@@ -117,10 +117,6 @@ namespace Application.Core.Channel.Net
                         RemovePartyPlayer(Character);
 
                         Character.logOff();
-                        if (YamlConfig.config.server.INSTANT_NAME_CHANGE)
-                        {
-                            Character.doPendingNameChange();
-                        }
                     }
                     else
                     {

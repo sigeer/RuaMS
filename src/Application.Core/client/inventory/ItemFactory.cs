@@ -106,15 +106,6 @@ public class ItemFactory : EnumClass
     }
     public bool IsAccount => account;
 
-    public List<ItemInventoryType> loadItems(int id, bool login)
-    {
-        return loadItemsCommon(id, login);
-    }
-
-    public void saveItems(List<ItemInventoryType> items, int id, DBContext dbContext)
-    {
-        saveItemsCommon(items, id, dbContext);
-    }
 
     private static Equip loadEquipFromResultSet(EquipItemModelFromDB rs)
     {
@@ -166,117 +157,6 @@ public class ItemFactory : EnumClass
                         select new EquipItemModelFromDB(a, bs)).ToList();
 
         return dataList.Select(x => loadEquipFromResultSet(x)).ToList();
-    }
-
-    private List<ItemInventoryType> loadItemsCommon(int id, bool login)
-    {
-        List<ItemInventoryType> items = new();
-        var equipedType = InventoryType.EQUIPPED.getType();
-
-        using var dbContext = new DBContext();
-        var queryExpress = (from a in dbContext.Inventoryitems
-                            join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
-                            from bs in bss.DefaultIfEmpty()
-                            where a.Type == value && (account ? a.Accountid == id : a.Characterid == id)
-                            where (!login || a.Inventorytype == equipedType)
-                            select new EquipItemModelFromDB(a, bs)).ToList();
-
-        queryExpress.ForEach(x =>
-        {
-            InventoryType mit = InventoryTypeUtils.getByType(x.Inventorytype);
-
-            if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
-            {
-                items.Add(new(loadEquipFromResultSet(x), mit));
-            }
-            else
-            {
-                Item item = new Item(x.Itemid, (byte)x.Position, x.Quantity);
-                item.setOwner(x.Owner);
-                item.setExpiration(x.Expiration);
-                item.setGiftFrom(x.GiftFrom);
-                item.setFlag(x.Flag);
-                items.Add(new(item, mit));
-            }
-        });
-
-        return items;
-    }
-
-    private void saveItemsCommon(List<ItemInventoryType> items, int id, DBContext dbContext)
-    {
-        object lockObj = locks[id % lockCount];
-        Monitor.Enter(lockObj);
-        try
-        {
-            var itemIds = (from a in dbContext.Inventoryitems
-                           where a.Type == value && (account ? a.Accountid == id : a.Characterid == id)
-                           select a.Inventoryitemid).ToList();
-
-            dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-            dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-
-            if (items.Count > 0)
-            {
-                foreach (var pair in items)
-                {
-                    Item item = pair.Item;
-                    InventoryType mit = pair.Type;
-                    var dbModel = new Inventoryitem();
-                    dbModel.Type = (byte)value;
-                    dbModel.Characterid = account ? null : id;
-                    dbModel.Accountid = account ? id : null;
-                    dbModel.Itemid = item.getItemId();
-                    dbModel.Inventorytype = mit.getType();
-                    dbModel.Position = item.getPosition();
-                    dbModel.Quantity = item.getQuantity();
-                    dbModel.Owner = item.getOwner();
-                    dbModel.Petid = item.PetId;
-                    dbModel.Flag = item.getFlag();
-                    dbModel.Expiration = item.getExpiration();
-                    dbModel.GiftFrom = item.getGiftFrom();
-                    dbContext.Inventoryitems.Add(dbModel);
-                    dbContext.SaveChanges();
-
-                    if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
-                    {
-                        Equip equip = (Equip)item;
-                        var newInventoryEquipment = new Inventoryequipment()
-                        {
-                            Inventoryitemid = dbModel.Inventoryitemid,
-                            Avoid = equip.getAvoid(),
-                            Upgradeslots = equip.getUpgradeSlots(),
-                            Level = equip.getLevel(),
-                            Str = equip.getStr(),
-                            Dex = equip.getDex(),
-                            Int = equip.getInt(),
-                            Luk = equip.getLuk(),
-                            Hp = equip.getHp(),
-                            Mp = equip.getMp(),
-                            Watk = equip.getWatk(),
-                            Matk = equip.getMatk(),
-                            Wdef = equip.getWdef(),
-                            Mdef = equip.getMdef(),
-                            Acc = equip.getAcc(),
-                            Hands = equip.getHands(),
-                            Speed = equip.getSpeed(),
-                            Jump = equip.getJump(),
-                            Vicious = equip.getVicious(),
-                            Itemlevel = equip.getItemLevel(),
-                            Itemexp = equip.getItemExp(),
-                            RingId = equip.getRingId()
-                        };
-                        dbContext.Inventoryequipments.Add(newInventoryEquipment);
-                    }
-
-                }
-                dbContext.SaveChanges();
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
     }
 }
 

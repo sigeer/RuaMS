@@ -22,7 +22,6 @@
 
 
 using Application.Core.Login.Client;
-using Application.Core.Login.Services;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -30,16 +29,14 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class CheckCharNameHandler : LoginHandlerBase
 {
-    readonly CharacterService characterManager;
-    public CheckCharNameHandler(MasterServer server, CharacterService characterManager, ILogger<LoginHandlerBase> logger)
+    public CheckCharNameHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
         : base(server, logger)
     {
-        this.characterManager = characterManager;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
         string name = p.readString();
-        c.sendPacket(PacketCreator.charNameResponse(name, !characterManager.CheckCharacterName(name)));
+        c.sendPacket(PacketCreator.charNameResponse(name, !_server.CharacterManager.CheckCharacterName(name)));
     }
 }

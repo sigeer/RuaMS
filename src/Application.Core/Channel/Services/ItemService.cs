@@ -380,5 +380,17 @@ namespace Application.Core.Channel.Services
             _itemStore.HandleTransaction(data.Transaction);
         }
 
+        public bool RegisterNameChange(IPlayer chr, string newName)
+        {
+            Dto.NameChangeResponse res = _transport.ReigsterNameChange(new Dto.NameChangeRequest { MasterId = chr.Id, NewName = newName });
+            if (res.Code == 0)
+            {
+                chr.Name = newName;
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

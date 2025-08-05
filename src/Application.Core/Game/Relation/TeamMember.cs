@@ -7,5 +7,6 @@ namespace Application.Core.Game.Relation
         public int Level { get; set; }
         public int JobId { get; set; }
         public int Channel { get; set; }
+        public int MapId { get; set; }
     }
 }

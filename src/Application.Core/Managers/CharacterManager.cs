@@ -23,35 +23,35 @@ namespace Application.Core.Managers
         }
 
 
-        public static void deleteQuestProgressWhereCharacterId(DBContext dbContext, int cid)
-        {
-            dbContext.Medalmaps.Where(x => x.Characterid == cid).ExecuteDelete();
+        //public static void deleteQuestProgressWhereCharacterId(DBContext dbContext, int cid)
+        //{
+        //    dbContext.Medalmaps.Where(x => x.Characterid == cid).ExecuteDelete();
 
-            dbContext.Questprogresses.Where(x => x.Characterid == cid).ExecuteDelete();
+        //    dbContext.Questprogresses.Where(x => x.Characterid == cid).ExecuteDelete();
 
-            dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
-        }
+        //    dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
+        //}
 
-        public static void SavePlayerQuestInfo(DBContext dbContext, IPlayer player)
-        {
-            foreach (var qs in player.getQuests())
-            {
-                var questStatus = new QuestStatusEntity(player.Id, qs.getQuestID(), (int)qs.getStatus(), (int)(qs.getCompletionTime() / 1000), qs.getExpirationTime(),
-                   qs.getForfeited(), qs.getCompleted());
-                dbContext.Queststatuses.Add(questStatus);
-                dbContext.SaveChanges();
+        //public static void SavePlayerQuestInfo(DBContext dbContext, IPlayer player)
+        //{
+        //    foreach (var qs in player.getQuests())
+        //    {
+        //        var questStatus = new QuestStatusEntity(player.Id, qs.getQuestID(), (int)qs.getStatus(), (int)(qs.getCompletionTime() / 1000), qs.getExpirationTime(),
+        //           qs.getForfeited(), qs.getCompleted());
+        //        dbContext.Queststatuses.Add(questStatus);
+        //        dbContext.SaveChanges();
 
-                foreach (int mob in qs.getProgress().Keys)
-                {
-                    dbContext.Questprogresses.Add(new Questprogress(player.Id, questStatus.Queststatusid, mob, qs.getProgress(mob)));
-                }
-                foreach (var item in qs.getMedalMaps())
-                {
-                    dbContext.Medalmaps.Add(new Medalmap(player.Id, questStatus.Queststatusid, item));
-                }
-            }
-            dbContext.SaveChanges();
-        }
+        //        foreach (int mob in qs.getProgress().Keys)
+        //        {
+        //            dbContext.Questprogresses.Add(new Questprogress(player.Id, questStatus.Queststatusid, mob, qs.getProgress(mob)));
+        //        }
+        //        foreach (var item in qs.getMedalMaps())
+        //        {
+        //            dbContext.Medalmaps.Add(new Medalmap(player.Id, questStatus.Queststatusid, item));
+        //        }
+        //    }
+        //    dbContext.SaveChanges();
+        //}
 
 
         ///// <summary>
@@ -421,162 +421,6 @@ namespace Application.Core.Managers
             return players;
         }
 
-        public static bool doNameChange(DBContext dbContext, int characterId, string oldName, string newName, int nameChangeId)
-        {
-            try
-            {
-                dbContext.Characters.Where(x => x.Id == characterId).ExecuteUpdate(x => x.SetProperty(y => y.Name, newName));
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e, "Failed to perform chr name change in database for chrId {CharacterId}", characterId);
-                return false;
-            }
-
-            /*try (PreparedStatement ps = con.prepareStatement("UPDATE playernpcs SET name = ? WHERE name = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE gifts SET `from` = ? WHERE `from` = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-            try (PreparedStatement ps = con.prepareStatement("UPDATE dueypackages SET SenderName = ? WHERE SenderName = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE dueypackages SET SenderName = ? WHERE SenderName = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE inventoryitems SET owner = ? WHERE owner = ?")) { //GMS doesn't do this
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE mts_items SET owner = ? WHERE owner = ?")) { //GMS doesn't do this
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE newyear SET sendername = ? WHERE sendername = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE newyear SET receivername = ? WHERE receivername = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE notes SET `to` = ? WHERE `to` = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE notes SET `from` = ? WHERE `from` = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }
-
-            try (PreparedStatement ps = con.prepareStatement("UPDATE nxcode SET retriever = ? WHERE retriever = ?")) {
-                ps.setString(1, newName);
-                ps.setString(2, oldName);
-                ps.executeUpdate();
-            } catch(Exception e) { 
-                Log.Logger.Error(e.ToString());
-                FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-                return false;
-            }*/
-
-            if (nameChangeId != -1)
-            {
-                try
-                {
-                    dbContext.Namechanges.Where(x => x.Id == nameChangeId).ExecuteUpdate(x => x.SetProperty(y => y.CompletionTime, DateTimeOffset.UtcNow));
-                }
-                catch (Exception e)
-                {
-                    Log.Logger.Error(e, "Failed to save chr name change for chrId {NameChangeId}", nameChangeId);
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static void SaveQuickSlotMapped(DBContext dbContext, IPlayer player)
-        {
-            bool bQuickslotEquals = player.QuickSlotKeyMapped == null
-                || (player.QuickSlotLoaded != null && player.QuickSlotKeyMapped.GetKeybindings().SequenceEqual(player.QuickSlotLoaded));
-            if (!bQuickslotEquals)
-            {
-                long nQuickslotKeymapped = LongTool.BytesToLong(player.QuickSlotKeyMapped!.GetKeybindings());
-                var m = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == player.AccountId).FirstOrDefault();
-                if (m == null)
-                {
-                    m = new Quickslotkeymapped(player.AccountId, nQuickslotKeymapped);
-                    dbContext.Quickslotkeymappeds.Add(m);
-                }
-                else
-                {
-                    m.Keymap = nQuickslotKeymapped;
-                }
-                dbContext.SaveChanges();
-            }
-        }
 
         //public void saveCharToDB(IPlayer player, bool notAutosave)
         //{

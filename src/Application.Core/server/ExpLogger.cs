@@ -42,24 +42,25 @@ public class ExpLogger
 
     private static Action saveExpLoggerToDBRunnable = () =>
     {
-        try
-        {
-            using var dbContext = new DBContext();
-            // "INSERT INTO characterexplogs (world_exp_rate, exp_coupon, gained_exp, current_exp, exp_gain_time, charid) VALUES (?, ?, ?, ?, ?, ?)"
+        // TODO: 使用别的数据库直连
+        //try
+        //{
+        //    using var dbContext = new DBContext();
+        //    // "INSERT INTO characterexplogs (world_exp_rate, exp_coupon, gained_exp, current_exp, exp_gain_time, charid) VALUES (?, ?, ?, ?, ?, ?)"
 
-            List<ExpLogRecord> drainedExpLogs = new();
+        //    List<ExpLogRecord> drainedExpLogs = new();
 
-            while (expLoggerQueue.TryDequeue(out var item))
-            {
-                drainedExpLogs.Add(item);
-            }
-            dbContext.ExpLogRecords.AddRange(drainedExpLogs);
-            dbContext.SaveChanges();
-        }
-        catch (Exception sqle)
-        {
-            Log.Logger.Error(sqle.ToString());
-        }
+        //    while (expLoggerQueue.TryDequeue(out var item))
+        //    {
+        //        drainedExpLogs.Add(item);
+        //    }
+        //    dbContext.ExpLogRecords.AddRange(drainedExpLogs);
+        //    dbContext.SaveChanges();
+        //}
+        //catch (Exception sqle)
+        //{
+        //    Log.Logger.Error(sqle.ToString());
+        //}
 
     };
 

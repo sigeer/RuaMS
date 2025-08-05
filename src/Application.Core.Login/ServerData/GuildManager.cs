@@ -2,10 +2,12 @@ using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Services;
+using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Guild;
 using Application.Shared.Team;
+using Application.Utility;
 using AutoMapper;
 using Dto;
 using Jint.Runtime.Debugger;
@@ -21,7 +23,7 @@ using System.Xml.Linq;
 
 namespace Application.Core.Login.ServerData
 {
-    public class GuildManager : IDisposable
+    public class GuildManager : IStorage, IDisposable
     {
         ConcurrentDictionary<int, GuildModel> _idGuildDataSource = new();
         ConcurrentDictionary<string, GuildModel> _nameGuildDataSource = new();
@@ -35,17 +37,15 @@ namespace Application.Core.Login.ServerData
         readonly ILogger<GuildManager> _logger;
         readonly IMapper _mapper;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly DataStorage _dataStorage;
-        public GuildManager(MasterServer server, ILogger<GuildManager> logger, IMapper mapper, IDbContextFactory<DBContext> dbContext, DataStorage dataStorage)
+        public GuildManager(MasterServer server, ILogger<GuildManager> logger, IMapper mapper, IDbContextFactory<DBContext> dbContext)
         {
             _server = server;
             _logger = logger;
             _mapper = mapper;
             _dbContextFactory = dbContext;
-            _dataStorage = dataStorage;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public async Task InitializeAsync(DBContext dbContext)
         {
             // 家族、联盟的数据应该不会太多，全部加载省事
             var allGuilds = await dbContext.Guilds.AsNoTracking().ToListAsync();
@@ -108,7 +108,7 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
-            _dataStorage.SetGuildUpdate(guildModel);
+            SetGuildUpdate(guildModel);
             var response = new Dto.GuildDto();
             response.GuildId = guildModel.GuildId;
             response.Leader = guildModel.Leader;
@@ -242,7 +242,7 @@ namespace Application.Core.Login.ServerData
 
             _idAllianceDataSource[allianceModel.Id] = allianceModel;
             _nameAllianceDataSource[allianceName] = allianceModel;
-            _dataStorage.SetAlliance(allianceModel);
+            SetAlliance(allianceModel);
 
             guild1.AllianceId = allianceModel.Id;
             guild2.AllianceId = allianceModel.Id;
@@ -308,7 +308,7 @@ namespace Application.Core.Login.ServerData
                 }
                 else
                 {
-                    _dataStorage.SetGuildUpdate(guild!);
+                    SetGuildUpdate(guild!);
                     guildAction(guild);
                     code = GuildUpdateResult.Success;
                     return guild.GuildId;
@@ -420,7 +420,7 @@ namespace Application.Core.Login.ServerData
                 }
                 _idGuildDataSource.Remove(guild.GuildId, out _);
                 _nameGuildDataSource.Remove(guild.Name, out _);
-                _dataStorage.SetGuildRemoved(guild!);
+                SetGuildRemoved(guild!);
             }, out var code);
 
             var response = new GuildDisbandResponse { Code = (int)code, Request = request, GuildId = guildId };
@@ -557,7 +557,7 @@ namespace Application.Core.Login.ServerData
                     else
                     {
                         code = guildAction(master, alliance, guild);
-                        _dataStorage.SetGuildUpdate(guild!);
+                        SetGuildUpdate(guild!);
                         return (alliance.Id, guild.GuildId);
                     }
                 }
@@ -675,7 +675,7 @@ namespace Application.Core.Login.ServerData
             var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
                 alliance.Capacity += 1;
-                _dataStorage.SetAlliance(alliance);
+                SetAlliance(alliance);
                 return 0;
             }, out var code);
 
@@ -691,7 +691,7 @@ namespace Application.Core.Login.ServerData
                 alliance.Rank3 = request.RankTitles[2];
                 alliance.Rank4 = request.RankTitles[3];
                 alliance.Rank5 = request.RankTitles[4];
-                _dataStorage.SetAlliance(alliance);
+                SetAlliance(alliance);
                 return 0;
             }, out var code);
 
@@ -703,7 +703,7 @@ namespace Application.Core.Login.ServerData
             var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
                 alliance.Notice = request.Notice;
-                _dataStorage.SetAlliance(alliance);
+                SetAlliance(alliance);
                 return 0;
             }, out var code);
 
@@ -784,13 +784,14 @@ namespace Application.Core.Login.ServerData
                             member.Character.AllianceRank = 5;
                     }
                 }
-                _dataStorage.SetAllianceRemoved(alliance);
+                SetAllianceRemoved(alliance);
                 return 0;
             }, out var code);
 
             _server.Transport.BroadcastAllianceDisband(new Dto.DisbandAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId });
 
         }
+
         #endregion
 
         public QueryRankedGuildsResponse LoadRankedGuilds()
@@ -799,6 +800,132 @@ namespace Application.Core.Login.ServerData
             var res = new QueryRankedGuildsResponse();
             res.Guilds.AddRange(_mapper.Map<GuildDto[]>(list));
             return res;
+        }
+
+        #region Guild
+        ConcurrentDictionary<int, StoreUnit<GuildModel>> _guild = new();
+        public void SetGuildUpdate(GuildModel data)
+        {
+            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.AddOrUpdate, data);
+        }
+        public void SetGuildRemoved(GuildModel data)
+        {
+            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.Remove, data);
+        }
+        public async Task CommitGuildAsync(DBContext dbContext)
+        {
+            var updateData = new Dictionary<int, StoreUnit<GuildModel>>();
+            foreach (var key in _guild.Keys.ToList())
+            {
+                _guild.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
+            if (updateCount == 0)
+                return;
+
+            var dbData = dbContext.Guilds.Where(x => updateData.Keys.Contains(x.GuildId)).ToList();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Flag == StoreFlag.Remove)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
+                    await dbContext.Guilds.Where(x => x.GuildId == obj.GuildId).ExecuteDeleteAsync();
+                }
+                else
+                {
+                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == obj.GuildId);
+                    if (dbModel == null)
+                    {
+                        dbModel = new GuildEntity(obj.GuildId, obj.Name, obj.Leader);
+                        dbContext.Add(dbModel);
+                    }
+                    dbModel.GP = obj.GP;
+                    dbModel.Rank1Title = obj.Rank1Title;
+                    dbModel.Rank2Title = obj.Rank2Title;
+                    dbModel.Rank3Title = obj.Rank3Title;
+                    dbModel.Rank4Title = obj.Rank4Title;
+                    dbModel.Rank5Title = obj.Rank5Title;
+                    dbModel.Logo = obj.Logo;
+                    dbModel.LogoBg = obj.LogoBg;
+                    dbModel.LogoBgColor = obj.LogoBgColor;
+                    dbModel.LogoColor = obj.LogoColor;
+                    dbModel.AllianceId = obj.AllianceId;
+                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Name = obj.Name;
+                    dbModel.Notice = obj.Notice;
+                    dbModel.Signature = obj.Signature;
+                    dbModel.Leader = obj.Leader;
+                }
+
+            }
+            await dbContext.SaveChangesAsync();
+        }
+        #endregion
+
+        #region Alliance
+        ConcurrentDictionary<int, StoreUnit<AllianceModel>> _alliance = new();
+        public void SetAlliance(AllianceModel data)
+        {
+            _alliance[data.Id] = new StoreUnit<AllianceModel>(StoreFlag.AddOrUpdate, data);
+        }
+        public void SetAllianceRemoved(AllianceModel data)
+        {
+            _alliance[data.Id] = new StoreUnit<AllianceModel>(StoreFlag.Remove, data);
+        }
+        public async Task CommitAllianceAsync(DBContext dbContext)
+        {
+            var updateData = new Dictionary<int, StoreUnit<AllianceModel>>();
+            foreach (var key in _alliance.Keys.ToList())
+            {
+                _alliance.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
+            if (updateCount == 0)
+                return;
+
+            var dbData = dbContext.Alliances.Where(x => updateData.Keys.Contains(x.Id)).ToList();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Flag == StoreFlag.Remove)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
+                    await dbContext.Alliances.Where(x => x.Id == obj.Id).ExecuteDeleteAsync();
+                }
+                else
+                {
+                    var dbModel = dbData.FirstOrDefault(x => x.Id == obj.Id);
+                    if (dbModel == null)
+                    {
+                        dbModel = new AllianceEntity(obj.Id, obj.Name);
+                        dbContext.Add(dbModel);
+                    }
+                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Name = obj.Name;
+                    dbModel.Notice = obj.Notice;
+                    dbModel.Rank1 = obj.Rank1;
+                    dbModel.Rank2 = obj.Rank2;
+                    dbModel.Rank3 = obj.Rank3;
+                    dbModel.Rank4 = obj.Rank4;
+                    dbModel.Rank5 = obj.Rank5;
+                }
+
+            }
+            await dbContext.SaveChangesAsync();
+        }
+        #endregion
+
+        public async Task Commit(DBContext dbContext)
+        {
+            await CommitAllianceAsync(dbContext);
+            await CommitGuildAsync(dbContext);
         }
     }
 }

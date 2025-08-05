@@ -136,15 +136,12 @@ namespace Application.Core.Login
         public InvitationManager InvitationManager => _invitationManager.Value;
 
         public List<MasterModule> Modules { get; private set; }
-        CharacterService _characterSevice;
         public ITimerManager TimerManager { get; private set; } = null!;
-        public MasterServer(IServiceProvider sp, CharacterService characterManager)
+        public MasterServer(IServiceProvider sp)
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
             Modules = new();
-
-            _characterSevice = characterManager;
 
             ChannelServerList = new();
             Channels = new();
@@ -512,11 +509,6 @@ namespace Application.Core.Login
         public void BroadcastWorldGMPacket(Packet packet)
         {
             Transport.BroadcastWorldGMPacket(packet);
-        }
-
-        public bool CheckCharacterName(string name)
-        {
-            return _characterSevice.CheckCharacterName(name);
         }
 
         private AtomicLong currentTime = new AtomicLong(0);

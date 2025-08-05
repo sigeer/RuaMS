@@ -258,7 +258,7 @@ namespace Application.Core.Channel.InProgress
 
         public bool CheckCharacterName(string name)
         {
-            return _server.CheckCharacterName(name);
+            return _server.CharacterManager.CheckCharacterName(name);
         }
 
         public void UpdateAccountChracterByAdd(int accountId, int id)
@@ -788,6 +788,11 @@ namespace Application.Core.Channel.InProgress
         public GacheponDataDto GetGachaponData()
         {
             return _server.GachaponManager.GetGachaponData();
+        }
+
+        public NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest)
+        {
+            return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
     }
 }

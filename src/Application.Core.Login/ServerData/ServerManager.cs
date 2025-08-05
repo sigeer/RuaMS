@@ -59,7 +59,6 @@ namespace Application.Core.Login.Datas
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
                 await CleanNxcodeCoupons(dbContext);
                 await _masterServer.CouponManager.Initialize(dbContext);
-                await _masterServer.GuildManager.Initialize(dbContext);
 
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
 
@@ -95,14 +94,14 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        private static async Task CleanNxcodeCoupons(DBContext dbContext)
+        private async Task CleanNxcodeCoupons(DBContext dbContext)
         {
             if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS)
             {
                 return;
             }
 
-            long timeClear = DateTimeOffset.UtcNow.AddDays(-14).ToUnixTimeMilliseconds();
+            long timeClear = _masterServer.getCurrentTime() - (long)TimeSpan.FromDays(14).TotalMilliseconds;
 
             var codeList = dbContext.Nxcodes.Where(x => x.Expiration <= timeClear).ToList();
             var codeIdList = codeList.Select(x => x.Id).ToList();
@@ -169,12 +168,10 @@ namespace Application.Core.Login.Datas
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
                 await _dataStorage.CommitCharacterAsync(dbContext);
+
                 await _dataStorage.CommitAccountCtrlAsync(dbContext);
                 await _dataStorage.CommitAccountGameAsync(dbContext);
                 await _dataStorage.CommitAccountLoginRecord(dbContext);
-
-                await _dataStorage.CommitAllianceAsync(dbContext);
-                await _dataStorage.CommitGuildAsync(dbContext);
 
                 foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
                 {

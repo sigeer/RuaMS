@@ -419,7 +419,6 @@ public class CashOperationHandler : ChannelHandlerBase
                 else if (action == 0x2E)
                 {
                     // TODO: 暂不支持，后续修复
-                    throw new BusinessNotsupportException();
                     //name change
                     var cItem = _cashItemProvider.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
@@ -432,28 +431,26 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         p.readString(); //old name
                         string newName = p.readString();
-                        if (!c.CurrentServerContainer.CheckCharacterName(newName) || chr.getLevel() < 10)
-                        { //(longest ban duration isn't tracked currently)
-                            c.sendPacket(PacketCreator.showCashShopMessage(0));
-                            c.enableCSActions();
-                            return;
-                        }
                         //else if (c.AccountEntity?.Tempban != null && (c.AccountEntity.Tempban!.Value.AddDays(30)) > DateTimeOffset.UtcNow)
                         //{
                         //    c.sendPacket(PacketCreator.showCashShopMessage(0));
                         //    c.enableCSActions();
                         //    return;
                         //}
-                        if (chr.registerNameChange(newName))
-                        { //success
+
+                        if (_itemService.RegisterNameChange(c.OnlinedCharacter, newName))
+                        { 
+                            //success
                             Item item = _itemService.CashItem2Item(cItem);
                             c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
-                            cs.Buy(4, cItem);
-                            cs.addToInventory(item);
+                            cs.gainCash(CashType.NX_PREPAID, -cItem.getPrice());
+                            //cs.Buy(CashType.NX_PREPAID, cItem);
+                            //cs.addToInventory(item);
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0));
+                            c.enableCSActions();
+                            return;
                         }
                     }
                     c.enableCSActions();

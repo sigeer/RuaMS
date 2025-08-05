@@ -283,24 +283,7 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        /// <summary>
-        /// Gets a packet telling the client the IP of the channel server.
-        /// </summary>
-        /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
-        /// <param name="port">The port the channel is on.</param>
-        /// <param name="characterId">The ID of the client.</param>
-        /// <returns>The server IP packet.</returns>
-        public static Packet GetServerIP(IPEndPoint iPEndPoint, int characterId)
-        {
-            OutPacket p = OutPacket.create(SendOpcode.SERVER_IP);
-            p.writeShort(0);
-            byte[] addr = iPEndPoint.Address.GetAddressBytes();
-            p.writeBytes(addr);
-            p.writeShort(iPEndPoint.Port);
-            p.writeInt(characterId);
-            p.writeBytes(new byte[] { 0, 0, 0, 0, 0 });
-            return p;
-        }
+
 
         public static Packet SendRecommended(MasterServer server)
         {
