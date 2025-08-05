@@ -12,11 +12,5 @@ namespace Application.Module.BBS.Master
         {
             _manager = bBSManager;
         }
-
-        public override async Task SaveChangesAsync(DBContext dbContext)
-        {
-            await base.SaveChangesAsync(dbContext);
-            await _manager.Commit(dbContext);
-        }
     }
 }

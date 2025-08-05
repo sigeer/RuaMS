@@ -1,3 +1,4 @@
+using Application.Core.Game.Controllers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -9,19 +10,35 @@ using System.Diagnostics;
 
 namespace Application.Core.Login.Datas
 {
-    public class ServerManager
+    public class ServerManager: TimelyControllerBase
     {
         readonly ILogger<ServerManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _masterServer;
+        protected System.Threading.Channels.Channel<bool> packetChannel;
+        readonly DataStorage _dataStorage;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-
-        public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
+        public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer, DataStorage chrStorage)
+            :base("DataStorage", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
 
             _masterServer = masterServer;
+
+            _dataStorage = chrStorage;
+            _logger = logger;
+            packetChannel = System.Threading.Channels.Channel.CreateUnbounded<bool>();
+            // 定时触发、特殊事件触发、关闭服务器触发
+            Task.Run(async () =>
+            {
+                await foreach (var p in packetChannel.Reader.ReadAllAsync())
+                {
+                    await CommitAllImmediately();
+
+                }
+            });
         }
 
         public async Task Setup()
@@ -50,12 +67,6 @@ namespace Application.Core.Login.Datas
                 {
                     await item.InitializeAsync(dbContext);
                 }
-
-                foreach (var module in _masterServer.Modules)
-                {
-                    await module.IntializeDatabaseAsync(dbContext);
-                }
-
                 await dbTrans.CommitAsync();
                 _logger.LogInformation("初始化数据库>>>成功");
             }
@@ -132,5 +143,51 @@ namespace Application.Core.Login.Datas
         //        throw;
         //    }
         //}
+
+        #region Write
+
+        protected override void HandleRun()
+        {
+            CommitAll();
+        }
+        public bool CommitAll()
+        {
+            return packetChannel.Writer.TryWrite(true);
+        }
+
+        public async Task CommitAllImmediately()
+        {
+            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(20)))
+            {
+                _logger.LogInformation("失败：已经有一个保存操作正在进行中");
+                return;
+            }
+
+            try
+            {
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+                await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+
+                await _dataStorage.CommitCharacterAsync(dbContext);
+                await _dataStorage.CommitAccountCtrlAsync(dbContext);
+                await _dataStorage.CommitAccountGameAsync(dbContext);
+                await _dataStorage.CommitAccountLoginRecord(dbContext);
+
+                await _dataStorage.CommitAllianceAsync(dbContext);
+                await _dataStorage.CommitGuildAsync(dbContext);
+
+                foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
+                {
+                    await item.Commit(dbContext);
+                }
+
+                await dbTrans.CommitAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+        #endregion
     }
 }

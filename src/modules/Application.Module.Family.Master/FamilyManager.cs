@@ -1,37 +1,35 @@
 using Application.Core.Login;
+using Application.Core.Login.Shared;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Module.Family.Common;
-using Application.Utility.Exceptions;
+using Application.Module.Family.Master.Models;
+using Application.Utility;
 using AutoMapper;
-using Dto;
+using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
+using System.Collections.Frozen;
+using System.Linq.Expressions;
 
 namespace Application.Module.Family.Master
 {
-    public class FamilyManager
+    public class FamilyManager : StorageBase<int, FamilyCharacterModel>
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;
         readonly ILogger<FamilyManager> _logger;
-        readonly DataService _dataService;
         readonly FamilyConfigs _config;
         readonly IMapper _mapper;
         readonly MasterFamilyModuleTransport _transport;
 
-        ConcurrentDictionary<int, FamilyModel> _dataSource = new();
-        ConcurrentDictionary<int, FamilyModel> _chrFamilyDataSource = new();
-        int _currentId = 1;
+        int _currentFamilyId = 0;
 
         public FamilyManager(
             IDbContextFactory<DBContext> dbContextFactory,
             MasterServer server,
             ILogger<FamilyManager> logger,
-            DataService dataService,
             IMapper mapper,
             IOptions<FamilyConfigs> options,
             MasterFamilyModuleTransport transport)
@@ -39,21 +37,60 @@ namespace Application.Module.Family.Master
             _dbContextFactory = dbContextFactory;
             _server = server;
             _logger = logger;
-            _dataService = dataService;
             _mapper = mapper;
             _config = options.Value;
             _transport = transport;
         }
 
-        public async Task LoadAllFamilyAsync(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
-            var allData = await dbContext.FamilyCharacters.AsNoTracking().ToListAsync();
-            _dataSource = new(allData.GroupBy(x => x.Familyid).ToDictionary(
-                x => x.Key,
-                x => new FamilyModel(x.Key)
+            _currentFamilyId = await dbContext.FamilyCharacters.MaxAsync(x => (int?)x.Familyid) ?? 0;
+        }
+
+        public override List<FamilyCharacterModel> Query(Expression<Func<FamilyCharacterModel, bool>> expression)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var entityExpression = _mapper.MapExpression<Expression<Func<FamilyCharacterEntity, bool>>>(expression);
+
+            var allData = _mapper.Map<List<FamilyCharacterModel>>(dbContext.FamilyCharacters.AsNoTracking().Where(entityExpression).ToList());
+
+            var cids = allData.Select(x => x.Id).ToList();
+            var useRecords = dbContext.FamilyEntitlements.AsNoTracking().Where(x => cids.Contains(x.Charid)).ToList();
+            foreach (var item in allData)
+            {
+                item.EntitlementUseRecord = _mapper.Map<List<FamilyEntitlementUseRecord>>(useRecords.Where(x => x.Charid == item.Id));
+            }
+            return QueryWithDirty(allData, expression.Compile());
+        }
+
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<FamilyCharacterModel>> updateData)
+        {
+            await dbContext.FamilyCharacters.Where(x => updateData.Keys.Contains(x.Cid)).ExecuteDeleteAsync();
+            await dbContext.FamilyEntitlements.Where(x => updateData.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
+            foreach (var item in updateData.Values)
+            {
+                if (item.Flag != StoreFlag.Remove)
                 {
-                    Members = new(x.Where(y => y.Familyid == x.Key).ToList().ToDictionary(y => y.Cid, y => _mapper.Map<FamilyMemberModel>(y)))
-                }));
+                    var x = item.Data!;
+                    dbContext.FamilyCharacters.Add(new FamilyCharacterEntity(x.Id, x.Familyid, x.Seniorid)
+                    {
+                        Lastresettime = x.Lastresettime,
+                        Precepts = x.Precepts,
+                        Reptosenior = x.Reptosenior,
+                        Reputation = x.Reputation,
+                        Todaysrep = x.Todaysrep,
+                        Totalreputation = x.Totalreputation
+                    });
+                    dbContext.FamilyEntitlements.AddRange(x.EntitlementUseRecord.Select(y => new FamilyEntitlementEntity
+                    {
+                        Entitlementid = y.Id,
+                        Charid = x.Id,
+                        Timestamp = y.Time
+                    }));
+                }
+            }
+            await dbContext.SaveChangesAsync();
         }
 
         public void UpdateFamilyMessage()
@@ -74,28 +111,17 @@ namespace Application.Module.Family.Master
 
         public void ResetEntitlementUsage()
         {
-            var resetTime = DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeMilliseconds();
+            var resetTime = _server.getCurrentTime() + (long)TimeSpan.FromMinutes(1).TotalMilliseconds;
             try
             {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                try
+                var dataList = Query(x => x.Lastresettime <= resetTime);
+                foreach (var item in dataList)
                 {
-                    dbContext.FamilyCharacters.Where(x => x.Lastresettime <= resetTime).ExecuteUpdate(x => x.SetProperty(y => y.Todaysrep, 0).SetProperty(y => y.Reptosenior, 0));
+                    item.Todaysrep = 0;
+                    item.Reptosenior = 0;
+                    item.EntitlementUseRecord.RemoveAll(x => x.Time <= resetTime);
+                    SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, item));
                 }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Could not reset daily rep for families");
-                }
-                try
-                {
-                    dbContext.FamilyEntitlements.Where(x => x.Timestamp <= resetTime).ExecuteDelete();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Could not do daily reset for family entitlements");
-                }
-                dbTrans.Commit();
             }
             catch (Exception e)
             {
@@ -105,112 +131,109 @@ namespace Application.Module.Family.Master
 
         public Dto.GetFamilyResponse AcceptInvite(int masterId, int memberId)
         {
-            var memberChr = _server.CharacterManager.FindPlayerById(memberId)!;
-            if (_dataSource.TryGetValue(memberChr.Character.FamilyId, out var theFamily))
+            var theFamily = Query(x => x.Id == memberId).FirstOrDefault();
+            if (theFamily != null && theFamily.Seniorid != 0)
             {
-                // 接受邀请者已有学院
-                if (theFamily.Members.Values.Any(x => x.Seniorid == 0 && x.Cid == masterId))
-                    return new Dto.GetFamilyResponse { Code = ErrorCode.NotLeader };
+                // 接受邀请者已有学院 且已有上级
+                return new Dto.GetFamilyResponse { Code = ErrorCode.NotLeader };
             }
 
-            var masterChr = _server.CharacterManager.FindPlayerById(masterId)!;
-            if (_dataSource.TryGetValue(masterChr.Character.FamilyId, out var family))
+            var family = Query(x => x.Id == masterId).FirstOrDefault();
+            if (family != null)
             {
+
                 if (theFamily != null)
                 {
-                    if (GetDepthOfMember(family.Members, masterId) + GetAllJuniorsAndDepth(theFamily.Members, memberId).maxDepth > _config.FAMILY_MAX_GENERATIONS)
+                    // 已经在同一个学院里了
+                    if (family.Familyid == theFamily.Familyid)
+                        return new Dto.GetFamilyResponse();
+
+                    // 合并学院但是超出范围
+                    if (GetMemberDepth(masterId) + GetMaxDepth(theFamily.Familyid) > _config.FAMILY_MAX_GENERATIONS)
                     {
                         return new Dto.GetFamilyResponse { Code = ErrorCode.OverMaxGenerations };
                     }
                 }
-
             }
             else
             {
-                family = new FamilyModel(Interlocked.Increment(ref _currentId));
-                var masterMember = new FamilyMemberModel { Cid = masterId, Seniorid = 0 };
-                family.Members[masterMember.Cid] = masterMember;
-                _dataSource[family.Id] = family;
-                _dataService.SetDirty(family);
+                family = new FamilyCharacterModel
+                {
+                    Id = masterId,
+                    Familyid = Interlocked.Increment(ref _currentFamilyId),
+                };
+                SetDirty(family.Id, new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, family));
             }
 
 
             // 对方有学院、则合并。没有则加入
             if (theFamily != null)
             {
-                foreach (var item in theFamily.Members.Values)
-                {
-                    var chr = _server.CharacterManager.FindPlayerById(item.Cid);
-                    if (chr != null)
-                        chr.Character.FamilyId = family.Id;
-
-                    if (item.Cid == memberId)
-                    {
-                        item.Seniorid = masterId;
-                        item.Reptosenior = 0;
-                    }
-                }
+                theFamily.Seniorid = masterId;
+                theFamily.Reptosenior = 0;
+                theFamily.Familyid = family.Familyid;
             }
             else
             {
-                var member = new FamilyMemberModel { Cid = memberId, Seniorid = masterId };
-                family.Members[member.Cid] = member;
+                theFamily = new FamilyCharacterModel
+                {
+                    Id = memberId,
+                    Familyid = family.Familyid,
+                    Seniorid = masterId
+                };
+                SetDirty(theFamily.Id, new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, theFamily));
             }
             return new Dto.GetFamilyResponse { Model = _mapper.Map<Dto.FamilyDto>(family) };
         }
 
         public Dto.GetFamilyResponse ForkFamily(int id)
         {
-            var masterChr = _server.CharacterManager.FindPlayerById(id)!;
-
-            if (!_dataSource.TryGetValue(masterChr.Character.FamilyId, out var family))
+            var family = Query(x => x.Id == id).FirstOrDefault();
+            if (family == null)
                 return new Dto.GetFamilyResponse();
 
-            var master = family.Members.GetValueOrDefault(id);
-            if (master == null)
-                throw new BusinessFatalException($"FamilyId 与 Family成员不匹配， FamilyId = {masterChr.Character.FamilyId}, CharacterId = {id}");
+            var originTree = Query(x => x.Familyid == family.Familyid);
 
+            var children = GetAllChildren(originTree, id);
+            var newFamilyId = Interlocked.Increment(ref _currentFamilyId);
 
-            var members = GetAllChildren(family.Members.Values.ToList(), id);
-            foreach (var item in members)
+            family.Seniorid = 0;
+            family.Reptosenior = 0;
+            family.Familyid = newFamilyId;
+            SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, family));
+
+            foreach (var item in children)
             {
-                family.Members.TryRemove(item.Cid, out _);
+                item.Familyid = newFamilyId;
+
+                SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, item));
             }
+            return new Dto.GetFamilyResponse { Model = _mapper.Map<Dto.FamilyDto>(Map(children, newFamilyId)) };
+        }
 
-            var newFamily = new FamilyModel(Interlocked.Increment(ref _currentId));
-
-            family.Members.TryRemove(id, out _);
-            master.Seniorid = 0;
-            master.Reptosenior = 0;
-            masterChr.Character.FamilyId = newFamily.Id;
-            newFamily.Members[id] = master;
-
-            foreach (var item in members)
+        private FamilyModel Map(List<FamilyCharacterModel> chrs, int familyId)
+        {
+            return new FamilyModel(familyId)
             {
-                newFamily.Members[item.Cid] = item;
-                var itemChr = _server.CharacterManager.FindPlayerById(item.Cid);
-                if (itemChr != null)
-                    itemChr.Character.FamilyId = newFamily.Id;
-            }
-            _dataSource[newFamily.Id] = newFamily;
-
-            _dataService.SetDirty(family);
-            _dataService.SetDirty(newFamily);
-
-            return new Dto.GetFamilyResponse { Model = _mapper.Map<Dto.FamilyDto>(newFamily) };
+                Members = new(chrs.Where(y => y.Familyid == familyId).ToList().ToDictionary(y => y.Id, y => _mapper.Map<FamilyMemberModel>(y)))
+            };
         }
 
-        internal FamilyModel? GetFamily(int familyId)
+        internal FamilyModel? GetFamilyByCharacterId(int cid)
         {
-            return _dataSource.GetValueOrDefault(familyId);
+            var item = GetFamilyCharacter(cid);
+            if (item == null)
+                return null;
+
+            return Map(Query(x => x.Familyid == item.Familyid), item.Familyid);
         }
-        internal FamilyModel? GetFamilyByPlayer(int chrId)
+        public FamilyCharacterModel? GetFamilyCharacter(int cid)
         {
-            return _chrFamilyDataSource.GetValueOrDefault(chrId);
+            return Query(x => x.Id == cid).FirstOrDefault();
         }
-        List<FamilyMemberModel> GetAllChildren(IEnumerable<FamilyMemberModel> flatList, int parentId)
+        List<FamilyCharacterModel> GetAllChildren(IEnumerable<FamilyCharacterModel> flatList, int parentId)
         {
-            var result = new List<FamilyMemberModel>();
+            var result = new List<FamilyCharacterModel>();
 
             // 找到直接子项
             var directChildren = flatList.Where(n => n.Seniorid == parentId).ToList();
@@ -218,94 +241,114 @@ namespace Application.Module.Family.Master
             foreach (var child in directChildren)
             {
                 result.Add(child);
-                result.AddRange(GetAllChildren(flatList, child.Cid)); // 递归查找孙子节点
+                result.AddRange(GetAllChildren(flatList, child.Id)); // 递归查找孙子节点
             }
 
             return result;
         }
 
-        public static int GetDepthOfMember(IDictionary<int, FamilyMemberModel> memberDict, int cid)
+
+        /// <summary>
+        /// 玩家在学院里的深度
+        /// </summary>
+        /// <param name="cid">玩家ID</param>
+        /// <returns></returns>
+        public int GetMemberDepth(int cid)
         {
+            var chrData = Query(x => x.Id == cid).FirstOrDefault();
+            if (chrData == null)
+                return -1;
+
+            var totalFamilyList = Query(x => x.Familyid == chrData.Familyid);
+
             int depth = 0;
-            int currentId = cid;
-
-            while (memberDict.TryGetValue(currentId, out var member))
+            var point = totalFamilyList.FirstOrDefault(x => x.Id == cid);
+            while (point != null)
             {
-                if (member.Seniorid == 0 || member.Seniorid == member.Cid)
-                    break; // 到达最上层或异常数据（避免死循环）
-
                 depth++;
-                currentId = member.Seniorid;
+                point = totalFamilyList.FirstOrDefault(x => x.Id == point.Seniorid);
             }
-
             return depth;
         }
 
-        public static (List<FamilyMemberModel> juniors, int maxDepth) GetAllJuniorsAndDepth(
-            IDictionary<int, FamilyMemberModel> memberDict,
-            int rootCid)
+        public int GetMaxDepth(int familyId)
         {
-            var juniors = new List<FamilyMemberModel>();
-            var queue = new Queue<(FamilyMemberModel member, int depth)>();
-            var allMembers = memberDict.Values.ToList();
+            var totalFamilyList = Query(x => x.Familyid == familyId);
+            if (totalFamilyList.Count == 0)
+                return 0;
+
+            return GetMaxDepth(totalFamilyList);
+
+        }
+
+        public static int GetMaxDepth(List<FamilyCharacterModel> list)
+        {
+            // 构建映射：Seniorid -> List of Children
+            var childrenMap = list
+                .GroupBy(f => f.Seniorid)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             int maxDepth = 0;
 
-            if (!memberDict.TryGetValue(rootCid, out var root))
-                return (juniors, maxDepth); // root 不存在，返回空
-
-            queue.Enqueue((root, 0));
-
-            while (queue.Count > 0)
+            void Dfs(int currentCid, int depth)
             {
-                var (current, depth) = queue.Dequeue();
                 maxDepth = Math.Max(maxDepth, depth);
 
-                // 找所有 junior
-                var children = allMembers.Where(m => m.Seniorid == current.Cid).ToList();
-                foreach (var child in children)
+                if (childrenMap.TryGetValue(currentCid, out var children))
                 {
-                    juniors.Add(child);
-                    queue.Enqueue((child, depth + 1));
+                    foreach (var child in children)
+                    {
+                        Dfs(child.Id, depth + 1);
+                    }
                 }
             }
 
-            return (juniors, maxDepth);
+            // 寻找所有根节点（Seniorid == 0）
+            var roots = list.Where(f => f.Seniorid == 0);
+
+            foreach (var root in roots)
+            {
+                Dfs(root.Id, 1);
+            }
+
+            return maxDepth;
         }
 
         public void UseEntitlement(Dto.UseEntitlementRequest request)
         {
-            if (_chrFamilyDataSource.TryGetValue(request.MatserId, out var family))
+            var playerFamily = Query(x => x.Id == request.MatserId).FirstOrDefault();
+            if (playerFamily == null)
             {
-                if (family.Members.TryGetValue(request.MatserId, out var member))
-                {
-                    var entitlement = FamilyEntitlement.Parse(request.EntitlementId);
-                    if (member.Reputation < entitlement.getRepCost())
-                    {
-                        _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
-                        return;
-                    }
-                    if (member.EntitlementUseRecord.Count(x => x.Id == request.EntitlementId) >= entitlement.getUsageLimit())
-                    {
-                        _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
-                        return;
-                    }
-
-
-                    if (request.EntitlementId == FamilyEntitlement.FAMILY_REUINION.Value)
-                    {
-                        _server.CrossServerService.SummonPlayerById(request.MatserId, request.TargetPlayerId);
-                    }
-                    var chr = _server.CharacterManager.FindPlayerById(member.Cid);
-                    GainReputation(member, -entitlement.getRepCost(), false, chr.Character.Name);
-                    member.Reputation -= entitlement.getRepCost();
-                    member.EntitlementUseRecord.Add(new FamilyEntitlementUseRecord(request.EntitlementId));
-
-                    _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 0 });
-                }
+                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                return;
             }
+
+
+            var entitlement = FamilyEntitlement.Parse(request.EntitlementId);
+            if (playerFamily.Reputation < entitlement.getRepCost())
+            {
+                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                return;
+            }
+            if (playerFamily.EntitlementUseRecord.Count(x => x.Id == request.EntitlementId) >= entitlement.getUsageLimit())
+            {
+                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                return;
+            }
+
+
+            if (request.EntitlementId == FamilyEntitlement.FAMILY_REUINION.Value)
+            {
+                _server.CrossServerService.SummonPlayerById(request.MatserId, request.TargetPlayerId);
+            }
+
+            GainReputation(playerFamily, -entitlement.getRepCost(), false, _server.CharacterManager.GetPlayerName(playerFamily.Id));
+            playerFamily.EntitlementUseRecord.Add(new FamilyEntitlementUseRecord(request.EntitlementId));
+
+            _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 0 });
         }
 
-        void GainReputation(FamilyMemberModel member, int gain, bool countTowardsTotal, string? from = null)
+        void GainReputation(FamilyCharacterModel member, int gain, bool countTowardsTotal, string? from = null)
         {
             member.Reputation += gain;
             member.Todaysrep += gain;
@@ -317,30 +360,26 @@ namespace Application.Module.Family.Master
 
         public void Refund(int usePlayer)
         {
-            if (_chrFamilyDataSource.TryGetValue(usePlayer, out var family))
-            {
-                if (family.Members.TryGetValue(usePlayer, out var member))
-                {
-                    GainReputation(member, FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false);
-                    member.RemoveRecord(FamilyEntitlement.SUMMON_FAMILY.Value);
+            var playerFamily = Query(x => x.Id == usePlayer).FirstOrDefault();
+            if (playerFamily == null)
+                return;
+
+            GainReputation(playerFamily, FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false);
+            playerFamily.RemoveRecord(FamilyEntitlement.SUMMON_FAMILY.Value);
 
 
-                    _transport.Send(usePlayer, new Dto.UseEntitlementResponse { Code = 0 });
-                }
-            }
+            _transport.Send(usePlayer, new Dto.UseEntitlementResponse { Code = 0 });
 
         }
 
         internal void ResetDailyReps()
         {
-            foreach (var family in _dataSource.Values)
+            var all = Query(x => true);
+            foreach (var family in all)
             {
-                foreach (var member in family.Members.Values)
-                {
-                    member.Reptosenior = 0;
-                    member.Todaysrep = 0;
-                    member.EntitlementUseRecord.Clear();
-                }
+                family.Reptosenior = 0;
+                family.Todaysrep = 0;
+                family.EntitlementUseRecord.Clear();
             }
         }
     }

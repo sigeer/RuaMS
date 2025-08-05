@@ -21,16 +21,6 @@ namespace Application.Core.Login.Events
         }
 
         /// <summary>
-        /// Master服务器初始化数据库调用（在InitializeAsync之前）
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <returns></returns>
-        public virtual Task IntializeDatabaseAsync(DBContext dbContext)
-        {
-            _logger.LogInformation("模块 {Name}：加载数据", _moduleName);
-            return Task.CompletedTask;
-        }
-        /// <summary>
         /// 启动Master服务器时调用
         /// </summary>
         /// <returns></returns>
@@ -92,19 +82,5 @@ namespace Application.Core.Login.Events
         {
 
         }
-
-
-        /// <summary>
-        /// Master服务器统一保存数据时调用
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <returns></returns>
-        public virtual Task SaveChangesAsync(DBContext dbContext)
-        {
-            _logger.LogInformation("模块 {Name}：保存数据库", _moduleName);
-            return Task.CompletedTask;
-        }
-
-
     }
 }

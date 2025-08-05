@@ -1,6 +1,6 @@
 using Application.Module.Family.Common;
 
-namespace Application.Module.Family.Master
+namespace Application.Module.Family.Master.Models
 {
     public class FamilyMemberModel
     {

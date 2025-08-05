@@ -57,9 +57,9 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<FamelogEntity> Famelogs { get; set; }
 
-    public virtual DbSet<FamilyCharacter> FamilyCharacters { get; set; }
+    public virtual DbSet<FamilyCharacterEntity> FamilyCharacters { get; set; }
 
-    public virtual DbSet<DB_FamilyEntitlement> FamilyEntitlements { get; set; }
+    public virtual DbSet<FamilyEntitlementEntity> FamilyEntitlements { get; set; }
 
     public virtual DbSet<FredstorageEntity> Fredstorages { get; set; }
 
@@ -565,7 +565,7 @@ public partial class DBContext : DbContext
                 .HasConstraintName("famelog_ibfk_1");
         });
 
-        modelBuilder.Entity<FamilyCharacter>(entity =>
+        modelBuilder.Entity<FamilyCharacterEntity>(entity =>
         {
             entity.HasKey(e => e.Cid).HasName("PRIMARY");
 
@@ -602,11 +602,11 @@ public partial class DBContext : DbContext
                 .HasColumnName("totalreputation");
 
             entity.HasOne(d => d.CidNavigation).WithOne(p => p.FamilyCharacter)
-                .HasForeignKey<FamilyCharacter>(d => d.Cid)
+                .HasForeignKey<FamilyCharacterEntity>(d => d.Cid)
                 .HasConstraintName("family_character_ibfk_1");
         });
 
-        modelBuilder.Entity<DB_FamilyEntitlement>(entity =>
+        modelBuilder.Entity<FamilyEntitlementEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class DB_FamilyEntitlement
+public partial class FamilyEntitlementEntity
 {
     public int Id { get; set; }
 

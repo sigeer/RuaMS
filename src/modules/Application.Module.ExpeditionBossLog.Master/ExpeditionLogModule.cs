@@ -26,12 +26,6 @@ namespace Application.Module.ExpeditionBossLog.Master
 
         }
 
-        public override async Task IntializeDatabaseAsync(DBContext dbContext)
-        {
-            await base.IntializeDatabaseAsync(dbContext);
-            await _manager.LoadDataAsync(dbContext);
-        }
-
         public override void RegisterTask(ITimerManager timerManager)
         {
             var timeLeft = TimeUtils.GetTimeLeftForNextDay();
@@ -44,12 +38,6 @@ namespace Application.Module.ExpeditionBossLog.Master
 
             if (_task != null)
                 await _task.CancelAsync(false);
-        }
-
-        public override async Task SaveChangesAsync(DBContext dbContext)
-        {
-            await base.SaveChangesAsync(dbContext);
-            await _manager.CommitDataAsync(dbContext);
         }
 
         public ExpeditionCheckResponse CanStartExpedition(ExpeditionCheckRequest request)

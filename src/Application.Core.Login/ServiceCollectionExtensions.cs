@@ -53,8 +53,6 @@ namespace Application.Core.Login
         static IServiceCollection AddStorage(this IServiceCollection services)
         {
             services.AddSingleton<DataStorage>();
-
-            services.AddSingleton<StorageService>();
             return services;
         }
 

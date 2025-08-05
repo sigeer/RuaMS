@@ -26,6 +26,11 @@ namespace Application.Core.Login.Shared
             return true;
         }
 
+        protected virtual bool SetDirty(StoreUnit<TModel> model)
+        {
+            return SetDirty(model.Data!.Id, model);
+        }
+
         protected virtual bool SetRemoved(TKey key)
         {
             if (_localData.TryGetValue(key, out var d) && d.Flag != StoreFlag.Remove)
