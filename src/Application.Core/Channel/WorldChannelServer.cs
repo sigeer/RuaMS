@@ -663,6 +663,7 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<Dto.BuddyChatBroadcast>(BroadcastType.Buddy_Chat, BuddyManager.OnBuddyChatReceived);
             MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);
             MessageDispatcher.Register<Dto.SendBuddyNoticeMessageDto>(BroadcastType.Buddy_NoticeMessage, BuddyManager.OnBuddyNoticeMessageReceived);
+            MessageDispatcher.Register<Dto.DeleteBuddyBroadcast>(BroadcastType.Buddy_Delete, BuddyManager.OnBuddyDeleted);
 
             MessageDispatcher.Register<Dto.MultiChatMessage>(BroadcastType.OnMultiChat, OnMulitiChat);
 

@@ -87,8 +87,6 @@ namespace Application.Core.Channel.Net
                                     Character.sendPacket(GuildPackets.showGuildInfo(Character));
                                 }
                             }
-
-                            CurrentServerContainer.BuddyManager.SendNotify(Character, false);
                         }
                     }
                 }

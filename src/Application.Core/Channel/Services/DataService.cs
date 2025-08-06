@@ -408,7 +408,6 @@ namespace Application.Core.Channel.Services
                 chr.setLoginTime(DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()));
             }
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
-            _server.BuddyManager.SendNotify(chr, true);
 
             _transactionStore.HandleTransactions(chr, o.PendingTransactions);
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);

@@ -46,13 +46,6 @@ namespace Application.Core.Channel.ServerData
 
         }
 
-        public void SendNotify(IPlayer chr, bool isLogin)
-        {
-            var request = new Dto.NotifyBuddyWhenLoginoffRequest { MasterId = chr.Id, IsLogin = isLogin };
-            request.BuddyId.AddRange(chr.BuddyList.getBuddyIds());
-            _transport.SendBuddyNotify(request);
-        }
-
         public void OnBuddyNotifyChannel(Dto.NotifyBuddyWhenLoginoffBroadcast data)
         {
             foreach (int buddy in data.BuddyId)
@@ -122,7 +115,7 @@ namespace Application.Core.Channel.ServerData
 
             try
             {
-                var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyRequest { MasterId = player.Id, TargetName = addName });
+                var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
                 if (res.Code == 1)
                 {
                     player.sendPacket(PacketCreator.serverNotice(1, $"玩家 {addName} 未找到"));
@@ -178,6 +171,24 @@ namespace Application.Core.Channel.ServerData
             }
 
             _server.Transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = true, Type = InviteTypes.Buddy, CheckKey = fromId });
+        }
+
+        public void DeleteBuddy(IPlayer chr, int targetId)
+        {
+            chr.BuddyList.Remove(targetId);
+            chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+        }
+
+        public void OnBuddyDeleted(Dto.DeleteBuddyBroadcast data)
+        {
+            var chr = _server.FindPlayerById(data.MasterId);
+            if (chr != null)
+            {
+                if (chr.BuddyList.Contains(data.Buddyid))
+                {
+                    chr.sendPacket(PacketCreator.updateBuddyChannel(data.Buddyid, -1));
+                }
+            }
         }
     }
 }

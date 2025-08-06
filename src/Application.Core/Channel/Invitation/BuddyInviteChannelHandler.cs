@@ -21,7 +21,7 @@ namespace Application.Core.Channel.Invitation
             if (code == InviteResponseCode.Success)
             {
                 var receiver = _server.FindPlayerById(data.ReceivePlayerId);
-                if (receiver != null)
+                if (receiver != null && !receiver.BuddyList.Contains(data.SenderPlayerId))
                 {
                     receiver.sendPacket(PacketCreator.requestBuddylistAdd(data.SenderPlayerId, data.ReceivePlayerId, data.SenderPlayerName));
                 }

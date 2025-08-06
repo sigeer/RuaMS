@@ -810,11 +810,6 @@ namespace Application.Core.Channel.InProgress
             _server.BuddyManager.BuddyChat(request);
         }
 
-        public void SendBuddyNotify(NotifyBuddyWhenLoginoffRequest request)
-        {
-            _server.BuddyManager.BroadcastNotify(request);
-        }
-
         public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
         {
             _server.BuddyManager.BroadcastNoticeMessage(request);

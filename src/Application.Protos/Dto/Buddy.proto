@@ -61,3 +61,13 @@ message SendBuddyNoticeMessageDto {
 	int32 type = 3;
 	string message = 4;
 }
+
+message DeleteBuddyRequest {
+	int32 masterId = 1;
+	int32 buddyid = 2;
+}
+
+message DeleteBuddyBroadcast {
+	int32 masterId = 1;
+	int32 buddyid = 2;
+}

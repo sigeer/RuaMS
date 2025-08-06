@@ -91,5 +91,10 @@ namespace Application.Core.Login.ServerData
         {
             _server.Transport.SendMessage(BroadcastType.Buddy_NoticeMessage, data, data.BuddyId.ToArray());
         }
+
+        public void DeleteBuddy(Dto.DeleteBuddyBroadcast request)
+        {
+            _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, request.Buddyid);
+        }
     }
 }

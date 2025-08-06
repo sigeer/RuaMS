@@ -194,7 +194,6 @@ namespace Application.Core.ServerTransports
         void BatchSyncPlayer(List<PlayerSaveDto> data);
         AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest);
         void SendBuddyChat(BuddyChatRequest request);
-        void SendBuddyNotify(NotifyBuddyWhenLoginoffRequest request);
         void SendBuddyMessage(SendBuddyNoticeMessageDto request);
     }
 }
