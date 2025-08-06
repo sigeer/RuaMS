@@ -94,6 +94,9 @@ namespace Application.Core.Login
         public TeamManager TeamManager => _teamManager.Value;
         readonly Lazy<GuildManager> _guildManager;
         public GuildManager GuildManager => _guildManager.Value;
+
+        readonly Lazy<BuddyManager> _buddyManager;
+        public BuddyManager BuddyManager => _buddyManager.Value;    
         readonly Lazy<InventoryManager> _inventoryManager;
         public InventoryManager InventoryManager => _inventoryManager.Value;
         readonly Lazy<RingManager> _ringManager;
@@ -168,6 +171,7 @@ namespace Application.Core.Login
 
             _invitationManager = new(() => ServiceProvider.GetRequiredService<InvitationManager>());
 
+            _buddyManager = new(() => ServiceProvider.GetRequiredService<BuddyManager>());
             _serverManager = new(() => ServiceProvider.GetRequiredService<ServerManager>());
             _couponManager = new(() => ServiceProvider.GetRequiredService<CouponManager>());
             _characterManager = new(() => ServiceProvider.GetRequiredService<CharacterManager>());

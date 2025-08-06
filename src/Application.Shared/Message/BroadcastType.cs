@@ -2,6 +2,11 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string Buddy_Chat = "Buddy_Chat";
+        public const string Buddy_AcceptInvite = "Buddy_AcceptInvite";
+        public const string Buddy_NotifyChannel = "Buddy_NotifyChannel";
+        public const string Buddy_NoticeMessage = "Buddy_NoticeMessage";
+
         public const string SendPlayerDisconnectAll = "SendPlayerDisconnectAll";
         public const string SendPlayerDisconnect = "SendPlayerDisconnect";
         public const string SendWrapPlayerByName = "SendWrapPlayerByName";

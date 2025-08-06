@@ -240,7 +240,7 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Client.Channel, TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
+                        sendPacket(PacketCreator.updateParty(Channel, TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
                         updatePartyMemberHP();
                     }
                 }

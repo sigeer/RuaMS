@@ -221,6 +221,7 @@ namespace Application.Core.Mappers
 
             CreateMap<Dto.SkillMacroDto, SkillMacro>().ReverseMap();
             CreateMap<Dto.FameLogRecordDto, FameLogObject>().ReverseMap();
+            CreateMap<Dto.BuddyDto, BuddyCharacter>().ReverseMap();
 
             CreateMap<PlayerCoolDownValueHolder, Dto.CoolDownDto>()
                 .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))

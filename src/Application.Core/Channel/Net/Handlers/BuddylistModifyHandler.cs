@@ -21,56 +21,21 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Relation;
-using Application.Core.Channel;
-using Application.EF;
-using Application.EF.Entities;
-using client;
 using Microsoft.Extensions.Logging;
-using tools;
-using static Application.Core.Game.Relation.BuddyList;
-using static Application.Core.Game.Relation.BuddyList.BuddyOperation;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class BuddylistModifyHandler : ChannelHandlerBase
 {
     readonly ILogger<BuddylistModifyHandler> _logger;
+    readonly BuddyManager _buddyManager;
 
-    public BuddylistModifyHandler(ILogger<BuddylistModifyHandler> logger)
+    public BuddylistModifyHandler(ILogger<BuddylistModifyHandler> logger, BuddyManager buddyManager)
     {
         _logger = logger;
-    }
-
-    private record CharacterIdNameBuddyCapacity : CharacterNameAndId
-    {
-        private int buddyCapacity;
-
-        public CharacterIdNameBuddyCapacity(int id, string name, int buddyCapacity) : base(id, name)
-        {
-
-            this.buddyCapacity = buddyCapacity;
-        }
-
-        public int getBuddyCapacity()
-        {
-            return buddyCapacity;
-        }
-    }
-
-    private void nextPendingRequest(IChannelClient c)
-    {
-        var pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
-        if (pendingBuddyRequest != null)
-        {
-            c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
-        }
-    }
-
-    private CharacterIdNameBuddyCapacity? getCharacterIdAndNameFromDatabase(string name)
-    {
-        var p = AllPlayerStorage.GetOrAddCharacterByName(name);
-        return p == null ? null : new CharacterIdNameBuddyCapacity(p.Id, p.Name, p.BuddyList.Capacity);
+        _buddyManager = buddyManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -78,7 +43,6 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         int mode = p.readByte();
         var player = c.OnlinedCharacter;
         BuddyList buddylist = player.getBuddylist();
-        using var dbContext = new DBContext();
         if (mode == 1)
         {
             // add
@@ -88,144 +52,24 @@ public class BuddylistModifyHandler : ChannelHandlerBase
             {
                 return; //hax.
             }
-            var ble = buddylist.get(addName);
-            if (ble != null && !ble.Visible && group.Equals(ble.Group))
-            {
-                c.sendPacket(PacketCreator.serverNotice(1, "You already have \"" + ble.getName() + "\" on your Buddylist"));
-            }
-            else if (buddylist.isFull() && ble == null)
-            {
-                c.sendPacket(PacketCreator.serverNotice(1, "Your buddylist is already full"));
-            }
-            else if (ble == null)
-            {
-                try
-                {
-                    var world = c.getWorldServer();
-                    CharacterIdNameBuddyCapacity? charWithId;
-                    int channel;
-                    var otherChar = c.CurrentServer.getPlayerStorage().getCharacterByName(addName);
-                    if (otherChar != null)
-                    {
-                        channel = c.CurrentServer.getId();
-                        charWithId = new CharacterIdNameBuddyCapacity(otherChar.getId(), otherChar.getName(), otherChar.BuddyList.Capacity);
-                    }
-                    else
-                    {
-                        channel = world.find(addName);
-                        charWithId = getCharacterIdAndNameFromDatabase(addName);
-                    }
-                    if (charWithId != null)
-                    {
-                        BuddyAddResult buddyAddResult = BuddyAddResult.OK;
-                        if (channel != -1)
-                        {
-                            buddyAddResult = world.requestBuddyAdd(addName, c.CurrentServer.getId(), player.getId(), player.getName());
-                        }
-                        else
-                        {
 
-                            var countOfBuddy = dbContext.Buddies.Where(x => x.CharacterId == charWithId.id && x.Pending == 0).Count();
-                            if (countOfBuddy >= charWithId.getBuddyCapacity())
-                            {
-                                buddyAddResult = BuddyAddResult.BUDDYLIST_FULL;
-                            }
-
-                            var statusModel = dbContext.Buddies.Where(x => x.CharacterId == charWithId.id && x.BuddyId == player.getId()).Select(x => new { x.Pending }).FirstOrDefault();
-                            if (statusModel != null)
-                            {
-                                buddyAddResult = BuddyAddResult.ALREADY_ON_LIST;
-                            }
-                        }
-
-                        if (buddyAddResult == BuddyAddResult.BUDDYLIST_FULL)
-                        {
-                            c.sendPacket(PacketCreator.serverNotice(1, "\"" + addName + "\"'s Buddylist is full"));
-                        }
-                        else
-                        {
-                            int displayChannel = -1;
-                            if (buddyAddResult == BuddyAddResult.ALREADY_ON_LIST && channel != -1)
-                            {
-                                displayChannel = channel;
-                                notifyRemoteChannel(c, channel, charWithId.id, ADDED);
-                            }
-                            else if (buddyAddResult != BuddyAddResult.ALREADY_ON_LIST && channel == -1)
-                            {
-                                dbContext.Buddies.Add(new BuddyEntity
-                                {
-                                    CharacterId = charWithId.id,
-                                    BuddyId = player.getId(),
-                                    Pending = 1
-                                });
-                                dbContext.SaveChanges();
-                            }
-                            buddylist.put(group, charWithId.id);
-                            c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
-                        }
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "A character called \"" + addName + "\" does not exist"));
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                }
-            }
-            else
-            {
-                ble.Group = group;
-                c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
-            }
+            _buddyManager.AddBuddy(player, addName, group);
         }
         else if (mode == 2)
         {
             // accept buddy
             int otherCid = p.readInt();
-            if (!buddylist.isFull())
-            {
-                try
-                {
-                    int channel = c.getWorldServer().find(otherCid);//worldInterface.find(otherCid);
-                    string? otherName = null;
-                    var otherChar = c.CurrentServer.getPlayerStorage().getCharacterById(otherCid);
-                    if (otherChar == null)
-                    {
-                        otherName = dbContext.Characters.Where(x => x.Id == otherCid).Select(x => new { x.Name }).FirstOrDefault()?.Name;
-                    }
-                    else
-                    {
-                        otherName = otherChar.getName();
-                    }
-                    if (otherName != null)
-                    {
-                        buddylist.put("Default Group", otherCid);
-                        c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
-                        notifyRemoteChannel(c, channel, otherCid, ADDED);
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                }
-            }
-            nextPendingRequest(c);
+            _buddyManager.AnswerInvite(player, otherCid);
         }
         else if (mode == 3)
-        { // delete
+        {
+            // delete
             int otherCid = p.readInt();
             player.deleteBuddy(otherCid);
         }
-    }
-
-    private void notifyRemoteChannel(IChannelClient c, int remoteChannel, int otherCid, BuddyOperation operation)
-    {
-        var player = c.OnlinedCharacter;
-        if (remoteChannel != -1)
+        else
         {
-            c.getWorldServer().buddyChanged(otherCid, player.getId(), player.getName(), c.CurrentServer.getId(), operation);
+            _logger.LogDebug("未知的Mode{Mode}, 可读字节数{AvailableCount}", mode, p.available());
         }
     }
 }

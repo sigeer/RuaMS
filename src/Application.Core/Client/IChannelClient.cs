@@ -12,7 +12,6 @@ namespace Application.Core.Client
         WorldChannel CurrentServer { get; }
         WorldChannelServer CurrentServerContainer => CurrentServer.Container;
         int Channel { get; }
-        int ActualChannel { get; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
 

@@ -799,5 +799,25 @@ namespace Application.Core.Channel.InProgress
         {
             _server.CharacterManager.BatchUpdate(data);
         }
+
+        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest)
+        {
+            return _server.BuddyManager.AddBuddy(addBuddyRequest);
+        }
+
+        public void SendBuddyChat(BuddyChatRequest request)
+        {
+            _server.BuddyManager.BuddyChat(request);
+        }
+
+        public void SendBuddyNotify(NotifyBuddyWhenLoginoffRequest request)
+        {
+            _server.BuddyManager.BroadcastNotify(request);
+        }
+
+        public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
+        {
+            _server.BuddyManager.BroadcastNoticeMessage(request);
+        }
     }
 }

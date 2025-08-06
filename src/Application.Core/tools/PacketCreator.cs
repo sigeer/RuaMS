@@ -37,6 +37,7 @@ using Application.Core.Managers;
 using Application.Core.model;
 using Application.Core.Models;
 using Application.Shared.Battle;
+using Application.Shared.Constants.Buddy;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using Application.Shared.Team;
@@ -4185,22 +4186,19 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateBuddylist(ICollection<BuddylistEntry> buddylist)
+    public static Packet updateBuddylist(ICollection<BuddyCharacter> buddylist)
     {
         OutPacket p = OutPacket.create(SendOpcode.BUDDYLIST);
         p.writeByte(7);
         p.writeByte(buddylist.Count());
-        foreach (BuddylistEntry buddy in buddylist)
+        foreach (var buddy in buddylist)
         {
-            if (buddy.Visible)
-            {
-                p.writeInt(buddy.getCharacterId()); // cid
-                p.writeFixedString(buddy.getName());
-                p.writeByte(0); // opposite status
-                p.writeInt(buddy.getChannel() - 1);
-                p.writeFixedString(buddy.Group);
-                p.writeInt(0);//mapid?
-            }
+            p.writeInt(buddy.Id); // cid
+            p.writeFixedString(buddy.Name);
+            p.writeByte(0); // opposite status
+            p.writeInt(buddy.Channel - 1);
+            p.writeFixedString(buddy.Group);
+            p.writeInt(0);//mapid?
         }
         for (int x = 0; x < buddylist.Count(); x++)
         {
@@ -4228,7 +4226,7 @@ public class PacketCreator
         p.writeByte(0xf0);
         p.writeByte(0x01);
         p.writeInt(0x0f);
-        p.writeFixedString("Default Group");
+        p.writeFixedString(StringConstants.Buddy_DefaultGroup);
         p.writeByte(0);
         p.writeInt(chrId);
         return p;
@@ -5843,17 +5841,6 @@ public class PacketCreator
     public static Packet enableCSUse(IPlayer mc)
     {
         return showCash(mc);
-    }
-
-    public static class WhisperFlag
-    {
-        public const byte LOCATION = 0x01;
-        public const byte WHISPER = 0x02;
-        public const byte REQUEST = 0x04;
-        public const byte RESULT = 0x08;
-        public const byte RECEIVE = 0x10;
-        public const byte BLOCKED = 0x20;
-        public const byte LOCATION_FRIEND = 0x40;
     }
 
     /**

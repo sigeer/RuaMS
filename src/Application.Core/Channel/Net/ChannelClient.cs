@@ -4,6 +4,7 @@ using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using Application.Shared.Team;
 using DotNetty.Transport.Channels;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
 using net.server;
 using net.server.guild;
@@ -36,12 +37,7 @@ namespace Application.Core.Channel.Net
         public WorldChannel CurrentServer { get; }
         public WorldChannelServer CurrentServerContainer => CurrentServer.Container;
 
-        /// <summary>
-        /// CashShop
-        /// </summary>
-        public bool IsAwayWorld { get; private set; }
         public int Channel => CurrentServer.getId();
-        public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
 
         public override int AccountId => AccountEntity?.Id ?? -2;
@@ -92,10 +88,7 @@ namespace Application.Core.Channel.Net
                                 }
                             }
 
-                            if (Character.BuddyList.Count > 0)
-                            {
-                                CurrentServer.UpdateBuddyByLoggedOff(Character.Id, CurrentServer.getId(), Character.BuddyList.getBuddyIds());
-                            }
+                            CurrentServerContainer.BuddyManager.SendNotify(Character, false);
                         }
                     }
                 }
@@ -494,7 +487,7 @@ namespace Application.Core.Channel.Net
         }
 
         public WorldChannel getChannelServer() => CurrentServer;
-        public int getChannel() => ActualChannel;
+        public int getChannel() => Channel;
 
         public EventManager? getEventManager(string @event)
         {

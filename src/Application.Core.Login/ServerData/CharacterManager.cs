@@ -208,7 +208,7 @@ namespace Application.Core.Login.Datas
                     TeamId = d.Character.Party,
                     Channel = d.Channel,
                     FamilyId = d.Character.FamilyId,
-                    IsNewComer = true
+                    IsNewComer = d.Channel == 0
                 });
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
@@ -292,9 +292,8 @@ namespace Application.Core.Login.Datas
                 var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
                 var buddyData = (from a in dbContext.Buddies
-                                 join b in dbContext.Characters on a.BuddyId equals b.Id
                                  where a.CharacterId == characterId
-                                 select new BuddyModel { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
+                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group }).ToArray();
 
                 #region quest
                 var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
@@ -413,16 +412,6 @@ namespace Application.Core.Login.Datas
 
                 world = characterModel.World;
 
-                var storage = Server.getInstance().getWorld(world).getPlayerStorage();
-                var dbBuddyIdList = dbContext.Buddies.Where(x => x.CharacterId == cid).Select(x => x.BuddyId).ToList();
-                dbBuddyIdList.ForEach(buddyid =>
-                {
-                    var buddy = storage.getCharacterById(buddyid);
-                    if (buddy != null && buddy.IsOnlined)
-                    {
-                        buddy.deleteBuddy(cid);
-                    }
-                });
                 dbContext.Buddies.Where(x => x.CharacterId == cid).ExecuteDelete();
 
                 // TODO: 退出队伍

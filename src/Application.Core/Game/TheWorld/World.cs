@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
+using Application.Shared.Constants.Buddy;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
@@ -88,51 +89,6 @@ public class World
         }
     }
 
-    public int getId()
-    {
-        return Id;
-    }
-
-    public int find(string name)
-    {
-        var chr = getPlayerStorage().getCharacterByName(name);
-        return chr?.Channel ?? -1;
-    }
-
-    public int find(int id)
-    {
-        var chr = getPlayerStorage().getCharacterById(id);
-        return chr?.Channel ?? -1;
-    }
-
-    public void buddyChat(int[] recipientCharacterIds, int cidFrom, string nameFrom, string chattext)
-    {
-        var playerStorage = getPlayerStorage();
-        foreach (int characterId in recipientCharacterIds)
-        {
-            var chr = playerStorage.getCharacterById(characterId);
-            if (chr != null && chr.IsOnlined)
-            {
-                if (chr.BuddyList.containsVisible(cidFrom))
-                {
-                    chr.sendPacket(PacketCreator.multiChat(nameFrom, chattext, 0));
-                }
-            }
-        }
-    }
-
-    public CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds)
-    {
-        List<CharacterIdChannelPair> foundsChars = new(characterIds.Length);
-        foreach (var ch in getChannels())
-        {
-            foreach (int charid in ch.multiBuddyFind(charIdFrom, characterIds))
-            {
-                foundsChars.Add(new CharacterIdChannelPair(charid, ch.getId()));
-            }
-        }
-        return foundsChars.ToArray();
-    }
 
     #region Messenger
 
@@ -156,92 +112,6 @@ public class World
     //    return getPlayerStorage().getCharacterByName(charName)?.IsOnlined == true;
     //}
     #endregion
-
-
-
-    public BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom)
-    {
-        var addChar = getPlayerStorage().getCharacterByName(addName);
-        if (addChar != null && addChar.IsOnlined)
-        {
-            BuddyList buddylist = addChar.getBuddylist();
-            if (buddylist.isFull())
-            {
-                return BuddyAddResult.BUDDYLIST_FULL;
-            }
-            if (!buddylist.contains(cidFrom))
-            {
-                buddylist.addBuddyRequest(addChar.Client, cidFrom, nameFrom, channelFrom);
-            }
-            else if (buddylist.containsVisible(cidFrom))
-            {
-                return BuddyAddResult.ALREADY_ON_LIST;
-            }
-        }
-        return BuddyAddResult.OK;
-    }
-
-    public void buddyChanged(int cid, int cidFrom, string name, int channel, BuddyOperation operation)
-    {
-        var addChar = getPlayerStorage().getCharacterById(cid);
-        if (addChar != null && addChar.IsOnlined)
-        {
-            var buddylist = addChar.BuddyList;
-            switch (operation)
-            {
-                case BuddyOperation.ADDED:
-                    if (!buddylist.contains(cidFrom))
-                    {
-                        buddylist.put("Default Group", cidFrom);
-                        addChar.sendPacket(PacketCreator.updateBuddyChannel(cidFrom, (channel - 1)));
-                    }
-                    break;
-                case BuddyOperation.DELETED:
-                    if (buddylist.contains(cidFrom))
-                    {
-                        addChar.deleteBuddy(cidFrom);
-                    }
-                    break;
-            }
-        }
-    }
-
-    public void loggedOff(string name, int characterId, int channel, int[] buddies)
-    {
-        updateBuddies(characterId, channel, buddies, true);
-    }
-
-    public void loggedOn(string name, int characterId, int channel, int[] buddies)
-    {
-        updateBuddies(characterId, channel, buddies, false);
-    }
-
-    private void updateBuddies(int characterId, int channel, int[] buddies, bool offline)
-    {
-        var playerStorage = getPlayerStorage();
-        foreach (int buddy in buddies)
-        {
-            var chr = playerStorage.getCharacterById(buddy);
-            if (chr != null && chr.IsOnlined)
-            {
-                var ble = chr.getBuddylist().get(characterId);
-                if (ble != null && ble.Visible)
-                {
-                    int mcChannel;
-                    if (offline)
-                    {
-                        mcChannel = -1;
-                    }
-                    else
-                    {
-                        mcChannel = (byte)(channel - 1);
-                    }
-                    chr.getBuddylist().put(ble);
-                    chr.sendPacket(PacketCreator.updateBuddyChannel(ble.getCharacterId(), mcChannel));
-                }
-            }
-        }
-    }
 
     public void broadcastPacket(Packet packet)
     {

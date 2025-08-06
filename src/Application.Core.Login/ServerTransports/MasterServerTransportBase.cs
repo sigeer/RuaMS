@@ -17,7 +17,7 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="messageType"></param>
         /// <param name="message"></param>
         /// <param name="playerIdArray"></param>
-        protected void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
+        public void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
         {
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
@@ -33,7 +33,7 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="messageType"></param>
         /// <param name="message"></param>
         /// <param name="playerIdArray"></param>
-        protected void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : notnull
+        public void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : notnull
         {
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)

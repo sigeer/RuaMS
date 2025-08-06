@@ -22,12 +22,10 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
+using Application.Shared.Constants.Buddy;
 using client.autoban;
 using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
 using tools;
-using static tools.PacketCreator;
 
 namespace Application.Core.Channel.Net.Handlers;
 

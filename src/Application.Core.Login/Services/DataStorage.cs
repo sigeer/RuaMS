@@ -137,7 +137,7 @@ namespace Application.Core.Login.Services
 
                     await dbContext.Savedlocations.AddRangeAsync(obj.SavedLocations.Select(x => new SavedLocationEntity(x.Map, x.Portal, obj.Character.Id, x.Locationtype)));
                     await dbContext.Trocklocations.AddRangeAsync(obj.TrockLocations.Select(x => new Trocklocation(obj.Character.Id, x.Mapid, x.Vip)));
-                    await dbContext.Buddies.AddRangeAsync(obj.BuddyList.Select(x => new BuddyEntity(obj.Character.Id, x.CharacterId, x.Pending, x.Group)));
+                    await dbContext.Buddies.AddRangeAsync(obj.BuddyList.Select(x => new BuddyEntity(obj.Character.Id, x.Id, 0, x.Group)));
                     await dbContext.AreaInfos.AddRangeAsync(obj.Areas.Select(x => new AreaInfo(obj.Character.Id, x.Area, x.Info)));
                     await dbContext.Eventstats.AddRangeAsync(obj.Events.Select(x => new Eventstat(obj.Character.Id, x.Name, x.Info)));
 

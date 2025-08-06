@@ -260,5 +260,25 @@ namespace Application.Core.Login.ServerData
             BroadcastResult(responseCode, room.Id, fromPlayer, toPlayer, request.ToName);
         }
     }
+
+    public sealed class BuddyInviteHandler : InviteMasterHandler
+    {
+        public BuddyInviteHandler(MasterServer server) : base(server, InviteTypes.Buddy)
+        {
+        }
+
+        protected override void OnInvitationAccepted(InviteRequest request)
+        {
+            _server.BuddyManager.PushAcceptBuddy(request.ToPlayerId, request.FromPlayerId);
+        }
+
+        public override void HandleInvitationCreated(CreateInviteRequest request)
+        {
+            InviteResponseCode responseCode = InviteResponseCode.Success;
+            var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
+            var toPlayer = _server.CharacterManager.FindPlayerByName(request.ToName);
+            BroadcastResult(responseCode, request.FromId, fromPlayer, toPlayer, request.ToName);
+        }
+    }
 }
 

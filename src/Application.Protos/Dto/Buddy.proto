@@ -5,8 +5,59 @@ import "google/protobuf/wrappers.proto";
 package Dto;
 
 message BuddyDto {
-  int32 characterId = 1;
-  string characterName = 2;
-  int32 pending = 3;
+  int32 id = 1;
+  string name = 2;
+  int32 channel = 3;
   string group = 4;
+  int32 mapId = 5;
+}
+
+message BuddyChatRequest {
+	int32 fromId = 1;
+	repeated int32 toIds = 2;
+	string text = 3;
+}
+
+message BuddyChatBroadcast {
+	int32 fromId = 1;
+	string fromName = 2;
+	repeated int32 toIds = 3;
+	string text = 4;
+}
+
+message AddBuddyRequest {
+	int32 masterId = 1;
+	string targetName = 2;
+	string groupName = 3;
+}
+
+message AddBuddyBroadcast {
+	int32 fromId = 1;
+	int32 receiverId = 3;
+	BuddyDto buddy = 2;
+}
+
+message AddBuddyResponse {
+	int32 code = 1;
+	BuddyDto buddy = 2;
+}
+
+message NotifyBuddyWhenLoginoffRequest {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	bool isLogin = 3;
+}
+
+message NotifyBuddyWhenLoginoffBroadcast {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	bool isLogin = 3;
+	int32 channel = 4;
+}
+
+message SendBuddyNoticeMessageDto {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	int32 type = 3;
+	string message = 4;
 }

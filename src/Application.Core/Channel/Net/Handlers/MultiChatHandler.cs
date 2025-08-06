@@ -34,12 +34,14 @@ public class MultiChatHandler : ChannelHandlerBase
     readonly GuildManager _guildManager;
     readonly ILogger<MultiChatHandler> _logger;
     readonly AutoBanDataManager _autoBanManager;
+    readonly BuddyManager _buddyManager;
 
-    public MultiChatHandler(ILogger<MultiChatHandler> logger, GuildManager guildManager, AutoBanDataManager autoBanManager)
+    public MultiChatHandler(ILogger<MultiChatHandler> logger, GuildManager guildManager, AutoBanDataManager autoBanManager, BuddyManager buddyManager)
     {
         _logger = logger;
         _guildManager = guildManager;
         _autoBanManager = autoBanManager;
+        _buddyManager = buddyManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -68,7 +70,7 @@ public class MultiChatHandler : ChannelHandlerBase
         var world = c.getWorldServer();
         if (type == 0)
         {
-            world.buddyChat(recipients, player.getId(), player.getName(), chattext);
+            _buddyManager.BuddyChat(player, recipients, chattext);
             // ChatLogger.log(c, "Buddy", chattext);
         }
         else if (type == 1 && player.getParty() != null)

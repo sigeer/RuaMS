@@ -254,7 +254,7 @@ namespace Application.Core.Channel.Services
                 player.QuickSlotKeyMapped = new QuickslotBinding(bytes);
             }
 
-            player.BuddyList.LoadFromDb(o.BuddyList);
+            player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>( o.BuddyList));
             player.UpdateLocalStats(true);
             return player;
         }
@@ -356,7 +356,7 @@ namespace Application.Core.Channel.Services
                 return m;
             }));
             data.WishItems.AddRange(player.CashShopModel.getWishList());
-            data.BuddyList.AddRange(player.BuddyList.ToDto());
+            data.BuddyList.AddRange(_mapper.Map<Dto.BuddyDto[]>( player.BuddyList));
             data.CoolDowns.AddRange(_mapper.Map<Dto.CoolDownDto[]>(player.getAllCooldowns()));
             data.InventoryItems.AddRange(d);
             data.AccountGame = new Dto.AccountGameDto()
@@ -405,9 +405,10 @@ namespace Application.Core.Channel.Services
         {
             if (o.LoginInfo.IsNewCommer)
             {
-                chr.setLoginTime(DateTimeOffset.UtcNow);
+                chr.setLoginTime(DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()));
             }
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+            _server.BuddyManager.SendNotify(chr, true);
 
             _transactionStore.HandleTransactions(chr, o.PendingTransactions);
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);

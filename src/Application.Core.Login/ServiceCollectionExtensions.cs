@@ -74,6 +74,7 @@ namespace Application.Core.Login
             services.AddSingleton<InviteMasterHandler, GuildInviteHandler>();
             services.AddSingleton<InviteMasterHandler, AllianceInviteHandler>();
             services.AddSingleton<InviteMasterHandler, MessengerInviteHandler>();
+            services.AddSingleton<InviteMasterHandler, BuddyInviteHandler>();
             return services;
         }
 
@@ -104,6 +105,8 @@ namespace Application.Core.Login
 
             services.AddSingleton<GachaponManager>();
             services.AddSingleton<IStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
+
+            services.AddSingleton<BuddyManager>();
 
             services.AddSingleton<InventoryManager>();
             services.AddSingleton<ItemFactoryManager>();
