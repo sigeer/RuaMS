@@ -191,5 +191,6 @@ namespace Application.Core.ServerTransports
         GetAllClientInfo GetOnliendClientInfo();
         ItemProto.GacheponDataDto GetGachaponData();
         NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
+        void BatchSyncPlayer(List<PlayerSaveDto> data);
     }
 }

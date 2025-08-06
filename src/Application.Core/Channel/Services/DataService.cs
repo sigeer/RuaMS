@@ -58,7 +58,7 @@ namespace Application.Core.Channel.Services
             {
                 dto.Channel = setChannel.Value;
             }
-            _transport.SendPlayerObject(dto);
+            _server.BatchSyncPlayerManager.Enqueue(dto);
         }
 
         public IPlayer? Serialize(IChannelClient c, Dto.PlayerGetterDto o)

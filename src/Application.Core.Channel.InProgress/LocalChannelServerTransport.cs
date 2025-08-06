@@ -794,5 +794,10 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
+
+        public void BatchSyncPlayer(List<PlayerSaveDto> data)
+        {
+            _server.CharacterManager.BatchUpdate(data);
+        }
     }
 }

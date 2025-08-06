@@ -10,6 +10,12 @@ namespace Application.Utility
         private Task _lastFlushTask = Task.CompletedTask;
         private Timer? _timer;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delayMs">等待时长</param>
+        /// <param name="maxBatchSize">每批最多<paramref name="maxBatchSize"/>条数据</param>
+        /// <param name="processBatchAsync"></param>
         public BatchSyncManager(int delayMs, int maxBatchSize, Action<List<T>> processBatchAsync)
         {
             _delayMs = delayMs;

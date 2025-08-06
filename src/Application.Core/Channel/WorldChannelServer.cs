@@ -123,6 +123,7 @@ namespace Application.Core.Channel
         ScheduledFuture? playerShopTask;
 
         public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
+        public BatchSyncManager<Dto.PlayerSaveDto> BatchSyncPlayerManager { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -174,6 +175,7 @@ namespace Application.Core.Channel
             _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
 
             BatchSynMapManager = new BatchSyncManager<SyncProto.MapSyncDto>(50, 100, data => Transport.BatchSyncMap(data));
+            BatchSyncPlayerManager = new BatchSyncManager<PlayerSaveDto>(50, 100, data => Transport.BatchSyncPlayer(data));
         }
 
         #region 时间
