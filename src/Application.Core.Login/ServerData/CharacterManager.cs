@@ -183,6 +183,14 @@ namespace Application.Core.Login.Datas
             }
         }
 
+        public void BatchUpdate(List<Dto.PlayerSaveDto> list)
+        {
+            foreach (var item in list)
+            {
+                Update(item);
+            }
+        }
+
         internal void CompleteLogin(int playerId, int channel, out int accountId)
         {
             if (_idDataSource.TryGetValue(playerId, out var d))
