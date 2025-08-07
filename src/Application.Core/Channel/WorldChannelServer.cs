@@ -659,6 +659,8 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
+
             MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_AcceptInvite, BuddyManager.OnAddBuddyBroadcast);
             MessageDispatcher.Register<Dto.BuddyChatBroadcast>(BroadcastType.Buddy_Chat, BuddyManager.OnBuddyChatReceived);
             MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);

@@ -5843,31 +5843,28 @@ public class PacketCreator
         return showCash(mc);
     }
 
-    /**
-     * User for /find, buddy find and /c (chase)
-     * CField::OnWhisper
-     *
-     * @param target         Name string from the command parameter
-     * @param type           Location of the target
-     * @param fieldOrChannel If true & chr is not null, shows different channel message
-     * @param flag           LOCATION or LOCATION_FRIEND
-     * @return packet structure
-     */
-    public static Packet getFindResult(IPlayer target, byte type, int fieldOrChannel, byte flag)
+    public static Packet GetSameChannelFindResult(IPlayer target, byte flag)
     {
         OutPacket p = OutPacket.create(SendOpcode.WHISPER);
 
         p.writeByte(flag | WhisperFlag.RESULT);
-        p.writeString(target.getName());
+        p.writeString(target.Name);
+        p.writeByte(WhisperType.RT_SAME_CHANNEL);
+        p.writeInt(target.getMapId());
+
+        p.writeInt(target.getPosition().X);
+        p.writeInt(target.getPosition().Y);
+        return p;
+    }
+
+    public static Packet GetFindResult(string targetName, byte type, int field, byte flag)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.WHISPER);
+
+        p.writeByte(flag | WhisperFlag.RESULT);
+        p.writeString(targetName);
         p.writeByte(type);
-        p.writeInt(fieldOrChannel);
-
-        if (type == WhisperType.RT_SAME_CHANNEL)
-        {
-            p.writeInt(target.getPosition().X);
-            p.writeInt(target.getPosition().Y);
-        }
-
+        p.writeInt(field);
         return p;
     }
 

@@ -5,9 +5,12 @@ namespace Application.Core.Login.Models
     public class CharacterViewObject
     {
         /// <summary>
-        /// 仅在MasterServer使用
+        /// 仅在MasterServer使用，-1：商城，0：离线
         /// </summary>
         public int Channel { get; set; }
+        /// <summary>
+        /// 不记录-1 （在商城时，记录的仍然是玩家所在的频道服务器），只用作寻找服务器
+        /// </summary>
         public int ActualChannel { get; set; }
         public CharacterModel Character { get; set; }
         public ItemModel[] InventoryItems { get; set; } = [];

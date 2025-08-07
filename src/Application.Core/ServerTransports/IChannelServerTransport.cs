@@ -196,5 +196,7 @@ namespace Application.Core.ServerTransports
         void SendBuddyChat(BuddyChatRequest request);
         void SendBuddyMessage(SendBuddyNoticeMessageDto request);
         DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
+        SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
+        GetLocationResponse GetLocation(GetLocationRequest getLocationRequest);
     }
 }

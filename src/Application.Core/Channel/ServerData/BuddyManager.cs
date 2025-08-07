@@ -1,8 +1,10 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Buddy;
 using Application.Shared.Invitations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.X509;
 using System.Threading.Channels;
 using tools;
 
@@ -59,7 +61,7 @@ namespace Application.Core.Channel.ServerData
                         int mcChannel = -1;
                         if (data.IsLogin)
                         {
-                            mcChannel = (byte)(data.Channel - 1);
+                            mcChannel = data.Channel - 1;
                         }
                         chr.BuddyList.Update(ble);
                         chr.sendPacket(PacketCreator.updateBuddyChannel(ble.Id, mcChannel));
@@ -193,6 +195,50 @@ namespace Application.Core.Channel.ServerData
                 {
                     chr.sendPacket(PacketCreator.updateBuddyChannel(data.Buddyid, -1));
                 }
+            }
+        }
+
+        internal void SendWhisper(IPlayer chr, string targetName, string message)
+        {
+            var res = _transport.SendWhisper(new Dto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
+            chr.sendPacket(PacketCreator.getWhisperResult(targetName, res.Code == 0));
+        }
+
+        internal void OnWhisperReceived(Dto.SendWhisperMessageBroadcast data)
+        {
+            var chr = _server.FindPlayerById(data.ReceiverId);
+            if (chr != null)
+            {
+                chr.sendPacket(PacketCreator.getWhisperReceive(data.FromName, data.FromChannel - 1, data.IsFromGM, data.Text));
+            }
+        }
+
+        internal void GetLocation(IPlayer chr, string name)
+        {
+            var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(name);
+            if (sameChannelSearch != null)
+            {
+                chr.sendPacket(PacketCreator.GetSameChannelFindResult(sameChannelSearch, WhisperFlag.LOCATION));
+                return;
+            }
+
+            var res = _transport.GetLocation(new Dto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
+            var code = (WhisperLocationResponseCode)res.Code;
+            switch (code)
+            {
+                case WhisperLocationResponseCode.NotFound:
+                case WhisperLocationResponseCode.NotOnlined:
+                case WhisperLocationResponseCode.NoAccess:
+                    chr.sendPacket(PacketCreator.getWhisperResult(name, false));
+                    break;
+                case WhisperLocationResponseCode.AwayWorld:
+                    chr.sendPacket(PacketCreator.GetFindResult(name, WhisperType.RT_CASH_SHOP, -1, WhisperFlag.LOCATION));
+                    break;
+                case WhisperLocationResponseCode.DiffChannel:
+                    chr.sendPacket(PacketCreator.GetFindResult(name, WhisperType.RT_DIFFERENT_CHANNEL, res.Field, WhisperFlag.LOCATION));
+                    break;
+                default:
+                    break;
             }
         }
     }

@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string Whisper_Chat = "Whisper_Chat";
+
         public const string Buddy_Chat = "Buddy_Chat";
         public const string Buddy_AcceptInvite = "Buddy_AcceptInvite";
         public const string Buddy_Delete = "Buddy_Delete";

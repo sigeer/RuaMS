@@ -2,6 +2,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
 using Application.Shared.Constants;
+using Application.Shared.Constants.Buddy;
 using Application.Shared.Invitations;
 using Application.Shared.Message;
 using AutoMapper;
@@ -90,13 +91,13 @@ namespace Application.Core.Login.ServerData
             _server.Transport.SendMessage(BroadcastType.Buddy_Chat, request, request.ToIds.ToArray());
         }
 
-        public void BroadcastNotify(NotifyBuddyWhenLoginoffRequest request)
+        public void BroadcastNotify(CharacterLiveObject obj, bool isLogin)
         {
             var data = new Dto.NotifyBuddyWhenLoginoffBroadcast();
-            data.BuddyId.AddRange(request.BuddyId);
-            data.Channel = _server.CharacterManager.FindPlayerById(request.MasterId)?.ActualChannel ?? 0;
-            data.IsLogin = request.IsLogin;
-            data.MasterId = request.MasterId;
+            data.BuddyId.AddRange(obj.BuddyList.Keys);
+            data.Channel = obj.Channel;
+            data.IsLogin = isLogin;
+            data.MasterId = obj.Character.Id;
             _server.Transport.SendMessage(BroadcastType.Buddy_NotifyChannel, data, data.BuddyId.ToArray());
         }
 
@@ -114,6 +115,40 @@ namespace Application.Core.Login.ServerData
             masterChr.BuddyList.Remove(request.Buddyid);
             _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, request.Buddyid);
             return new DeleteBuddyResponse();
+        }
+
+        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
+        {
+            var senderChr = _server.CharacterManager.FindPlayerById(request.FromId);
+            if (senderChr == null || senderChr.Channel < 0)
+                return new SendWhisperMessageResponse { Code = 1 };
+
+            var receiverChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
+            if (receiverChr == null || senderChr.Channel < 0)
+                return new SendWhisperMessageResponse { Code = 1 };
+
+            var data = new Dto.SendWhisperMessageBroadcast
+            {
+                FromChannel = senderChr.Channel,
+                FromName = senderChr.Character.Name,
+                ReceiverId = receiverChr.Character.Id,
+                Text = request.Text
+            };
+            _server.Transport.SendMessage(BroadcastType.Whisper_Chat, data, data.ReceiverId);
+            return new SendWhisperMessageResponse();
+        }
+
+        public GetLocationResponse GetLocation(GetLocationRequest request)
+        {
+            var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.NotFound };
+            if (targetChr.Channel == 0)
+                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.NotOnlined };
+            if (targetChr.Channel < 0)
+                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.AwayWorld };
+
+            return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.DiffChannel, Field = targetChr.Channel };
         }
     }
 }

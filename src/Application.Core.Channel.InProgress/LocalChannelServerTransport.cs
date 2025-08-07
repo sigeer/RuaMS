@@ -106,7 +106,7 @@ namespace Application.Core.Channel.InProgress
 
         public DateTimeOffset GetServerupTime()
         {
-            return Server.uptime;
+            return _server.StartupTime;
         }
 
         public bool IsGuildQueued(int guildId)
@@ -818,6 +818,16 @@ namespace Application.Core.Channel.InProgress
         public DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest request)
         {
             return _server.BuddyManager.DeleteBuddy(request);
+        }
+
+        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
+        {
+            return _server.BuddyManager.SendWhisper(request);
+        }
+
+        public GetLocationResponse GetLocation(GetLocationRequest request)
+        {
+            return _server.BuddyManager.GetLocation(request);
         }
     }
 }

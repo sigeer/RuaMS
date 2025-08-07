@@ -163,11 +163,6 @@ namespace Application.Core.Login.Datas
                             FamilyId = origin.Character.FamilyId,
                             Channel = obj.Channel
                         });
-                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
-                        _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
-                        var data = new NotifyBuddyWhenLoginoffRequest { IsLogin = false, MasterId = origin.Character.Id };
-                        data.BuddyId.AddRange(origin.BuddyList.Keys);
-                        _masterServer.BuddyManager.BroadcastNotify(data);
 
                         foreach (var module in _masterServer.Modules)
                         {
@@ -181,6 +176,11 @@ namespace Application.Core.Login.Datas
                             module.OnPlayerEnterCashShop(origin);
                         }
                     }
+
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
+                    _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
+
+                    _masterServer.BuddyManager.BroadcastNotify(origin, false);
                 }
             }
         }
@@ -215,9 +215,7 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
 
-                var data = new NotifyBuddyWhenLoginoffRequest { IsLogin = true, MasterId = d.Character.Id };
-                data.BuddyId.AddRange(d.BuddyList.Keys);
-                _masterServer.BuddyManager.BroadcastNotify(data);
+                _masterServer.BuddyManager.BroadcastNotify(d, true);
 
                 foreach (var module in _masterServer.Modules)
                 {

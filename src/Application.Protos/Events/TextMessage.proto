@@ -8,3 +8,21 @@ message SendTextMessage {
   int32 fromChannel = 3;
   bool smegaEar = 4;
 }
+
+message SendWhisperMessageRequest {
+	int32 fromId = 1;
+	string targetName = 2;
+	string text = 3;
+}
+
+message SendWhisperMessageBroadcast {
+	string fromName = 1;
+	int32 fromChannel  = 2;
+	bool isFromGM = 3;
+	int32 receiverId = 4;
+	string text = 5;
+}
+
+message SendWhisperMessageResponse {
+	int32 code = 1;
+}

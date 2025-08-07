@@ -75,3 +75,13 @@ message DeleteBuddyBroadcast {
 message DeleteBuddyResponse {
 	int32 code = 1;
 }
+
+message GetLocationRequest {
+	int32 masterId = 1;
+	string targetName = 2;
+}
+
+message GetLocationResponse {
+	int32 code = 1;
+	int32 field = 2;
+}
