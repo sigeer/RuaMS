@@ -85,15 +85,14 @@ public class WhisperHandler : ChannelHandlerBase
             return;
         }
 
-        if (ble.Channel == 0)
+        if (ble.ActualChannel == 0)
         {
             c.sendPacket(PacketCreator.getWhisperResult(targetName, false));
             return;
         }
 
-        var type = ble.Channel < 0 ? WhisperType.RT_CASH_SHOP : WhisperType.RT_DIFFERENT_CHANNEL;
-        var channel = ble.Channel < 0 ? -1 : ble.Channel - 1;
-        c.sendPacket(PacketCreator.GetFindResult(targetName, type, channel, WhisperFlag.LOCATION_FRIEND));
+        var type = ble.IsAwayWorld ? WhisperType.RT_CASH_SHOP : WhisperType.RT_DIFFERENT_CHANNEL;
+        c.sendPacket(PacketCreator.GetFindResult(targetName, type, ble.ActualChannel - 1, WhisperFlag.LOCATION_FRIEND));
     }
 
     void HandleSendWhisper(IChannelClient c, string targetName, string message)

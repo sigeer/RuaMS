@@ -8,8 +8,9 @@ message BuddyDto {
   int32 id = 1;
   string name = 2;
   int32 channel = 3;
-  string group = 4;
-  int32 mapId = 5;
+  int32 actualChannel =4;
+  string group = 5;
+  int32 mapId = 6;
 }
 
 message BuddyChatRequest {
@@ -42,17 +43,12 @@ message AddBuddyResponse {
 	BuddyDto buddy = 2;
 }
 
-message NotifyBuddyWhenLoginoffRequest {
-	int32 masterId = 1;
-	repeated int32 buddyId = 2;
-	bool isLogin = 3;
-}
 
 message NotifyBuddyWhenLoginoffBroadcast {
 	int32 masterId = 1;
 	repeated int32 buddyId = 2;
-	bool isLogin = 3;
 	int32 channel = 4;
+	int32 actualChannel = 5;
 }
 
 message SendBuddyNoticeMessageDto {

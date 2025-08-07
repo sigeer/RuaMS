@@ -74,7 +74,8 @@ namespace Application.Core.Login.Mappers
             CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
-            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
+            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>()
+                .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
             CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
             CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()

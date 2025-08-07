@@ -4196,13 +4196,12 @@ public class PacketCreator
             p.writeInt(buddy.Id); // cid
             p.writeFixedString(buddy.Name);
             p.writeByte(0); // opposite status
-            p.writeInt(buddy.Channel - 1);
-            p.writeFixedString(buddy.Group);
-            p.writeInt(0);//mapid?
+            p.writeInt(buddy.ActualChannel - 1);
+            p.writeFixedString(buddy.Group, 17);
         }
-        for (int x = 0; x < buddylist.Count(); x++)
+        foreach (var buddy in buddylist)
         {
-            p.writeInt(0);//mapid?
+            p.writeInt(buddy.MapId);
         }
         return p;
     }

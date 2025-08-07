@@ -58,13 +58,10 @@ namespace Application.Core.Channel.ServerData
                     var ble = chr.BuddyList.Get(data.MasterId);
                     if (ble != null)
                     {
-                        int mcChannel = -1;
-                        if (data.IsLogin)
-                        {
-                            mcChannel = data.Channel - 1;
-                        }
+                        ble.Channel = data.Channel;
+                        ble.ActualChannel = data.ActualChannel;
                         chr.BuddyList.Update(ble);
-                        chr.sendPacket(PacketCreator.updateBuddyChannel(ble.Id, mcChannel));
+                        chr.sendPacket(PacketCreator.updateBuddyChannel(ble.Id, ble.ActualChannel - 1));
                     }
                 }
             }
@@ -141,20 +138,7 @@ namespace Application.Core.Channel.ServerData
             var chr = _server.FindPlayerById(data.ReceiverId);
             if (chr != null)
             {
-                if (chr.BuddyList.isFull())
-                {
-                    chr.dropMessage(1, "好友位已满");
-                    return;
-                }
-
-                if (chr.BuddyList.Contains(data.FromId))
-                {
-                    chr.dropMessage(1, "已经是你的好友了");
-                    return;
-                }
-
-                chr.BuddyList.Add(_mapper.Map<BuddyCharacter>(data.Buddy));
-                chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+                AddBuddy(chr, data.Buddy.Name, data.Buddy.Group);
             }
         }
 

@@ -168,6 +168,8 @@ namespace Application.Core.Login.Datas
                         {
                             module.OnPlayerLogoff(origin);
                         }
+
+                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                     }
                     else
                     {
@@ -177,10 +179,9 @@ namespace Application.Core.Login.Datas
                         }
                     }
 
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                     _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
 
-                    _masterServer.BuddyManager.BroadcastNotify(origin, false);
+                    _masterServer.BuddyManager.BroadcastNotify(origin);
                 }
             }
         }
@@ -215,7 +216,7 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
 
-                _masterServer.BuddyManager.BroadcastNotify(d, true);
+                _masterServer.BuddyManager.BroadcastNotify(d);
 
                 foreach (var module in _masterServer.Modules)
                 {

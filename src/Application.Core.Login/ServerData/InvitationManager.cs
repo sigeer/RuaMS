@@ -1,6 +1,7 @@
 using Application.Core.Game.Controllers;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
+using Application.Shared.Constants;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using Application.Utility.Configs;
@@ -76,6 +77,9 @@ namespace Application.Core.Login.ServerData
         {
             foreach (var it in _allRequests)
             {
+                if (it.Key == InviteTypes.Buddy)
+                    continue;
+
                 if (it.Value.TryRemove(masterId, out var d))
                     _inviteMasterHandlerRegistry.GetHandler(it.Key)?.OnInvitationExpired(d);
             }

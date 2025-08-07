@@ -9,6 +9,7 @@ using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 namespace Application.Core.Login.ServerData
 {
@@ -35,6 +36,7 @@ namespace Application.Core.Login.ServerData
             return new Dto.BuddyDto
             {
                 Channel = buddyChr.BuddyList.ContainsKey(chrId) ? buddyChr.Channel : -1,
+                ActualChannel = buddyChr.BuddyList.ContainsKey(chrId) ? buddyChr.ActualChannel : -1,
                 Group = group,
                 Id = buddyChr.Character.Id,
                 Name = buddyChr.Character.Name,
@@ -58,6 +60,15 @@ namespace Application.Core.Login.ServerData
             if (!hasBuddy)
             {
                 _invitationService.AddInvitation(new Dto.CreateInviteRequest { FromId = request.MasterId, ToName = request.TargetName, Type = InviteTypes.Buddy });
+            }
+            else
+            {
+                var data = new Dto.NotifyBuddyWhenLoginoffBroadcast();
+                data.BuddyId.Add(targetChr.Character.Id);
+                data.Channel = masterChr.Channel;
+                data.ActualChannel = masterChr.ActualChannel;
+                data.MasterId = masterChr.Character.Id;
+                _server.Transport.SendMessage(BroadcastType.Buddy_NotifyChannel, data, targetChr.Character.Id);
             }
 
             return new Dto.AddBuddyResponse
@@ -88,15 +99,15 @@ namespace Application.Core.Login.ServerData
             data.FromName = _server.CharacterManager.GetPlayerName(request.FromId);
             data.FromId = request.FromId;
             data.Text = request.Text;
-            _server.Transport.SendMessage(BroadcastType.Buddy_Chat, request, request.ToIds.ToArray());
+            _server.Transport.SendMessage(BroadcastType.Buddy_Chat, data, data.ToIds.ToArray());
         }
 
-        public void BroadcastNotify(CharacterLiveObject obj, bool isLogin)
+        public void BroadcastNotify(CharacterLiveObject obj)
         {
             var data = new Dto.NotifyBuddyWhenLoginoffBroadcast();
             data.BuddyId.AddRange(obj.BuddyList.Keys);
             data.Channel = obj.Channel;
-            data.IsLogin = isLogin;
+            data.ActualChannel = obj.ActualChannel;
             data.MasterId = obj.Character.Id;
             _server.Transport.SendMessage(BroadcastType.Buddy_NotifyChannel, data, data.BuddyId.ToArray());
         }
