@@ -814,5 +814,10 @@ namespace Application.Core.Channel.InProgress
         {
             _server.BuddyManager.BroadcastNoticeMessage(request);
         }
+
+        public DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest request)
+        {
+            return _server.BuddyManager.DeleteBuddy(request);
+        }
     }
 }

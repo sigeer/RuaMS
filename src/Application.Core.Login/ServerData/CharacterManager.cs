@@ -92,7 +92,6 @@ namespace Application.Core.Login.Datas
             {
                 var oldCharacterData = origin.Character;
                 origin.Character = _mapper.Map<CharacterModel>(obj.Character);
-                origin.BuddyList = _mapper.Map<BuddyModel[]>(obj.BuddyList);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
                 origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
                 origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
@@ -167,7 +166,7 @@ namespace Application.Core.Login.Datas
                         _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                         _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
                         var data = new NotifyBuddyWhenLoginoffRequest { IsLogin = false, MasterId = origin.Character.Id };
-                        data.BuddyId.AddRange(origin.BuddyList.Select(x => x.Id));
+                        data.BuddyId.AddRange(origin.BuddyList.Keys);
                         _masterServer.BuddyManager.BroadcastNotify(data);
 
                         foreach (var module in _masterServer.Modules)
@@ -217,7 +216,7 @@ namespace Application.Core.Login.Datas
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
 
                 var data = new NotifyBuddyWhenLoginoffRequest { IsLogin = true, MasterId = d.Character.Id };
-                data.BuddyId.AddRange(d.BuddyList.Select(x => x.Id));
+                data.BuddyId.AddRange(d.BuddyList.Keys);
                 _masterServer.BuddyManager.BroadcastNotify(data);
 
                 foreach (var module in _masterServer.Modules)
@@ -300,7 +299,7 @@ namespace Application.Core.Login.Datas
 
                 var buddyData = (from a in dbContext.Buddies
                                  where a.CharacterId == characterId
-                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group }).ToArray();
+                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
 
                 #region quest
                 var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
@@ -318,7 +317,7 @@ namespace Application.Core.Login.Datas
                     Channel = 0,
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    BuddyList = buddyData,
+                    BuddyList = buddyData.ToDictionary(x => x.Id),
                     FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
                     Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     InventoryItems = invItems,

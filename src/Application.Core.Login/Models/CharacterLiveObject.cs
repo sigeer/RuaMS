@@ -31,7 +31,7 @@ namespace Application.Core.Login.Models
         public CoolDownModel[] CoolDowns { get; set; }
         public KeyMapModel[] KeyMaps { get; set; }
         public SavedLocationModel[] SavedLocations { get; set; }
-        public BuddyModel[] BuddyList { get; set; }
+        public Dictionary<int, BuddyModel> BuddyList { get; set; }
         public NewYearCardModel[] NewYearCards { get; set; }
         public FameLogModel[] FameLogs { get; set; }
 

@@ -65,6 +65,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         {
             // delete
             int otherCid = p.readInt();
+            _buddyManager.DeleteBuddy(player, otherCid);
             player.deleteBuddy(otherCid);
         }
         else

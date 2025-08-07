@@ -356,7 +356,6 @@ namespace Application.Core.Channel.Services
                 return m;
             }));
             data.WishItems.AddRange(player.CashShopModel.getWishList());
-            data.BuddyList.AddRange(_mapper.Map<Dto.BuddyDto[]>( player.BuddyList));
             data.CoolDowns.AddRange(_mapper.Map<Dto.CoolDownDto[]>(player.getAllCooldowns()));
             data.InventoryItems.AddRange(d);
             data.AccountGame = new Dto.AccountGameDto()

@@ -71,3 +71,7 @@ message DeleteBuddyBroadcast {
 	int32 masterId = 1;
 	int32 buddyid = 2;
 }
+
+message DeleteBuddyResponse {
+	int32 code = 1;
+}

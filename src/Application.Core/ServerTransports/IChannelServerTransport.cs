@@ -195,5 +195,6 @@ namespace Application.Core.ServerTransports
         AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest);
         void SendBuddyChat(BuddyChatRequest request);
         void SendBuddyMessage(SendBuddyNoticeMessageDto request);
+        DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
     }
 }

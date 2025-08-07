@@ -6,8 +6,8 @@ using Application.Shared.Invitations;
 using Application.Shared.Message;
 using AutoMapper;
 using Dto;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using XmlWzReader;
 
 namespace Application.Core.Login.ServerData
 {
@@ -17,24 +17,27 @@ namespace Application.Core.Login.ServerData
         readonly IMapper _mapper;
         readonly ILogger<BuddyManager> _logger;
         readonly InvitationService _invitationService;
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-        public BuddyManager(MasterServer server, IMapper mapper, ILogger<BuddyManager> logger, InvitationService invitationService)
+
+        public BuddyManager(MasterServer server, IMapper mapper, ILogger<BuddyManager> logger, InvitationService invitationService, IDbContextFactory<DBContext> dbContextFactory)
         {
             _server = server;
             _mapper = mapper;
             _logger = logger;
             _invitationService = invitationService;
+            _dbContextFactory = dbContextFactory;
         }
 
-        private Dto.BuddyDto GetDtoByChr(CharacterLiveObject chr, string group = StringConstants.Buddy_DefaultGroup)
+        public static Dto.BuddyDto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)
         {
             return new Dto.BuddyDto
             {
-                Channel = chr.Channel,
+                Channel = buddyChr.BuddyList.ContainsKey(chrId) ? buddyChr.Channel : -1,
                 Group = group,
-                Id = chr.Character.Id,
-                Name = chr.Character.Name,
-                MapId = chr.Character.Map
+                Id = buddyChr.Character.Id,
+                Name = buddyChr.Character.Name,
+                MapId = buddyChr.Character.Map
             };
         }
 
@@ -44,25 +47,35 @@ namespace Application.Core.Login.ServerData
             if (targetChr == null)
                 return new Dto.AddBuddyResponse() { Code = 1 };
 
-            _invitationService.AddInvitation(new Dto.CreateInviteRequest { FromId = request.MasterId, ToName = request.TargetName, Type = InviteTypes.Buddy });
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (masterChr == null)
+                return new Dto.AddBuddyResponse() { Code = 1 };
+
+            masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, Group = request.GroupName, CharacterId = request.MasterId };
+
+            bool hasBuddy = targetChr.BuddyList.ContainsKey(request.MasterId);
+            if (!hasBuddy)
+            {
+                _invitationService.AddInvitation(new Dto.CreateInviteRequest { FromId = request.MasterId, ToName = request.TargetName, Type = InviteTypes.Buddy });
+            }
 
             return new Dto.AddBuddyResponse
             {
-                Buddy = GetDtoByChr(targetChr, request.GroupName)
+                Buddy = GetChrBuddyDto(request.MasterId, targetChr, request.GroupName)
             };
         }
 
         public void PushAcceptBuddy(int masterId, int senderId)
         {
-            var chr = _server.CharacterManager.FindPlayerById(senderId);
-            if (chr == null)
+            var otherChr = _server.CharacterManager.FindPlayerById(senderId);
+            if (otherChr == null)
                 return;
 
             var data = new Dto.AddBuddyBroadcast()
             {
                 FromId = senderId,
                 ReceiverId = masterId,
-                Buddy = GetDtoByChr(chr)
+                Buddy = GetChrBuddyDto(masterId, otherChr)
             };
             _server.Transport.SendMessage(BroadcastType.Buddy_AcceptInvite, data, data.ReceiverId);
         }
@@ -92,9 +105,15 @@ namespace Application.Core.Login.ServerData
             _server.Transport.SendMessage(BroadcastType.Buddy_NoticeMessage, data, data.BuddyId.ToArray());
         }
 
-        public void DeleteBuddy(Dto.DeleteBuddyBroadcast request)
+        public Dto.DeleteBuddyResponse DeleteBuddy(Dto.DeleteBuddyRequest request)
         {
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (masterChr == null)
+                return new DeleteBuddyResponse() { Code = 1 };
+
+            masterChr.BuddyList.Remove(request.Buddyid);
             _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, request.Buddyid);
+            return new DeleteBuddyResponse();
         }
     }
 }

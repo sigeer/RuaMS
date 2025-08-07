@@ -109,7 +109,7 @@ namespace Application.Core.Channel.ServerData
                     return;
                 }
 
-                player.sendPacket(PacketCreator.serverNotice(1, "You already have \"" + ble.Name + "\" on your Buddylist"));
+                player.sendPacket(PacketCreator.serverNotice(1, $"{ble.Name} 已经是你的好友了"));
                 return;
             }
 
@@ -175,8 +175,13 @@ namespace Application.Core.Channel.ServerData
 
         public void DeleteBuddy(IPlayer chr, int targetId)
         {
-            chr.BuddyList.Remove(targetId);
-            chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+            var res = _transport.SendDeleteBuddy(new Dto.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
+            if (res.Code == 0)
+            {
+                chr.BuddyList.Remove(targetId);
+                chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+            }
+
         }
 
         public void OnBuddyDeleted(Dto.DeleteBuddyBroadcast data)
