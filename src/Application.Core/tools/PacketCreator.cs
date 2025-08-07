@@ -37,6 +37,7 @@ using Application.Core.Managers;
 using Application.Core.model;
 using Application.Core.Models;
 using Application.Shared.Battle;
+using Application.Shared.Constants.Buddy;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using Application.Shared.Team;
@@ -4185,26 +4186,22 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateBuddylist(ICollection<BuddylistEntry> buddylist)
+    public static Packet updateBuddylist(ICollection<BuddyCharacter> buddylist)
     {
         OutPacket p = OutPacket.create(SendOpcode.BUDDYLIST);
         p.writeByte(7);
         p.writeByte(buddylist.Count());
-        foreach (BuddylistEntry buddy in buddylist)
+        foreach (var buddy in buddylist)
         {
-            if (buddy.Visible)
-            {
-                p.writeInt(buddy.getCharacterId()); // cid
-                p.writeFixedString(buddy.getName());
-                p.writeByte(0); // opposite status
-                p.writeInt(buddy.getChannel() - 1);
-                p.writeFixedString(buddy.Group);
-                p.writeInt(0);//mapid?
-            }
+            p.writeInt(buddy.Id); // cid
+            p.writeFixedString(buddy.Name);
+            p.writeByte(0); // opposite status
+            p.writeInt(buddy.ActualChannel - 1);
+            p.writeFixedString(buddy.Group, 17);
         }
-        for (int x = 0; x < buddylist.Count(); x++)
+        foreach (var buddy in buddylist)
         {
-            p.writeInt(0);//mapid?
+            p.writeInt(buddy.MapId);
         }
         return p;
     }
@@ -4228,7 +4225,7 @@ public class PacketCreator
         p.writeByte(0xf0);
         p.writeByte(0x01);
         p.writeInt(0x0f);
-        p.writeFixedString("Default Group");
+        p.writeFixedString(StringConstants.Buddy_DefaultGroup);
         p.writeByte(0);
         p.writeInt(chrId);
         return p;
@@ -5845,42 +5842,28 @@ public class PacketCreator
         return showCash(mc);
     }
 
-    public static class WhisperFlag
-    {
-        public const byte LOCATION = 0x01;
-        public const byte WHISPER = 0x02;
-        public const byte REQUEST = 0x04;
-        public const byte RESULT = 0x08;
-        public const byte RECEIVE = 0x10;
-        public const byte BLOCKED = 0x20;
-        public const byte LOCATION_FRIEND = 0x40;
-    }
-
-    /**
-     * User for /find, buddy find and /c (chase)
-     * CField::OnWhisper
-     *
-     * @param target         Name string from the command parameter
-     * @param type           Location of the target
-     * @param fieldOrChannel If true & chr is not null, shows different channel message
-     * @param flag           LOCATION or LOCATION_FRIEND
-     * @return packet structure
-     */
-    public static Packet getFindResult(IPlayer target, byte type, int fieldOrChannel, byte flag)
+    public static Packet GetSameChannelFindResult(IPlayer target, byte flag)
     {
         OutPacket p = OutPacket.create(SendOpcode.WHISPER);
 
         p.writeByte(flag | WhisperFlag.RESULT);
-        p.writeString(target.getName());
+        p.writeString(target.Name);
+        p.writeByte(WhisperType.RT_SAME_CHANNEL);
+        p.writeInt(target.getMapId());
+
+        p.writeInt(target.getPosition().X);
+        p.writeInt(target.getPosition().Y);
+        return p;
+    }
+
+    public static Packet GetFindResult(string targetName, byte type, int field, byte flag)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.WHISPER);
+
+        p.writeByte(flag | WhisperFlag.RESULT);
+        p.writeString(targetName);
         p.writeByte(type);
-        p.writeInt(fieldOrChannel);
-
-        if (type == WhisperType.RT_SAME_CHANNEL)
-        {
-            p.writeInt(target.getPosition().X);
-            p.writeInt(target.getPosition().Y);
-        }
-
+        p.writeInt(field);
         return p;
     }
 

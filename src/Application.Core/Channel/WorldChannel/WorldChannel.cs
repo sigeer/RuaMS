@@ -450,25 +450,6 @@ public partial class WorldChannel : ISocketServer
         }
     }
 
-
-    public int[] multiBuddyFind(int charIdFrom, int[] characterIds)
-    {
-        List<int> ret = new(characterIds.Length);
-        var playerStorage = Players;
-        foreach (int characterId in characterIds)
-        {
-            var chr = playerStorage.getCharacterById(characterId);
-            if (chr != null)
-            {
-                if (chr.BuddyList.containsVisible(charIdFrom))
-                {
-                    ret.Add(characterId);
-                }
-            }
-        }
-        return ret.ToArray();
-    }
-
     public bool addExpedition(Expedition exped)
     {
         lock (expeditions)
@@ -699,44 +680,5 @@ public partial class WorldChannel : ISocketServer
             return getIP();
 
         return Container.GetChannelEndPoint(channel);
-    }
-
-
-
-    public void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies)
-    {
-        UpdateBuddyChannel(characterId, channel, buddies, true);
-    }
-
-    public void UpdateBuddyByLoggedIn(int characterId, int channel, int[] buddies)
-    {
-        UpdateBuddyChannel(characterId, channel, buddies, false);
-    }
-
-    private void UpdateBuddyChannel(int characterId, int channel, int[] buddies, bool offline)
-    {
-        var playerStorage = getPlayerStorage();
-        foreach (int buddy in buddies)
-        {
-            var chr = playerStorage.getCharacterById(buddy);
-            if (chr != null && chr.IsOnlined)
-            {
-                var ble = chr.getBuddylist().get(characterId);
-                if (ble != null && ble.Visible)
-                {
-                    int mcChannel;
-                    if (offline)
-                    {
-                        mcChannel = -1;
-                    }
-                    else
-                    {
-                        mcChannel = (byte)(channel - 1);
-                    }
-                    chr.getBuddylist().put(ble);
-                    chr.sendPacket(PacketCreator.updateBuddyChannel(ble.getCharacterId(), mcChannel));
-                }
-            }
-        }
     }
 }

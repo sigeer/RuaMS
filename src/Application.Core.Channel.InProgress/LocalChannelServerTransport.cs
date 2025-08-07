@@ -106,7 +106,7 @@ namespace Application.Core.Channel.InProgress
 
         public DateTimeOffset GetServerupTime()
         {
-            return Server.uptime;
+            return _server.StartupTime;
         }
 
         public bool IsGuildQueued(int guildId)
@@ -798,6 +798,36 @@ namespace Application.Core.Channel.InProgress
         public void BatchSyncPlayer(List<PlayerSaveDto> data)
         {
             _server.CharacterManager.BatchUpdate(data);
+        }
+
+        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest)
+        {
+            return _server.BuddyManager.AddBuddy(addBuddyRequest);
+        }
+
+        public void SendBuddyChat(BuddyChatRequest request)
+        {
+            _server.BuddyManager.BuddyChat(request);
+        }
+
+        public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
+        {
+            _server.BuddyManager.BroadcastNoticeMessage(request);
+        }
+
+        public DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest request)
+        {
+            return _server.BuddyManager.DeleteBuddy(request);
+        }
+
+        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
+        {
+            return _server.BuddyManager.SendWhisper(request);
+        }
+
+        public GetLocationResponse GetLocation(GetLocationRequest request)
+        {
+            return _server.BuddyManager.GetLocation(request);
         }
     }
 }

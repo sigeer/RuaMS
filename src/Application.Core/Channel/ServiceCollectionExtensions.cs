@@ -26,6 +26,7 @@ namespace Application.Core.Channel
             services.AddSingleton<InviteChannelHandler, GuildInviteChannelHandler>();
             services.AddSingleton<InviteChannelHandler, AllianceInviteChannelHandler>();
             services.AddSingleton<InviteChannelHandler, MessengerInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, BuddyInviteChannelHandler>();
             return services;
         }
 
@@ -92,6 +93,7 @@ namespace Application.Core.Channel
             services.AddSingleton<CrossServerCallbackService>();
 
             // 频道的数据中心不再与频道关联，而是与频道所在的进程关联（同一进程多个频道）
+            services.AddSingleton<BuddyManager>();
             services.AddSingleton<TeamManager>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<ChatRoomService>();

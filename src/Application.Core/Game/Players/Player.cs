@@ -61,7 +61,7 @@ namespace Application.Core.Game.Players
             ExpValue = new AtomicInteger();
             GachaExpValue = new AtomicInteger();
 
-            BuddyList = new BuddyList(this, 20);
+            BuddyList = new BuddyList(this);
 
             KeyMap = new(this);
 

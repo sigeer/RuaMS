@@ -140,8 +140,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.getMap().addPlayer(player);
             player.visitMap(player.getMap());
 
-            int[] buddyIds = player.BuddyList.getBuddyIds();
-            c.CurrentServer.UpdateBuddyByLoggedIn(player.getId(), c.Channel, buddyIds);
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
             if (player.getParty() != null)
@@ -167,12 +165,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
-
-            var pendingBuddyRequest = c.OnlinedCharacter.BuddyList.pollPendingRequest();
-            if (pendingBuddyRequest != null)
-            {
-                c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
-            }
 
             c.sendPacket(PacketCreator.updateGender(player));
 

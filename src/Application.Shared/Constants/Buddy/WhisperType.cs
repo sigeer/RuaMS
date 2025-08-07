@@ -1,4 +1,4 @@
-namespace Application.Shared.Constants
+namespace Application.Shared.Constants.Buddy
 {
     public class WhisperType
     {

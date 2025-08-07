@@ -40,5 +40,6 @@ namespace Application.Shared.Invitations
         public const string Guild = "Guild";
         public const string Alliance = "Alliance";
         public const string Messenger = "Messenger";
+        public const string Buddy = "Buddy";
     }
 }

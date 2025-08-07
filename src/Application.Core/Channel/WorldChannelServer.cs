@@ -52,6 +52,8 @@ namespace Application.Core.Channel
 
         readonly Lazy<TeamManager> _teamManager;
         public TeamManager TeamManager => _teamManager.Value;
+        readonly Lazy<BuddyManager> _buddyManager;
+        public BuddyManager BuddyManager => _buddyManager.Value;
 
         readonly Lazy<ShopManager> _shopManager;
         public ShopManager ShopManager => _shopManager.Value;
@@ -156,6 +158,7 @@ namespace Application.Core.Channel
 
             InviteChannelHandlerRegistry = ServiceProvider.GetRequiredService<InviteChannelHandlerRegistry>();
 
+            _buddyManager = new (() => ServiceProvider.GetRequiredService<BuddyManager>());
             _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
@@ -597,6 +600,9 @@ namespace Application.Core.Channel
 
         private void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
         {
+            // 切换频道也会被调用
+            bool isLogin = data.IsNewComer;
+            bool isLogoff = data.Channel == 0;
             if (data.GuildId > 0)
             {
                 var guild = GuildManager.GetGuildById(data.GuildId);
@@ -630,7 +636,7 @@ namespace Application.Core.Channel
 
             foreach (var module in Modules)
             {
-                if (data.IsNewComer)
+                if (isLogin)
                     module.OnPlayerLogin(data);
             }
         }
@@ -653,6 +659,16 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
+
+            MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_AcceptInvite, BuddyManager.OnAddBuddyBroadcast);
+            MessageDispatcher.Register<Dto.BuddyChatBroadcast>(BroadcastType.Buddy_Chat, BuddyManager.OnBuddyChatReceived);
+            MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);
+            MessageDispatcher.Register<Dto.SendBuddyNoticeMessageDto>(BroadcastType.Buddy_NoticeMessage, BuddyManager.OnBuddyNoticeMessageReceived);
+            MessageDispatcher.Register<Dto.DeleteBuddyBroadcast>(BroadcastType.Buddy_Delete, BuddyManager.OnBuddyDeleted);
+
+            MessageDispatcher.Register<Dto.MultiChatMessage>(BroadcastType.OnMultiChat, OnMulitiChat);
+
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
             MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
             MessageDispatcher.Register<Dto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
@@ -796,6 +812,18 @@ namespace Application.Core.Channel
             foreach (var ch in Servers.Values)
             {
                 ch.broadcastPacket(PacketCreator.serverNotice(data.Type, data.Text)); ;
+            }
+        }
+
+        void OnMulitiChat(MultiChatMessage data)
+        {
+            foreach (var cid in data.Receivers)
+            {
+                var chr = FindPlayerById(cid);
+                if (chr != null && !chr.isAwayFromWorld())
+                {
+                    chr.sendPacket(PacketCreator.multiChat(data.FromName, data.Text, data.Type));
+                }
             }
         }
     }

@@ -285,7 +285,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     break;
                 case 2:
                     // Super megaphone
-                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -346,7 +346,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getMultiMegaphone(msg2, c.ActualChannel, whisper));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -481,7 +481,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getAvatarMega(player, medal, c.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
             c.CurrentServerContainer.TimerManager.schedule(() => c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }

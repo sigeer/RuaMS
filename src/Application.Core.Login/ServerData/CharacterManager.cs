@@ -92,7 +92,6 @@ namespace Application.Core.Login.Datas
             {
                 var oldCharacterData = origin.Character;
                 origin.Character = _mapper.Map<CharacterModel>(obj.Character);
-                origin.BuddyList = _mapper.Map<BuddyModel[]>(obj.BuddyList);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
                 origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
                 origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
@@ -164,13 +163,13 @@ namespace Application.Core.Login.Datas
                             FamilyId = origin.Character.FamilyId,
                             Channel = obj.Channel
                         });
-                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
-                        _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
 
                         foreach (var module in _masterServer.Modules)
                         {
                             module.OnPlayerLogoff(origin);
                         }
+
+                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                     }
                     else
                     {
@@ -179,6 +178,10 @@ namespace Application.Core.Login.Datas
                             module.OnPlayerEnterCashShop(origin);
                         }
                     }
+
+                    _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
+
+                    _masterServer.BuddyManager.BroadcastNotify(origin);
                 }
             }
         }
@@ -208,10 +211,12 @@ namespace Application.Core.Login.Datas
                     TeamId = d.Character.Party,
                     Channel = d.Channel,
                     FamilyId = d.Character.FamilyId,
-                    IsNewComer = true
+                    IsNewComer = d.Channel == 0
                 });
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
+
+                _masterServer.BuddyManager.BroadcastNotify(d);
 
                 foreach (var module in _masterServer.Modules)
                 {
@@ -292,9 +297,8 @@ namespace Application.Core.Login.Datas
                 var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
                 var buddyData = (from a in dbContext.Buddies
-                                 join b in dbContext.Characters on a.BuddyId equals b.Id
                                  where a.CharacterId == characterId
-                                 select new BuddyModel { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
+                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
 
                 #region quest
                 var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
@@ -312,7 +316,7 @@ namespace Application.Core.Login.Datas
                     Channel = 0,
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    BuddyList = buddyData,
+                    BuddyList = buddyData.ToDictionary(x => x.Id),
                     FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
                     Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     InventoryItems = invItems,
@@ -413,16 +417,6 @@ namespace Application.Core.Login.Datas
 
                 world = characterModel.World;
 
-                var storage = Server.getInstance().getWorld(world).getPlayerStorage();
-                var dbBuddyIdList = dbContext.Buddies.Where(x => x.CharacterId == cid).Select(x => x.BuddyId).ToList();
-                dbBuddyIdList.ForEach(buddyid =>
-                {
-                    var buddy = storage.getCharacterById(buddyid);
-                    if (buddy != null && buddy.IsOnlined)
-                    {
-                        buddy.deleteBuddy(cid);
-                    }
-                });
                 dbContext.Buddies.Where(x => x.CharacterId == cid).ExecuteDelete();
 
                 // TODO: 退出队伍

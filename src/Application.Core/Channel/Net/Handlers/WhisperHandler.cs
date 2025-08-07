@@ -22,12 +22,10 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
+using Application.Shared.Constants.Buddy;
 using client.autoban;
 using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
 using tools;
-using static tools.PacketCreator;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -38,36 +36,32 @@ public class WhisperHandler : ChannelHandlerBase
 {
     readonly ILogger<WhisperHandler> _logger;
     readonly AutoBanDataManager _autoBanManager;
+    readonly BuddyManager _buddyManager;
 
-    public WhisperHandler(ILogger<WhisperHandler> logger, AutoBanDataManager autoBanManager)
+    public WhisperHandler(ILogger<WhisperHandler> logger, AutoBanDataManager autoBanManager, BuddyManager buddyManager)
     {
         _logger = logger;
         _autoBanManager = autoBanManager;
+        _buddyManager = buddyManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         byte request = p.readByte();
         string name = p.readString();
-        var target = c.getWorldServer().getPlayerStorage().getCharacterByName(name);
-
-        if (target == null || !target.IsOnlined)
-        {
-            c.sendPacket(PacketCreator.getWhisperResult(name, false));
-            return;
-        }
 
         switch (request)
         {
             case WhisperFlag.LOCATION | WhisperFlag.REQUEST:
-                handleFind(c.OnlinedCharacter, target, WhisperFlag.LOCATION);
+                _logger.LogDebug("何时触发");
+                _buddyManager.GetLocation(c.OnlinedCharacter, name);
                 break;
             case WhisperFlag.WHISPER | WhisperFlag.REQUEST:
                 string message = p.readString();
-                handleWhisper(message, c, target);
+                HandleSendWhisper(c, name, message);
                 break;
             case WhisperFlag.LOCATION_FRIEND | WhisperFlag.REQUEST:
-                handleFind(c.OnlinedCharacter, target, WhisperFlag.LOCATION_FRIEND);
+                HandleFriendLocation(c, name);
                 break;
             default:
                 _logger.LogWarning("Unknown request {Request} triggered by {CharacterName}", request, c.OnlinedCharacter.getName());
@@ -75,37 +69,38 @@ public class WhisperHandler : ChannelHandlerBase
         }
     }
 
-    private void handleFind(IPlayer user, IPlayer target, byte flag)
+    void HandleFriendLocation(IChannelClient c, string targetName)
     {
-        if (user.gmLevel() >= target.gmLevel())
+        var ble = c.OnlinedCharacter.BuddyList.GetByName(targetName);
+        if (ble == null)
         {
-            if (target.getCashShop().isOpened())
-            {
-                user.sendPacket(PacketCreator.getFindResult(target, WhisperType.RT_CASH_SHOP, -1, flag));
-            }
-            else if (target.getClient().getChannel() == user.getClient().getChannel())
-            {
-                user.sendPacket(PacketCreator.getFindResult(target, WhisperType.RT_SAME_CHANNEL, target.getMapId(), flag));
-            }
-            else
-            {
-                user.sendPacket(PacketCreator.getFindResult(target, WhisperType.RT_DIFFERENT_CHANNEL, target.getClient().getChannel() - 1, flag));
-            }
-        }
-        else
-        {
-            // not found for whisper is the same message
-            user.sendPacket(PacketCreator.getWhisperResult(target.getName(), false));
-        }
-    }
-
-    private void handleWhisper(string message, IChannelClient client, IPlayer target)
-    {
-        var user = client.OnlinedCharacter;
-        if (user.getAutobanManager().getLastSpam(7) + 200 > client.CurrentServerContainer.getCurrentTime())
-        {
+            c.sendPacket(PacketCreator.getWhisperResult(targetName, false));
             return;
         }
+
+        var sameChannelSearch = c.CurrentServer.Players.getCharacterByName(targetName);
+        if (sameChannelSearch != null)
+        {
+            c.sendPacket(PacketCreator.GetSameChannelFindResult(sameChannelSearch, WhisperFlag.LOCATION_FRIEND));
+            return;
+        }
+
+        if (ble.ActualChannel == 0)
+        {
+            c.sendPacket(PacketCreator.getWhisperResult(targetName, false));
+            return;
+        }
+
+        var type = ble.IsAwayWorld ? WhisperType.RT_CASH_SHOP : WhisperType.RT_DIFFERENT_CHANNEL;
+        c.sendPacket(PacketCreator.GetFindResult(targetName, type, ble.ActualChannel - 1, WhisperFlag.LOCATION_FRIEND));
+    }
+
+    void HandleSendWhisper(IChannelClient c, string targetName, string message)
+    {
+        var user = c.OnlinedCharacter;
+        if (user.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
+            return;
+
         user.getAutobanManager().spam(7);
 
         if (message.Length > sbyte.MaxValue)
@@ -116,11 +111,6 @@ public class WhisperHandler : ChannelHandlerBase
             return;
         }
 
-        // ChatLogger.log(user.getClient(), "Whisper To " + target.getName(), message);
-
-        target.sendPacket(PacketCreator.getWhisperReceive(user.getName(), user.getClient().getChannel() - 1, user.isGM(), message));
-
-        bool hidden = target.isHidden() && target.gmLevel() > user.gmLevel();
-        user.sendPacket(PacketCreator.getWhisperResult(target.getName(), !hidden));
+        _buddyManager.SendWhisper(user, targetName, message);
     }
 }

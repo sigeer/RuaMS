@@ -35,6 +35,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Shared.Constants.Buddy;
 using Application.Shared.Items;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
@@ -975,12 +976,11 @@ public partial class Player
     public void broadcastAcquaintances(int type, string message)
     {
         broadcastAcquaintances(PacketCreator.serverNotice(type, message));
+        Client.CurrentServerContainer.BuddyManager.SendBuddyNoticeMessage(this, type, message);
     }
 
     public void broadcastAcquaintances(Packet packet)
     {
-        BuddyList.broadcast(packet);
-
         var guild = getGuild();
         if (guild != null)
         {
@@ -1439,34 +1439,10 @@ public partial class Player
         this.possibleReports--;
     }
 
-
-    private void nextPendingRequest(IChannelClient c)
-    {
-        CharacterNameAndId? pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
-        if (pendingBuddyRequest != null)
-        {
-            c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
-        }
-    }
-
-    private void notifyRemoteChannel(IChannelClient c, int remoteChannel, int otherCid, BuddyList.BuddyOperation operation)
-    {
-        var player = c.OnlinedCharacter;
-        if (remoteChannel != -1)
-        {
-            c.getWorldServer().buddyChanged(otherCid, player.getId(), player.getName(), c.Channel, operation);
-        }
-    }
-
     public void deleteBuddy(int otherCid)
     {
-        if (BuddyList.containsVisible(otherCid))
-        {
-            notifyRemoteChannel(Client, getWorldServer().find(otherCid), otherCid, BuddyList.BuddyOperation.DELETED);
-        }
-        BuddyList.remove(otherCid);
+        BuddyList.Remove(otherCid);
         sendPacket(PacketCreator.updateBuddylist(BuddyList.getBuddies()));
-        nextPendingRequest(Client);
     }
 
     private void stopExtraTask()

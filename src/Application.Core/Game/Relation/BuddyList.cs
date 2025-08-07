@@ -1,6 +1,4 @@
 using client;
-using Google.Protobuf.Collections;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using tools;
 
@@ -8,69 +6,51 @@ namespace Application.Core.Game.Relation;
 
 public class BuddyList
 {
-    public enum BuddyOperation
-    {
-        ADDED, DELETED
-    }
-
-    public enum BuddyAddResult
-    {
-        BUDDYLIST_FULL, ALREADY_ON_LIST, OK
-    }
-
     public IPlayer Owner { get; set; }
     public int Capacity { get; set; }
-    private ConcurrentDictionary<int, BuddylistEntry> buddies = new();
-    private ConcurrentQueue<CharacterNameAndId> _pendingRequests = new();
+    /// <summary>
+    /// 好友变动不太可能会并发，使用原始Dictionary
+    /// </summary>
+    private Dictionary<int, BuddyCharacter> buddies = new();
     public int Count => buddies.Count;
 
-    public BuddyList(IPlayer owner, int capacity)
+    public BuddyList(IPlayer owner)
     {
         Owner = owner;
-        Capacity = capacity;
+        Capacity = Owner.BuddyCapacity;
     }
 
-    public bool contains(int characterId)
+    public bool Contains(int characterId)
     {
-        lock (buddies)
-        {
-            return buddies.ContainsKey(characterId);
-        }
+        return buddies.ContainsKey(characterId);
     }
 
-    public bool containsVisible(int characterId)
-    {
-        BuddylistEntry? ble = buddies.GetValueOrDefault(characterId);
-        return ble?.Visible ?? false;
-
-    }
-    public BuddylistEntry? get(int characterId)
+    public BuddyCharacter? Get(int characterId)
     {
         return buddies.GetValueOrDefault(characterId);
     }
 
-    public BuddylistEntry? get(string characterName)
+    public BuddyCharacter? GetByName(string characterName)
     {
-        return getBuddies().FirstOrDefault(x => x.getName().Equals(characterName, StringComparison.OrdinalIgnoreCase));
+        return buddies.Values.FirstOrDefault(x => x.Name.Equals(characterName, StringComparison.OrdinalIgnoreCase));
     }
 
-    public void put(BuddylistEntry entry)
+    public void Update(BuddyCharacter entry)
     {
-        buddies.AddOrUpdate(entry.getCharacterId(), entry);
+        buddies[entry.Id] = entry;
     }
 
-    public void put(string group, int characterId, bool visible = true)
+    public void Add(BuddyCharacter entry)
     {
-        var entry = Owner.getWorldServer().Players.getCharacterById(characterId) ?? throw new BusinessCharacterNotFoundException(characterId);
-        buddies.AddOrUpdate(characterId, new BuddylistEntry(entry, group, visible));
+        buddies[entry.Id] = entry;
     }
 
-    public void remove(int characterId)
+    public void Remove(int characterId)
     {
         buddies.Remove(characterId);
     }
 
-    public ICollection<BuddylistEntry> getBuddies()
+    public ICollection<BuddyCharacter> getBuddies()
     {
         return buddies.Values.ToList();
     }
@@ -85,100 +65,8 @@ public class BuddyList
         return buddies.Keys.ToArray();
     }
 
-    public void broadcast(Packet packet)
+    public void LoadFromRemote(BuddyCharacter[] dbList)
     {
-        foreach (int bid in getBuddyIds())
-        {
-            var chr = Owner.getWorldServer().Players.getCharacterById(bid);
-
-            if (chr != null && chr.isLoggedinWorld())
-            {
-                chr.sendPacket(packet);
-            }
-        }
-    }
-
-    public void LoadFromDb(RepeatedField<Dto.BuddyDto> dbList)
-    {
-        List<int> buddyPlayerList = dbList.Where(x => x.Pending != 1).Select(x => x.CharacterId).ToList();
-        var buddies = Owner.getWorldServer().Players.GetPlayersByIds(buddyPlayerList);
-        foreach (var x in dbList)
-        {
-            if (x.Pending == 1)
-                _pendingRequests.Enqueue(new CharacterNameAndId(x.CharacterId, x.CharacterName));
-            else
-            {
-                var player = buddies.FirstOrDefault(y => y.Id == x.CharacterId);
-                if (player != null)
-                    put(new BuddylistEntry(player, x.Group, true));
-            }
-        }
-    }
-
-    public void LoadFromDb(DBContext dbContext)
-    {
-        var dbList = (from a in dbContext.Buddies
-                      join b in dbContext.Characters on a.BuddyId equals b.Id
-                      where a.CharacterId == Owner.Id
-                      select new { a.BuddyId, BuddyName = b.Name, a.Pending, a.Group }).ToList();
-        List<int> buddyPlayerList = dbList.Where(x => x.Pending != 1).Select(x => x.BuddyId).ToList();
-        var buddies = Owner.getWorldServer().Players.GetPlayersByIds(buddyPlayerList);
-        dbList.ForEach(x =>
-        {
-            if (x.Pending == 1)
-                _pendingRequests.Enqueue(new CharacterNameAndId(x.BuddyId, x.BuddyName));
-            else
-            {
-                var player = buddies.FirstOrDefault(y => y.Id == x.BuddyId);
-                if (player != null)
-                    put(new BuddylistEntry(player, x.Group, true));
-            }
-        });
-        dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 1).ExecuteDelete();
-    }
-
-    public Dto.BuddyDto[] ToDto()
-    {
-        return getBuddies().Where(x => x.Visible).Select(x => new Dto.BuddyDto
-        {
-            CharacterId = x.getCharacterId(),
-            CharacterName = x.getName(),
-            Group = x.Group,
-            Pending = 0
-        }).ToArray();
-    }
-
-    public void Save(DBContext dbContext)
-    {
-        dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 0).ExecuteDelete();
-        foreach (var entry in getBuddies())
-        {
-            if (entry.Visible)
-            {
-                dbContext.Buddies.Add(new BuddyEntity(Owner.Id, entry.getCharacterId(), 0, entry.Group));
-            }
-        }
-        dbContext.SaveChanges();
-    }
-
-    public CharacterNameAndId? pollPendingRequest()
-    {
-        if (_pendingRequests.TryDequeue(out var d))
-            return d;
-        return null;
-    }
-
-    public void addBuddyRequest(IChannelClient c, int cidFrom, string nameFrom, int channelFrom)
-    {
-        // 只是申请为什么要加数据？
-        put("Default Group", cidFrom, false);
-        if (_pendingRequests.Count == 0)
-        {
-            c.sendPacket(PacketCreator.requestBuddylistAdd(cidFrom, c.OnlinedCharacter.getId(), nameFrom));
-        }
-        else
-        {
-            _pendingRequests.Enqueue(new CharacterNameAndId(cidFrom, nameFrom));
-        }
+        buddies = new(dbList.ToDictionary(x => x.Id));
     }
 }

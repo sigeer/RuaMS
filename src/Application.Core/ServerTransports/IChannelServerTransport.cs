@@ -192,5 +192,11 @@ namespace Application.Core.ServerTransports
         ItemProto.GacheponDataDto GetGachaponData();
         NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
         void BatchSyncPlayer(List<PlayerSaveDto> data);
+        AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest);
+        void SendBuddyChat(BuddyChatRequest request);
+        void SendBuddyMessage(SendBuddyNoticeMessageDto request);
+        DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
+        SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
+        GetLocationResponse GetLocation(GetLocationRequest getLocationRequest);
     }
 }

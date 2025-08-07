@@ -65,13 +65,17 @@ namespace Application.Core.Login.Mappers
             CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
 
             CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
-            CreateMap<BuddyModel, Dto.BuddyDto>().ReverseMap();
+            CreateMap<BuddyModel, Dto.BuddyDto>()
+                .ConvertUsing<BuddyConverter>();
+
+            CreateMap<Dto.BuddyDto, BuddyModel>();
 
             CreateMap<PlayerBuffSaveModel, Dto.PlayerBuffSaveDto>().ReverseMap();
             CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
-            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
+            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>()
+                .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
             CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
             CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()
