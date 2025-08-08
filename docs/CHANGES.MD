@@ -143,3 +143,4 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 - [ ] 移除World
 - [ ] 移除Server
 - [ ] 整理初始化脚本以及迁移，对DBContext拆分
+- [ ] `IChannelServerTransport`的返回类型、参数全部改成proto

@@ -62,7 +62,7 @@ namespace Application.Core.Channel.ServerData
             HashSet<IPlayer> guildMembers = new();
             guildMembers.Add(guildLeader);
 
-            MatchCheckerCoordinator mmce = guildLeader.getWorldServer().getMatchCheckerCoordinator();
+            MatchCheckerCoordinator mmce = guildLeader.Client.CurrentServer.MatchChecker;
             foreach (var chr in guildLeader.getMap().getAllPlayers())
             {
                 if (chr.getParty() == null && chr.getGuild() == null && mmce.getMatchConfirmationLeaderid(chr.getId()) == -1)

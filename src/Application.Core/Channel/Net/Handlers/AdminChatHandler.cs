@@ -18,27 +18,26 @@ public class AdminChatHandler : ChannelHandlerBase
         //not saving slides...
         string message = p.readString();
         var type = p.readByte();
-        var packet = PacketCreator.serverNotice(type, message);//maybe I should make a check for the slea.readByte()... but I just hope gm's don't fuck things up :)
         switch (mode)
         {
             case 0:
                 {
                     // /alertall, /noticeall, /slideall
-                    c.CurrentServerContainer.BroadcastWorldMessage(packet);
+                    c.CurrentServerContainer.SendDropMessage(type, message);
                     // ChatLogger.log(c, "Alert All", message);
                     break;
                 }
             case 1:
                 {
                     // /alertch, /noticech, /slidech
-                    c.CurrentServer.broadcastPacket(packet);
+                    c.CurrentServer.dropMessage(type, message);
                     // ChatLogger.log(c, "Alert Ch", message);
                     break;
                 }
             case 2:
                 {
                     // /alertm /alertmap, /noticem /noticemap, /slidem /slidemap
-                    c.OnlinedCharacter.getMap().broadcastMessage(packet);
+                    c.OnlinedCharacter.getMap().dropMessage(type, message);
                     // ChatLogger.log(c, "Alert Map", message);
                     break;
                 }

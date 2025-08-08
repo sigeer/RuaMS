@@ -12,6 +12,6 @@ public class RipCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + joinStringFrom(paramsValue, 1)));
+        c.CurrentServerContainer.SendDropMessage(6, "[RIP]: " + joinStringFrom(paramsValue, 1));
     }
 }

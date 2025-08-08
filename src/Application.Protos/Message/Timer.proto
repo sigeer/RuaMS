@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message SetTimer {
+	int32 seconds = 1;
+}
+
+message RemoveTimer {
+
+}

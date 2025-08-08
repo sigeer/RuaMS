@@ -13,11 +13,13 @@ using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server;
 using System.Net;
+using System.Threading.Tasks;
 
 
 namespace Application.Core.Login
@@ -28,6 +30,7 @@ namespace Application.Core.Login
     public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer
     {
         public bool IsRunning { get; private set; }
+        public bool IsShuttingdown => isShuttingdown;
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
         public int Port { get; set; } = 8484;
@@ -96,7 +99,7 @@ namespace Application.Core.Login
         public GuildManager GuildManager => _guildManager.Value;
 
         readonly Lazy<BuddyManager> _buddyManager;
-        public BuddyManager BuddyManager => _buddyManager.Value;    
+        public BuddyManager BuddyManager => _buddyManager.Value;
         readonly Lazy<InventoryManager> _inventoryManager;
         public InventoryManager InventoryManager => _inventoryManager.Value;
         readonly Lazy<RingManager> _ringManager;
@@ -140,6 +143,8 @@ namespace Application.Core.Login
 
         public List<MasterModule> Modules { get; private set; }
         public ITimerManager TimerManager { get; private set; } = null!;
+
+        CancellationTokenSource? _shutdownCts = null;
         public MasterServer(IServiceProvider sp)
         {
             ServiceProvider = sp;
@@ -198,8 +203,55 @@ namespace Application.Core.Login
             _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
         }
 
-        bool isShuttingdown = false;
-        public async Task Shutdown()
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
+        public async Task CancelShutdown()
+        {
+            await _semaphore.WaitAsync();
+            try
+            {
+                if (_shutdownCts != null)
+                {
+                    _shutdownCts.Cancel();
+                    _shutdownCts.Dispose();
+                    _shutdownCts = null;
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        public async Task Shutdown(int delaySeconds = -1)
+        {
+            await _semaphore.WaitAsync();
+            try
+            {
+                if (!IsRunning)
+                    return;
+
+                if (IsShuttingdown)
+                    return;
+
+                if (_shutdownCts != null)
+                {
+                    _shutdownCts.Cancel();
+                    _shutdownCts.Dispose();
+                }
+                _shutdownCts = new CancellationTokenSource();
+                if (delaySeconds <= 0)
+                    await ShutdownServer();
+                else
+                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownCts.Token).ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        AtomicBoolean isShuttingdown = new AtomicBoolean();
+        public async Task ShutdownServer()
         {
             if (!IsRunning)
             {
@@ -213,13 +265,28 @@ namespace Application.Core.Login
                 return;
             }
 
-            isShuttingdown = true;
+            isShuttingdown.Set(true);
             _logger.LogInformation("[{ServerName}] 停止中...", ServerName);
 
             await NettyServer.Stop();
             _logger.LogInformation("[{ServerName}] 停止监听", ServerName);
 
             Transport.BroadcastShutdown();
+
+            await OnAllChannelShutdown();
+        }
+
+        public async Task OnChannelShutdown(CompleteShutdownRequest request)
+        {
+            RemoveChannel(request.ServerName);
+            if (isShuttingdown)
+                await OnAllChannelShutdown();
+        }
+
+        async Task OnAllChannelShutdown()
+        {
+            if (ChannelServerList.Count > 0)
+                return;
 
             foreach (var module in Modules)
             {
@@ -236,7 +303,8 @@ namespace Application.Core.Login
             _logger.LogInformation("[{ServerName}] 玩家数据已保存", ServerName);
 
             IsRunning = false;
-            isShuttingdown = false;
+            isShuttingdown.Set(false);
+            _shutdownCts?.Dispose();
             _logger.LogInformation("[{ServerName}] 已停止", ServerName);
         }
 
@@ -457,7 +525,7 @@ namespace Application.Core.Login
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
-            
+
             TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
@@ -504,15 +572,6 @@ namespace Application.Core.Login
             }
 
             return status;
-        }
-
-        public void BroadcastWorldMessage(Packet p)
-        {
-            Transport.BroadcastMessage(p);
-        }
-        public void BroadcastWorldGMPacket(Packet packet)
-        {
-            Transport.BroadcastWorldGMPacket(packet);
         }
 
         private AtomicLong currentTime = new AtomicLong(0);

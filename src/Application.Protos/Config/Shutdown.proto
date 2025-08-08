@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package Config;
+
+message ShutdownMasterRequest {
+	int32 delaySeconds = 1;
+}
+
+message CompleteShutdownRequest {
+  string serverName = 1;
+}

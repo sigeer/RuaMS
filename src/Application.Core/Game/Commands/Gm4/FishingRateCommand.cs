@@ -23,6 +23,5 @@ public class FishingRateCommand : CommandBase
 
         int fishrate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { FishingRate = fishrate });
-        c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Fishing Rate has been changed to " + fishrate + "x."));
     }
 }

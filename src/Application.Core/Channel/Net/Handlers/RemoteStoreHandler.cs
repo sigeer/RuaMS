@@ -52,17 +52,17 @@ public class RemoteStoreHandler : ChannelHandlerBase
             return;
         }
 
-        var hmChannel = c.CurrentServerContainer.Transport.FindPlayerShopChannel(chr.Id);
-        if (hmChannel != null)
+        var res = c.CurrentServerContainer.Transport.FindPlayerShopChannel(new ItemProto.SearchHiredMerchantChannelRequest { MasterId = chr.Id });
+        if (res.Channel > 0)
         {
-            if (hmChannel.Value == chr.getClient().getChannel())
+            if (res.Channel == chr.getClient().getChannel())
             {
                 var hm = c.CurrentServer.PlayerShopManager.GetPlayerShop(PlayerShopType.HiredMerchant, chr.Id);
                 hm!.VisitShop(chr);
             }
             else
             {
-                c.sendPacket(PacketCreator.remoteChannelChange((byte)(hmChannel.Value - 1)));
+                c.sendPacket(PacketCreator.remoteChannelChange((byte)(res.Channel - 1)));
             }
             return;
         }

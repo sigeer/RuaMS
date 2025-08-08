@@ -2,6 +2,14 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string SaveAll = "SaveAll";
+
+        public const string Broadcast_SetTimer = "Broadcast_SetTimer";
+        public const string Broadcast_RemoveTimer = "Broadcast_RemoveTimer";
+        public const string Broadcast_YellowTip = "Broadcast_YellowTip";
+        public const string Broadcast_Packet = "Broadcast_Packet";
+        public const string Broadcast_DropMessage = "Broadcast_DropMessage";
+
         public const string Whisper_Chat = "Whisper_Chat";
 
         public const string Buddy_Chat = "Buddy_Chat";
@@ -30,7 +38,7 @@ namespace Application.Shared.Message
         public const string OnItemMegaphone = "OnItemMegaphone";
         public const string OnTVMessage = "OnTVMessage";
         public const string OnTVMessageFinish = "OnTVMessageFinish";
-        public const string OnMessage = "OnMessage";
+
         public const string OnSetFly = "OnSetFly";
         public const string OnEventsReloaded = "OnEventsReloaded";
         public const string OnShutdown = "OnShutdown";
@@ -44,7 +52,7 @@ namespace Application.Shared.Message
 
         public const string OnTeamUpdate = "OnTeamUpdate";
 
-        public const string OnDropMessage = "OnDropMessage";
+
         public const string OnMultiChat = "OnMultiChat";
 
         public const string OnChatRoomMessageSend = "OnChatRoomMessageSend";

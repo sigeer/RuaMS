@@ -21,8 +21,14 @@ public class LoginServerInitializer : ServerChannelInitializer
 
     protected override void InitChannel(ISocketChannel socketChannel)
     {
+        if (!masterServer.IsRunning || masterServer.IsShuttingdown)
+        {
+            socketChannel.CloseAsync().Wait();
+            return;
+        }
+
         string remoteAddress = getRemoteAddress(socketChannel);
-        Log.Logger.Debug("Client connected to login server from {ClientIP} ", remoteAddress);
+        Log.Logger.Debug("{ClientIP} 发起连接到登录服务器", remoteAddress);
 
         long clientSessionId = sessionId.getAndIncrement();
 

@@ -562,8 +562,7 @@ namespace Application.Core.Login.Datas
                 dbTrans.Commit();
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(data.Character.AccountId, characterId);
-                _masterServer.Transport.BroadcastWorldGMPacket(
-                    PacketCreator.sendYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name));
+                _masterServer.DropYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name);
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", data.Character.AccountId, data.Character.Name);
                 return characterId;
             }
@@ -585,10 +584,10 @@ namespace Application.Core.Login.Datas
             return _idDataSource.Values.Count(x => x.Channel == channelId);
         }
 
-        internal List<int> GetOnlinedGMs()
+        internal int[] GetOnlinedGMs()
         {
             var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
-            return _idDataSource.Values.Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToList();
+            return _idDataSource.Values.Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToArray();
         }
 
         public List<int> GetOnlinedPlayerAccountId()

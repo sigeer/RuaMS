@@ -15,7 +15,7 @@ public class GetAccCommand : CommandBase
             player.yellowMessage("Syntax: !getacc <playername>");
             return;
         }
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             player.message(victim.getName() + "'s account name is " + victim.getClient().AccountEntity!.Name + ".");

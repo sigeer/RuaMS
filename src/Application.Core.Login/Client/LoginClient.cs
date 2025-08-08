@@ -1,3 +1,4 @@
+using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
@@ -301,16 +302,14 @@ namespace Application.Core.Login.Client
                 return true;
             }
 
-            foreach (var w in Server.getInstance().getWorlds())
+            var allChrs = CurrentServer.AccountManager.GetAccountPlayerIds(accid);
+            foreach (var chrId in allChrs)
             {
-                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
+                var chr = CurrentServer.CharacterManager.FindPlayerById(chrId);
+                if (chr?.Channel != 0)
                 {
-                    if (accid == chr.getAccountID())
-                    {
-                        log.LogWarning("Chr {CharacterName} has been removed from world {WorldName}. Possible Dupe attempt.", chr.getName(), w.Name);
-                        chr.getClient().ForceDisconnect();
-                        return false;
-                    }
+                    CurrentServer.DisconnectChr(chrId);
+                    return false;
                 }
             }
             return true;

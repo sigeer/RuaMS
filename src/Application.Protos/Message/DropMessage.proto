@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message DropMessageRequest {
+	int32 type = 1;
+	string message = 2;
+	bool onlyGM = 3;
+}
+
+message DropMessageBroadcast {
+	int32 type = 1;
+	string message = 2;
+	repeated int32 receivers = 3;
+}

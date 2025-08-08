@@ -95,7 +95,7 @@ public class GuildOperationHandler : ChannelHandlerBase
 
                 var eligibleCids = eligibleMembers.Select(x => x.Id).ToHashSet();
 
-                c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.GUILD_CREATION, 0, mc.getId(), eligibleCids, guildName);
+                c.CurrentServer.MatchChecker.createMatchConfirmation(MatchCheckerType.GUILD_CREATION, 0, mc.getId(), eligibleCids, guildName);
                 break;
             case 0x05:
                 if (mc.GuildId <= 0 || mc.GuildRank > 2)
@@ -205,21 +205,20 @@ public class GuildOperationHandler : ChannelHandlerBase
                 break;
             case 0x1E:
                 p.readInt();
-                var wserv = c.getWorldServer();
 
                 if (mc.getParty() != null)
                 {
-                    wserv.getMatchCheckerCoordinator().dismissMatchConfirmation(mc.getId());
+                    c.CurrentServer.MatchChecker.dismissMatchConfirmation(mc.getId());
                     return;
                 }
 
-                int leaderid = wserv.getMatchCheckerCoordinator().getMatchConfirmationLeaderid(mc.getId());
+                int leaderid = c.CurrentServer.MatchChecker.getMatchConfirmationLeaderid(mc.getId());
                 if (leaderid != -1)
                 {
                     bool result = p.readByte() != 0;
-                    if (result && wserv.getMatchCheckerCoordinator().isMatchConfirmationActive(mc.getId()))
+                    if (result && c.CurrentServer.MatchChecker.isMatchConfirmationActive(mc.getId()))
                     {
-                        var leader = wserv.getPlayerStorage().getCharacterById(leaderid);
+                        var leader = c.CurrentServer.getPlayerStorage().getCharacterById(leaderid);
                         if (leader != null)
                         {
                             int partyid = leader.getPartyId();
@@ -230,7 +229,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                         }
                     }
 
-                    wserv.getMatchCheckerCoordinator().answerMatchConfirmation(mc.getId(), result);
+                    c.CurrentServer.MatchChecker.answerMatchConfirmation(mc.getId(), result);
                 }
 
                 break;

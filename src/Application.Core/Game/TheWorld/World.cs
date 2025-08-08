@@ -1,14 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
-using Application.Core.Game.Relation;
-using Application.Core.Game.Trades;
-using Application.Shared.Constants.Buddy;
-using net.server;
-using net.server.channel;
-using net.server.coordinator.matchchecker;
-using net.server.task;
-using tools;
-using static Application.Core.Game.Relation.BuddyList;
 
 namespace Application.Core.Game.TheWorld;
 
@@ -19,12 +10,6 @@ public class World
     public string Name { get; set; }
 
     public List<WorldChannel> Channels { get; }
-    WorldPlayerStorage? _players;
-    public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
-
-    private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
-
-    private ScheduledFuture? timeoutSchedule;
 
     public World(WorldConfigEntity config)
     {
@@ -33,62 +18,13 @@ public class World
 
         this.Id = config.Id;
         Name = config.Name;
-#if !DEBUG
-        timeoutSchedule = Server.getInstance().GlobalTimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-#endif
-
-    }
-
-    public List<WorldChannel> getChannels()
-    {
-        return new(Channels);
-    }
-
-    public WorldChannel getChannel(int channel)
-    {
-        return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
     }
 
     public int addChannel(WorldChannel channel)
     {
         Channels.Add(channel);
-        Players.RelateChannel(channel.getId(), channel.Players);
         return Channels.Count;
     }
-
-
-    public WorldPlayerStorage getPlayerStorage()
-    {
-        return Players;
-    }
-
-    public MatchCheckerCoordinator getMatchCheckerCoordinator()
-    {
-        return matchChecker;
-    }
-
-
-    public void removePlayer(IPlayer chr)
-    {
-        var cserv = chr.getChannelServer();
-
-        if (cserv != null)
-        {
-            if (!cserv.removePlayer(chr))
-            {
-                // oy the player is not where they should be, find this mf
-
-                foreach (var ch in Channels)
-                {
-                    if (ch.removePlayer(chr))
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
 
     #region Messenger
 
@@ -113,58 +49,4 @@ public class World
     //}
     #endregion
 
-    public void broadcastPacket(Packet packet)
-    {
-        foreach (IPlayer chr in Players.GetAllOnlinedPlayers())
-        {
-            chr.sendPacket(packet);
-        }
-    }
-
-    public List<KeyValuePair<PlayerShopItem, IPlayerShop>> getAvailableItemBundles(int itemid)
-    {
-        List<KeyValuePair<PlayerShopItem, IPlayerShop>> hmsAvailable = new();
-
-        foreach (var ch in getChannels())
-        {
-            foreach (var hm in ch.PlayerShopManager.GetAllOpeningShops())
-            {
-                List<PlayerShopItem> itemBundles = hm.QueryAvailableBundles(itemid);
-
-                foreach (PlayerShopItem mpsi in itemBundles)
-                {
-                    hmsAvailable.Add(new(mpsi, hm));
-                }
-            }
-        }
-
-
-        hmsAvailable = hmsAvailable.OrderBy(x => x.Key.getPrice()).Take(200).ToList();
-        return hmsAvailable;
-    }
-
-
-    public void dropMessage(int type, string message)
-    {
-        foreach (var player in getPlayerStorage().GetAllOnlinedPlayers())
-        {
-            player.dropMessage(type, message);
-        }
-    }
-
-    public async Task Shutdown()
-    {
-        foreach (var ch in getChannels())
-        {
-            await ch.Shutdown();
-        }
-
-        if (timeoutSchedule != null)
-        {
-            await timeoutSchedule.CancelAsync(false);
-            timeoutSchedule = null;
-        }
-        Players.disconnectAll();
-        log.Information("Finished shutting down world {WorldId}", Id);
-    }
 }

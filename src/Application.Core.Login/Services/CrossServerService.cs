@@ -71,10 +71,10 @@ namespace Application.Core.Login.Services
         public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
-            if (targetChr == null || targetChr.Channel <= 0)
+            if (targetChr == null || targetChr.Channel == 0)
                 return new Dto.DisconnectPlayerByNameResponse { Code = 1 };
 
-            _server.Transport.SendPlayerDisconnect(new Dto.DisconnectPlayerByNameBroadcast { MasterId = targetChr.Character.Id });
+            _server.DisconnectChr(targetChr.Character.Id);
 
             return new Dto.DisconnectPlayerByNameResponse();
         }

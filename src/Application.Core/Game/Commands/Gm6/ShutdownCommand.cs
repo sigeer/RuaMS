@@ -1,3 +1,4 @@
+using Application.Core.Channel.Services;
 using net.server;
 using server;
 
@@ -5,8 +6,10 @@ namespace Application.Core.Game.Commands.Gm6;
 
 public class ShutdownCommand : CommandBase
 {
-    public ShutdownCommand() : base(6, "shutdown")
+    readonly AdminService _adminService;
+    public ShutdownCommand(AdminService adminService) : base(6, "shutdown")
     {
+        _adminService = adminService;
         Description = "Shut down the server.";
     }
 
@@ -15,46 +18,17 @@ public class ShutdownCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !shutdown [<time>|NOW]");
+            player.yellowMessage("Syntax: !shutdown [<seconds>| -1]");
             return;
         }
 
-        int time = 60000;
-        if (paramsValue[0].Equals("now", StringComparison.OrdinalIgnoreCase))
+
+        if (!int.TryParse(paramsValue[0], out var seconds))
         {
-            time = 1;
-        }
-        else
-        {
-            time *= int.Parse(paramsValue[0]);
+            player.yellowMessage("Syntax: !shutdown [<seconds>| -1]");
+            return;
         }
 
-        if (time > 1)
-        {
-            var dur = TimeSpan.FromMilliseconds(time);
-
-
-            string strTime = "";
-            if (dur.Days > 0)
-            {
-                strTime += dur.Days + " days, ";
-            }
-            if (dur.Hours > 0)
-            {
-                strTime += dur.Hours + " hours, ";
-            }
-            strTime += dur.Minutes + " minutes, ";
-            strTime += dur.Seconds + " seconds";
-
-            foreach (var w in Server.getInstance().getWorlds())
-            {
-                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
-                {
-                    chr.dropMessage("NewServer is undergoing maintenance process, and will be shutdown in " + strTime + ". Prepare yourself to quit safely in the mean time.");
-                }
-            }
-        }
-
-        c.CurrentServerContainer.TimerManager.schedule(Server.getInstance().shutdown(false), time);
+        _adminService.ShutdownMaster(player, seconds);
     }
 }

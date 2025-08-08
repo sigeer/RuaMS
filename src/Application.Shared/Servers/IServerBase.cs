@@ -9,7 +9,7 @@ namespace Application.Shared.Servers
         string ServerName { get; }
         TServerTransport Transport { get; }
         Task StartServer();
-        Task Shutdown();
+        Task Shutdown(int delaySeconds = -1);
         bool IsRunning { get; }
 
         /// <summary>
@@ -30,10 +30,5 @@ namespace Application.Shared.Servers
         void SetCharacteridInTransition(string clientSession, int cid);
         bool HasCharacteridInTransition(string clientSession);
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
-
-        [Obsolete("避免把Packet传给MasterServer再分发，后期再改")]
-        void BroadcastWorldGMPacket(Packet packet);
-        [Obsolete("避免把Packet传给MasterServer再分发，后期再改")]
-        void BroadcastWorldMessage(Packet p);
     }
 }

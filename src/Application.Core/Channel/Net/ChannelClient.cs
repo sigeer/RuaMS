@@ -70,7 +70,7 @@ namespace Application.Core.Channel.Net
                 var wserv = Server.getInstance().getWorld(0);   // obviously wserv is NOT null if this player was online on it
                 try
                 {
-                    RemovePlayer(Character, wserv, IsServerTransition);
+                    RemovePlayer(Character, IsServerTransition);
 
                     if (Channel != -1 && !isShutdown)
                     {
@@ -98,7 +98,6 @@ namespace Application.Core.Channel.Net
                 {
                     if (!IsServerTransition)
                     {
-                        wserv.removePlayer(Character);
                         CurrentServerContainer.RemovePlayer(Character.Id);
                         //getChannelServer().removePlayer(player); already being done
 
@@ -146,7 +145,7 @@ namespace Application.Core.Channel.Net
             _isDisconnecting = false;
         }
 
-        private void RemovePlayer(IPlayer player, World wserv, bool serverTransition)
+        private void RemovePlayer(IPlayer player, bool serverTransition)
         {
             try
             {

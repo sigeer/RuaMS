@@ -26,6 +26,5 @@ public class TravelRateCommand : CommandBase
 
         int travelrate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { TravelRate = travelrate });
-        c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Travel Rate has been changed to " + travelrate + "x."));
     }
 }

@@ -6,7 +6,9 @@ using BaseProto;
 using CashProto;
 using Config;
 using Dto;
+using Google.Protobuf.WellKnownTypes;
 using ItemProto;
+using MessageProto;
 using SyncProto;
 using System.Net;
 
@@ -24,17 +26,12 @@ namespace Application.Core.ServerTransports
         Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels);
         Task<bool> RemoveServer(WorldChannel server);
 
-        void DropWorldMessage(int type, string message);
+        void DropWorldMessage(MessageProto.DropMessageRequest request);
         /// <summary>
         /// 向全服发送数据包
         /// </summary>
         /// <param name="p"></param>
-        void BroadcastMessage(Packet p);
-        /// <summary>
-        /// 全服GM发送数据包
-        /// </summary>
-        /// <param name="p"></param>
-        void BroadcastGMMessage(Packet p);
+        void BroadcastMessage(MessageProto.PacketRequest p);
 
         #region
         void RemoveGuildQueued(int guildId);
@@ -58,7 +55,7 @@ namespace Application.Core.ServerTransports
         #endregion
 
         #region PlayerShop
-        int? FindPlayerShopChannel(int ownerId);
+        SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request);
         #endregion
 
         #region Guild
@@ -153,7 +150,6 @@ namespace Application.Core.ServerTransports
         void SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest);
         void SendSetFly(SetFlyRequest setFlyRequest);
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
-        void BroadcastMessage(SendTextMessage data);
         void BroadcastTV(ItemProto.CreateTVMessageRequest request);
         void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
         void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest);
@@ -199,5 +195,9 @@ namespace Application.Core.ServerTransports
         DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
         SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
         GetLocationResponse GetLocation(GetLocationRequest getLocationRequest);
+        void CompleteShutdown(CompleteShutdownRequest completeShutdownRequest);
+        void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
+        void SaveAll(Empty empty);
+        void SendYellowTip(YellowTipRequest yellowTipRequest);
     }
 }

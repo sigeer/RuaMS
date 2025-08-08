@@ -16,6 +16,11 @@ public class ByteBufOutPacket : OutPacket
         this.byteBuf = Unpooled.Buffer();
     }
 
+    public ByteBufOutPacket(byte[] bytes): this()
+    {
+        this.byteBuf.WriteBytes(bytes);
+    }
+
     public ByteBufOutPacket(SendOpcode op)
     {
         IByteBuffer byteBuf = Unpooled.Buffer();

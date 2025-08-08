@@ -19,6 +19,9 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="playerIdArray"></param>
         public void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
         {
+            if (playerIdArray.Length == 0)
+                return;
+
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
             {

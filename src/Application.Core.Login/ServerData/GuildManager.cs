@@ -285,10 +285,7 @@ namespace Application.Core.Login.ServerData
         {
             if (_idGuildDataSource.TryGetValue(guildId, out var guild))
             {
-                var onlinedGuildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById)
-                    .Where(x => x != null && x.Channel > 0)
-                    .Select(x => new PlayerChannelPair(x.Channel, x.Character.Id)).ToArray();
-                _server.Transport.DropMessage(onlinedGuildMembers, v, callout);
+                _server.DropWorldMessage(v, callout, guild.Members.ToArray());
             }
         }
 
