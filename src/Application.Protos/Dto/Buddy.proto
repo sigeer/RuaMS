@@ -32,8 +32,12 @@ message AddBuddyRequest {
 	string groupName = 3;
 }
 
+message AddBuddyByIdRequest {
+	int32 masterId = 1;
+	int32 targetId = 2;
+}
+
 message AddBuddyBroadcast {
-	int32 fromId = 1;
 	int32 receiverId = 3;
 	BuddyDto buddy = 2;
 }

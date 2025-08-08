@@ -800,9 +800,14 @@ namespace Application.Core.Channel.InProgress
             _server.CharacterManager.BatchUpdate(data);
         }
 
-        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest addBuddyRequest)
+        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
         {
-            return _server.BuddyManager.AddBuddy(addBuddyRequest);
+            return _server.BuddyManager.AddBuddyByName(request);
+        }
+
+        public AddBuddyResponse SendAddBuddyRequest(AddBuddyByIdRequest request)
+        {
+            return _server.BuddyManager.AddBuddyById(request);
         }
 
         public void SendBuddyChat(BuddyChatRequest request)

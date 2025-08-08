@@ -5,7 +5,7 @@ namespace Application.Shared.Message
         public const string Whisper_Chat = "Whisper_Chat";
 
         public const string Buddy_Chat = "Buddy_Chat";
-        public const string Buddy_AcceptInvite = "Buddy_AcceptInvite";
+        public const string Buddy_Added = "Buddy_Added";
         public const string Buddy_Delete = "Buddy_Delete";
         public const string Buddy_NotifyChannel = "Buddy_NotifyChannel";
         public const string Buddy_NoticeMessage = "Buddy_NoticeMessage";

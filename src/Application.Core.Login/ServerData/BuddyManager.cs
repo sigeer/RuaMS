@@ -3,13 +3,11 @@ using Application.Core.Login.Services;
 using Application.EF;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Buddy;
-using Application.Shared.Invitations;
 using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
 namespace Application.Core.Login.ServerData
 {
@@ -44,7 +42,24 @@ namespace Application.Core.Login.ServerData
             };
         }
 
-        public Dto.AddBuddyResponse AddBuddy(Dto.AddBuddyRequest request)
+        Dto.AddBuddyResponse AddBuddy(CharacterLiveObject masterChr, CharacterLiveObject targetChr, string groupName = StringConstants.Buddy_DefaultGroup)
+        {
+            masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, CharacterId = masterChr.Character.Id, Group = groupName };
+
+            var data = new Dto.AddBuddyBroadcast()
+            {
+                ReceiverId = targetChr.Character.Id,
+                Buddy = GetChrBuddyDto(targetChr.Character.Id, masterChr)
+            };
+            _server.Transport.SendMessage(BroadcastType.Buddy_Added, data, data.ReceiverId);
+
+            return new Dto.AddBuddyResponse
+            {
+                Buddy = GetChrBuddyDto(masterChr.Character.Id, targetChr, groupName)
+            };
+        }
+
+        public Dto.AddBuddyResponse AddBuddyByName(Dto.AddBuddyRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
@@ -54,42 +69,20 @@ namespace Application.Core.Login.ServerData
             if (masterChr == null)
                 return new Dto.AddBuddyResponse() { Code = 1 };
 
-            masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, Group = request.GroupName, CharacterId = request.MasterId };
-
-            bool hasBuddy = targetChr.BuddyList.ContainsKey(request.MasterId);
-            if (!hasBuddy)
-            {
-                _invitationService.AddInvitation(new Dto.CreateInviteRequest { FromId = request.MasterId, ToName = request.TargetName, Type = InviteTypes.Buddy });
-            }
-            else
-            {
-                var data = new Dto.NotifyBuddyWhenLoginoffBroadcast();
-                data.BuddyId.Add(targetChr.Character.Id);
-                data.Channel = masterChr.Channel;
-                data.ActualChannel = masterChr.ActualChannel;
-                data.MasterId = masterChr.Character.Id;
-                _server.Transport.SendMessage(BroadcastType.Buddy_NotifyChannel, data, targetChr.Character.Id);
-            }
-
-            return new Dto.AddBuddyResponse
-            {
-                Buddy = GetChrBuddyDto(request.MasterId, targetChr, request.GroupName)
-            };
+            return AddBuddy(masterChr, targetChr, request.GroupName);
         }
 
-        public void PushAcceptBuddy(int masterId, int senderId)
+        public Dto.AddBuddyResponse AddBuddyById(Dto.AddBuddyByIdRequest request)
         {
-            var otherChr = _server.CharacterManager.FindPlayerById(senderId);
-            if (otherChr == null)
-                return;
+            var targetChr = _server.CharacterManager.FindPlayerById(request.TargetId);
+            if (targetChr == null)
+                return new Dto.AddBuddyResponse() { Code = 1 };
 
-            var data = new Dto.AddBuddyBroadcast()
-            {
-                FromId = senderId,
-                ReceiverId = masterId,
-                Buddy = GetChrBuddyDto(masterId, otherChr)
-            };
-            _server.Transport.SendMessage(BroadcastType.Buddy_AcceptInvite, data, data.ReceiverId);
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (masterChr == null)
+                return new Dto.AddBuddyResponse() { Code = 1 };
+
+            return AddBuddy(masterChr, targetChr);
         }
 
         public void BuddyChat(BuddyChatRequest request)
