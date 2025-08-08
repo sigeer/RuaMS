@@ -26,7 +26,6 @@ namespace Application.Core.Channel
             services.AddSingleton<InviteChannelHandler, GuildInviteChannelHandler>();
             services.AddSingleton<InviteChannelHandler, AllianceInviteChannelHandler>();
             services.AddSingleton<InviteChannelHandler, MessengerInviteChannelHandler>();
-            services.AddSingleton<InviteChannelHandler, BuddyInviteChannelHandler>();
             return services;
         }
 

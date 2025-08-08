@@ -74,7 +74,6 @@ namespace Application.Core.Login
             services.AddSingleton<InviteMasterHandler, GuildInviteHandler>();
             services.AddSingleton<InviteMasterHandler, AllianceInviteHandler>();
             services.AddSingleton<InviteMasterHandler, MessengerInviteHandler>();
-            services.AddSingleton<InviteMasterHandler, BuddyInviteHandler>();
             return services;
         }
 
