@@ -23,6 +23,5 @@ public class ExpRateCommand : CommandBase
 
         int exprate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { ExpRate = exprate });
-        c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Exp Rate has been changed to " + exprate + "x."));
     }
 }

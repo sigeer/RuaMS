@@ -23,6 +23,5 @@ public class MesoRateCommand : CommandBase
 
         int mesorate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { MesoRate = mesorate });
-        c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Meso Rate has been changed to " + mesorate + "x."));
     }
 }

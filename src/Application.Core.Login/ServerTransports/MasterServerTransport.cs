@@ -6,11 +6,7 @@ using BaseProto;
 using CashProto;
 using Config;
 using Dto;
-using ItemProto;
 using net.server;
-using tools;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login
 {
@@ -18,24 +14,6 @@ namespace Application.Core.Login
     {
         public MasterServerTransport(MasterServer masterServer) : base(masterServer)
         {
-        }
-
-        public void BroadcastMessage(Packet p)
-        {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
-            {
-                ch.broadcastPacket(p);
-            }
-        }
-
-        public void BroadcastWorldGMPacket(Packet packet)
-        {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
-            {
-                ch.broadcastGMPacket(packet);
-            }
         }
 
         public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
@@ -93,20 +71,6 @@ namespace Application.Core.Login
             foreach (var server in _server.ChannelServerList.Values)
             {
                 server.BroadcastMessage(BroadcastType.OnTeamUpdate, response);
-            }
-        }
-
-        internal void DropMessage(IEnumerable<PlayerChannelPair> targets, int type, string message)
-        {
-            if (targets.Count() == 0)
-                return;
-
-            var groups = _server.GroupPlayer(targets);
-            foreach (var server in groups)
-            {
-                var msg = new DropMessageDto { Type = type, Message = message };
-                msg.PlayerId.AddRange(server.Value);
-                server.Key.BroadcastMessage(BroadcastType.OnDropMessage, msg);
             }
         }
 
@@ -400,11 +364,6 @@ namespace Application.Core.Login
         internal void SendWrapPlayerByName(SummonPlayerByNameBroadcast data)
         {
             SendMessage(BroadcastType.SendWrapPlayerByName, data, data.MasterId);
-        }
-
-        internal void SendPlayerDisconnect(DisconnectPlayerByNameBroadcast data)
-        {
-            SendMessage(BroadcastType.SendPlayerDisconnect, data, data.MasterId);
         }
     }
 }

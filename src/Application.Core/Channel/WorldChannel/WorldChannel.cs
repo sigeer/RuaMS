@@ -5,6 +5,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
+using net.server.coordinator.matchchecker;
 using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
@@ -57,7 +58,7 @@ public partial class WorldChannel : ISocketServer
 
 
     private object lockObj = new object();
-    private ReaderWriterLockSlim merchLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+    public MatchCheckerCoordinator MatchChecker { get; set; }
 
     // public IWorld WorldModel { get; set; }
     public event Action? OnWorldMobRateChanged;
@@ -139,6 +140,8 @@ public partial class WorldChannel : ISocketServer
         NettyServer = new NettyChannelServer(this);
         log = LogFactory.GetLogger(ServerName);
 
+        MatchChecker = new MatchCheckerCoordinator(this);
+
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
         _respawnTask = new RespawnTask(this);
 
@@ -172,34 +175,50 @@ public partial class WorldChannel : ISocketServer
         if (updatePatch.MobRate.HasValue)
         {
             WorldMobRate = updatePatch.MobRate.Value;
+
+            dropMessage(6, "[Rate] Mob Rate has been changed to " + WorldMobRate + "x.");
         }
         if (updatePatch.MesoRate.HasValue)
         {
             WorldMesoRate = updatePatch.MesoRate.Value;
+
+            dropMessage(6, "[Rate] Meso Rate has been changed to " + WorldMesoRate + "x.");
         }
         if (updatePatch.ExpRate.HasValue)
         {
             WorldExpRate = updatePatch.ExpRate.Value;
+
+            dropMessage(6, "[Rate] Exp Rate has been changed to " + WorldExpRate + "x.");
         }
         if (updatePatch.DropRate.HasValue)
         {
             WorldDropRate = updatePatch.DropRate.Value;
+
+            dropMessage(6, "[Rate] Drop Rate has been changed to " + WorldDropRate + "x.");
         }
         if (updatePatch.QuestRate.HasValue)
         {
             WorldQuestRate = updatePatch.QuestRate.Value;
+
+            dropMessage(6, "[Rate] Quest Rate has been changed to " + WorldQuestRate + "x.");
         }
         if (updatePatch.BossDropRate.HasValue)
         {
             WorldBossDropRate = updatePatch.BossDropRate.Value;
+
+            dropMessage(6, "[Rate] Boss Drop Rate has been changed to " + WorldBossDropRate + "x.");
         }
         if (updatePatch.TravelRate.HasValue)
         {
             WorldTravelRate = updatePatch.TravelRate.Value;
+
+            dropMessage(6, "[Rate] Travel Rate has been changed to " + WorldTravelRate + "x.");
         }
         if (updatePatch.FishingRate.HasValue)
         {
             WorldFishingRate = updatePatch.FishingRate.Value;
+
+            dropMessage(6, "[Rate] Fishing Rate has been changed to " + WorldFishingRate + "x.");
         }
         if (updatePatch.ServerMessage != null)
         {
@@ -274,7 +293,7 @@ public partial class WorldChannel : ISocketServer
     bool isShuttingDown = false;
 
 
-    public async Task Shutdown()
+    public async Task ShutdownServer()
     {
         try
         {

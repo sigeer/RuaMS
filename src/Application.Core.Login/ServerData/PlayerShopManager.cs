@@ -135,6 +135,15 @@ namespace Application.Core.Login.ServerData
 
         }
 
+        public ItemProto.SearchHiredMerchantChannelResponse FindHiredMerchantChannel(ItemProto.SearchHiredMerchantChannelRequest request)
+        {
+            if (_hiredMerchantData.TryGetValue(request.MasterId, out var hm))
+            {
+                return new SearchHiredMerchantChannelResponse { Channel = hm.Channel };
+            }
+            return new SearchHiredMerchantChannelResponse();
+        }
+
         public ItemProto.RemoteHiredMerchantDto GetPlayerHiredMerchant(ItemProto.GetPlayerHiredMerchantRequest request)
         {
             var res = new ItemProto.RemoteHiredMerchantDto()

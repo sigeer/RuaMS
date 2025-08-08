@@ -3898,16 +3898,18 @@ public partial class Player
     public void sendPolice(string text)
     {
         string message = getName() + " received this - " + text;
-        if (Server.getInstance().isGmOnline(this.getWorld()))
-        {
-            //Alert and log if a GM is online
-            Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
-        }
-        else
-        {
-            //Auto DC and log if no GM is online
-            Client.Disconnect(false, false);
-        }
+        //if (Server.getInstance().isGmOnline(this.getWorld()))
+        //{
+        //    //Alert and log if a GM is online
+        //    Client.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
+        //}
+        //else
+        //{
+        //    //Auto DC and log if no GM is online
+        //    Client.Disconnect(false, false);
+        //}
+        Client.CurrentServerContainer.SendYellowTip(message, true);
+        Client.Disconnect(false);
         Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));

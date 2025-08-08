@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message YellowTipRequest {
+	string message = 2;
+	bool onlyGM = 3;
+}
+
+message YellowTipBroadcast {
+	string message = 2;
+	repeated int32 receivers = 3;
+}

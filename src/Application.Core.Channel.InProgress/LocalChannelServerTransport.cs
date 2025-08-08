@@ -14,7 +14,9 @@ using BaseProto;
 using CashProto;
 using Config;
 using Dto;
+using Google.Protobuf.WellKnownTypes;
 using ItemProto;
+using MessageProto;
 using net.server;
 using server.expeditions;
 using System.Net;
@@ -89,9 +91,9 @@ namespace Application.Core.Channel.InProgress
             });
         }
 
-        public void DropWorldMessage(int type, string message)
+        public void DropWorldMessage(MessageProto.DropMessageRequest request)
         {
-            _world.dropMessage(type, message);
+            _server.DropWorldMessage(request.Type, request.Message, request.OnlyGM);
         }
 
         public long GetCurrentTime()
@@ -133,47 +135,25 @@ namespace Application.Core.Channel.InProgress
             return Task.FromResult(true);
         }
 
-        public void BroadcastMessage(Packet p)
+        public void BroadcastMessage(MessageProto.PacketRequest p)
         {
-            _server.BroadcastWorldMessage(p);
-        }
-
-        public void BroadcastGMMessage(Packet p)
-        {
-            _server.BroadcastWorldGMPacket(p);
+            _server.BroadcastPacket(p);
         }
 
         public void SendTimer(int seconds)
         {
-            foreach (var victim in Server.getInstance().getWorld(0).getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                victim.sendPacket(PacketCreator.getClock(seconds));
-            }
+            _server.Transport.BroadcastMessage(BroadcastType.Broadcast_SetTimer, new MessageProto.SetTimer { Seconds = seconds });
         }
 
         public void RemoveTimer()
         {
-            foreach (var victim in Server.getInstance().getWorld(0).getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                victim.sendPacket(PacketCreator.removeClock());
-            }
+            _server.Transport.BroadcastMessage(BroadcastType.Broadcast_RemoveTimer, new MessageProto.RemoveTimer());
         }
 
 
-        public int? FindPlayerShopChannel(int ownerId)
+        public SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request)
         {
-            IPlayerShop? ps = null;
-            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
-            {
-                ps = ch.PlayerShopManager.GetPlayerShop(Shared.Items.PlayerShopType.HiredMerchant, ownerId);
-                if (ps != null)
-                    break;
-            }
-
-            if (ps == null)
-                return null;
-
-            return ps.Channel;
+            return _server.PlayerShopManager.FindHiredMerchantChannel(request);
         }
 
         public void SendAccountLogout(int accountId)
@@ -183,7 +163,7 @@ namespace Application.Core.Channel.InProgress
 
         public IPEndPoint GetChannelEndPoint(int channel)
         {
-            return _world.getChannel(channel).getIP();
+            return _server.GetChannelIPEndPoint(channel);
         }
 
         public void BatchSyncMap(List<SyncProto.MapSyncDto> data)
@@ -613,11 +593,6 @@ namespace Application.Core.Channel.InProgress
             _server.Transport.BroadcastMessage(BroadcastType.OnEventsReloaded, new ReloadEventsResponse { Code = 0, Request = reloadEventsRequest });
         }
 
-        public void BroadcastMessage(SendTextMessage data)
-        {
-            _server.Transport.BroadcastMessage(BroadcastType.OnMessage, data);
-        }
-
         public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
             _itemService.BroadcastTV(request);
@@ -833,6 +808,27 @@ namespace Application.Core.Channel.InProgress
         public GetLocationResponse GetLocation(GetLocationRequest request)
         {
             return _server.BuddyManager.GetLocation(request);
+        }
+
+        public void CompleteShutdown(CompleteShutdownRequest request)
+        {
+            _ = _server.OnChannelShutdown(request);
+        }
+
+        public void ShutdownMaster(ShutdownMasterRequest request)
+        {
+            _ = _server.Shutdown(request.DelaySeconds);
+            _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
+        }
+
+        public void SaveAll(Empty empty)
+        {
+            _server.Transport.BroadcastMessage(BroadcastType.SaveAll, new Empty());
+        }
+
+        public void SendYellowTip(YellowTipRequest yellowTipRequest)
+        {
+            _server.DropYellowTip(yellowTipRequest.Message, yellowTipRequest.OnlyGM);
         }
     }
 }

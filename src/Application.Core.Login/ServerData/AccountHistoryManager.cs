@@ -232,7 +232,6 @@ namespace Application.Core.Login.ServerData
             };
             _server.Transport.BroadcastBanned(data);
 
-
             return new BanResponse();
         }
 

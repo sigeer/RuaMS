@@ -15,7 +15,7 @@ public class ExpLogger
     {
         if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
         {
-            startExpLogger();
+            // startExpLogger();
         }
     }
     public static void putExpLogRecord(ExpLogRecord expLogRecord)
@@ -65,17 +65,17 @@ public class ExpLogger
     };
 
 
-    private static void startExpLogger()
-    {
-        expLoggerSchedule = Server.getInstance().GlobalTimerManager.register(saveExpLoggerToDBRunnable,
-            TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS),
-            TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS));
+    //private static void startExpLogger()
+    //{
+    //    expLoggerSchedule = Server.getInstance().GlobalTimerManager.register(saveExpLoggerToDBRunnable,
+    //        TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS),
+    //        TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS));
 
-        AppDomain.CurrentDomain.ProcessExit += (obj, evt) => stopExpLogger();
-    }
+    //    AppDomain.CurrentDomain.ProcessExit += (obj, evt) => stopExpLogger();
+    //}
 
-    private static bool stopExpLogger()
-    {
-        return expLoggerSchedule?.cancel(true) ?? true;
-    }
+    //private static bool stopExpLogger()
+    //{
+    //    return expLoggerSchedule?.cancel(true) ?? true;
+    //}
 }

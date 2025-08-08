@@ -1,6 +1,7 @@
 using Application.Core.Game.Players;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
+using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using Org.BouncyCastle.Asn1.X509;
@@ -27,7 +28,7 @@ namespace Application.Core.Channel.Services
             {
                 OperatorId = ServerConstants.SystemCId,
                 Victim = chr.Name,
-                Reason =  reason,
+                Reason = reason,
                 ReasonDesc = "[AutoBan] " + reasonDesc,
                 BanLevel = (int)level,
                 Days = days
@@ -72,7 +73,7 @@ namespace Application.Core.Channel.Services
                 }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
             }
 
-            _server.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + data.TargetName + " has been banned."));
+            _server.BroadcastGMPacket(PacketCreator.serverNotice(6, "[RIP]: " + data.TargetName + " has been banned."));
         }
 
         public void Unban(IPlayer chr, string victim)
@@ -230,6 +231,30 @@ namespace Application.Core.Channel.Services
         {
             Dto.GetAllClientInfo res = _transport.GetOnliendClientInfo();
             return res.List.ToList();
+        }
+
+        /// <summary>
+        /// 停机
+        /// </summary>
+        /// <param name="delay">单位：秒。-1：立即</param>
+        public void ShutdownMaster(IPlayer chr, int delay = -1)
+        {
+            chr.dropMessage("服务器正在停止中...");
+            _transport.ShutdownMaster(new Config.ShutdownMasterRequest() { DelaySeconds = delay });
+        }
+
+        internal void SavelAll()
+        {
+            _transport.SaveAll(new Empty());
+        }
+
+        internal void OnSaveAll(Empty empty)
+        {
+            foreach (var chr in _server.PlayerStorage.getAllCharacters())
+            {
+                chr.saveCharToDB(setChannel: chr.Channel);
+            }
+            _server.BroadcastGMPacket(PacketCreator.serverNotice(5, "玩家数据已同步"));
         }
     }
 }

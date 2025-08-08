@@ -19,6 +19,8 @@
 */
 
 
+using Application.Core.Channel;
+
 namespace net.server.coordinator.matchchecker;
 
 
@@ -28,167 +30,15 @@ namespace net.server.coordinator.matchchecker;
  */
 public class MatchCheckerCoordinator
 {
-
+    WorldChannel _worldChannel;
     private Dictionary<int, MatchCheckingElement> matchEntries = new();
 
     private HashSet<int> pooledCids = new();
     private Semaphore semaphorePool = new Semaphore(7, 7);
 
-    public class MatchCheckingEntry
+    public MatchCheckerCoordinator(WorldChannel worldChannel)
     {
-        public bool accepted;
-        public int cid;
-
-        public MatchCheckingEntry(int cid)
-        {
-            this.cid = cid;
-            this.accepted = false;
-        }
-
-        public bool setAccept()
-        {
-            if (!this.accepted)
-            {
-                this.accepted = true;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool getAccept()
-        {
-            return this.accepted;
-        }
-    }
-
-    public class MatchCheckingElement
-    {
-        public int leaderCid;
-        public int world;
-
-        public MatchCheckerType matchType;
-        public AbstractMatchCheckerListener listener;
-
-        public Dictionary<int, MatchCheckingEntry> confirmingMembers = new();
-        public int confirmCount;
-        public bool active = true;
-
-        private string message;
-
-        public MatchCheckingElement(MatchCheckerType matchType, int leaderCid, int world, AbstractMatchCheckerListener leaderListener, HashSet<int> matchPlayers, string message)
-        {
-            this.leaderCid = leaderCid;
-            this.world = world;
-            this.listener = leaderListener;
-            this.confirmCount = 0;
-            this.message = message;
-            this.matchType = matchType;
-
-            foreach (int cid in matchPlayers)
-            {
-                MatchCheckingEntry mmcEntry = new MatchCheckingEntry(cid);
-                confirmingMembers.AddOrUpdate(cid, mmcEntry);
-            }
-        }
-
-        public bool acceptEntry(int cid)
-        {
-            var mmcEntry = confirmingMembers.GetValueOrDefault(cid);
-            if (mmcEntry != null)
-            {
-                if (mmcEntry.setAccept())
-                {
-                    this.confirmCount++;
-
-                    return this.confirmCount == this.confirmingMembers.Count;
-                }
-            }
-
-            return false;
-        }
-
-        public bool isMatchActive()
-        {
-            return active;
-        }
-
-        public void setMatchActive(bool a)
-        {
-            active = a;
-        }
-
-        public HashSet<int> getMatchPlayers()
-        {
-            return confirmingMembers.Keys.ToHashSet();
-        }
-
-        public HashSet<int> getAcceptedMatchPlayers()
-        {
-            HashSet<int> s = new();
-
-            foreach (var e in confirmingMembers)
-            {
-                if (e.Value.getAccept())
-                {
-                    s.Add(e.Key);
-                }
-            }
-
-            return s;
-        }
-
-        public HashSet<IPlayer> getMatchCharacters()
-        {
-            HashSet<IPlayer> players = new();
-
-            var wserv = Server.getInstance().getWorld(world);
-            if (wserv != null)
-            {
-                var ps = wserv.getPlayerStorage();
-
-                foreach (int cid in getMatchPlayers())
-                {
-                    var chr = ps.getCharacterById(cid);
-                    if (chr != null && chr.IsOnlined)
-                    {
-                        players.Add(chr);
-                    }
-                }
-            }
-
-            return players;
-        }
-
-        public void dispatchMatchCreated()
-        {
-            HashSet<IPlayer> nonLeaderMatchPlayers = getMatchCharacters();
-            var leader = nonLeaderMatchPlayers.FirstOrDefault(x => x.getId() == leaderCid);
-            if (leader != null)
-            {
-                nonLeaderMatchPlayers.Remove(leader);
-                listener.onMatchCreated(leader, nonLeaderMatchPlayers, message);
-            }
-        }
-
-        public void dispatchMatchResult(bool accept)
-        {
-            if (accept)
-            {
-                listener.onMatchAccepted(leaderCid, getMatchCharacters(), message);
-            }
-            else
-            {
-                listener.onMatchDeclined(leaderCid, getMatchCharacters(), message);
-            }
-        }
-
-        public void dispatchMatchDismissed()
-        {
-            listener.onMatchDismissed(leaderCid, getMatchCharacters(), message);
-        }
+        _worldChannel = worldChannel;
     }
 
     private void unpoolMatchPlayer(int cid)
@@ -300,9 +150,11 @@ public class MatchCheckerCoordinator
         }
     }
 
-    private MatchCheckingElement createMatchConfirmationInternal(MatchCheckerType matchType, int world, int leaderCid, AbstractMatchCheckerListener leaderListener, HashSet<int> players, string message)
+    private MatchCheckingElement createMatchConfirmationInternal(
+        MatchCheckerType matchType, 
+        int leaderCid, AbstractMatchCheckerListener leaderListener, HashSet<int> players, string message)
     {
-        MatchCheckingElement mmce = new MatchCheckingElement(matchType, leaderCid, world, leaderListener, players, message);
+        MatchCheckingElement mmce = new MatchCheckingElement(_worldChannel, matchType, leaderCid, leaderListener, players, message);
 
         foreach (int cid in players)
         {
@@ -328,7 +180,7 @@ public class MatchCheckerCoordinator
                         if (isMatchingAvailable(players))
                         {
                             AbstractMatchCheckerListener leaderListener = matchType.getListener();
-                            mmce = createMatchConfirmationInternal(matchType, world, leaderCid, leaderListener, players, message);
+                            mmce = createMatchConfirmationInternal(matchType, leaderCid, leaderListener, players, message);
                         }
                         else
                         {
@@ -562,4 +414,156 @@ public class MatchCheckerCoordinator
         }
     }
 
+}
+
+public class MatchCheckingEntry
+{
+    public bool accepted;
+    public int cid;
+
+    public MatchCheckingEntry(int cid)
+    {
+        this.cid = cid;
+        this.accepted = false;
+    }
+
+    public bool setAccept()
+    {
+        if (!this.accepted)
+        {
+            this.accepted = true;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool getAccept()
+    {
+        return this.accepted;
+    }
+}
+
+public class MatchCheckingElement
+{
+    public int leaderCid;
+
+    public MatchCheckerType matchType;
+    public AbstractMatchCheckerListener listener;
+
+    public Dictionary<int, MatchCheckingEntry> confirmingMembers = new();
+    public int confirmCount;
+    public bool active = true;
+
+    private string message;
+    WorldChannel _worldChannel;
+
+    public MatchCheckingElement(WorldChannel worldChannel, MatchCheckerType matchType, int leaderCid, AbstractMatchCheckerListener leaderListener, HashSet<int> matchPlayers, string message)
+    {
+        _worldChannel = worldChannel;
+        this.leaderCid = leaderCid;
+        this.listener = leaderListener;
+        this.confirmCount = 0;
+        this.message = message;
+        this.matchType = matchType;
+
+        foreach (int cid in matchPlayers)
+        {
+            MatchCheckingEntry mmcEntry = new MatchCheckingEntry(cid);
+            confirmingMembers.AddOrUpdate(cid, mmcEntry);
+        }
+    }
+
+    public bool acceptEntry(int cid)
+    {
+        var mmcEntry = confirmingMembers.GetValueOrDefault(cid);
+        if (mmcEntry != null)
+        {
+            if (mmcEntry.setAccept())
+            {
+                this.confirmCount++;
+
+                return this.confirmCount == this.confirmingMembers.Count;
+            }
+        }
+
+        return false;
+    }
+
+    public bool isMatchActive()
+    {
+        return active;
+    }
+
+    public void setMatchActive(bool a)
+    {
+        active = a;
+    }
+
+    public HashSet<int> getMatchPlayers()
+    {
+        return confirmingMembers.Keys.ToHashSet();
+    }
+
+    public HashSet<int> getAcceptedMatchPlayers()
+    {
+        HashSet<int> s = new();
+
+        foreach (var e in confirmingMembers)
+        {
+            if (e.Value.getAccept())
+            {
+                s.Add(e.Key);
+            }
+        }
+
+        return s;
+    }
+
+    public HashSet<IPlayer> getMatchCharacters()
+    {
+        HashSet<IPlayer> players = new();
+
+        var ps = _worldChannel.getPlayerStorage();
+
+        foreach (int cid in getMatchPlayers())
+        {
+            var chr = ps.getCharacterById(cid);
+            if (chr != null && chr.IsOnlined)
+            {
+                players.Add(chr);
+            }
+        }
+        return players;
+    }
+
+    public void dispatchMatchCreated()
+    {
+        HashSet<IPlayer> nonLeaderMatchPlayers = getMatchCharacters();
+        var leader = nonLeaderMatchPlayers.FirstOrDefault(x => x.getId() == leaderCid);
+        if (leader != null)
+        {
+            nonLeaderMatchPlayers.Remove(leader);
+            listener.onMatchCreated(leader, nonLeaderMatchPlayers, message);
+        }
+    }
+
+    public void dispatchMatchResult(bool accept)
+    {
+        if (accept)
+        {
+            listener.onMatchAccepted(leaderCid, getMatchCharacters(), message);
+        }
+        else
+        {
+            listener.onMatchDeclined(leaderCid, getMatchCharacters(), message);
+        }
+    }
+
+    public void dispatchMatchDismissed()
+    {
+        listener.onMatchDismissed(leaderCid, getMatchCharacters(), message);
+    }
 }

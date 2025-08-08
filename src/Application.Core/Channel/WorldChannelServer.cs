@@ -1,12 +1,10 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Events;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
-using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Message;
@@ -16,16 +14,16 @@ using constants.game;
 using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using MessageProto;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using net.server.coordinator.matchchecker;
 using net.server.guild;
 using Polly;
-using Serilog;
-using server;
 using System.Diagnostics;
 using System.Net;
-using System.Security.Cryptography;
 using tools;
 
 namespace Application.Core.Channel
@@ -123,6 +121,7 @@ namespace Application.Core.Channel
 
         ScheduledFuture? invitationTask;
         ScheduledFuture? playerShopTask;
+        ScheduledFuture? timeoutTask;
 
         public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public BatchSyncManager<Dto.PlayerSaveDto> BatchSyncPlayerManager { get; }
@@ -158,7 +157,7 @@ namespace Application.Core.Channel
 
             InviteChannelHandlerRegistry = ServiceProvider.GetRequiredService<InviteChannelHandlerRegistry>();
 
-            _buddyManager = new (() => ServiceProvider.GetRequiredService<BuddyManager>());
+            _buddyManager = new(() => ServiceProvider.GetRequiredService<BuddyManager>());
             _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
@@ -225,7 +224,7 @@ namespace Application.Core.Channel
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-        public async Task Shutdown()
+        public async Task Shutdown(int delaySeconds = -1)
         {
             await _semaphore.WaitAsync();
 
@@ -250,6 +249,8 @@ namespace Application.Core.Channel
                     await invitationTask.CancelAsync(false);
                 if (playerShopTask != null)
                     await playerShopTask.CancelAsync(false);
+                if (timeoutTask != null)
+                    await timeoutTask.CancelAsync(false);
 
                 InviteChannelHandlerRegistry.Dispose();
 
@@ -260,12 +261,16 @@ namespace Application.Core.Channel
 
                 foreach (var channel in Servers.Values)
                 {
-                    await channel.Shutdown();
+                    await channel.ShutdownServer();
                 }
+                // 有些玩家在CashShop
+                PlayerStorage.disconnectAll();
+
                 await TimerManager.Stop();
                 _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
 
                 IsRunning = false;
+                Transport.CompleteShutdown(new Config.CompleteShutdownRequest { ServerName = ServerName });
             }
             catch (Exception ex)
             {
@@ -276,6 +281,7 @@ namespace Application.Core.Channel
                 _semaphore.Release();
             }
         }
+
         public async Task StartServer()
         {
             await Start();
@@ -312,6 +318,9 @@ namespace Application.Core.Channel
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
             playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+#if !DEBUG
+            timeoutTask = TimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+#endif
 
             InviteChannelHandlerRegistry.Register(ServiceProvider.GetServices<InviteChannelHandler>());
             InitializeMessage();
@@ -430,17 +439,78 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        public void BroadcastWorldMessage(int type, string text)
+        public void BroadcastPacket(Packet p)
         {
-            Transport.BroadcastMessage(new Dto.SendTextMessage { Text = text, Type = type });
+            foreach (var ch in Servers.Values)
+            {
+                ch.broadcastPacket(p);
+            }
         }
-        public void BroadcastWorldMessage(Packet p)
+
+        public void BroadcastGMPacket(Packet p)
         {
-            Transport.BroadcastMessage(p);
+            foreach (var ch in Servers.Values)
+            {
+                ch.broadcastGMPacket(p);
+            }
         }
-        public void BroadcastWorldGMPacket(Packet packet)
+
+        void BroadcastSetTimer(MessageProto.SetTimer data)
         {
-            Transport.BroadcastGMMessage(packet);
+            BroadcastPacket(PacketCreator.getClock(data.Seconds));
+        }
+
+        void BroadcastRemoveTimer(MessageProto.RemoveTimer data)
+        {
+            BroadcastPacket(PacketCreator.removeClock());
+        }
+
+        public void SendBroadcastWorldPacket(Packet p)
+        {
+            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes())});
+        }
+        public void SendBroadcastWorldGMPacket(Packet p)
+        {
+            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = true });
+        }
+
+        void OnReceivedPacket(MessageProto.PacketBroadcast data)
+        {
+            var packet = new ByteBufOutPacket(data.Data.ToByteArray());
+            foreach (var ch in Servers.Values)
+            {
+                if (data.Receivers.Contains(-1))
+                {
+                    foreach (var player in ch.Players.getAllCharacters())
+                    {
+                        player.sendPacket(packet);
+                    }
+                }
+                else
+                {
+                    foreach (var id in data.Receivers)
+                    {
+                        ch.Players.getCharacterById(id)?.sendPacket(packet);
+                    }
+
+                }
+            }
+        }
+
+
+        public void SendDropMessage(int type, string message)
+        {
+            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message });
+        }
+
+        public void SendDropGMMessage(int type, string message)
+        {
+            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = true });
+        }
+
+        public void SendYellowTip(string message, bool onlyGM)
+        {
+            Transport.SendYellowTip(new MessageProto.YellowTipRequest { Message = message, OnlyGM = onlyGM });
         }
 
         private void UpdateWorldConfig(Config.WorldConfig updatePatch)
@@ -503,11 +573,11 @@ namespace Application.Core.Channel
             return Transport.CheckCharacterName(name);
         }
 
-        public void DropMessage(DropMessageDto msg)
+        void OnDropMessage(DropMessageBroadcast msg)
         {
             foreach (var ch in Servers.Values)
             {
-                if (msg.PlayerId.Contains(-1))
+                if (msg.Receivers.Contains(-1))
                 {
                     foreach (var player in ch.Players.getAllCharacters())
                     {
@@ -516,9 +586,31 @@ namespace Application.Core.Channel
                 }
                 else
                 {
-                    foreach (var id in msg.PlayerId)
+                    foreach (var id in msg.Receivers)
                     {
                         ch.Players.getCharacterById(id)?.dropMessage(msg.Type, msg.Message);
+                    }
+
+                }
+            }
+        }
+
+        void OnYellowTip(YellowTipBroadcast msg)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                if (msg.Receivers.Contains(-1))
+                {
+                    foreach (var player in ch.Players.getAllCharacters())
+                    {
+                        player.yellowMessage(msg.Message);
+                    }
+                }
+                else
+                {
+                    foreach (var id in msg.Receivers)
+                    {
+                        ch.Players.getCharacterById(id)?.yellowMessage(msg.Message);
                     }
 
                 }
@@ -659,6 +751,12 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            MessageDispatcher.Register<MessageProto.SetTimer>(BroadcastType.Broadcast_SetTimer, BroadcastSetTimer);
+            MessageDispatcher.Register<MessageProto.RemoveTimer>(BroadcastType.Broadcast_RemoveTimer, BroadcastRemoveTimer);
+            MessageDispatcher.Register<MessageProto.DropMessageBroadcast>(BroadcastType.Broadcast_DropMessage, OnDropMessage);
+            MessageDispatcher.Register<MessageProto.PacketBroadcast>(BroadcastType.Broadcast_Packet, OnReceivedPacket);
+            MessageDispatcher.Register<MessageProto.YellowTipBroadcast>(BroadcastType.Broadcast_YellowTip, OnYellowTip);
+
             MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
 
             MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_Added, BuddyManager.OnAddBuddyBroadcast);
@@ -670,6 +768,7 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<Dto.MultiChatMessage>(BroadcastType.OnMultiChat, OnMulitiChat);
 
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
+            MessageDispatcher.Register<Empty>(BroadcastType.SaveAll, adminSrv.OnSaveAll);
             MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
             MessageDispatcher.Register<Dto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
             MessageDispatcher.Register<Dto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
@@ -686,7 +785,6 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<CashProto.BuyCashItemResponse>(BroadcastType.OnCashItemPurchased, itemSrc.OnBuyCashItemCallback);
 
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
-            MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
             MessageDispatcher.Register<ItemProto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
             MessageDispatcher.Register<ItemProto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
             MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
@@ -741,8 +839,6 @@ namespace Application.Core.Channel
             #endregion
 
             MessageDispatcher.Register<UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
-
-            MessageDispatcher.Register<DropMessageDto>(BroadcastType.OnDropMessage, DropMessage);
 
             MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
 
@@ -804,14 +900,6 @@ namespace Application.Core.Channel
                     sender = ch.Players.getCharacterById(data.Request.MasterId);
                     sender?.dropMessage(5, "Reloaded Events");
                 }
-            }
-        }
-
-        private void OnBroadcastText(Dto.SendTextMessage data)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                ch.broadcastPacket(PacketCreator.serverNotice(data.Type, data.Text)); ;
             }
         }
 

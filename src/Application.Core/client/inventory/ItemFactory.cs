@@ -105,59 +105,6 @@ public class ItemFactory : EnumClass
         return value;
     }
     public bool IsAccount => account;
-
-
-    private static Equip loadEquipFromResultSet(EquipItemModelFromDB rs)
-    {
-        Equip equip = new Equip(rs.Itemid, rs.Position);
-        equip.setOwner(rs.Owner);
-        equip.setQuantity(rs.Quantity);
-        equip.setAcc(rs.Acc);
-        equip.setAvoid(rs.Avoid);
-        equip.setDex(rs.Dex);
-        equip.setHands(rs.Hands);
-        equip.setHp(rs.Hp);
-        equip.setInt(rs.Int);
-        equip.setJump(rs.Jump);
-        equip.setVicious(rs.Vicious);
-        equip.setFlag(rs.Flag);
-        equip.setLuk(rs.Luk);
-        equip.setMatk(rs.Matk);
-        equip.setMdef(rs.Mdef);
-        equip.setMp(rs.Mp);
-        equip.setSpeed(rs.Speed);
-        equip.setStr(rs.Str);
-        equip.setWatk(rs.Watk);
-        equip.setWdef(rs.Wdef);
-        equip.setUpgradeSlots(rs.Upgradeslots);
-        equip.setLevel(rs.Level);
-        equip.setItemExp(rs.Itemexp);
-        equip.setItemLevel(rs.Itemlevel);
-        equip.setExpiration(rs.Expiration);
-        equip.setGiftFrom(rs.GiftFrom);
-
-        return equip;
-    }
-
-    /// <summary>
-    /// 加载已穿戴的装备
-    /// </summary>
-    /// <param name="characterId"></param>
-    /// <returns>Item</returns>
-    public static List<Equip> loadEquippedItems(int characterId)
-    {
-        var equipedType = InventoryType.EQUIPPED.getType();
-
-        using var dbContext = new DBContext();
-        var dataList = (from a in dbContext.Inventoryitems
-                        join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
-                        from bs in bss.DefaultIfEmpty()
-                        where a.Characterid == characterId
-                        where a.Inventorytype == equipedType
-                        select new EquipItemModelFromDB(a, bs)).ToList();
-
-        return dataList.Select(x => loadEquipFromResultSet(x)).ToList();
-    }
 }
 
 

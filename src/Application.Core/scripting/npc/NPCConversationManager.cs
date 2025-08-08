@@ -478,7 +478,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (item.Level > 0)
         {
             //Uncommon and Rare
-            c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
         }
     }
 
@@ -1095,12 +1095,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
         cpqLeaders.Add(leaderid);
         cpqLeaders.Add(getPlayer().getId());
 
-        return c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, 0, getPlayer().getId(), cpqLeaders, cpqType);
+        return c.CurrentServer.MatchChecker.createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, 0, getPlayer().getId(), cpqLeaders, cpqType);
     }
 
     public void answerCPQChallenge(bool accept)
     {
-        c.getWorldServer().getMatchCheckerCoordinator().answerMatchConfirmation(getPlayer().getId(), accept);
+        c.CurrentServer.MatchChecker.answerMatchConfirmation(getPlayer().getId(), accept);
     }
 
     public void challengeParty2(int field)

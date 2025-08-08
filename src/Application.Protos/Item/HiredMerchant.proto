@@ -83,3 +83,11 @@ message OwlSearchResultItemDto {
 	int32 channel = 5;
 	int32 mapObjectId = 6;
 }
+
+message SearchHiredMerchantChannelRequest {
+	int32 masterId = 1;
+}
+
+message SearchHiredMerchantChannelResponse {
+	int32 channel = 1;
+}

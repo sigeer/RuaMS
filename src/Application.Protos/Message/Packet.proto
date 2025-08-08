@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message PacketRequest {
+	bytes data = 1;
+	bool onlyGM = 2;
+}
+
+message PacketBroadcast {
+	bytes data = 1;
+	repeated int32 receivers = 2;
+}

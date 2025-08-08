@@ -74,16 +74,6 @@ public class Server
         return RunningWorlds.Values.ToList();
     }
 
-    public int getWorldsSize()
-    {
-        return RunningWorlds.Count;
-    }
-
-    public List<WorldChannel> getChannelsFromWorld(int world)
-    {
-        return this.getWorld(world).getChannels();
-    }
-
 
     public bool AddWorld(WorldConfigEntity worldConfig)
     {
@@ -179,8 +169,6 @@ public class Server
         {
             Initialize(ignoreCache);
 
-            var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
-
             LoadWorld();
 
             IsOnline = true;
@@ -188,7 +176,7 @@ public class Server
             totalSw.Stop();
             log.Information("服务器配置加载完成，耗时 {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
-            await startTimelyTask;
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -201,32 +189,11 @@ public class Server
         }
     }
 
-    public ITimerManager GlobalTimerManager { get; private set; }
-    public async Task InitializeTimelyTasks(TaskEngine engine)
-    {
+    //public bool isGmOnline(int world)
+    //{
+    //    return getWorld(world).Players.GetAllOnlinedPlayers().Any(x => x.isGM());
+    //}
 
-        GlobalTimerManager = await TimerManager.InitializeAsync(engine, "Temp");
-    }
-
-
-    public void broadcastMessage(int world, Packet packet)
-    {
-        foreach (var ch in getChannelsFromWorld(world))
-        {
-            ch.broadcastPacket(packet);
-        }
-    }
-
-    public bool isGmOnline(int world)
-    {
-        return getWorld(world).Players.GetAllOnlinedPlayers().Any(x => x.isGM());
-    }
-
-    public Action shutdown(bool restart)
-    {
-        //no player should be online when trying to shutdown!
-        return async () => await Stop(restart);
-    }
 
     public void Reset()
     {
@@ -248,15 +215,10 @@ public class Server
         {
             return;//already shutdown
         }
-        foreach (World w in runningWorlds)
-        {
-            await w.Shutdown();
-        }
 
         resetServerWorlds();
 
         ThreadManager.getInstance().stop();
-        await GlobalTimerManager.Stop();
 
         IsOnline = false;
         if (force)

@@ -22,6 +22,7 @@
 		<Protobuf Include="Config\MessageWrapper.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Config\Shutdown.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Fame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ClientInfo.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ServerCrossCallback.proto" GrpcServices="None" />
@@ -62,11 +63,11 @@
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
 		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
-		<Protobuf Include="Events\TextMessage.proto" GrpcServices="None" />
+		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
+		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Events\ReloadEventsRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Events\FlySetting.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\MultiChatMessage.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\DropMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\NewYearCard.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
 		<Protobuf Include="Events\PlayerOnlineChange.proto">
@@ -85,6 +86,9 @@
 		<Protobuf Include="Invitation\CreateInvite.proto" GrpcServices="None" />
 		<Protobuf Include="Invitation\AnswerInvite.proto" GrpcServices="None" />
 		<Protobuf Include="Item\ItemMegaphone.proto" GrpcServices="None" />
+		<Protobuf Include="Message\DropMessage.proto" GrpcServices="None" />
+		<Protobuf Include="Message\Timer.proto" GrpcServices="None" />
+		<Protobuf Include="Message\Packet.proto" GrpcServices="None" />
 		<Protobuf Include="MTS\MTS.proto" GrpcServices="None" />
 		<Protobuf Include="MTS\MTSOperation.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
@@ -149,7 +153,6 @@
 
 	<ItemGroup>
 	  <Folder Include="PlayerNPC\" />
-	  <Folder Include="Marriage\" />
 	</ItemGroup>
 
 

@@ -103,9 +103,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
             */
 
-
-            var wserv = Server.getInstance().getWorld(0);
-
             // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {
@@ -199,7 +196,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
+                    c.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
                 }
             }
             else

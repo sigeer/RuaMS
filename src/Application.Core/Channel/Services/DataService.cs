@@ -152,7 +152,6 @@ namespace Application.Core.Channel.Services
             }
             player.setPosition(portal.getPosition());
 
-            var wserv = Server.getInstance().getWorld(0);
             player.setParty(c.CurrentServerContainer.TeamManager.GetParty(player.Party));
 
 

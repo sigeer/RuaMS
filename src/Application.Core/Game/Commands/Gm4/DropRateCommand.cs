@@ -23,7 +23,6 @@ public class DropRateCommand : CommandBase
 
         int droprate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { DropRate = droprate });
-        c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Drop Rate has been changed to " + droprate + "x."));
 
     }
 }

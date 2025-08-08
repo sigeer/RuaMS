@@ -14,7 +14,7 @@ public class ClearSavedLocationsCommand : CommandBase
 
         if (paramsValue.Length > 0)
         {
-            victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+            victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
             if (victim == null || !victim.IsOnlined)
             {
                 player.message("Player '" + paramsValue[0] + "' could not be found.");
