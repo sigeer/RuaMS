@@ -59,6 +59,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         {
             // accept buddy
             int otherCid = p.readInt();
+            var unknown = p.available();
             _buddyManager.AnswerInvite(player, otherCid);
         }
         else if (mode == 3)
@@ -66,7 +67,6 @@ public class BuddylistModifyHandler : ChannelHandlerBase
             // delete
             int otherCid = p.readInt();
             _buddyManager.DeleteBuddy(player, otherCid);
-            player.deleteBuddy(otherCid);
         }
         else
         {
