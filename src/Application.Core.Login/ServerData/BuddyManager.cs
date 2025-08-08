@@ -124,11 +124,11 @@ namespace Application.Core.Login.ServerData
         public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
         {
             var senderChr = _server.CharacterManager.FindPlayerById(request.FromId);
-            if (senderChr == null || senderChr.Channel < 0)
+            if (senderChr == null || senderChr.Channel <= 0)
                 return new SendWhisperMessageResponse { Code = 1 };
 
             var receiverChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
-            if (receiverChr == null || senderChr.Channel < 0)
+            if (receiverChr == null || senderChr.Channel <= 0)
                 return new SendWhisperMessageResponse { Code = 1 };
 
             var data = new Dto.SendWhisperMessageBroadcast
