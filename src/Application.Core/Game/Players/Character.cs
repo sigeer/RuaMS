@@ -1439,12 +1439,6 @@ public partial class Player
         this.possibleReports--;
     }
 
-    public void deleteBuddy(int otherCid)
-    {
-        BuddyList.Remove(otherCid);
-        sendPacket(PacketCreator.updateBuddylist(BuddyList.getBuddies()));
-    }
-
     private void stopExtraTask()
     {
         chLock.EnterReadLock();

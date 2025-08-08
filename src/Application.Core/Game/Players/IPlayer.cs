@@ -190,7 +190,6 @@ namespace Application.Core.Game.Players
         void debugListAllBuffsCount();
         void decreaseBattleshipHp(int decrease);
         void decreaseReports();
-        void deleteBuddy(int otherCid);
         void deleteFromTrocks(int map);
         void deleteFromVipTrocks(int map);
         void disbandGuild();

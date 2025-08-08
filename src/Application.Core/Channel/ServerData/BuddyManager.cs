@@ -1,11 +1,8 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Buddy;
-using Application.Shared.Invitations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.X509;
-using System.Threading.Channels;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -112,24 +109,17 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            try
+            var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
+            if (res.Code == 1)
             {
-                var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
-                if (res.Code == 1)
-                {
-                    player.sendPacket(PacketCreator.serverNotice(1, $"玩家 {addName} 未找到"));
-                    return;
-                }
-
-                if (res.Code == 0)
-                {
-                    player.BuddyList.Add(_mapper.Map<BuddyCharacter>(res.Buddy));
-                    player.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
-                }
+                player.sendPacket(PacketCreator.serverNotice(1, $"玩家 {addName} 未找到"));
+                return;
             }
-            catch (Exception e)
+
+            if (res.Code == 0)
             {
-                _logger.LogError(e.ToString());
+                player.BuddyList.Add(_mapper.Map<BuddyCharacter>(res.Buddy));
+                player.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
             }
         }
 
@@ -138,7 +128,15 @@ namespace Application.Core.Channel.ServerData
             var chr = _server.FindPlayerById(data.ReceiverId);
             if (chr != null)
             {
-                AddBuddy(chr, data.Buddy.Name, data.Buddy.Group);
+                if (chr.BuddyList.Contains(data.Buddy.Id))
+                {
+                    chr.BuddyList.Update(_mapper.Map<BuddyCharacter>(data.Buddy));
+                    chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+                }
+                else
+                {
+                    chr.sendPacket(PacketCreator.requestBuddylistAdd(data.Buddy.Id, data.ReceiverId, data.Buddy.Name));
+                }
             }
         }
 
@@ -156,7 +154,16 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            _server.Transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = true, Type = InviteTypes.Buddy, CheckKey = fromId });
+            var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
+            if (res.Code == 0)
+            {
+                chr.BuddyList.Add(_mapper.Map<BuddyCharacter>(res.Buddy));
+                chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+            }
+            else
+            {
+                chr.dropMessage(1, "未知错误：" + res.Code);
+            }
         }
 
         public void DeleteBuddy(IPlayer chr, int targetId)
