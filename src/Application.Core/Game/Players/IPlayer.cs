@@ -441,8 +441,6 @@ namespace Application.Core.Game.Players
         IMapObject[] getVisibleMapObjects();
         IMap getWarpMap(int map);
         bool getWhiteChat();
-        int getWorld();
-        World getWorldServer();
         void giveCoolDowns(int skillid, long starttime, long length);
         void giveDebuff(Disease disease, MobSkill skill);
         int gmLevel();

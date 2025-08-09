@@ -256,11 +256,14 @@ public partial class WorldChannel : ISocketServer
             throw new Exception("频道服务器需要先向中心服务器注册才能初始化");
         }
 
-        log.Information("[{ServerName}] 初始化...",
-            _serverLogName);
+        log.Information("[{ServerName}] 初始化...", _serverLogName);
 
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+
+        log.Information("[{ServerName}] 初始化事件...", _serverLogName);
+        eventSM.ReloadEventScript();
+        log.Information("[{ServerName}] 初始化事件...完成", _serverLogName);
 
         _respawnTask.Register(Container.TimerManager);
         EventRecallManager.Register(Container.TimerManager);

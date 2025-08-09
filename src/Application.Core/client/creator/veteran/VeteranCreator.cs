@@ -1,11 +1,12 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Services;
 using client.creator;
 
 namespace Application.Core.client.creator.veteran
 {
     public abstract class VeteranCreator : CharacterFactory
     {
-        protected VeteranCreator(ChannelService channelService) : base(channelService)
+        protected VeteranCreator(DataService channelService) : base(channelService)
         {
         }
 

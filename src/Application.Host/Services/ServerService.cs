@@ -26,7 +26,6 @@ namespace Application.Host.Services
             {
                 State = srv.IsStarting ? 1: (srv.IsOnline ? 2 : 0),
                 IsOnline = srv.IsOnline,
-                RunningWorldCount = srv.RunningWorlds.Count
             };
         }
 

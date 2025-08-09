@@ -67,7 +67,6 @@ namespace Application.Core.Channel.Net
 
                 Character.cancelMagicDoor();
 
-                var wserv = Server.getInstance().getWorld(0);   // obviously wserv is NOT null if this player was online on it
                 try
                 {
                     RemovePlayer(Character, IsServerTransition);
@@ -275,11 +274,6 @@ namespace Application.Core.Channel.Net
         public AbstractPlayerInteraction getAbstractPlayerInteraction()
         {
             return _pi ??= new AbstractPlayerInteraction(this);
-        }
-
-        public World getWorldServer()
-        {
-            return Server.getInstance().getWorld(0);
         }
 
         long lastNpcClick;

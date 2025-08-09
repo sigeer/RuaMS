@@ -24,11 +24,6 @@ namespace Application.Core.Client
         AbstractPlayerInteraction getAbstractPlayerInteraction();
         void lockClient();
         void unlockClient();
-        /// <summary>
-        /// 临时使用
-        /// </summary>
-        /// <returns></returns>
-        World getWorldServer();
         void OpenNpc(int npcid, string? script = null);
         bool canClickNPC();
         void setClickedNPC();

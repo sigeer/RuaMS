@@ -5,6 +5,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Item;
@@ -15,8 +16,11 @@ using Application.Shared.NewYear;
 using AutoMapper;
 using BaseProto;
 using client;
+using client.creator;
 using client.inventory;
 using client.keybind;
+using ExpeditionProto;
+using Google.Protobuf;
 using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
@@ -710,6 +714,53 @@ namespace Application.Core.Channel.Services
                 return _transport.RequestPLifeByMapId(new GetPLifeByMapIdRequest { MapId = mapId }).List.ToList();
             }) ?? [];
 
+        }
+
+        public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
+        {
+            var code = CharacterFactory.GetNoviceCreator(request.Type, this)
+                .createCharacter(request.AccountId, request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
+            return new Dto.CreateCharResponseDto { Code = code };
+        }
+
+        public int SendNewPlayer(IPlayer player)
+        {
+            var dto = DeserializeNew(player);
+            return _transport.SendNewPlayer(dto).Code;
+        }
+
+        public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
+        {
+            var checkResult = _transport.CreatePlayerCheck(new Dto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
+            if (checkResult != CreateCharResult.Success)
+                return checkResult;
+
+            return CharacterFactory.GetVeteranCreator(type, this)
+                .createCharacter(client.AccountId, name, face, hair, skin, gender, improveSp);
+        }
+
+        public QueryChannelExpedtionResponse GetExpeditionInfo()
+        {
+            var res = new QueryChannelExpedtionResponse();
+            foreach (var channel in _server.Servers.Values)
+            {
+                var item = new ExpeditionProto.ChannelExpeditionDto() { Channel = channel.getId() };
+
+                var expeds =  channel.getExpeditions();
+                foreach (var exped in expeds)
+                {
+                    var dto = new ExpeditionInfoDto
+                    {
+                        LeaderId = exped.getLeader().Id,
+                        Status = exped.isRegistering() ? 1 : 0,
+                        Type = exped.getType().ordinal()
+                    };
+                    dto.Members.AddRange(exped.getMembers().Select(x => new ExpeditionMemberDto { Id = x.Key, Name = x.Value }).OrderBy(x => x.Id == dto.LeaderId));
+                    item.Expeditions.Add(dto);
+                }
+                res.List.Add(item);
+            }
+            return res;
         }
     }
 }

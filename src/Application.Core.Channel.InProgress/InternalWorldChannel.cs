@@ -1,5 +1,7 @@
 using Application.Core.Login.Servers;
 using Config;
+using Dto;
+using ExpeditionProto;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -15,6 +17,16 @@ namespace Application.Core.Channel.InProgress
         public override void BroadcastMessage(string type, object message)
         {
             ChannelServer.OnMessageReceived(type, message);
+        }
+
+        public override CreateCharResponseDto CreateCharacterFromChannel(CreateCharRequestDto request)
+        {
+            return ChannelServer.DataService.CreatePlayer(request);
+        }
+
+        public override QueryChannelExpedtionResponse GetExpeditionInfo()
+        {
+            return ChannelServer.DataService.GetExpeditionInfo();
         }
     }
 }

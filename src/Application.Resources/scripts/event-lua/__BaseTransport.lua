@@ -128,7 +128,7 @@ end
 
 function BaseTransport:stopentry()
     em:setProperty("entry", "false")
-    em:setProperty("next", os.time() * 1000 + self.beginTime - self.closeTime + self.rideTime)
+    em:setProperty("next", Server:getCurrentTime() + self.beginTime - self.closeTime + self.rideTime)
 
     -- 如果有船舱/车厢，清除其中的对象
     if self.cabinAMap then

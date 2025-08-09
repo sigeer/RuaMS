@@ -31,6 +31,7 @@
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Dto\NameChange.proto" GrpcServices="None" />
+		<Protobuf Include="Expedition\ExpeditionInfo.proto" GrpcServices="None" />
 		<Protobuf Include="Item\Gachapon.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>

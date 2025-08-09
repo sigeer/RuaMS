@@ -68,7 +68,6 @@ namespace Application.Core.ServerTransports
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        string LoadExpeditionInfo();
         Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
@@ -199,5 +198,6 @@ namespace Application.Core.ServerTransports
         void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
         void SaveAll(Empty empty);
         void SendYellowTip(YellowTipRequest yellowTipRequest);
+        ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
     }
 }

@@ -563,11 +563,6 @@ namespace Application.Core.Channel
             return Transport.GetChannelEndPoint(channel);
         }
 
-        public string GetExpeditionInfo()
-        {
-            return Transport.LoadExpeditionInfo();
-        }
-
         public bool CheckCharacterName(string name)
         {
             return Transport.CheckCharacterName(name);

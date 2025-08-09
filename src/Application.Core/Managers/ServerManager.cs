@@ -19,28 +19,28 @@ namespace Application.Core.Managers
 
         public static void ApplyWorldServer(WorldConfigEntity worldConfig)
         {
-            var srv = Server.getInstance();
-            if (srv.RunningWorlds.TryGetValue(worldConfig.Id, out var runningWorldSrv))
-            {
-                // 更新世界设置
-                //runningWorldSrv.Name = worldConfig.Name;
-                //runningWorldSrv.setExpRate(worldConfig.ExpRate);
-                //runningWorldSrv.setMesoRate(worldConfig.MesoRate);
-                //runningWorldSrv.setDropRate(worldConfig.DropRate);
-                //runningWorldSrv.BossDropRate = worldConfig.BossDropRate;
-                //runningWorldSrv.FishingRate = worldConfig.FishingRate;
-                //runningWorldSrv.TravelRate = worldConfig.TravelRate;
-                //runningWorldSrv.QuestRate = worldConfig.QuestRate;
+            //var srv = Server.getInstance();
+            //if (srv.RunningWorlds.TryGetValue(worldConfig.Id, out var runningWorldSrv))
+            //{
+            //    // 更新世界设置
+            //    //runningWorldSrv.Name = worldConfig.Name;
+            //    //runningWorldSrv.setExpRate(worldConfig.ExpRate);
+            //    //runningWorldSrv.setMesoRate(worldConfig.MesoRate);
+            //    //runningWorldSrv.setDropRate(worldConfig.DropRate);
+            //    //runningWorldSrv.BossDropRate = worldConfig.BossDropRate;
+            //    //runningWorldSrv.FishingRate = worldConfig.FishingRate;
+            //    //runningWorldSrv.TravelRate = worldConfig.TravelRate;
+            //    //runningWorldSrv.QuestRate = worldConfig.QuestRate;
 
-                //runningWorldSrv.EventMessage = worldConfig.EventMessage;
-                //runningWorldSrv.ServerMessage = worldConfig.ServerMessage;
-                //runningWorldSrv.WhyAmIRecommended = worldConfig.RecommendMessage;
+            //    //runningWorldSrv.EventMessage = worldConfig.EventMessage;
+            //    //runningWorldSrv.ServerMessage = worldConfig.ServerMessage;
+            //    //runningWorldSrv.WhyAmIRecommended = worldConfig.RecommendMessage;
 
-            }
-            else
-            {
-                srv.AddWorld(worldConfig);
-            }
+            //}
+            //else
+            //{
+            //    srv.AddWorld(worldConfig);
+            //}
 
         }
 

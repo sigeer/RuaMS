@@ -1,11 +1,14 @@
+using Application.Core.Channel.Services;
 using Application.Core.scripting.npc;
 
 namespace Application.Core.Game.Commands.Gm3;
 
 public class ExpedsCommand : CommandBase
 {
-    public ExpedsCommand() : base(3, "expeds")
+    readonly AdminService _adminService;
+    public ExpedsCommand(AdminService adminService) : base(3, "expeds")
     {
+        _adminService = adminService;
         Description = "Show all ongoing boss expeditions.";
     }
 
@@ -14,7 +17,7 @@ public class ExpedsCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (TempConversation.TryCreate(c, out var p))
         {
-            p.RegisterTalk(c.CurrentServerContainer.GetExpeditionInfo());
+            p.RegisterTalk(_adminService.QueryExpeditionInfo(c.OnlinedCharacter));
         }
     }
 }

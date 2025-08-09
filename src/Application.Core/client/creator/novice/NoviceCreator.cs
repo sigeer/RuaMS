@@ -1,11 +1,12 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Services;
 using client.creator;
 
 namespace Application.Core.client.creator.novice
 {
     public abstract class NoviceCreator : CharacterFactory
     {
-        protected NoviceCreator(ChannelService channelService) : base(channelService)
+        protected NoviceCreator(DataService channelService) : base(channelService)
         {
         }
 

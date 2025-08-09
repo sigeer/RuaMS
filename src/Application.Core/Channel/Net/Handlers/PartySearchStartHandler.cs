@@ -72,7 +72,7 @@ public class PartySearchStartHandler : ChannelHandlerBase
             return;
         }
 
-        var world = c.getWorldServer();
+        // var world = c.getWorldServer();
         // world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
     }
 }

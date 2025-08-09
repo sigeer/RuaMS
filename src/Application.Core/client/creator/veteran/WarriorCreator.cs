@@ -21,6 +21,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.client.creator.veteran;
 using Application.Core.Game.Skills;
 using client.inventory;
@@ -37,7 +38,7 @@ public class WarriorCreator : VeteranCreator
     private static int[] startingHpMp = { 905, 208 };
     private static int[] hpGain = { 0, 72, 144, 212, 280, 348, 412, 476, 540, 600, 660 };
 
-    public WarriorCreator(ChannelService channelService) : base(channelService)
+    public WarriorCreator(DataService channelService) : base(channelService)
     {
     }
 

@@ -7,6 +7,7 @@ using CashProto;
 using Config;
 using Dto;
 using net.server;
+using System.Resources;
 
 namespace Application.Core.Login
 {
@@ -18,12 +19,31 @@ namespace Application.Core.Login
 
         public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
         {
-            var world = Server.getInstance().getWorld(0);
-            var channel = world.Channels[0];
-            var statusCode = channel.Service.CreatePlayer(
-                request.Type, request.AccountId,
-                request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
-            return new Dto.CreateCharResponseDto() { Code = statusCode };
+            var defaultServer = _server.ChannelServerList.FirstOrDefault().Value;
+            if (defaultServer == null)
+                return new CreateCharResponseDto { Code = -2 };
+
+            return defaultServer.CreateCharacterFromChannel(request);
+        }
+
+        public ExpeditionProto.QueryChannelExpedtionResponse QueryExpeditionInfo(ExpeditionProto.QueryChannelExpedtionRequest request)
+        {
+            if (request.Channel <= 0)
+            {
+                var res = new ExpeditionProto.QueryChannelExpedtionResponse();
+                List<ExpeditionProto.ChannelExpeditionDto> all = [];
+                foreach (var item in _server.ChannelServerList)
+                {
+                    var data = item.Value.GetExpeditionInfo();
+                    all.AddRange(data.List);
+                }
+                res.List.AddRange(all.OrderBy(x => x.Channel));
+                return res;
+            }
+            else
+            {
+                return _server.ChannelServerList[_server.Channels[request.Channel].ServerName].GetExpeditionInfo();
+            }
         }
 
 

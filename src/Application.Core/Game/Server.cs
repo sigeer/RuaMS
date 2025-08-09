@@ -43,9 +43,6 @@ public class Server
     public static Server getInstance() => instance.Value;
 
 
-    public Dictionary<int, World> RunningWorlds { get; set; } = new();
-
-
     private volatile bool availableDeveloperRoom = false;
     public bool IsOnline { get; set; }
     public static DateTimeOffset uptime = DateTimeOffset.UtcNow;
@@ -64,41 +61,6 @@ public class Server
         return availableDeveloperRoom;
     }
 
-    public World getWorld(int id)
-    {
-        return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
-    }
-
-    public List<World> getWorlds()
-    {
-        return RunningWorlds.Values.ToList();
-    }
-
-
-    public bool AddWorld(WorldConfigEntity worldConfig)
-    {
-        return InitWorld(worldConfig);
-    }
-
-    public bool InitWorld(WorldConfigEntity worldConfig)
-    {
-        if (RunningWorlds.ContainsKey(worldConfig.Id))
-            return false;
-
-        log.Information("初始化世界 {WorldId}", worldConfig.Id);
-
-        var world = new World(worldConfig);
-
-        RunningWorlds[worldConfig.Id] = world;
-        log.Information("世界 {WorldId} 加载完成", world.Id);
-        return true;
-    }
-
-
-    private void resetServerWorlds()
-    {
-        RunningWorlds.Clear();
-    }
 
 
     bool basedCached = false;
@@ -133,26 +95,6 @@ public class Server
         basedCached = true;
     }
 
-    public void LoadWorld()
-    {
-        InitWorld(new WorldConfigEntity(0, "Scania")
-        {
-            Enable = true,
-            ServerMessage = "Welcome to Scania!",
-            EventMessage = "Scania!",
-            RecommendMessage = "Welcome to Scania!",
-            ExpRate = 10,
-            DropRate = 10,
-            MobRate = 1,
-            TravelRate = 10,
-            QuestRate = 5,
-            FishingRate = 10,
-            BossDropRate = 10,
-            MesoRate = 10,
-            StartPort = 7575
-        });
-    }
-
     public bool IsStarting { get; set; }
     public async Task Start(bool ignoreCache = false)
     {
@@ -168,8 +110,6 @@ public class Server
         try
         {
             Initialize(ignoreCache);
-
-            LoadWorld();
 
             IsOnline = true;
 
@@ -208,15 +148,6 @@ public class Server
             log.Warning("不能停止未启动的服务");
             return;
         }
-
-        log.Information("{0} the server!", restart ? "Restarting" : "Shutting down");
-        var runningWorlds = getWorlds();
-        if (runningWorlds.Count == 0)
-        {
-            return;//already shutdown
-        }
-
-        resetServerWorlds();
 
         ThreadManager.getInstance().stop();
 

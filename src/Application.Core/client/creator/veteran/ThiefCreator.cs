@@ -23,6 +23,7 @@ using Application.Core.client.creator.veteran;
 using Application.Core.Channel;
 using client.inventory;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 
 namespace client.creator.veteran;
 
@@ -36,7 +37,7 @@ public class ThiefCreator : VeteranCreator
     private static int[] weapons = { ItemId.STEEL_GUARDS, ItemId.REEF_CLAW };
     private static int[] startingHpMp = { 794, 407 };
 
-    public ThiefCreator(ChannelService channelService) : base(channelService)
+    public ThiefCreator(DataService channelService) : base(channelService)
     {
     }
 
