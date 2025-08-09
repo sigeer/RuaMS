@@ -26,8 +26,6 @@ end
 
 function BasePrivateTransport:setup(level, lobbyid)
     if not self.loaded then
-        -- 初始化时间
-        self.rideTime = em:getTransportationTime(self.rideTime)
         -- 获取地图实例
         self.stationAMap = em:GetMap(self.stationA)
         self.stationBMap = em:GetMap(self.stationB)
@@ -50,10 +48,12 @@ function BasePrivateTransport:playerEntry(eim, player)
     
     -- 传送玩家到交通工具
     player:changeMap(transportMap, transportMap:getPortal(0))
+
+    local rideTime = em:getTransportationTime(self.rideTime)
     -- 显示倒计时
-    player:sendPacket(PacketCreator.getClock(self.rideTime / 1000))
+    player:sendPacket(PacketCreator.getClock(rideTime / 1000))
     -- 安排到达时间
-    eim:schedule("timeOut", self.rideTime)
+    eim:schedule("timeOut", rideTime)
 end
 
 function BasePrivateTransport:playerExit(eim, player, success)
