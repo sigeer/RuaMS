@@ -65,11 +65,6 @@ end
 
 -- 初始化
 function BaseTransport:init()
-    -- 初始化时间，根据航行速率重置时间
-    self.closeTime = em:getTransportationTime(self.closeTime)
-    self.beginTime = em:getTransportationTime(self.beginTime)
-    self.rideTime = em:getTransportationTime(self.rideTime)
-
     -- 获取地图实例
     self.stationAMap = em:GetMap(self.stationA)
     self.stationBMap = em:GetMap(self.stationB)
@@ -122,13 +117,13 @@ function BaseTransport:scheduleNew()
     end
 
     -- 安排关闭入口和启程的时间点
-    em:schedule("stopentry", self.closeTime)
-    em:schedule("takeoff", self.beginTime)
+    em:schedule("stopentry", em:getTransportationTime(self.closeTime))
+    em:schedule("takeoff", em:getTransportationTime(self.beginTime))
 end
 
 function BaseTransport:stopentry()
     em:setProperty("entry", "false")
-    em:setProperty("next", os.time() * 1000 + self.beginTime - self.closeTime + self.rideTime)
+    em:setProperty("next", Server:getCurrentTime() + em:getTransportationTime(self.beginTime - self.closeTime + self.rideTime))
 
     -- 如果有船舱/车厢，清除其中的对象
     if self.cabinAMap then
@@ -170,7 +165,7 @@ function BaseTransport:takeoff()
     end
 
     -- 安排到达时间
-    em:schedule("arrived", self.rideTime)
+    em:schedule("arrived", em:getTransportationTime(self.rideTime))
 end
 
 -- 到达目的地

@@ -34,15 +34,16 @@ public class TransferWorldHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        p.readInt(); //cid
-        int birthday = p.readInt();
-        if (!c.CheckBirthday(birthday))
-        {
-            c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
-            c.sendPacket(PacketCreator.enableActions());
-            return;
-        }
-        c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));
-        return;
+        throw new BusinessNotsupportException();
+        //p.readInt(); //cid
+        //int birthday = p.readInt();
+        //if (!c.CheckBirthday(birthday))
+        //{
+        //    c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
+        //    c.sendPacket(PacketCreator.enableActions());
+        //    return;
+        //}
+        //c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));
+        //return;
     }
 }

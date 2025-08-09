@@ -1,11 +1,15 @@
 using Application.Core.Game.Players;
+using Application.Core.Game.TheWorld;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
+using Application.Utility;
 using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using Org.BouncyCastle.Asn1.X509;
+using server.expeditions;
 using System.Numerics;
+using System.Text;
 using tools;
 using static Mysqlx.Notice.Warning.Types;
 
@@ -255,6 +259,52 @@ namespace Application.Core.Channel.Services
                 chr.saveCharToDB(setChannel: chr.Channel);
             }
             _server.BroadcastGMPacket(PacketCreator.serverNotice(5, "玩家数据已同步"));
+        }
+
+        internal string QueryExpeditionInfo(IPlayer onlinedCharacter)
+        {
+            var dataSource = _transport.GetExpeditionInfo().List;
+            StringBuilder sb = new StringBuilder();
+            foreach (var ch in dataSource)
+            {
+                sb.Append("==== 频道");
+                sb.Append(ch.Channel);
+                sb.Append(" ====");
+                sb.Append("\r\n\r\n");
+                var expeds = ch.Expeditions;
+                if (expeds.Count == 0)
+                {
+                    sb.Append("无");
+                    continue;
+                }
+
+                int id = 0;
+                foreach (var exped in expeds)
+                {
+                    id++;
+                    sb.Append("> Expedition " + id);
+                    
+                    sb.Append(">> Type: " + EnumClassCache<ExpeditionType>.Values[exped.Type].name());
+                    sb.Append(">> Status: " + (exped.Status == 1 ? "REGISTERING" : "UNDERWAY"));
+                    sb.Append(">> Size: " + exped.Members.Count);
+                    int memId = 1;
+                    foreach (var e in exped.Members)
+                    {
+                        if (e.Id == exped.LeaderId)
+                        {
+                            sb.Append(">>> Leader: " + e.Name);
+                        }
+                        else
+                        {
+                            sb.Append(">>> Member " + memId + ": " + e.Name);
+                            memId++;
+                        }
+
+                    }
+                    sb.Append("\r\n\r\n");
+                }
+            }
+            return sb.ToString();
         }
     }
 }

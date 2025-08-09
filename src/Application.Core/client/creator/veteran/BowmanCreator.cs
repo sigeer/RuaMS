@@ -23,6 +23,7 @@ using Application.Core.client.creator.veteran;
 using Application.Core.Channel;
 using client.inventory;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 
 namespace client.creator.veteran;
 
@@ -36,7 +37,7 @@ public class BowmanCreator : VeteranCreator
     private static int[] weapons = { ItemId.RYDEN, ItemId.MOUNTAIN_CROSSBOW };
     private static int[] startingHpMp = { 797, 404 };
 
-    public BowmanCreator(ChannelService channelService) : base(channelService)
+    public BowmanCreator(DataService channelService) : base(channelService)
     {
     }
 

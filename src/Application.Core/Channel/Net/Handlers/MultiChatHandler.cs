@@ -67,7 +67,6 @@ public class MultiChatHandler : ChannelHandlerBase
             c.Disconnect(true, false);
             return;
         }
-        var world = c.getWorldServer();
         if (type == 0)
         {
             _buddyManager.BuddyChat(player, recipients, chattext);

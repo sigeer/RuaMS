@@ -41,10 +41,6 @@ namespace Application.Core.Channel.InProgress
         readonly IExpeditionService _expeditionService;
         readonly ResourceDataManager _resourceService;
         readonly IMapper _mapper;
-        /// <summary>
-        /// 后期移除，逐步合并到MasterServer中去
-        /// </summary>
-        World _world => Server.getInstance().getWorld(0);
 
         public LocalChannelServerTransport(
             MasterServer server,
@@ -76,11 +72,6 @@ namespace Application.Core.Channel.InProgress
         {
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
-
-            foreach (var item in channels)
-            {
-                _world.addChannel(item);
-            }
 
             var channelId = _server.AddChannel(new InternalWorldChannel(server, channels));
             return Task.FromResult(new Config.RegisterServerResult
@@ -186,46 +177,10 @@ namespace Application.Core.Channel.InProgress
             return _server.HasCharacteridInTransition(clientSession);
         }
 
-        public string LoadExpeditionInfo()
+        public ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo()
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (var ch in _world.Channels)
-            {
-                sb.Append("==== 频道");
-                sb.Append(ch.getId());
-                sb.Append(" ====");
-                sb.Append("\r\n\r\n");
-                List<Expedition> expeds = ch.getExpeditions();
-                if (expeds.Count == 0)
-                {
-                    sb.Append("无");
-                    continue;
-                }
-
-                int id = 0;
-                foreach (Expedition exped in expeds)
-                {
-                    id++;
-                    sb.Append("> Expedition " + id);
-                    sb.Append(">> Type: " + exped.getType().ToString());
-                    sb.Append(">> Status: " + (exped.isRegistering() ? "REGISTERING" : "UNDERWAY"));
-                    sb.Append(">> Size: " + exped.getMembers().Count);
-                    sb.Append(">> Leader: " + exped.getLeader().getName());
-                    int memId = 2;
-                    foreach (var e in exped.getMembers())
-                    {
-                        if (exped.isLeader(e.Key))
-                        {
-                            continue;
-                        }
-                        sb.Append(">>> Member " + memId + ": " + e.Value);
-                        memId++;
-                    }
-                }
-            }
-            return sb.ToString();
+            return _server.Transport.QueryExpeditionInfo(new ExpeditionProto.QueryChannelExpedtionRequest());
         }
-
         public Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid)
         {
             return _loginService.PlayerLogin(clientSession, channelId, cid);
@@ -830,5 +785,7 @@ namespace Application.Core.Channel.InProgress
         {
             _server.DropYellowTip(yellowTipRequest.Message, yellowTipRequest.OnlyGM);
         }
+
+
     }
 }

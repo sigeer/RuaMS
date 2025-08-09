@@ -5707,24 +5707,24 @@ public class PacketCreator
     /// </param>
     /// <param name="c"></param>
     /// <returns></returns>
-    public static Packet sendWorldTransferRules(int error, IChannelClient c)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_TRANSFER_WORLD_POSSIBLE_RESULT);
-        p.writeInt(0); //ignored
-        p.writeByte(error);
-        p.writeInt(0);
-        p.writeBool(error == 0); //0 = ?, otherwise list servers
-        if (error == 0)
-        {
-            var worlds = Server.getInstance().getWorlds();
-            p.writeInt(worlds.Count);
-            foreach (var world in worlds)
-            {
-                p.writeString(world.Name);
-            }
-        }
-        return p;
-    }
+    //public static Packet sendWorldTransferRules(int error, IChannelClient c)
+    //{
+    //    OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_TRANSFER_WORLD_POSSIBLE_RESULT);
+    //    p.writeInt(0); //ignored
+    //    p.writeByte(error);
+    //    p.writeInt(0);
+    //    p.writeBool(error == 0); //0 = ?, otherwise list servers
+    //    if (error == 0)
+    //    {
+    //        var worlds = Server.getInstance().getWorlds();
+    //        p.writeInt(worlds.Count);
+    //        foreach (var world in worlds)
+    //        {
+    //            p.writeString(world.Name);
+    //        }
+    //    }
+    //    return p;
+    //}
 
     public static Packet showWorldTransferSuccess(Item item, int accountId)
     {

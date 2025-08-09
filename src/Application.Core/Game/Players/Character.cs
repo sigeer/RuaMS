@@ -2669,16 +2669,6 @@ public partial class Player
         return visibleMapObjects.Keys.ToArray();
     }
 
-    public int getWorld()
-    {
-        return World;
-    }
-
-    public World getWorldServer()
-    {
-        return Server.getInstance().getWorld(World);
-    }
-
     public int gmLevel()
     {
         return Client.AccountEntity!.GMLevel;

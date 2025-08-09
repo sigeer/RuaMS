@@ -35,26 +35,6 @@ namespace Application.Core.Channel
             _tranport.SendRemovePlayerIncomingInvites(id);
         }
 
-        public int CreatePlayer(int type, int accountId, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
-        {
-            return CharacterFactory.GetNoviceCreator(type, this).createCharacter(accountId, name, face, hair, skin, top, bottom, shoes, weapon, gender);
-        }
-
-        public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
-        {
-            var checkResult = _tranport.CreatePlayerCheck(new Dto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
-            if (checkResult != CreateCharResult.Success)
-                return checkResult;
-
-            return CharacterFactory.GetVeteranCreator(type, this).createCharacter(client.AccountId, name, face, hair, skin, gender, improveSp);
-        }
-
-        public int SendNewPlayer(IPlayer player)
-        {
-            var dto = _characteService.DeserializeNew(player);
-            return _tranport.SendNewPlayer(dto).Code;
-        }
-
 
         public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
         {

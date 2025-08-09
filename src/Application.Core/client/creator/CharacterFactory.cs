@@ -22,6 +22,7 @@
 using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.client.creator.novice;
 using Application.Core.client.creator.veteran;
 using Application.Core.Managers.Constants;
@@ -42,10 +43,10 @@ namespace client.creator;
  */
 public abstract class CharacterFactory
 {
-    protected readonly ChannelService _channelService;
+    protected readonly DataService _channelService;
     object createNewLock = new object();
 
-    protected CharacterFactory(ChannelService channelService)
+    protected CharacterFactory(DataService channelService)
     {
         _channelService = channelService;
     }
@@ -142,7 +143,7 @@ public abstract class CharacterFactory
         return CreateCharacter(accountId, name, face, hair, skin, gender, recipe);
     }
 
-    public static NoviceCreator GetNoviceCreator(int type, ChannelService channelService)
+    public static NoviceCreator GetNoviceCreator(int type, DataService channelService)
     {
         if (type == 0) return new NoblesseCreator(channelService);
         if (type == 1) return new BeginnerCreator(channelService);
@@ -150,7 +151,7 @@ public abstract class CharacterFactory
         throw new BusinessFatalException("不支持的创建类型");
     }
 
-    public static VeteranCreator GetVeteranCreator(int type, ChannelService channelService)
+    public static VeteranCreator GetVeteranCreator(int type, DataService channelService)
     {
         return (type) switch
         {

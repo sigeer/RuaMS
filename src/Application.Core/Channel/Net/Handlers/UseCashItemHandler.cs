@@ -518,7 +518,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             int jobid = p.readInt();
             int improveSp = p.readInt();
 
-            int newPlayerId = c.CurrentServer.Service.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
+            int newPlayerId = c.CurrentServerContainer.DataService.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
 
             if (newPlayerId > 0)
             {

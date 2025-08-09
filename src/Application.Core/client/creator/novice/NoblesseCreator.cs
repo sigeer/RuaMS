@@ -19,6 +19,7 @@
 */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Services;
 using Application.Core.client.creator.novice;
 
 namespace client.creator.novice;
@@ -28,7 +29,7 @@ namespace client.creator.novice;
  */
 public class NoblesseCreator : NoviceCreator
 {
-    public NoblesseCreator(ChannelService channelService) : base(channelService)
+    public NoblesseCreator(DataService channelService) : base(channelService)
     {
     }
 

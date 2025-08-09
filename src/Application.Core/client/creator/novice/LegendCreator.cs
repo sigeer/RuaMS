@@ -19,6 +19,7 @@
 */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Services;
 using Application.Core.client.creator.novice;
 
 namespace client.creator.novice;
@@ -28,7 +29,7 @@ namespace client.creator.novice;
  */
 public class LegendCreator : NoviceCreator
 {
-    public LegendCreator(ChannelService channelService) : base(channelService)
+    public LegendCreator(DataService channelService) : base(channelService)
     {
     }
 

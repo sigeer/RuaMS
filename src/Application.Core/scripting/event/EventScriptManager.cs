@@ -45,8 +45,6 @@ public class EventScriptManager : AbstractScriptManager
         : base(logger, commandExecutor, channel, addtionalRegistries)
     {
         eventScripts = ScriptResFactory.GetEvents();
-
-        ReloadEventScript();
     }
 
     public void ReloadEventScript()

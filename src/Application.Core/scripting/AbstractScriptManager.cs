@@ -126,6 +126,8 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("YamlConfig", typeof(YamlConfig));
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
         engine.AddHostedType("Point", typeof(Point));
+        engine.AddHostedObject("Server", _channelServer.Container);
+
         foreach (var item in _addtionalRegistries)
         {
             item.AddHostedObject(engine);
@@ -147,12 +149,12 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("MonsterBook", typeof(MonsterBook));
             engine.AddHostedType("ExpTable", typeof(ExpTable));
             engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
-            engine.AddHostedType("Server", typeof(Server));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedObject("PlayerNPC", _channelServer.Container.PlayerNPCService);
             engine.AddHostedType("ShopFactory", typeof(ShopManager));
             engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
+            engine.AddHostedType("InventoryType", typeof(InventoryType));
             engine.AddHostedType("InventoryType", typeof(InventoryType));
 
             var jsUtils = GetScriptMeta(JsUtil);

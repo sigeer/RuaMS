@@ -31,7 +31,6 @@ public class PartyOperationHandler : ChannelHandlerBase
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;
-        var world = c.getWorldServer();
         var party = player.getParty();
         switch (operation)
         {

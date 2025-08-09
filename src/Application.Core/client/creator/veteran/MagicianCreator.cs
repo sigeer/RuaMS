@@ -21,6 +21,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.client.creator.veteran;
 using Application.Core.Game.Skills;
 using client.inventory;
@@ -37,7 +38,7 @@ public class MagicianCreator : VeteranCreator
     private static int[] startingHpMp = { 405, 729 };
     private static int[] mpGain = { 0, 40, 80, 118, 156, 194, 230, 266, 302, 336, 370 };
 
-    public MagicianCreator(ChannelService channelService) : base(channelService)
+    public MagicianCreator(DataService channelService) : base(channelService)
     {
     }
 

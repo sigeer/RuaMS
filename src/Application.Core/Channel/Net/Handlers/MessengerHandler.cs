@@ -43,7 +43,6 @@ public class MessengerHandler : ChannelHandlerBase
                 string input;
                 byte mode = p.readByte();
                 var player = c.OnlinedCharacter;
-                var world = c.getWorldServer();
                 switch (mode)
                 {
                     case 0x00:

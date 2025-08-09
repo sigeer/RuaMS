@@ -19,10 +19,10 @@
 */
 
 
-using Application.Core.client.creator.veteran;
-using Application.Core.Channel;
-using client.inventory;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
+using Application.Core.client.creator.veteran;
+using client.inventory;
 
 namespace client.creator.veteran;
 
@@ -35,7 +35,7 @@ public class PirateCreator : VeteranCreator
     private static int[] weapons = { ItemId.PRIME_HANDS, ItemId.COLD_MIND };
     private static int[] startingHpMp = { 846, 503 };
 
-    public PirateCreator(ChannelService channelService) : base(channelService)
+    public PirateCreator(DataService channelService) : base(channelService)
     {
     }
 

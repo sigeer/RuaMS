@@ -14,6 +14,8 @@ namespace Application.Core.Login.Servers
         public List<ChannelConfig> ServerConfigs { get; }
 
         public abstract void BroadcastMessage(string type, object message);
+        public abstract Dto.CreateCharResponseDto CreateCharacterFromChannel(Dto.CreateCharRequestDto request);
+        public abstract ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
     }
 
 

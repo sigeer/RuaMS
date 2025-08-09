@@ -179,11 +179,6 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public World getWorldServer()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
         public void lockClient()
         {
             throw new BusinessCharacterOfflineException();
