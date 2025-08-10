@@ -134,6 +134,10 @@ namespace Application.Core.Login.Mappers
             CreateMap<GachaponPoolLevelChanceEntity, GachaponPoolLevelChanceModel>();
             CreateMap<GachaponPoolItemEntity, GachaponPoolItemModel>();
 
+            CreateMap<CdkCodeEntity, CdkCodeModel>();
+            CreateMap<CdkItemEntity, CdkItemModel>();
+            CreateMap<CdkRecordEntity, CdkRecordModel>();
+
         }
     }
 }

@@ -21,13 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Servers.Services;
-using Application.Core.ServerTransports;
-using Application.Shared.Items;
 using client.inventory;
-using Microsoft.EntityFrameworkCore;
-using net.server;
-using System.Security.Policy;
 
 namespace server;
 
@@ -38,10 +32,18 @@ namespace server;
 public class CashShop
 {
     ILogger? _log;
-    ILogger log => _log ?? (_log = LogFactory.GetCharacterLog(accountId, characterId, "CashShop"));
 
+    /// <summary>
+    /// 点券
+    /// </summary>
     public const int NX_CREDIT = 1;
+    /// <summary>
+    /// 抵用券
+    /// </summary>
     public const int MAPLE_POINT = 2;
+    /// <summary>
+    /// 信用卡
+    /// </summary>
     public const int NX_PREPAID = 4;
 
 

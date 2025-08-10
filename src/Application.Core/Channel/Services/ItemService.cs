@@ -7,7 +7,9 @@ using Application.Core.ServerTransports;
 using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
+using client.inventory.manipulator;
 using Google.Protobuf.WellKnownTypes;
+using ItemProto;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.Extensions.Logging;
 using Mysqlx.Crud;
@@ -115,7 +117,7 @@ namespace Application.Core.Channel.Services
             List<ItemMessagePair> gifts = new();
             try
             {
-                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(new ItemProto.GetMyGiftsRequest { MasterId = chr.Id}).List);
+                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(new ItemProto.GetMyGiftsRequest { MasterId = chr.Id }).List);
                 foreach (var rs in dataList)
                 {
                     cashShop.Notes++;
@@ -392,5 +394,112 @@ namespace Application.Core.Channel.Services
             return false;
         }
 
+        internal void UseCdk(IPlayer chr, string cdk)
+        {
+            UseCdkResponseCode code = UseCdkResponseCode.Success;
+            if (!chr.Client.attemptCsCoupon())
+            {
+                code = UseCdkResponseCode.TooManyError;
+            }
+
+            ItemProto.UseCdkResponse res = new ItemProto.UseCdkResponse();
+            if (code == UseCdkResponseCode.Success)
+            {
+                res = _transport.UseCdk(new ItemProto.UseCdkRequest { MasterId = chr.Id, Cdk = cdk });
+                code = (UseCdkResponseCode)res.Code;
+            }
+
+            if (code != UseCdkResponseCode.Success)
+            {
+                chr.sendPacket(PacketCreator.showCashShopMessage((byte)code));
+            }
+            else
+            {
+                chr.Client.resetCsCoupon();
+                List<Item> cashItems = new();
+                List<ItemQuantity> items = new();
+                int nxCredit = 0;
+                int maplePoints = 0;
+                int nxPrepaid = 0;
+                int mesos = 0;
+
+                foreach (var pair in res.Items)
+                {
+                    int quantity = pair.Quantity;
+
+                    CashShop cs = chr.getCashShop();
+                    var itemType = (CdkItemType)pair.Type;
+                    switch (itemType)
+                    {
+                        case CdkItemType.Meso:
+                            chr.gainMeso(quantity, false); //mesos
+                            mesos += quantity;
+                            break;
+                        case CdkItemType.NxCredit:
+                            cs.gainCash(1, quantity);    //nxCredit
+                            nxCredit += quantity;
+                            break;
+                        case CdkItemType.MaplePoint:
+                            cs.gainCash(2, quantity);    //maplePoint
+                            maplePoints += quantity;
+                            break;
+                        case CdkItemType.NxPrepaid:
+                            cs.gainCash(4, quantity);    //nxPrepaid
+                            nxPrepaid += quantity;
+                            break;
+                        case CdkItemType.Unknown:
+                            cs.gainCash(1, quantity);
+                            nxCredit += quantity;
+                            cs.gainCash(4, (quantity / 5000));
+                            nxPrepaid += quantity / 5000;
+                            break;
+
+                        default:
+                            int item = pair.ItemId;
+
+                            short qty;
+                            if (quantity > short.MaxValue)
+                            {
+                                qty = short.MaxValue;
+                            }
+                            else if (quantity < short.MinValue)
+                            {
+                                qty = short.MinValue;
+                            }
+                            else
+                            {
+                                qty = (short)quantity;
+                            }
+
+                            if (ItemInformationProvider.getInstance().isCash(item))
+                            {
+                                Item it = GenerateCouponItem(item, qty);
+
+                                cs.addToInventory(it);
+                                cashItems.Add(it);
+                            }
+                            else
+                            {
+                                InventoryManipulator.addById(chr.Client, item, qty, "");
+                                items.Add(new(item, qty));
+                            }
+                            break;
+                    }
+                }
+                if (cashItems.Count > 255)
+                {
+                    cashItems = cashItems.Take(255).ToList();
+                }
+                if (nxCredit != 0 || nxPrepaid != 0)
+                { //coupon packet can only show maple points (afaik)
+                    chr.sendPacket(PacketCreator.showBoughtQuestItem(0));
+                }
+                else
+                {
+                    chr.sendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
+                }
+                chr.Client.enableCSActions();
+            }
+        }
     }
 }

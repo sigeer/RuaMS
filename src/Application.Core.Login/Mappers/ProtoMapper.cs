@@ -130,6 +130,8 @@ namespace Application.Core.Login.Mappers
             CreateMap<GachaponPoolModel, ItemProto.GachaponPoolDto>();
             CreateMap<GachaponPoolLevelChanceModel, ItemProto.GachaponPoolChanceDto>();
             CreateMap<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
+
+            CreateMap<CdkItemModel, ItemProto.CdkRewordPackageDto>();
         }
     }
 }

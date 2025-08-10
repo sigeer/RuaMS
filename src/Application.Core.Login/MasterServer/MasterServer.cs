@@ -130,6 +130,8 @@ namespace Application.Core.Login
 
         readonly Lazy<DataStorage> _dataStorage;
         public DataStorage DataStorage => _dataStorage.Value;
+        readonly Lazy<CDKManager> _cdkManager;
+        public CDKManager CDKManager => _cdkManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -201,6 +203,7 @@ namespace Application.Core.Login
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
             _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
+            _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);

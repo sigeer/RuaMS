@@ -105,6 +105,9 @@ namespace Application.Core.Login
             services.AddSingleton<GachaponManager>();
             services.AddSingleton<IStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
 
+            services.AddSingleton<CDKManager>();
+            services.AddSingleton<IStorage, CDKManager>(sp => sp.GetRequiredService<CDKManager>());
+
             services.AddSingleton<BuddyManager>();
 
             services.AddSingleton<InventoryManager>();

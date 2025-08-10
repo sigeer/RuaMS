@@ -109,9 +109,10 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<NoteEntity> Notes { get; set; }
 
-    public virtual DbSet<Nxcode> Nxcodes { get; set; }
+    public virtual DbSet<CdkCodeEntity> CdkCodes { get; set; }
 
-    public virtual DbSet<NxcodeItem> NxcodeItems { get; set; }
+    public virtual DbSet<CdkItemEntity> CdkItems { get; set; }
+    public virtual DbSet<CdkRecordEntity> CdkRecords { get; set; }
 
     public virtual DbSet<Nxcoupon> Nxcoupons { get; set; }
 
@@ -1300,52 +1301,65 @@ public partial class DBContext : DbContext
                 .HasColumnName("toId");
         });
 
-        modelBuilder.Entity<Nxcode>(entity =>
+        modelBuilder.Entity<CdkCodeEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("nxcode");
+            entity.ToTable("cdk_codes");
 
-            entity.HasIndex(e => e.Code, "code").IsUnique();
+            entity.HasIndex(e => e.Code, "idx_code").IsUnique();
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
+                .HasColumnType("int");
             entity.Property(e => e.Code)
-                .HasMaxLength(17)
-                .HasColumnName("code");
+                .HasMaxLength(17);
+            entity.Property(e => e.MaxCount)
+                .HasColumnType("int");
             entity.Property(e => e.Expiration)
-                .HasColumnType("bigint(20) unsigned")
-                .HasColumnName("expiration");
-            entity.Property(e => e.Retriever)
-                .HasMaxLength(13)
-                .HasColumnName("retriever");
+                .HasColumnType("bigint(20) unsigned");
         });
 
-        modelBuilder.Entity<NxcodeItem>(entity =>
+        modelBuilder.Entity<CdkItemEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("nxcode_items");
+            entity.ToTable("cdk_items");
+
+            entity.HasIndex(e => e.CodeId, "idx_code");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
-            entity.Property(e => e.Codeid)
-                .HasColumnType("int(11)")
-                .HasColumnName("codeid");
-            entity.Property(e => e.Item)
+                .HasColumnType("int");
+            entity.Property(e => e.CodeId)
+                .HasColumnType("int");
+            entity.Property(e => e.ItemId)
                 .HasDefaultValueSql("'4000000'")
-                .HasColumnType("int(11)")
-                .HasColumnName("item");
+                .HasColumnType("int");
             entity.Property(e => e.Quantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("quantity");
+                .HasColumnType("int");
             entity.Property(e => e.Type)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
-                .HasColumnName("type");
+                .HasColumnType("int");
+        });
+
+        modelBuilder.Entity<CdkRecordEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("cdk_records");
+
+            entity.HasIndex(e => e.CodeId, "idx_code");
+
+            entity.Property(e => e.Id)
+                .HasColumnType("int");
+            entity.Property(e => e.CodeId)
+                .HasColumnType("int");
+            entity.Property(e => e.RecipientId)
+                .HasColumnType("int");
+            entity.Property(e => e.RecipientTime)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp");
         });
 
         modelBuilder.Entity<Nxcoupon>(entity =>

@@ -786,6 +786,9 @@ namespace Application.Core.Channel.InProgress
             _server.DropYellowTip(yellowTipRequest.Message, yellowTipRequest.OnlyGM);
         }
 
-
+        public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
+        {
+            return _server.CDKManager.UseCdk(useCdkRequest);
+        }
     }
 }
