@@ -103,10 +103,10 @@ namespace Application.Core.Login.Datas
 
             long timeClear = _masterServer.getCurrentTime() - (long)TimeSpan.FromDays(14).TotalMilliseconds;
 
-            var codeList = dbContext.Nxcodes.Where(x => x.Expiration <= timeClear).ToList();
+            var codeList = dbContext.CdkCodes.Where(x => x.Expiration <= timeClear).ToList();
             var codeIdList = codeList.Select(x => x.Id).ToList();
-            await dbContext.NxcodeItems.Where(x => codeIdList.Contains(x.Codeid)).ExecuteDeleteAsync();
-            dbContext.Nxcodes.RemoveRange(codeList);
+            await dbContext.CdkItems.Where(x => codeIdList.Contains(x.CodeId)).ExecuteDeleteAsync();
+            dbContext.CdkCodes.RemoveRange(codeList);
             await dbContext.SaveChangesAsync();
         }
 

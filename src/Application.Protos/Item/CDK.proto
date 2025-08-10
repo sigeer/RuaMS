@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ItemProto;
+
+message UseCdkRequest {
+	int32 masterId =1;
+	string cdk = 2;
+}
+
+message UseCdkResponse {
+	int32 code = 1;
+	repeated  CdkRewordPackageDto items = 2;
+}
+
+message CdkRewordPackageDto {
+	int32 type = 2;
+	int32 itemId = 3;
+	int32 quantity = 4;
+}

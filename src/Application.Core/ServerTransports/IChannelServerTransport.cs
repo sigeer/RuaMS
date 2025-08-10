@@ -199,5 +199,6 @@ namespace Application.Core.ServerTransports
         void SaveAll(Empty empty);
         void SendYellowTip(YellowTipRequest yellowTipRequest);
         ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
+        UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
     }
 }

@@ -151,7 +151,9 @@ namespace Application.Core.Login.ServerData
             bannedIP.RemoveAll(x => x.Aid == accountId);
             bannedHWID.RemoveAll(x => x.AccountId == accountId);
             bannedMAC.RemoveAll(x => x.Aid == accountId);
-            var histories = _server.AccountHistoryManager.Query(x => x.AccountId == accountId);
+
+            var dayBeforeMonth = _server.GetCurrentTimeDateTimeOffset().AddDays(30);
+            var histories = _server.AccountHistoryManager.Query(x => x.AccountId == accountId && x.LastActiveTime >= dayBeforeMonth);
             foreach (var his in histories)
             {
                 if (banLevel.HasFlag(BanLevel.IP))
