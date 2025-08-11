@@ -1,9 +1,8 @@
-using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 
 namespace Application.Core.Channel.ServerData;
 
-public class MapOwnershipManager : TimelyControllerBase
+public class MapOwnershipManager : TaskBase
 {
 
     private HashSet<IMap> ownedMaps = new();

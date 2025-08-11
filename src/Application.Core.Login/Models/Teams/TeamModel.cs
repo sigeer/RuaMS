@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using Application.Shared.Team;
 
 namespace Application.Core.Login.Models

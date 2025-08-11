@@ -14,11 +14,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core.EF\Application.Core.EF.csproj" />
-    <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="CharacterCreator\" />
+    <Folder Include="ServerData\Items\" />
   </ItemGroup>
 
 </Project>

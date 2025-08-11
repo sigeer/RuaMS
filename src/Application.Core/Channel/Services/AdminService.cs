@@ -1,8 +1,11 @@
+using Application.Core.Models;
+using Application.Core.scripting.npc;
 using Application.Core.ServerTransports;
+using Application.Shared.Events;
 using Application.Shared.Login;
+using AutoMapper;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
-using server.expeditions;
 using System.Text;
 using tools;
 
@@ -12,11 +15,13 @@ namespace Application.Core.Channel.Services
     {
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
+        readonly IMapper _mapper;
 
-        public AdminService(IChannelServerTransport transport, WorldChannelServer server)
+        public AdminService(IChannelServerTransport transport, WorldChannelServer server, IMapper mapper)
         {
             _transport = transport;
             _server = server;
+            _mapper = mapper;
         }
 
         public void AutoBan(IPlayer chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
@@ -299,5 +304,50 @@ namespace Application.Core.Channel.Services
             }
             return sb.ToString();
         }
+
+        internal ServerState GetServerStats()
+        {
+            return _mapper.Map<ServerState>(_transport.GetServerStats());
+        }
+
+        //public void printSessionTrace(IChannelClient c)
+        //{
+        //    string str = "Opened server sessions:\r\n\r\n";
+
+        //    if (onlineClients.Count > 0)
+        //    {
+        //        var elist = onlineClients.OrderBy(x => x.Key).ToList();
+
+        //        str += ("Current online clients:\r\n");
+        //        foreach (var e in elist)
+        //        {
+        //            str += ("  " + e.Key + "\r\n");
+        //        }
+        //    }
+
+        //    if (onlineRemoteHwids.Count > 0)
+        //    {
+        //        List<Hwid> hwids = onlineRemoteHwids.OrderBy(x => x.hwid).ToList();
+
+        //        str += ("Current online HWIDs:\r\n");
+        //        foreach (Hwid s in hwids)
+        //        {
+        //            str += ("  " + s + "\r\n");
+        //        }
+        //    }
+
+        //    if (loginRemoteHosts.Count > 0)
+        //    {
+        //        var elist = loginRemoteHosts.OrderBy(x => x.Key).ToList();
+
+        //        str += ("Current login sessions:\r\n");
+        //        foreach (var e in elist)
+        //        {
+        //            str += ("  " + e.Key + ", IP: " + e.Value.RemoteAddress + "\r\n");
+        //        }
+        //    }
+
+        //    TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
+        //}
     }
 }

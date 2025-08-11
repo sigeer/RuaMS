@@ -1,5 +1,3 @@
-using client;
-
 namespace Application.Core.Game.Commands.Gm3;
 
 public class FameCommand : CommandBase

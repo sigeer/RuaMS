@@ -25,7 +25,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using client;
 using client.status;
 using net.server.services.task.channel;
 

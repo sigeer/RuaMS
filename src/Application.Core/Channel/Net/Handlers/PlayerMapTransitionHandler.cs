@@ -22,7 +22,6 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
-using client;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

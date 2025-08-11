@@ -24,8 +24,8 @@
 using Application.Core.Login;
 using Application.Core.Login.Client;
 using Application.Core.Login.Net;
+using Application.Core.Login.Net.Packets;
 using Microsoft.Extensions.Logging;
-using tools;
 
 namespace net.server.handlers.login;
 
@@ -43,6 +43,6 @@ public class RelogRequestHandler : LoginHandlerBase
 
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
-        c.sendPacket(PacketCreator.getRelogResponse());
+        c.sendPacket(LoginPacketCreator.getRelogResponse());
     }
 }

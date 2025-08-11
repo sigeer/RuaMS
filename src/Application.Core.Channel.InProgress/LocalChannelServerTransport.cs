@@ -21,6 +21,7 @@ using net.server;
 using server.expeditions;
 using System.Net;
 using System.Text;
+using SystemProto;
 using tools;
 
 namespace Application.Core.Channel.InProgress
@@ -789,6 +790,11 @@ namespace Application.Core.Channel.InProgress
         public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
         {
             return _server.CDKManager.UseCdk(useCdkRequest);
+        }
+
+        public ServerStateDto GetServerStats()
+        {
+            return _server.GetServerStats();
         }
     }
 }

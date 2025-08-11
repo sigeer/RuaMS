@@ -2,7 +2,6 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
 using Application.Core.Login.Services;
-using Application.Core.Managers.Constants;
 using Application.EF;
 using Application.Shared.Constants;
 using Application.Shared.Items;
@@ -12,18 +11,14 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
-using net.server;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using tools;
-using XmlWzReader;
 
 namespace Application.Core.Login.Datas
 {

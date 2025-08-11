@@ -1059,18 +1059,6 @@ public class PacketCreator
     }
 
     /**
-     * Gets the response to a relog request.
-     *
-     * @return The relog response packet.
-     */
-    public static Packet getRelogResponse()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.RELOG_RESPONSE);
-        p.writeByte(1);//1 O.O Must be more types ):
-        return p;
-    }
-
-    /**
      * Gets a server message packet.
      *
      * @param message The message to convey.
@@ -2480,15 +2468,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showAllCharacter(int totalWorlds, int totalChrs)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
-        p.writeByte(totalChrs > 0 ? 1 : 5); // 2: already connected to server, 3 : unk error (view-all-characters), 5 : cannot find any
-        p.writeInt(totalWorlds);
-        p.writeInt(totalChrs);
-        return p;
-    }
-
     public static Packet showAriantScoreBoard()
     {
         // thanks lrenex for pointing match's end scoreboard packet
@@ -2645,14 +2624,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet charNameResponse(string charname, bool nameUsed)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CHAR_NAME_RESPONSE);
-        p.writeString(charname);
-        p.writeByte(nameUsed ? 1 : 0);
-        return p;
-    }
-
     public static Packet addNewCharEntry(IClientBase client, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
@@ -2661,30 +2632,6 @@ public class PacketCreator
         return p;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="cid"></param>
-    /// <param name="state">
-    /// <para>0x00 = success</para>
-    /// <para>0x06 = Trouble logging into the game?</para>
-    /// <para>0x09 = Unknown error</para>
-    /// <para>0x0A = Could not be processed due to too many connection requests to the server.</para>
-    /// <para>0x12 = invalid bday</para>
-    /// <para>0x14 = incorrect pic</para>
-    /// <para>0x16 = Cannot delete a guild master.</para>
-    /// <para>0x18 = Cannot delete a character with a pending wedding.</para>
-    /// <para>0x1A = Cannot delete a character with a pending world transfer.</para>
-    /// <para>0x1D = Cannot delete a character that has a family.</para>
-    /// </param>
-    /// <returns></returns>
-    public static Packet deleteCharResponse(int cid, int state)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.DELETE_CHAR_RESPONSE);
-        p.writeInt(cid);
-        p.writeByte(state);
-        return p;
-    }
 
 
 

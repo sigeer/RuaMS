@@ -28,7 +28,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using client;
+using Application.Shared.Events;
 using constants.game;
 using constants.String;
 using Microsoft.Extensions.DependencyInjection;

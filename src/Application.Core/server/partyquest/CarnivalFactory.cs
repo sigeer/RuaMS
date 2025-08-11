@@ -1,6 +1,3 @@
-
-
-using client;
 using server.life;
 
 namespace server.partyquest;

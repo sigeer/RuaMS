@@ -2,7 +2,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using System.Runtime.CompilerServices;

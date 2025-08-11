@@ -28,7 +28,6 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;

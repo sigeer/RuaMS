@@ -1,3 +1,4 @@
+using Application.Shared.Constants.Skill;
 using Application.Utility;
 using Application.Utility.Exceptions;
 
@@ -26,5 +27,26 @@ namespace Application.Shared.Constants.Job
         }
 
         public static int MaxJobId = _dataSource.Keys.Max();
+    }
+
+    public static class JobUtils
+    {
+        public static int getMax()
+        {
+            return 22;
+        }
+
+        public static int getJobMapChair(this Job job)
+        {
+            switch (job.Type)
+            {
+                case JobType.Adventurer:
+                    return Beginner.MAP_CHAIR;
+                case JobType.Cygnus:
+                    return Noblesse.MAP_CHAIR;
+                default:
+                    return Legend.MAP_CHAIR;
+            }
+        }
     }
 }

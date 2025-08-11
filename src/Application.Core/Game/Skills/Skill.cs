@@ -22,7 +22,6 @@
 
 
 using server;
-using server.life;
 
 namespace Application.Core.Game.Skills;
 

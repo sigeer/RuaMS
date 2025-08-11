@@ -27,6 +27,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using client;
 using client.inventory;

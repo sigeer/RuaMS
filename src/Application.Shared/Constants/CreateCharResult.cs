@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Managers.Constants
+namespace Application.Shared.Constants
 {
     public class CreateCharResult
     {

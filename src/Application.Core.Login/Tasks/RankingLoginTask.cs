@@ -23,7 +23,6 @@
 
 using Application.EF;
 using Application.Utility.Tasks;
-using client;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Tasks;

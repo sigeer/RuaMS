@@ -8,6 +8,7 @@ using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
+using Application.Shared.Constants;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Compatible.Atomics;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using net.server;
 using System.Net;
 using System.Threading.Tasks;
+using SystemProto;
 
 
 namespace Application.Core.Login
@@ -147,6 +149,7 @@ namespace Application.Core.Login
         public ITimerManager TimerManager { get; private set; } = null!;
 
         CancellationTokenSource? _shutdownCts = null;
+        public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
         {
             ServiceProvider = sp;
@@ -299,7 +302,6 @@ namespace Application.Core.Login
             await InvitationManager.DisposeAsync();
 
             await TimerManager.Stop();
-            await Server.getInstance().Stop(false);
 
             _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", ServerName);
             await ServerManager.CommitAllImmediately();
@@ -320,7 +322,7 @@ namespace Application.Core.Login
 
                 await ServerManager.Setup();
 
-                await Server.getInstance().Start();
+                OpcodeConstants.generateOpcodeNames();
 
                 foreach (var module in Modules)
                 {
@@ -522,7 +524,7 @@ namespace Application.Core.Login
         {
             _logger.LogInformation("[{ServerName}] 定时任务加载中...", ServerName);
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
+            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
@@ -603,6 +605,11 @@ namespace Application.Core.Login
             var forceTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             serverCurrentTime = forceTime;
             currentTime.set(forceTime);
+        }
+
+        public ServerStateDto GetServerStats()
+        {
+            return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
         }
     }
 }

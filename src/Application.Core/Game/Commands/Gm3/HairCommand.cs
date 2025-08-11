@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using client;
 
 namespace Application.Core.Game.Commands.Gm3;
 

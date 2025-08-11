@@ -1,9 +1,5 @@
 using Application.Shared.Message;
 using Dto;
-using MySql.EntityFrameworkCore.Metadata;
-using Org.BouncyCastle.Asn1.X509;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login
 {

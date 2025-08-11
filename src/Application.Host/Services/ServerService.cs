@@ -21,11 +21,8 @@ namespace Application.Host.Services
 
         public ServerInfoDto GetServerInfo()
         {
-            var srv = Server.getInstance();
             return new ServerInfoDto
             {
-                State = srv.IsStarting ? 1: (srv.IsOnline ? 2 : 0),
-                IsOnline = srv.IsOnline,
             };
         }
 

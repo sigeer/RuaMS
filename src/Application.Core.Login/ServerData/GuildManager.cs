@@ -1,7 +1,5 @@
-using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
-using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
@@ -10,15 +8,9 @@ using Application.Shared.Team;
 using Application.Utility;
 using AutoMapper;
 using Dto;
-using Jint.Runtime.Debugger;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Ocsp;
-using server.quest;
-using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Application.Core.Login.ServerData
@@ -762,7 +754,7 @@ namespace Application.Core.Login.ServerData
             _server.Transport.BroadcastAllianceMemberRankChanged(new Dto.ChangePlayerAllianceRankResponse { Code = (int)code, NewRank = newRank, Request = request, AllianceId = allianceId });
         }
 
-        public void DisbandAlliance(DisbandAllianceRequest request )
+        public void DisbandAlliance(DisbandAllianceRequest request)
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {

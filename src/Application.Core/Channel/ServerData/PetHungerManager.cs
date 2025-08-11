@@ -1,8 +1,6 @@
-using Application.Core.Game.Controllers;
-
 namespace Application.Core.Channel.ServerData
 {
-    public class PetHungerManager : TimelyControllerBase
+    public class PetHungerManager : TaskBase
     {
         private object activePetsLock = new object();
         private Dictionary<int, int> activePets = new();

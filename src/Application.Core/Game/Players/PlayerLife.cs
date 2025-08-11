@@ -1,5 +1,4 @@
 using Application.Shared.Objects;
-using client;
 
 namespace Application.Core.Game.Players
 {

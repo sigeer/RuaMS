@@ -39,6 +39,7 @@
 
 	<ItemGroup>
 	  <Folder Include="constants\net\" />
+	  <Folder Include="Managers\Constants\" />
 	  <Folder Include="Net\opcodes\" />
 	  <Folder Include="Net\server\coordinator\session\" />
 	  <Folder Include="server\life\positioner\" />

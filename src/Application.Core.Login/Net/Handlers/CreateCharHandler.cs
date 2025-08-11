@@ -21,14 +21,9 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.ServerTransports;
-using client.creator.novice;
 using Microsoft.Extensions.Logging;
-using Serilog;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -57,7 +52,7 @@ public class CreateCharHandler : LoginHandlerBase
 
         if (job < 0 || job > 2)
         {
-            c.sendPacket(PacketCreator.deleteCharResponse(0, 9));
+            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
             return;
         }
 
@@ -70,7 +65,7 @@ public class CreateCharHandler : LoginHandlerBase
 
         if (newCharacterId == -2)
         {
-            c.sendPacket(PacketCreator.deleteCharResponse(0, 9));
+            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
         }
     }
 }

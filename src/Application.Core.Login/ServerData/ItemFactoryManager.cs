@@ -1,9 +1,10 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
-using Application.Core.Login.ServerData.Items;
 using Application.EF;
+using Application.Shared.Items;
+using Application.Utility;
+using Application.Utility.Exceptions;
 using AutoMapper;
-using client.inventory;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
@@ -31,7 +32,7 @@ namespace Application.Core.Login.ServerData
             if (_groupedItems.TryGetValue(keyObj, out var d))
                 return d;
 
-            var typeInfo = ItemFactory.GetItemFactory(itemType);
+            var typeInfo = EnumClassCache<ItemFactory>.Values.FirstOrDefault(x => x.getValue() == itemType) ?? throw new BusinessFatalException($"不存在的道具分类 {itemType}");
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dataList = (from a in dbContext.Inventoryitems.AsNoTracking()
                 .Where(x => typeInfo.IsAccount ? x.Accountid == key : x.Characterid == key)

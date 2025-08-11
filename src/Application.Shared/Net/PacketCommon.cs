@@ -63,6 +63,12 @@ namespace Application.Shared.Net
             return p;
         }
 
+        public static Packet customPacket(byte[] packet)
+        {
+            OutPacket p = new ByteBufOutPacket();
+            p.writeBytes(packet);
+            return p;
+        }
 
         /// <summary>
         /// Gets a server message packet.

@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;

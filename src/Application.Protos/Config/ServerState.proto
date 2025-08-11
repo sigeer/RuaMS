@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package SystemProto;
+
+message ServerStateDto {
+	bool isDevRoomAvailable = 1;
+}

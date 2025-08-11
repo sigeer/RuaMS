@@ -18,7 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.Controllers;
 using scripting.Event;
 using System.Collections.Concurrent;
 
@@ -27,7 +26,7 @@ namespace Application.Core.Channel;
 /**
  * @author Ronan
  */
-public class EventRecallManager : TimelyControllerBase
+public class EventRecallManager : TaskBase
 {
 
     private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();

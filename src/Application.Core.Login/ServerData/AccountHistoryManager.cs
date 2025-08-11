@@ -7,7 +7,6 @@ using Application.Shared.Login;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using client.inventory;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -88,9 +87,9 @@ namespace Application.Core.Login.ServerData
 
         int _localId = 0;
 
-        List<IpbanEntity> bannedIP = new ();
-        List<MacbanEntity> bannedMAC = new ();
-        List<HwidbanEntity> bannedHWID = new ();
+        List<IpbanEntity> bannedIP = new();
+        List<MacbanEntity> bannedMAC = new();
+        List<HwidbanEntity> bannedHWID = new();
 
         public AccountBanManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
         {
@@ -214,10 +213,10 @@ namespace Application.Core.Login.ServerData
             if (targetChr == null)
                 return new BanResponse { Code = 1 };
 
-            if (!BanAccount(targetChr.Character.AccountId, 
-                request.Days < 0 ? DateTimeOffset.MaxValue : _server.GetCurrentTimeDateTimeOffset().AddDays(request.Days), 
+            if (!BanAccount(targetChr.Character.AccountId,
+                request.Days < 0 ? DateTimeOffset.MaxValue : _server.GetCurrentTimeDateTimeOffset().AddDays(request.Days),
                 request.BanLevel,
-                request.Reason, 
+                request.Reason,
                 request.ReasonDesc))
             {
                 // 已经处于封禁状态了

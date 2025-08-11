@@ -1,4 +1,3 @@
-using client;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm3;
