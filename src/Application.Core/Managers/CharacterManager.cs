@@ -1,16 +1,11 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.model;
 using AutoMapper;
 using client.inventory;
-using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
-using tools;
 
 namespace Application.Core.Managers
 {
     public class CharacterManager
     {
-        static IMapper Mapper = GlobalTools.Mapper;
         public static string makeMapleReadable(string input)
         {
             string i = input.Replace('I', 'i');

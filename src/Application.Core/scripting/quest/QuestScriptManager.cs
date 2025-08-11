@@ -21,8 +21,8 @@
  */
 
 
-using Application.Core.Game.Commands;
 using Application.Core.Channel;
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
@@ -41,7 +41,7 @@ public class QuestScriptManager : AbstractScriptManager
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }

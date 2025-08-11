@@ -861,35 +861,4 @@ public class Equip : Item
     {
         return itemLevel;
     }
-
-    public void SetDataFromDB(MtsItemEntity dbModel)
-    {
-        this.setOwner(dbModel.Owner);
-        this.setQuantity(1);
-        this.setAcc((short)dbModel.Acc);
-        this.setAvoid((short)dbModel.Avoid);
-        this.setDex((short)dbModel.Dex);
-        this.setHands((short)dbModel.Hands);
-        this.setHp((short)dbModel.Hp);
-        this.setInt((short)dbModel.Int);
-        this.setJump((short)dbModel.Jump);
-        this.setLuk((short)dbModel.Luk);
-        this.setMatk((short)dbModel.Matk);
-        this.setMdef((short)dbModel.Mdef);
-        this.setMp((short)dbModel.Mp);
-        this.setSpeed((short)dbModel.Speed);
-        this.setStr((short)dbModel.Str);
-        this.setWatk((short)dbModel.Watk);
-        this.setWdef((short)dbModel.Wdef);
-        this.setUpgradeSlots((byte)dbModel.Upgradeslots);
-        this.setLevel((byte)dbModel.Level);
-        this.setItemLevel((byte)dbModel.Itemlevel);
-        this.setItemExp(dbModel.Itemexp);
-        // this.setRingId(dbModel.Ringid);
-        this.setVicious((byte)dbModel.Vicious);
-        this.setFlag((short)dbModel.Flag);
-        this.setExpiration(dbModel.Expiration);
-        this.setGiftFrom(dbModel.GiftFrom);
-
-    }
 }

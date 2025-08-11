@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Items;
-using Application.Utility.Configs;
 using client.inventory;
 using tools;
 

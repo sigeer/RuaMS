@@ -27,7 +27,7 @@ public class DevtestCommand : CommandBase
 
 public class DevtestScriptManager : AbstractScriptManager
 {
-    public DevtestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+    public DevtestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }

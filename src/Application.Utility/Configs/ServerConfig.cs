@@ -2,8 +2,6 @@ namespace Application.Utility.Configs;
 
 public class ServerConfig
 {
-    public string DB_CONNECTIONSTRING;
-
     public bool ENABLE_OPENAPI;
 
     //Login Configuration

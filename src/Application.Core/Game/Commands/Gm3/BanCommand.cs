@@ -17,7 +17,7 @@ public class BanCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
-        { 
+        {
             player.yellowMessage("Syntax: !ban <玩家昵称> <天>");
             return;
         }

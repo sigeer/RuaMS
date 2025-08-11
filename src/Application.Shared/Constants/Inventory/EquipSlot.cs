@@ -8,6 +8,9 @@ namespace Application.Shared.Constants.Inventory;
 public class EquipSlot : EnumClass
 {
     public const int Medal = -49;
+    public const int OverAll = -5;
+    public const int Pants = -6;
+    public const int Shoes = -7;
     public const int Weapon = -11;
     public const int Mount = -18;
 

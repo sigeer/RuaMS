@@ -22,12 +22,9 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Core.constants;
-using Application.Core.Game.Players;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
-using net.server.guild;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -120,7 +117,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.AnswerInvitation(mc,gid, true);
+                _guildManager.AnswerInvitation(mc, gid, true);
                 break;
             case 0x07:
                 cid = p.readInt();

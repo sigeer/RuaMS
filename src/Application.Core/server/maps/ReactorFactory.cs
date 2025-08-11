@@ -21,7 +21,6 @@
 */
 
 
-using client.inventory;
 using tools;
 using static server.maps.ReactorStats;
 

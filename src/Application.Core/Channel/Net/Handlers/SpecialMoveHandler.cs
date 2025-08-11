@@ -22,9 +22,7 @@
 
 
 using Application.Core.Game.Skills;
-using Application.Utility.Configs;
 using server;
-using System.Drawing;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -26,20 +26,12 @@ namespace Application.Host.Models
                 .ForMember(a => a.ItemId, b => b.MapFrom(x => x.Itemid))
                 .ForMember(a => a.ContinentId, b => b.MapFrom(x => x.Continent))
                 .ForMember(a => a.ItemName, b => b.MapFrom(x => ItemInformationProvider.getInstance().getName(x.Itemid)))
-                .ForMember(a => a.ContinentName, b => b.MapFrom(x => x.Continent < 0 ? "-" : GetContinentName(x.Continent)))
+                .ForMember(a => a.ContinentName, b => b.MapFrom(x => "-"))
                 .ForMember(a => a.QuestName, b => b.MapFrom(x => Quest.getInstance(x.Questid).getName()))
                 .ReverseMap();
 
             CreateMap<WorldServerConfig, WorldConfigEntity>().ReverseMap();
             CreateMap<WorldServerDto, WorldConfigEntity>().ReverseMap();
-        }
-
-        private string GetContinentName(int id)
-        {
-            if (id == -1)
-                return "全部";
-
-            return ServerManager.GetWorldName(id) ?? $"未知 (Id: {id}) ";
         }
     }
 }

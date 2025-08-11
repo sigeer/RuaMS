@@ -1,6 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Core.Managers;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Commands.Gm3;
 

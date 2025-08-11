@@ -24,7 +24,6 @@
 using Application.Core.Game.Maps;
 using Microsoft.Extensions.Logging;
 using server.movement;
-using System.Drawing;
 using tools.exceptions;
 
 namespace Application.Core.Channel.Net.Handlers;

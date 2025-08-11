@@ -208,7 +208,7 @@ public class GuildPackets
         return p;
     }
 
-    
+
 
     public static Packet showGuildRanks(int npcid, List<Dto.GuildDto> dataList)
     {
@@ -415,7 +415,7 @@ public class GuildPackets
     }
 
 
-    public static Packet updateAllianceJobLevel(Guild guild, int memberId, int level,int jobId)
+    public static Packet updateAllianceJobLevel(Guild guild, int memberId, int level, int jobId)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x18);

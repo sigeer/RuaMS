@@ -1,6 +1,5 @@
 using Application.Core.Game.Packets;
 using client;
-using server;
 using server.quest;
 
 namespace Application.Core.Game.Players

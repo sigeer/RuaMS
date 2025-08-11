@@ -33,11 +33,9 @@ using client;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
-using server;
 using server.life;
 using server.loot;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Game.Life;
 

@@ -1,6 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Core.Managers;
-using server.life;
 
 namespace Application.Core.Game.Commands.Gm4;
 

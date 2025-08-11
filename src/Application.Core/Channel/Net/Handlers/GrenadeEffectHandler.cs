@@ -20,7 +20,6 @@
 
 
 using Microsoft.Extensions.Logging;
-using System.Drawing;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

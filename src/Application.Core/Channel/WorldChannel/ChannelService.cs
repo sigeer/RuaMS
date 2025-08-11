@@ -1,14 +1,7 @@
-using Application.Core.Channel;
 using Application.Core.Channel.Services;
-using Application.Core.Game.Items;
 using Application.Core.Game.Life;
-using Application.Core.Managers.Constants;
 using Application.Core.ServerTransports;
-using Application.Shared.Items;
 using AutoMapper;
-using client.creator;
-using client.inventory;
-using server;
 
 namespace Application.Core.Channel
 {

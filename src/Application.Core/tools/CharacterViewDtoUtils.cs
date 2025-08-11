@@ -6,7 +6,7 @@ namespace Application.Core.tools
     {
         public static string GetPlayerNameWithMedal(Dto.PlayerViewDto data)
         {
-            return GetPlayerNameWithMedal(data.Character.Name, 
+            return GetPlayerNameWithMedal(data.Character.Name,
                 data.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1);
         }
 

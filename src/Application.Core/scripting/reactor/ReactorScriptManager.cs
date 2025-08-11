@@ -21,12 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
-using Application.Core.Channel;
 using Microsoft.Extensions.Logging;
 using server.maps;
-using Application.Core.Channel.Services;
 
 namespace scripting.reactor;
 
@@ -38,7 +37,7 @@ public class ReactorScriptManager : AbstractScriptManager
 {
     private Dictionary<int, List<DropEntry>> drops = new();
 
-    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
         LoadAllReactorDrops();

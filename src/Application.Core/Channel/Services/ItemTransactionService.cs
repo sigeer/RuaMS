@@ -1,5 +1,4 @@
 using Application.Core.ServerTransports;
-using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using ItemProto;
@@ -138,7 +137,7 @@ namespace Application.Core.Channel.Services
                     var status = (ItemTransactionStatus)transaction.Status;
                     if (status == ItemTransactionStatus.PendingForRollback)
                     {
-                        _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, transaction.CashType, transaction.CashValue, 
+                        _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, transaction.CashType, transaction.CashValue,
                             "系统消耗失败返还");
                     }
 

@@ -22,10 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Trades;
-using Application.Utility.Extensions;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using System.Drawing;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

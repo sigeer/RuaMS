@@ -50,29 +50,20 @@
 - ServiceTest 测试
 
 
-### 数据库迁移
+## 运行
 
-```
-// 在 Application.Core.EF 中执行
-dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host
-
-dotnet ef database update --startup-project ../Application.Host
-```
-
-### 运行
-
-#### 需要安装的软件
+### 需要安装的软件
 
 - Mysql 8
 
-#### 步骤
+### 步骤
 
 1. 配置 `config.yaml`，主要是连接字符串`DB_CONNECTIONSTRING`、`HOST`
 2. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
 3. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
 4. 运行`Application.Host.exe`
 
-#### 单机部署
+### 单机部署
 
 #### docker
 
@@ -106,6 +97,6 @@ rua-ms
 docker compose up -d
 ```
 
-#### 分布式部署
+### 分布式部署
 
 开发中...

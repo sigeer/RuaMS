@@ -25,9 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using tools;
 
 namespace server.life;

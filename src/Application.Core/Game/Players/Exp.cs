@@ -1,4 +1,3 @@
-using Application.Core.EF.Entities;
 using client;
 using constants.game;
 using server;
@@ -109,20 +108,20 @@ namespace Application.Core.Game.Players
                     }
                     else
                     {
-                        LastExpGainTime = DateTimeOffset.UtcNow;
+                        LastExpGainTime = Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
 
-                        if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
-                        {
-                            ExpLogRecord expLogRecord = new ExpLogRecord(
-                                Id,
-                                getChannelServer().WorldExpRate,
-                                expCoupon,
-                                totalExpGained,
-                                ExpValue.get(),
-                                LastExpGainTime
-                            );
-                            ExpLogger.putExpLogRecord(expLogRecord);
-                        }
+                        //if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
+                        //{
+                        //    ExpLogRecord expLogRecord = new ExpLogRecord(
+                        //        Id,
+                        //        getChannelServer().WorldExpRate,
+                        //        expCoupon,
+                        //        totalExpGained,
+                        //        ExpValue.get(),
+                        //        LastExpGainTime
+                        //    );
+                        //    ExpLogger.putExpLogRecord(expLogRecord);
+                        //}
 
                         totalExpGained = 0;
                     }

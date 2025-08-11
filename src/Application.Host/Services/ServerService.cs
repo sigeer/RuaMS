@@ -82,21 +82,11 @@ namespace Application.Host.Services
 
         public bool Apply()
         {
-            if (!Server.getInstance().IsOnline)
-                return false;
-            ServerManager.ApplyWorldServer();
             return true;
         }
 
         public bool Apply(int id)
         {
-            if (!Server.getInstance().IsOnline)
-                return false;
-
-            var config = ServerManager.GetWorld(id);
-            if (config == null)
-                return false;
-
             return true;
         }
     }

@@ -1,6 +1,5 @@
 using Application.Core.Game.Life;
 using Application.Shared.Events;
-using Application.Shared.MapObjects;
 using server.maps;
 using server.partyquest;
 using static server.partyquest.CarnivalFactory;

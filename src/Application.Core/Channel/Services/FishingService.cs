@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Services
 
         public void StopFishing(IPlayer chr)
         {
-            
+
         }
     }
 }

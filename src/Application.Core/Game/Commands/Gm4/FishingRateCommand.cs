@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Core.Game.Commands.Gm4;
 
 public class FishingRateCommand : CommandBase

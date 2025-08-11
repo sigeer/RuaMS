@@ -1,9 +1,8 @@
 using Google.Protobuf.Collections;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
-    public class PlayerSavedLocation : PlayerPropBase
+    public class PlayerSavedLocation : PlayerPropBase<Dto.SavedLocationDto>
     {
         public SavedLocationType[] AllType { get; set; }
         public PlayerSavedLocation(IPlayer owner) : base(owner)
@@ -13,35 +12,23 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         SavedLocation?[] _dataSource;
-        public void LoadData(RepeatedField<Dto.SavedLocationDto> savedLocFromDB)
+        public override void LoadData(RepeatedField<Dto.SavedLocationDto> savedLocFromDB)
         {
             foreach (var item in savedLocFromDB)
             {
                 _dataSource[(int)Enum.Parse<SavedLocationType>(item.Locationtype)] = new SavedLocation(item.Map, item.Portal);
             }
-
         }
-        public override void LoadData(DBContext dbContext)
+
+        public override Dto.SavedLocationDto[] ToDto()
         {
-            var savedLocFromDB = dbContext.Savedlocations.Where(x => x.Characterid == Owner.Id).Select(x => new { x.Locationtype, x.Map, x.Portal }).ToList();
-            foreach (var item in savedLocFromDB)
+            return _dataSource.Where(x => x != null).Select((x, idx) => new Dto.SavedLocationDto
             {
-                _dataSource[(int)Enum.Parse<SavedLocationType>(item.Locationtype)] = new SavedLocation(item.Map, item.Portal);
-            }
-
+                Locationtype = ((SavedLocationType)idx).ToString(),
+                Map = x.getMapId(),
+                Portal = x.getPortal(),
+            }).ToArray();
         }
-
-        public override void SaveData(DBContext dbContext)
-        {
-            dbContext.Savedlocations.Where(x => x.Characterid == Owner.Id).ExecuteDelete();
-            dbContext.Savedlocations.AddRange(
-                AllType
-                .Where(x => _dataSource[(int)x] != null)
-                .Select(x => new SavedLocationEntity(Owner.Id, _dataSource[(int)x]!, x))
-                );
-            dbContext.SaveChanges();
-        }
-
         public void FillData(SavedLocation data)
         {
             for (int i = 0; i < _dataSource.Length; i++)
@@ -73,14 +60,5 @@ namespace Application.Core.Game.Players.PlayerProps
         public SavedLocation? GetData(int key) => _dataSource.ElementAtOrDefault(key);
         public SavedLocation? GetData(string typeName) => _dataSource.ElementAtOrDefault(GetKey(typeName));
         public SavedLocation? GetData(SavedLocationType type) => _dataSource.ElementAtOrDefault(GetKey(type));
-        public Dto.SavedLocationDto[] ToDto()
-        {
-            return _dataSource.Where(x => x != null).Select((x, idx) => new Dto.SavedLocationDto
-            {
-                Locationtype = ((SavedLocationType)idx).ToString(),
-                Map = x.getMapId(),
-                Portal = x.getPortal(),
-            }).ToArray();
-        }
     }
 }

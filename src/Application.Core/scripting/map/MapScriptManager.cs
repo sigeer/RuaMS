@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Game.Commands;
 using Application.Core.Channel;
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +32,7 @@ public class MapScriptManager : AbstractScriptManager
 {
     readonly EngineStorage _scripts = new EngineStorage();
 
-    public MapScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+    public MapScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }

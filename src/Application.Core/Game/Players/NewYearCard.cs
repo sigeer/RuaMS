@@ -1,5 +1,4 @@
 using Application.Core.Models;
-using Application.Shared.NewYear;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Players

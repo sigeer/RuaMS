@@ -2,6 +2,15 @@
 
 记录一些代码、文件等
 
+## 数据库迁移
+
+```
+// 在 Application.Core.EF 中执行
+dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host
+
+dotnet ef database update --startup-project ../Application.Host
+```
+
 ## 脚本相关
 
 ### 事件脚本

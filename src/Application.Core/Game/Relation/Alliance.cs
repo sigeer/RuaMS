@@ -21,8 +21,6 @@
 */
 
 
-using Application.Core.Channel;
-using Microsoft.EntityFrameworkCore;
 using net.server.guild;
 using System.Collections.Concurrent;
 

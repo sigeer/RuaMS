@@ -21,14 +21,6 @@
  */
 
 
-using Application.Core.Channel.DataProviders;
-using client.autoban;
-using client.inventory;
-using client.inventory.manipulator;
-using net.packet;
-using server;
-using tools;
-
 /**
  * @author Matze
  * @author Ronan - inventory concurrency protection on storing items

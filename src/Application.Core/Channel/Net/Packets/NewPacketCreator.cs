@@ -1,5 +1,3 @@
-using Application.Core.Game.Relation;
-
 namespace Application.Core.Channel.Net.Packets
 {
     public class NewPacketCreator

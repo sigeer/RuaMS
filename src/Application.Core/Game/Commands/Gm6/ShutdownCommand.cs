@@ -1,6 +1,4 @@
 using Application.Core.Channel.Services;
-using net.server;
-using server;
 
 namespace Application.Core.Game.Commands.Gm6;
 

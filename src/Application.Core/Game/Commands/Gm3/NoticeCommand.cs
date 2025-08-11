@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Core.Game.Commands.Gm3;
 
 public class NoticeCommand : CommandBase

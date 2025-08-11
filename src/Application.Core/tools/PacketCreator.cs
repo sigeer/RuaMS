@@ -33,13 +33,10 @@ using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
-using Application.Core.Managers;
 using Application.Core.model;
 using Application.Core.Models;
 using Application.Shared.Battle;
 using Application.Shared.Constants.Buddy;
-using Application.Shared.Items;
-using Application.Shared.NewYear;
 using Application.Shared.Team;
 using client;
 using client.inventory;
@@ -55,7 +52,6 @@ using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
-using static server.CashShop;
 
 namespace tools;
 

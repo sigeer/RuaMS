@@ -1,18 +1,8 @@
 using Application.Core.Channel;
-using Application.Core.Game.TheWorld;
 using Application.Shared.Guild;
-using AutoMapper;
-using AutoMapper.Execution;
-using Microsoft.EntityFrameworkCore;
-using net.server;
 using net.server.guild;
-using Org.BouncyCastle.Asn1.X509;
-using System;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using tools;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Game.Relation;
 
@@ -59,7 +49,7 @@ public class Guild
     public Guild(WorldChannelServer serverContainer, int guildId)
     {
         _serverContainer = serverContainer;
-        channelDirty = new ();
+        channelDirty = new();
         GuildId = guildId;
         this.members = [];
     }
@@ -309,7 +299,7 @@ public class Guild
     {
         dropMessage(5, message);
     }
-    
+
     /// <summary>
     /// 如果直接调用，只会修改本机上的数据。所有操作应该由GuildManager调用
     /// </summary>

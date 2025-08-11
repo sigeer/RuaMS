@@ -1,6 +1,5 @@
 using Application.Core.Game.Relation;
 using constants.String;
-using server.events.gm;
 using tools;
 
 namespace server.partyquest;

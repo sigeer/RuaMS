@@ -1,6 +1,4 @@
 using Application.Core.Channel.ServerData;
-using client.autoban;
-using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
 

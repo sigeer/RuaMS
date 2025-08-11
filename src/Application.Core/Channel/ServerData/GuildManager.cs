@@ -1,6 +1,5 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Npc;
 using Application.Shared.Invitations;
 using AutoMapper;
 using constants.game;

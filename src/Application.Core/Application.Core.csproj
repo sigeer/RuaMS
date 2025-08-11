@@ -28,7 +28,6 @@
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\Application.Core.EF\Application.Core.EF.csproj" />
 		<ProjectReference Include="..\Application.Protos\Application.Protos.csproj" />
 		<ProjectReference Include="..\Application.Scripting.JS\Application.Scripting.JS.csproj" />
 		<ProjectReference Include="..\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />

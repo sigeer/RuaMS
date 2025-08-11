@@ -19,7 +19,6 @@
 
 
 using client.inventory;
-using Microsoft.EntityFrameworkCore;
 using tools;
 
 namespace server;

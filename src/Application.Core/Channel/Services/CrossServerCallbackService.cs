@@ -106,7 +106,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                _logger.LogWarning("RemoveCallService: 参数不匹配, Name: {Name}, MethodParamCount: {ParamsCount}, InputParamCount{InputCount}", 
+                _logger.LogWarning("RemoveCallService: 参数不匹配, Name: {Name}, MethodParamCount: {ParamsCount}, InputParamCount{InputCount}",
                     data.CallbackName, methodParams.Length, data.Params.Count);
                 return;
             }

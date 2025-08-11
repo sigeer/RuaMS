@@ -25,7 +25,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Items;
 using Application.Core.Managers;
-using Application.Shared.Items;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
@@ -69,7 +68,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     int useNX = p.readInt();
                     int snCS = p.readInt();
                     var cItem = _cashItemProvider.getItem(snCS);
-                    if (cItem == null  || !canBuy(chr, cItem, cs.getCash(useNX)))
+                    if (cItem == null || !canBuy(chr, cItem, cs.getCash(useNX)))
                     {
                         _logger.LogError("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
                         c.enableCSActions();
@@ -77,7 +76,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
 
                     if (action == 0x03)
-                    { 
+                    {
                         // Item
                         if (ItemConstants.isCashStore(cItem!.getItemId()) && chr.getLevel() < 16)
                         {
@@ -134,7 +133,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showWishList(chr, true));
                 }
                 else if (action == 0x06)
-                { 
+                {
                     // Increase Inventory Slots
                     p.skip(1);
                     int cash = p.readInt();
@@ -220,7 +219,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
-                        { 
+                        {
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
@@ -399,7 +398,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x23)
-                { 
+                {
                     //Friendship :3
                     int birthday = p.readInt();
                     if (c.CheckBirthday(birthday))
@@ -439,7 +438,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         //}
 
                         if (_itemService.RegisterNameChange(c.OnlinedCharacter, newName))
-                        { 
+                        {
                             //success
                             cs.Buy(CashType.NX_PREPAID, cItem);
 

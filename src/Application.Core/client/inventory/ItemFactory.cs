@@ -19,9 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-using Microsoft.EntityFrameworkCore;
-
 namespace client.inventory;
 
 /**
@@ -106,88 +103,4 @@ public class ItemFactory : EnumClass
     }
     public bool IsAccount => account;
 }
-
-
-public class EquipItemModelFromDB
-{
-    public int CharacterId { get; set; }
-    public int Itemid { get; internal set; }
-    public short Position { get; internal set; }
-    public string Owner { get; internal set; } = null!;
-    public short Quantity { get; internal set; }
-    public int Acc { get; internal set; }
-    public int Avoid { get; internal set; }
-    public int Dex { get; internal set; }
-    public int Hands { get; internal set; }
-    public int Hp { get; internal set; }
-    public int Int { get; internal set; }
-    public int Jump { get; internal set; }
-    public int Vicious { get; internal set; }
-    public short Flag { get; internal set; }
-    public int Luk { get; internal set; }
-    public int Matk { get; internal set; }
-    public int Mdef { get; internal set; }
-    public int Mp { get; internal set; }
-    public int Speed { get; internal set; }
-    public int Str { get; internal set; }
-    public int Watk { get; internal set; }
-    public int Wdef { get; internal set; }
-    public int Upgradeslots { get; internal set; }
-    public byte Level { get; internal set; }
-    public byte Itemlevel { get; internal set; }
-    public string GiftFrom { get; internal set; } = null!;
-    public int Itemexp { get; internal set; }
-    public long Expiration { get; internal set; }
-    public long Ringid { get; internal set; } = -1;
-    public sbyte Inventorytype { get; set; }
-    public long PetId { get; internal set; }
-    public int Inventoryitemid { get; internal set; }
-
-    public EquipItemModelFromDB()
-    {
-
-    }
-    public EquipItemModelFromDB(Inventoryitem a, Inventoryequipment? b)
-    {
-        if (b != null)
-        {
-            Hp = b.Hp;
-            Acc = b.Acc;
-            Avoid = b.Avoid;
-            Dex = b.Dex;
-            Hands = b.Hands;
-            Int = b.Int;
-            Jump = b.Jump;
-            Level = b.Level;
-            Luk = b.Luk;
-            Matk = b.Matk;
-            Mdef = b.Mdef;
-            Mp = b.Mp;
-            Itemlevel = b.Itemlevel;
-            Itemexp = b.Itemexp;
-
-            Ringid = b.RingId;
-            Speed = b.Speed;
-            Str = b.Str;
-            Upgradeslots = b.Upgradeslots;
-            Vicious = b.Vicious;
-            Watk = b.Watk;
-            Wdef = b.Wdef;
-        }
-
-        Inventorytype = a.Inventorytype;
-        CharacterId = a.Characterid ?? 0;
-        Expiration = a.Expiration;
-        Flag = a.Flag;
-        GiftFrom = a.GiftFrom;
-        Inventoryitemid = a.Inventoryitemid;
-        Itemid = a.Itemid;
-        Owner = a.Owner;
-        PetId = a.Petid;
-        Position = a.Position;
-        Quantity = a.Quantity;
-
-    }
-}
-
 public record ItemInventoryType(Item Item, InventoryType Type);

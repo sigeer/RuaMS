@@ -22,8 +22,6 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

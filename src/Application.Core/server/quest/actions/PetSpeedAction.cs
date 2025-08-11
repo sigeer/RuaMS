@@ -18,9 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Shared.Items;
-
 namespace server.quest.actions;
 
 /**

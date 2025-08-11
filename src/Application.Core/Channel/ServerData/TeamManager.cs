@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
@@ -6,7 +5,6 @@ using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Numerics;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -308,7 +306,7 @@ namespace Application.Core.Channel.ServerData
         }
         public void AnswerInvite(IPlayer chr, int partyId, bool answer)
         {
-            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer,  CheckKey = partyId, Type = InviteTypes.Party });
+            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
         }
     }
 }

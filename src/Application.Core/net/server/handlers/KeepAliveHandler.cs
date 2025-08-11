@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Shared.Client;
-
 namespace net.server.handlers;
 
 public class KeepAliveHandler<TClient> : IPacketHandlerBase<TClient> where TClient : IClientBase

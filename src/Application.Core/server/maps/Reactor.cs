@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Maps;
-using client.inventory;
 using net.server.services.task.channel;
 using server.partyquest;
 using tools;

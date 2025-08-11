@@ -1,6 +1,6 @@
 namespace Application.Core.Channel.Invitation
 {
-    public class InviteChannelHandlerRegistry: IDisposable
+    public class InviteChannelHandlerRegistry : IDisposable
     {
         private readonly Dictionary<string, InviteChannelHandler> _handlers = new();
 

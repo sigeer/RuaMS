@@ -1,8 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
-    public class PlayerTrockLocation : PlayerPropBase
+    /// <summary>
+    /// 传送石
+    /// </summary>
+    public class PlayerTrockLocation : PlayerPropBase<Dto.TrockLocationDto>
     {
         int[] _dataSouce;
         int[] _vipDataSouce;
@@ -17,7 +20,7 @@ namespace Application.Core.Game.Players.PlayerProps
             _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
         }
 
-        public void LoadData(Dto.TrockLocationDto[] trockLocList)
+        public override void LoadData(RepeatedField<Dto.TrockLocationDto> trockLocList)
         {
             _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();
             _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
@@ -40,57 +43,11 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public Dto.TrockLocationDto[] ToDto()
+        public override Dto.TrockLocationDto[] ToDto()
         {
             return _dataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 0 })
                 .Concat(_vipDataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 1 })).ToArray();
         }
-        public override void LoadData(DBContext dbContext)
-        {
-            _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();
-            _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
-
-            var trockLocList = dbContext.Trocklocations.Where(x => x.Characterid == Owner.Id).Select(x => new { x.Vip, x.Mapid }).Take(15).ToList();
-
-            byte vip = 0;
-            byte reg = 0;
-
-            foreach (var item in trockLocList)
-            {
-                if (item.Vip == 1)
-                {
-                    _vipDataSouce[vip] = item.Mapid;
-                    vip++;
-                }
-                else
-                {
-                    _dataSouce[reg] = item.Mapid;
-                    reg++;
-                }
-            }
-        }
-
-        public override void SaveData(DBContext dbContext)
-        {
-            dbContext.Trocklocations.Where(x => x.Characterid == Owner.Id).ExecuteDelete();
-            for (int i = 0; i < _size; i++)
-            {
-                if (_dataSouce[i] != MapId.NONE)
-                {
-                    dbContext.Trocklocations.Add(new Trocklocation(Owner.Id, _dataSouce[i], 0));
-                }
-            }
-
-            for (int i = 0; i < _vipSize; i++)
-            {
-                if (_vipDataSouce[i] != MapId.NONE)
-                {
-                    dbContext.Trocklocations.Add(new Trocklocation(Owner.Id, _vipDataSouce[i], 1));
-                }
-            }
-            dbContext.SaveChanges();
-        }
-
         public int[] GetTrockMaps()
         {
             return _dataSouce;

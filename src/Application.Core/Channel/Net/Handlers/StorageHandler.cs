@@ -21,14 +21,13 @@
  */
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using client.autoban;
-using client.inventory.manipulator;
 using client.inventory;
-using Serilog;
+using client.inventory.manipulator;
+using Microsoft.Extensions.Logging;
 using server;
 using tools;
-using Application.Core.Channel.ServerData;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.Net.Handlers;
 
