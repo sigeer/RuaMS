@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Shared.Items;
 
 namespace Application.Core.Game.Life
 {

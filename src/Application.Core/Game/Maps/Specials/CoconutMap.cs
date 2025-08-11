@@ -1,4 +1,3 @@
-using Application.Shared.MapObjects;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials

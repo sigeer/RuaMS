@@ -11,7 +11,6 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
-using Application.Shared.NewYear;
 using Application.Shared.Objects;
 using client;
 using client.autoban;

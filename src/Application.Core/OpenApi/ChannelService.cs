@@ -1,5 +1,4 @@
 using Application.Shared.Events;
-using net.server;
 
 namespace Application.Core.OpenApi
 {

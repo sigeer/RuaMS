@@ -26,7 +26,6 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
-using net.packet;
 using tools;
 
 namespace client.processor.stat;

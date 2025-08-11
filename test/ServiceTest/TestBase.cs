@@ -38,7 +38,7 @@ namespace ServiceTest
             builder.Services.AddSingleton<IChannelServerTransport, Application.Core.Channel.InProgress.LocalChannelServerTransport>();
 
             // 需要先启动Master
-            builder.Services.AddLoginServer(YamlConfig.config.server.DB_CONNECTIONSTRING);
+            builder.Services.AddLoginServer("server=localhost;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;");
             builder.Services.AddChannelServer();
             builder.Services.AddPlayerNPCInProgress();
 

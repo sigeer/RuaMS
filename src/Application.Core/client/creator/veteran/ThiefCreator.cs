@@ -19,11 +19,10 @@
 */
 
 
-using Application.Core.client.creator.veteran;
-using Application.Core.Channel;
-using client.inventory;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
+using Application.Core.client.creator.veteran;
+using client.inventory;
 
 namespace client.creator.veteran;
 

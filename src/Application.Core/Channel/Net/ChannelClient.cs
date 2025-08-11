@@ -4,14 +4,11 @@ using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using Application.Shared.Team;
 using DotNetty.Transport.Channels;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
-using net.server;
 using net.server.guild;
 using scripting;
 using scripting.Event;
 using scripting.npc;
-using System.Text.RegularExpressions;
 using tools;
 
 namespace Application.Core.Channel.Net

@@ -1,5 +1,4 @@
 using Application.Core.Game.Life;
-using Dto;
 
 namespace Application.Core.Channel.Events
 {

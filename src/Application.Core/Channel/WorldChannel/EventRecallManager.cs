@@ -32,7 +32,7 @@ public class EventRecallManager : TimelyControllerBase
 
     private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();
 
-    public EventRecallManager(WorldChannel worldChannel) 
+    public EventRecallManager(WorldChannel worldChannel)
         : base($"EventRecallController_{worldChannel.ServerName}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
     {
     }

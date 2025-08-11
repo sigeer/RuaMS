@@ -19,9 +19,8 @@
 */
 
 
-using Application.Core.Game.Life;
 using Application.Core.Channel;
-using server;
+using Application.Core.Game.Life;
 
 namespace net.server.coordinator.world;
 

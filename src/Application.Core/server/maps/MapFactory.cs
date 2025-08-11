@@ -21,11 +21,10 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Channel;
-using Application.Shared.MapObjects;
 using Application.Shared.WzEntity;
 using scripting.Event;
 using server.life;

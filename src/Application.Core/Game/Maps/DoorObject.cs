@@ -123,7 +123,7 @@ public class DoorObject : AbstractMapObject
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
         {
-            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.getMemberById( Owner.getChannelServer(), Owner.Id) != null))
+            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.getMemberById(Owner.getChannelServer(), Owner.Id) != null))
             {
                 chr.sendPacket(PacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
             }

@@ -5,17 +5,13 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
-using Application.Shared.Items;
-using Application.Shared.NewYear;
 using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
-using ItemProto;
 using net.server;
 using server;
 using server.life;
 using server.maps;
-using System.Resources;
 
 namespace Application.Core.Mappers
 {
@@ -241,7 +237,7 @@ namespace Application.Core.Mappers
                 });
 
             CreateMap<Dto.NoteDto, NoteObject>()
-                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.GetNPCStats(x.FromId).getName() : x.From ));
+                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.GetNPCStats(x.FromId).getName() : x.From));
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
             CreateMap<Dto.ShopItemDto, ShopItem>()

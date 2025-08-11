@@ -1,7 +1,5 @@
 using Application.Core.Channel;
-using Application.Core.Client.inventory;
 using Application.Core.Game.Maps;
-using client.inventory;
 
 namespace Application.Core.Game.Trades
 {

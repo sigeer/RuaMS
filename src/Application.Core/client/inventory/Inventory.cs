@@ -552,7 +552,7 @@ public class Inventory : IEnumerable<Item>
         {
             int itemId = item.Item.getItemId();
 
-            if(rcvItems.TryGetValue(itemId, out var qty))
+            if (rcvItems.TryGetValue(itemId, out var qty))
             {
                 if (!ItemConstants.isEquipment(itemId) && !ItemConstants.isRechargeable(itemId))
                 {

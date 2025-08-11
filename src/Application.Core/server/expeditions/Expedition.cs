@@ -22,10 +22,9 @@
 
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Channel;
-using Application.Core.model;
 using System.Collections.Concurrent;
 using tools;
 

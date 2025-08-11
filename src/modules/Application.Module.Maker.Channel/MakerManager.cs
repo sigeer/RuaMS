@@ -1,9 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
-using Application.Core.Game.Players;
 using Application.Module.Maker.Common;
 using Application.Shared.Constants.Item;
-using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
 using AutoMapper;
@@ -15,7 +13,6 @@ using server.life;
 using tools;
 using XmlWzReader;
 using XmlWzReader.wz;
-using ZstdSharp.Unsafe;
 
 namespace Application.Module.Maker.Channel
 {

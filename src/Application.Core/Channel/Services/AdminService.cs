@@ -1,17 +1,10 @@
-using Application.Core.Game.Players;
-using Application.Core.Game.TheWorld;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
-using Application.Utility;
-using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
-using Org.BouncyCastle.Asn1.X509;
 using server.expeditions;
-using System.Numerics;
 using System.Text;
 using tools;
-using static Mysqlx.Notice.Warning.Types;
 
 namespace Application.Core.Channel.Services
 {
@@ -283,7 +276,7 @@ namespace Application.Core.Channel.Services
                 {
                     id++;
                     sb.Append("> Expedition " + id);
-                    
+
                     sb.Append(">> Type: " + EnumClassCache<ExpeditionType>.Values[exped.Type].name());
                     sb.Append(">> Status: " + (exped.Status == 1 ? "REGISTERING" : "UNDERWAY"));
                     sb.Append(">> Size: " + exped.Members.Count);

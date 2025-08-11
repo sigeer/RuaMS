@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Game.Relation;
-using server;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {

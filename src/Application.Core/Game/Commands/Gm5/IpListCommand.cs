@@ -1,6 +1,5 @@
 using Application.Core.Channel.Services;
 using Application.Core.scripting.npc;
-using net.server;
 
 namespace Application.Core.Game.Commands.Gm5;
 

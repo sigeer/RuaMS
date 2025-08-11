@@ -23,14 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ServerData;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using client;
-using client.inventory;
 using constants.game;
 using constants.String;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +38,6 @@ using server.expeditions;
 using server.life;
 using server.partyquest;
 using tools;
-using tools.packets;
 using static server.partyquest.Pyramid;
 
 

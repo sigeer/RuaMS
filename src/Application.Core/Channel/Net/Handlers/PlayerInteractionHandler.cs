@@ -26,14 +26,11 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
-using Application.Shared.Constants.Item;
-using Application.Shared.Constants.Skill;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using server;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -680,7 +677,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     bundles = 1;
                 }
                 else if (ivItem.getQuantity() < (bundles * perBundle))
-                {     
+                {
                     // thanks GabrielSin for finding a dupe here
                     c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
                     c.sendPacket(PacketCreator.enableActions());
@@ -806,7 +803,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 }
 
                 c.getChannelServer().PlayerShopManager.CloseByPlayer(chr);
-                
+
             }
             else if (mode == PlayerInterAction.MAINTENANCE_OFF.getCode())
             {

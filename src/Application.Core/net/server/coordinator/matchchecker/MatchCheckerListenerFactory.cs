@@ -42,7 +42,7 @@ public static class MatchCheckerTypeUtils
     }
 }
 
-public  class MatchCheckerStaticFactory
+public class MatchCheckerStaticFactory
 {
     public static MatchCheckerStaticFactory Context { get; set; }
     public MatchCheckerGuildCreationListener matchCheckerGuildCreationListener { get; }

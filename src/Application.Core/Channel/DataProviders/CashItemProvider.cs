@@ -1,5 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Shared.Items;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ZLinq;

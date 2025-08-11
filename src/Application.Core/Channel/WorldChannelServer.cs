@@ -15,11 +15,9 @@ using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using MessageProto;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using net.server.coordinator.matchchecker;
 using net.server.guild;
 using Polly;
 using System.Diagnostics;
@@ -192,6 +190,11 @@ namespace Application.Core.Channel
         public long getCurrentTime()
         {
             return serverCurrentTime;
+        }
+
+        public DateTimeOffset GetCurrentTimeDateTimeOffSet()
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds(serverCurrentTime);
         }
         public void UpdateServerTime()
         {
@@ -467,7 +470,7 @@ namespace Application.Core.Channel
 
         public void SendBroadcastWorldPacket(Packet p)
         {
-            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes())});
+            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
         }
         public void SendBroadcastWorldGMPacket(Packet p)
         {

@@ -22,7 +22,6 @@
 
 
 using Microsoft.Extensions.Logging;
-using System.Drawing;
 
 namespace Application.Core.Channel.Net.Handlers;
 

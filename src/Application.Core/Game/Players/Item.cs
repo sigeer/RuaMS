@@ -5,7 +5,6 @@ using Application.Core.Game.Relation;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using Jint.Native.ShadowRealm;
 using System.Runtime.CompilerServices;
 using tools;
 
@@ -682,7 +681,7 @@ namespace Application.Core.Game.Players
 
             lock (itemLock)
             {
-                if (!condition.Invoke()) 
+                if (!condition.Invoke())
                     return UseItemCheck.NotPass;
 
                 RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-quantity), false);

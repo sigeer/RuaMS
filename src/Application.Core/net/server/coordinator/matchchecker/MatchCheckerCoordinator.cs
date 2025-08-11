@@ -151,7 +151,7 @@ public class MatchCheckerCoordinator
     }
 
     private MatchCheckingElement createMatchConfirmationInternal(
-        MatchCheckerType matchType, 
+        MatchCheckerType matchType,
         int leaderCid, AbstractMatchCheckerListener leaderListener, HashSet<int> players, string message)
     {
         MatchCheckingElement mmce = new MatchCheckingElement(_worldChannel, matchType, leaderCid, leaderListener, players, message);

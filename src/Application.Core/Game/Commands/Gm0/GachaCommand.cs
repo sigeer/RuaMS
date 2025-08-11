@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
-using Application.Core.EF.Entities.Gachapons;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
 

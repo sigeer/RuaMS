@@ -19,7 +19,6 @@
 */
 
 using Application.Core.Channel;
-using Application.Core.Channel;
 
 namespace net.server.services.task.channel;
 

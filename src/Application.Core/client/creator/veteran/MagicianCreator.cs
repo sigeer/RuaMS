@@ -19,7 +19,6 @@
 */
 
 
-using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.client.creator.veteran;

@@ -21,7 +21,6 @@
 
 using Application.Core.ServerTransports;
 using Application.Core.Tools;
-using Application.Shared.Items;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;

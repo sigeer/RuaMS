@@ -1,6 +1,5 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using net.server;
 using server.maps;
 
 namespace Application.Core.Game.Commands.Gm5;

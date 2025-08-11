@@ -1,7 +1,3 @@
-using client;
-using System.Collections.Concurrent;
-using tools;
-
 namespace Application.Core.Game.Relation;
 
 public class BuddyList

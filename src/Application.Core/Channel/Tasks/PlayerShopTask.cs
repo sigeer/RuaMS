@@ -1,5 +1,3 @@
-using Application.Core.Game.Invites;
-
 namespace Application.Core.Channel.Tasks
 {
     public class PlayerShopTask : AbstractRunnable

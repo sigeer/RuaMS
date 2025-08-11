@@ -1,10 +1,7 @@
-using Application.Core.Game.Life;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.NewYear;
 using AutoMapper;
 using Dto;
-using Mysqlx.Connection;
 using tools;
 
 namespace Application.Core.Channel.ServerData

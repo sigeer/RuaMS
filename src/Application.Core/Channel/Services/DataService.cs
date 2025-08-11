@@ -1,18 +1,11 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
-using Application.Core.Game.Life;
-using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Item;
-using Application.Shared.Constants.Mob;
-using Application.Shared.Constants.Npc;
-using Application.Shared.Items;
-using Application.Shared.NewYear;
 using AutoMapper;
 using BaseProto;
 using client;
@@ -20,17 +13,13 @@ using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
-using Google.Protobuf;
 using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
 using server.events;
 using server.life;
 using server.quest;
-using System.Net.NetworkInformation;
-using System.Numerics;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel.Services
 {
@@ -171,7 +160,7 @@ namespace Application.Core.Channel.Services
             }
             player.commitExcludedItems();
 
-            player.PlayerTrockLocation.LoadData(o.TrockLocations.ToArray());
+            player.PlayerTrockLocation.LoadData(o.TrockLocations);
             player.AreaInfo = o.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
             player.Events = o.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
 
@@ -257,7 +246,7 @@ namespace Application.Core.Channel.Services
                 player.QuickSlotKeyMapped = new QuickslotBinding(bytes);
             }
 
-            player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>( o.BuddyList));
+            player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.BuddyList));
             player.UpdateLocalStats(true);
             return player;
         }
@@ -746,7 +735,7 @@ namespace Application.Core.Channel.Services
             {
                 var item = new ExpeditionProto.ChannelExpeditionDto() { Channel = channel.getId() };
 
-                var expeds =  channel.getExpeditions();
+                var expeds = channel.getExpeditions();
                 foreach (var exped in expeds)
                 {
                     var dto = new ExpeditionInfoDto

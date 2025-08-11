@@ -1,8 +1,6 @@
-using Application.Core.Channel;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using net.netty;
-using Serilog;
 
 namespace Application.Core.Channel.Net;
 

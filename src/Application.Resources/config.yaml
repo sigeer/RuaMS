@@ -1,7 +1,4 @@
 server:
-    #Database Configuration
-    DB_CONNECTIONSTRING: "server=localhost;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;"
-
     ENABLE_OPENAPI: true
 
     #Login Configuration

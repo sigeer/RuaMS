@@ -23,7 +23,6 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Events;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -35,20 +34,16 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
-using Application.Shared.Constants.Buddy;
-using Application.Shared.Items;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
 using Application.Shared.Team;
 using client;
 using client.autoban;
-using client.creator;
 using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
 using client.processor.action;
 using constants.game;
-using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
 using scripting;
@@ -63,7 +58,6 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using tools;
-using tools.packets;
 using static client.inventory.Equip;
 
 namespace Application.Core.Game.Players;

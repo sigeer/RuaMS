@@ -21,17 +21,10 @@
  */
 
 
-using Application.Core.Channel;
-using Application.Core.EF.Entities.SystemBase;
-using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
-using Application.Core.Managers;
-using Application.Core.model;
-using Microsoft.EntityFrameworkCore;
 using server;
 using server.quest;
 using System.Diagnostics;
-using static server.CashShop;
 
 namespace net.server;
 

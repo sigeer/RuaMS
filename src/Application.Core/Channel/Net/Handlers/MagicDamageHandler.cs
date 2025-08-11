@@ -23,7 +23,6 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using Application.Utility.Configs;
 using client;
 using Microsoft.Extensions.Logging;
 using tools;

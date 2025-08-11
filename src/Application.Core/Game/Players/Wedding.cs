@@ -1,6 +1,4 @@
 using Application.Core.Game.Relation;
-using server;
-using System.Net.NetworkInformation;
 using tools;
 
 namespace Application.Core.Game.Players
