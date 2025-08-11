@@ -1,4 +1,4 @@
-﻿namespace Application.Shared
+namespace Application.Shared.GameProps
 {
     public enum MobSkillType
     {

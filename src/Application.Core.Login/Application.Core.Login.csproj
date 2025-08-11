@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="CharacterCreator\" />
+    <Folder Include="ServerData\Items\" />
   </ItemGroup>
 
 </Project>

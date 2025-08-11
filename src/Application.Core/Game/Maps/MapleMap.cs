@@ -31,7 +31,6 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
-using client;
 using client.autoban;
 using client.inventory;
 using client.status;

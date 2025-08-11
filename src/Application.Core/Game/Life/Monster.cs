@@ -29,7 +29,6 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
-using client;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;

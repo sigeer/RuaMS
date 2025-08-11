@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using AutoMapper;
 using client.inventory;
 
 namespace Application.Core.Managers

@@ -3,6 +3,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Utility;
 using AutoMapper;
