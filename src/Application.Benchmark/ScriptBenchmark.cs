@@ -21,7 +21,6 @@ namespace Application.Benchmark
             // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
             // 支持GBK
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            GlobalTools.Encoding = Encoding.GetEncoding("GBK");
         }
 
 
@@ -30,7 +29,6 @@ namespace Application.Benchmark
         {
             Initialize();
             ScriptDir.Event = "event";
-            await Server.getInstance().Start();
         }
 
         [Benchmark()]
@@ -38,7 +36,6 @@ namespace Application.Benchmark
         {
             Initialize();
             ScriptDir.Event = "event-lua";
-            await Server.getInstance().Start();
         }
     }
 }

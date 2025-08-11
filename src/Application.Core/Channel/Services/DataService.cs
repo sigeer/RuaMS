@@ -3,7 +3,6 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using AutoMapper;

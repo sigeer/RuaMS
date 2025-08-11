@@ -5,6 +5,7 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
+using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Message;
@@ -20,6 +21,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using net.server.guild;
 using Polly;
+using Serilog;
+using server;
+using server.quest;
 using System.Diagnostics;
 using System.Net;
 using tools;
@@ -201,6 +205,11 @@ namespace Application.Core.Channel
             serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
         }
 
+        public bool canEnterDeveloperRoom()
+        {
+            return AdminService.GetServerStats().IsDevRoomAvailable;
+        }
+
         public void ForceUpdateServerTime()
         {
             Stopwatch sw = new Stopwatch();
@@ -270,6 +279,7 @@ namespace Application.Core.Channel
                 PlayerStorage.disconnectAll();
 
                 await TimerManager.Stop();
+                ThreadManager.getInstance().stop();
                 _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
 
                 IsRunning = false;
@@ -298,6 +308,9 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
+            if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
+                throw new DirectoryNotFoundException();
+
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>
@@ -306,10 +319,30 @@ namespace Application.Core.Channel
                 });
             }
 
+            _ = Task.Run(() =>
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                SkillFactory.LoadAllSkills();
+                sw.Stop();
+                _logger.LogDebug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
+            });
+
+            _ = Task.Run(() =>
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                Quest.loadAllQuests();
+                sw.Stop();
+                _logger.LogDebug("WZ - 任务加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
+            });
+
             Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
+            OpcodeConstants.generateOpcodeNames();
 
-            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
+
+            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
 
             CharacterDiseaseManager.Register(TimerManager);
             PetHungerManager.Register(TimerManager);

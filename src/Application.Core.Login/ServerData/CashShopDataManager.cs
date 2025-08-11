@@ -1,9 +1,8 @@
-using Application.Shared.Items;
+using Application.Shared.Constants;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
 using AutoMapper;
 using CashProto;
-using constants.game;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
@@ -40,12 +39,14 @@ namespace Application.Core.Login.ServerData
                     request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
                 if (giftResult.Code != 0)
                 {
-                    _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse { 
-                        Code = giftResult.Code, 
+                    _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse
+                    {
+                        Code = giftResult.Code,
                         GiftInfo = giftResult,
                         MasterId = request.MasterId,
                         Sn = request.CashItemSn,
-                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForRollback) });
+                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForRollback)
+                    });
                     return;
                 }
             }

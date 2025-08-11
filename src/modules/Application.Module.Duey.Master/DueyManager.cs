@@ -9,7 +9,6 @@ using Application.Shared.Items;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using client.inventory;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

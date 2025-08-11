@@ -1,6 +1,6 @@
-namespace Application.Core.Game.Controllers
+namespace Application.Utility.Tasks
 {
-    public abstract class TimelyControllerBase : IAsyncDisposable
+    public abstract class TaskBase : IAsyncDisposable
     {
         protected ScheduledFuture? _scheduler;
 
@@ -8,7 +8,7 @@ namespace Application.Core.Game.Controllers
         TimeSpan _repeatDuration;
         TimeSpan _repeatDelay;
 
-        protected TimelyControllerBase(string taskName, TimeSpan repeatDuration, TimeSpan repeatDelay)
+        protected TaskBase(string taskName, TimeSpan repeatDuration, TimeSpan repeatDelay)
         {
             _repeatDuration = repeatDuration;
             _repeatDelay = repeatDelay;

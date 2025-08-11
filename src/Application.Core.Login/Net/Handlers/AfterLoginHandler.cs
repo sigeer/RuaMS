@@ -28,7 +28,6 @@ using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
-using tools;
 
 namespace Application.Core.Net.Handlers;
 

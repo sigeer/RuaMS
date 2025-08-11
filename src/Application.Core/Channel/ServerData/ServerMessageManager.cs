@@ -1,9 +1,8 @@
-using Application.Core.Game.Controllers;
 using tools;
 
 namespace Application.Core.Channel.ServerData
 {
-    public class ServerMessageManager : TimelyControllerBase
+    public class ServerMessageManager : TaskBase
     {
         private Dictionary<int, int> disabledServerMessages = new();
         private object srvMessagesLock = new object();

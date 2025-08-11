@@ -1,8 +1,6 @@
-using Application.Core.Game.Controllers;
-
 namespace Application.Core.Channel.ServerData
 {
-    public class CharacterDiseaseManager : TimelyControllerBase
+    public class CharacterDiseaseManager : TaskBase
     {
         private object disLock = new object();
         private Queue<IChannelClient> processDiseaseAnnouncePlayers = new();

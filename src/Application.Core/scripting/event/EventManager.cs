@@ -48,7 +48,6 @@ public class EventManager
     ILogger log = LogFactory.GetLogger(LogType.EventManager);
     private IEngine iv;
     private WorldChannel cserv;
-    private Server server;
     private EventScriptScheduler ess;
     private ConcurrentDictionary<string, EventInstanceManager> instances = new();
     private Dictionary<string, int> instanceLocks = new();
@@ -77,7 +76,6 @@ public class EventManager
 
     public EventManager(WorldChannel cserv, IEngine iv, string name)
     {
-        this.server = Server.getInstance();
         this.iv = iv;
         this.cserv = cserv;
         this.name = name;

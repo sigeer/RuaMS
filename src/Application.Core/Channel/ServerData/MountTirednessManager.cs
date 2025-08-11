@@ -1,8 +1,6 @@
-using Application.Core.Game.Controllers;
-
 namespace Application.Core.Channel.ServerData
 {
-    public class MountTirednessManager : TimelyControllerBase
+    public class MountTirednessManager : TaskBase
     {
 
         private object activeMountsLock = new object();

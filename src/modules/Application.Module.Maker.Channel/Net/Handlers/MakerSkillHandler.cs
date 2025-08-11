@@ -1,11 +1,11 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net;
 using Application.Core.Client;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using Application.Shared.Net;
 using client.inventory.manipulator;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -39,7 +39,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                     int stimulantid = -1;
 
                     if (type == 3)
-                    {   
+                    {
                         // building monster crystal
                         int fromLeftover = toCreate;
                         toCreate = _service.getMakerCrystalFromLeftover(toCreate);
@@ -86,7 +86,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                         if (ItemConstants.isEquipment(toCreate))
                         {   // only equips uses stimulant and reagents
                             if (p.readByte() != 0)
-                            {  
+                            {
                                 // stimulant
                                 stimulantid = _service.getMakerStimulant(toCreate);
                                 if (!c.getAbstractPlayerInteraction().haveItem(stimulantid))
@@ -97,7 +97,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
 
                             int reagents = Math.Min(p.readInt(), _service.getMakerReagentSlots(toCreate));
                             for (int i = 0; i < reagents; i++)
-                            {  
+                            {
                                 // crystals
                                 int reagentid = p.readInt();
                                 if (ItemConstants.isMakerReagent(reagentid))
@@ -247,11 +247,11 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 c.sendPacket(
                                     MakerPacketCreator.makerResult(
-                                        makerSucceeded, 
-                                        recipe.getGainItems()[0].ItemId, 
-                                        recipe.getGainItems()[0].Quantity, 
-                                        recipe.getCost(), 
-                                        recipe.getReqItems(), 
+                                        makerSucceeded,
+                                        recipe.getGainItems()[0].ItemId,
+                                        recipe.getGainItems()[0].Quantity,
+                                        recipe.getCost(),
+                                        recipe.getReqItems(),
                                         stimulantid,
                                         reagentids.Keys.ToList()));
                             }

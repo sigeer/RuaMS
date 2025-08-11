@@ -22,11 +22,10 @@
 
 
 using Application.Core.Login.Client;
+using Application.Core.Login.Net.Packets;
 using Application.EF;
 using Application.Utility.Exceptions;
 using Microsoft.Extensions.Logging;
-using net.server;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -55,7 +54,7 @@ public class DeleteCharHandler : LoginHandlerBase
                     .FirstOrDefault() ?? throw new BusinessCharacterNotFoundException(cid);
                 if (charModel.GuildId != 0 && charModel.GuildRank <= 1)
                 {
-                    c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x16));
+                    c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x16));
                     return;
                 }
 
@@ -64,7 +63,7 @@ public class DeleteCharHandler : LoginHandlerBase
                     var checkResult = module.DeleteCharacterCheck(cid);
                     if (checkResult != 0)
                     {
-                        c.sendPacket(PacketCreator.deleteCharResponse(cid, checkResult));
+                        c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, checkResult));
                         return;
                     }
                 }
@@ -72,23 +71,23 @@ public class DeleteCharHandler : LoginHandlerBase
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to delete chrId {CharacterId}", cid);
-                c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x09));
+                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
                 return;
             }
 
             if (_server.CharacterManager.DeleteChar(cid, c.AccountEntity!.Id))
             {
                 _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);
-                c.sendPacket(PacketCreator.deleteCharResponse(cid, 0));
+                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0));
             }
             else
             {
-                c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x09));
+                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
             }
         }
         else
         {
-            c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x14));
+            c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x14));
         }
     }
 }

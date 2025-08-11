@@ -1,10 +1,9 @@
-using Application.Core.Game.Controllers;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
-using Application.Shared.Constants;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using Application.Utility.Configs;
+using Application.Utility.Tasks;
 using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -14,7 +13,7 @@ namespace Application.Core.Login.ServerData
     /// <summary>
     /// 邀请过期检查
     /// </summary>
-    public class InvitationManager : TimelyControllerBase
+    public class InvitationManager : TaskBase
     {
         const long Expired = 3 * 60 * 1000;
 

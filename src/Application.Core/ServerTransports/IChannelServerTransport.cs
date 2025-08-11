@@ -11,6 +11,7 @@ using ItemProto;
 using MessageProto;
 using SyncProto;
 using System.Net;
+using SystemProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -200,5 +201,6 @@ namespace Application.Core.ServerTransports
         void SendYellowTip(YellowTipRequest yellowTipRequest);
         ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
+        ServerStateDto GetServerStats();
     }
 }

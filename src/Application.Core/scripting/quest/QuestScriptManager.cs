@@ -49,7 +49,7 @@ public class QuestScriptManager : AbstractScriptManager
     private IEngine? getQuestScriptEngine(IChannelClient c, short questid)
     {
         var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
-        if (engine == null && GameConstants.isMedalQuest(questid))
+        if (engine == null && GameUtils.isMedalQuest(questid))
         {
             engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"), c);   // start generic medal quest
         }

@@ -5,6 +5,7 @@ using Application.Core.Login.Session;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
+using SystemProto;
 
 namespace Application.Core.Login
 {
@@ -172,6 +173,5 @@ namespace Application.Core.Login
                 }
             }
         }
-
     }
 }

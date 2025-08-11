@@ -23,12 +23,10 @@
 
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.Login.ServerData;
 using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.Extensions.Logging;
-using XmlWzReader;
 
 namespace Application.Core.Login.Net.Handlers;
 

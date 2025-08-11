@@ -138,9 +138,9 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 	- [x] 提取 `PlayerNpc`
 	- [x] 提取结婚系统
 	- [ ] 提取拍卖系统
-	- [ ] 重构 雇佣商人
+	- [x] 重构 雇佣商人
 	- [x] 重构 好友系统
-- [ ] 移除World
-- [ ] 移除Server
+- [x] 移除World
+- [x] 移除Server
 - [ ] 整理初始化脚本以及迁移，对DBContext拆分
-- [ ] `IChannelServerTransport`的返回类型、参数全部改成proto
+- [ ] 以grpc的方式实现`IChannelServerTransport`

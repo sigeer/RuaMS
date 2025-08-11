@@ -1,9 +1,8 @@
-using Application.Core.Game.Controllers;
 using server.maps;
 
 namespace Application.Core.Channel.Tasks
 {
-    public class RespawnTask : TimelyControllerBase
+    public class RespawnTask : TaskBase
     {
         readonly WorldChannel _worldChannel;
 

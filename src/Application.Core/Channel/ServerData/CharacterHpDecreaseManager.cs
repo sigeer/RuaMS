@@ -1,8 +1,6 @@
-using Application.Core.Game.Controllers;
-
 namespace Application.Core.Channel.ServerData
 {
-    public class CharacterHpDecreaseManager : TimelyControllerBase
+    public class CharacterHpDecreaseManager : TaskBase
     {
         private Dictionary<IPlayer, int> playerHpDec = new Dictionary<IPlayer, int>();
 

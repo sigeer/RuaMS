@@ -53,7 +53,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         var mob = map.getMonsterByOid(mobOid);
         if (mob != null)
         {
-            if (dmg < 0 || dmg > GameConstants.MAX_FIELD_MOB_DAMAGE)
+            if (dmg < 0 || dmg > GameUtils.MAX_FIELD_MOB_DAMAGE)
             {
                 _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", c.OnlinedCharacter.getName(),
                         map.getId(), MonsterInformationProvider.getInstance().getMobNameFromId(mob.getId()), dmg);

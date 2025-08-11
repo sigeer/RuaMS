@@ -1,9 +1,7 @@
-using Application.Core.Game.Controllers;
-
 namespace Application.Core.Channel.ServerData
 {
 
-    public class MapObjectManager : TimelyControllerBase
+    public class MapObjectManager : TaskBase
     {
         private Dictionary<Action, DateTime> registeredTimedMapObjects = new();
         private object timedMapObjectLock = new object();

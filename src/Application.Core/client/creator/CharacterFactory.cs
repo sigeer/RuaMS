@@ -23,11 +23,9 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.client.creator.novice;
 using Application.Core.client.creator.veteran;
-using Application.Core.Managers.Constants;
 using client.creator.novice;
 using client.creator.veteran;
 using client.inventory;
-using constants.game;
 
 namespace client.creator;
 

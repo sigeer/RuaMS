@@ -19,9 +19,7 @@
 */
 
 
-using Application.Core.Client;
 using Application.Core.Login.Client;
-using Application.Core.scripting.npc;
 using Application.EF;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
@@ -389,43 +387,5 @@ public class SessionCoordinator
         }
     }
 
-    public void printSessionTrace(IChannelClient c)
-    {
-        string str = "Opened server sessions:\r\n\r\n";
 
-        if (onlineClients.Count > 0)
-        {
-            var elist = onlineClients.OrderBy(x => x.Key).ToList();
-
-            str += ("Current online clients:\r\n");
-            foreach (var e in elist)
-            {
-                str += ("  " + e.Key + "\r\n");
-            }
-        }
-
-        if (onlineRemoteHwids.Count > 0)
-        {
-            List<Hwid> hwids = onlineRemoteHwids.OrderBy(x => x.hwid).ToList();
-
-            str += ("Current online HWIDs:\r\n");
-            foreach (Hwid s in hwids)
-            {
-                str += ("  " + s + "\r\n");
-            }
-        }
-
-        if (loginRemoteHosts.Count > 0)
-        {
-            var elist = loginRemoteHosts.OrderBy(x => x.Key).ToList();
-
-            str += ("Current login sessions:\r\n");
-            foreach (var e in elist)
-            {
-                str += ("  " + e.Key + ", IP: " + e.Value.RemoteAddress + "\r\n");
-            }
-        }
-
-        TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
-    }
 }

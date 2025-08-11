@@ -22,6 +22,7 @@
 		<Protobuf Include="Config\MessageWrapper.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Config\ServerState.proto" GrpcServices="None" />
 		<Protobuf Include="Config\Shutdown.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Fame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ClientInfo.proto" GrpcServices="None" />
