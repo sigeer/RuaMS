@@ -399,7 +399,7 @@ public partial class WorldChannel : ISocketServer
 
     public int getChannelCapacity()
     {
-        return (int)(Math.Ceiling(((float)Players.getAllCharacters().Count / YamlConfig.config.server.CHANNEL_LOAD) * 800));
+        return (int)(Math.Ceiling(((float)Players.getAllCharacters().Count / ChannelConfig.MaxSize) * 800));
     }
 
     public void broadcastPacket(Packet packet)

@@ -22,7 +22,7 @@ namespace Application.Core.Servers.Services
             return _cache.GetOrCreate("Rank", e =>
             {
                 e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-                var remote = _mapper.Map<List<RankedCharacterInfo>>(_transport.LoadPlayerRanking(topCount).DataSource);
+                var remote = _mapper.Map<List<RankedCharacterInfo>>(_transport.LoadPlayerRanking(topCount).List);
                 return remote;
             }) ?? [];
             ;

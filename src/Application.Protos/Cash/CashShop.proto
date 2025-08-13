@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "Item/Ring.proto";
+
+package CashProto;
+
+message MosterSellerInfo {
+	repeated MonsterSellerTab tabs = 1;
+}
+message MonsterSellerTab {
+	repeated int32 itemIdList = 1;
+}

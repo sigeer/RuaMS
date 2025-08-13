@@ -13,7 +13,7 @@ namespace Application.Core.Channel.Services
 
         public void RegisterExpedition(int[] cids, int channel, string bossName)
         {
-            var request = new Dto.ExpeditionRegistry();
+            var request = new ExpeditionProto.ExpeditionRegistry();
             request.CidList.AddRange(cids);
             request.Channel = channel;
             request.BossName = bossName;
@@ -21,7 +21,7 @@ namespace Application.Core.Channel.Services
         }
         public bool CanStartExpedition(int cid, int channel, string bossName)
         {
-            return _transport.CanStartExpedition(new Dto.ExpeditionCheckRequest { Cid = cid, Channel = channel, BossName = bossName }).IsSuccess;
+            return _transport.CanStartExpedition(new ExpeditionProto.ExpeditionCheckRequest { Cid = cid, Channel = channel, BossName = bossName }).IsSuccess;
         }
     }
 }

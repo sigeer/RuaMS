@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Buff.proto";
+import "Dto/Disease.proto";
+
+package SyncProto;
+
+message PlayerBuffDto {
+  repeated Dto.BuffDto buffs = 1;
+  repeated Dto.DiseaseDto diseases = 2;
+}
+
+message GetPlayerBufferRequest {
+	int32 characterId = 1;
+}
+
+message PushPlayerBuffsRequest {
+	int32 characterId = 1;
+	PlayerBuffDto data = 2;
+}

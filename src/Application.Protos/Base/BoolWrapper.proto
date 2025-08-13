@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package BaseProto;
+
+message BoolWrapper {
+	bool value = 1;
+}

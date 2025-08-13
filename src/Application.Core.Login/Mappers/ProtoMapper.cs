@@ -70,15 +70,15 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<Dto.BuddyDto, BuddyModel>();
 
-            CreateMap<PlayerBuffSaveModel, Dto.PlayerBuffSaveDto>().ReverseMap();
+            CreateMap<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().ReverseMap();
             CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
-            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>()
+            CreateMap<CharacterLiveObject, SyncProto.PlayerGetterDto>()
                 .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
             CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
-            CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()
+            CreateMap<CharacterLiveObject, TeamProto.TeamMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
@@ -86,7 +86,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
                 .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Character.Map));
 
-            CreateMap<CharacterLiveObject, Dto.GuildMemberDto>()
+            CreateMap<CharacterLiveObject, GuildProto.GuildMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
@@ -105,7 +105,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.ToName, src => src.MapFrom<GiftToNameValueResolver>());
 
             CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
-            CreateMap<PLifeModel, BaseProto.PLifeDto>()
+            CreateMap<PLifeModel, LifeProto.PLifeDto>()
                 .ForMember(dest => dest.LifeId, src => src.MapFrom(x => x.Life))
                 .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map))
                 .ReverseMap()

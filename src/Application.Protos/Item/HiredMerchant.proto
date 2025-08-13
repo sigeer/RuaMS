@@ -1,10 +1,15 @@
 syntax = "proto3";
 
 import "Dto/Item.proto";
-import "Item/PlayerShopItem.proto";
 import "google/protobuf/wrappers.proto";
 
 package ItemProto;
+
+message PlayerShopItemDto {
+	Dto.ItemDto item = 1;
+	int32 price = 2;
+	int32 bundles = 3;
+}
 
 message CommitRetrievedRequest {
 	int32 ownerId = 1;
@@ -64,25 +69,7 @@ message CanHiredMerchantResponse {
 	int32 code = 1;
 }
 
-message OwlSearchRequest {
-	int32 masterId = 1;
-	int32 usedItemId = 2;
-	int32 searchItemId = 3;
-}
 
-message OwlSearchResponse{
-	int32 itemdId = 1;
-	repeated OwlSearchResultItemDto items = 2;
-}
-
-message OwlSearchResultItemDto {
-	PlayerShopItemDto item = 1;
-	string title = 2;
-	string ownerName = 3;
-	int32 mapId = 4;
-	int32 channel = 5;
-	int32 mapObjectId = 6;
-}
 
 message SearchHiredMerchantChannelRequest {
 	int32 masterId = 1;

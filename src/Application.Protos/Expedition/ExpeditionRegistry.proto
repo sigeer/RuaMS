@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Dto;
+package ExpeditionProto;
 
 message ExpeditionRegistry {
   repeated int32 cidList = 1;

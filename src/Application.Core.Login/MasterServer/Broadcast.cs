@@ -82,7 +82,7 @@ namespace Application.Core.Login
 
         public void DisconnectChr(int chrId)
         {
-            var data = new DisconnectPlayerByNameBroadcast() { MasterId = chrId };
+            var data = new SystemProto.DisconnectPlayerByNameBroadcast() { MasterId = chrId };
             Transport.SendMessage(BroadcastType.SendPlayerDisconnect, data, data.MasterId);
         }
     }

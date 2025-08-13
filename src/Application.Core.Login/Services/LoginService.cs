@@ -29,7 +29,7 @@ namespace Application.Core.Login.Services
         /// <param name="channelId"></param>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public Dto.PlayerGetterDto? PlayerLogin(string clientSession, int channelId, int characterId)
+        public SyncProto.PlayerGetterDto? PlayerLogin(string clientSession, int characterId)
         {
             var characterObj = _masterServer.CharacterManager.FindPlayerById(characterId);
             if (characterObj == null || characterObj.Character == null)
@@ -46,20 +46,18 @@ namespace Application.Core.Login.Services
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
-            var data = _mapper.Map<Dto.PlayerGetterDto>(characterObj);
-            data.LoginInfo = new Dto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
+            var data = _mapper.Map<SyncProto.PlayerGetterDto>(characterObj);
+            data.LoginInfo = new SyncProto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
 
             using var dbContext = _dbContextFactory.CreateDbContext();
 
 
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
-                .Select(x => new Dto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
+                .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
             data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountManager.GetAccountGameData(data.Character.AccountId));
             data.Account = _mapper.Map<Dto.AccountCtrlDto>(accountData);
-            data.PendingTransactions.AddRange(_masterServer.ItemTransactionManager.GetPlayerPendingTransactions(data.Character.Id));
-
             data.RemoteCallList.AddRange(_masterServer.CrossServerService.GetCallback(characterId));
             return data;
         }

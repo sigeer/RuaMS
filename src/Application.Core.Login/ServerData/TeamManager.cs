@@ -22,30 +22,30 @@ namespace Application.Core.Login.ServerData
             _logger = logger;
         }
 
-        public Dto.TeamDto? GetTeamFull(int teamId)
+        public TeamProto.TeamDto? GetTeamFull(int teamId)
         {
             var data = GetTeamLocal(teamId);
             if (data == null)
                 return null;
 
-            var response = new Dto.TeamDto();
+            var response = new TeamProto.TeamDto();
             response.Id = teamId;
             response.LeaderId = data.LeaderId;
-            response.Members.AddRange(_mapper.Map<Dto.TeamMemberDto[]>(data.GetMembers().Select(_server.CharacterManager.FindPlayerById)));
+            response.Members.AddRange(_mapper.Map<TeamProto.TeamMemberDto[]>(data.GetMembers().Select(_server.CharacterManager.FindPlayerById)));
             return response;
         }
         public TeamModel? GetTeamLocal(int teamId) => _dataSource.GetValueOrDefault(teamId);
 
-        public Dto.TeamDto CreateTeam(int playerId)
+        public TeamProto.TeamDto CreateTeam(int playerId)
         {
             var newTeam = new TeamModel(Interlocked.Increment(ref _currentId), playerId);
             var chrFrom = _server.CharacterManager.FindPlayerById(playerId)!;
             chrFrom.Character.Party = newTeam.Id;
 
-            var response = new Dto.TeamDto();
+            var response = new TeamProto.TeamDto();
             response.Id = newTeam.Id;
             response.LeaderId = newTeam.LeaderId;
-            response.Members.AddRange(_mapper.Map<Dto.TeamMemberDto[]>(new CharacterLiveObject[] { chrFrom }));
+            response.Members.AddRange(_mapper.Map<TeamProto.TeamMemberDto[]>(new CharacterLiveObject[] { chrFrom }));
             _dataSource[newTeam.Id] = newTeam;
             return response;
         }
@@ -55,9 +55,9 @@ namespace Application.Core.Login.ServerData
                 return _dataSource.TryRemove(teamId, out _);
             return false;
         }
-        public Dto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
+        public TeamProto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
         {
-            var response = new Dto.UpdateTeamResponse();
+            var response = new TeamProto.UpdateTeamResponse();
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
 
             var party = GetTeamLocal(partyid);
@@ -67,7 +67,7 @@ namespace Application.Core.Login.ServerData
             {
                 var chrFrom = fromId > 0 ? _server.CharacterManager.FindPlayerById(fromId) : null;
                 var chrTo = fromId == toId ? chrFrom : _server.CharacterManager.FindPlayerById(toId)!;
-                response.UpdatedMember = _mapper.Map<Dto.TeamMemberDto>(chrTo);
+                response.UpdatedMember = _mapper.Map<TeamProto.TeamMemberDto>(chrTo);
                 switch (operation)
                 {
                     case PartyOperation.JOIN:

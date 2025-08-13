@@ -12,7 +12,7 @@ namespace Application.Module.Duey.Master
         {
         }
 
-        internal void SendCreatePackage(CreatePackageResponse response)
+        internal void SendCreatePackage(CreatePackageBroadcast response)
         {
             SendMessage(BroadcastType.OnDueyPackageCreation, response, response.Package.SenderId, response.Package.ReceiverId);
         }

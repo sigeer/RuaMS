@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "Base/BoolWrapper.proto";
+
+import "Team/Team.proto";
+import "Team/TeamOperation.proto";
+
+package ServiceProto;
+
+service TeamService {
+	rpc SendTeamUpdate(TeamProto.UpdateTeamRequest) returns (TeamProto.UpdateTeamResponse);
+	rpc SendTeamChat(TeamProto.TeamChatRequest) returns (google.protobuf.Empty);
+	rpc GetTeamModel(TeamProto.GetTeamRequest) returns (TeamProto.GetTeamResponse);
+	rpc CreateTeam(TeamProto.CreateTeamRequest) returns (TeamProto.GetTeamResponse);
+}

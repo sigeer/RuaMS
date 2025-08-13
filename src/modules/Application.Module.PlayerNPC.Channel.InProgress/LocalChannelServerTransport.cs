@@ -21,6 +21,10 @@ namespace Application.Module.PlayerNPC.Channel.InProgress
             return _manager.GetMapData(getMapPlayerNPCListRequest);
         }
 
+        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList(GetAllPlayerNPCDataRequest request)
+        {
+            return _manager.GetAllData();
+        }
 
         public CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest commitPlayerNPCRequest)
         {

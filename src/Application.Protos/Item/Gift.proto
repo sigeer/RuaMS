@@ -22,3 +22,8 @@ message GetMyGiftsRequest {
 message GetMyGiftsResponse {
 	repeated GiftDto list = 1;
 }
+
+message CommitRetrieveGiftRequest {
+	int32 masterId = 1;
+	repeated int32 idList = 2;
+}

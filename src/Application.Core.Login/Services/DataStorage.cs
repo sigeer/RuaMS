@@ -31,7 +31,7 @@ namespace Application.Core.Login.Services
             _server = server;
         }
 
-        public int CommitNewPlayer(DBContext dbContext, Dto.NewPlayerSaveDto newCharacter)
+        public int CommitNewPlayer(DBContext dbContext, CreatorProto.NewPlayerSaveDto newCharacter)
         {
             _logger.LogInformation("正在保存新角色数据...");
 

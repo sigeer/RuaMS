@@ -87,6 +87,14 @@ namespace Application.Core.Login.ServerData
             return res;
         }
 
+        public void CommitRetrieveGift(int[] giftIdArray)
+        {
+            foreach (var item in giftIdArray)
+            {
+                SetRemoved(item);
+            }
+        }
+
         protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<GiftModel>> updateData)
         {
             var updateKeys = updateData.Keys.ToArray();

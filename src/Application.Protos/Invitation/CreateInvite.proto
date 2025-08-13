@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 
-package Dto;
+package InvitationProto;
 
 message CreateInviteRequest {
   string type = 1;

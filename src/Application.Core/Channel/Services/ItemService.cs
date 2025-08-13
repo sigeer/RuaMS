@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
@@ -9,6 +10,7 @@ using client.inventory.manipulator;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using server;
+using System.Transactions;
 using tools;
 using static server.CashShop;
 
@@ -20,21 +22,18 @@ namespace Application.Core.Channel.Services
         readonly IChannelServerTransport _transport;
         readonly ILogger<ItemService> _logger;
         readonly WorldChannelServer _server;
-        readonly ItemTransactionService _itemStore;
         readonly CashItemProvider _cashItemProvider;
 
         public ItemService(IMapper mapper,
             IChannelServerTransport transport,
             ILogger<ItemService> logger,
             WorldChannelServer server,
-            ItemTransactionService itemStore,
             CashItemProvider cashItemProvider)
         {
             _mapper = mapper;
             _transport = transport;
             _logger = logger;
             _server = server;
-            _itemStore = itemStore;
             _cashItemProvider = cashItemProvider;
         }
 
@@ -198,52 +197,42 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
         {
-            if (_itemStore.TryBeginTransaction(player, [item], 0, out var transaction))
+            var request = new ItemProto.CreateTVMessageRequest
             {
-                var request = new ItemProto.CreateTVMessageRequest
-                {
-                    MasterId = player.Id,
-                    ToName = victim,
-                    Type = tvType,
-                    ShowEar = showEar,
-                    Transaction = transaction
-                };
-                request.MessageList.AddRange(messages);
-                _transport.BroadcastTV(request);
-            }
+                MasterId = player.Id,
+                ToName = victim,
+                Type = tvType,
+                ShowEar = showEar,
+            };
+            request.MessageList.AddRange(messages);
 
+            new ResourceConsumeBuilder().ConsumeItem(item, 1).Execute(player, ct =>
+            {
+                var res = _transport.BroadcastTV(request);
+                if (res.Code == 0)
+                    return true;
+
+                player.dropMessage(1, "MapleTV is already in use.");
+                return false;
+            });
         }
 
-        public void OnBroadcastTV(ItemProto.CreateTVMessageResponse data)
+        public void OnBroadcastTV(ItemProto.CreateTVMessageBroadcast data)
         {
-            if (data.Code == 0)
+            var noticeMsg = string.Join(" ", data.MessageList);
+            foreach (var ch in _server.Servers.Values)
             {
-                var noticeMsg = string.Join(" ", data.Data.MessageList);
-                foreach (var ch in _server.Servers.Values)
+                foreach (var chr in ch.Players.getAllCharacters())
                 {
-                    foreach (var chr in ch.Players.getAllCharacters())
-                    {
-                        chr.sendPacket(PacketCreator.enableTV());
-                        chr.sendPacket(PacketCreator.sendTV(data.Data.Master, data.Data.MessageList.ToArray(), data.Data.Type <= 2 ? data.Data.Type : data.Data.Type - 3, data.Data.MasterPartner));
+                    chr.sendPacket(PacketCreator.enableTV());
+                    chr.sendPacket(PacketCreator.sendTV(data.Master, data.MessageList.ToArray(), data.Type <= 2 ? data.Type : data.Type - 3, data.MasterPartner));
 
-                        if (data.Data.Type >= 3)
-                        {
-                            chr.sendPacket(PacketCreator.serverNotice(3, data.Data.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Data.Master) + " : " + noticeMsg, data.ShowEar));
-                        }
+                    if (data.Type >= 3)
+                    {
+                        chr.sendPacket(PacketCreator.serverNotice(3, data.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Master) + " : " + noticeMsg, data.ShowEar));
                     }
                 }
             }
-            else
-            {
-                var master = _server.FindPlayerById(data.MasterId);
-                if (master != null)
-                {
-                    master.dropMessage(1, "MapleTV is already in use.");
-                }
-
-            }
-
-            _itemStore.HandleTransaction(data.Transaction);
         }
 
         public void OnBroadcastTVFinished(Empty data)
@@ -256,59 +245,104 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
         {
-            if (_itemStore.TryBeginTransaction(player, [costItem], 0, out var transaction))
+            var request = new ItemProto.UseItemMegaphoneRequest
             {
-                var request = new ItemProto.UseItemMegaphoneRequest
-                {
-                    MasterId = player.Id,
-                    Message = message,
-                    Item = _mapper.Map<Dto.ItemDto>(item),
-                    IsWishper = isWishper,
-                    Transaction = transaction
-                };
-                _transport.SendItemMegaphone(request);
-            }
+                MasterId = player.Id,
+                Message = message,
+                Item = _mapper.Map<Dto.ItemDto>(item),
+                IsWishper = isWishper,
+            };
 
+            new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Execute(player, ct =>
+            {
+                var res = _transport.SendItemMegaphone(request);
+                return res.Code == 0;
+            });
         }
 
-        public void OnItemMegaphon(ItemProto.UseItemMegaphoneResponse data)
+        public void OnItemMegaphon(ItemProto.UseItemMegaphoneBroadcast data)
         {
-            if (data.Code == 0)
+            foreach (var ch in _server.Servers.Values)
             {
-                foreach (var ch in _server.Servers.Values)
-                {
-                    ch.broadcastPacket(PacketCreator.itemMegaphone(data.Data.Message, data.Data.IsWishper, data.Data.SenderChannel, _mapper.Map<Item>(data.Data.Item)));
-                }
+                ch.broadcastPacket(PacketCreator.itemMegaphone(data.Message, data.IsWishper, data.SenderChannel, _mapper.Map<Item>(data.Item)));
             }
-            else
-            {
-
-            }
-
-            _itemStore.HandleTransaction(data.Transaction);
         }
 
         public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)
         {
-            if (_itemStore.TryBuyCash(chr, cashType, cItem, out var transaction))
-                _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+            chr.BuyCashItem(cashType, cItem, () =>
+            {
+                var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
                     CashItemId = cItem.getItemId(),
                     CashItemSn = cItem.getSN(),
-                    Transaction = transaction
                 });
+                if (data.Code != 0)
+                {
+                    chr.sendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
+                    return false;
+                }
+
+                BuyCashItemCallback(chr, cItem, data);
+                return true;
+            });
+        }
+
+        void BuyCashItemCallback(IPlayer chr, CashItem cItem, CashProto.BuyCashItemResponse data)
+        {
+            if (data.GiftInfo != null)
+            {
+                Item item = CashItem2Item(cItem);
+                if (data.GiftInfo.RingSource != null && CashItem2Item(cItem) is Equip equip)
+                {
+                    var ring = _mapper.Map<RingSourceModel>(data.GiftInfo.RingSource);
+                    equip.SetRing(ring.RingId1, ring);
+                    chr.addPlayerRing(ring.GetRing(ring.RingId1));
+                    // 原代码中 crush ring 用的是showBoughtCashItem
+                    chr.sendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
+                    chr.getCashShop().addToInventory(item);
+                }
+
+
+                chr.sendPacket(PacketCreator.showGiftSucceed(data.GiftInfo.Recipient, cItem));
+            }
+            else
+            {
+                if (_cashItemProvider.isPackage(cItem.getItemId()))
+                {
+                    var cashPackage = getPackage(cItem.getItemId());
+                    foreach (var item in cashPackage)
+                    {
+                        chr.getCashShop().addToInventory(item);
+
+                        chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                    }
+                    chr.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
+                }
+                else
+                {
+                    Item item = CashItem2Item(cItem);
+
+                    chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                    chr.getCashShop().addToInventory(item);
+
+                }
+
+            }
+
+            chr.sendPacket(PacketCreator.showCash(chr));
         }
 
         public void BuyCashItemForGift(IPlayer chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
         {
-            if (_itemStore.TryBuyCash(chr, cashType, cItem, out var transaction))
-                _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+            chr.BuyCashItem(cashType, cItem, () =>
+            {
+                var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
                     CashItemId = cItem.getItemId(),
                     CashItemSn = cItem.getSN(),
-                    Transaction = transaction,
                     GiftInfo = new CashProto.GiftInfo
                     {
                         Message = message,
@@ -316,64 +350,15 @@ namespace Application.Core.Channel.Services
                         CreateRing = createRing
                     }
                 });
-        }
-
-        public void OnBuyCashItemCallback(CashProto.BuyCashItemResponse data)
-        {
-            var chr = _server.FindPlayerById(data.MasterId);
-            if (chr != null)
-            {
                 if (data.Code != 0)
                 {
                     chr.sendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
-                    return;
+                    return false;
                 }
 
-                if (data.GiftInfo != null)
-                {
-                    var cItem = _cashItemProvider.getItem(data.Sn)!;
-                    Item item = CashItem2Item(cItem);
-                    if (data.GiftInfo.RingSource != null && CashItem2Item(cItem) is Equip equip)
-                    {
-                        var ring = _mapper.Map<RingSourceModel>(data.GiftInfo.RingSource);
-                        equip.SetRing(ring.RingId1, ring);
-                        chr.addPlayerRing(ring.GetRing(ring.RingId1));
-                        // 原代码中 crush ring 用的是showBoughtCashItem
-                        chr.sendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
-                        chr.getCashShop().addToInventory(item);
-                    }
-
-
-                    chr.sendPacket(PacketCreator.showGiftSucceed(data.GiftInfo.Recipient, cItem));
-                }
-                else
-                {
-                    var cItem = _cashItemProvider.getItem(data.Sn)!;
-                    if (_cashItemProvider.isPackage(cItem.getItemId()))
-                    {
-                        var cashPackage = getPackage(cItem.getItemId());
-                        foreach (var item in cashPackage)
-                        {
-                            chr.getCashShop().addToInventory(item);
-
-                            chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
-                        }
-                        chr.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
-                    }
-                    else
-                    {
-                        Item item = CashItem2Item(cItem);
-
-                        chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
-                        chr.getCashShop().addToInventory(item);
-
-                    }
-
-                }
-
-                chr.sendPacket(PacketCreator.showCash(chr));
-            }
-            _itemStore.HandleTransaction(data.Transaction);
+                BuyCashItemCallback(chr, cItem, data);
+                return true;
+            });
         }
 
         public bool RegisterNameChange(IPlayer chr, string newName)

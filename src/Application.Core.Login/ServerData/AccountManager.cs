@@ -190,7 +190,7 @@ namespace Application.Core.Login.Datas
             _dataStorage.SetAccount(obj);
         }
 
-        public void SetFly(SetFlyRequest request)
+        public ConfigProto.SetFlyResponse SetFly(ConfigProto.SetFlyRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.CId);
             if (chr != null)
@@ -199,10 +199,10 @@ namespace Application.Core.Login.Datas
                 {
                     data.CanFly = request.SetStatus;
 
-                    _server.Transport.SendSetFly(new Dto.SetFlyResponse { Code = 0, Request = request });
+                    return new ConfigProto.SetFlyResponse { Code = 0, Request = request };
                 }
             }
-
+            return new ConfigProto.SetFlyResponse() { Code = 1 };
         }
 
         public int[] GetOnlinedGmAccId()
@@ -210,23 +210,23 @@ namespace Application.Core.Login.Datas
             return _accDataSource.Values.Where(x => x.GMLevel > 1).Select(x => x.Id).ToArray();
         }
 
-        public SetGmLevelResponse SetGmLevel(SetGmLevelRequest request)
+        public SystemProto.SetGmLevelResponse SetGmLevel(SystemProto.SetGmLevelRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
-                return new SetGmLevelResponse { Code = 1 };
+                return new SystemProto.SetGmLevelResponse { Code = 1 };
 
             var accountDto = GetAccount(targetChr.Character.AccountId)!;
             accountDto.GMLevel = (sbyte)request.Level;
 
-            _server.Transport.BroadcastGmLevelChanged(new SetGmLevelBroadcast
+            _server.Transport.BroadcastGmLevelChanged(new SystemProto.SetGmLevelBroadcast
             {
                 TargetId = targetChr.Character.Id,
                 OperatorName = _server.CharacterManager.GetPlayerName(request.OperatorId),
                 TargetName = request.TargetName,
                 Level = request.Level
             });
-            return new SetGmLevelResponse();
+            return new SystemProto.SetGmLevelResponse();
         }
 
         public GetAllClientInfo GetOnliendClientInfo()

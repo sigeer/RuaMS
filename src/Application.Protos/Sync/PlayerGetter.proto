@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Character.proto";
+import "Dto/AccountCtrl.proto";
+import "Dto/Item.proto";
+import "Dto/Monsterbook.proto";
+import "Dto/PetIgnore.proto";
+import "Dto/TrockLocation.proto";
+import "Dto/Area.proto";
+import "Dto/Event.proto";
+import "Dto/QuestStatus.proto";
+import "Dto/Skill.proto";
+import "Dto/SkillMacro.proto";
+import "Dto/CoolDown.proto";
+import "Dto/KeyMap.proto";
+import "Dto/SavedLocation.proto";
+import "Dto/Buddy.proto";
+import "Dto/AccountGame.proto";
+import "Dto/NewYearCard.proto";
+import "Dto/ServerCrossCallback.proto";
+import "Dto/Fame.proto";
+
+package SyncProto;
+
+message LoginInfo {
+	bool isNewCommer = 1;
+}
+
+message CharacterLinkDto {
+  int32 level = 1;
+  string name = 2;
+}
+
+message PlayerGetterDto {
+  Dto.AccountCtrlDto account = 1;
+  Dto.CharacterDto character = 2; // CHECK TYPE
+  repeated Dto.ItemDto inventoryItems = 3; // CHECK TYPE
+  Dto.AccountGameDto accountGame = 4; // CHECK TYPE
+  repeated Dto.MonsterbookDto monsterBooks = 5; // CHECK TYPE
+  repeated Dto.PetIgnoreDto petIgnores = 6; // CHECK TYPE
+  repeated Dto.TrockLocationDto trockLocations = 7; // CHECK TYPE
+  repeated Dto.AreaDto areas = 8; // CHECK TYPE
+  repeated Dto.EventDto events = 9; // CHECK TYPE
+  repeated Dto.QuestStatusDto questStatuses = 10; // CHECK TYPE
+  repeated Dto.SkillDto skills = 11; // CHECK TYPE
+  repeated Dto.SkillMacroDto skillMacros = 12; // CHECK TYPE
+  repeated Dto.CoolDownDto coolDowns = 13; // CHECK TYPE
+  repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
+  repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
+  repeated Dto.BuddyDto buddyList = 16; // CHECK TYPE
+  LoginInfo loginInfo = 17;
+  CharacterLinkDto link = 18;
+  repeated Dto.FameLogRecordDto fameLogs = 19;
+  repeated int32 wishItems = 20;
+  repeated Dto.NewYearCardDto newYearCards = 21;
+  repeated Dto.RemoteCallDto remoteCallList = 23;
+}
+
+message GetPlayerByLoginRequest {
+	string clientSession = 1;
+	int32 characterId = 2; 
+}
+
+message GetPlayerByLoginResponse {
+	PlayerGetterDto data = 1;
+}

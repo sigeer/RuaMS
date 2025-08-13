@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package ItemProto;
+
+message ReactorSkillBookDto {
+	repeated int32 idList = 1;
+}

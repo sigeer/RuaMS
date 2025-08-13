@@ -4,6 +4,7 @@ using Application.Shared.Invitations;
 using AutoMapper;
 using constants.game;
 using Dto;
+using GuildProto;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
@@ -53,7 +54,7 @@ namespace Application.Core.Channel.ServerData
                 return false;
             }
 
-            return _transport.CreateAllianceCheck(new CreateAllianceCheckRequest { Name = name }).IsValid;
+            return _transport.CreateAllianceCheck(new AllianceProto.CreateAllianceCheckRequest { Name = name }).IsValid;
         }
 
         public HashSet<IPlayer> getEligiblePlayersForGuild(IPlayer guildLeader)
@@ -75,7 +76,7 @@ namespace Application.Core.Channel.ServerData
 
         public void SendInvitation(IChannelClient c, string targetName)
         {
-            _transport.SendInvitation(new Dto.CreateInviteRequest
+            _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
                 Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
@@ -87,7 +88,7 @@ namespace Application.Core.Channel.ServerData
 
         public void AnswerInvitation(IPlayer answer, int guildId, bool operation)
         {
-            _transport.AnswerInvitation(new AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public Guild? CreateGuild(string guildName, int playerId, HashSet<IPlayer> members, Action failCallback)
@@ -320,7 +321,7 @@ namespace Application.Core.Channel.ServerData
 
         public void SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
         {
-            _transport.SendUpdateGuildEmblem(new Dto.UpdateGuildEmblemRequest
+            _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -344,7 +345,7 @@ namespace Application.Core.Channel.ServerData
 
         public void SetGuildRankTitle(IPlayer chr, string[] titles)
         {
-            var request = new Dto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
+            var request = new GuildProto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
             request.RankTitles.AddRange(titles);
             _transport.SendUpdateGuildRankTitle(request);
         }
@@ -360,7 +361,7 @@ namespace Application.Core.Channel.ServerData
 
         public void IncreaseGuildCapacity(IPlayer chr, int cost)
         {
-            _transport.SendUpdateGuildCapacity(new Dto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
+            _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
         public void OnGuildCapacityIncreased(UpdateGuildCapacityResponse data)
@@ -392,10 +393,10 @@ namespace Application.Core.Channel.ServerData
 
         public void Disband(IPlayer chr)
         {
-            _transport.SendGuildDisband(new Dto.GuildDisbandRequest { MasterId = chr.Id });
+            _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
         }
 
-        public void OnGuildDisband(Dto.GuildDisbandResponse data)
+        public void OnGuildDisband(GuildProto.GuildDisbandResponse data)
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
                 guild =>
@@ -429,7 +430,7 @@ namespace Application.Core.Channel.ServerData
             _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
         }
 
-        internal void OnGuildGPUpdate(Dto.UpdateGuildGPResponse data)
+        internal void OnGuildGPUpdate(GuildProto.UpdateGuildGPResponse data)
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
                 guild =>
@@ -496,7 +497,7 @@ namespace Application.Core.Channel.ServerData
                 }
                 else
                 {
-                    _transport.SendInvitation(new CreateInviteRequest
+                    _transport.SendInvitation(new InvitationProto.CreateInviteRequest
                     {
                         Type = InviteTypes.Alliance,
                         FromId = c.OnlinedCharacter.Id,
@@ -508,7 +509,7 @@ namespace Application.Core.Channel.ServerData
 
         public void AnswerAllianceInvitation(IPlayer chr, int allianceId, bool answer)
         {
-            _transport.AnswerInvitation(new AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
+            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
         public Alliance? GetAllianceById(int id)
         {
@@ -582,10 +583,10 @@ namespace Application.Core.Channel.ServerData
             {
                 return;
             }
-            _transport.SendGuildLeaveAlliance(new Dto.GuildLeaveAllianceRequest { MasterId = player.Id });
+            _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
         }
 
-        public void OnGuildLeaveAlliance(GuildLeaveAllianceResponse data)
+        public void OnGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -600,9 +601,9 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            _transport.SendAllianceExpelGuild(new Dto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
+            _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
         }
-        public void OnAllianceExpelGuild(AllianceExpelGuildResponse data)
+        public void OnAllianceExpelGuild(AllianceProto.AllianceExpelGuildResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -610,7 +611,7 @@ namespace Application.Core.Channel.ServerData
                     return alliance.RemoveGuildFromAlliance(data.GuildId, 2);
                 });
         }
-        public void OnGuildJoinAlliance(GuildJoinAllianceResponse data)
+        public void OnGuildJoinAlliance(AllianceProto.GuildJoinAllianceResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -634,9 +635,9 @@ namespace Application.Core.Channel.ServerData
             {
                 return;
             }
-            _transport.SendChangeAllianceLeader(new Dto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+            _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
         }
-        public void OnAllianceLeaderChanged(AllianceChangeLeaderResponse data)
+        public void OnAllianceLeaderChanged(AllianceProto.AllianceChangeLeaderResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -663,9 +664,9 @@ namespace Application.Core.Channel.ServerData
         }
         public void ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
         {
-            _transport.SendChangePlayerAllianceRank(new Dto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+            _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
         }
-        public void OnPlayerAllianceRankChanged(ChangePlayerAllianceRankResponse data)
+        public void OnPlayerAllianceRankChanged(AllianceProto.ChangePlayerAllianceRankResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -684,9 +685,9 @@ namespace Application.Core.Channel.ServerData
         }
         public void HandleIncreaseAllianceCapacity(IPlayer chr)
         {
-            _transport.SendIncreaseAllianceCapacity(new Dto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+            _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
         }
-        public void OnAllianceCapacityIncreased(IncreaseAllianceCapacityResponse data)
+        public void OnAllianceCapacityIncreased(AllianceProto.IncreaseAllianceCapacityResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -704,11 +705,11 @@ namespace Application.Core.Channel.ServerData
         }
         internal void UpdateAllianceRank(IPlayer chr, string[] ranks)
         {
-            var request = new Dto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
+            var request = new AllianceProto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
             request.RankTitles.AddRange(ranks);
             _transport.SendUpdateAllianceRankTitle(request);
         }
-        public void OnAllianceRankTitleChanged(UpdateAllianceRankTitleResponse data)
+        public void OnAllianceRankTitleChanged(AllianceProto.UpdateAllianceRankTitleResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -722,9 +723,9 @@ namespace Application.Core.Channel.ServerData
         }
         internal void UpdateAllianceNotice(IPlayer chr, string notice)
         {
-            _transport.SendUpdateAllianceNotice(new Dto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+            _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
-        public void OnAllianceNoticeChanged(UpdateAllianceNoticeResponse data)
+        public void OnAllianceNoticeChanged(AllianceProto.UpdateAllianceNoticeResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
@@ -740,9 +741,9 @@ namespace Application.Core.Channel.ServerData
 
         internal void DisbandAlliance(IPlayer player, int allianceId)
         {
-            _transport.SendAllianceDisband(new Dto.DisbandAllianceRequest { MasterId = player.Id });
+            _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
         }
-        public void OnAllianceDisband(DisbandAllianceResponse data)
+        public void OnAllianceDisband(AllianceProto.DisbandAllianceResponse data)
         {
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>

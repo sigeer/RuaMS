@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,7 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.Channel\Application.Core.Channel.csproj" />
+    <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+    <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Maker.Channel\Application.Module.Maker.Channel.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.PlayerNPC.Channel\Application.Module.PlayerNPC.Channel.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<FilesToDelete Include="$(OutputPath)cache\**" />
+	</ItemGroup>
+	<Target Name="DeleteFile" BeforeTargets="Clean">
+		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
+		<Delete Files="@(FilesToDelete)" />
+	</Target>
 </Project>

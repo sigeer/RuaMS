@@ -1,7 +1,9 @@
 using Application.Core.Login.Events;
 using Application.Module.Maker.Master.Models;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.Maker.Master
@@ -22,7 +24,11 @@ namespace Application.Module.Maker.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            app.MapGrpcService<GrpcServer>();
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+            {
+                app.MapGrpcService<GrpcServer>();
+            }
+
         }
     }
 }

@@ -19,11 +19,11 @@ namespace Application.Core.Login.Services
             _mapper = mapper;
         }
 
-        public Dto.WrapPlayerByNameResponse WarpPlayerByName(Dto.WrapPlayerByNameRequest request)
+        public SystemProto.WrapPlayerByNameResponse WarpPlayerByName(SystemProto.WrapPlayerByNameRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel <= 0)
-                return new Dto.WrapPlayerByNameResponse { Code = 1 };
+                return new SystemProto.WrapPlayerByNameResponse { Code = 1 };
 
             if (!_callbacks.TryGetValue(request.MasterId, out var list))
             {
@@ -37,27 +37,27 @@ namespace Application.Core.Login.Services
                 Params = [new CallbackParamModel() { Index = 0, Schema = typeof(string).Name, Value = request.Victim }]
             });
 
-            return new Dto.WrapPlayerByNameResponse { TargetChannel = targetChr.Channel };
+            return new SystemProto.WrapPlayerByNameResponse { TargetChannel = targetChr.Channel };
         }
 
-        public Dto.SummonPlayerByNameResponse SummonPlayerByName(Dto.SummonPlayerByNameRequest request)
+        public SystemProto.SummonPlayerByNameResponse SummonPlayerByName(SystemProto.SummonPlayerByNameRequest request)
         {
             return SummonPlayer(request.MasterId, _server.CharacterManager.FindPlayerByName(request.Victim));
         }
 
-        public Dto.SummonPlayerByNameResponse SummonPlayerById(int operatorId, int targetId)
+        public SystemProto.SummonPlayerByNameResponse SummonPlayerById(int operatorId, int targetId)
         {
             return SummonPlayer(operatorId, _server.CharacterManager.FindPlayerById(targetId));
         }
 
-        private Dto.SummonPlayerByNameResponse SummonPlayer(int operatorId, CharacterLiveObject? targetChr)
+        private SystemProto.SummonPlayerByNameResponse SummonPlayer(int operatorId, CharacterLiveObject? targetChr)
         {
             if (targetChr == null || targetChr.Channel <= 0)
-                return new Dto.SummonPlayerByNameResponse { Code = 1 };
+                return new SystemProto.SummonPlayerByNameResponse { Code = 1 };
 
-            _server.Transport.SendWrapPlayerByName(new Dto.SummonPlayerByNameBroadcast { WarpToName = _server.CharacterManager.GetPlayerName(operatorId), MasterId = targetChr.Character.Id });
+            _server.Transport.SendWrapPlayerByName(new SystemProto.SummonPlayerByNameBroadcast { WarpToName = _server.CharacterManager.GetPlayerName(operatorId), MasterId = targetChr.Character.Id });
 
-            return new Dto.SummonPlayerByNameResponse();
+            return new SystemProto.SummonPlayerByNameResponse();
         }
 
 
@@ -68,15 +68,15 @@ namespace Application.Core.Login.Services
             return [];
         }
 
-        public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
+        public SystemProto.DisconnectPlayerByNameResponse DisconnectPlayerByName(SystemProto.DisconnectPlayerByNameRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel == 0)
-                return new Dto.DisconnectPlayerByNameResponse { Code = 1 };
+                return new SystemProto.DisconnectPlayerByNameResponse { Code = 1 };
 
             _server.DisconnectChr(targetChr.Character.Id);
 
-            return new Dto.DisconnectPlayerByNameResponse();
+            return new SystemProto.DisconnectPlayerByNameResponse();
         }
     }
 }

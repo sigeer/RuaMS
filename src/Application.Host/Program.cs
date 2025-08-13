@@ -1,15 +1,12 @@
 using Application.Core.Channel.InProgress;
-using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using net.server.coordinator.matchchecker;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
@@ -22,10 +19,11 @@ try
 {
 
     var builder = WebApplication.CreateBuilder(args);
-    builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
+    builder.Configuration.AddEnvironmentVariables(AppSettingKeys.EnvPrefix);
 
     // 支持GBK
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
 
     // 日志配置
     Log.Logger = new LoggerConfiguration()
@@ -38,6 +36,7 @@ try
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
         .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+        .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .WriteTo.Console()
         .WriteTo.Map(
@@ -53,7 +52,6 @@ try
 
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
-
 
     builder.AddGameServerInProgress();
 
@@ -131,13 +129,6 @@ try
 
     var app = builder.Build();
 
-    var idGeneratorOptions = new IdGeneratorOptions(1);
-    YitIdHelper.SetIdGenerator(idGeneratorOptions);
-
-    MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-        app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
-        app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
-
     var bootstrap = app.Services.GetServices<IServerBootstrap>();
     foreach (var item in bootstrap)
     {
@@ -164,11 +155,6 @@ try
         app.MapControllers();
     }
 
-    //AppDomain.CurrentDomain.ProcessExit += (e, o) =>
-    //{
-    //    var server = app.Services.GetService<IMasterServer>();
-    //        server.Shutdown().Wait();
-    //};
     app.Run();
 }
 catch (Exception ex)

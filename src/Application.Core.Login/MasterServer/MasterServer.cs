@@ -15,6 +15,7 @@ using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using Config;
+using Grpc.AspNetCore.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -108,8 +109,7 @@ namespace Application.Core.Login
         public RingManager RingManager => _ringManager.Value;
         readonly Lazy<GiftManager> _giftManager;
         public GiftManager GiftManager => _giftManager.Value;
-        readonly Lazy<ItemTransactionManager> _itemTransactionManager;
-        public ItemTransactionManager ItemTransactionManager => _itemTransactionManager.Value;
+
         readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
         public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
         readonly Lazy<NewYearCardManager> _lazyNewYearCardManager;
@@ -148,7 +148,7 @@ namespace Application.Core.Login
         public List<MasterModule> Modules { get; private set; }
         public ITimerManager TimerManager { get; private set; } = null!;
 
-        CancellationTokenSource? _shutdownCts = null;
+
         public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
         {
@@ -191,7 +191,6 @@ namespace Application.Core.Login
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _guildManager = new(() => ServiceProvider.GetRequiredService<GuildManager>());
             _chatRoomManager = new(() => ServiceProvider.GetRequiredService<ChatRoomManager>());
-            _itemTransactionManager = new(() => ServiceProvider.GetRequiredService<ItemTransactionManager>());
             _itemFactoryManager = new(() => ServiceProvider.GetRequiredService<ItemFactoryManager>());
             _inventoryManager = new(() => ServiceProvider.GetRequiredService<InventoryManager>());
             _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
@@ -215,11 +214,11 @@ namespace Application.Core.Login
             await _semaphore.WaitAsync();
             try
             {
-                if (_shutdownCts != null)
+                if (_shutdownDelayCtrl != null)
                 {
-                    _shutdownCts.Cancel();
-                    _shutdownCts.Dispose();
-                    _shutdownCts = null;
+                    _shutdownDelayCtrl.Cancel();
+                    _shutdownDelayCtrl.Dispose();
+                    _shutdownDelayCtrl = null;
                 }
             }
             finally
@@ -228,6 +227,7 @@ namespace Application.Core.Login
             }
         }
 
+        CancellationTokenSource? _shutdownDelayCtrl = null;
         public async Task Shutdown(int delaySeconds = -1)
         {
             await _semaphore.WaitAsync();
@@ -239,16 +239,16 @@ namespace Application.Core.Login
                 if (IsShuttingdown)
                     return;
 
-                if (_shutdownCts != null)
+                if (_shutdownDelayCtrl != null)
                 {
-                    _shutdownCts.Cancel();
-                    _shutdownCts.Dispose();
+                    _shutdownDelayCtrl.Cancel();
+                    _shutdownDelayCtrl.Dispose();
                 }
-                _shutdownCts = new CancellationTokenSource();
+                _shutdownDelayCtrl = new CancellationTokenSource();
                 if (delaySeconds <= 0)
                     await ShutdownServer();
                 else
-                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownCts.Token).ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token).ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
             }
             finally
             {
@@ -257,6 +257,7 @@ namespace Application.Core.Login
         }
 
         AtomicBoolean isShuttingdown = new AtomicBoolean();
+
         public async Task ShutdownServer()
         {
             if (!IsRunning)
@@ -277,23 +278,27 @@ namespace Application.Core.Login
             await NettyServer.Stop();
             _logger.LogInformation("[{ServerName}] 停止监听", ServerName);
 
+            _shutdownTcs = new TaskCompletionSource();
             Transport.BroadcastShutdown();
+            if (ChannelServerList.Count == 0)
+                _shutdownTcs.SetResult();
 
-            await OnAllChannelShutdown();
+            await CompleteMasterShutdown();
+        }
+        TaskCompletionSource _shutdownTcs = new TaskCompletionSource();
+        public void CompleteChannelShutdown(string serverName)
+        {
+            RemoveChannel(serverName);
+
+            if (ChannelServerList.Count == 0)
+                _shutdownTcs.SetResult();
         }
 
-        public async Task OnChannelShutdown(CompleteShutdownRequest request)
+        async Task CompleteMasterShutdown()
         {
-            RemoveChannel(request.ServerName);
-            if (isShuttingdown)
-                await OnAllChannelShutdown();
-        }
+            await _shutdownTcs.Task;
 
-        async Task OnAllChannelShutdown()
-        {
-            if (ChannelServerList.Count > 0)
-                return;
-
+            _logger.LogInformation("[{ServerName}] 所有频道已停止", ServerName);
             foreach (var module in Modules)
             {
                 await module.UninstallAsync();
@@ -309,7 +314,7 @@ namespace Application.Core.Login
 
             IsRunning = false;
             isShuttingdown.Set(false);
-            _shutdownCts?.Dispose();
+            _shutdownDelayCtrl?.Dispose();
             _logger.LogInformation("[{ServerName}] 已停止", ServerName);
         }
 
@@ -366,28 +371,23 @@ namespace Application.Core.Login
                         ServerName = channel.ServerName,
                         MaxSize = item.MaxSize
                     });
+                    _logger.LogInformation("[{ServerName}] 已注册服务器[{ChannelServerName}]：频道{Channel}", ServerName, channel.ServerName, Channels.Count);
                 }
-                _serverChannelCache = null;
                 return started + 1;
             }
             return -1;
         }
 
-        public bool RemoveChannel(string instanceId)
+        private bool RemoveChannel(string instanceId)
         {
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {
-                _serverChannelCache = null;
+                _logger.LogInformation("[{ServerName}] 移除{Type}服务器{ChannelServerName}", ServerName, channelServer.GetType().Name, instanceId);
                 return Channels.RemoveAll(x => x.ServerName == channelServer.ServerName) == channelServer.ServerConfigs.Count;
             }
             return false;
         }
 
-        List<ServerChannelPair>? _serverChannelCache;
-        private List<ServerChannelPair> GetServerChannel()
-        {
-            return _serverChannelCache ??= Channels.Select((item, idx) => new ServerChannelPair(item.ServerName, idx + 1)).ToList();
-        }
 
         /// <summary>
         /// 对玩家按服务器分组
@@ -397,7 +397,6 @@ namespace Application.Core.Login
         /// <returns>服务器: 服务器上的玩家</returns>
         public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
         {
-            var channelServerMap = GetServerChannel();
             var result = new Dictionary<ChannelServerWrapper, List<int>>();
 
             foreach (var player in dataList)
@@ -421,7 +420,6 @@ namespace Application.Core.Login
 
         public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<int> cidList)
         {
-            var channelServerMap = GetServerChannel();
             var result = new Dictionary<ChannelServerWrapper, List<int>>();
 
             foreach (var cid in cidList)
@@ -558,7 +556,7 @@ namespace Application.Core.Login
 
         public int GetWorldCapacityStatus()
         {
-            int worldCap = ChannelServerList.Count * YamlConfig.config.server.CHANNEL_LOAD;
+            int worldCap = ChannelServerList.Sum(x => x.Value.ServerConfigs.Sum(y => y.MaxSize));
             int num = CharacterManager.GetOnlinedPlayerCount();
 
             int status;

@@ -44,7 +44,7 @@ public class YamlConfig
             var members = typeof(ServerConfig).GetFields();
             foreach (var item in members)
             {
-                var envValue = Environment.GetEnvironmentVariable(AppSettings.EnvPrefix + item.Name);
+                var envValue = Environment.GetEnvironmentVariable(AppSettingKeys.EnvPrefix + item.Name);
                 if (!string.IsNullOrEmpty(envValue))
                 {
                     item.SetValue(fromConfigData.server, Convert.ChangeType(envValue, item.FieldType));

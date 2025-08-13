@@ -338,6 +338,10 @@ namespace Application.Core.Game.Players
                 {
                     nextMeso = MesoValue.addAndGet(gain);
                 }
+                else
+                {
+                    return false;
+                }
             }
             finally
             {
@@ -685,6 +689,21 @@ namespace Application.Core.Game.Players
 
                 RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-quantity), false);
                 return UseItemCheck.Success;
+            }
+        }
+
+        readonly Lock buyCashItemLock = new Lock();
+        public void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition)
+        {
+            lock (buyCashItemLock)
+            {
+                if (cItem.getPrice() > CashShopModel.getCash(cashType))
+                    return;
+
+                if (!condition.Invoke())
+                    return ;
+
+                CashShopModel.BuyCashItem(cashType, cItem);
             }
         }
 

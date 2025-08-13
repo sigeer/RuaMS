@@ -6,3 +6,7 @@ message CouponConfig {
 	repeated int32 activeCoupons = 1;
 	map<int32, int32> couponRates = 2;
 }
+
+message ToggelCouponRequest {
+	int32 id = 1;
+}

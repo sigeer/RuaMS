@@ -177,5 +177,14 @@ namespace Application.Module.PlayerNPC.Master
             }
             await dbContext.SaveChangesAsync();
         }
+
+        public GetAllPlayerNPCDataResponse GetAllData()
+        {
+            var allData = Query(x => true);
+
+            var res = new GetAllPlayerNPCDataResponse();
+            res.List.AddRange(_mapper.Map<PlayerNPCDto[]>(allData));
+            return res;
+        }
     }
 }

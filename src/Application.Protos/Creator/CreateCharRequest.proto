@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-package Dto;
+package CreatorProto;
 
 message CreateCharRequestDto {
   string name = 1;

@@ -112,7 +112,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.To, src => src.MapFrom(x => x.ToId))
                 .ForMember(dest => dest.From, src => src.MapFrom(x => x.FromId));
 
-            CreateMap<SpecialCashItemEntity, Dto.SpecialCashItemDto>();
+            CreateMap<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
 
             CreateMap<GuildEntity, GuildModel>();
             CreateMap<AllianceEntity, AllianceModel>();

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "Base/BoolWrapper.proto";
+import "Sync/GuildQueue.proto";
+
+package ServiceProto;
+
+service DataService {
+	rpc RemoveGuildQueued(SyncProto.QuildRequest) returns(google.protobuf.Empty);
+	rpc IsGuildQueued(SyncProto.QuildRequest) returns(BaseProto.BoolWrapper);
+	rpc PutGuildQueued(SyncProto.QuildRequest) returns(google.protobuf.Empty);
+}

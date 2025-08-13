@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Dto;
+
+message SetClientCharacterTransitionRequest {
+	string clientSession = 1;
+	int32 characterId = 2;
+}
+
+message CheckCharacterInTransitionRequest {
+	string clientSession = 1;
+}

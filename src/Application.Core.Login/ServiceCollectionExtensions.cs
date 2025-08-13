@@ -16,6 +16,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
 using AutoMapper.Extensions.ExpressionMapping;
 using Application.Core.Login.Datas;
+using Microsoft.Extensions.Configuration;
+using Application.Utility;
+using Application.Protos;
 
 namespace Application.Core.Login
 {
@@ -124,7 +127,6 @@ namespace Application.Core.Login
             services.AddSingleton<ChatRoomManager>();
             services.AddSingleton<CashShopDataManager>();
             services.AddSingleton<InvitationManager>();
-            services.AddSingleton<ItemTransactionManager>();
             return services;
         }
 
@@ -143,11 +145,11 @@ namespace Application.Core.Login
             return services;
         }
 
-        public static IServiceCollection AddLoginServer(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddLoginServer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContextFactory<DBContext>(o =>
             {
-                o.UseMySQL(connectionString);
+                o.UseMySQL(configuration.GetConnectionString(AppSettingKeys.ConnectStr_Mysql)!);
             });
             services.AddAutoMapper(cfg =>
             {
@@ -164,7 +166,14 @@ namespace Application.Core.Login
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
-            services.AddGrpc();
+            if (configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+            {
+                services.AddGrpc(options =>
+                {
+                    options.Interceptors.Add<LoggingInterceptor>();
+                });
+            }
+ 
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
             services.AddHostedService<MasterHost>();

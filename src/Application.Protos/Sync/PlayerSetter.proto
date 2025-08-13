@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+import "Dto/Character.proto";
+import "Dto/Item.proto";
+import "Dto/Monsterbook.proto";
+import "Dto/PetIgnore.proto";
+import "Dto/TrockLocation.proto";
+import "Dto/Area.proto";
+import "Dto/Event.proto";
+import "Dto/QuestStatus.proto";
+import "Dto/Skill.proto";
+import "Dto/SkillMacro.proto";
+import "Dto/CoolDown.proto";
+import "Dto/KeyMap.proto";
+import "Dto/SavedLocation.proto";
+import "Dto/QuickSlot.proto";
+import "Dto/Storage.proto";
+import "Dto/Buddy.proto";
+import "Dto/AccountGame.proto";
+import "Dto/Fame.proto";
+
+package SyncProto;
+
+message PlayerSaveDto {
+  int32 channel = 1;
+  Dto.CharacterDto character = 2; // CHECK TYPE
+  repeated Dto.ItemDto inventoryItems = 3; // CHECK TYPE
+  Dto.AccountGameDto accountGame = 4; // CHECK TYPE
+  repeated Dto.MonsterbookDto monsterBooks = 5; // CHECK TYPE
+  repeated Dto.PetIgnoreDto petIgnores = 6; // CHECK TYPE
+  repeated Dto.TrockLocationDto trockLocations = 7; // CHECK TYPE
+  repeated Dto.AreaDto areas = 8; // CHECK TYPE
+  repeated Dto.EventDto events = 9; // CHECK TYPE
+  repeated Dto.QuestStatusDto questStatuses = 10; // CHECK TYPE
+  repeated Dto.SkillDto skills = 11; // CHECK TYPE
+  repeated Dto.SkillMacroDto skillMacros = 12; // CHECK TYPE
+  repeated Dto.CoolDownDto coolDowns = 13; // CHECK TYPE
+  repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
+  repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
+  Dto.QuickSlotDto quickSlot = 16; // CHECK TYPE
+  Dto.StorageDto storageInfo = 17; // CHECK TYPE
+  repeated int32 wishItems = 19;
+  repeated Dto.FameLogRecordDto fameLogs = 20;
+}

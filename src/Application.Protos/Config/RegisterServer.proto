@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "Config/WorldConfig.proto";
+import "Config/CouponConfig.proto";
+
+package Config;
+
+message RegisterServerRequest {
+	string serverName = 1;
+	repeated RegisterChannelConfigDto channels = 2;
+	int32 grpcPort = 3;
+}
+
+message RegisterChannelConfigDto {
+	int32 port = 1;
+	string host = 2;
+	int32 maxSize = 3;
+
+}
+
+message RegisterServerResult {
+  int32 startChannel = 1;
+  WorldConfig config = 2;
+  CouponConfig coupon = 3;
+  string message = 4;
+}

@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "Dto/Item.proto";
-import "Item/ItemTransaction.proto";
 
 package ItemProto;
 
@@ -10,19 +9,16 @@ message UseItemMegaphoneRequest {
 	Dto.ItemDto item = 2;
 	string message = 3;
 	bool isWishper = 4;
-	CreateItemTransactionRequest transaction = 5;
 }
 
-message UseItemMegaphoneResult {
+message UseItemMegaphoneResponse {
+	int32 code = 1;
+}
+
+message UseItemMegaphoneBroadcast {
 	int32 senderId = 1;
 	int32 senderChannel = 2;
 	Dto.ItemDto item = 3;
 	string message = 4;
 	bool isWishper = 5;
-}
-
-message UseItemMegaphoneResponse {
-	int32 code = 1;
-	UseItemMegaphoneResult data = 2;
-	ItemTransaction transaction = 3;
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Rank;
+package RankProto;
 
 message RankCharacter {
   int32 rank = 1;
@@ -8,6 +8,10 @@ message RankCharacter {
   string name = 3;
 }
 
-message RankCharacterList {
-  repeated RankCharacter dataSource = 1;
+message LoadCharacterRankRequest {
+	int32 count = 1;
+}
+
+message LoadCharacterRankResponse {
+  repeated RankCharacter list = 1;
 }

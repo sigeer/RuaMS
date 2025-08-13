@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -11,28 +11,37 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Base\PLife.proto" GrpcServices="None" />
+		<Protobuf Include="Base\MessageWarpper.proto" GrpcServices="None" />
+		<Protobuf Include="Base\TimeWrapper.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Base\BoolWrapper.proto">
+			<GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Base\IPEndPoint.proto" GrpcServices="None" />
+		<Protobuf Include="Lives\DBLife.proto" GrpcServices="None" />
 		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
+		<Protobuf Include="Cash\CashShop.proto" GrpcServices="None" />
 		<Protobuf Include="Cash\Cash.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
 		<Protobuf Include="Config\PlayerBase.proto" GrpcServices="None" />
 		<Protobuf Include="Config\AutoBanConfig.proto" GrpcServices="None" />
 		<Protobuf Include="Config\MonitorConfig.proto" GrpcServices="None" />
-		<Protobuf Include="Config\MessageWrapper.proto">
-		  <GrpcServices>None</GrpcServices>
-		</Protobuf>
+		<Protobuf Include="Config\RegisterServer.proto" GrpcServices="None" />
 		<Protobuf Include="Config\ServerState.proto" GrpcServices="None" />
 		<Protobuf Include="Config\Shutdown.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Client.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Fame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ClientInfo.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ServerCrossCallback.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\AccountManage.proto" GrpcServices="None" />
+		<Protobuf Include="Config\Admin.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Report.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Dto\NameChange.proto" GrpcServices="None" />
 		<Protobuf Include="Expedition\ExpeditionInfo.proto" GrpcServices="None" />
+		<Protobuf Include="Item\SkillBook.proto" GrpcServices="None" />
 		<Protobuf Include="Item\CDK.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
@@ -40,17 +49,13 @@
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Item\ItemStorage.proto" GrpcServices="None" />
-		<Protobuf Include="Item\PlayerShopItem.proto">
-		  <GrpcServices>None</GrpcServices>
-		</Protobuf>
-		<Protobuf Include="Item\OwlSearchRecord.proto">
+		<Protobuf Include="Item\OwlSearch.proto">
 			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Item\HiredMerchant.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Item\Ring.proto" GrpcServices="None" />
-		<Protobuf Include="Item\ItemTransaction.proto" GrpcServices="None" />
 		<Protobuf Include="Item\Gift.proto" GrpcServices="None" />
 		<Protobuf Include="Item\TVMessage.proto">
 		  <GrpcServices>None</GrpcServices>
@@ -70,22 +75,33 @@
 		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
 		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />
-		<Protobuf Include="Events\ReloadEventsRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Events\FlySetting.proto" GrpcServices="None" />
+		<Protobuf Include="Events\ReloadEvents.proto" GrpcServices="None" />
+		<Protobuf Include="Config\FlySetting.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\MultiChatMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\NewYearCard.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
 		<Protobuf Include="Events\PlayerOnlineChange.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
-		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
+		<Protobuf Include="Services\Buddy.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Master2Channel.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\PlayerShop.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Data.proto">
+		  <GrpcServices>Both</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Services\Item.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Cash.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Alliance.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Team.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Guild.proto" GrpcServices="Both" />
+		<Protobuf Include="Sync\GuildQueue.proto" GrpcServices="None" />
+		<Protobuf Include="Sync\PlayerGetter.proto" GrpcServices="None" />
 		<Protobuf Include="Expedition\ExpeditionEntry.proto" GrpcServices="None" />
 		<Protobuf Include="Expedition\ExpeditionRegistry.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\Alliance.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Guild\Guild.proto" GrpcServices="None" />
-		<Protobuf Include="Guild\GuildMember.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateAlliance.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateGuild.proto" GrpcServices="None" />
 		<Protobuf Include="Invitation\CreateInvite.proto" GrpcServices="None" />
@@ -97,8 +113,6 @@
 		<Protobuf Include="MTS\MTS.proto" GrpcServices="None" />
 		<Protobuf Include="MTS\MTSOperation.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
-
-		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />
 		<Protobuf Include="Config\WorldConfig.proto" GrpcServices="None" />
 		<Protobuf Include="Config\CouponConfig.proto" GrpcServices="None" />
 	</ItemGroup>
@@ -113,7 +127,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Dto\SpecialCashItem.proto" GrpcServices="None" />
+		<Protobuf Include="Cash\SpecialCashItem.proto" GrpcServices="None" />
 
 		<Protobuf Include="Dto\PlayerShop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
@@ -140,24 +154,24 @@
 		<Protobuf Include="Dto\Storage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\TrockLocation.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Note.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\PlayerBuffSave.proto" GrpcServices="None" />
+		<Protobuf Include="Sync\PlayerBuff.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Buff.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Disease.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\PlayerSetter.proto" GrpcServices="None" />
+		<Protobuf Include="Sync\PlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Shop.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
+		<Protobuf Include="Services\Game.proto" GrpcServices="Both" />
+		<Protobuf Include="Services\Sync.proto" GrpcServices="Both" />
 		<Protobuf Include="Sync\Map.proto" GrpcServices="None" />
 
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Team\TeamMember.proto" GrpcServices="None" />
 		<Protobuf Include="Team\Team.proto" GrpcServices="None" />
-		<Protobuf Include="Team\UpdateTeamResponse.proto" GrpcServices="None" />
+		<Protobuf Include="Team\TeamOperation.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="PlayerNPC\" />
+		<Protobuf Include="Services\System.proto" GrpcServices="Both" />
 	</ItemGroup>
 
 

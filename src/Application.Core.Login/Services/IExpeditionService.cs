@@ -1,28 +1,21 @@
-using Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Application.Core.Login.Services
 {
     public interface IExpeditionService
     {
-        ExpeditionCheckResponse CanStartExpedition(ExpeditionCheckRequest request);
-        void RegisterExpedition(ExpeditionRegistry request);
+        ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request);
+        void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request);
     }
 
     public class DefaultExpeditionService : IExpeditionService
     {
-        public ExpeditionCheckResponse CanStartExpedition(ExpeditionCheckRequest request)
+        public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request)
         {
-            return new ExpeditionCheckResponse { IsSuccess = true };
+            return new ExpeditionProto.ExpeditionCheckResponse { IsSuccess = true };
         }
 
-        public void RegisterExpedition(ExpeditionRegistry request)
+        public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
         {
-            
+
         }
     }
 }

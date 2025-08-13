@@ -23,7 +23,7 @@ namespace Application.Core.Login.Services
             _inviteRegistry.Register(_allHandlers);
         }
 
-        public void AddInvitation(CreateInviteRequest request)
+        public void AddInvitation(InvitationProto.CreateInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)
@@ -32,7 +32,7 @@ namespace Application.Core.Login.Services
             handler.HandleInvitationCreated(request);
         }
 
-        public void AnswerInvitation(AnswerInviteRequest request)
+        public void AnswerInvitation(InvitationProto.AnswerInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)

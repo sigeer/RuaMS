@@ -8,6 +8,7 @@ using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Common.Models;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
+using Application.Shared.Items;
 using Application.Utility.Compatible;
 using AutoMapper;
 using client.inventory;
@@ -223,7 +224,8 @@ namespace Application.Module.Marriage.Channel
 
         public List<Item> GetUnclaimedMarriageGifts(IPlayer chr)
         {
-            return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
+            return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { 
+                Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
         }
 
         public void TakeItemFromGifts(IPlayer chr, int itemPos)

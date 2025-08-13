@@ -1,3 +1,4 @@
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Login;
@@ -146,11 +147,11 @@ namespace Application.Core.Channel.Net
             try
             {
                 player.setDisconnectedFromChannelWorld();
-                player.removeIncomingInvites();
                 player.cancelAllBuffs(true);
 
                 player.closePlayerInteractions();
                 player.closePartySearchInteractions();
+                ResourceManager.Cancel(player);
 
                 if (!serverTransition)
                 {
@@ -417,7 +418,6 @@ namespace Application.Core.Channel.Net
             Character.unregisterChairBuff();
             CurrentServer.Container.DataService.SaveBuff(Character);
             Character.setDisconnectedFromChannelWorld();
-            Character.removeIncomingInvites();
             Character.cancelAllBuffs(true);
             Character.cancelAllDebuffs();
 

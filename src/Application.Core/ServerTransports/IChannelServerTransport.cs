@@ -9,6 +9,7 @@ using Dto;
 using Google.Protobuf.WellKnownTypes;
 using ItemProto;
 using MessageProto;
+using Polly;
 using SyncProto;
 using System.Net;
 using SystemProto;
@@ -22,10 +23,8 @@ namespace Application.Core.ServerTransports
     {
         public long GetCurrentTime();
         public int GetCurrentTimestamp();
-        public DateTimeOffset GetServerupTime();
 
-        Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels);
-        Task<bool> RemoveServer(WorldChannel server);
+        Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels);
 
         void DropWorldMessage(MessageProto.DropMessageRequest request);
         /// <summary>
@@ -47,7 +46,7 @@ namespace Application.Core.ServerTransports
         void SendWorldConfig(Config.WorldConfig updatePatch);
 
         #region Team
-        Dto.TeamDto CreateTeam(int playerId);
+        TeamProto.TeamDto CreateTeam(int playerId);
         #endregion
 
         #region
@@ -69,70 +68,65 @@ namespace Application.Core.ServerTransports
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
-        int GetAccountCharacterCount(int accId);
+        SyncProto.PlayerGetterDto? GetPlayerData(string clientSession,int cid);
         bool CheckCharacterName(string name);
-        void UpdateAccountChracterByAdd(int accountId, int id);
-        void SendPlayerObject(Dto.PlayerSaveDto characterValueObject);
-        void SendRemovePlayerIncomingInvites(int id);
-        void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto);
-        Dto.PlayerBuffSaveDto GetBuffObject(int id);
+        void SendBuffObject(int v, SyncProto.PlayerBuffDto playerBuffSaveDto);
+        SyncProto.PlayerBuffDto GetBuffObject(int id);
         /// <summary>
         /// 设置玩家在线
         /// </summary>
         /// <param name="id">玩家id</param>
         /// <param name="channelId">频道号</param>
         void SetPlayerOnlined(int id, int channelId);
-        void CallSaveDB();
         Dto.DropAllDto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
-        Dto.SpecialCashItemListDto RequestSpecialCashItems();
+        CashProto.SpecialCashItemListDto RequestSpecialCashItems();
 
         GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
         bool SendNormalNoteMessage(int senderId, string toName, string noteMessage);
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
-        int[] GetCardTierSize();
-        Rank.RankCharacterList LoadPlayerRanking(int topCount);
+        RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
-        void UpdateAccount(AccountCtrl accountEntity);
-        Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
-        Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
+        CreatorProto.CreateCharResponseDto SendNewPlayer(CreatorProto.NewPlayerSaveDto data);
+        CreatorProto.CreateCharCheckResponse CreatePlayerCheck(CreatorProto.CreateCharCheckRequest request);
         int[][] GetMostSellerCashItems();
+        ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
         ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
-        Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
+        TeamProto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
-        Dto.GetTeamResponse GetTeam(int party);
-        Dto.GetGuildResponse GetGuild(int id);
-        Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
-        Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request);
-        Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
-        Dto.GetAllianceResponse GetAlliance(int id);
+        TeamProto.GetTeamResponse GetTeam(int party);
+
+        GuildProto.GetGuildResponse GetGuild(int id);
+        GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
         void SendGuildChat(string name, string text);
-        void SendAllianceChat(string name, string text);
         void BroadcastGuildMessage(int guildId, int v, string callout);
-        void SendUpdateGuildGP(Dto.UpdateGuildGPRequest request);
-        void SendUpdateGuildRankTitle(Dto.UpdateGuildRankTitleRequest request);
-        void SendUpdateGuildNotice(Dto.UpdateGuildNoticeRequest request);
-        void SendUpdateGuildCapacity(Dto.UpdateGuildCapacityRequest request);
-        void SendUpdateGuildEmblem(Dto.UpdateGuildEmblemRequest request);
-        void SendGuildDisband(Dto.GuildDisbandRequest request);
-        void SendChangePlayerGuildRank(Dto.UpdateGuildMemberRankRequest request);
-        void SendGuildExpelMember(Dto.ExpelFromGuildRequest expelFromGuildRequest);
-        void SendPlayerLeaveGuild(Dto.LeaveGuildRequest leaveGuildRequest);
-        void SendPlayerJoinGuild(Dto.JoinGuildRequest joinGuildRequest);
+        void SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request);
+        void SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request);
+        void SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request);
+        void SendUpdateGuildCapacity(GuildProto.UpdateGuildCapacityRequest request);
+        void SendUpdateGuildEmblem(GuildProto.UpdateGuildEmblemRequest request);
+        void SendGuildDisband(GuildProto.GuildDisbandRequest request);
+        void SendChangePlayerGuildRank(GuildProto.UpdateGuildMemberRankRequest request);
+        void SendGuildExpelMember(GuildProto.ExpelFromGuildRequest expelFromGuildRequest);
+        void SendPlayerLeaveGuild(GuildProto.LeaveGuildRequest leaveGuildRequest);
+        void SendPlayerJoinGuild(GuildProto.JoinGuildRequest joinGuildRequest);
 
 
-        void SendGuildJoinAlliance(Dto.GuildJoinAllianceRequest guildJoinAllianceRequest);
-        void SendGuildLeaveAlliance(Dto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
-        void SendAllianceExpelGuild(Dto.AllianceExpelGuildRequest allianceExpelGuildRequest);
-        void SendChangeAllianceLeader(Dto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
-        void SendChangePlayerAllianceRank(Dto.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
-        void SendIncreaseAllianceCapacity(Dto.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
-        void SendUpdateAllianceRankTitle(Dto.UpdateAllianceRankTitleRequest request);
-        void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
-        void SendAllianceDisband(Dto.DisbandAllianceRequest disbandAllianceRequest);
+        AllianceProto.GetAllianceResponse GetAlliance(int id);
+        void SendAllianceChat(string name, string text);
+        AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request);
+        AllianceProto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
+        void SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest guildJoinAllianceRequest);
+        void SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
+        void SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest allianceExpelGuildRequest);
+        void SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
+        void SendChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
+        void SendIncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
+        void SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request);
+        void SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
+        void SendAllianceDisband(AllianceProto.DisbandAllianceRequest disbandAllianceRequest);
         #endregion
 
         void SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest joinChatRoomRequest);
@@ -140,34 +134,36 @@ namespace Application.Core.ServerTransports
         void SendChatRoomMesage(Dto.SendChatRoomMessageRequest sendChatRoomMessageRequest);
         void SendCreateChatRoom(Dto.CreateChatRoomRequest createChatRoomRequest);
 
-        void SendInvitation(Dto.CreateInviteRequest request);
-        void AnswerInvitation(Dto.AnswerInviteRequest request);
-        void RegisterExpedition(Dto.ExpeditionRegistry request);
-        Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest);
+        void SendInvitation(InvitationProto.CreateInviteRequest request);
+        void AnswerInvitation(InvitationProto.AnswerInviteRequest request);
+
+        void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request);
+        ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest expeditionCheckRequest);
+        ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
 
         void ReceiveNewYearCard(ReceiveNewYearCardRequest receiveNewYearCardRequest);
         void SendNewYearCard(SendNewYearCardRequest sendNewYearCardRequest);
         void SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest);
-        void SendSetFly(SetFlyRequest setFlyRequest);
+
+        ConfigProto.SetFlyResponse SendSetFly(ConfigProto.SetFlyRequest setFlyRequest);
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
-        void BroadcastTV(ItemProto.CreateTVMessageRequest request);
-        void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
-        void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest);
+        ItemProto.CreateTVMessageResponse BroadcastTV(ItemProto.CreateTVMessageRequest request);
+        ItemProto.UseItemMegaphoneResponse SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
         Dto.DropAllDto RequestDropData();
-        Dto.QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest queryDropperByItemRequest);
         BaseProto.QueryMonsterCardDataResponse RequestMonsterCardData();
-        QueryRankedGuildsResponse RequestRankedGuilds();
-        GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
-        void SendCreatePLife(CreatePLifeRequest createPLifeRequest);
-        void SendRemovePLife(RemovePLifeRequest removePLifeRequest);
-        void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
+        GuildProto.QueryRankedGuildsResponse RequestRankedGuilds();
+        LifeProto.GetAllPLifeResponse GetAllPLife(LifeProto.GetAllPLifeRequest request);
+        LifeProto.GetPLifeByMapIdResponse RequestPLifeByMapId(LifeProto.GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
+        void SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest);
+        void SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest);
+        BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
+
         RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest);
         void SyncPlayerShop(SyncPlayerShopRequest request);
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
         ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
         void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
-        ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
-        void CompleteTakeItem(TakeItemSubmit takeItemResolve);
+
         StoreItemsResponse SaveItems(StoreItemsRequest request);
         LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
         void BatchSyncMap(List<MapSyncDto> data);
@@ -185,22 +181,27 @@ namespace Application.Core.ServerTransports
         DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
         void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
         GetAllClientInfo GetOnliendClientInfo();
+        void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
+        void CompleteChannelShutdown(string serverName);
+        void SaveAll(Empty empty);
+        ServerStateDto GetServerState();
+
         ItemProto.GacheponDataDto GetGachaponData();
         NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
         void BatchSyncPlayer(List<PlayerSaveDto> data);
+        #region Buddy
         AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request);
         AddBuddyResponse SendAddBuddyRequest(AddBuddyByIdRequest request);
         void SendBuddyChat(BuddyChatRequest request);
         void SendBuddyMessage(SendBuddyNoticeMessageDto request);
         DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
+        #endregion
+
         SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
         GetLocationResponse GetLocation(GetLocationRequest getLocationRequest);
-        void CompleteShutdown(CompleteShutdownRequest completeShutdownRequest);
-        void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
-        void SaveAll(Empty empty);
+
         void SendYellowTip(YellowTipRequest yellowTipRequest);
-        ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
+
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
-        ServerStateDto GetServerStats();
     }
 }

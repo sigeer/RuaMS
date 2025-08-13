@@ -3,12 +3,27 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "Dto/ShopItem.proto";
-
 package Dto;
 
 message ShopDto {
   int32 shopId = 1;
   int32 npcId = 2;
   repeated ShopItemDto items = 3;
+}
+
+message ShopItemDto {
+  int32 itemId = 1;
+  int32 price = 2;
+  int32 pitch = 3;
+  int32 position = 4;
+  int32 buyable = 5;
+}
+
+message GetShopRequest {
+	int32 id = 1;
+	bool isShopId = 2;
+}
+
+message GetShopResponse {
+	ShopDto data = 1;
 }

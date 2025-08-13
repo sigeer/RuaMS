@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Core.Game.Players;
@@ -18,7 +19,10 @@ using client.inventory;
 using client.inventory.manipulator;
 using DueyDto;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 using tools;
+using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Module.Duey.Channel
 {
@@ -28,17 +32,15 @@ namespace Application.Module.Duey.Channel
         readonly IChannelTransport _transport;
         readonly ILogger<DueyManager> _logger;
         readonly WorldChannelServer _server;
-        readonly ItemTransactionService _itemStore;
         readonly IItemDistributeService _distributeService;
 
         public DueyManager(
-            WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger, ItemTransactionService itemStore, IItemDistributeService distributeService)
+            WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger, IItemDistributeService distributeService)
         {
             _server = server;
             _mapper = mapper;
             _transport = transport;
             _logger = logger;
-            _itemStore = itemStore;
             _distributeService = distributeService;
         }
 
@@ -50,9 +52,13 @@ namespace Application.Module.Duey.Channel
                 items.Add(new Item(ItemId.QUICK_DELIVERY_TICKET, 0, 1));
             }
 
-            if(_itemStore.TryBeginTransaction(chr, items, costMeso, out var transaction))
+            var builder = new ResourceConsumeBuilder().ConsumeMeso(costMeso);
+            if (quick)
+                builder.ConsumeItem(ItemId.QUICK_DELIVERY_TICKET, 1);
+
+            builder.Execute(chr, ct =>
             {
-                _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+                var res = _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
                 {
                     SenderId = chr.Id,
                     SendMeso = sendMesos,
@@ -60,47 +66,35 @@ namespace Application.Module.Duey.Channel
                     ReceiverName = recipient,
                     Quick = quick,
                     Item = _mapper.Map<Dto.ItemDto>(item),
-                    Transaction = transaction
                 });
-            }
+
+                if (res.Code == 0)
+                {
+                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                    return true;
+                }
+
+                var dueyResponseCode = (SendDueyItemResponseCode)res.Code;
+                if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
+                {
+                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
+                }
+                if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
+                {
+                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
+                }
+                return false;
+            });
 
         }
 
-        public void OnDueyPackageCreated(DueyDto.CreatePackageResponse data)
+        public void OnDueyPackageCreated(DueyDto.CreatePackageBroadcast data)
         {
-            if (data.Code == 0)
+            var receiver = _server.FindPlayerById(data.Package.ReceiverId);
+            if (receiver != null)
             {
-                var chr = _server.FindPlayerById(data.Package.SenderId);
-                if (chr != null)
-                {
-                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
-                }
-
-                var receiver = _server.FindPlayerById(data.Package.ReceiverId);
-                if (receiver != null)
-                {
-                    receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
-                }
+                receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
             }
-            else
-            {
-                var sender = _server.FindPlayerById(data.Package.SenderId);
-                if (sender != null)
-                {
-                    var dueyResponseCode = (SendDueyItemResponseCode)data.Code;
-                    if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
-                    {
-                        sender.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
-                    }
-                    if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
-                    {
-                        sender.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
-                    }
-                }
-
-            }
-
-            _itemStore.HandleTransaction(data.Transaction);
         }
 
 

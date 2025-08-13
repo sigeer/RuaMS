@@ -1,5 +1,8 @@
+using Application.Core.Login.Servers;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Core.Login.Modules
 {
@@ -9,6 +12,18 @@ namespace Application.Core.Login.Modules
         public void ConfigureHost(WebApplication app)
         {
             // TODO: 在这里启动grcp server
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+            {
+                app.MapGrpcService<GameGrpcService>();
+                app.MapGrpcService<SystemGrpcService>();
+                app.MapGrpcService<SyncGrpcService>();
+                app.MapGrpcService<GuildGrpcService>();
+                app.MapGrpcService<AllianceGrpcService>();
+                app.MapGrpcService<ItemGrpcService>();
+                app.MapGrpcService<CashGrcpService>();
+                app.MapGrpcService<BuddyGrpcService>();
+                app.MapGrpcService<DataGrpcService>();
+            }
         }
     }
 }

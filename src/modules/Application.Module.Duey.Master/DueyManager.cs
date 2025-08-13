@@ -119,64 +119,53 @@ namespace Application.Module.Duey.Master
         }
 
 
-        public void CreateDueyPackage(DueyDto.CreatePackageRequest request)
+        public DueyDto.CreatePackageResponse CreateDueyPackage(DueyDto.CreatePackageRequest request)
         {
-            try
+            var target = _server.CharacterManager.FindPlayerByName(request.ReceiverName);
+            var sender = _server.CharacterManager.FindPlayerById(request.SenderId);
+            if (target == null || sender == null)
             {
-                var target = _server.CharacterManager.FindPlayerByName(request.ReceiverName);
-                var sender = _server.CharacterManager.FindPlayerById(request.SenderId);
-                if (target == null || sender == null)
+                return new DueyDto.CreatePackageResponse
                 {
-                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
-                    {
-                        Code = (int)SendDueyItemResponseCode.CharacterNotExisted,
-                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
-                    });
-                    return;
-                }
-
-                if (target.Character.AccountId == sender.Character.AccountId)
-                {
-                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
-                    {
-                        Code = (int)SendDueyItemResponseCode.SameAccount,
-                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
-                    });
-                    return;
-                }
-
-                // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
-                var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
-                if (request.Quick)
-                    time = time.AddDays(-1);
-                var model = new DueyPackageModel()
-                {
-                    Id = Interlocked.Increment(ref _currentId),
-                    ReceiverId = target.Character.Id,
-                    SenderId = sender.Character.Id,
-                    Mesos = request.SendMeso,
-                    Message = request.SendMessage,
-                    Type = request.Quick,
-                    Checked = true,
-                    TimeStamp = time,
-                    Item = _mapper.Map<ItemModel>(request.Item, ctx =>
-                    {
-                        ctx.Items["Type"] = (int)ItemType.Duey;
-                    })
+                    Code = (int)SendDueyItemResponseCode.CharacterNotExisted,
                 };
-
-                SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
-
-                _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
-                {
-                    Package = _mapper.Map<DueyDto.DueyPackageDto>(model),
-                    Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit)
-                });
             }
-            catch (Exception sqle)
+
+            if (target.Character.AccountId == sender.Character.AccountId)
             {
-                _logger.LogError(sqle.ToString());
+                return new DueyDto.CreatePackageResponse
+                {
+                    Code = (int)SendDueyItemResponseCode.SameAccount,
+                };
             }
+
+            // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
+            var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+            if (request.Quick)
+                time = time.AddDays(-1);
+            var model = new DueyPackageModel()
+            {
+                Id = Interlocked.Increment(ref _currentId),
+                ReceiverId = target.Character.Id,
+                SenderId = sender.Character.Id,
+                Mesos = request.SendMeso,
+                Message = request.SendMessage,
+                Type = request.Quick,
+                Checked = true,
+                TimeStamp = time,
+                Item = _mapper.Map<ItemModel>(request.Item, ctx =>
+                {
+                    ctx.Items["Type"] = (int)ItemType.Duey;
+                })
+            };
+
+            SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
+
+            _transport.SendCreatePackage(new DueyDto.CreatePackageBroadcast
+            {
+                Package = _mapper.Map<DueyDto.DueyPackageDto>(model),
+            });
+            return new CreatePackageResponse();
         }
 
         public void RemovePackage(DueyDto.RemovePackageRequest request)

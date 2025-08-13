@@ -44,5 +44,17 @@
 	  <Folder Include="Net\server\coordinator\session\" />
 	  <Folder Include="server\life\positioner\" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="scripts\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="handbook\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 	
 </Project>

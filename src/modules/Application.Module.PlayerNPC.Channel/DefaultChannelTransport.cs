@@ -28,6 +28,11 @@ namespace Application.Module.PlayerNPC.Channel
             return _grpcClient.GetMapPlayerNPC(request);
         }
 
+        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList(GetAllPlayerNPCDataRequest request)
+        {
+            return _grpcClient.GetAllPlayerNPC(request);
+        }
+
         public CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest request)
         {
             return _grpcClient.CreatePlayerNPCCheck(request);

@@ -30,7 +30,7 @@ namespace Application.Core.Login.ServerData
 
         }
 
-        public void BuyCashItem(BuyCashItemRequest request)
+        public BuyCashItemResponse BuyCashItem(BuyCashItemRequest request)
         {
             CreateGiftResponse? giftResult = null;
             if (request.GiftInfo != null)
@@ -39,15 +39,7 @@ namespace Application.Core.Login.ServerData
                     request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
                 if (giftResult.Code != 0)
                 {
-                    _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse
-                    {
-                        Code = giftResult.Code,
-                        GiftInfo = giftResult,
-                        MasterId = request.MasterId,
-                        Sn = request.CashItemSn,
-                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForRollback)
-                    });
-                    return;
+                    return new BuyCashItemResponse { Code = giftResult.Code };
                 }
             }
 
@@ -67,14 +59,13 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
-            _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse
+            return new BuyCashItemResponse
             {
                 Code = 0,
                 GiftInfo = giftResult,
                 MasterId = request.MasterId,
                 Sn = request.CashItemSn,
-                Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForCommit)
-            });
+            };
         }
 
         private List<List<KeyValuePair<int, int>>> GetBoughtCashItems()

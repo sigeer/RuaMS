@@ -101,7 +101,7 @@ namespace Application.Core.Channel.ServerData
             UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
-        public void ProcessUpdateResponse(Dto.UpdateTeamResponse res)
+        public void ProcessUpdateResponse(TeamProto.UpdateTeamResponse res)
         {
             if (res.ErrorCode != 0)
             {
@@ -301,12 +301,12 @@ namespace Application.Core.Channel.ServerData
                 fromChr.sendPacket(PacketCreator.partyStatusMessage(17));
                 return;
             }
-            _transport.SendInvitation(new Dto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
+            _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
         public void AnswerInvite(IPlayer chr, int partyId, bool answer)
         {
-            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
+            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
         }
     }
 }

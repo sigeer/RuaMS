@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package SyncProto;
+
+message QuildRequest {
+	int32 guildId = 1;
+}

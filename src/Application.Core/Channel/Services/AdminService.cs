@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Services
 
         public void AutoBan(IPlayer chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
         {
-            var res = _transport.Ban(new Dto.BanRequest
+            var res = _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = ServerConstants.SystemCId,
                 Victim = chr.Name,
@@ -39,7 +39,7 @@ namespace Application.Core.Channel.Services
 
         public void Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
-            var res = _transport.Ban(new Dto.BanRequest
+            var res = _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
@@ -58,7 +58,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void OnBannedNotify(Dto.BanBroadcast data)
+        public void OnBannedNotify(SystemProto.BanBroadcast data)
         {
             var chr = _server.FindPlayerById(data.TargetId);
             if (chr != null)
@@ -80,7 +80,7 @@ namespace Application.Core.Channel.Services
 
         public void Unban(IPlayer chr, string victim)
         {
-            var res = _transport.Unban(new Dto.UnbanRequest
+            var res = _transport.Unban(new SystemProto.UnbanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
@@ -93,7 +93,7 @@ namespace Application.Core.Channel.Services
 
         internal void SetGmLevel(IPlayer chr, string victim, int newLevel)
         {
-            var res = _transport.SetGmLevel(new SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
+            var res = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
             if (res.Code == 0)
             {
                 chr.dropMessage(victim + " is now a level " + newLevel + " GM.");
@@ -104,7 +104,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void OnSetGmLevelNotify(SetGmLevelBroadcast data)
+        public void OnSetGmLevelNotify(SystemProto.SetGmLevelBroadcast data)
         {
             var chr = _server.FindPlayerById(data.TargetId);
             if (chr != null)
@@ -114,7 +114,34 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public OnlinedPlayerInfoDto[] GetOnlinedPlayers()
+        public void SetFly(IPlayer chr, bool v)
+        {
+            var data = _transport.SendSetFly(new ConfigProto.SetFlyRequest { CId = chr.Id, SetStatus = v });
+            if (data.Code == 0)
+            {
+                string sendStr = "";
+                if (data.Request.SetStatus)
+                {
+                    sendStr += "Enabled Fly feature (F1). With fly active, you cannot attack.";
+                    if (!chr.Client.AccountEntity!.CanFly)
+                    {
+                        sendStr += " Re-login to take effect.";
+                    }
+                }
+                else
+                {
+                    sendStr += "Disabled Fly feature. You can now attack.";
+                    if (chr.Client.AccountEntity!.CanFly)
+                    {
+                        sendStr += " Re-login to take effect.";
+                    }
+                }
+
+                chr.dropMessage(sendStr);
+            }
+        }
+
+        public SystemProto.OnlinedPlayerInfoDto[] GetOnlinedPlayers()
         {
             return _transport.GetOnlinedPlayers().List.ToArray();
         }
@@ -134,7 +161,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.WarpPlayerByName(new Dto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                var res = _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
                 if (res.Code == 0)
                 {
                     chr.Client.ChangeChannel(res.TargetChannel);
@@ -163,7 +190,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.SummonPlayerByName(new Dto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                var res = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
                 if (res.Code != 0)
                 {
                     chr.dropMessage($"玩家 {victim} 不存在或者不在线");
@@ -171,7 +198,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void OnPlayerSummoned(Dto.SummonPlayerByNameBroadcast data)
+        public void OnPlayerSummoned(SystemProto.SummonPlayerByNameBroadcast data)
         {
             var summoned = _server.FindPlayerById(data.MasterId);
             if (summoned != null)
@@ -192,7 +219,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.DisconnectPlayerByName(new Dto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                var res = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
                 if (res.Code != 0)
                 {
                     chr.dropMessage($"玩家 {victim} 不存在或者不在线");
@@ -200,7 +227,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void OnReceivedDisconnectCommand(Dto.DisconnectPlayerByNameBroadcast data)
+        public void OnReceivedDisconnectCommand(SystemProto.DisconnectPlayerByNameBroadcast data)
         {
             var chr = _server.FindPlayerById(data.MasterId);
             if (chr != null)
@@ -211,7 +238,7 @@ namespace Application.Core.Channel.Services
 
         public void DisconnectAll(IPlayer chr)
         {
-            _transport.DisconnectAll(new Dto.DisconnectAllRequest { MasterId = chr.Id });
+            _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
             chr.message("All players successfully disconnected.");
         }
 
@@ -242,7 +269,7 @@ namespace Application.Core.Channel.Services
         public void ShutdownMaster(IPlayer chr, int delay = -1)
         {
             chr.dropMessage("服务器正在停止中...");
-            _transport.ShutdownMaster(new Config.ShutdownMasterRequest() { DelaySeconds = delay });
+            _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
         }
 
         internal void SavelAll()
@@ -307,7 +334,7 @@ namespace Application.Core.Channel.Services
 
         internal ServerState GetServerStats()
         {
-            return _mapper.Map<ServerState>(_transport.GetServerStats());
+            return _mapper.Map<ServerState>(_transport.GetServerState());
         }
 
         //public void printSessionTrace(IChannelClient c)

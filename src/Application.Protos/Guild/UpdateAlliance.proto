@@ -1,9 +1,8 @@
 syntax = "proto3";
 
 import "Guild/Alliance.proto";
-import "Guild/GuildMember.proto";
 
-package Dto;
+package AllianceProto;
 
 
 message GuildLeaveAllianceRequest {
@@ -105,4 +104,9 @@ message DisbandAllianceResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	DisbandAllianceRequest request = 3;
+}
+
+message AllianceChatRequest {
+	string name = 1;
+	string text = 2;
 }

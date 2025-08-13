@@ -2,7 +2,9 @@ using Application.Core.Login.Events;
 using Application.Core.Login.Shared;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.Marriage.Master
@@ -28,7 +30,11 @@ namespace Application.Module.Marriage.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            app.MapGrpcService<GrpcService>();
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+            {
+                app.MapGrpcService<GrpcService>();
+            }
+
         }
     }
 }

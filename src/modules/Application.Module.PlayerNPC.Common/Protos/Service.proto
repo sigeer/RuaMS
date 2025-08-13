@@ -11,4 +11,5 @@ service ChannelService {
 	rpc RemoveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
 	rpc RemoveByName(RemovePlayerNPCRequest) returns(google.protobuf.Empty);
 	rpc GetMapPlayerNPC(GetMapPlayerNPCListRequest) returns(GetMapPlayerNPCListResponse);
+	rpc GetAllPlayerNPC(GetAllPlayerNPCDataRequest) returns(GetAllPlayerNPCDataResponse);
 }

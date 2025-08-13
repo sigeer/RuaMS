@@ -17,15 +17,15 @@ namespace Application.Core.Login.Datas
             _server = server;
         }
 
-        public void SaveBuff(int v, Dto.PlayerBuffSaveDto data)
+        public void SaveBuff(int v, SyncProto.PlayerBuffDto data)
         {
             _datasource[v] = _mapper.Map<PlayerBuffSaveModel>(data);
         }
 
-        public Dto.PlayerBuffSaveDto Get(int playerId)
+        public SyncProto.PlayerBuffDto Get(int playerId)
         {
             if (_datasource.Remove(playerId, out var d))
-                return _mapper.Map<Dto.PlayerBuffSaveDto>(d);
+                return _mapper.Map<SyncProto.PlayerBuffDto>(d);
             return new();
         }
     }

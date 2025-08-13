@@ -90,7 +90,7 @@ namespace Application.Core.Game.Players
         public MonsterCarnivalParty? MCTeam { get; set; }
         public int TotalCP { get; }
         public int AvailableCP { get; }
-
+        Lock ResourceLock { get; }
         public ILogger Log { get; }
         void LeaveGuild();
         void StartPlayerTask();
@@ -532,7 +532,6 @@ namespace Application.Core.Game.Players
         void reloadQuestExpirations();
         void removeAllCooldownsExcept(int id, bool packet);
         void removeCooldown(int skillId);
-        void removeIncomingInvites();
         void removeJailExpirationTime();
 
         Door? removePartyDoor(bool partyUpdate);
@@ -679,7 +678,6 @@ namespace Application.Core.Game.Players
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
-        void SetFly(bool v);
         bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
@@ -705,5 +703,6 @@ namespace Application.Core.Game.Players
         void CancelUseItem(Item item);
         void CommitUseItem(Item item);
         Ring? GetRingBySourceId(int sourceId);
+        void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition);
     }
 }

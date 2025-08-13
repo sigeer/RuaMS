@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "Base/TimeWrapper.proto";
+import "Base/IPEndPoint.proto";
+import "Config/RegisterServer.proto";
+import "Config/WorldConfig.proto";
+import "Message/DropMessage.proto";
+import "Message/Packet.proto";
+import "Message/Timer.proto";
+import "Dto/Report.proto";
+import "Config/AutoBanConfig.proto";
+import "Config/Admin.proto";
+import "Config/FlySetting.proto";
+import "Dto/ClientInfo.proto";
+import "Config/Shutdown.proto";
+import "Config/ServerState.proto";
+
+package ServiceProto;
+
+service SystemService {
+	rpc GetCurrentTime(google.protobuf.Empty) returns(BaseProto.TimeWrapper);
+	rpc GetCurrentTimestamp(google.protobuf.Empty) returns(BaseProto.TimeWrapper);
+	rpc GetChannelEndPoint(BaseProto.GetChannelEndPointRequest) returns(BaseProto.IPEndPointDto);
+
+	rpc RegisterServer(Config.RegisterServerRequest) returns(Config.RegisterServerResult);
+
+	rpc DropMessage(MessageProto.DropMessageRequest) returns(google.protobuf.Empty);
+	rpc BroadcastMessage(MessageProto.PacketRequest) returns(google.protobuf.Empty);
+
+	rpc SendWorldConfig(Config.WorldConfig) returns(google.protobuf.Empty);
+
+	rpc SendTimer(MessageProto.SetTimer) returns(google.protobuf.Empty);
+	rpc RemoveTimer(google.protobuf.Empty) returns(google.protobuf.Empty);
+
+	rpc SendReport(Dto.SendReportRequest) returns(Dto.SendReportResponse);
+	rpc SetAutobanIgnore(Config.ToggleAutoBanIgnoreRequest) returns(Config.ToggleAutoBanIgnoreResponse);
+	rpc GetAutobanIgnores(google.protobuf.Empty) returns(Config.AutoBanIgnoredWrapper);
+
+	rpc Ban(SystemProto.BanRequest) returns(SystemProto.BanResponse);
+	rpc Unban(SystemProto.UnbanRequest) returns(SystemProto.UnbanResponse);
+	rpc SetGmLevel(SystemProto.SetGmLevelRequest) returns(SystemProto.SetGmLevelResponse);
+	rpc SetAccountFly(ConfigProto.SetFlyRequest) returns (ConfigProto.SetFlyResponse);
+	rpc GetOnlinedPlayers(google.protobuf.Empty) returns(SystemProto.ShowOnlinePlayerResponse);
+	rpc WrapPlayer(SystemProto.WrapPlayerByNameRequest) returns(SystemProto.WrapPlayerByNameResponse);
+	rpc SummonPlayer(SystemProto.SummonPlayerByNameRequest) returns(SystemProto.SummonPlayerByNameResponse);
+	rpc DisconnectPlayer(SystemProto.DisconnectPlayerByNameRequest) returns(SystemProto.DisconnectPlayerByNameResponse);
+	rpc DisconnectAll(SystemProto.DisconnectAllRequest) returns(google.protobuf.Empty);
+	rpc GetOnlinedClients(google.protobuf.Empty) returns(Dto.GetAllClientInfo);
+
+	rpc CompleteChannelShutdown(SystemProto.ChannelShutdownCallback) returns(google.protobuf.Empty);
+	rpc ShutdownMaster(SystemProto.ShutdownMasterRequest) returns(google.protobuf.Empty);
+	rpc SaveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
+	rpc GetServerState(google.protobuf.Empty) returns(SystemProto.ServerStateDto);
+
+}

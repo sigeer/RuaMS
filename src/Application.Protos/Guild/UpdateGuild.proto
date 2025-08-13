@@ -1,9 +1,8 @@
 syntax = "proto3";
 
 import "Guild/Guild.proto";
-import "Guild/GuildMember.proto";
 
-package Dto;
+package GuildProto;
 
 message JoinGuildRequest {
 	int32 guildId = 1;
@@ -134,4 +133,9 @@ message CreateGuildRequest {
 	string name = 1;
 	int32 leaderId = 2;
 	repeated int32 members = 3;
+}
+
+message GuildChatRequest {
+	string name = 1;
+	string text = 2;
 }

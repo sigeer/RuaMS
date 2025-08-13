@@ -97,6 +97,6 @@ rua-ms
 docker compose up -d
 ```
 
-### 分布式部署
+### 多机部署
 
 开发中...
