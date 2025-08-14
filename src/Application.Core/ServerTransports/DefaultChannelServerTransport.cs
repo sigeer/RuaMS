@@ -109,8 +109,8 @@ namespace Application.Core.ServerTransports
 
         public async Task<RegisterServerResult> RegisterServer(List<WorldChannel> channels)
         {
-            var req = new RegisterServerRequest { ServerName = _config.ServerName, GrpcPort = _config.GrpcPort };
-            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.ChannelConfig.Port, Host = x.ChannelConfig.Host, MaxSize = x.ChannelConfig.MaxSize }));
+            var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost, GrpcPort = _config.GrpcPort };
+            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.ChannelConfig.Port, MaxSize = x.ChannelConfig.MaxSize }));
             return await _systemClient.RegisterServerAsync(req);
         }
 

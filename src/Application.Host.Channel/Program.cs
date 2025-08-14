@@ -57,6 +57,14 @@ builder.Services.AddDueyChannel();
 builder.Services.AddMakerChannel();
 builder.Services.AddPlayerNPCChannel();
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+    });
+});
+
 var app = builder.Build();
 
 var bootstrap = app.Services.GetServices<IServerBootstrap>();

@@ -20,15 +20,14 @@
 ### src
 
 - **Application.Host** 主服务器入口
-- **Application.Host.Channel** 频道服务器入口，暂时隐藏
-- **Application.Core** 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
+- **Application.Host.Channel** 频道服务器入口
+- **Application.Core** 频道服务器功能
 - **Application.Core.EF** EF
-- **Application.Core.Channel** 频道服务器实现
 - **Application.Core.Channel.InProgress** 进程内同时运行主服务器+频道服务器的实现 （Application.Modules.XXX.Channel.InProgress）
 - **Application.Core.Login** 登录服务器、主服务器实现
 - **Application.Proto** proto文件
 - **Application.Utility** 工具类
-- **Application.Resource** 资源：js、初始化数据sql、配置文件
+- **Application.Resource** 资源：yaml配置文件 后期逐步移除
  > 当前使用的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，可以使用该项目中的wz、以及客户端。    
 也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/RuaMS/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
 （来自于 [Cosmic](https://github.com/P0nk/Cosmic)） 但是代码发生了多次更新可能存在BUG
@@ -58,10 +57,9 @@
 
 ### 步骤
 
-1. 配置 `config.yaml`，主要是连接字符串`DB_CONNECTIONSTRING`、`HOST`
-2. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
-3. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
-4. 运行`Application.Host.exe`
+1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
+2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
+3. 运行`Application.Host.exe`
 
 ### 单机部署
 
@@ -86,8 +84,8 @@ rua-ms
 # 非docker compose运行需要设置连接字符串
 -e "RUA_MS_ConnectionStrings__MySql=" \
 
-# 公网运行运行需要修改Host
--e "RUA_MS_HOST=" \
+# 公网运行运行需要修改`ChannelServerConfig.ChannelConfig`的Host
+-e "RUA_MS_ChannelServerConfig__ServerHost=" \
 ```
 
 **docker compose运行**
@@ -99,4 +97,6 @@ docker compose up -d
 
 ### 多机部署
 
-开发中...
+0. 配置见`Application.Host`和`Application.Host.Channel`的`appsettings.json`注释
+1. 先启动`Application.Host`
+2. 再启动`Application.Host.Channel`

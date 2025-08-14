@@ -4,7 +4,6 @@ namespace Application.Shared.Servers
     public class ChannelConfig
     {
         public int Port { get; set; }
-        public string Host { get; set; } = "127.0.0.1";
         public int MaxSize { get; set; } = 100;
     }
 
@@ -17,11 +16,16 @@ namespace Application.Shared.Servers
         public string MasterServerGrpcAddress { get; set; } = "http://192.168.0.1:7878";
         public int GrpcPort { get; set; } = 7879;
         public string ServerName { get; set; } = "Channel_Local";
+        /// <summary>
+        /// 供客户端使用的Host
+        /// </summary>
+        public string ServerHost { get; set; } = "127.0.0.1";
         public List<ChannelConfig> ChannelConfig { get; set; } = [];
     }
 
     public class RegisteredChannelConfig: ChannelConfig
     {
+        public string ServerHost { get; set; } = "127.0.0.1";
         public string ServerName { get; set; } = null!;
     }
 }

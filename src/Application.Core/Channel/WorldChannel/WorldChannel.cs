@@ -118,7 +118,7 @@ public partial class WorldChannel : ISocketServer
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public WorldChannelServer Container { get; }
-    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, ChannelConfig config)
+    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config)
     {
         Container = serverContainer;
         LifeScope = scope;
@@ -136,7 +136,7 @@ public partial class WorldChannel : ISocketServer
 
         this.mapManager = new MapManager(null, this);
         this.Port = config.Port;
-        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
+        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(serverHost), Port);
 
         NettyServer = new NettyChannelServer(this);
         log = LogFactory.GetLogger(ServerName);

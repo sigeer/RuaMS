@@ -13,8 +13,6 @@ using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
 
-// Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
-
 try
 {
 
@@ -55,7 +53,23 @@ try
 
     builder.AddGameServerInProgress();
 
-    if (YamlConfig.config.server.ENABLE_OPENAPI)
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
+        {
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort));
+        }
+
+        if (builder.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+        {
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
+            {
+                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+            });
+        }
+    });
+
+    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
     {
         builder.Services.AddCors(options =>
         {
@@ -135,7 +149,7 @@ try
         item.ConfigureHost(app);
     }
 
-    if (YamlConfig.config.server.ENABLE_OPENAPI)
+    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
     {
         var authCode = AuthService.GetAuthCode();
         Log.Logger.Information("授权码>>：[" + authCode + "]");

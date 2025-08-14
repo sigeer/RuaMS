@@ -103,10 +103,10 @@ namespace Application.Core.Login.Servers
 
         public override Task<RegisterServerResult> RegisterServer(RegisterServerRequest request, ServerCallContext context)
         {
-            var channelHost = context.GetHttpContext().Connection.RemoteIpAddress!.ToString();
-            var channelId = _server.AddChannel(new RemoteWorldChannel(request.ServerName,
-                channelHost, request.GrpcPort,
-                request.Channels.Select(x => new Application.Shared.Servers.ChannelConfig { Host = x.Host, MaxSize = x.MaxSize, Port = x.Port }).ToList()));
+            var channelGrpcHost = context.GetHttpContext().Connection.RemoteIpAddress!.ToString();
+            var channelId = _server.AddChannel(new RemoteWorldChannel(request.ServerName, request.ServerHost,
+                channelGrpcHost, request.GrpcPort,
+                request.Channels.Select(x => new Application.Shared.Servers.ChannelConfig { MaxSize = x.MaxSize, Port = x.Port }).ToList()));
             return Task.FromResult(new RegisterServerResult
             {
                 StartChannel = channelId,

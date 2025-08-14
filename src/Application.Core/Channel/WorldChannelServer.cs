@@ -311,6 +311,8 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
                 throw new DirectoryNotFoundException();
 
+            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>
@@ -373,7 +375,7 @@ namespace Application.Core.Channel
             foreach (var config in ServerConfig.ChannelConfig)
             {
                 var scope = ServiceProvider.CreateScope();
-                var channel = new WorldChannel(this, scope, config);
+                var channel = new WorldChannel(this, scope, ServerConfig.ServerHost, config);
                 await channel.StartServer();
                 if (channel.IsRunning)
                 {

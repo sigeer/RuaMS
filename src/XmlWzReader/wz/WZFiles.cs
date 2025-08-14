@@ -37,7 +37,7 @@ public class WZFiles
 
     private static string getWzDirectory()
     {
-        var propertyPath = Environment.GetEnvironmentVariable("ms-wz");
+        var propertyPath = Environment.GetEnvironmentVariable("ms-wz") ?? Environment.GetEnvironmentVariable("RUA_MS_ms-wz");
         if (propertyPath != null && Directory.Exists(propertyPath))
         {
             return propertyPath;

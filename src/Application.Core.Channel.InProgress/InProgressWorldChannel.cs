@@ -7,7 +7,8 @@ namespace Application.Core.Channel.InProgress
 {
     public sealed class InProgressWorldChannel : ChannelServerWrapper
     {
-        public InProgressWorldChannel(WorldChannelServer worldChannel, List<WorldChannel> channels) : base(worldChannel.ServerName, channels.Select(x => x.ChannelConfig).ToList())
+        public InProgressWorldChannel(WorldChannelServer worldChannel, List<WorldChannel> channels) 
+            : base(worldChannel.ServerName, worldChannel.ServerConfig.ServerHost, channels.Select(x => x.ChannelConfig).ToList())
         {
             ChannelServer = worldChannel;
         }

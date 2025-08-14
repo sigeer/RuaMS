@@ -163,7 +163,7 @@ namespace Application.Core.Login
             NettyServer = new NettyLoginServer(this);
 
             var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
-            ServerName = configuration.GetSection("ServerConfig").GetValue<string>("ServerName", "中心服务器");
+            ServerName = configuration.GetValue<string>("ServerName", "中心服务器");
 
             var serverSection = configuration.GetSection("GameConfig");
             Name = serverSection.GetValue<string>("Name", "RuaMS");
@@ -366,7 +366,7 @@ namespace Application.Core.Login
                 {
                     Channels.Add(new RegisteredChannelConfig
                     {
-                        Host = item.Host,
+                        ServerHost = channel.ServerHost,
                         Port = item.Port,
                         ServerName = channel.ServerName,
                         MaxSize = item.MaxSize
@@ -455,7 +455,7 @@ namespace Application.Core.Login
         public IPEndPoint GetChannelIPEndPoint(int channelId)
         {
             var channel = Channels[channelId - 1];
-            return new IPEndPoint(IPAddress.Parse(channel.Host), channel.Port);
+            return new IPEndPoint(IPAddress.Parse(channel.ServerHost), channel.Port);
         }
 
         public int GetChannelCapacity(int channelId)

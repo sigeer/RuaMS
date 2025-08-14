@@ -11,11 +11,13 @@ namespace Application.Core.Login.Servers
 {
     public abstract class ChannelServerWrapper
     {
-        protected ChannelServerWrapper(string serverName, List<ChannelConfig> serverConfigs)
+        protected ChannelServerWrapper(string serverName, string serverHost, List<ChannelConfig> serverConfigs)
         {
             ServerName = serverName;
+            ServerHost = serverHost;
             ServerConfigs = serverConfigs;
         }
+        public string ServerHost { get; }
         public string ServerName { get; protected set; }
         public List<ChannelConfig> ServerConfigs { get; }
 
@@ -28,9 +30,9 @@ namespace Application.Core.Login.Servers
     public class RemoteWorldChannel : ChannelServerWrapper
     {
         readonly ServiceProto.Master2ChannelService.Master2ChannelServiceClient _client;
-        public RemoteWorldChannel(string serverName, string host, int port, List<ChannelConfig> channelConfigs) : base(serverName, channelConfigs)
+        public RemoteWorldChannel(string serverName, string serverHost, string grpcHost, int grpcPort, List<ChannelConfig> channelConfigs) : base(serverName, serverHost, channelConfigs)
         {
-            _client = new ServiceProto.Master2ChannelService.Master2ChannelServiceClient(GrpcChannel.ForAddress($"http://{host}:{port}"));
+            _client = new ServiceProto.Master2ChannelService.Master2ChannelServiceClient(GrpcChannel.ForAddress($"http://{grpcHost}:{grpcPort}"));
         }
 
         public override void BroadcastMessage<TMessage>(string type, TMessage message)
