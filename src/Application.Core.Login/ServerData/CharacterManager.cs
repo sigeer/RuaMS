@@ -81,7 +81,7 @@ namespace Application.Core.Login.Datas
             return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
-        public void Update(Dto.PlayerSaveDto obj)
+        public void Update(SyncProto.PlayerSaveDto obj)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
@@ -103,7 +103,7 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
-                _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
+                _logger.LogDebug("频道{Channel} 玩家{PlayerName}已缓存", obj.Channel, obj.Character.Name);
                 _dataStorage.SetCharacter(origin);
 
                 if (oldCharacterData.Level != origin.Character.Level)
@@ -177,11 +177,12 @@ namespace Application.Core.Login.Datas
                     _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
 
                     _masterServer.BuddyManager.BroadcastNotify(origin);
+                    _masterServer.InvitationManager.RemovePlayerInvitation(origin.Character.Id);
                 }
             }
         }
 
-        public void BatchUpdate(List<Dto.PlayerSaveDto> list)
+        public void BatchUpdate(List<SyncProto.PlayerSaveDto> list)
         {
             foreach (var item in list)
             {
@@ -531,7 +532,7 @@ namespace Application.Core.Login.Datas
             if (checkResult != CreateCharResult.Success)
                 return checkResult;
 
-            return _masterServer.Transport.CreatePlayer(new Dto.CreateCharRequestDto
+            return _masterServer.Transport.CreatePlayer(new CreatorProto.CreateCharRequestDto
             {
                 AccountId = accountId,
                 Type = type,
@@ -547,7 +548,7 @@ namespace Application.Core.Login.Datas
             }).Code;
         }
 
-        public int CreatePlayerDB(Dto.NewPlayerSaveDto data)
+        public int CreatePlayerDB(CreatorProto.NewPlayerSaveDto data)
         {
             try
             {
@@ -590,11 +591,11 @@ namespace Application.Core.Login.Datas
             return _idDataSource.Values.Where(x => x.Channel > 0).Select(x => x.Character.AccountId).ToList();
         }
 
-        public ShowOnlinePlayerResponse GetOnlinedPlayers()
+        public SystemProto.ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
             var list = _idDataSource.Values.Where(x => x.Channel > 0).ToList();
-            var res = new ShowOnlinePlayerResponse();
-            res.List.AddRange(list.Select(x => new Dto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
+            var res = new SystemProto.ShowOnlinePlayerResponse();
+            res.List.AddRange(list.Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
         }
 

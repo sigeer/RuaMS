@@ -5,20 +5,26 @@ namespace Application.Core.Channel
     public class ChannelHost : IHostedService
     {
         readonly WorldChannelServer _server;
-        public ChannelHost(WorldChannelServer server)
+        readonly IHostApplicationLifetime _hostLifetime;
+        public ChannelHost(WorldChannelServer server, IHostApplicationLifetime hostLifetime)
         {
             _server = server;
+            _hostLifetime = hostLifetime;
+
+            _hostLifetime.ApplicationStopping.Register(() =>
+            {
+                _server.Shutdown().GetAwaiter().GetResult();
+            });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await _server.StartServer();
-            return;
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            await _server.Shutdown();
+            return Task.CompletedTask;
         }
     }
 }

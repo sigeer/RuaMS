@@ -5,6 +5,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Map;
 using AutoMapper;
 using BaseProto;
 using client;
@@ -18,6 +19,7 @@ using server;
 using server.events;
 using server.life;
 using server.quest;
+using System.Collections.Generic;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -25,22 +27,20 @@ namespace Application.Core.Channel.Services
     public class DataService
     {
         readonly IMapper _mapper;
-        readonly ItemTransactionService _transactionStore;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
-        readonly IMemoryCache _cache;
-        public DataService(IMapper mapper, ItemTransactionService store, IChannelServerTransport transport, WorldChannelServer server, IMemoryCache cache)
+        Dictionary<int, List<LifeProto.PLifeDto>> _plifeCache;
+        public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server)
         {
             _mapper = mapper;
-            _transactionStore = store;
             _transport = transport;
             _server = server;
-            _cache = cache;
+            _plifeCache = new();
         }
 
-        public Dto.PlayerGetterDto? GetPlayerData(int channelId, string clientSession, int cid)
+        public SyncProto.PlayerGetterDto? GetPlayerData(int channelId, string clientSession, int cid)
         {
-            return _transport.GetPlayerData(clientSession, channelId, cid);
+            return _transport.GetPlayerData(clientSession, cid);
         }
 
         public void SaveChar(Player player, int? setChannel = null)
@@ -53,7 +53,7 @@ namespace Application.Core.Channel.Services
             _server.BatchSyncPlayerManager.Enqueue(dto);
         }
 
-        public IPlayer? Serialize(IChannelClient c, Dto.PlayerGetterDto o)
+        public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
         {
             if (o == null)
                 return null;
@@ -250,7 +250,7 @@ namespace Application.Core.Channel.Services
             return player;
         }
 
-        private Dto.PlayerSaveDto Deserialize(IPlayer player)
+        private SyncProto.PlayerSaveDto Deserialize(IPlayer player)
         {
             List<Dto.QuestStatusDto> questStatusList = new();
             foreach (var qs in player.getQuests())
@@ -325,7 +325,7 @@ namespace Application.Core.Channel.Services
             })).ToArray();
             #endregion
 
-            var data = new Dto.PlayerSaveDto()
+            var data = new SyncProto.PlayerSaveDto()
             {
                 Channel = player.ActualChannel,
                 Character = playerDto
@@ -391,7 +391,7 @@ namespace Application.Core.Channel.Services
             return data;
         }
 
-        public void CompleteLogin(IPlayer chr, Dto.PlayerGetterDto o)
+        public void CompleteLogin(IPlayer chr, SyncProto.PlayerGetterDto o)
         {
             if (o.LoginInfo.IsNewCommer)
             {
@@ -399,7 +399,6 @@ namespace Application.Core.Channel.Services
             }
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
 
-            _transactionStore.HandleTransactions(chr, o.PendingTransactions);
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
         }
 
@@ -432,9 +431,9 @@ namespace Application.Core.Channel.Services
         //    };
         //}
 
-        public Dto.PlayerBuffSaveDto DeserializeBuff(IPlayer player)
+        public SyncProto.PlayerBuffDto DeserializeBuff(IPlayer player)
         {
-            var data = new Dto.PlayerBuffSaveDto();
+            var data = new SyncProto.PlayerBuffDto();
             data.Buffs.AddRange(player.getAllBuffs().Select(x => new Dto.BuffDto
             {
                 IsSkill = x.effect.isSkill(),
@@ -456,7 +455,7 @@ namespace Application.Core.Channel.Services
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Dto.NewPlayerSaveDto DeserializeNew(IPlayer player)
+        public CreatorProto.NewPlayerSaveDto DeserializeNew(IPlayer player)
         {
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
             if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
@@ -502,7 +501,7 @@ namespace Application.Core.Channel.Services
 
             #endregion
 
-            var data = new Dto.NewPlayerSaveDto()
+            var data = new CreatorProto.NewPlayerSaveDto()
             {
                 Character = playerDto
             };
@@ -574,10 +573,10 @@ namespace Application.Core.Channel.Services
             int ypos = checkpos.Y;
             int fh = chr.getMap().getFootholds()!.findBelow(checkpos)!.getId();
 
-            _transport.SendCreatePLife(new BaseProto.CreatePLifeRequest
+            _transport.SendCreatePLife(new LifeProto.CreatePLifeRequest
             {
                 MasterId = chr.Id,
-                Data = new PLifeDto
+                Data = new LifeProto.PLifeDto
                 {
                     LifeId = lifeId,
                     Cy = ypos,
@@ -594,7 +593,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void OnPLifeCreated(BaseProto.CreatePLifeRequest data)
+        public void OnPLifeCreated(LifeProto.CreatePLifeRequest data)
         {
             IPlayer? chr = null;
             foreach (var ch in _server.Servers.Values)
@@ -650,15 +649,17 @@ namespace Application.Core.Channel.Services
                     chr.yellowMessage("Pmob created.");
                 }
             }
+
+            LoadAllPLife();
         }
 
         public void RemovePLife(IPlayer chr, string lifeType, int lifeId = -1)
         {
             var pos = chr.getPosition();
-            _transport.SendRemovePLife(new BaseProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
+            _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
         }
 
-        public void OnPLifeRemoved(RemovePLifeResponse res)
+        public void OnPLifeRemoved(LifeProto.RemovePLifeResponse res)
         {
             IPlayer? chr = null;
             foreach (var ch in _server.Servers.Values)
@@ -693,22 +694,25 @@ namespace Application.Core.Channel.Services
                     chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pmob placements.");
                 }
             }
+
+            LoadAllPLife();
         }
 
-        internal List<BaseProto.PLifeDto> LoadPLife(int mapId)
+        public void LoadAllPLife()
         {
-            return _cache.GetOrCreate($"PLife_{mapId}", e =>
-            {
-                return _transport.RequestPLifeByMapId(new GetPLifeByMapIdRequest { MapId = mapId }).List.ToList();
-            }) ?? [];
-
+            _plifeCache = _transport.RequestPLifeByMapId(new LifeProto.GetPLifeByMapIdRequest()).List.GroupBy(x => x.MapId).ToDictionary(x => x.Key, x => x.ToList());
         }
 
-        public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
+        internal List<LifeProto.PLifeDto> LoadPLife(int mapId)
+        {
+            return _plifeCache.GetValueOrDefault(mapId, []);
+        }
+
+        public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
         {
             var code = CharacterFactory.GetNoviceCreator(request.Type, this)
                 .createCharacter(request.AccountId, request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
-            return new Dto.CreateCharResponseDto { Code = code };
+            return new CreatorProto.CreateCharResponseDto { Code = code };
         }
 
         public int SendNewPlayer(IPlayer player)
@@ -719,7 +723,7 @@ namespace Application.Core.Channel.Services
 
         public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
         {
-            var checkResult = _transport.CreatePlayerCheck(new Dto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
+            var checkResult = _transport.CreatePlayerCheck(new CreatorProto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
             if (checkResult != CreateCharResult.Success)
                 return checkResult;
 

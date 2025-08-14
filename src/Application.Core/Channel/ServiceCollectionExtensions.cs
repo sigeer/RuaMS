@@ -9,6 +9,8 @@ using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
+using Application.Core.ServerTransports;
+using Application.Protos;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -105,8 +107,6 @@ namespace Application.Core.Channel
             services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
             services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
 
-            services.AddSingleton<ItemTransactionService>();
-
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
 
@@ -121,6 +121,7 @@ namespace Application.Core.Channel
             services.AddChannelCommands();
             services.AddChannelHandlers();
 
+            services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             services.AddSingleton<IServerBootstrap, DefaultChannelBootstrap>();
 
             services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");

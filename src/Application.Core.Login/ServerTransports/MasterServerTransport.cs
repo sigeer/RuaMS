@@ -17,11 +17,11 @@ namespace Application.Core.Login
         {
         }
 
-        public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
+        public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
         {
             var defaultServer = _server.ChannelServerList.FirstOrDefault().Value;
             if (defaultServer == null)
-                return new CreateCharResponseDto { Code = -2 };
+                return new CreatorProto.CreateCharResponseDto { Code = -2 };
 
             return defaultServer.CreateCharacterFromChannel(request);
         }
@@ -86,7 +86,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastTeamUpdate(UpdateTeamResponse response)
+        internal void BroadcastTeamUpdate(TeamProto.UpdateTeamResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -94,7 +94,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildGPUpdate(UpdateGuildGPResponse response)
+        internal void BroadcastGuildGPUpdate(GuildProto.UpdateGuildGPResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -102,7 +102,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildRankTitleUpdate(UpdateGuildRankTitleResponse response)
+        internal void BroadcastGuildRankTitleUpdate(GuildProto.UpdateGuildRankTitleResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -110,7 +110,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildNoticeUpdate(UpdateGuildNoticeResponse response)
+        internal void BroadcastGuildNoticeUpdate(GuildProto.UpdateGuildNoticeResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -118,7 +118,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildCapacityUpdate(UpdateGuildCapacityResponse response)
+        internal void BroadcastGuildCapacityUpdate(GuildProto.UpdateGuildCapacityResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -126,7 +126,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildEmblemUpdate(UpdateGuildEmblemResponse response)
+        internal void BroadcastGuildEmblemUpdate(GuildProto.UpdateGuildEmblemResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -134,7 +134,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildDisband(GuildDisbandResponse response)
+        internal void BroadcastGuildDisband(GuildProto.GuildDisbandResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -142,7 +142,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildRankChanged(UpdateGuildMemberRankResponse response)
+        internal void BroadcastGuildRankChanged(GuildProto.UpdateGuildMemberRankResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -150,7 +150,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildExpelMember(ExpelFromGuildResponse response)
+        internal void BroadcastGuildExpelMember(GuildProto.ExpelFromGuildResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -158,7 +158,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastPlayerJoinGuild(JoinGuildResponse response)
+        internal void BroadcastPlayerJoinGuild(GuildProto.JoinGuildResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -166,7 +166,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastPlayerLeaveGuild(LeaveGuildResponse response)
+        internal void BroadcastPlayerLeaveGuild(GuildProto.LeaveGuildResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -198,7 +198,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildJoinAlliance(GuildJoinAllianceResponse response)
+        internal void BroadcastGuildJoinAlliance(AllianceProto.GuildJoinAllianceResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -206,7 +206,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastGuildLeaveAlliance(GuildLeaveAllianceResponse response)
+        internal void BroadcastGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -214,7 +214,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceExpelGuild(AllianceExpelGuildResponse response)
+        internal void BroadcastAllianceExpelGuild(AllianceProto.AllianceExpelGuildResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -222,7 +222,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceCapacityIncreased(IncreaseAllianceCapacityResponse response)
+        internal void BroadcastAllianceCapacityIncreased(AllianceProto.IncreaseAllianceCapacityResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -230,7 +230,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceRankTitleChanged(UpdateAllianceRankTitleResponse response)
+        internal void BroadcastAllianceRankTitleChanged(AllianceProto.UpdateAllianceRankTitleResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -238,7 +238,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceNoticeChanged(UpdateAllianceNoticeResponse response)
+        internal void BroadcastAllianceNoticeChanged(AllianceProto.UpdateAllianceNoticeResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -246,7 +246,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceLeaderChanged(AllianceChangeLeaderResponse response)
+        internal void BroadcastAllianceLeaderChanged(AllianceProto.AllianceChangeLeaderResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -254,7 +254,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceMemberRankChanged(ChangePlayerAllianceRankResponse response)
+        internal void BroadcastAllianceMemberRankChanged(AllianceProto.ChangePlayerAllianceRankResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -262,7 +262,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastAllianceDisband(DisbandAllianceResponse response)
+        internal void BroadcastAllianceDisband(AllianceProto.DisbandAllianceResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
@@ -294,12 +294,12 @@ namespace Application.Core.Login
             }
         }
 
-        internal void ReturnInvitationCreated(CreateInviteResponse response)
+        internal void ReturnInvitationCreated(InvitationProto.CreateInviteResponse response)
         {
             SendMessage(BroadcastType.OnInvitationSend, response, response.SenderPlayerId, response.ReceivePlayerId);
         }
 
-        internal void ReturnInvitationAnswer(AnswerInviteResponse response)
+        internal void ReturnInvitationAnswer(InvitationProto.AnswerInviteResponse response)
         {
             SendMessage(BroadcastType.OnInvitationAnswer, response, response.SenderPlayerId, response.ReceivePlayerId);
         }
@@ -308,7 +308,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastMessage(BroadcastType.OnShutdown, new Google.Protobuf.WellKnownTypes.Empty());
+                BroadcastMessage(BroadcastType.OnShutdown, new Google.Protobuf.WellKnownTypes.Empty());
             }
         }
 
@@ -336,17 +336,13 @@ namespace Application.Core.Login
             }
         }
 
-        internal void SendSetFly(SetFlyResponse setFlyResponse)
-        {
-            SendMessage(BroadcastType.OnSetFly, setFlyResponse, setFlyResponse.Request.CId);
-        }
 
-        internal void BroadcastPLifeCreated(CreatePLifeRequest request)
+        internal void BroadcastPLifeCreated(LifeProto.CreatePLifeRequest request)
         {
             BroadcastMessage(BroadcastType.OnPLifeCreated, request);
         }
 
-        internal void BroadcastPLifeRemoved(RemovePLifeResponse request)
+        internal void BroadcastPLifeRemoved(LifeProto.RemovePLifeResponse request)
         {
             BroadcastMessage(BroadcastType.OnPLifeRemoved, request);
         }
@@ -371,17 +367,17 @@ namespace Application.Core.Login
             SendMessage(BroadcastType.OnAutoBanIgnoreChangedNotify, data, data.GmId.ToArray());
         }
 
-        internal void BroadcastBanned(BanBroadcast data)
+        internal void BroadcastBanned(SystemProto.BanBroadcast data)
         {
             BroadcastMessage(BroadcastType.BroadcastBan, data);
         }
 
-        internal void BroadcastGmLevelChanged(SetGmLevelBroadcast data)
+        internal void BroadcastGmLevelChanged(SystemProto.SetGmLevelBroadcast data)
         {
             SendMessage(BroadcastType.OnGmLevelSet, data, data.TargetId);
         }
 
-        internal void SendWrapPlayerByName(SummonPlayerByNameBroadcast data)
+        internal void SendWrapPlayerByName(SystemProto.SummonPlayerByNameBroadcast data)
         {
             SendMessage(BroadcastType.SendWrapPlayerByName, data, data.MasterId);
         }

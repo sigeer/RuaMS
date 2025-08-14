@@ -13,10 +13,9 @@ namespace Application.Module.Duey.Master
             _manager = manager;
         }
 
-        public override Task<Empty> CreateDueyPackage(CreatePackageRequest request, ServerCallContext context)
+        public override Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request, ServerCallContext context)
         {
-            _manager.CreateDueyPackage(request);
-            return base.CreateDueyPackage(request, context);
+            return Task.FromResult(_manager.CreateDueyPackage(request));
         }
 
         public override Task<GetPlayerDueyPackageResponse> GetPlayerDueyPackage(GetPlayerDueyPackageRequest request, ServerCallContext context)

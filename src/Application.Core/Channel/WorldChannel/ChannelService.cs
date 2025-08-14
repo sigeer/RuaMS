@@ -23,22 +23,11 @@ namespace Application.Core.Channel
             _mapper = mapper;
         }
 
-        public void RemovePlayerIncomingInvites(int id)
-        {
-            _tranport.SendRemovePlayerIncomingInvites(id);
-        }
-
 
         public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
         {
             var allItems = _tranport.RequestAllReactorDrops();
             return allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
-        }
-
-
-        internal int[] GetCardTierSize()
-        {
-            return _tranport.GetCardTierSize();
         }
 
         internal List<List<int>> GetMostSellerCashItems()

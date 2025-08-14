@@ -6,7 +6,6 @@ package DueyDto;
 
 import "Dto/Item.proto";
 import "Duey/DueyPackage.proto";
-import "Item/ItemTransaction.proto";
 
 message CreatePackageRequest {
 	int32 senderId = 1;
@@ -15,11 +14,12 @@ message CreatePackageRequest {
 	string receiverName = 4;
 	bool quick = 5;
 	Dto.ItemDto item = 6;
-	ItemProto.CreateItemTransactionRequest transaction = 7;
 }
 
 message CreatePackageResponse {
 	int32 code = 1;
+}
+
+message CreatePackageBroadcast {
 	DueyPackageDto package = 2;
-	ItemProto.ItemTransaction transaction = 3;
 }

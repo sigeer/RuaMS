@@ -23,12 +23,12 @@ namespace Application.Core.Login.Services
             _dbContextFactory = dbContextFactory;
             _server = server;
         }
-        public Rank.RankCharacterList LoadPlayerRanking(int topCount = 50, bool ignoreCache = false)
+        public RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount = 50, bool ignoreCache = false)
         {
             var cacheKey = "Rank";
             if (!ignoreCache && _cache.Get(cacheKey) is byte[] cachedBytes)
             {
-                return Rank.RankCharacterList.Parser.ParseFrom(cachedBytes);
+                return RankProto.LoadCharacterRankResponse.Parser.ParseFrom(cachedBytes);
             }
 
             var data = LoadPlayerRankingFromDB(topCount);
@@ -36,7 +36,7 @@ namespace Application.Core.Login.Services
             return data;
         }
 
-        private Rank.RankCharacterList LoadPlayerRankingFromDB(int topCount = 50)
+        private RankProto.LoadCharacterRankResponse LoadPlayerRankingFromDB(int topCount = 50)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -47,11 +47,11 @@ namespace Application.Core.Login.Services
                             where b.GMLevel < 2
                             orderby a.Level descending, a.Exp descending, a.LastExpGainTime
                             select new { a.Level, a.Name }).Take(topCount).ToList();
-            var obj = new Rank.RankCharacterList();
+            var obj = new RankProto.LoadCharacterRankResponse();
             for (int i = 0; i < dataList.Count; i++)
             {
                 var item = dataList[i];
-                obj.DataSource.Add(new Rank.RankCharacter { Rank = i + 1, Name = item.Name, Level = item.Level });
+                obj.List.Add(new RankProto.RankCharacter { Rank = i + 1, Name = item.Name, Level = item.Level });
             }
             return obj;
         }

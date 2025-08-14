@@ -39,6 +39,13 @@ message GetMapPlayerNPCListResponse {
 	repeated PlayerNPCDto list = 1;
 }
 
+message GetAllPlayerNPCDataRequest {
+}
+
+message GetAllPlayerNPCDataResponse {
+	repeated PlayerNPCDto list = 1;
+}
+
 message CreatePlayerNPCPreRequest {
 	int32 mapId = 1;
 	int32 branchSidStart = 2;

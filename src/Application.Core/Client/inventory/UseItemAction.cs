@@ -19,6 +19,4 @@ namespace Application.Core.Client.inventory
         /// </summary>
         NotPass
     }
-    public record UseItemResponse(UseItemCheck Status);
-
 }

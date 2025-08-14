@@ -18,7 +18,7 @@ namespace Application.Core.Channel.InProgress
             builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
 
             // 需要先启动Master
-            builder.Services.AddLoginServer(builder.Configuration.GetConnectionString("MySql")!);
+            builder.Services.AddLoginServer(builder.Configuration);
             builder.Services.AddChannelServer();
 
             // 其他可关闭的游戏模块

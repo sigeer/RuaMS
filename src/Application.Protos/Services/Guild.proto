@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "Base/BoolWrapper.proto";
+
+import "Guild/Guild.proto";
+import "Guild/UpdateGuild.proto";
+
+package ServiceProto;
+
+service GuildService {
+	rpc GetGuildModel(GuildProto.GetGuildRequest) returns(GuildProto.GetGuildResponse);
+	rpc CreateGuild(GuildProto.CreateGuildRequest) returns(GuildProto.GetGuildResponse);
+	rpc SendGuildChat(GuildProto.GuildChatRequest) returns (google.protobuf.Empty);
+
+	rpc UpdateGP(GuildProto.UpdateGuildGPRequest) returns (google.protobuf.Empty);
+	rpc UpdateRankTitle(GuildProto.UpdateGuildRankTitleRequest) returns (google.protobuf.Empty);
+	rpc UpdateNotice(GuildProto.UpdateGuildNoticeRequest) returns (google.protobuf.Empty);
+	rpc UpdateCapacity(GuildProto.UpdateGuildCapacityRequest) returns (google.protobuf.Empty);
+	rpc UpdateEmblem(GuildProto.UpdateGuildEmblemRequest) returns (google.protobuf.Empty);
+	rpc UpdateMemberRank(GuildProto.UpdateGuildMemberRankRequest) returns (google.protobuf.Empty);
+
+	rpc ExpelFromGuild(GuildProto.ExpelFromGuildRequest) returns (google.protobuf.Empty);
+	rpc LeaveGuild(GuildProto.LeaveGuildRequest) returns (google.protobuf.Empty);
+	rpc JoinGuild(GuildProto.JoinGuildRequest) returns (google.protobuf.Empty);
+	rpc DisbandGuild(GuildProto.GuildDisbandRequest) returns (google.protobuf.Empty);
+
+	rpc GetGuildRank(google.protobuf.Empty) returns(GuildProto.QueryRankedGuildsResponse);
+}

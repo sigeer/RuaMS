@@ -1737,6 +1737,11 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return monsterBookID.GetValueOrDefault(id);
     }
 
+    public int[] getCardTierSize()
+    {
+        return monsterBookID.Keys.GroupBy(x => (int)(Math.Floor(x / 1000d))).Select(x => x.Count()).ToArray();
+    }
+
     public bool isUntradeableOnEquip(int itemId)
     {
         if (onEquipUntradeableCache.TryGetValue(itemId, out var value))

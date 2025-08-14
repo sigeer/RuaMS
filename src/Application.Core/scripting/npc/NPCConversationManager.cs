@@ -1434,6 +1434,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public int[] getCardTierSize()
     {
-        return c.CurrentServer.Service.GetCardTierSize();
+        return ItemInformationProvider.getInstance().getCardTierSize();
     }
 }

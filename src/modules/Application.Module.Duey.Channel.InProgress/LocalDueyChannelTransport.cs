@@ -15,9 +15,9 @@ namespace Application.Module.Duey.Channel.InProgress
             _mapper = mapper;
         }
 
-        public void CreateDueyPackage(CreatePackageRequest request)
+        public CreatePackageResponse CreateDueyPackage(CreatePackageRequest request)
         {
-            _masterManager.CreateDueyPackage(request);
+            return _masterManager.CreateDueyPackage(request);
         }
 
         public GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)

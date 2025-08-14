@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package Config;
+package SystemProto;
 
 message ShutdownMasterRequest {
 	int32 delaySeconds = 1;
 }
 
-message CompleteShutdownRequest {
+message ChannelShutdownCallback {
   string serverName = 1;
 }

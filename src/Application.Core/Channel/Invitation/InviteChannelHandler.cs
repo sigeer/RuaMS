@@ -14,8 +14,8 @@ namespace Application.Core.Channel.Invitation
             _logger = logger;
         }
 
-        public abstract void OnInvitationCreated(Dto.CreateInviteResponse data);
-        public abstract void OnInvitationAnswered(Dto.AnswerInviteResponse data);
+        public abstract void OnInvitationCreated(InvitationProto.CreateInviteResponse data);
+        public abstract void OnInvitationAnswered(InvitationProto.AnswerInviteResponse data);
 
     }
 }

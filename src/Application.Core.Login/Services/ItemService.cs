@@ -4,6 +4,7 @@ using Application.EF.Entities;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Shared.Message;
+using Application.Utility.Compatible.Atomics;
 using AutoMapper;
 using BaseProto;
 using Dto;
@@ -56,62 +57,37 @@ namespace Application.Core.Login.Services
             .ToArray();
         }
 
-        public Dto.SpecialCashItemListDto LoadSpecialCashItems()
+        public CashProto.SpecialCashItemListDto LoadSpecialCashItems()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var data = new Dto.SpecialCashItemListDto();
-            data.Items.AddRange(_mapper.Map<Dto.SpecialCashItemDto[]>(dbContext.Specialcashitems.AsNoTracking().ToList()));
+            var data = new CashProto.SpecialCashItemListDto();
+            data.Items.AddRange(_mapper.Map<CashProto.SpecialCashItemDto[]>(dbContext.Specialcashitems.AsNoTracking().ToList()));
             return data;
         }
 
 
-        public void ClearGifts(int[] giftIdArray)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            dbContext.Gifts.Where(x => giftIdArray.Contains(x.Id)).ExecuteDelete();
-        }
-
-        public int[] GetCardTierSize()
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
-        }
-
-        bool isLocked = false;
-        public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
+        AtomicBoolean isLocked = new AtomicBoolean();
+        public ItemProto.CreateTVMessageResponse BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
             if (isLocked)
             {
-                _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, new ItemProto.CreateTVMessageResponse()
-                {
-                    Code = 1,
-                    MasterId = request.MasterId,
-                    Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
-                });
-                return;
+                return new CreateTVMessageResponse { Code = 1 };
             }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
-
-            var messageDto = new ItemProto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
+            var response = new ItemProto.CreateTVMessageBroadcast()
+            {
+                Master = _mapper.Map<Dto.PlayerViewDto>(master),
+                ShowEar = request.ShowEar,
+                Type = request.Type,
+            };
+            response.MessageList.AddRange(request.MessageList);
             var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
             if (masterPartner != null)
-                messageDto.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
-
-            messageDto.MessageList.AddRange(request.MessageList);
-
-            var tsc = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit);
-            var response = new ItemProto.CreateTVMessageResponse()
-            {
-                Code = 0,
-                MasterId = master.Character.Id,
-                ShowEar = request.ShowEar,
-                Data = messageDto,
-                Transaction = tsc
-            };
+                response.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
 
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
-            isLocked = true;
+            isLocked.Set(true);
 
             int delay = 15;
             if (request.Type == 4)
@@ -123,32 +99,30 @@ namespace Application.Core.Login.Services
                 delay = 60;
             }
             _server.TimerManager.schedule(BroadcastTVFinish, TimeSpan.FromSeconds(delay));
+            return new CreateTVMessageResponse();
         }
 
         void BroadcastTVFinish()
         {
-            isLocked = false;
+            isLocked.Set(false);
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessageFinish, new Empty());
         }
 
-        public void BroadcastItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
+        public ItemProto.UseItemMegaphoneResponse BroadcastItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
-            var res = new ItemProto.UseItemMegaphoneResponse();
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null || master.Channel <= 0)
+                return new UseItemMegaphoneResponse { Code = 1 };
 
-            var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
-
-            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemProto.UseItemMegaphoneResponse
+            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemProto.UseItemMegaphoneBroadcast
             {
-                Code = 0,
-                Data = new ItemProto.UseItemMegaphoneResult
-                {
-                    IsWishper = request.IsWishper,
-                    Item = request.Item,
-                    Message = request.Message,
-                    SenderChannel = master.Channel,
-                    SenderId = master.Character.Id,
-                }
+                IsWishper = request.IsWishper,
+                Item = request.Item,
+                Message = request.Message,
+                SenderChannel = master.Channel,
+                SenderId = master.Character.Id,
             });
+            return new UseItemMegaphoneResponse();
         }
 
         public QueryDropperByItemResponse LoadWhoDrops(QueryDropperByItemRequest request)

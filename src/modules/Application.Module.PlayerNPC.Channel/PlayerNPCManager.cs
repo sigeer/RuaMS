@@ -6,6 +6,7 @@ using Application.Module.PlayerNPC.Channel.Net;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
 using Application.Shared.MapObjects;
 using Application.Utility.Configs;
@@ -19,6 +20,7 @@ using PlayerNPCProto;
 using Serilog;
 using server.life;
 using System.Drawing;
+using ZLinq;
 
 namespace Application.Module.PlayerNPC.Channel
 {
@@ -29,24 +31,26 @@ namespace Application.Module.PlayerNPC.Channel
         readonly WorldChannelServer _server;
         readonly ILogger<PlayerNPCManager> _logger;
         readonly Configs _config;
-        readonly IMemoryCache _cache;
+        Dictionary<int, List<PlayerNpc>> _cache;
 
-        public PlayerNPCManager(IChannelTransport transport, IMapper mapper, WorldChannelServer server, ILogger<PlayerNPCManager> logger, IOptions<Configs> options, IMemoryCache memoryCache)
+        public PlayerNPCManager(IChannelTransport transport, IMapper mapper, WorldChannelServer server, ILogger<PlayerNPCManager> logger, IOptions<Configs> options)
         {
             _transport = transport;
             _mapper = mapper;
             _server = server;
             _logger = logger;
             _config = options.Value;
-            _cache = memoryCache;
+            _cache = new(); ;
+        }
+
+        public void LoadAllData()
+        {
+            _cache = _mapper.Map<List<PlayerNpc>>(_transport.GetAllPlayerNPCList(new GetAllPlayerNPCDataRequest()).List).GroupBy(x => x.Map).ToDictionary(x => x.Key, x=>x.ToList());
         }
 
         public List<PlayerNpc> GetMapPlayerNPCList(int mapId)
         {
-            return _cache.GetOrCreate($"Map_{mapId}_PlayerNpc", e =>
-            {
-                return _mapper.Map<List<PlayerNpc>>(_transport.GetMapPlayerNPCList(new GetMapPlayerNPCListRequest { MapId = mapId }).List);
-            }) ?? [];
+            return _cache.GetValueOrDefault(mapId, []);
 
         }
 
@@ -271,8 +275,7 @@ namespace Application.Module.PlayerNPC.Channel
                     map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(newData));
                 }
             }
-            _cache.Remove($"Map_{data.MapId}_PlayerNpc");
-
+            LoadAllData();
         }
 
 
@@ -295,9 +298,9 @@ namespace Application.Module.PlayerNPC.Channel
                         map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(item.ObjectId));
                         map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(item.ObjectId));
                     }
-                    _cache.Remove($"Map_{item.MapId}_PlayerNpc");
                 }
             }
+            LoadAllData();
         }
 
         public void RemoveAllPlayerNPC()
@@ -324,10 +327,9 @@ namespace Application.Module.PlayerNPC.Channel
                             map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                         }
                     }
-                    _cache.Remove($"Map_{mapId}_PlayerNpc");
                 }
-
             }
+            LoadAllData();
         }
     }
 }

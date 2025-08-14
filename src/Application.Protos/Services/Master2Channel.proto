@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "Base/MessageWarpper.proto";
+
+import "Creator/CreateCharRequest.proto";
+import "Expedition/ExpeditionInfo.proto";
+import "Config/Shutdown.proto";
+
+package ServiceProto;
+
+service Master2ChannelService {
+	rpc BroadcastMesssage(BaseProto.MessageWrapper) returns(google.protobuf.Empty);
+	rpc CreateCharacterFromChannel(CreatorProto.CreateCharRequestDto) returns(CreatorProto.CreateCharResponseDto);
+	rpc GetExpeditionInfo(google.protobuf.Empty) returns(ExpeditionProto.QueryChannelExpedtionResponse);
+}

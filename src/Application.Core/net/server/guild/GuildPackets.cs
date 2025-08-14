@@ -210,7 +210,7 @@ public class GuildPackets
 
 
 
-    public static Packet showGuildRanks(int npcid, List<Dto.GuildDto> dataList)
+    public static Packet showGuildRanks(int npcid, List<GuildProto.GuildDto> dataList)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);

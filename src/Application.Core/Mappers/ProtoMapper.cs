@@ -35,7 +35,7 @@ namespace Application.Core.Mappers
             CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
 
-            CreateMap<Rank.RankCharacter, RankedCharacterInfo>()
+            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>()
                 .ForMember(dest => dest.Rank, src => src.MapFrom(x => x.Rank))
                 .ForMember(dest => dest.CharacterName, src => src.MapFrom(x => x.Name))
                 .ForMember(dest => dest.CharacterLevel, src => src.MapFrom(x => x.Level));
@@ -67,6 +67,7 @@ namespace Application.Core.Mappers
                             .ForMember(x => x.Mp, opt => opt.MapFrom(x => x.MP))
                             .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
                             .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
+            CreateMap<Dto.AccountCtrlDto, AccountCtrl>().ReverseMap();
 
             #region Item
             CreateMap<Dto.ItemDto, Pet>()
@@ -244,11 +245,11 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) => new ShopItem((short)src.Buyable, src.ItemId, src.Price, src.Pitch));
 
             CreateMap<ItemProto.GiftDto, GiftModel>();
-            CreateMap<Dto.SpecialCashItemDto, SpecialCashItem>()
+            CreateMap<CashProto.SpecialCashItemDto, SpecialCashItem>()
                 .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
 
-            CreateMap<Dto.TeamMemberDto, TeamMember>();
-            CreateMap<Dto.TeamDto, Team>()
+            CreateMap<TeamProto.TeamMemberDto, TeamMember>();
+            CreateMap<TeamProto.TeamDto, Team>()
                 .AfterMap((src, dest, ctx) =>
                 {
                     foreach (var member in src.Members)
@@ -257,8 +258,8 @@ namespace Application.Core.Mappers
                     }
                 });
 
-            CreateMap<Dto.GuildMemberDto, GuildMember>();
-            CreateMap<Dto.GuildDto, Guild>()
+            CreateMap<GuildProto.GuildMemberDto, GuildMember>();
+            CreateMap<GuildProto.GuildDto, Guild>()
                 .ForMember(dest => dest.RankTitles, src => src.MapFrom(x => new string[5]
                 {
                     x.Rank1Title,

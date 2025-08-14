@@ -1250,11 +1250,6 @@ public partial class Player
         }
     }
 
-    public void removeIncomingInvites()
-    {
-        Client.CurrentServer.Service.RemovePlayerIncomingInvites(Id);
-    }
-
     public void checkBerserk(bool isHidden)
     {
         berserkSchedule?.cancel(false);

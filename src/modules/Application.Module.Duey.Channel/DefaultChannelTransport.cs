@@ -13,9 +13,9 @@ namespace Application.Module.Duey.Channel
             _grpcClient = new DueyService.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
         }
 
-        public void CreateDueyPackage(CreatePackageRequest request)
+        public CreatePackageResponse CreateDueyPackage(CreatePackageRequest request)
         {
-            _grpcClient.CreateDueyPackage(request);
+            return _grpcClient.CreateDueyPackage(request);
         }
 
         public GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)

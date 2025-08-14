@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package LifeProto;
+
+message PLifeDto {
+	int32 lifeId = 1;
+	string type = 2;
+	int32 cy = 3;
+	int32 f = 4;
+	int32 fh = 5;
+	int32 rx0 = 6;
+	int32 rx1 = 7;
+	int32 x = 8;
+	int32 y = 9;
+	int32 hide = 10;
+	int32 mobtime = 11;
+	int32 team = 12;
+	int32 mapId = 13;
+	int32 id = 14;
+}
+
+message GetPLifeByMapIdRequest {
+	int32 mapId = 1;
+}
+
+message GetPLifeByMapIdResponse {
+	repeated PLifeDto list = 2;
+}
+
+message GetAllPLifeRequest {
+}
+
+message GetAllPLifeResponse {
+	repeated PLifeDto list = 2;
+}
+
+message CreatePLifeRequest {
+	int32 masterId = 1;
+	PLifeDto data = 2;
+}
+
+message RemovePLifeRequest {
+	int32 masterId = 1;
+	int32 mapId = 2;
+	int32 lifeId = 3;
+	string lifeType = 4;
+	int32 posX = 5;
+	int32 posY = 6;
+}
+
+message RemovePLifeResponse {
+	int32 masterId = 1;
+	string lifeType = 2;
+	repeated PLifeDto removedItems = 3;
+}

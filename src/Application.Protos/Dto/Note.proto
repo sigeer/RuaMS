@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
 package Dto;
 
 message NoteDto {
@@ -18,4 +16,18 @@ message SendNoteResponse {
 	int32 receiverId = 1;
 	int32 receiverChannel = 2;
 	repeated NoteDto list = 3;
+}
+
+message SendNormalNoteRequest {
+	int32 fromId = 1;
+	string toName = 2;
+	string message = 3;
+}
+
+message SetNoteReadRequest {
+	int32 id = 1;
+}
+
+message SetNoteReadResponse {
+	NoteDto data = 1;
 }

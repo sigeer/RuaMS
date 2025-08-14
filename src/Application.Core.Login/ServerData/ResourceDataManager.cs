@@ -46,14 +46,21 @@ namespace Application.Core.Login.ServerData
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
-        public GetPLifeByMapIdResponse LoadMapPLife(GetPLifeByMapIdRequest request)
+        public LifeProto.GetPLifeByMapIdResponse LoadMapPLife(LifeProto.GetPLifeByMapIdRequest request)
         {
-            var res = new GetPLifeByMapIdResponse();
-            res.List.AddRange(_mapper.Map<PLifeDto[]>(Query(x => x.Map == request.MapId)));
+            var res = new LifeProto.GetPLifeByMapIdResponse();
+            res.List.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(Query(x => x.Map == request.MapId)));
             return res;
         }
 
-        public void CreatePLife(CreatePLifeRequest request)
+        public LifeProto.GetAllPLifeResponse GetAllPLife()
+        {
+            var res = new LifeProto.GetAllPLifeResponse();
+            res.List.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(Query(x => true)));
+            return res;
+        }
+
+        public void CreatePLife(LifeProto.CreatePLifeRequest request)
         {
             var newKey = Interlocked.Increment(ref _localPLifeId);
             var newModel = _mapper.Map<PLifeModel>(request.Data);
@@ -62,7 +69,7 @@ namespace Application.Core.Login.ServerData
             _server.Transport.BroadcastPLifeCreated(request);
         }
 
-        public void RemovePLife(RemovePLifeRequest request)
+        public void RemovePLife(LifeProto.RemovePLifeRequest request)
         {
             List<PLifeModel> toRemove = [];
             if (request.LifeId > 0)
@@ -81,8 +88,8 @@ namespace Application.Core.Login.ServerData
                 SetRemoved(item.Id);
             }
 
-            var res = new RemovePLifeResponse { MasterId = request.MasterId };
-            res.RemovedItems.AddRange(_mapper.Map<PLifeDto[]>(toRemove));
+            var res = new LifeProto.RemovePLifeResponse { MasterId = request.MasterId };
+            res.RemovedItems.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(toRemove));
             _server.Transport.BroadcastPLifeRemoved(res);
         }
 

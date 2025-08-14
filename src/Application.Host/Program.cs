@@ -1,31 +1,27 @@
 using Application.Core.Channel.InProgress;
-using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using net.server.coordinator.matchchecker;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
 
-// Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
-
 try
 {
 
     var builder = WebApplication.CreateBuilder(args);
-    builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
+    builder.Configuration.AddEnvironmentVariables(AppSettingKeys.EnvPrefix);
 
     // 支持GBK
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
 
     // 日志配置
     Log.Logger = new LoggerConfiguration()
@@ -38,6 +34,7 @@ try
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
         .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+        .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .WriteTo.Console()
         .WriteTo.Map(
@@ -54,10 +51,25 @@ try
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
 
-
     builder.AddGameServerInProgress();
 
-    if (YamlConfig.config.server.ENABLE_OPENAPI)
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
+        {
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort));
+        }
+
+        if (builder.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+        {
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
+            {
+                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+            });
+        }
+    });
+
+    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
     {
         builder.Services.AddCors(options =>
         {
@@ -131,20 +143,13 @@ try
 
     var app = builder.Build();
 
-    var idGeneratorOptions = new IdGeneratorOptions(1);
-    YitIdHelper.SetIdGenerator(idGeneratorOptions);
-
-    MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-        app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
-        app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
-
     var bootstrap = app.Services.GetServices<IServerBootstrap>();
     foreach (var item in bootstrap)
     {
         item.ConfigureHost(app);
     }
 
-    if (YamlConfig.config.server.ENABLE_OPENAPI)
+    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
     {
         var authCode = AuthService.GetAuthCode();
         Log.Logger.Information("授权码>>：[" + authCode + "]");
@@ -164,11 +169,6 @@ try
         app.MapControllers();
     }
 
-    //AppDomain.CurrentDomain.ProcessExit += (e, o) =>
-    //{
-    //    var server = app.Services.GetService<IMasterServer>();
-    //        server.Shutdown().Wait();
-    //};
     app.Run();
 }
 catch (Exception ex)

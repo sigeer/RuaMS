@@ -22,7 +22,7 @@ public class OnlineCommand : CommandBase
 
         StringBuilder sb = new StringBuilder();
 
-        List<Dto.OnlinedPlayerInfoDto> list = [];
+        List<SystemProto.OnlinedPlayerInfoDto> list = [];
         int i = 0;
         foreach (var item in channelGroup)
         {

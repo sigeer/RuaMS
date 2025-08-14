@@ -1,3 +1,4 @@
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Login;
@@ -92,9 +93,9 @@ namespace Application.Core.Channel.Net
                 }
                 finally
                 {
+                    CurrentServerContainer.RemovePlayer(Character.Id);
                     if (!IsServerTransition)
                     {
-                        CurrentServerContainer.RemovePlayer(Character.Id);
                         //getChannelServer().removePlayer(player); already being done
 
                         Character.cancelAllDebuffs();
@@ -106,8 +107,6 @@ namespace Application.Core.Channel.Net
                     }
                     else
                     {
-                        CurrentServer.removePlayer(Character);
-
                         Character.cancelAllDebuffs();
                         Character.saveCharToDB();
                     }
@@ -146,11 +145,11 @@ namespace Application.Core.Channel.Net
             try
             {
                 player.setDisconnectedFromChannelWorld();
-                player.removeIncomingInvites();
                 player.cancelAllBuffs(true);
 
                 player.closePlayerInteractions();
                 player.closePartySearchInteractions();
+                ResourceManager.Cancel(player);
 
                 if (!serverTransition)
                 {
@@ -417,7 +416,6 @@ namespace Application.Core.Channel.Net
             Character.unregisterChairBuff();
             CurrentServer.Container.DataService.SaveBuff(Character);
             Character.setDisconnectedFromChannelWorld();
-            Character.removeIncomingInvites();
             Character.cancelAllBuffs(true);
             Character.cancelAllDebuffs();
 
@@ -430,7 +428,7 @@ namespace Application.Core.Channel.Net
 
             Character.getInventory(InventoryType.EQUIPPED).SetChecked(false); //test
             Character.getMap().removePlayer(Character);
-            Character.getChannelServer().removePlayer(Character);
+            CurrentServerContainer.RemovePlayer(Character.Id);
             Character.saveCharToDB();
 
             SetCharacterOnSessionTransitionState(Character.getId());

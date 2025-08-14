@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "Base/BoolWrapper.proto";
+
+import "Item/Gift.proto";
+import "Cash/Cash.proto";
+import "Cash/SpecialCashItem.proto";
+import "Cash/CashShop.proto";
+
+package ServiceProto;
+
+service CashService {
+	rpc LoadGifts(ItemProto.GetMyGiftsRequest) returns(ItemProto.GetMyGiftsResponse);
+	rpc CommitRetrieveGift(ItemProto.CommitRetrieveGiftRequest) returns(google.protobuf.Empty);
+
+	rpc BuyCashItem(CashProto.BuyCashItemRequest) returns (CashProto.BuyCashItemResponse);
+	rpc LoadSpecialItems(google.protobuf.Empty) returns(CashProto.SpecialCashItemListDto);
+	rpc LoadMosterSellItems(google.protobuf.Empty) returns(CashProto.MosterSellerInfo);
+}

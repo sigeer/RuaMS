@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Invitation
         {
         }
 
-        public override void OnInvitationAnswered(AnswerInviteResponse data)
+        public override void OnInvitationAnswered(InvitationProto.AnswerInviteResponse data)
         {
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Invitation
             }
         }
 
-        public override void OnInvitationCreated(CreateInviteResponse data)
+        public override void OnInvitationCreated(InvitationProto.CreateInviteResponse data)
         {
             var code = (GuildResponse)data.Code;
             if (code == GuildResponse.Success)

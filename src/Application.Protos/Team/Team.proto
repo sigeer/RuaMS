@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-import "Team/TeamMember.proto";
-
-package Dto;
+package TeamProto;
 
 message TeamDto {
   int32 id = 1;
@@ -10,6 +8,23 @@ message TeamDto {
   repeated TeamMemberDto members = 3;
 }
 
+message TeamMemberDto {
+	int32 id = 1;
+	string name = 2;
+	int32 level = 3;
+	int32 job = 4;
+	int32 channel = 5;
+	int32 mapId = 6;
+}
+
+message GetTeamRequest {
+	int32 id = 1;
+}
+
 message GetTeamResponse {
 	TeamDto model = 1;
+}
+
+message CreateTeamRequest {
+	int32 leaderId = 1;
 }

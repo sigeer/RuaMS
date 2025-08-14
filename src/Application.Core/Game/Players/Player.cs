@@ -26,6 +26,7 @@ namespace Application.Core.Game.Players
         public MapManager MapManager => Client.CurrentServer.getMapFactory();
 
         public List<FameLogObject> FameLogs { get; set; }
+        public Lock ResourceLock { get; } = new Lock();
 
         public object SaveToDBLock { get; set; } = new object();
 
@@ -126,11 +127,6 @@ namespace Application.Core.Game.Players
             forfeitExpirableQuests();
             cancelQuestExpirationTask();
         }
-        public void SetFly(bool v)
-        {
-            Client.CurrentServerContainer.SetFly(Id, v);
-        }
-
         public override int GetSourceId()
         {
             return Id;

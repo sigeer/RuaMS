@@ -1,4 +1,5 @@
 using Application.Core.Login.Models;
+using Google.Protobuf;
 
 namespace Application.Core.Login.ServerTransports
 {
@@ -17,7 +18,7 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="messageType"></param>
         /// <param name="message"></param>
         /// <param name="playerIdArray"></param>
-        public void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
+        public void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : IMessage
         {
             if (playerIdArray.Length == 0)
                 return;
@@ -36,7 +37,7 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="messageType"></param>
         /// <param name="message"></param>
         /// <param name="playerIdArray"></param>
-        public void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : notnull
+        public void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : IMessage
         {
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
@@ -45,7 +46,7 @@ namespace Application.Core.Login.ServerTransports
             }
         }
 
-        public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : notnull
+        public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : IMessage
         {
             foreach (var server in _server.ChannelServerList.Values)
             {

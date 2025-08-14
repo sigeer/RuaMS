@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "Dto/Item.proto";
-import "Item/ItemTransaction.proto";
 import "MTS/MTS.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -23,13 +22,11 @@ message SaleItemRequest {
 	int32 masterId = 1;
 	Dto.ItemDto item = 2;
 	int32 price = 3;
-	ItemProto.CreateItemTransactionRequest transaction = 4;
 }
 
 message SaleItemResponse {
 	int32 code = 1;
 	int32 masterId = 2;
-	ItemProto.ItemTransaction transaction = 3;
 	PlayerMTSInfo myMTSInfo = 4;
 	PagedItems pageData = 5;
 }

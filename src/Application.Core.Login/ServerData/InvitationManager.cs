@@ -120,7 +120,7 @@ namespace Application.Core.Login.ServerData
             _server.TeamManager.UpdateParty(request.Key, PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
 
@@ -154,10 +154,10 @@ namespace Application.Core.Login.ServerData
 
         protected override void OnInvitationAccepted(InviteRequest request)
         {
-            _server.GuildManager.PlayerJoinGuild(new JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
+            _server.GuildManager.PlayerJoinGuild(new GuildProto.JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -182,10 +182,10 @@ namespace Application.Core.Login.ServerData
 
         protected override void OnInvitationAccepted(InviteRequest request)
         {
-            _server.GuildManager.GuildJoinAlliance(new GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
+            _server.GuildManager.GuildJoinAlliance(new AllianceProto.GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -237,7 +237,7 @@ namespace Application.Core.Login.ServerData
             _server.ChatRoomManager.JoinChatRoom(new JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;

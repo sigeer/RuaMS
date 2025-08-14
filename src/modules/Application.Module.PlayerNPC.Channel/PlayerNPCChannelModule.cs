@@ -31,7 +31,10 @@ namespace Application.Module.PlayerNPC.Channel
             MessageDispatcher.Register<PlayerNPCProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
             MessageDispatcher.Register<PlayerNPCProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
             MessageDispatcher.Register<PlayerNPCProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
+
+            _manager.LoadAllData();
         }
+
         public bool CanSpawn(IMap map, string targetName)
         {
             if (_config.PLAYERNPC_AUTODEPLOY)

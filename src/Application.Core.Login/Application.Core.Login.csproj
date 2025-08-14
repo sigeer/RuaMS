@@ -21,4 +21,11 @@
     <Folder Include="ServerData\Items\" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="sql\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+
 </Project>

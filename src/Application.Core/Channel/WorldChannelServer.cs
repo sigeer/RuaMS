@@ -27,6 +27,7 @@ using server.quest;
 using System.Diagnostics;
 using System.Net;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Channel
 {
@@ -126,7 +127,7 @@ namespace Application.Core.Channel
         ScheduledFuture? timeoutTask;
 
         public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
-        public BatchSyncManager<Dto.PlayerSaveDto> BatchSyncPlayerManager { get; }
+        public BatchSyncManager<SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -179,7 +180,7 @@ namespace Application.Core.Channel
             _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
 
             BatchSynMapManager = new BatchSyncManager<SyncProto.MapSyncDto>(50, 100, data => Transport.BatchSyncMap(data));
-            BatchSyncPlayerManager = new BatchSyncManager<PlayerSaveDto>(50, 100, data => Transport.BatchSyncPlayer(data));
+            BatchSyncPlayerManager = new BatchSyncManager<SyncProto.PlayerSaveDto>(50, 100, data => Transport.BatchSyncPlayer(data));
         }
 
         #region 时间
@@ -281,9 +282,8 @@ namespace Application.Core.Channel
                 await TimerManager.Stop();
                 ThreadManager.getInstance().stop();
                 _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
-
+                Transport.CompleteChannelShutdown(ServerName);
                 IsRunning = false;
-                Transport.CompleteShutdown(new Config.CompleteShutdownRequest { ServerName = ServerName });
             }
             catch (Exception ex)
             {
@@ -337,6 +337,8 @@ namespace Application.Core.Channel
                 _logger.LogDebug("WZ - 任务加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
             });
 
+            DataService.LoadAllPLife();
+
             Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
             OpcodeConstants.generateOpcodeNames();
@@ -371,7 +373,7 @@ namespace Application.Core.Channel
             foreach (var config in ServerConfig.ChannelConfig)
             {
                 var scope = ServiceProvider.CreateScope();
-                var channel = new WorldChannel(this, scope, config);
+                var channel = new WorldChannel(this, scope, ServerConfig.ServerHost, config);
                 await channel.StartServer();
                 if (channel.IsRunning)
                 {
@@ -385,7 +387,7 @@ namespace Application.Core.Channel
                 {
                     _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
                 });
-            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(this, localServers));
+            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(localServers));
 
             if (configs.StartChannel > 0)
             {
@@ -452,11 +454,6 @@ namespace Application.Core.Channel
         internal WorldChannel? GetChannel(int channel)
         {
             return Servers.GetValueOrDefault(channel);
-        }
-
-        public void CommitAccountEntity(AccountCtrl accountEntity)
-        {
-            Transport.UpdateAccount(accountEntity);
         }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
@@ -768,13 +765,13 @@ namespace Application.Core.Channel
         /// 成功：向受邀者发送请求，失败：向邀请者发送失败原因
         /// </summary>
         /// <param name="data"></param>
-        private void OnSendInvitation(Dto.CreateInviteResponse data)
+        private void OnSendInvitation(InvitationProto.CreateInviteResponse data)
         {
             InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
         }
 
 
-        private void OnAnswerInvitation(AnswerInviteResponse data)
+        private void OnAnswerInvitation(InvitationProto.AnswerInviteResponse data)
         {
             InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
         }
@@ -801,10 +798,10 @@ namespace Application.Core.Channel
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
             MessageDispatcher.Register<Empty>(BroadcastType.SaveAll, adminSrv.OnSaveAll);
             MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
-            MessageDispatcher.Register<Dto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
-            MessageDispatcher.Register<Dto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
-            MessageDispatcher.Register<Dto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
-            MessageDispatcher.Register<Dto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
+            MessageDispatcher.Register<SystemProto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
+            MessageDispatcher.Register<SystemProto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
+            MessageDispatcher.Register<SystemProto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
+            MessageDispatcher.Register<SystemProto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
 
             MessageDispatcher.Register<Config.AutoBanIgnoredChangedNotifyDto>(BroadcastType.OnAutoBanIgnoreChangedNotify, AutoBanManager.OnIgoreDataChanged);
             MessageDispatcher.Register<Config.MonitorDataChangedNotifyDto>(BroadcastType.OnMonitorChangedNotify, MonitorManager.OnMonitorDataChanged);
@@ -813,47 +810,45 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<Dto.SendReportBroadcast>(BroadcastType.OnReportReceived, reportSrv.OnGMReceivedReport);
 
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
-            MessageDispatcher.Register<CashProto.BuyCashItemResponse>(BroadcastType.OnCashItemPurchased, itemSrc.OnBuyCashItemCallback);
 
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
-            MessageDispatcher.Register<ItemProto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
-            MessageDispatcher.Register<ItemProto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
+            MessageDispatcher.Register<ItemProto.UseItemMegaphoneBroadcast>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
+            MessageDispatcher.Register<ItemProto.CreateTVMessageBroadcast>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
             MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
-            MessageDispatcher.Register<Dto.SetFlyResponse>(BroadcastType.OnSetFly, OnSetFly);
             MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
             MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);
             MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
 
-            MessageDispatcher.Register<CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
-            MessageDispatcher.Register<AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
+            MessageDispatcher.Register<InvitationProto.CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
+            MessageDispatcher.Register<InvitationProto.AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
 
             MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
             MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
             MessageDispatcher.Register<PlayerOnlineChange>(BroadcastType.OnPlayerLoginOff, OnPlayerLoginOff);
 
             #region Guild
-            MessageDispatcher.Register<UpdateGuildNoticeResponse>(BroadcastType.OnGuildNoticeUpdate, GuildManager.OnGuildNoticeUpdate);
-            MessageDispatcher.Register<UpdateGuildGPResponse>(BroadcastType.OnGuildGpUpdate, GuildManager.OnGuildGPUpdate);
-            MessageDispatcher.Register<UpdateGuildCapacityResponse>(BroadcastType.OnGuildCapacityUpdate, GuildManager.OnGuildCapacityIncreased);
-            MessageDispatcher.Register<UpdateGuildEmblemResponse>(BroadcastType.OnGuildEmblemUpdate, GuildManager.OnGuildEmblemUpdate);
-            MessageDispatcher.Register<UpdateGuildRankTitleResponse>(BroadcastType.OnGuildRankTitleUpdate, GuildManager.OnGuildRankTitleUpdate);
-            MessageDispatcher.Register<UpdateGuildMemberRankResponse>(BroadcastType.OnGuildRankChanged, GuildManager.OnChangePlayerGuildRank);
-            MessageDispatcher.Register<JoinGuildResponse>(BroadcastType.OnPlayerJoinGuild, GuildManager.OnPlayerJoinGuild);
-            MessageDispatcher.Register<LeaveGuildResponse>(BroadcastType.OnPlayerLeaveGuild, GuildManager.OnPlayerLeaveGuild);
-            MessageDispatcher.Register<ExpelFromGuildResponse>(BroadcastType.OnGuildExpelMember, GuildManager.OnGuildExpelMember);
-            MessageDispatcher.Register<GuildDisbandResponse>(BroadcastType.OnGuildDisband, GuildManager.OnGuildDisband);
+            MessageDispatcher.Register<GuildProto.UpdateGuildNoticeResponse>(BroadcastType.OnGuildNoticeUpdate, GuildManager.OnGuildNoticeUpdate);
+            MessageDispatcher.Register<GuildProto.UpdateGuildGPResponse>(BroadcastType.OnGuildGpUpdate, GuildManager.OnGuildGPUpdate);
+            MessageDispatcher.Register<GuildProto.UpdateGuildCapacityResponse>(BroadcastType.OnGuildCapacityUpdate, GuildManager.OnGuildCapacityIncreased);
+            MessageDispatcher.Register<GuildProto.UpdateGuildEmblemResponse>(BroadcastType.OnGuildEmblemUpdate, GuildManager.OnGuildEmblemUpdate);
+            MessageDispatcher.Register<GuildProto.UpdateGuildRankTitleResponse>(BroadcastType.OnGuildRankTitleUpdate, GuildManager.OnGuildRankTitleUpdate);
+            MessageDispatcher.Register<GuildProto.UpdateGuildMemberRankResponse>(BroadcastType.OnGuildRankChanged, GuildManager.OnChangePlayerGuildRank);
+            MessageDispatcher.Register<GuildProto.JoinGuildResponse>(BroadcastType.OnPlayerJoinGuild, GuildManager.OnPlayerJoinGuild);
+            MessageDispatcher.Register<GuildProto.LeaveGuildResponse>(BroadcastType.OnPlayerLeaveGuild, GuildManager.OnPlayerLeaveGuild);
+            MessageDispatcher.Register<GuildProto.ExpelFromGuildResponse>(BroadcastType.OnGuildExpelMember, GuildManager.OnGuildExpelMember);
+            MessageDispatcher.Register<GuildProto.GuildDisbandResponse>(BroadcastType.OnGuildDisband, GuildManager.OnGuildDisband);
             #endregion
 
             #region Alliance
-            MessageDispatcher.Register<GuildJoinAllianceResponse>(BroadcastType.OnGuildJoinAlliance, GuildManager.OnGuildJoinAlliance);
-            MessageDispatcher.Register<GuildLeaveAllianceResponse>(BroadcastType.OnGuildLeaveAlliance, GuildManager.OnGuildLeaveAlliance);
-            MessageDispatcher.Register<AllianceExpelGuildResponse>(BroadcastType.OnAllianceExpelGuild, GuildManager.OnAllianceExpelGuild);
-            MessageDispatcher.Register<IncreaseAllianceCapacityResponse>(BroadcastType.OnAllianceCapacityUpdate, GuildManager.OnAllianceCapacityIncreased);
-            MessageDispatcher.Register<DisbandAllianceResponse>(BroadcastType.OnAllianceDisband, GuildManager.OnAllianceDisband);
-            MessageDispatcher.Register<UpdateAllianceNoticeResponse>(BroadcastType.OnAllianceNoticeUpdate, GuildManager.OnAllianceNoticeChanged);
-            MessageDispatcher.Register<ChangePlayerAllianceRankResponse>(BroadcastType.OnAllianceRankChange, GuildManager.OnPlayerAllianceRankChanged);
-            MessageDispatcher.Register<UpdateAllianceRankTitleResponse>(BroadcastType.OnAllianceRankTitleUpdate, GuildManager.OnAllianceRankTitleChanged);
-            MessageDispatcher.Register<AllianceChangeLeaderResponse>(BroadcastType.OnAllianceChangeLeader, GuildManager.OnAllianceLeaderChanged);
+            MessageDispatcher.Register<AllianceProto.GuildJoinAllianceResponse>(BroadcastType.OnGuildJoinAlliance, GuildManager.OnGuildJoinAlliance);
+            MessageDispatcher.Register<AllianceProto.GuildLeaveAllianceResponse>(BroadcastType.OnGuildLeaveAlliance, GuildManager.OnGuildLeaveAlliance);
+            MessageDispatcher.Register<AllianceProto.AllianceExpelGuildResponse>(BroadcastType.OnAllianceExpelGuild, GuildManager.OnAllianceExpelGuild);
+            MessageDispatcher.Register<AllianceProto.IncreaseAllianceCapacityResponse>(BroadcastType.OnAllianceCapacityUpdate, GuildManager.OnAllianceCapacityIncreased);
+            MessageDispatcher.Register<AllianceProto.DisbandAllianceResponse>(BroadcastType.OnAllianceDisband, GuildManager.OnAllianceDisband);
+            MessageDispatcher.Register<AllianceProto.UpdateAllianceNoticeResponse>(BroadcastType.OnAllianceNoticeUpdate, GuildManager.OnAllianceNoticeChanged);
+            MessageDispatcher.Register<AllianceProto.ChangePlayerAllianceRankResponse>(BroadcastType.OnAllianceRankChange, GuildManager.OnPlayerAllianceRankChanged);
+            MessageDispatcher.Register<AllianceProto.UpdateAllianceRankTitleResponse>(BroadcastType.OnAllianceRankTitleUpdate, GuildManager.OnAllianceRankTitleChanged);
+            MessageDispatcher.Register<AllianceProto.AllianceChangeLeaderResponse>(BroadcastType.OnAllianceChangeLeader, GuildManager.OnAllianceLeaderChanged);
             #endregion
 
             #region ChatRoom
@@ -869,49 +864,22 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<Dto.DiscardNewYearCardResponse>(BroadcastType.OnNewYearCardDiscard, NewYearCardService.OnNewYearCardDiscard);
             #endregion
 
-            MessageDispatcher.Register<UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
+            MessageDispatcher.Register<TeamProto.UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
 
             MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
 
-            MessageDispatcher.Register<BaseProto.CreatePLifeRequest>(BroadcastType.OnPLifeCreated, DataService.OnPLifeCreated);
-            MessageDispatcher.Register<BaseProto.RemovePLifeResponse>(BroadcastType.OnPLifeRemoved, DataService.OnPLifeRemoved);
+            MessageDispatcher.Register<LifeProto.CreatePLifeRequest>(BroadcastType.OnPLifeCreated, DataService.OnPLifeCreated);
+            MessageDispatcher.Register<LifeProto.RemovePLifeResponse>(BroadcastType.OnPLifeRemoved, DataService.OnPLifeRemoved);
         }
 
-        public void OnMessageReceived(string type, object message)
+        public void OnMessageReceived(BaseProto.MessageWrapper message)
+        {
+            MessageDispatcher.Dispatch(message);
+        }
+
+        public void OnMessageReceived(string type, IMessage message)
         {
             MessageDispatcher.Dispatch(type, message);
-        }
-
-        internal void SetFly(int id, bool v)
-        {
-            Transport.SendSetFly(new Dto.SetFlyRequest { CId = id, SetStatus = v });
-        }
-
-        private void OnSetFly(Dto.SetFlyResponse data)
-        {
-            var chr = FindPlayerById(data.Request.CId);
-            if (chr != null)
-            {
-                string sendStr = "";
-                if (data.Request.SetStatus)
-                {
-                    sendStr += "Enabled Fly feature (F1). With fly active, you cannot attack.";
-                    if (!chr.Client.AccountEntity!.CanFly)
-                    {
-                        sendStr += " Re-login to take effect.";
-                    }
-                }
-                else
-                {
-                    sendStr += "Disabled Fly feature. You can now attack.";
-                    if (chr.Client.AccountEntity!.CanFly)
-                    {
-                        sendStr += " Re-login to take effect.";
-                    }
-                }
-
-                chr.dropMessage(sendStr);
-            }
         }
 
         internal void SendReloadEvents(IPlayer chr)

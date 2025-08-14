@@ -7,7 +7,7 @@ using Application.Shared.Login;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using Dto;
+using SystemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -191,7 +191,7 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public Dto.UnbanResponse Unban(Dto.UnbanRequest request)
+        public UnbanResponse Unban(UnbanRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null)

@@ -40,12 +40,12 @@ namespace Application.Module.ExpeditionBossLog.Master
                 await _task.CancelAsync(false);
         }
 
-        public ExpeditionCheckResponse CanStartExpedition(ExpeditionCheckRequest request)
+        public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request)
         {
-            return new ExpeditionCheckResponse { IsSuccess = _manager.AttemptBoss(request.Cid, request.Channel, request.BossName, false) };
+            return new ExpeditionProto.ExpeditionCheckResponse { IsSuccess = _manager.AttemptBoss(request.Cid, request.Channel, request.BossName, false) };
         }
 
-        public void RegisterExpedition(ExpeditionRegistry request)
+        public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
         {
             foreach (var cid in request.CidList)
             {

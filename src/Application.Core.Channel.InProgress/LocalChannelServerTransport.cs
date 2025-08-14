@@ -1,13 +1,9 @@
-using Application.Core.Game.TheWorld;
-using Application.Core.Game.Trades;
 using Application.Core.Login;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Message;
-using Application.Shared.Models;
-using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
@@ -16,13 +12,12 @@ using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using ItemProto;
+using LifeProto;
 using MessageProto;
-using net.server;
-using server.expeditions;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
-using System.Text;
 using SystemProto;
-using tools;
+using ZstdSharp.Unsafe;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -69,12 +64,12 @@ namespace Application.Core.Channel.InProgress
             _resourceService = resourceDataService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
+        public Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels)
         {
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
 
-            var channelId = _server.AddChannel(new InternalWorldChannel(server, channels));
+            var channelId = _server.AddChannel(new InProgressWorldChannel(_server.ServiceProvider.GetRequiredService<WorldChannelServer>(), channels));
             return Task.FromResult(new Config.RegisterServerResult
             {
                 StartChannel = channelId,
@@ -98,11 +93,6 @@ namespace Application.Core.Channel.InProgress
             return _server.getCurrentTimestamp();
         }
 
-        public DateTimeOffset GetServerupTime()
-        {
-            return _server.StartupTime;
-        }
-
         public bool IsGuildQueued(int guildId)
         {
             return _server.IsGuildQueued(guildId);
@@ -120,11 +110,6 @@ namespace Application.Core.Channel.InProgress
         public void SendWorldConfig(Config.WorldConfig updatePatch)
         {
             _server.UpdateWorldConfig(updatePatch);
-        }
-
-        public Task<bool> RemoveServer(WorldChannel server)
-        {
-            return Task.FromResult(true);
         }
 
         public void BroadcastMessage(MessageProto.PacketRequest p)
@@ -182,14 +167,9 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.Transport.QueryExpeditionInfo(new ExpeditionProto.QueryChannelExpedtionRequest());
         }
-        public Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid)
+        public SyncProto.PlayerGetterDto? GetPlayerData(string clientSession, int cid)
         {
-            return _loginService.PlayerLogin(clientSession, channelId, cid);
-        }
-
-        public int GetAccountCharacterCount(int accId)
-        {
-            return _server.GetAccountCharacterCount(accId);
+            return _loginService.PlayerLogin(clientSession, cid);
         }
 
         public bool CheckCharacterName(string name)
@@ -197,26 +177,11 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.CheckCharacterName(name);
         }
 
-        public void UpdateAccountChracterByAdd(int accountId, int id)
-        {
-            _server.UpdateAccountChracterByAdd(accountId, id);
-        }
-
-        public void SendPlayerObject(Dto.PlayerSaveDto characterValueObject)
-        {
-            _server.CharacterManager.Update(characterValueObject);
-        }
-
-        public void SendRemovePlayerIncomingInvites(int id)
-        {
-            _invitationService.RemovePlayerInvitation(id);
-        }
-
-        public void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto)
+        public void SendBuffObject(int v, SyncProto.PlayerBuffDto playerBuffSaveDto)
         {
             _server.BuffManager.SaveBuff(v, playerBuffSaveDto);
         }
-        public Dto.PlayerBuffSaveDto GetBuffObject(int id)
+        public SyncProto.PlayerBuffDto GetBuffObject(int id)
         {
             return _server.BuffManager.Get(id);
         }
@@ -224,11 +189,6 @@ namespace Application.Core.Channel.InProgress
         public void SetPlayerOnlined(int id, int v)
         {
             _loginService.SetPlayerLogedIn(id, v);
-        }
-
-        public void CallSaveDB()
-        {
-            _ = _server.ServerManager.CommitAllImmediately();
         }
 
         public Dto.DropAllDto RequestAllReactorDrops()
@@ -241,7 +201,7 @@ namespace Application.Core.Channel.InProgress
             return _itemService.LoadReactorSkillBooks();
         }
 
-        public Dto.SpecialCashItemListDto RequestSpecialCashItems()
+        public CashProto.SpecialCashItemListDto RequestSpecialCashItems()
         {
             return _itemService.LoadSpecialCashItems();
         }
@@ -253,7 +213,7 @@ namespace Application.Core.Channel.InProgress
         }
         public void ClearGifts(int[] giftIdArray)
         {
-            _itemService.ClearGifts(giftIdArray);
+            _server.GiftManager.CommitRetrieveGift(giftIdArray);
         }
 
         public bool SendNormalNoteMessage(int senderId, string toName, string noteMessage)
@@ -271,17 +231,12 @@ namespace Application.Core.Channel.InProgress
             return _shopManager.LoadFromDB(id, isShopId);
         }
 
-        public int[] GetCardTierSize()
-        {
-            return _itemService.GetCardTierSize();
-        }
-
         public SendReportResponse SendReport(SendReportRequest request)
         {
             return _msgService.AddReport(request);
         }
 
-        public Rank.RankCharacterList LoadPlayerRanking(int topCount)
+        public RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount)
         {
             return _rankService.LoadPlayerRanking(topCount);
         }
@@ -290,19 +245,14 @@ namespace Application.Core.Channel.InProgress
         {
             _server.CouponManager.ToggleCoupon(v);
         }
-        public void UpdateAccount(AccountCtrl accountEntity)
+        public CreatorProto.CreateCharResponseDto SendNewPlayer(CreatorProto.NewPlayerSaveDto data)
         {
-            _server.AccountManager.UpdateAccount(accountEntity);
+            return new CreatorProto.CreateCharResponseDto { Code = _server.CharacterManager.CreatePlayerDB(data) };
         }
 
-        public Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data)
+        public CreatorProto.CreateCharCheckResponse CreatePlayerCheck(CreatorProto.CreateCharCheckRequest request)
         {
-            return new Dto.CreateCharResponseDto { Code = _server.CharacterManager.CreatePlayerDB(data) };
-        }
-
-        public Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request)
-        {
-            return new Dto.CreateCharCheckResponse()
+            return new CreatorProto.CreateCharCheckResponse()
             {
                 Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name)
             };
@@ -319,12 +269,12 @@ namespace Application.Core.Channel.InProgress
         }
 
         #region Team
-        public Dto.TeamDto CreateTeam(int playerId)
+        public TeamProto.TeamDto CreateTeam(int playerId)
         {
             return _server.TeamManager.CreateTeam(playerId);
         }
 
-        public Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
+        public TeamProto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
         {
             return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
         }
@@ -334,9 +284,9 @@ namespace Application.Core.Channel.InProgress
             _server.TeamManager.SendTeamChat(name, chattext);
         }
 
-        public Dto.GetTeamResponse GetTeam(int party)
+        public TeamProto.GetTeamResponse GetTeam(int party)
         {
-            return new Dto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
+            return new TeamProto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
 
 
@@ -345,29 +295,29 @@ namespace Application.Core.Channel.InProgress
         #endregion
 
         #region Guild & Alliance
-        public Dto.GetGuildResponse GetGuild(int id)
+        public GuildProto.GetGuildResponse GetGuild(int id)
         {
-            return new Dto.GetGuildResponse() { Model = _server.GuildManager.GetGuildFull(id) };
+            return new GuildProto.GetGuildResponse() { Model = _server.GuildManager.GetGuildFull(id) };
         }
 
-        public Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
+        public GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
         {
-            return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
+            return new GuildProto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
-        public Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request)
+        public AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request)
         {
             return _server.GuildManager.CreateAllianceCheck(request);
         }
-        public Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
+        public AllianceProto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
         {
-            return new Dto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
+            return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
         }
 
 
-        public Dto.GetAllianceResponse GetAlliance(int id)
+        public AllianceProto.GetAllianceResponse GetAlliance(int id)
         {
-            return new Dto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
+            return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
         }
 
         public void SendGuildChat(string name, string text)
@@ -385,97 +335,97 @@ namespace Application.Core.Channel.InProgress
             _server.GuildManager.BroadcastGuildMessage(guildId, v, callout);
         }
 
-        public void SendUpdateGuildGP(Dto.UpdateGuildGPRequest request)
+        public void SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request)
         {
             _server.GuildManager.UpdateGuildGP(request);
         }
 
-        public void SendUpdateGuildRankTitle(Dto.UpdateGuildRankTitleRequest request)
+        public void SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request)
         {
             _server.GuildManager.UpdateGuildRankTitle(request);
         }
 
-        public void SendUpdateGuildNotice(Dto.UpdateGuildNoticeRequest request)
+        public void SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request)
         {
             _server.GuildManager.UpdateGuildNotice(request);
         }
 
-        public void SendUpdateGuildCapacity(Dto.UpdateGuildCapacityRequest request)
+        public void SendUpdateGuildCapacity(GuildProto.UpdateGuildCapacityRequest request)
         {
             _server.GuildManager.IncreseGuildCapacity(request);
         }
 
-        public void SendUpdateGuildEmblem(Dto.UpdateGuildEmblemRequest request)
+        public void SendUpdateGuildEmblem(GuildProto.UpdateGuildEmblemRequest request)
         {
             _server.GuildManager.UpdateGuildEmblem(request);
         }
 
-        public void SendGuildDisband(Dto.GuildDisbandRequest request)
+        public void SendGuildDisband(GuildProto.GuildDisbandRequest request)
         {
             _server.GuildManager.DisbandGuild(request);
         }
 
-        public void SendChangePlayerGuildRank(Dto.UpdateGuildMemberRankRequest request)
+        public void SendChangePlayerGuildRank(GuildProto.UpdateGuildMemberRankRequest request)
         {
             _server.GuildManager.ChangePlayerGuildRank(request);
         }
 
-        public void SendGuildExpelMember(Dto.ExpelFromGuildRequest request)
+        public void SendGuildExpelMember(GuildProto.ExpelFromGuildRequest request)
         {
             _server.GuildManager.GuildExpelMember(request);
         }
 
-        public void SendPlayerLeaveGuild(Dto.LeaveGuildRequest request)
+        public void SendPlayerLeaveGuild(GuildProto.LeaveGuildRequest request)
         {
             _server.GuildManager.PlayerLeaveGuild(request);
         }
 
-        public void SendPlayerJoinGuild(Dto.JoinGuildRequest request)
+        public void SendPlayerJoinGuild(GuildProto.JoinGuildRequest request)
         {
             _server.GuildManager.PlayerJoinGuild(request);
         }
 
-        public void SendGuildJoinAlliance(Dto.GuildJoinAllianceRequest request)
+        public void SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
         {
             _server.GuildManager.GuildJoinAlliance(request);
         }
 
-        public void SendGuildLeaveAlliance(Dto.GuildLeaveAllianceRequest request)
+        public void SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
         {
             _server.GuildManager.GuildLeaveAlliance(request);
         }
 
-        public void SendAllianceExpelGuild(Dto.AllianceExpelGuildRequest request)
+        public void SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
         {
             _server.GuildManager.AllianceExpelGuild(request);
         }
 
-        public void SendChangeAllianceLeader(Dto.AllianceChangeLeaderRequest request)
+        public void SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
         {
             _server.GuildManager.ChangeAllianceLeader(request);
         }
 
-        public void SendChangePlayerAllianceRank(Dto.ChangePlayerAllianceRankRequest request)
+        public void SendChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
         {
             _server.GuildManager.ChangePlayerAllianceRank(request);
         }
 
-        public void SendIncreaseAllianceCapacity(Dto.IncreaseAllianceCapacityRequest request)
+        public void SendIncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
         {
             _server.GuildManager.IncreaseAllianceCapacity(request);
         }
 
-        public void SendUpdateAllianceRankTitle(Dto.UpdateAllianceRankTitleRequest request)
+        public void SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
         {
             _server.GuildManager.UpdateAllianceRankTitle(request);
         }
 
-        public void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest request)
+        public void SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
         {
             _server.GuildManager.UpdateAllianceNotice(request);
         }
 
-        public void SendAllianceDisband(Dto.DisbandAllianceRequest request)
+        public void SendAllianceDisband(AllianceProto.DisbandAllianceRequest request)
         {
             _server.GuildManager.DisbandAlliance(request);
         }
@@ -503,22 +453,22 @@ namespace Application.Core.Channel.InProgress
         }
         #endregion
 
-        public void SendInvitation(Dto.CreateInviteRequest request)
+        public void SendInvitation(InvitationProto.CreateInviteRequest request)
         {
             _invitationService.AddInvitation(request);
         }
 
-        public void AnswerInvitation(Dto.AnswerInviteRequest request)
+        public void AnswerInvitation(InvitationProto.AnswerInviteRequest request)
         {
             _invitationService.AnswerInvitation(request);
         }
 
-        public void RegisterExpedition(Dto.ExpeditionRegistry request)
+        public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
         {
             _expeditionService.RegisterExpedition(request);
         }
 
-        public Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest)
+        public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest expeditionCheckRequest)
         {
             return _expeditionService.CanStartExpedition(expeditionCheckRequest);
         }
@@ -539,9 +489,9 @@ namespace Application.Core.Channel.InProgress
             _server.NewYearCardManager.DiscardNewYearCard(request);
         }
 
-        public void SendSetFly(SetFlyRequest setFlyRequest)
+        public ConfigProto.SetFlyResponse SendSetFly(ConfigProto.SetFlyRequest setFlyRequest)
         {
-            _server.AccountManager.SetFly(setFlyRequest);
+            return _server.AccountManager.SetFly(setFlyRequest);
         }
 
         public void SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
@@ -549,19 +499,14 @@ namespace Application.Core.Channel.InProgress
             _server.Transport.BroadcastMessage(BroadcastType.OnEventsReloaded, new ReloadEventsResponse { Code = 0, Request = reloadEventsRequest });
         }
 
-        public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
+        public ItemProto.CreateTVMessageResponse BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
-            _itemService.BroadcastTV(request);
+            return _itemService.BroadcastTV(request);
         }
 
-        public void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
+        public ItemProto.UseItemMegaphoneResponse SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
-            _itemService.BroadcastItemMegaphone(request);
-        }
-
-        public void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest)
-        {
-            _server.ItemTransactionManager.Finish(finishTransactionRequest);
+            return _itemService.BroadcastItemMegaphone(request);
         }
 
         public DropAllDto RequestDropData()
@@ -569,39 +514,39 @@ namespace Application.Core.Channel.InProgress
             return _itemService.LoadMobDropDto();
         }
 
-        public QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest request)
-        {
-            return _itemService.LoadWhoDrops(request);
-        }
-
         public QueryMonsterCardDataResponse RequestMonsterCardData()
         {
             return _itemService.LoadMonsterCard();
         }
 
-        public QueryRankedGuildsResponse RequestRankedGuilds()
+        public GuildProto.QueryRankedGuildsResponse RequestRankedGuilds()
         {
             return _server.GuildManager.LoadRankedGuilds();
         }
 
-        public GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest request)
+        public LifeProto.GetPLifeByMapIdResponse RequestPLifeByMapId(LifeProto.GetPLifeByMapIdRequest request)
         {
             return _resourceService.LoadMapPLife(request);
         }
 
-        public void SendCreatePLife(CreatePLifeRequest createPLifeRequest)
+        public GetAllPLifeResponse GetAllPLife(GetAllPLifeRequest request)
+        {
+            return _resourceService.GetAllPLife();
+        }
+
+        public void SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest)
         {
             _resourceService.CreatePLife(createPLifeRequest);
         }
 
-        public void SendRemovePLife(RemovePLifeRequest removePLifeRequest)
+        public void SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest)
         {
             _resourceService.RemovePLife(removePLifeRequest);
         }
 
-        public void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
+        public BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
         {
-            _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
+            return  _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
         }
 
         public RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest)
@@ -635,12 +580,6 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.PlayerShopManager.OwlSearch(request);
         }
-
-        public void CompleteTakeItem(TakeItemSubmit request)
-        {
-            _server.ItemTransactionManager.CompleteTakeItem(request);
-        }
-
         public StoreItemsResponse SaveItems(StoreItemsRequest request)
         {
             return _server.ItemFactoryManager.Store(request);
@@ -708,7 +647,7 @@ namespace Application.Core.Channel.InProgress
 
         public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
         {
-            _server.Transport.BroadcastMessage(BroadcastType.SendPlayerDisconnectAll, new Google.Protobuf.WellKnownTypes.Empty());
+            _server.DisconnectAll(disconnectAllRequest);
         }
 
         public GetAllClientInfo GetOnliendClientInfo()
@@ -726,7 +665,7 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
 
-        public void BatchSyncPlayer(List<PlayerSaveDto> data)
+        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data)
         {
             _server.CharacterManager.BatchUpdate(data);
         }
@@ -766,15 +705,16 @@ namespace Application.Core.Channel.InProgress
             return _server.BuddyManager.GetLocation(request);
         }
 
-        public void CompleteShutdown(CompleteShutdownRequest request)
-        {
-            _ = _server.OnChannelShutdown(request);
-        }
 
         public void ShutdownMaster(ShutdownMasterRequest request)
         {
             _ = _server.Shutdown(request.DelaySeconds);
             _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
+        }
+
+        public void CompleteChannelShutdown(string serverName)
+        {
+            _server.CompleteChannelShutdown(serverName);
         }
 
         public void SaveAll(Empty empty)
@@ -792,9 +732,10 @@ namespace Application.Core.Channel.InProgress
             return _server.CDKManager.UseCdk(useCdkRequest);
         }
 
-        public ServerStateDto GetServerStats()
+        public ServerStateDto GetServerState()
         {
             return _server.GetServerStats();
         }
+
     }
 }

@@ -89,7 +89,7 @@ namespace Application.Core.Channel.ServerData
                     continue;
 
                 var chr = _server.FindPlayerById(member.PlayerInfo.Character.Id);
-                if (chr != null && chr.IsOnlined)
+                if (chr != null && chr.isLoggedinWorld())
                 {
                     chr.sendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
                 }
@@ -106,7 +106,7 @@ namespace Application.Core.Channel.ServerData
             foreach (var member in data.Members)
             {
                 var chr = _server.FindPlayerById(member);
-                if (chr != null && chr.IsOnlined)
+                if (chr != null && chr.isLoggedinWorld())
                 {
                     chr.sendPacket(PacketCreator.messengerChat(data.Text));
                 }
@@ -115,12 +115,12 @@ namespace Application.Core.Channel.ServerData
 
         internal void CreateInvite(IPlayer player, string input)
         {
-            _server.Transport.SendInvitation(new Dto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
+            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
         internal void AnswerInvite(IPlayer player, int roomId, bool v)
         {
-            _server.Transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

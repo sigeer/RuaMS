@@ -49,11 +49,11 @@ namespace Application.Core.Login.Models.Invitations
             Type = type;
         }
 
-        public abstract void HandleInvitationCreated(CreateInviteRequest request);
-        public void HandleInvitationAnswered(AnswerInviteRequest request)
+        public abstract void HandleInvitationCreated(InvitationProto.CreateInviteRequest request);
+        public void HandleInvitationAnswered(InvitationProto.AnswerInviteRequest request)
         {
             var result = _server.InvitationManager.AnswerInvite(Type, request.MasterId, request.CheckKey, request.Ok);
-            AnswerInviteResponse response = new AnswerInviteResponse
+            var response = new InvitationProto.AnswerInviteResponse
             {
                 Result = (int)result.Result,
                 Type = request.Type,
@@ -116,7 +116,7 @@ namespace Application.Core.Login.Models.Invitations
                 }
             }
 
-            var response = new CreateInviteResponse
+            var response = new InvitationProto.CreateInviteResponse
             {
                 Code = (int)responseCode,
                 SenderPlayerId = fromPlayer.Character.Id,

@@ -3,7 +3,9 @@ using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Session;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using Application.Utility.Configs;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using SystemProto;
 
@@ -172,6 +174,11 @@ namespace Application.Core.Login
                     sessionCoordinator.closeSession(c, true);
                 }
             }
+        }
+
+        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
+        {
+            Transport.BroadcastMessage(BroadcastType.SendPlayerDisconnectAll, new Google.Protobuf.WellKnownTypes.Empty());
         }
     }
 }

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package BaseProto;
+
+message IPEndPointDto {
+	bytes address = 1;
+	int32 port = 2;
+}
+
+message GetChannelEndPointRequest {
+	int32 channel = 1;
+}

@@ -22,3 +22,14 @@ message AccountCtrlDto {
   int32 language = 17;
   bool canFly = 18;
 }
+
+message UpdateAccountStateRequest {
+	int32 accId = 1;
+	int32 state = 2;
+}
+
+message AccountLoginStateDto {
+	int32 accId = 1;
+	int32 state = 2;
+	google.protobuf.Timestamp time = 3;
+}
