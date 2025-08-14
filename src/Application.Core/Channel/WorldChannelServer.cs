@@ -311,8 +311,6 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
                 throw new DirectoryNotFoundException();
 
-            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
-
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>

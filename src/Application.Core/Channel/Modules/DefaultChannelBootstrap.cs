@@ -11,6 +11,8 @@ namespace Application.Core.Channel.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
+            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
                     app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
                     app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());

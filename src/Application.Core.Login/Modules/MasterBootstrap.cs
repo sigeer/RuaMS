@@ -19,6 +19,7 @@ namespace Application.Core.Login.Modules
                 app.MapGrpcService<SyncGrpcService>();
                 app.MapGrpcService<GuildGrpcService>();
                 app.MapGrpcService<AllianceGrpcService>();
+                app.MapGrpcService<TeamGrpcService>();
                 app.MapGrpcService<ItemGrpcService>();
                 app.MapGrpcService<CashGrcpService>();
                 app.MapGrpcService<BuddyGrpcService>();

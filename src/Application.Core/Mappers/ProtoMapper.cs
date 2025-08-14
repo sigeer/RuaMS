@@ -67,6 +67,7 @@ namespace Application.Core.Mappers
                             .ForMember(x => x.Mp, opt => opt.MapFrom(x => x.MP))
                             .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
                             .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
+            CreateMap<Dto.AccountCtrlDto, AccountCtrl>().ReverseMap();
 
             #region Item
             CreateMap<Dto.ItemDto, Pet>()
