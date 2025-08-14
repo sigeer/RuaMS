@@ -103,7 +103,7 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
-                _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
+                _logger.LogDebug("频道{Channel} 玩家{PlayerName}已缓存", obj.Channel, obj.Character.Name);
                 _dataStorage.SetCharacter(origin);
 
                 if (oldCharacterData.Level != origin.Character.Level)

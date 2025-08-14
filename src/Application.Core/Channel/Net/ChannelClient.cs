@@ -93,9 +93,9 @@ namespace Application.Core.Channel.Net
                 }
                 finally
                 {
+                    CurrentServerContainer.RemovePlayer(Character.Id);
                     if (!IsServerTransition)
                     {
-                        CurrentServerContainer.RemovePlayer(Character.Id);
                         //getChannelServer().removePlayer(player); already being done
 
                         Character.cancelAllDebuffs();
@@ -107,8 +107,6 @@ namespace Application.Core.Channel.Net
                     }
                     else
                     {
-                        CurrentServer.removePlayer(Character);
-
                         Character.cancelAllDebuffs();
                         Character.saveCharToDB();
                     }
@@ -430,7 +428,7 @@ namespace Application.Core.Channel.Net
 
             Character.getInventory(InventoryType.EQUIPPED).SetChecked(false); //test
             Character.getMap().removePlayer(Character);
-            Character.getChannelServer().removePlayer(Character);
+            CurrentServerContainer.RemovePlayer(Character.Id);
             Character.saveCharToDB();
 
             SetCharacterOnSessionTransitionState(Character.getId());
