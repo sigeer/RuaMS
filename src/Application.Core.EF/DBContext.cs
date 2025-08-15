@@ -1,15 +1,7 @@
-using Application.Core.EF;
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
-using Application.Core.EF.Entities.SystemBase;
 using Application.EF.Entities;
-using Application.Shared.Constants;
-using Application.Shared.Constants.Inventory;
-using Application.Shared.Items;
-using Application.Utility;
-using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Application.EF;
 
