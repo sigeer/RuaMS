@@ -12,7 +12,7 @@ namespace Application.Core.Login.Modules
         public void ConfigureHost(WebApplication app)
         {
             // TODO: 在这里启动grcp server
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
             {
                 app.MapGrpcService<GameGrpcService>();
                 app.MapGrpcService<SystemGrpcService>();

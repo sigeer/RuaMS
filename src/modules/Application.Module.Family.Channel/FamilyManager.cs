@@ -154,19 +154,19 @@ namespace Application.Module.Family.Channel
 
         internal void CreateInvite(IPlayer chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
+            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
         }
         internal void AnswerInvite(IPlayer chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
         internal void CreateSummonInvite(IPlayer chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
+            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
         }
         internal void AnswerSummonInvite(IPlayer chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
         public void OnJoinFamily(Dto.JoinFamilyResponse data)

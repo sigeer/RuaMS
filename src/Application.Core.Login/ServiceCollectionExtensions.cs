@@ -171,14 +171,12 @@ namespace Application.Core.Login
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
-
-            if (configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+#if !IsStandalone
+            services.AddGrpc(options =>
             {
-                services.AddGrpc(options =>
-                {
-                    options.Interceptors.Add<LoggingInterceptor>();
-                });
-            }
+                options.Interceptors.Add<LoggingInterceptor>();
+            });
+#endif
 
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();

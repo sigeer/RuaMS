@@ -10,7 +10,7 @@ namespace Application.Utility
         public const string EnableOpenApi = "EnableOpenApi";
 
         public const string LongIdSeed = "LongIdSeed";
-        public const string AllowMultiMachine = "AllowMultiMachine";
+        public const string UseExtraChannel = "UseExtraChannel";
         public const string GrpcPort = "GrpcPort";
         public const string OpenApiPort = "OpenApiPort";
     }

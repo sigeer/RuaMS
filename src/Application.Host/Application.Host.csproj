@@ -8,6 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+	<IsStandalone>true</IsStandalone>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
+    <ProjectReference Condition="'$(IsStandalone)'=='true'" Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />
@@ -48,5 +49,9 @@
 	<Target Name="DeleteFile" BeforeTargets="Clean">
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
 		<Delete Files="@(FilesToDelete)" />
+	</Target>
+
+	<Target Name="ShowProperties" BeforeTargets="Build">
+		<Message Importance="high" Text="IsStandalone = '$(IsStandalone)'" />
 	</Target>
 </Project>

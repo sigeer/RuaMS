@@ -22,7 +22,8 @@ namespace Application.Module.BBS.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            app.MapGrpcService<GrpcService>();
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+                app.MapGrpcService<GrpcService>();
         }
     }
 }

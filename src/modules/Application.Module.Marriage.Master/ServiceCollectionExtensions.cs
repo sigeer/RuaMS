@@ -30,10 +30,8 @@ namespace Application.Module.Marriage.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
-            {
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
                 app.MapGrpcService<GrpcService>();
-            }
 
         }
     }
