@@ -7,8 +7,7 @@
 
 ### 注意 ❗
 
-当前分支(master)正在对`Server`, `World`, `Channel`进行拆分，大量内容未经测试，可能出现大量BUG，不建议搭建游玩。
-可以尝试使用本次重构之前的[代码（位于分支 v0）](https://github.com/sigeer/RuaMS/tree/v0)。
+大量内容未经测试，可能出现大量BUG，不建议搭建游玩。
 
 ## 开发环境
 
@@ -65,6 +64,8 @@
 
 ### 单机部署
 
+登录服务器 和 频道服务器处于同一进程内
+
 #### docker
 
 **生成镜像**
@@ -91,6 +92,9 @@ rua-ms
 -e "RUA_MS_ChannelServerConfig__ServerHost=" \
 ```
 
+**sqlite数据库备份**
+`docker cp [container_id]:/app/database.db ./backup.db`
+
 **docker compose运行**
 
 在根目录（`docker-compose.yaml`同级目录）下执行
@@ -100,6 +104,13 @@ docker compose up -d
 
 ### 多机部署
 
-0. 配置见`Application.Host`和`Application.Host.Channel`的`appsettings.json`注释
-1. 先启动`Application.Host`
-2. 再启动`Application.Host.Channel`
+0. 修改`Application.Host`的配置，启用`AllowMultiMachine`
+
+#### 登录服务器 与 频道服务器 在不同进程（不同机器）上  
+
+1. 移除`AddChannelServerInProgress`（可以考虑移除`Application.Host`的引用`Application.Core.Channel.InProgress`）
+2. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
+
+#### 一部分频道与登录服务器在同一进程，一部分频道在其他进程（其他机器）上
+
+1. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`

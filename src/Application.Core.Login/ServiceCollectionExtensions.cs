@@ -171,6 +171,7 @@ namespace Application.Core.Login
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
+
             if (configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
             {
                 services.AddGrpc(options =>

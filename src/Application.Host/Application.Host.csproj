@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.0.11" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
 		  <PrivateAssets>all</PrivateAssets>
@@ -23,8 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
+    <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Maker.Master\Application.Module.Maker.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.PlayerNPC.Master\Application.Module.PlayerNPC.Master.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
