@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />

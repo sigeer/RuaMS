@@ -1,3 +1,4 @@
+using Application.Core.Channel.InProgress;
 using Application.Core.Login;
 using Application.Host.Middlewares;
 using Application.Host.Services;
@@ -59,7 +60,7 @@ try
     builder.Services.AddMakerMaster();
     builder.Services.AddPlayerNPCMaster();
 
-    // builder.AddChannelServerInProgress();
+    builder.AddChannelServerInProgress();
 
     builder.WebHost.ConfigureKestrel(options =>
     {
