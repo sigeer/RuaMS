@@ -133,14 +133,16 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 
 ## 待办事项
 
-- [ ] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`
-- [ ] 移除 `new DBConext()` 
+- [x] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`
+- [x] 移除 `new DBConext()` 
 	- [x] 提取 `PlayerNpc`
 	- [x] 提取结婚系统
-	- [ ] 提取拍卖系统
 	- [x] 重构 雇佣商人
 	- [x] 重构 好友系统
 - [x] 移除World
 - [x] 移除Server
 - [x] 整理初始化脚本以及迁移，对DBContext拆分
 - [x] 以grpc的方式实现`IChannelServerTransport`
+- [ ] wz相关数据读取的整理，整理一些可以放在MasterServer的wz
+- [ ] 重构创建角色（MasterServer的请求，却依赖了wz，不得不请求频道服务器）
+- [ ] OpenApi （一些数据涉及到wz，但是MasterServer上没有wz）

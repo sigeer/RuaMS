@@ -52,9 +52,10 @@
 
 ## 运行
 
-### 需要安装的软件
+### 支持数据库
 
-- Mysql 8 (仅启用sqlite可跳过)
+- **Sqlite （默认）**
+- Mysql 8
 
 ### 步骤
 
@@ -92,10 +93,10 @@ rua-ms
 -e "RUA_MS_ChannelServerConfig__ServerHost=" \
 ```
 
-**sqlite数据库备份**
+**sqlite数据库备份**  
 `docker cp [container_id]:/app/database.db ./backup.db`
 
-**docker compose运行**
+**docker compose运行**  
 
 在根目录（`docker-compose.yaml`同级目录）下执行
 ```
@@ -106,11 +107,11 @@ docker compose up -d
 
 0. 修改`Application.Host`的配置，启用`AllowMultiMachine`
 
-#### 登录服务器 与 频道服务器 在不同进程（不同机器）上  
+#### 登录服务器 与 频道服务器 在不同进程
 
 1. 移除`AddChannelServerInProgress`（可以考虑移除`Application.Host`的引用`Application.Core.Channel.InProgress`）
 2. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
 
-#### 一部分频道与登录服务器在同一进程，一部分频道在其他进程（其他机器）上
+#### 一部分频道与登录服务器在同一进程（默认），一部分频道在其他进程
 
 1. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
