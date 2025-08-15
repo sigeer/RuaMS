@@ -32,10 +32,10 @@ jobs:
       run: dotnet restore "./src/Application.Host/Application.Host.csproj"
 
     - name: Publish win-x64
-      run: dotnet publish "./src/Application.Host.csproj" -c Release -r win-x64 -o /app/win-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o /app/win-x64 --self-contained true
 
     - name: Publish linux-x64
-      run: dotnet publish "./src/Application.Host.csproj" -c Release -r linux-x64 -o /app/linux-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o /app/linux-x64 --self-contained true
 
     - name: get latest version
       run: |
@@ -58,5 +58,5 @@ jobs:
         draft: true
         prerelease: false
         files: |
-          ${{env.ReleaseName}}-v${{env.VERSION}}-win-x64.zip
-          ${{env.ReleaseName}}-v${{env.VERSION}}-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip
