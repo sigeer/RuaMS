@@ -1,10 +1,13 @@
 using Application.Core.Channel.InProgress;
+using Application.Core.Login;
 using Application.Host.Middlewares;
-using Application.Host.Models;
 using Application.Host.Services;
+using Application.Module.Duey.Master;
+using Application.Module.ExpeditionBossLog.Master;
+using Application.Module.Maker.Master;
+using Application.Module.PlayerNPC.Master;
 using Application.Shared.Servers;
 using Application.Utility;
-using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -51,7 +54,13 @@ try
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
 
-    builder.AddGameServerInProgress();
+    builder.Services.AddLoginServer(builder.Configuration);
+    builder.Services.AddDueyMaster();
+    builder.Services.AddExpeditionBossLogMaster();
+    builder.Services.AddMakerMaster();
+    builder.Services.AddPlayerNPCMaster();
+
+    builder.AddChannelServerInProgress();
 
     builder.WebHost.ConfigureKestrel(options =>
     {
@@ -92,11 +101,6 @@ try
         //builder.Services.AddSingleton<TimerManager>();
 
         builder.Services.AddScoped<AuthService>();
-        builder.Services.AddScoped<DropdataService>();
-        builder.Services.AddScoped<DataService>();
-        builder.Services.AddScoped<ServerService>();
-        builder.Services.AddScoped<Application.Core.OpenApi.ChannelService>();
-        builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
 
         builder.Services.AddAuthentication(s =>
         {

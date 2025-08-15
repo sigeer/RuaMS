@@ -1,4 +1,3 @@
-using Application.Module.Maker.Master;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.Maker.Channel.InProgress
@@ -9,7 +8,6 @@ namespace Application.Module.Maker.Channel.InProgress
         {
             services.AddSingleton<IChannelTransport, LocalChannelTransport>();
             services.AddMakerChannel();
-            services.AddMakerMaster();
 
             return services;
         }

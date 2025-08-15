@@ -312,6 +312,9 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
                 throw new DirectoryNotFoundException();
 
+            if (ServerConfig.ChannelConfig.Count == 0)
+                throw new BusinessFatalException("必须包含频道");
+
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>

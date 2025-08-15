@@ -1,4 +1,3 @@
-using Application.Module.BBS.Master;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.BBS.Channel.InProgress
@@ -9,7 +8,6 @@ namespace Application.Module.BBS.Channel.InProgress
         {
             services.AddSingleton<IChannelTransport, LocalChannelTransport>();
             services.AddGuildBBSChannel();
-            services.AddGuildBBSMaster();
 
             return services;
         }

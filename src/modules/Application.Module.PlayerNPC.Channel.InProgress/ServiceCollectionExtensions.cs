@@ -9,8 +9,6 @@ namespace Application.Module.PlayerNPC.Channel.InProgress
         {
             services.AddSingleton<IChannelTransport, LocalChannelServerTransport>();
             services.AddPlayerNPCChannel();
-
-            services.AddPlayerNPCMaster();
             return services;
         }
     }
