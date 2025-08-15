@@ -154,12 +154,12 @@ namespace Application.Core.Channel.ResourceTransaction
                 if (request.CostNxCredit > 0)
                     tx.AddResourceHandler(new PlayerCostCashHandler(player, CashType.NX_CREDIT, request.CostNxCredit));
                 if (request.GainNxCredit > 0)
-                    tx.AddResourceHandler(new PlayerGainCashHandler(player, CashType.NX_PREPAID, request.GainNxCredit));
+                    tx.AddResourceHandler(new PlayerGainCashHandler(player, CashType.NX_CREDIT, request.GainNxCredit));
 
                 if (request.CostMaplePoint > 0)
                     tx.AddResourceHandler(new PlayerCostCashHandler(player, CashType.MAPLE_POINT, request.CostMaplePoint));
                 if (request.GainMaplePoint > 0)
-                    tx.AddResourceHandler(new PlayerGainCashHandler(player, CashType.NX_PREPAID, request.GainMaplePoint));
+                    tx.AddResourceHandler(new PlayerGainCashHandler(player, CashType.MAPLE_POINT, request.GainMaplePoint));
 
                 return tx.ExecuteTransaction(businessLogic);
             }
