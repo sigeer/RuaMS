@@ -142,7 +142,7 @@ public class NoteManager : StorageBase<int, NoteModel>
                 var obj = item.Value.Data!;
 
                 NoteEntity dbModel = new NoteEntity(obj.Id, obj.ToId, obj.FromId, obj.Message, obj.Timestamp, obj.Fame);
-                dbModel.Deleted = obj.IsDeleted ? 1 : 0;
+                dbModel.Deleted = obj.IsDeleted;
                 dbContext.Notes.Add(dbModel);
 
             }

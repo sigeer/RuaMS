@@ -4,10 +4,14 @@ public class CharacterEntity
 {
     protected CharacterEntity() { }
 
-    public CharacterEntity(int accountId, int world, string name, int level, int exp, int gachaexp, int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp, int meso, int job, int skincolor, int gender, int hair, int face, int map, int spawnpoint, int ap, string sp)
+    public CharacterEntity(int accountId, string name, int level, int exp, int gachaexp, 
+        int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp, 
+        int meso, int job, 
+        int skincolor, int gender, int hair, int face, 
+        int map, int spawnpoint, 
+        int ap, string sp)
     {
         AccountId = accountId;
-        World = world;
         Name = name;
         Level = level;
         Exp = exp;

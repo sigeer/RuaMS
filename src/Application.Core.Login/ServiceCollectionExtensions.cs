@@ -1,4 +1,5 @@
 using Application.Core.Login.Client;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Mappers;
 using Application.Core.Login.Models.Invitations;
 using Application.Core.Login.Modules;
@@ -9,16 +10,14 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Shared;
 using Application.Core.Login.Tasks;
 using Application.EF;
+using Application.Protos;
 using Application.Shared.Servers;
+using Application.Utility;
+using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using net.server.handlers;
-using AutoMapper.Extensions.ExpressionMapping;
-using Application.Core.Login.Datas;
-using Microsoft.Extensions.Configuration;
-using Application.Utility;
-using Application.Protos;
 
 namespace Application.Core.Login
 {
@@ -147,10 +146,16 @@ namespace Application.Core.Login
 
         public static IServiceCollection AddLoginServer(this IServiceCollection services, IConfiguration configuration)
         {
+            var dbType = configuration.GetValue<string>(AppSettingKeys.Database)!;
+            var connectString = configuration.GetConnectionString(dbType)!;
             services.AddDbContextFactory<DBContext>(o =>
             {
-                o.UseMySQL(configuration.GetConnectionString(AppSettingKeys.ConnectStr_Mysql)!);
+                if (dbType == AppSettingKeys.ConnectStr_Mysql)
+                    o.UseMySql(connectString, ServerVersion.AutoDetect(connectString), o => o.MigrationsAssembly("Application.Core.EF.MySQL"));
+                else
+                    o.UseSqlite(connectString, o => o.MigrationsAssembly("Application.Core.EF.Sqlite"));
             });
+
             services.AddAutoMapper(cfg =>
             {
                 cfg.AddExpressionMapping();
@@ -173,7 +178,7 @@ namespace Application.Core.Login
                     options.Interceptors.Add<LoggingInterceptor>();
                 });
             }
- 
+
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
             services.AddHostedService<MasterHost>();

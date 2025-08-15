@@ -102,7 +102,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
 
             CreateMap<NoteEntity, NoteModel>()
-                .ForMember(dest => dest.IsDeleted, src => src.MapFrom(x => x.Deleted == 1));
+                .ForMember(dest => dest.IsDeleted, src => src.MapFrom(x => x.Deleted));
             CreateMap<ShopEntity, Dto.ShopDto>();
             CreateMap<Shopitem, Dto.ShopItemDto>();
 

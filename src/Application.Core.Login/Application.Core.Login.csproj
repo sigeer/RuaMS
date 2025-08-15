@@ -13,18 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.EF\Application.Core.EF.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="CharacterCreator\" />
     <Folder Include="ServerData\Items\" />
   </ItemGroup>
 
 	<ItemGroup>
-		<Content Include="sql\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+	  <ProjectReference Include="..\Application.Core.EF.MySQL\Application.Core.EF.MySQL.csproj" />
+	  <ProjectReference Include="..\Application.Core.EF.Sqlite\Application.Core.EF.Sqlite.csproj" />
 	</ItemGroup>
 
 

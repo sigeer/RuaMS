@@ -2,13 +2,13 @@ namespace Application.EF.Entities;
 
 public partial class MakerCreatedataEntity
 {
-    public sbyte Id { get; set; }
+    public int Id { get; set; }
 
     public int Itemid { get; set; }
 
-    public sbyte ReqLevel { get; set; }
+    public short ReqLevel { get; set; }
 
-    public sbyte ReqMakerLevel { get; set; }
+    public short ReqMakerLevel { get; set; }
 
     public int ReqMeso { get; set; }
 
