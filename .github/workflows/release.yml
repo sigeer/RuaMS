@@ -37,10 +37,10 @@ jobs:
           dotnet restore "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 
     - name: Publish Standalone win-x64
-      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o ./app/standalone-win-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o ./app/master-standalone-win-x64 --self-contained true
 
     - name: Publish Standalone linux-x64
-      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o ./app/standalone-linux-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o ./app/master-standalone-linux-x64 --self-contained true
 
     - name: Publish Master win-x64
       run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -p:IsStandalone=false -r win-x64 -o ./app/master-win-x64 --self-contained true
@@ -61,8 +61,8 @@ jobs:
 
     - name: Zip
       run: |
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip ./app/standalone-win-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip ./app/standalone-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip ./app/master-standalone-win-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip ./app/master-standalone-linux-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip ./app/master-win-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip ./app/master-linux-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip ./app/channel-win-x64

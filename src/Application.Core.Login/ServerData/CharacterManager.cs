@@ -303,7 +303,8 @@ namespace Application.Core.Login.Datas
                 #endregion
 
                 var now = _masterServer.GetCurrentTimeDateTimeOffset();
-                var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
+                var before30Days = now.AddDays(-30);
+                var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && x.When >= before30Days).ToList();
 
                 d = new CharacterLiveObject()
                 {

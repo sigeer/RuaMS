@@ -306,6 +306,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Attempttime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime,v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("attempttime");
             entity.Property(e => e.Bosstype)
                 .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
@@ -322,11 +323,11 @@ public partial class DBContext : DbContext
             entity.ToTable("bosslog_weekly");
 
             entity.Property(e => e.Id)
-
                 .HasColumnName("id");
             entity.Property(e => e.Attempttime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("attempttime");
             entity.Property(e => e.Bosstype)
                 .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
@@ -493,7 +494,8 @@ public partial class DBContext : DbContext
             entity.Property(e => e.SenderId).HasColumnType("int");
             entity.Property(e => e.TimeStamp)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp");
+                .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1)");
@@ -536,6 +538,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.When)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("when");
 
             entity.HasOne(d => d.Character).WithMany(p => p.Famelogs)
@@ -629,6 +632,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("timestamp");
         });
 
@@ -738,6 +742,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.ExpiresAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("expiresat");
             entity.Property(e => e.Relevance)
                 .HasColumnType("tinyint")
@@ -1177,6 +1182,10 @@ public partial class DBContext : DbContext
                 .HasColumnName("characterid");
             entity.Property(e => e.CompletionTime)
                 .HasColumnType("timestamp")
+                .HasConversion(
+                    v => v.HasValue ? v.Value.UtcDateTime : (DateTime?)null,
+                    v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : (DateTimeOffset?)null
+                )
                 .HasColumnName("completionTime");
             entity.Property(e => e.New)
                 .HasMaxLength(13)
@@ -1187,6 +1196,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.RequestTime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("requestTime");
         });
 
@@ -1301,9 +1311,9 @@ public partial class DBContext : DbContext
             entity.Property(e => e.RecipientId)
                 .HasColumnType("int");
             entity.Property(e => e.RecipientTime)
-                .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp");
+                .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
         });
 
         modelBuilder.Entity<Nxcoupon>(entity =>
@@ -1727,6 +1737,7 @@ public partial class DBContext : DbContext
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("reporttime");
             entity.Property(e => e.Victimid)
                 .HasColumnType("int")
@@ -1814,6 +1825,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("characterid");
             entity.Property(e => e.CreateTime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnType("timestamp")
                 .HasColumnName("createTime");
             entity.Property(e => e.Message)
@@ -2018,6 +2030,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("current_exp");
             entity.Property(e => e.ExpGainTime)
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("exp_gain_time");
             entity.Property(e => e.CharId)
@@ -2080,6 +2093,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("createdat");
             entity.Property(e => e.Email)
                 .HasMaxLength(45)
@@ -2094,6 +2108,10 @@ public partial class DBContext : DbContext
                 .HasColumnName("language");
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
+                .HasConversion(
+                    v => v.HasValue ? v.Value.UtcDateTime : (DateTime?)null,
+                    v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : (DateTimeOffset?)null
+                )
                 .HasColumnName("lastlogin");
             entity.Property(e => e.MaplePoint)
                 .HasColumnType("int")
@@ -2161,6 +2179,7 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.LastActiveTime)
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("LastActiveTime")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
@@ -2189,11 +2208,13 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.StartTime)
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("StartTime")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.Property(e => e.EndTime)
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("EndTime")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
@@ -2234,6 +2255,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.CreateDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("createdate");
             entity.Property(e => e.DataString)
                 .HasMaxLength(64)
@@ -2319,10 +2341,12 @@ public partial class DBContext : DbContext
             entity.Property(e => e.LastExpGainTime)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("lastExpGainTime");
             entity.Property(e => e.LastLogoutTime)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp")
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("lastLogoutTime");
             entity.Property(e => e.Level)
                 .HasDefaultValueSql("'1'")
