@@ -19,6 +19,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write   # 创建 release 必须有写权限
+
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
