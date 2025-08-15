@@ -78,8 +78,8 @@ jobs:
         draft: true
         prerelease: false
         files: |
-          ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip
-          ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip
           ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip
           ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip
           ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip
