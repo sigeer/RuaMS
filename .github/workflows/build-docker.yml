@@ -26,7 +26,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -69,6 +68,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
+          push: true
           context: .
           tags: |
             ${{ env.DOCKERHUB_IMAGE_NAME_LC }}:${{ env.VERSION }}
