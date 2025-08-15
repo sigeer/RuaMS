@@ -3,7 +3,6 @@ using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions;
 
 namespace Application.Core.Login.Services
 {

@@ -1,8 +1,6 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
-using Application.Core.EF.Entities.SystemBase;
 using Application.EF.Entities;
-using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.EF;
@@ -175,6 +173,7 @@ public partial class DBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var isMysql = Database.ProviderName!.Contains("mysql", StringComparison.OrdinalIgnoreCase);
         ConfigAccountCharacter(modelBuilder);
 
         modelBuilder.Entity<AllianceEntity>(entity =>
@@ -186,11 +185,9 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Name, "name");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Capacity)
                 .HasDefaultValueSql("'2'")
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("capacity");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
@@ -228,13 +225,12 @@ public partial class DBContext : DbContext
             entity.ToTable("area_info");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Area)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("area");
             entity.Property(e => e.Charid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("charid");
             entity.Property(e => e.Info)
                 .HasMaxLength(200)
@@ -248,20 +244,19 @@ public partial class DBContext : DbContext
             entity.ToTable("bbs_replies");
 
             entity.Property(e => e.Replyid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("replyid");
             entity.Property(e => e.Content)
                 .HasMaxLength(26)
                 .HasDefaultValueSql("''")
                 .HasColumnName("content");
             entity.Property(e => e.Postercid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("postercid");
             entity.Property(e => e.Threadid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("threadid");
             entity.Property(e => e.Timestamp)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("timestamp");
         });
 
@@ -272,32 +267,31 @@ public partial class DBContext : DbContext
             entity.ToTable("bbs_threads");
 
             entity.Property(e => e.Threadid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("threadid");
             entity.Property(e => e.Guildid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("guildid");
             entity.Property(e => e.Icon)
-                .HasColumnType("smallint(5) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("icon");
             entity.Property(e => e.Localthreadid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("localthreadid");
             entity.Property(e => e.Name)
                 .HasMaxLength(26)
                 .HasDefaultValueSql("''")
                 .HasColumnName("name");
             entity.Property(e => e.Postercid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("postercid");
             entity.Property(e => e.Replycount)
-                .HasColumnType("smallint(5) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("replycount");
             entity.Property(e => e.Startpost)
                 .HasColumnType("text")
                 .HasColumnName("startpost");
             entity.Property(e => e.Timestamp)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("timestamp");
         });
 
@@ -308,17 +302,16 @@ public partial class DBContext : DbContext
             entity.ToTable("bosslog_daily");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Attempttime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("attempttime");
             entity.Property(e => e.Bosstype)
-                .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
+                .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
                 .HasColumnName("bosstype");
             entity.Property(e => e.CharacterId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
         });
 
@@ -329,17 +322,17 @@ public partial class DBContext : DbContext
             entity.ToTable("bosslog_weekly");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
+
                 .HasColumnName("id");
             entity.Property(e => e.Attempttime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("attempttime");
             entity.Property(e => e.Bosstype)
-                .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
+                .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
                 .HasColumnName("bosstype");
             entity.Property(e => e.CharacterId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
         });
 
@@ -350,20 +343,19 @@ public partial class DBContext : DbContext
             entity.ToTable("buddies");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.BuddyId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("buddyid");
             entity.Property(e => e.CharacterId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Group)
                 .HasMaxLength(17)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("group");
             entity.Property(e => e.Pending)
-                .HasColumnType("tinyint(4)")
+                .HasColumnType("tinyint")
                 .HasColumnName("pending");
         });
 
@@ -374,18 +366,17 @@ public partial class DBContext : DbContext
             entity.ToTable("cooldowns");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Charid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("charid");
             entity.Property(e => e.Length)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("length");
             entity.Property(e => e.SkillId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("SkillID");
-            entity.Property(e => e.StartTime).HasColumnType("bigint(20) unsigned");
+            entity.Property(e => e.StartTime).HasColumnType("bigint");
         });
 
         modelBuilder.Entity<DropDataGlobal>(entity =>
@@ -397,10 +388,9 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Continent, "mobid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("bigint(20)")
                 .HasColumnName("id");
             entity.Property(e => e.Chance)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("chance");
             entity.Property(e => e.Comments)
                 .HasMaxLength(45)
@@ -411,18 +401,18 @@ public partial class DBContext : DbContext
                 .HasColumnName("continent")
                 .HasColumnType("tinyint");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.MaximumQuantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("maximum_quantity");
             entity.Property(e => e.MinimumQuantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("minimum_quantity");
             entity.Property(e => e.Questid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("questid");
         });
 
@@ -439,27 +429,26 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Dropperid, "mobid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("bigint(20)")
                 .HasColumnName("id");
             entity.Property(e => e.Chance)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("chance");
             entity.Property(e => e.Dropperid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("dropperid");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.MaximumQuantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("maximum_quantity");
             entity.Property(e => e.MinimumQuantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("minimum_quantity");
             entity.Property(e => e.Questid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("questid");
         });
 
@@ -474,12 +463,11 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.PackageId, "PackageId");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("inventoryitemid");
-            entity.Property(e => e.PackageId).HasColumnType("int(10) unsigned");
+            entity.Property(e => e.PackageId).HasColumnType("int");
 
             entity.HasOne(d => d.Package).WithMany(p => p.Dueyitems)
                 .HasForeignKey(d => d.PackageId)
@@ -492,23 +480,23 @@ public partial class DBContext : DbContext
 
             entity.ToTable("dueypackages");
 
-            entity.Property(e => e.PackageId).HasColumnType("int(10) unsigned");
+            entity.Property(e => e.PackageId);
             entity.Property(e => e.Checked)
                 .HasDefaultValue(true)
                 .HasSentinel(true)
-                .HasColumnType("tinyint(1) unsigned");
+                .HasColumnType("tinyint(1)");
             entity.Property(e => e.Mesos)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(10) unsigned");
+                .HasColumnType("int");
             entity.Property(e => e.Message).HasMaxLength(200);
-            entity.Property(e => e.ReceiverId).HasColumnType("int(10) unsigned");
-            entity.Property(e => e.SenderId).HasColumnType("int(10) unsigned");
+            entity.Property(e => e.ReceiverId).HasColumnType("int");
+            entity.Property(e => e.SenderId).HasColumnType("int");
             entity.Property(e => e.TimeStamp)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp");
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
-                .HasColumnType("tinyint(1) unsigned");
+                .HasColumnType("tinyint(1)");
         });
 
         modelBuilder.Entity<Eventstat>(entity =>
@@ -518,10 +506,9 @@ public partial class DBContext : DbContext
             entity.ToTable("eventstats");
 
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11) unsigned")
                 .HasColumnName("characterid");
             entity.Property(e => e.Info)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("info");
             entity.Property(e => e.Name)
                 .HasMaxLength(11)
@@ -539,13 +526,12 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Characterid, "characterid");
 
             entity.Property(e => e.Famelogid)
-                .HasColumnType("int(11)")
                 .HasColumnName("famelogid");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.CharacteridTo)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid_to");
             entity.Property(e => e.When)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -566,31 +552,30 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => new { e.Cid, e.Familyid }, "cid");
 
             entity.Property(e => e.Cid)
-                .HasColumnType("int(11)")
                 .HasColumnName("cid");
             entity.Property(e => e.Familyid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("familyid");
             entity.Property(e => e.Lastresettime)
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("lastresettime");
             entity.Property(e => e.Precepts)
                 .HasMaxLength(200)
                 .HasColumnName("precepts");
             entity.Property(e => e.Reptosenior)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("reptosenior");
             entity.Property(e => e.Reputation)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("reputation");
             entity.Property(e => e.Seniorid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("seniorid");
             entity.Property(e => e.Todaysrep)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("todaysrep");
             entity.Property(e => e.Totalreputation)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("totalreputation");
 
             entity.HasOne(d => d.CidNavigation).WithOne(p => p.FamilyCharacter)
@@ -607,16 +592,15 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Charid, "charid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Charid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("charid");
             entity.Property(e => e.Entitlementid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("entitlementid");
             entity.Property(e => e.Timestamp)
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("timestamp");
         });
 
@@ -629,13 +613,12 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Cid, "cid_2").IsUnique();
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Cid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("cid");
             entity.Property(e => e.Daynotes)
-                .HasColumnType("int(4) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("daynotes");
             entity.Property(e => e.Meso)
                 .HasColumnType("int")
@@ -656,22 +639,21 @@ public partial class DBContext : DbContext
             entity.ToTable("gifts");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.FromId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fromId");
             entity.Property(e => e.Message)
                 .HasColumnType("tinytext")
                 .HasColumnName("message");
             entity.Property(e => e.RingSourceId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("ringSourceId");
             entity.Property(e => e.Sn)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("sn");
             entity.Property(e => e.ToId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("toId");
         });
 
@@ -684,32 +666,31 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => new { e.GuildId, e.Name }, "guildid");
 
             entity.Property(e => e.GuildId)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("guildid");
             entity.Property(e => e.AllianceId)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("allianceId");
             entity.Property(e => e.Capacity)
                 .HasDefaultValueSql("'10'")
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("capacity");
             entity.Property(e => e.GP)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("GP");
             entity.Property(e => e.Leader)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("leader");
             entity.Property(e => e.Logo)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("logo");
             entity.Property(e => e.LogoBg)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("logoBG");
             entity.Property(e => e.LogoBgColor)
-                .HasColumnType("smallint(5) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("logoBGColor");
             entity.Property(e => e.LogoColor)
-                .HasColumnType("smallint(5) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("logoColor");
             entity.Property(e => e.Name)
                 .HasMaxLength(45)
@@ -738,7 +719,7 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'Member'")
                 .HasColumnName("rank5title");
             entity.Property(e => e.Signature)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("signature");
         });
 
@@ -749,7 +730,6 @@ public partial class DBContext : DbContext
             entity.ToTable("hwidaccounts");
 
             entity.Property(e => e.AccountId)
-                .HasColumnType("int(11)")
                 .HasColumnName("accountid");
             entity.Property(e => e.Hwid)
                 .HasMaxLength(40)
@@ -760,7 +740,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("timestamp")
                 .HasColumnName("expiresat");
             entity.Property(e => e.Relevance)
-                .HasColumnType("tinyint(2)")
+                .HasColumnType("tinyint")
                 .HasColumnName("relevance");
         });
 
@@ -773,14 +753,12 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Hwid, "hwid_2").IsUnique();
 
             entity.Property(e => e.Hwidbanid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("hwidbanid");
             entity.Property(e => e.Hwid)
                 .HasMaxLength(30)
                 .HasColumnName("hwid");
 
             entity.Property(e => e.AccountId)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("AccountId");
         });
 
@@ -793,10 +771,8 @@ public partial class DBContext : DbContext
             entity.ToTable("ipbans");
 
             entity.Property(e => e.Ipbanid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("ipbanid");
             entity.Property(e => e.Aid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("aid");
             entity.Property(e => e.Ip)
                 .HasMaxLength(40)
@@ -811,19 +787,18 @@ public partial class DBContext : DbContext
             entity.ToTable("keymap");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Action)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("action");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Key)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("key");
             entity.Property(e => e.Type)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("type");
         });
 
@@ -836,10 +811,8 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Mac, "mac_2").IsUnique();
 
             entity.Property(e => e.Macbanid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("macbanid");
             entity.Property(e => e.Aid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("aid");
             entity.Property(e => e.Mac)
                 .HasMaxLength(30)
@@ -853,7 +826,6 @@ public partial class DBContext : DbContext
             entity.ToTable("macfilters");
 
             entity.Property(e => e.Macfilterid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("macfilterid");
             entity.Property(e => e.Filter)
                 .HasMaxLength(30)
@@ -867,34 +839,33 @@ public partial class DBContext : DbContext
             entity.ToTable("makercreatedata");
 
             entity.Property(e => e.Id)
-                .HasColumnType("tinyint(3) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Catalyst)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("catalyst");
             entity.Property(e => e.Quantity)
-                .HasColumnType("smallint(6)")
+                .HasColumnType("smallint")
                 .HasColumnName("quantity");
             entity.Property(e => e.ReqEquip)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("req_equip");
             entity.Property(e => e.ReqItem)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("req_item");
             entity.Property(e => e.ReqLevel)
-                .HasColumnType("tinyint(3) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("req_level");
             entity.Property(e => e.ReqMakerLevel)
-                .HasColumnType("tinyint(3) unsigned")
+                .HasColumnType("smallint")
                 .HasColumnName("req_maker_level");
             entity.Property(e => e.ReqMeso)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("req_meso");
             entity.Property(e => e.Tuc)
-                .HasColumnType("tinyint(3)")
+                .HasColumnType("tinyint")
                 .HasColumnName("tuc");
         });
 
@@ -905,13 +876,12 @@ public partial class DBContext : DbContext
             entity.ToTable("makerreagentdata");
 
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
                 .HasColumnName("itemid");
             entity.Property(e => e.Stat)
                 .HasMaxLength(20)
                 .HasColumnName("stat");
             entity.Property(e => e.Value)
-                .HasColumnType("smallint(6)")
+                .HasColumnType("smallint")
                 .HasColumnName("value");
         });
 
@@ -922,13 +892,12 @@ public partial class DBContext : DbContext
             entity.ToTable("makerrecipedata");
 
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
                 .HasColumnName("itemid");
             entity.Property(e => e.ReqItem)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("req_item");
             entity.Property(e => e.Count)
-                .HasColumnType("smallint(6)")
+                .HasColumnType("smallint")
                 .HasColumnName("count");
         });
 
@@ -939,17 +908,15 @@ public partial class DBContext : DbContext
             entity.ToTable("makerrewarddata");
 
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
                 .HasColumnName("itemid");
             entity.Property(e => e.Rewardid)
-                .HasColumnType("int(11)")
                 .HasColumnName("rewardid");
             entity.Property(e => e.Prob)
                 .HasDefaultValueSql("'100'")
-                .HasColumnType("tinyint(3) unsigned")
+                .HasColumnType("tinyint")
                 .HasColumnName("prob");
             entity.Property(e => e.Quantity)
-                .HasColumnType("smallint(6)")
+                .HasColumnType("smallint")
                 .HasColumnName("quantity");
         });
 
@@ -960,13 +927,12 @@ public partial class DBContext : DbContext
             entity.ToTable("marriages");
 
             entity.Property(e => e.Marriageid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("marriageid");
             entity.Property(e => e.Husbandid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("husbandid");
             entity.Property(e => e.Wifeid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("wifeid");
         });
 
@@ -979,16 +945,15 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Queststatusid, "queststatusid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Mapid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mapid");
             entity.Property(e => e.Queststatusid)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("queststatusid");
         });
 
@@ -999,14 +964,12 @@ public partial class DBContext : DbContext
                 .ToTable("monsterbook");
 
             entity.Property(e => e.Cardid)
-                .HasColumnType("int(11)")
                 .HasColumnName("cardid");
             entity.Property(e => e.Charid)
-                .HasColumnType("int(11) unsigned")
                 .HasColumnName("charid");
             entity.Property(e => e.Level)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(1)")
+                .HasColumnType("int")
                 .HasColumnName("level");
         });
 
@@ -1019,13 +982,12 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Id, "id").IsUnique();
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Cardid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("cardid");
             entity.Property(e => e.Mobid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mobid");
         });
 
@@ -1036,13 +998,12 @@ public partial class DBContext : DbContext
             entity.ToTable("mts_cart");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Cid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("cid");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
         });
 
@@ -1053,91 +1014,90 @@ public partial class DBContext : DbContext
             entity.ToTable("mts_items");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Acc)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("acc");
             entity.Property(e => e.Avoid)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("avoid");
             entity.Property(e => e.BidIncre)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("bid_incre");
             entity.Property(e => e.BuyNow)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("buy_now");
             entity.Property(e => e.Dex)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("dex");
             entity.Property(e => e.Expiration)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("expiration");
             entity.Property(e => e.Flag)
-                .HasColumnType("int(2) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("flag");
             entity.Property(e => e.GiftFrom)
                 .HasMaxLength(26)
                 .HasColumnName("giftFrom");
             entity.Property(e => e.Hands)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hands");
             entity.Property(e => e.Hp)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hp");
             entity.Property(e => e.Int)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("int");
             entity.Property(e => e.Isequip)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(1)")
+                .HasColumnType("int")
                 .HasColumnName("isequip");
             entity.Property(e => e.Itemexp)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("itemexp");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Itemlevel)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemlevel");
             entity.Property(e => e.Jump)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("jump");
             entity.Property(e => e.Level)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("level");
             entity.Property(e => e.Locked)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("locked");
             entity.Property(e => e.Luk)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("luk");
             entity.Property(e => e.Matk)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("matk");
             entity.Property(e => e.Mdef)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mdef");
             entity.Property(e => e.Mp)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mp");
             entity.Property(e => e.Owner)
                 .HasMaxLength(16)
@@ -1145,14 +1105,14 @@ public partial class DBContext : DbContext
                 .HasColumnName("owner");
             entity.Property(e => e.Position)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("position");
             entity.Property(e => e.Price)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("price");
             entity.Property(e => e.Quantity)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("quantity");
             entity.Property(e => e.Ringid)
                 .HasDefaultValueSql("'-1'")
@@ -1162,43 +1122,43 @@ public partial class DBContext : DbContext
                 .HasMaxLength(16)
                 .HasColumnName("sell_ends");
             entity.Property(e => e.Seller)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("seller");
             entity.Property(e => e.Sellername)
                 .HasMaxLength(16)
                 .HasColumnName("sellername");
             entity.Property(e => e.Speed)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("speed");
             entity.Property(e => e.Str)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("str");
             entity.Property(e => e.Tab)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("tab");
             entity.Property(e => e.Transfer)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(2)")
+                .HasColumnType("int")
                 .HasColumnName("transfer");
             entity.Property(e => e.Type)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("type");
             entity.Property(e => e.Upgradeslots)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("upgradeslots");
             entity.Property(e => e.Vicious)
-                .HasColumnType("int(2) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("vicious");
             entity.Property(e => e.Watk)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("watk");
             entity.Property(e => e.Wdef)
                 .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("wdef");
         });
 
@@ -1211,10 +1171,9 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Characterid, "characterid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.CompletionTime)
                 .HasColumnType("timestamp")
@@ -1238,7 +1197,6 @@ public partial class DBContext : DbContext
             entity.ToTable("newyear");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Message)
                 .HasMaxLength(120)
@@ -1248,18 +1206,18 @@ public partial class DBContext : DbContext
             entity.Property(e => e.ReceiverDiscard).HasColumnName("receiverdiscard");
             entity.Property(e => e.ReceiverId)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(10)")
+                .HasColumnType("int")
                 .HasColumnName("receiverid");
             entity.Property(e => e.SenderDiscard).HasColumnName("senderdiscard");
             entity.Property(e => e.SenderId)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(10)")
+                .HasColumnType("int")
                 .HasColumnName("senderid");
             entity.Property(e => e.TimeReceived)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("timereceived");
             entity.Property(e => e.TimeSent)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("timesent");
         });
 
@@ -1270,25 +1228,23 @@ public partial class DBContext : DbContext
             entity.ToTable("notes");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Deleted)
-                .HasColumnType("int(2)")
                 .HasColumnName("deleted");
             entity.Property(e => e.Fame)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fame");
             entity.Property(e => e.FromId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fromId");
             entity.Property(e => e.Message)
                 .HasColumnType("text")
                 .HasColumnName("message");
             entity.Property(e => e.Timestamp)
-                .HasColumnType("bigint(20) unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("timestamp");
             entity.Property(e => e.ToId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("toId");
         });
 
@@ -1300,14 +1256,13 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => e.Code, "idx_code").IsUnique();
 
-            entity.Property(e => e.Id)
-                .HasColumnType("int");
+            entity.Property(e => e.Id);
             entity.Property(e => e.Code)
                 .HasMaxLength(17);
             entity.Property(e => e.MaxCount)
                 .HasColumnType("int");
             entity.Property(e => e.Expiration)
-                .HasColumnType("bigint(20) unsigned");
+                .HasColumnType("bigint");
         });
 
         modelBuilder.Entity<CdkItemEntity>(entity =>
@@ -1318,8 +1273,7 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => e.CodeId, "idx_code");
 
-            entity.Property(e => e.Id)
-                .HasColumnType("int");
+            entity.Property(e => e.Id);
             entity.Property(e => e.CodeId)
                 .HasColumnType("int");
             entity.Property(e => e.ItemId)
@@ -1341,8 +1295,7 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => e.CodeId, "idx_code");
 
-            entity.Property(e => e.Id)
-                .HasColumnType("int");
+            entity.Property(e => e.Id);
             entity.Property(e => e.CodeId)
                 .HasColumnType("int");
             entity.Property(e => e.RecipientId)
@@ -1360,22 +1313,21 @@ public partial class DBContext : DbContext
             entity.ToTable("nxcoupons");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Activeday)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("activeday");
             entity.Property(e => e.CouponId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("couponid");
             entity.Property(e => e.Endhour)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("endhour");
             entity.Property(e => e.Rate)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rate");
             entity.Property(e => e.Starthour)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("starthour");
         });
 
@@ -1385,20 +1337,20 @@ public partial class DBContext : DbContext
 
             entity.ToTable("pets");
 
-            entity.Property(e => e.Petid)
-                .HasColumnType("bigint unsigned")
+            var idProp = entity.Property(e => e.Petid)
                 .HasColumnName("petid");
+
             entity.Property(e => e.Closeness)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("closeness");
+                    .HasColumnType("int")
+                    .HasColumnName("closeness");
             entity.Property(e => e.Flag)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("flag");
             entity.Property(e => e.Fullness)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("fullness");
             entity.Property(e => e.Level)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("level");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
@@ -1415,13 +1367,12 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Petid, "fk_petignorepetid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Petid)
-                .HasColumnType("bigint unsigned")
+                .HasColumnType("bigint")
                 .HasColumnName("petid");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Petignores)
@@ -1436,23 +1387,22 @@ public partial class DBContext : DbContext
             entity.ToTable("playerdiseases");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Charid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("charid");
             entity.Property(e => e.Disease)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("disease");
             entity.Property(e => e.Length)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("length");
             entity.Property(e => e.Mobskillid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mobskillid");
             entity.Property(e => e.Mobskilllv)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mobskilllv");
         });
 
@@ -1463,61 +1413,60 @@ public partial class DBContext : DbContext
             entity.ToTable("playernpcs");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Cy)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("cy");
             entity.Property(e => e.Dir)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("dir");
             entity.Property(e => e.Face)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("face");
             entity.Property(e => e.Fh)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fh");
             entity.Property(e => e.Gender)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("gender");
             entity.Property(e => e.Hair)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hair");
             entity.Property(e => e.Job)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("job");
             entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("map");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
                 .HasColumnName("name");
             entity.Property(e => e.Overallrank)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("overallrank");
             entity.Property(e => e.Rx0)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rx0");
             entity.Property(e => e.Rx1)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rx1");
             entity.Property(e => e.Scriptid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("scriptid");
             entity.Property(e => e.Skin)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skin");
             entity.Property(e => e.World)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("world");
             entity.Property(e => e.Worldjobrank)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("worldjobrank");
             entity.Property(e => e.Worldrank)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("worldrank");
             entity.Property(e => e.X)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("x");
         });
 
@@ -1528,19 +1477,18 @@ public partial class DBContext : DbContext
             entity.ToTable("playernpcs_equip");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Equipid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("equipid");
             entity.Property(e => e.Equippos)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("equippos");
             entity.Property(e => e.Npcid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("npcid");
             entity.Property(e => e.Type)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("type");
         });
 
@@ -1551,17 +1499,16 @@ public partial class DBContext : DbContext
             entity.ToTable("playernpcs_field");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("map");
             entity.Property(e => e.Podium)
-                .HasColumnType("smallint(8)")
+                .HasColumnType("smallint")
                 .HasColumnName("podium");
             entity.Property(e => e.Step).HasColumnName("step").HasColumnType("tinyint").HasDefaultValueSql("'0'");
             entity.Property(e => e.World)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("world");
         });
 
@@ -1572,37 +1519,36 @@ public partial class DBContext : DbContext
             entity.ToTable("plife");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Cy)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("cy");
             entity.Property(e => e.F)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("f");
             entity.Property(e => e.Fh)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fh");
             entity.Property(e => e.Hide)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hide");
             entity.Property(e => e.Life)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("life");
             entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("map");
             entity.Property(e => e.Mobtime)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mobtime");
             entity.Property(e => e.Rx0)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rx0");
             entity.Property(e => e.Rx1)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rx1");
             entity.Property(e => e.Team)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("team");
             entity.Property(e => e.Type)
                 .HasMaxLength(1)
@@ -1610,13 +1556,13 @@ public partial class DBContext : DbContext
                 .HasColumnName("type");
             entity.Property(e => e.World)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("world");
             entity.Property(e => e.X)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("x");
             entity.Property(e => e.Y)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("y");
         });
 
@@ -1627,16 +1573,15 @@ public partial class DBContext : DbContext
             entity.ToTable("questactions");
 
             entity.Property(e => e.Questactionid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("questactionid");
             entity.Property(e => e.Data)
                 .HasColumnType("blob")
                 .HasColumnName("data");
             entity.Property(e => e.Questid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("questid");
             entity.Property(e => e.Status)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("status");
         });
 
@@ -1647,20 +1592,19 @@ public partial class DBContext : DbContext
             entity.ToTable("questprogress");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Progress)
                 .HasMaxLength(15)
                 .HasDefaultValueSql("''")
                 .HasColumnName("progress");
             entity.Property(e => e.Progressid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("progressid");
             entity.Property(e => e.Queststatusid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("queststatusid");
         });
 
@@ -1671,16 +1615,15 @@ public partial class DBContext : DbContext
             entity.ToTable("questrequirements");
 
             entity.Property(e => e.Questrequirementid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("questrequirementid");
             entity.Property(e => e.Data)
                 .HasColumnType("blob")
                 .HasColumnName("data");
             entity.Property(e => e.Questid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("questid");
             entity.Property(e => e.Status)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("status");
         });
 
@@ -1691,31 +1634,30 @@ public partial class DBContext : DbContext
             entity.ToTable("queststatus");
 
             entity.Property(e => e.Queststatusid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("queststatusid");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Completed)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("completed");
             entity.Property(e => e.Expires)
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("expires");
             entity.Property(e => e.Forfeited)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("forfeited");
             entity.Property(e => e.Info)
-                .HasColumnType("tinyint(3)")
+                .HasColumnType("tinyint")
                 .HasColumnName("info");
             entity.Property(e => e.Quest)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("quest");
             entity.Property(e => e.Status)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("status");
             entity.Property(e => e.Time)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("time");
         });
 
@@ -1726,10 +1668,9 @@ public partial class DBContext : DbContext
             entity.ToTable("quickslotkeymapped");
 
             entity.Property(e => e.Accountid)
-                .HasColumnType("int(11)")
                 .HasColumnName("accountid");
             entity.Property(e => e.Keymap)
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("keymap");
 
             entity.HasOne(d => d.Account).WithOne(p => p.Quickslotkeymapped)
@@ -1746,20 +1687,19 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Reactorid, "reactorid");
 
             entity.Property(e => e.Reactordropid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("reactordropid");
             entity.Property(e => e.Chance)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("chance");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Questid)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(5)")
+                .HasColumnType("int")
                 .HasColumnName("questid");
             entity.Property(e => e.Reactorid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("reactorid");
         });
 
@@ -1770,7 +1710,6 @@ public partial class DBContext : DbContext
             entity.ToTable("reports");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Chatlog)
                 .HasColumnType("text")
@@ -1779,10 +1718,10 @@ public partial class DBContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("description");
             entity.Property(e => e.Reason)
-                .HasColumnType("tinyint(4)")
+                .HasColumnType("tinyint")
                 .HasColumnName("reason");
             entity.Property(e => e.Reporterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("reporterid");
             entity.Property(e => e.Reporttime)
                 .ValueGeneratedOnAddOrUpdate()
@@ -1790,7 +1729,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("timestamp")
                 .HasColumnName("reporttime");
             entity.Property(e => e.Victimid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("victimid");
         });
 
@@ -1801,7 +1740,6 @@ public partial class DBContext : DbContext
             entity.ToTable("responses");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
             entity.Property(e => e.Chat)
                 .HasColumnType("text")
@@ -1818,19 +1756,18 @@ public partial class DBContext : DbContext
             entity.ToTable("rings");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.ItemId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.CharacterId1)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterId1");
             entity.Property(e => e.RingId1)
                 .HasColumnType("bigint")
                 .HasColumnName("ringId1");
             entity.Property(e => e.CharacterId2)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterId2");
             entity.Property(e => e.RingId2)
                 .HasColumnType("bigint")
@@ -1844,19 +1781,20 @@ public partial class DBContext : DbContext
             entity.ToTable("savedlocations");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
+
             entity.Property(e => e.Locationtype)
-                .HasColumnType("enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL','JAIL','CYGNUSINTRO')")
-                .HasColumnName("locationtype");
+             .HasColumnName("locationtype")
+             .HasColumnType(isMysql ? "enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL','JAIL','CYGNUSINTRO')" : "text");
+
             entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("map");
             entity.Property(e => e.Portal)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("portal");
         });
 
@@ -1867,13 +1805,12 @@ public partial class DBContext : DbContext
             entity.ToTable("server_queue");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Accountid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("accountid");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.CreateTime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -1883,10 +1820,10 @@ public partial class DBContext : DbContext
                 .HasMaxLength(128)
                 .HasColumnName("message");
             entity.Property(e => e.Type)
-                .HasColumnType("tinyint(2)")
+                .HasColumnType("tinyint")
                 .HasColumnName("type");
             entity.Property(e => e.Value)
-                .HasColumnType("int(10)")
+                .HasColumnType("int")
                 .HasColumnName("value");
         });
 
@@ -1897,10 +1834,9 @@ public partial class DBContext : DbContext
             entity.ToTable("shops");
 
             entity.Property(e => e.ShopId)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("shopid");
             entity.Property(e => e.NpcId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("npcid");
         });
 
@@ -1911,23 +1847,22 @@ public partial class DBContext : DbContext
             entity.ToTable("shopitems");
 
             entity.Property(e => e.Shopitemid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("shopitemid");
             entity.Property(e => e.ItemId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Pitch)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("pitch");
             entity.Property(e => e.Position)
                 .HasComment("sort is an arbitrary field designed to give leeway when modifying shops. The lowest number is 104 and it increments by 4 for each item to allow decent space for swapping/inserting/removing items.")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("position");
             entity.Property(e => e.Price)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("price");
             entity.Property(e => e.Shopid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("shopid");
         });
 
@@ -1942,23 +1877,22 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Characterid, "skills_chrid_fk");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Expiration)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("expiration");
             entity.Property(e => e.Masterlevel)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("masterlevel");
             entity.Property(e => e.Skillid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skillid");
             entity.Property(e => e.Skilllevel)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skilllevel");
         });
 
@@ -1969,10 +1903,9 @@ public partial class DBContext : DbContext
             entity.ToTable("skillmacros");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
@@ -1980,13 +1913,13 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Position).HasColumnName("position").HasColumnType("tinyint").HasDefaultValueSql("'0'");
             entity.Property(e => e.Shout).HasColumnName("shout").HasColumnType("tinyint").HasDefaultValueSql("'0'");
             entity.Property(e => e.Skill1)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skill1");
             entity.Property(e => e.Skill2)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skill2");
             entity.Property(e => e.Skill3)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skill3");
         });
 
@@ -1997,17 +1930,16 @@ public partial class DBContext : DbContext
             entity.ToTable("specialcashitems");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.Info)
-                .HasColumnType("int(1)")
+                .HasColumnType("int")
                 .HasColumnName("info");
             entity.Property(e => e.Modifier)
                 .HasComment("1024 is add/remove")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("modifier");
             entity.Property(e => e.Sn)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("sn");
         });
 
@@ -2018,20 +1950,16 @@ public partial class DBContext : DbContext
             entity.ToTable("storages");
 
             entity.Property(e => e.Storageid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("storageid");
             entity.Property(e => e.Accountid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("accountid");
             entity.Property(e => e.Meso)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("meso");
             entity.Property(e => e.Slots)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("slots");
-            entity.Property(e => e.World)
-                .HasColumnType("int(2)")
-                .HasColumnName("world");
         });
 
         modelBuilder.Entity<Trocklocation>(entity =>
@@ -2041,16 +1969,15 @@ public partial class DBContext : DbContext
             entity.ToTable("trocklocations");
 
             entity.Property(e => e.Trockid)
-                .HasColumnType("int(11)")
                 .HasColumnName("trockid");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Mapid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mapid");
             entity.Property(e => e.Vip)
-                .HasColumnType("int(2)")
+                .HasColumnType("int")
                 .HasColumnName("vip");
         });
 
@@ -2061,13 +1988,12 @@ public partial class DBContext : DbContext
             entity.ToTable("wishlists");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.CharId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("charid");
             entity.Property(e => e.Sn)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("sn");
         });
 
@@ -2077,7 +2003,6 @@ public partial class DBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.Property(e => e.Id)
-                .HasColumnType("bigint")
                 .HasColumnName("id");
             entity.Property(e => e.WorldExpRate)
                 .HasColumnType("int")
@@ -2142,7 +2067,6 @@ public partial class DBContext : DbContext
 
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
 
             entity.Property(e => e.Birthday)
@@ -2151,7 +2075,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("birthday");
             entity.Property(e => e.Characterslots)
                 .HasDefaultValueSql("'3'")
-                .HasColumnType("tinyint(2)")
+                .HasColumnType("tinyint")
                 .HasColumnName("characterslots");
             entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -2162,17 +2086,17 @@ public partial class DBContext : DbContext
                 .HasColumnName("email");
             entity.Property(e => e.Gender)
                 .HasDefaultValueSql("'10'")
-                .HasColumnType("tinyint(2)")
+                .HasColumnType("tinyint")
                 .HasColumnName("gender");
             entity.Property(e => e.Language)
                 .HasDefaultValueSql("'2'")
-                .HasColumnType("int(1)")
+                .HasColumnType("int")
                 .HasColumnName("language");
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
                 .HasColumnName("lastlogin");
             entity.Property(e => e.MaplePoint)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("maplePoint");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
@@ -2182,10 +2106,10 @@ public partial class DBContext : DbContext
                 .HasMaxLength(20)
                 .HasColumnName("nick");
             entity.Property(e => e.NxCredit)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("nxCredit");
             entity.Property(e => e.NxPrepaid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("nxPrepaid");
             entity.Property(e => e.Password)
                 .HasMaxLength(128)
@@ -2215,7 +2139,6 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.AccountId, "accountid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int")
                 .HasColumnName("Id");
             entity.Property(e => e.AccountId)
                 .HasColumnType("int")
@@ -2251,14 +2174,13 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.AccountId, "accountid");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int")
                 .HasColumnName("Id");
             entity.Property(e => e.AccountId)
                 .HasColumnType("int")
                 .HasColumnName("AccountId");
 
             entity.Property(e => e.Reason)
-                .HasColumnType("tinyint(4)")
+                .HasColumnType("tinyint")
                 .HasColumnName("Reason");
 
             entity.Property(e => e.ReasonDescription)
@@ -2291,24 +2213,23 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => new { e.Level, e.Exp }, "ranking1");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.AccountId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("accountid");
             entity.Property(e => e.AllianceRank)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(10)")
+                .HasColumnType("int")
                 .HasColumnName("allianceRank");
             entity.Property(e => e.Ap)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("ap");
             entity.Property(e => e.AriantPoints)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("ariantPoints");
             entity.Property(e => e.BuddyCapacity)
                 .HasDefaultValueSql("'25'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("buddyCapacity");
             entity.Property(e => e.CreateDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -2320,80 +2241,80 @@ public partial class DBContext : DbContext
                 .HasColumnName("dataString");
             entity.Property(e => e.Dex)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("dex");
             entity.Property(e => e.DojoPoints)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("dojoPoints");
             entity.Property(e => e.Equipslots)
                 .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("equipslots");
             entity.Property(e => e.Etcslots)
                 .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("etcslots");
             entity.Property(e => e.Exp)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("exp");
             entity.Property(e => e.Face)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("face");
             entity.Property(e => e.Fame)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fame");
             entity.Property(e => e.FamilyId)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("familyId");
             entity.Property(e => e.FinishedDojoTutorial)
-                .HasColumnType("tinyint(1) unsigned")
+                .HasColumnType("tinyint(1)")
                 .HasColumnName("finishedDojoTutorial");
             entity.Property(e => e.Fquest)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("fquest");
             entity.Property(e => e.Gachaexp)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("gachaexp");
             entity.Property(e => e.Gender)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("gender");
             entity.Property(e => e.GuildId)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("guildid");
             entity.Property(e => e.GuildRank)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("guildrank");
             entity.Property(e => e.Hair)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hair");
             entity.Property(e => e.Hp)
                 .HasDefaultValueSql("'50'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hp");
             entity.Property(e => e.HpMpUsed)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("hpMpUsed");
             entity.Property(e => e.Int)
                 .HasDefaultValueSql("'4'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("int");
             entity.Property(e => e.Jailexpire)
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("jailexpire");
             entity.Property(e => e.JobId)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("job");
             entity.Property(e => e.JobRank)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("jobRank");
             entity.Property(e => e.JobRankMove)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("jobRankMove");
             entity.Property(e => e.LastDojoStage)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("lastDojoStage");
             entity.Property(e => e.LastExpGainTime)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
@@ -2405,64 +2326,64 @@ public partial class DBContext : DbContext
                 .HasColumnName("lastLogoutTime");
             entity.Property(e => e.Level)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("level");
             entity.Property(e => e.Luk)
                 .HasDefaultValueSql("'4'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("luk");
             entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("map");
             entity.Property(e => e.Matchcardlosses)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("matchcardlosses");
             entity.Property(e => e.Matchcardties)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("matchcardties");
             entity.Property(e => e.Matchcardwins)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("matchcardwins");
             entity.Property(e => e.Maxhp)
                 .HasDefaultValueSql("'50'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("maxhp");
             entity.Property(e => e.Maxmp)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("maxmp");
             entity.Property(e => e.Meso)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("meso");
             entity.Property(e => e.Monsterbookcover)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("monsterbookcover");
             entity.Property(e => e.MountExp)
-                .HasColumnType("int(9)")
+                .HasColumnType("int")
                 .HasColumnName("mountexp");
             entity.Property(e => e.MountLevel)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(9)")
+                .HasColumnType("int")
                 .HasColumnName("mountlevel");
             entity.Property(e => e.Mounttiredness)
-                .HasColumnType("int(9)")
+                .HasColumnType("int")
                 .HasColumnName("mounttiredness");
             entity.Property(e => e.Mp)
                 .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mp");
             entity.Property(e => e.Name)
                 .HasMaxLength(13)
                 .HasDefaultValueSql("''")
                 .HasColumnName("name");
             entity.Property(e => e.Omoklosses)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("omoklosses");
             entity.Property(e => e.Omokties)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("omokties");
             entity.Property(e => e.Omokwins)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("omokwins");
             entity.Property(e => e.PartySearch)
                 .IsRequired()
@@ -2470,51 +2391,51 @@ public partial class DBContext : DbContext
                 .HasSentinel(true)
                 .HasColumnName("partySearch");
             entity.Property(e => e.Pqpoints)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("PQPoints");
             entity.Property(e => e.Rank)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("rank");
             entity.Property(e => e.RankMove)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("rankMove");
             entity.Property(e => e.Reborns)
-                .HasColumnType("int(5)")
+                .HasColumnType("int")
                 .HasColumnName("reborns");
             entity.Property(e => e.Setupslots)
                 .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("setupslots");
             entity.Property(e => e.Skincolor)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("skincolor");
             entity.Property(e => e.Sp)
                 .HasMaxLength(128)
                 .HasDefaultValueSql("'0,0,0,0,0,0,0,0,0,0'")
                 .HasColumnName("sp");
             entity.Property(e => e.Spawnpoint)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("spawnpoint");
             entity.Property(e => e.Str)
                 .HasDefaultValueSql("'12'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("str");
             entity.Property(e => e.SummonValue)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("summonValue");
             entity.Property(e => e.Useslots)
                 .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("useslots");
             entity.Property(e => e.VanquisherKills)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("vanquisherKills");
             entity.Property(e => e.VanquisherStage)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("vanquisherStage");
             entity.Property(e => e.World)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("world");
         });
     }
@@ -2527,32 +2448,31 @@ public partial class DBContext : DbContext
 
             entity.ToTable("inventoryitems");
 
-            entity.HasIndex(e => e.Characterid, "CHARID");
+            entity.HasIndex(e => e.Characterid, "idx_inv_charId");
 
             entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("inventoryitemid");
             entity.Property(e => e.Accountid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("accountid");
             entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.Expiration)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint(20)")
+                .HasColumnType("bigint")
                 .HasColumnName("expiration");
             entity.Property(e => e.Flag)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("flag");
             entity.Property(e => e.GiftFrom)
                 .HasMaxLength(26)
                 .HasColumnName("giftFrom");
             entity.Property(e => e.Inventorytype)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("inventorytype");
             entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemid");
             entity.Property(e => e.Owner)
                 .HasColumnType("tinytext")
@@ -2562,13 +2482,13 @@ public partial class DBContext : DbContext
                 .HasColumnType("bigint")
                 .HasColumnName("petid");
             entity.Property(e => e.Position)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("position");
             entity.Property(e => e.Quantity)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("quantity");
             entity.Property(e => e.Type)
-                .HasColumnType("tinyint(3) unsigned")
+                .HasColumnType("tinyint")
                 .HasColumnName("type");
         });
 
@@ -2581,79 +2501,79 @@ public partial class DBContext : DbContext
             entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
 
             entity.Property(e => e.Inventoryequipmentid)
-                .HasColumnType("int(10) unsigned")
                 .HasColumnName("inventoryequipmentid");
             entity.Property(e => e.Acc)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("acc");
             entity.Property(e => e.Avoid)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("avoid");
             entity.Property(e => e.Dex)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("dex");
             entity.Property(e => e.Hands)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hands");
             entity.Property(e => e.Hp)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("hp");
             entity.Property(e => e.Int)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("int");
             entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("inventoryitemid");
             entity.Property(e => e.Itemexp)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("itemexp");
             entity.Property(e => e.Itemlevel)
                 .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("itemlevel");
             entity.Property(e => e.Jump)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("jump");
             entity.Property(e => e.Level)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("level");
             entity.Property(e => e.Locked)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("locked");
             entity.Property(e => e.Luk)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("luk");
             entity.Property(e => e.Matk)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("matk");
             entity.Property(e => e.Mdef)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mdef");
             entity.Property(e => e.Mp)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("mp");
             entity.Property(e => e.RingId)
                 .HasDefaultValueSql("'-1'")
                 .HasColumnType("bigint")
                 .HasColumnName("ringid");
             entity.Property(e => e.Speed)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("speed");
             entity.Property(e => e.Str)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("str");
             entity.Property(e => e.Upgradeslots)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("upgradeslots");
             entity.Property(e => e.Vicious)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("int")
                 .HasColumnName("vicious");
             entity.Property(e => e.Watk)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("watk");
             entity.Property(e => e.Wdef)
-                .HasColumnType("int(11)")
+                .HasColumnType("int")
                 .HasColumnName("wdef");
         });
     }
+
 }

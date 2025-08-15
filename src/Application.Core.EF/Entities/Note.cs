@@ -32,5 +32,5 @@ public partial class NoteEntity
 
     public int Fame { get; set; }
 
-    public int Deleted { get; set; }
+    public bool Deleted { get; set; }
 }

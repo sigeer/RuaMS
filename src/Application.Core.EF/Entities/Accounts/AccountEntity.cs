@@ -38,7 +38,9 @@ public partial class AccountEntity
     public int? NxPrepaid { get; set; }
 
     public sbyte Characterslots { get; set; } = 3;
-
+    /// <summary>
+    /// 0. 男 1. 女
+    /// </summary>
     public sbyte Gender { get; set; }
 
     public bool Tos { get; set; }

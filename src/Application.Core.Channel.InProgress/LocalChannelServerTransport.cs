@@ -17,7 +17,6 @@ using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using SystemProto;
-using ZstdSharp.Unsafe;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -546,7 +545,7 @@ namespace Application.Core.Channel.InProgress
 
         public BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
         {
-            return  _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
+            return _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
         }
 
         public RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest)

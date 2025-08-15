@@ -72,7 +72,7 @@ public partial class Inventoryequipment
 
     public int Vicious { get; set; }
 
-    public byte Itemlevel { get; set; }
+    public byte Itemlevel { get; set; } = 1;
 
     public int Itemexp { get; set; }
 

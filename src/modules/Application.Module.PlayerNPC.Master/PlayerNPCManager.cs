@@ -7,10 +7,8 @@ using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
 using PlayerNPCProto;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace Application.Module.PlayerNPC.Master

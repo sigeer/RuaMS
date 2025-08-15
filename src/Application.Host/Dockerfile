@@ -36,7 +36,5 @@ ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS="http://*:8080"
-ENV ASPNETCORE_HTTP_PORTS=""
 
 ENTRYPOINT ["dotnet", "Application.Host.dll"]

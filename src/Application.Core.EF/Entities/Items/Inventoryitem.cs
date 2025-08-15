@@ -18,13 +18,13 @@ public partial class Inventoryitem
 
     public short Quantity { get; set; }
 
-    public string Owner { get; set; } = null!;
+    public string Owner { get; set; } = "";
 
-    public long Petid { get; set; }
+    public long Petid { get; set; } = -1;
 
     public short Flag { get; set; }
 
-    public long Expiration { get; set; }
+    public long Expiration { get; set; } = -1;
 
-    public string GiftFrom { get; set; } = null!;
+    public string GiftFrom { get; set; } = "";
 }

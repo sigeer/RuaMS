@@ -6,7 +6,6 @@ public partial class StorageEntity
     public StorageEntity(int accountid, int slots, int meso)
     {
         Accountid = accountid;
-        World = 0;
         Slots = slots;
         Meso = meso;
     }
@@ -15,7 +14,6 @@ public partial class StorageEntity
 
     public int Accountid { get; set; }
 
-    public int World { get; set; }
 
     public int Slots { get; set; }
 

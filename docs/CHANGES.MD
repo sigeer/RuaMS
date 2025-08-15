@@ -142,5 +142,5 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 	- [x] 重构 好友系统
 - [x] 移除World
 - [x] 移除Server
-- [ ] 整理初始化脚本以及迁移，对DBContext拆分
-- [ ] 以grpc的方式实现`IChannelServerTransport`
+- [x] 整理初始化脚本以及迁移，对DBContext拆分
+- [x] 以grpc的方式实现`IChannelServerTransport`

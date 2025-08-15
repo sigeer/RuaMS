@@ -74,7 +74,7 @@ namespace Application.Core.Mappers
                  .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.PetInfo!.Petid
                  ))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
-                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
+                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
                 .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
                 .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
@@ -93,7 +93,7 @@ namespace Application.Core.Mappers
                 {
                     Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
                     Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
-                    Level = Math.Min(Limits.MaxLevel, (int)x.Level),
+                    Level = Math.Min(Limits.MaxPetLevel, (int)x.Level),
                     Flag = x.PetAttribute,
                     Name = x.getName(),
                     Summoned = x.Summoned,

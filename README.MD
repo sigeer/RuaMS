@@ -23,6 +23,8 @@
 - **Application.Host.Channel** 频道服务器入口
 - **Application.Core** 频道服务器功能
 - **Application.Core.EF** EF
+- **Application.Core.EF.MySQL** MySQL驱动，及迁移文件、初始化脚本
+- **Application.Core.EF.Sqlite** Sqlite驱动，及迁移文件、初始化脚本
 - **Application.Core.Channel.InProgress** 进程内同时运行主服务器+频道服务器的实现 （Application.Modules.XXX.Channel.InProgress）
 - **Application.Core.Login** 登录服务器、主服务器实现
 - **Application.Proto** proto文件
@@ -53,7 +55,7 @@
 
 ### 需要安装的软件
 
-- Mysql 8
+- Mysql 8 (仅启用sqlite可跳过)
 
 ### 步骤
 
@@ -81,7 +83,8 @@ docker run -itd \
 rua-ms
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
-# 非docker compose运行需要设置连接字符串
+# 使用Mysql且非docker compose运行需要设置连接字符串
+-e "RUA_MS_Database=MySql" \
 -e "RUA_MS_ConnectionStrings__MySql=" \
 
 # 公网运行运行需要修改`ChannelServerConfig.ChannelConfig`的Host

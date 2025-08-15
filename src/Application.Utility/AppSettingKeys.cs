@@ -5,6 +5,7 @@ namespace Application.Utility
     {
         public const string EnvPrefix = "RUA_MS_";
 
+        public const string Database = "Database";
         public const string ConnectStr_Mysql = "MySql";
         public const string EnableOpenApi = "EnableOpenApi";
 
