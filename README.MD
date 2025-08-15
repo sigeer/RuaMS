@@ -115,3 +115,7 @@ docker compose up -d
 #### 一部分频道与登录服务器在同一进程（默认），一部分频道在其他进程
 
 1. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
+
+## 关于镜像发布
+
+当前发布的镜像都是基于 单机部署 模式的

@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Controllers;
 using Application.Core.Game.Players;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Map;
@@ -8,18 +7,17 @@ using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using System.Collections.Concurrent;
 using tools;
 
 namespace Application.Module.Fishing.Channel
 {
-    public class FishingManager: TimelyControllerBase
+    public class FishingManager : TaskBase
     {
         readonly ILogger<FishingManager> _logger;
         private ConcurrentDictionary<IPlayer, int> fishingAttempters = new();
 
-        public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger) 
+        public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger)
             : base($"Fishing_{server.ServerName}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
             _logger = logger;

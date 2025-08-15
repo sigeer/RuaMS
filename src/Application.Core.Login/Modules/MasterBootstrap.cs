@@ -12,8 +12,7 @@ namespace Application.Core.Login.Modules
         public void ConfigureHost(WebApplication app)
         {
             // TODO: 在这里启动grcp server
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
-            {
+#if !IsStandalone
                 app.MapGrpcService<GameGrpcService>();
                 app.MapGrpcService<SystemGrpcService>();
                 app.MapGrpcService<SyncGrpcService>();
@@ -24,7 +23,7 @@ namespace Application.Core.Login.Modules
                 app.MapGrpcService<CashGrcpService>();
                 app.MapGrpcService<BuddyGrpcService>();
                 app.MapGrpcService<DataGrpcService>();
-            }
+#endif
         }
     }
 }

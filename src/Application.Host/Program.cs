@@ -1,4 +1,3 @@
-using Application.Core.Channel.InProgress;
 using Application.Core.Login;
 using Application.Host.Middlewares;
 using Application.Host.Services;
@@ -15,6 +14,9 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
+#if IsStandalone
+using Application.Core.Channel.InProgress;
+#endif
 
 try
 {
@@ -60,7 +62,9 @@ try
     builder.Services.AddMakerMaster();
     builder.Services.AddPlayerNPCMaster();
 
+#if IsStandalone
     builder.AddChannelServerInProgress();
+#endif
 
     builder.WebHost.ConfigureKestrel(options =>
     {
@@ -69,13 +73,12 @@ try
             options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort));
         }
 
-        if (builder.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
+#if !IsStandalone
+        options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
         {
-            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
-            {
-                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-            });
-        }
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+        });
+#endif
     });
 
     if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))

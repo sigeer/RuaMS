@@ -31,25 +31,45 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: Restore dependencies
+    - name: Restore Standalone
       run: dotnet restore "./src/Application.Host/Application.Host.csproj"
 
-    - name: Publish win-x64
-      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o ./app/win-x64 --self-contained true
+    - name: Publish Standalone win-x64
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o ./app/standalone-win-x64 --self-contained true
 
-    - name: Publish linux-x64
-      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o ./app/linux-x64 --self-contained true
+    - name: Publish Standalone linux-x64
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o ./app/standalone-linux-x64 --self-contained true
+
+    - name: Restore Multi
+      run: |
+          dotnet restore "./src/Application.Host/Application.Host.csproj" -p:IsStandalone=false
+          dotnet restore "./src/Application.Host.Channel/Application.Host.Channel.csproj"
+
+    - name: Publish Master win-x64
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -p:IsStandalone=false -r win-x64 -o ./app/master-win-x64 --self-contained true
+
+    - name: Publish Master linux-x64
+      run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -p:IsStandalone=false -r linux-x64 -o ./app/master-linux-x64 --self-contained true
+
+    - name: Publish Channel win-x64
+      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -p:IsStandalone=false -r win-x64 -o ./app/channel-win-x64 --self-contained true
+
+    - name: Publish Channel linux-x64
+      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -p:IsStandalone=false -r linux-x64 -o ./app/channel-linux-x64 --self-contained true
 
     - name: get latest version
       run: |
           VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-    - name: Zip win-x64
-      run: zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip ./app/win-x64
-
-    - name: Zip linux-x64
-      run: zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip ./app/linux-x64
+    - name: Zip
+      run: |
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip ./app/standalone-win-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip ./app/standalone-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip ./app/master-win-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip ./app/master-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip ./app/channel-win-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.zip ./app/channel-linux-x64
 
     - name: Create Release and Upload Release Asset
       uses: softprops/action-gh-release@v1
@@ -63,3 +83,7 @@ jobs:
         files: |
           ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip
           ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.zip

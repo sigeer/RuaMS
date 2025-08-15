@@ -30,10 +30,9 @@ namespace Application.Module.Duey.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
-            {
-                app.MapGrpcService<DueyGrpcServer>();
-            }
+#if !IsStandalone
+            app.MapGrpcService<DueyGrpcServer>();
+#endif
         }
     }
 }

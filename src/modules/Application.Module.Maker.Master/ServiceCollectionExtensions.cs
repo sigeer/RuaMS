@@ -24,11 +24,9 @@ namespace Application.Module.Maker.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.AllowMultiMachine))
-            {
-                app.MapGrpcService<GrpcServer>();
-            }
-
+#if !IsStandalone
+            app.MapGrpcService<GrpcServer>();
+#endif
         }
     }
 }
