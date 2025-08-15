@@ -30,9 +30,9 @@ namespace Application.Module.Marriage.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-#if !IsStandalone
-            app.MapGrpcService<GrpcService>();
-#endif
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+                app.MapGrpcService<GrpcService>();
+
         }
     }
 }

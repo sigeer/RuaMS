@@ -49,25 +49,23 @@
 
 - ServiceTest 测试
 
+## 发布
 
-## 运行
+通过设置 -p:IsStandalone 切换输出版本
 
-### 支持数据库
+### master-standalone
 
-- **Sqlite （默认）**
-- Mysql 8
+内置`Application.Core.Channel.InProgress`，可通过设置`ChannelServerConfig`调整频道，也可通过设置`UseExtraChannel=true`接入其他频道服务器
 
-### 步骤
+### master
 
-1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
-2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
-3. 运行`Application.Host.exe`
+必须设置`UseExtraChannel=true`，不然毫无意义
 
-### 单机部署
+### channel
 
-登录服务器 和 频道服务器处于同一进程内
+通过设置`ChannelServerConfig.MasterServerGrpcAddress`连接到`MasterServer`
 
-#### docker
+### docker（默认单机模式）
 
 **生成镜像**
 
@@ -103,19 +101,27 @@ rua-ms
 docker compose up -d
 ```
 
-### 多机部署
+## 运行
 
-0. 修改`Application.Host`的配置，启用`AllowMultiMachine`
+### 支持数据库
 
-#### 登录服务器 与 频道服务器 在不同进程
+- **Sqlite （默认）**
+- Mysql 8
 
-1. 移除`AddChannelServerInProgress`（可以考虑移除`Application.Host`的引用`Application.Core.Channel.InProgress`）
-2. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
+### 步骤
 
-#### 一部分频道与登录服务器在同一进程（默认），一部分频道在其他进程
+1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
+2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
 
-1. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
+### 单进程模式（master-standalone）
 
-## 关于镜像发布
+配置`UseExtraChannel=false`，登录服务器 和 频道服务器处于同一进程内，直接运行`Application.Host.exe`即可
 
-当前发布的镜像都是基于 单机部署 模式的
+
+### 多进程模式
+
+配置`UseExtraChannel=true`
+
+1. 登录服务器 与 频道服务器 在不同进程：master
+2. 一部分频道与登录服务器在同一进程（默认），一部分频道在其他进程：master-standalone
+3. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`

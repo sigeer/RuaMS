@@ -30,9 +30,8 @@ namespace Application.Module.Duey.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-#if !IsStandalone
-            app.MapGrpcService<DueyGrpcServer>();
-#endif
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+                app.MapGrpcService<DueyGrpcServer>();
         }
     }
 }

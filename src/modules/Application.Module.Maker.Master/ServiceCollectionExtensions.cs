@@ -24,9 +24,8 @@ namespace Application.Module.Maker.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-#if !IsStandalone
-            app.MapGrpcService<GrpcServer>();
-#endif
+            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+                app.MapGrpcService<GrpcServer>();
         }
     }
 }

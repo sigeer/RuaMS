@@ -31,19 +31,16 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: Restore Standalone
-      run: dotnet restore "./src/Application.Host/Application.Host.csproj"
+    - name: Restore
+      run: |
+          dotnet restore "./src/Application.Host/Application.Host.csproj"
+          dotnet restore "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 
     - name: Publish Standalone win-x64
       run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r win-x64 -o ./app/standalone-win-x64 --self-contained true
 
     - name: Publish Standalone linux-x64
       run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -r linux-x64 -o ./app/standalone-linux-x64 --self-contained true
-
-    - name: Restore Multi
-      run: |
-          dotnet restore "./src/Application.Host/Application.Host.csproj" -p:IsStandalone=false
-          dotnet restore "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 
     - name: Publish Master win-x64
       run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -p:IsStandalone=false -r win-x64 -o ./app/master-win-x64 --self-contained true
@@ -52,10 +49,10 @@ jobs:
       run: dotnet publish "./src/Application.Host/Application.Host.csproj" -c Release -p:IsStandalone=false -r linux-x64 -o ./app/master-linux-x64 --self-contained true
 
     - name: Publish Channel win-x64
-      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -p:IsStandalone=false -r win-x64 -o ./app/channel-win-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -r win-x64 -o ./app/channel-win-x64 --self-contained true
 
     - name: Publish Channel linux-x64
-      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -p:IsStandalone=false -r linux-x64 -o ./app/channel-linux-x64 --self-contained true
+      run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -r linux-x64 -o ./app/channel-linux-x64 --self-contained true
 
     - name: get latest version
       run: |
@@ -64,8 +61,8 @@ jobs:
 
     - name: Zip
       run: |
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-win-x64.zip ./app/standalone-win-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-standalone-linux-x64.zip ./app/standalone-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip ./app/standalone-win-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip ./app/standalone-linux-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip ./app/master-win-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip ./app/master-linux-x64
           zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip ./app/channel-win-x64

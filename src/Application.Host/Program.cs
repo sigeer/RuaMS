@@ -73,12 +73,13 @@ try
             options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort));
         }
 
-#if !IsStandalone
-        options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
+        if (builder.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
         {
-            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-        });
-#endif
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
+            {
+                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+            });
+        }
     });
 
     if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
