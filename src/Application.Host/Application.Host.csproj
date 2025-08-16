@@ -5,9 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>false</InvariantGlobalization>
+	  <IsStandalone>true</IsStandalone>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(IsStandalone)' == 'true'">
+		<Version>$(Version)-standalone</Version>
+		<FileVersion>$(Version).1</FileVersion>
 		<DefineConstants>$(DefineConstants);IsStandalone</DefineConstants>
 	</PropertyGroup>
 
