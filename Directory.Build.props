@@ -1,20 +1,7 @@
 <Project>
 	<PropertyGroup>
-		<IsStandalone>true</IsStandalone>
-		<RuaMSVersion>0.0.1</RuaMSVersion>
-	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(IsStandalone)' == 'true'">
-		<Version>$(RuaMSVersion)-standalone</Version>
-		<FileVersion>$(RuaMSVersion).1</FileVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(IsStandalone)' != 'true'">
-		<Version>$(RuaMSVersion)</Version>
-		<FileVersion>$(RuaMSVersion).0</FileVersion>
-	</PropertyGroup>
-
-	<PropertyGroup>
+	  <Version>0.0.1</Version>
+	  <FileVersion>0.0.1.0</FileVersion>
 	  <RepositoryUrl>https://github.com/sigeer/RuaMS</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
 	  <PackageProjectUrl>https://github.com/sigeer/RuaMS</PackageProjectUrl>
