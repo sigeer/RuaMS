@@ -69,7 +69,7 @@
 
 **生成镜像**
 
-`docker build -f ./src/Application.Host/Dockerfile -t rua-ms:latest -t rua-ms:0.0.1 .`
+`docker build -f ./src/Application.Host/Dockerfile-standalone -t ruams-standalone:latest -t ruams:0.0.1 .`
 
 **运行**
 
@@ -79,8 +79,8 @@ docker run -itd \
 -p 8484:8484 \
 -p 7575-7600:7575-7600 \
 -v ./logs:/app/logs \
---name rua-ms \
-rua-ms
+--name ruams-standalone \
+sigeer/ruams-standalone
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
 # 使用Mysql且非docker compose运行需要设置连接字符串
@@ -89,17 +89,14 @@ rua-ms
 
 # 公网运行运行需要修改`ChannelServerConfig.ChannelConfig`的Host
 -e "RUA_MS_ChannelServerConfig__ServerHost=" \
+
+# 允许接入其他频道服务器
+-p 7878:7878 \
+-e "RUA_MS_UseExtraChannel=true" \
 ```
 
 **sqlite数据库备份**  
 `docker cp [container_id]:/app/database.db ./backup.db`
-
-**docker compose运行**  
-
-在根目录（`docker-compose.yaml`同级目录）下执行
-```
-docker compose up -d
-```
 
 ## 运行
 

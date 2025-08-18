@@ -70,7 +70,10 @@ try
     {
         if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
         {
-            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort));
+            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort), listenOptions =>
+            {
+                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+            });
         }
 
         if (builder.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))

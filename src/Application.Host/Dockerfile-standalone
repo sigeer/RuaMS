@@ -7,6 +7,8 @@ WORKDIR /app
 EXPOSE 8080
 # 登录服务器
 EXPOSE 8484
+# 频道服务器
+EXPOSE 7575-7600
 # Grpc服务
 EXPOSE 7878
 
@@ -18,23 +20,23 @@ COPY . .
 RUN dotnet restore "./src/Application.Host/Application.Host.csproj"
 
 WORKDIR "/src/src/Application.Host"
-RUN dotnet build "./Application.Host.csproj" -c $BUILD_CONFIGURATION  -p:IsStandalone=false -o /app/build
+RUN dotnet build "./Application.Host.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # 此阶段用于发布要复制到最终阶段的服务项目
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Application.Host.csproj" -c $BUILD_CONFIGURATION  -p:IsStandalone=false -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Application.Host.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # 此阶段在生产中使用，或在常规模式下从 VS 运行时使用(在不使用调试配置时为默认值)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=sleepnap/beidou-server:nightly /opt/server_backup/wz ./wz
+COPY --from=sleepnap/beidou-server:nightly /opt/server_backup/wz-zh-CN ./wz
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV ASPNETCORE_ENVIRONMENT=Production
-# 不包含频道服务器，必须设置`UseExtraChannel=true`，不然毫无意义
-ENV RUA_MS_UseExtraChannel=true
 
 ENTRYPOINT ["dotnet", "Application.Host.dll"]
