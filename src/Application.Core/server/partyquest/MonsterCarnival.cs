@@ -43,7 +43,7 @@ public class MonsterCarnival
 
         if (CheckMembers())
         {
-            endingTime = DateTimeOffset.UtcNow.AddSeconds(map.TimeDefault);
+            endingTime = WorldChannel.Container.GetCurrentTimeDateTimeOffSet().AddSeconds(map.TimeDefault);
 
             effectTimer = WorldChannel.Container.TimerManager.schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
             respawnTask = WorldChannel.Container.TimerManager.register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
@@ -165,7 +165,7 @@ public class MonsterCarnival
 
     public int getTimeLeftSeconds()
     {
-        return (int)(endingTime - DateTimeOffset.UtcNow).TotalSeconds;
+        return (int)(endingTime - WorldChannel.Container.GetCurrentTimeDateTimeOffSet()).TotalSeconds;
     }
 
     private void ExtendTime()
@@ -174,7 +174,7 @@ public class MonsterCarnival
         {
             chrMap.dropMessage(5, LanguageConstants.getMessage(chrMap, LanguageConstants.CPQExtendTime));
         }
-        endingTime = DateTimeOffset.UtcNow.AddSeconds(map.TimeExpand);
+        endingTime = WorldChannel.Container.GetCurrentTimeDateTimeOffSet().AddSeconds(map.TimeExpand);
 
         map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
 

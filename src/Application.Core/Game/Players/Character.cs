@@ -2437,7 +2437,7 @@ public partial class Player
     public void setPlayerAggro(int mobHash)
     {
         setTargetHpBarHash(mobHash);
-        setTargetHpBarTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        setTargetHpBarTime(Client.CurrentServerContainer.getCurrentTime());
     }
 
     public void resetPlayerAggro()
@@ -2709,7 +2709,7 @@ public partial class Player
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(
             skillid,
-            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
+            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServerContainer.getCurrentTime()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
@@ -4586,7 +4586,7 @@ public partial class Player
 
     public void portalDelay(long delay)
     {
-        this.portaldelay = DateTimeOffset.UtcNow.AddMilliseconds(delay).ToUnixTimeMilliseconds();
+        this.portaldelay = Client.CurrentServerContainer.getCurrentTime();
     }
 
     public long portalDelay()
@@ -4936,7 +4936,7 @@ public partial class Player
     /// <returns></returns>
     public TimeSpan getLoggedInTime()
     {
-        return DateTimeOffset.UtcNow - loginTime;
+        return Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet() - loginTime;
     }
 
     public bool isLoggedin()

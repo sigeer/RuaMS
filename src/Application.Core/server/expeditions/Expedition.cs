@@ -121,7 +121,7 @@ public class Expedition
     private void scheduleRegistrationEnd()
     {
         Expedition exped = this;
-        startTime = DateTimeOffset.UtcNow.AddMinutes(type.getRegistrationMinutes());
+        startTime = leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddMinutes(type.getRegistrationMinutes());
 
         schedule = leader.Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
@@ -189,7 +189,7 @@ public class Expedition
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
-        startTime = DateTimeOffset.UtcNow;
+        startTime = leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
         startMap.ChannelServer.Container.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
@@ -217,7 +217,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet()).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -241,7 +241,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet()).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -316,7 +316,7 @@ public class Expedition
         {
             if (mob.getId() == expeditionBoss)
             {
-                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.UtcNow.ToString("HH:mm:ss") + "\r\n");
+                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().ToString("HH:mm:ss") + "\r\n");
                 return;
             }
         }

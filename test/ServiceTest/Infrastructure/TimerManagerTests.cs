@@ -1,3 +1,4 @@
+using Application.Utility.Tasks;
 using net.server;
 using server;
 
@@ -8,7 +9,7 @@ namespace ServiceTest.Infrastructure
         [Test]
         public async Task RegisterTaskTests()
         {
-            var timeManager = await TimerManager.InitializeAsync(Application.Utility.Tasks.TaskEngine.Quartz, "test");
+            var timeManager = await TimerManagerFactory.InitializeAsync(Application.Utility.Tasks.TaskEngine.Quartz, "test");
             int count = 0;
             var task = timeManager.register(() =>
             {

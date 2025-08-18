@@ -395,7 +395,7 @@ namespace Application.Core.Channel.Services
         {
             if (o.LoginInfo.IsNewCommer)
             {
-                chr.setLoginTime(DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()));
+                chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
 

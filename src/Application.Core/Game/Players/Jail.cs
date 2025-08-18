@@ -4,12 +4,12 @@ namespace Application.Core.Game.Players
     {
         public long getJailExpirationTimeLeft()
         {
-            return Jailexpire - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return Jailexpire - Client.CurrentServerContainer.getCurrentTime();
         }
 
         private void setFutureJailExpiration(long time)
         {
-            Jailexpire = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + time;
+            Jailexpire = Client.CurrentServerContainer.getCurrentTime() + time;
         }
 
         public void addJailExpirationTime(long time)

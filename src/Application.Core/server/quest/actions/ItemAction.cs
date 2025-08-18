@@ -166,7 +166,7 @@ public class ItemAction : AbstractQuestAction
         {
             int itemid = iEntry.getId(), count = iEntry.getCount(), period = iEntry.getPeriod();    // thanks Vcoc for noticing quest milestone item not getting removed from inventory after a while
 
-            InventoryManipulator.addById(chr.Client, itemid, (short)count, "", expiration: period > 0 ? (DateTimeOffset.UtcNow.AddMinutes(period).ToUnixTimeMilliseconds()) : -1);
+            InventoryManipulator.addById(chr.Client, itemid, (short)count, "", expiration: period > 0 ? (chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddMinutes(period).ToUnixTimeMilliseconds()) : -1);
             chr.sendPacket(PacketCreator.getShowItemGain(itemid, (short)count, true));
         }
     }

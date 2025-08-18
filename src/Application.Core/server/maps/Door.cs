@@ -60,7 +60,7 @@ public class Door
             {
                 this.town = this.target.getReturnMap();
                 this.townPortal = getTownDoorPortal(owner.getDoorSlot());
-                this.deployTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                this.deployTime = target.ChannelServer.Container.getCurrentTime();
                 this.active = true;
 
                 if (townPortal != null)
@@ -206,7 +206,7 @@ public class Door
 
     public long getElapsedDeployTime()
     {
-        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - deployTime;
+        return target.ChannelServer.Container.getCurrentTime() - deployTime;
     }
 
     private bool dispose()

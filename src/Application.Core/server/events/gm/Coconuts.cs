@@ -29,16 +29,18 @@ public class Coconuts
     private int id;
     private int hits = 0;
     private bool hittable = false;
-    private long hittime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-    public Coconuts(int id)
+    private long hittime = 0;
+    Coconut _root;
+    public Coconuts(Coconut coconut, int id)
     {
+        _root = coconut;
         this.id = id;
+        hittime = _root.Map.ChannelServer.Container.getCurrentTime();
     }
 
     public void hit()
     {
-        this.hittime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + 750;
+        this.hittime = _root.Map.ChannelServer.Container.getCurrentTime() + 750;
         hits++;
     }
 

@@ -49,6 +49,6 @@ public class EndDateRequirement : AbstractQuestRequirement
     public override bool check(IPlayer chr, int? npcid)
     {
         var dt = DateTimeOffset.Parse(timeStr);
-        return dt >= DateTimeOffset.UtcNow;
+        return dt >= chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
     }
 }

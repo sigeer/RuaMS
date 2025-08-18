@@ -131,7 +131,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             int i = getFreeSlot();
             if (i > -1)
             {
-                visitors[i] = new Visitor(visitor, DateTimeOffset.UtcNow);
+                visitors[i] = new Visitor(visitor, ChannelServer.Container.GetCurrentTimeDateTimeOffSet());
                 broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
                 MapModel.broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
 
@@ -187,7 +187,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     private void addVisitorToHistory(Visitor visitor)
     {
         // 只需要时间差，不需要使用系统时间
-        TimeSpan visitDuration = DateTimeOffset.UtcNow - visitor.enteredAt;
+        TimeSpan visitDuration = ChannelServer.Container.GetCurrentTimeDateTimeOffSet() - visitor.enteredAt;
         visitorHistory.Enqueue(new PastVisitor(visitor.chr.getName(), visitDuration));
     }
 

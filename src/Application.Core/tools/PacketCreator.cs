@@ -521,7 +521,7 @@ public class PacketCreator
         foreach (PlayerCoolDownValueHolder cooling in chr.getAllCooldowns())
         {
             p.writeInt(cooling.skillId);
-            int timeLeft = (int)(cooling.length + cooling.startTime - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            int timeLeft = (int)(cooling.length + cooling.startTime - chr.Client.CurrentServerContainer.getCurrentTime());
             p.writeShort(timeLeft / 1000);
         }
     }
@@ -815,7 +815,7 @@ public class PacketCreator
             p.writeInt(Randomizer.nextInt());
         }
         addCharacterInfo(p, chr);
-        p.writeLong(PacketCommon.getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
         return p;
     }
 
