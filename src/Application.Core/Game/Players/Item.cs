@@ -30,7 +30,7 @@ namespace Application.Core.Game.Players
                 {
                     bool deletedCoupon = false;
 
-                    long expiration, currenttime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    long expiration, currenttime = Client.CurrentServerContainer.getCurrentTime();
                     foreach (var skill in getSkills())
                     {
                         if (skill.Value.expiration != -1 && skill.Value.expiration < currenttime)
@@ -573,7 +573,7 @@ namespace Application.Core.Game.Players
                         evolved.Tameness = from.Tameness;
                         evolved.Fullness = from.Fullness;
                         evolved.Level = from.Level;
-                        evolved.setExpiration(DateTimeOffset.UtcNow.AddMilliseconds(expires).ToUnixTimeMilliseconds());
+                        evolved.setExpiration(Client.CurrentServerContainer.getCurrentTime() + expires);
 
                         item = evolved;
                     }

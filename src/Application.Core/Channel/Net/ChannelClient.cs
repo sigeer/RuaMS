@@ -325,7 +325,7 @@ namespace Application.Core.Channel.Net
         {
             lock (announceBossHPLock)
             {
-                long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                long timeNow = CurrentServerContainer.getCurrentTime();
                 int targetHash = OnlinedCharacter.getTargetHpBarHash();
 
                 if (mobHash != targetHash)

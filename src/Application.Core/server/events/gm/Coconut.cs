@@ -35,7 +35,7 @@ namespace server.events.gm;
 //Make them better :)
 public class Coconut : Event
 {
-    private ICoconutMap map;
+    public ICoconutMap Map { get; }
     private int MapleScore = 0;
     private int StoryScore = 0;
     private int countBombing = 80;
@@ -45,29 +45,29 @@ public class Coconut : Event
 
     public Coconut(IMap map) : base(map.getId(), 50)
     {
-        this.map = (map as ICoconutMap)!;
-        countBombing = this.map.CountBombing;
-        countFalling = this.map.CountFalling;
-        countStopped = this.map.CountStopped;
+        this.Map = (map as ICoconutMap)!;
+        countBombing = this.Map.CountBombing;
+        countFalling = this.Map.CountFalling;
+        countStopped = this.Map.CountStopped;
     }
 
     public void startEvent()
     {
-        map.startEvent();
+        Map.startEvent();
         for (int i = 0; i < 506; i++)
         {
-            coconuts.Add(new Coconuts(i));
+            coconuts.Add(new Coconuts(this, i));
         }
-        map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
+        Map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
         setCoconutsHittable(true);
-        map.broadcastMessage(PacketCreator.getClock(map.TimeDefault));
+        Map.broadcastMessage(PacketCreator.getClock(Map.TimeDefault));
 
-        map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(map.TimeDefault));
+        Map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(Map.TimeDefault));
     }
 
     private void Check()
     {
-        if (map.getId() == MapId.EVENT_COCONUT_HARVEST)
+        if (Map.getId() == MapId.EVENT_COCONUT_HARVEST)
         {
             if (getMapleScore() == getStoryScore())
             {
@@ -76,17 +76,17 @@ public class Coconut : Event
             else
             {
                 var winnerTeam = getMapleScore() > getStoryScore() ? 0 : 1;
-                foreach (var chr in map.getCharacters())
+                foreach (var chr in Map.getCharacters())
                 {
                     if (chr.getTeam() == winnerTeam)
                     {
-                        chr.sendPacket(PacketCreator.showEffect(map.EffectWin));
-                        chr.sendPacket(PacketCreator.playSound(map.SoundWin));
+                        chr.sendPacket(PacketCreator.showEffect(Map.EffectWin));
+                        chr.sendPacket(PacketCreator.playSound(Map.SoundWin));
                     }
                     else
                     {
-                        chr.sendPacket(PacketCreator.showEffect(map.EffectLose));
-                        chr.sendPacket(PacketCreator.playSound(map.SoundLose));
+                        chr.sendPacket(PacketCreator.showEffect(Map.EffectLose));
+                        chr.sendPacket(PacketCreator.playSound(Map.SoundLose));
                     }
                 }
                 warpOut();
@@ -95,17 +95,17 @@ public class Coconut : Event
     }
     public void bonusTime()
     {
-        map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
-        map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(map.TimeExpand));
+        Map.broadcastMessage(PacketCreator.getClock(Map.TimeExpand));
+        Map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(Map.TimeExpand));
 
     }
 
     public void warpOut()
     {
         setCoconutsHittable(false);
-        map.ChannelServer.Container.TimerManager.schedule(() =>
+        Map.ChannelServer.Container.TimerManager.schedule(() =>
         {
-            List<IPlayer> chars = new(map.getCharacters());
+            List<IPlayer> chars = new(Map.getCharacters());
 
             foreach (var chr in chars)
             {
@@ -115,11 +115,11 @@ public class Coconut : Event
                 }
                 else
                 {
-                    chr.changeMap(map.getForcedReturnId());
+                    chr.changeMap(Map.getForcedReturnId());
                 }
             }
-            map.Coconut = null;
-        }, TimeSpan.FromSeconds(map.TimeFinish));
+            Map.Coconut = null;
+        }, TimeSpan.FromSeconds(Map.TimeFinish));
     }
 
     public int getMapleScore()

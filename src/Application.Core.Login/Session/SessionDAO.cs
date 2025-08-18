@@ -11,11 +11,13 @@ public class SessionDAO
 
     readonly ILogger<SessionDAO> _logger;
     readonly IDbContextFactory<DBContext> _dbContextFactory;
+    readonly MasterServer _server;
 
-    public SessionDAO(ILogger<SessionDAO> logger, IDbContextFactory<DBContext> dbContextFactory)
+    public SessionDAO(ILogger<SessionDAO> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
+        _server = server;
     }
 
     public void deleteExpiredHwidAccounts()
@@ -23,11 +25,12 @@ public class SessionDAO
         try
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            dbContext.Hwidaccounts.Where(X => X.ExpiresAt < DateTimeOffset.UtcNow).ExecuteDelete();
+            var now = _server.GetCurrentTimeDateTimeOffset();
+            dbContext.Hwidaccounts.Where(X => X.ExpiresAt < now).ExecuteDelete();
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, "Failed to delete expired hwidaccounts");
+            _logger.LogError(e, "Failed to delete expired hwidaccounts");
         }
     }
 

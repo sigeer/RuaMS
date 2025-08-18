@@ -1,11 +1,16 @@
 using Application.Core.Channel;
+using Application.Core.Channel.InProgress;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.ServerTransports;
+using Application.Module.Duey.Master;
+using Application.Module.ExpeditionBossLog.Master;
+using Application.Module.Maker.Master;
 using Application.Module.PlayerNPC.Channel.InProgress;
+using Application.Module.PlayerNPC.Master;
 using Application.Shared.Servers;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Builder;
@@ -38,9 +43,13 @@ namespace ServiceTest
             builder.Services.AddSingleton<IChannelServerTransport, Application.Core.Channel.InProgress.LocalChannelServerTransport>();
 
             // 需要先启动Master
-            builder.Services.AddLoginServer("server=localhost;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;");
-            builder.Services.AddChannelServer();
-            builder.Services.AddPlayerNPCInProgress();
+            builder.Services.AddLoginServer(builder.Configuration);
+            builder.Services.AddDueyMaster();
+            builder.Services.AddExpeditionBossLogMaster();
+            builder.Services.AddMakerMaster();
+            builder.Services.AddPlayerNPCMaster();
+
+            builder.AddChannelServerInProgress();
 
             //sc.AddScoped<IChannel, MockChannel>();
 
@@ -50,10 +59,6 @@ namespace ServiceTest
 
             var idGeneratorOptions = new IdGeneratorOptions(1);
             YitIdHelper.SetIdGenerator(idGeneratorOptions);
-
-            MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
-                app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
 
             var bootstrap = app.Services.GetServices<IServerBootstrap>();
             foreach (var item in bootstrap)
@@ -82,7 +87,7 @@ namespace ServiceTest
             var channel = _sp.GetRequiredService<WorldChannelServer>().Servers[1];
 
             var loginService = _sp.GetRequiredService<LoginService>();
-            var obj = loginService.PlayerLogin("", channel.getId(), 1);
+            var obj = loginService.PlayerLogin("", 1);
             var charSrv = _sp.GetRequiredService<Application.Core.Channel.Services.DataService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(_sp, (long)1, channel);

@@ -1,5 +1,7 @@
 using Application.Core.Game.Items;
 using Application.Core.Login;
+using Application.Core.Login.Datas;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Shared.Constants.Inventory;
 using client.inventory.manipulator;
@@ -23,7 +25,7 @@ namespace ServiceTest.ItemTests
             Assert.That(item is Pet);
 
             chr.saveCharToDB();
-            var storageSerivce = _sp.GetRequiredService<StorageService>();
+            var storageSerivce = _sp.GetRequiredService<ServerManager>();
             await storageSerivce.CommitAllImmediately();
             //模拟重新登录
             var chr1 = GetPlayer()!;

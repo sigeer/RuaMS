@@ -54,7 +54,7 @@ public class Ola
     { // TODO: Messages
         chr.getMap().startEvent();
         chr.sendPacket(PacketCreator.getClock(360));
-        this.timeStarted = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        this.timeStarted = chr.getChannelServer().Container.getCurrentTime();
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
@@ -80,6 +80,6 @@ public class Ola
 
     public long getTimeLeft()
     {
-        return time - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timeStarted);
+        return time - (chr.getChannelServer().Container.getCurrentTime() - timeStarted);
     }
 }

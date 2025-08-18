@@ -2799,7 +2799,7 @@ public class MapleMap : IMap
 
         if (hasClock())
         {
-            DateTimeOffset cal = DateTimeOffset.UtcNow;
+            var cal = ChannelServer.Container.GetCurrentTimeDateTimeOffSet();
             chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
         }
         if (hasBoat() > 0)

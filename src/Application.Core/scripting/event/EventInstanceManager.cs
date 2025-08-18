@@ -308,7 +308,7 @@ public class EventInstanceManager
 
     public void startEventTimer(long time)
     {
-        timeStarted = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        timeStarted = em.getChannelServer().Container.getCurrentTime();
         eventTime = time;
 
         foreach (IPlayer chr in getPlayers())
@@ -391,7 +391,7 @@ public class EventInstanceManager
 
     public long getTimeLeft()
     {
-        return eventTime - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timeStarted);
+        return eventTime - (em.getChannelServer().Container.getCurrentTime() - timeStarted);
     }
 
     public void registerParty(IPlayer chr)

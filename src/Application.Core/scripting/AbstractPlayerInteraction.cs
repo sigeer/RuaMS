@@ -91,7 +91,7 @@ public class AbstractPlayerInteraction
 
     public int getHourOfDay()
     {
-        return DateTimeOffset.UtcNow.Hour;
+        return c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().Hour;
     }
 
     public int getMarketPortalId(int mapId)
@@ -1193,7 +1193,7 @@ public class AbstractPlayerInteraction
     {
         List<Pet> list = new();
 
-        long curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long curTime = c.CurrentServerContainer.getCurrentTime();
         foreach (Item it in getPlayer().getInventory(InventoryType.CASH).list())
         {
             if (it is Pet pet && pet.getExpiration() < curTime)

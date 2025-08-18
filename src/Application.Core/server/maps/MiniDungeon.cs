@@ -35,19 +35,21 @@ public class MiniDungeon
 
     int baseMap;
     long expireTime;
+    readonly WorldChannel _worldChannel;
 
     public MiniDungeon(WorldChannel worldChannel, int baseValue, long timeLimit)
     {
+        _worldChannel = worldChannel;
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
         timeoutTask = worldChannel.Container.TimerManager.schedule(() => close(), expireTime);
-        expireTime += DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        expireTime += worldChannel.Container.getCurrentTime();
     }
 
     public bool registerPlayer(IPlayer chr)
     {
-        int time = (int)((expireTime - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 1000);
+        int time = (int)((expireTime - _worldChannel.Container.getCurrentTime()) / 1000);
         if (time > 0)
         {
             chr.sendPacket(PacketCreator.getClock(time));

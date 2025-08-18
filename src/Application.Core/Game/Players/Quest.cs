@@ -439,7 +439,7 @@ namespace Application.Core.Game.Players
 
         public void questTimeLimit2(Quest quest, long expires)
         {
-            long timeLeft = expires - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long timeLeft = expires - Client.CurrentServerContainer.getCurrentTime();
 
             if (timeLeft <= 0)
             {
