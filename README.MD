@@ -69,7 +69,7 @@
 
 **生成镜像**
 
-`docker build -f ./src/Application.Host/Dockerfile-standalone -t ruams-standalone:latest -t ruams:0.0.1 .`
+`docker build -f ./src/Application.Host/Dockerfile-standalone -t ruams-standalone:latest -t ruams-standalone:0.0.1 .`
 
 **运行**
 
