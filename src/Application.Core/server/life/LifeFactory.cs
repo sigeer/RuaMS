@@ -359,11 +359,11 @@ public class LifeFactory : IStaticService
 
     public string getNPCDefaultTalk(int nid)
     {
-        return _wzStringProvider.GetNpcName(nid).DefaultTalk;
+        return _wzStringProvider.GetNpcString(nid).DefaultTalk;
     }
 
     public NPCStats GetNPCStats(int npcId)
     {
-        return new NPCStats(_wzStringProvider.GetNpcName(npcId).Name);
+        return new NPCStats(_wzStringProvider.GetNpcString(npcId).Name);
     }
 }

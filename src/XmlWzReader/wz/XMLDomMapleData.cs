@@ -96,7 +96,6 @@ public class XMLDomMapleData : Data
             XmlNode? childNode = childNodes.Item(i);
             if (childNode != null && childNode.NodeType == XmlNodeType.Element)
             {
-                var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
                     ret.Add(new XMLDomMapleData(childNode));
             }
         });

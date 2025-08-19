@@ -1,4 +1,5 @@
 using Application.Shared;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
@@ -96,9 +97,9 @@ namespace Application.Resources
         ObjectName GetItemNameFromData(Data stringData)
         {
             var itemId = int.Parse(stringData.getName()!);
-            var itemName = DataTool.getString("name", stringData) ?? "NO-NAME";
+            var itemName = DataTool.getString("name", stringData) ?? StringConstants.WZ_NoName;
             _itemNameCache[itemId] = new ObjectName(itemId, itemName);
-            return new(itemId, itemName ?? "NO-NAME");
+            return new(itemId, itemName);
         }
 
         private Data? GetStringDataByItemId(int itemId)
@@ -242,40 +243,6 @@ namespace Application.Resources
             return _itemMsgCache[itemId] = ret;
         }
 
-        Dictionary<int, NpcObjectName> _npcNameCache = new();
-        bool _isNpcLoadAll = false;
-        void LoadAllNpcData()
-        {
-            if (!_isNpcLoadAll)
-            {
-                foreach (Data data in npcStringData.getChildren())
-                {
-                    var id = int.Parse(data.getName());
-                    var name = DataTool.getString("name", data) ?? "NO-NAME";
-                    var defaultTalk = DataTool.getString("d0", data) ?? "(...)";
-                    _npcNameCache[id] = new(id, name, defaultTalk);
-
-                    _isNpcLoadAll = true;
-                }
-            }
-        }
-        public List<NpcObjectName> GetAllNpcList()
-        {
-            LoadAllNpcData();
-            return _npcNameCache.Values.ToList();
-        }
-
-        public NpcObjectName GetNpcName(int npcId)
-        {
-            if (_npcNameCache.TryGetValue(npcId, out var data))
-                return data;
-
-            var name = DataTool.getString(npcId + "/name", npcStringData) ?? "NO-NAME";
-            var defaultTalk = DataTool.getString(npcId + "/d0", npcStringData) ?? "(...)";
-            return _npcNameCache[npcId] = new(npcId, name, defaultTalk);
-        }
-
-
 
         bool _isSkillLoadAll = false;
         Dictionary<int, ObjectName> _skillNameCache = new();
@@ -286,7 +253,7 @@ namespace Application.Resources
                 foreach (var skillData in skillStringData.getChildren())
                 {
                     var skillId = int.Parse(skillData.getName());
-                    var skillName = DataTool.getString("name", skillData) ?? "NO-NAME";
+                    var skillName = DataTool.getString("name", skillData) ?? StringConstants.WZ_NoName;
                     _skillNameCache[skillId] = new(skillId, skillName);
                 }
                 _isSkillLoadAll = true;
@@ -305,6 +272,9 @@ namespace Application.Resources
 
         public string? GetSkillName(int skillid)
         {
+            if (_skillNameCache.TryGetValue(skillid, out var data))
+                return data.Name;
+
             StringBuilder skill = new StringBuilder();
             skill.Append(skillid);
             if (skill.Length == 4)
@@ -313,7 +283,9 @@ namespace Application.Resources
                 skill.Append("000").Append(skillid);
             }
 
-            return DataTool.getString("name", skillStringData.getChildByPath(skill.ToString()));
+            var name = DataTool.getString("name", skillStringData.getChildByPath(skill.ToString())) ?? StringConstants.WZ_NoName;
+            _skillNameCache[skillid] = new ObjectName(skillid, name);
+            return name;
         }
 
 
@@ -329,8 +301,8 @@ namespace Application.Resources
                     foreach (Data searchData in searchDataDir.getChildren())
                     {
 
-                        mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? "NO-NAME";
-                        streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? "NO-NAME";
+                        mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? StringConstants.WZ_NoName;
+                        streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? StringConstants.WZ_NoName;
 
                         if (int.TryParse(searchData.getName(), out var id))
                         {
@@ -349,9 +321,43 @@ namespace Application.Resources
                 return data;
 
             var mapData = mapStringData.getChildByPath(MapConstants.GetMapDataName(mapId));
-            var mapName = DataTool.getString("mapName", mapData) ?? "NO-NAME";
-            var streetName = DataTool.getString("streetName", mapData) ?? "NO-NAME";
+            var mapName = DataTool.getString("mapName", mapData) ?? StringConstants.WZ_NoName;
+            var streetName = DataTool.getString("streetName", mapData) ?? StringConstants.WZ_NoName;
             return _mapNameCache[mapId] = new MapName(mapId, mapName, streetName);
+        }
+
+
+        Dictionary<int, NpcObjectName> _npcNameCache = new();
+        bool _isNpcLoadAll = false;
+        void LoadAllNpcData()
+        {
+            if (!_isNpcLoadAll)
+            {
+                foreach (Data data in npcStringData.getChildren())
+                {
+                    var id = int.Parse(data.getName());
+                    var name = DataTool.getString("name", data) ?? StringConstants.WZ_MissingNo;
+                    var defaultTalk = DataTool.getString("d0", data) ?? "(...)";
+                    _npcNameCache[id] = new(id, name, defaultTalk);
+
+                    _isNpcLoadAll = true;
+                }
+            }
+        }
+        public List<NpcObjectName> GetAllNpcList()
+        {
+            LoadAllNpcData();
+            return _npcNameCache.Values.ToList();
+        }
+
+        public NpcObjectName GetNpcString(int npcId)
+        {
+            if (_npcNameCache.TryGetValue(npcId, out var data))
+                return data;
+
+            var name = DataTool.getString(npcId + "/name", npcStringData) ?? StringConstants.WZ_MissingNo;
+            var defaultTalk = DataTool.getString(npcId + "/d0", npcStringData) ?? "(...)";
+            return _npcNameCache[npcId] = new(npcId, name, defaultTalk);
         }
 
 
@@ -364,7 +370,7 @@ namespace Application.Resources
                 foreach (Data item in mobStringData.getChildren())
                 {
                     var id = int.Parse(item.getName());
-                    _mobNameCache[id] = new ObjectName(id, DataTool.getString(item.getChildByPath("name")) ?? "NO-NAME");
+                    _mobNameCache[id] = new ObjectName(id, DataTool.getString(item.getChildByPath("name")) ?? StringConstants.WZ_MissingNo);
                 }
                 _isMobLoadAll = true;
             }
@@ -376,7 +382,7 @@ namespace Application.Resources
             if (_mobNameCache.TryGetValue(id, out var data))
                 return data.Name;
 
-            var mobName = DataTool.getString(mobStringData.getChildByPath(id + "/name")) ?? "NO-NAME";
+            var mobName = DataTool.getString(mobStringData.getChildByPath(id + "/name")) ?? StringConstants.WZ_MissingNo;
             _mobNameCache[id] = new ObjectName(id, mobName);
             return mobName;
         }

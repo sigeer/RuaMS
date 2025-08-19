@@ -2,13 +2,7 @@ namespace Application.Utility.Configs;
 
 public class ServerConfig
 {
-    public bool ENABLE_OPENAPI;
-
     //Login Configuration
-    public int WORLDS;
-    public int WLDLIST_SIZE;
-    public int CHANNEL_SIZE;
-    public int CHANNEL_LOAD;
     public int CHANNEL_LOCKS;
 
     public long RESPAWN_INTERVAL;
@@ -33,11 +27,6 @@ public class ServerConfig
     public int MAX_ALLOWED_ACCOUNT_HWID;
     public int MAX_ACCOUNT_LOGIN_ATTEMPT;
     public int LOGIN_ATTEMPT_DURATION;
-
-    //Ip Configuration
-    public string HOST;
-    public string LANHOST;
-    public string LOCALHOST;
 
     //Server Flags
     public bool USE_CUSTOM_KEYSET;
@@ -245,14 +234,6 @@ public class ServerConfig
     public bool USE_DEADLY_DOJO;
     public int DOJO_ENERGY_ATK;
     public int DOJO_ENERGY_DMG;
-
-    //Wedding Configuration
-    public int WEDDING_RESERVATION_DELAY;
-    public int WEDDING_RESERVATION_TIMEOUT;
-    public int WEDDING_RESERVATION_INTERVAL;
-    public int WEDDING_BLESS_EXP;
-    public int WEDDING_GIFT_LIMIT;
-    public bool WEDDING_BLESSER_SHOWFX;
 
     // Login timeout by shavit
     public long TIMEOUT_DURATION;

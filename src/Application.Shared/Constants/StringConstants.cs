@@ -13,5 +13,8 @@ namespace Application.Shared.Constants
             "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
 
         public const string Buddy_DefaultGroup = "Default Group";
+
+        public const string WZ_NoName = "NO-NAME";
+        public const string WZ_MissingNo = "MISSINGNO";
     }
 }
