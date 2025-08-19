@@ -226,7 +226,7 @@ function BaseTransport:invasionSpawnMobA()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posAX, self.invasionConfig.posAY)
     for i = 1, self.invasionConfig.countA do
-        self.transportationAMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobA), pos)
+        self.transportationAMap:spawnMonsterOnGroundBelow(LifeFactory:getMonster(self.invasionConfig.mobA), pos)
     end
 end
 
@@ -234,7 +234,7 @@ function BaseTransport:invasionSpawnMobB()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posBX, self.invasionConfig.posBY)
     for i = 1, self.invasionConfig.countB do
-        self.transportationBMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobB), pos)
+        self.transportationBMap:spawnMonsterOnGroundBelow(LifeFactory:getMonster(self.invasionConfig.mobB), pos)
     end
 end
 

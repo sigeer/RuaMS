@@ -28,6 +28,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
+using Application.Resources;
 using Application.Shared.Events;
 using constants.game;
 using constants.String;
@@ -65,7 +66,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var talk = npcDefaultTalks.GetValueOrDefault(npcid);
         if (talk == null)
         {
-            talk = LifeFactory.getNPCDefaultTalk(npcid);
+            talk = LifeFactory.Instance.getNPCDefaultTalk(npcid);
             npcDefaultTalks.AddOrUpdate(npcid, talk);
         }
 
@@ -428,11 +429,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void maxMastery()
     {
-        foreach (Data skill_ in DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Skill.img").getChildren())
+        var provider = c.CurrentServerContainer.ServiceProvider.GetRequiredService<WzStringProvider>();
+        foreach (var skillId in provider.GetAllSkillIdList())
         {
             try
             {
-                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()!));
+                Skill skill = SkillFactory.GetSkillTrust(skillId);
                 getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)

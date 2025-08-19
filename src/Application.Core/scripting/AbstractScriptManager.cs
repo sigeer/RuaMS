@@ -118,7 +118,7 @@ public abstract class AbstractScriptManager
 
     void InitializeScriptType(IEngine engine)
     {
-        engine.AddHostedType("LifeFactory", typeof(LifeFactory));
+        engine.AddHostedObject("LifeFactory", LifeFactory.Instance);
         engine.AddHostedType("DropItemEntry", typeof(DropItemEntry));
         engine.AddHostedType("YamlConfig", typeof(YamlConfig));
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
@@ -148,10 +148,8 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedObject("PlayerNPC", _channelServer.Container.PlayerNPCService);
-            engine.AddHostedType("ShopFactory", typeof(ShopManager));
             engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
-            engine.AddHostedType("InventoryType", typeof(InventoryType));
             engine.AddHostedType("InventoryType", typeof(InventoryType));
 
             var jsUtils = GetScriptMeta(JsUtil);

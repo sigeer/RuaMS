@@ -2,8 +2,11 @@ using Application.Core.Login;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
+using Application.Resources;
 using Application.Shared.Login;
+using Application.Shared.MapObjects;
 using Application.Shared.Message;
+using Application.Shared.Models;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
@@ -35,6 +38,7 @@ namespace Application.Core.Channel.InProgress
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
         readonly ResourceDataManager _resourceService;
+        readonly WzStringProvider _wzStringReader;
         readonly IMapper _mapper;
 
         public LocalChannelServerTransport(
@@ -48,6 +52,7 @@ namespace Application.Core.Channel.InProgress
             InvitationService invitationService,
             IExpeditionService expeditionService,
             ResourceDataManager resourceDataService,
+            WzStringProvider wzStringReader,
             IMapper mapper)
         {
             _server = server;
@@ -61,6 +66,7 @@ namespace Application.Core.Channel.InProgress
             _invitationService = invitationService;
             _expeditionService = expeditionService;
             _resourceService = resourceDataService;
+            _wzStringReader = wzStringReader;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels)
@@ -735,6 +741,5 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.GetServerStats();
         }
-
     }
 }

@@ -89,7 +89,7 @@ public class SpawnPoint
 
     public Monster GenrateMonster()
     {
-        var mob = LifeFactory.GetMonsterTrust(monster);
+        var mob = LifeFactory.Instance.GetMonsterTrust(monster);
         mob.setPosition(pos);
         mob.setTeam(team);
         mob.setFh(fh);

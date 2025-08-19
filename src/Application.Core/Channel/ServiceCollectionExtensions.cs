@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Infrastructures;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
@@ -10,10 +9,12 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
-using Application.Protos;
+using Application.Resources;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using server.life;
+using server.maps;
 
 namespace Application.Core.Channel
 {
@@ -78,6 +79,15 @@ namespace Application.Core.Channel
             services.AddSingleton<ItemInformationProvider>();
             services.AddSingleton<IStaticService, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
             services.AddSingleton<DataBootstrap, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
+
+            services.AddSingleton<MapFactory>();
+            services.AddSingleton<IStaticService, MapFactory>(sp => sp.GetRequiredService<MapFactory>());
+
+            services.AddSingleton<LifeFactory>();
+            services.AddSingleton<IStaticService, LifeFactory>(sp => sp.GetRequiredService<LifeFactory>());
+
+            services.AddSingleton<WzStringProvider>();
+            services.AddSingleton<WzStringQueryService>();
 
             services.AddSingleton<ShopManager>();
             services.AddSingleton<MonitorManager>();

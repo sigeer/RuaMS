@@ -238,7 +238,7 @@ namespace Application.Core.Mappers
                 });
 
             CreateMap<Dto.NoteDto, NoteObject>()
-                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.GetNPCStats(x.FromId).getName() : x.From));
+                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.Instance.GetNPCStats(x.FromId).getName() : x.From));
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
             CreateMap<Dto.ShopItemDto, ShopItem>()
@@ -283,7 +283,7 @@ namespace Application.Core.Mappers
 
             CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
                 .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso))
-                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.loadPlaceName(x.MapId)));
+                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.Instance.loadPlaceName(x.MapId)));
             CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
             CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
 

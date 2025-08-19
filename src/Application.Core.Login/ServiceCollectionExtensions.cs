@@ -11,6 +11,7 @@ using Application.Core.Login.Shared;
 using Application.Core.Login.Tasks;
 using Application.EF;
 using Application.Protos;
+using Application.Resources;
 using Application.Shared.Servers;
 using Application.Utility;
 using AutoMapper.Extensions.ExpressionMapping;

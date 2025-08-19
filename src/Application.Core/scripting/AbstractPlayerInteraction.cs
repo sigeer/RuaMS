@@ -990,7 +990,7 @@ public class AbstractPlayerInteraction
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        var npc = LifeFactory.getNPC(npcId);
+        var npc = LifeFactory.Instance.getNPC(npcId);
         if (npc != null)
         {
             npc.setPosition(pos);
@@ -1005,14 +1005,14 @@ public class AbstractPlayerInteraction
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.GetMonsterTrust(id);
+        var monster = LifeFactory.Instance.GetMonsterTrust(id);
         monster.setPosition(new Point(x, y));
         getPlayer().getMap().spawnMonster(monster);
     }
 
     public Monster? getMonsterLifeFactory(int mid)
     {
-        return LifeFactory.getMonster(mid);
+        return LifeFactory.Instance.getMonster(mid);
     }
 
     public void spawnGuide()

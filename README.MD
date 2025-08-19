@@ -24,21 +24,28 @@
 - **Application.Core.EF** EF
 - **Application.Core.EF.MySQL** MySQL驱动，及迁移文件、初始化脚本
 - **Application.Core.EF.Sqlite** Sqlite驱动，及迁移文件、初始化脚本
-- **Application.Core.Channel.InProgress** 进程内同时运行主服务器+频道服务器的实现 （Application.Modules.XXX.Channel.InProgress）
+- **Application.Core.Channel.InProgress** 进程内同时运行主服务器 + 频道服务器的实现 （Application.Modules.XXX.Channel.InProgress）
 - **Application.Core.Login** 登录服务器、主服务器实现
 - **Application.Proto** proto文件
 - **Application.Utility** 工具类
-- **Application.Resource** 资源：yaml配置文件 后期逐步移除
- > 当前使用的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，可以使用该项目中的wz、以及客户端。    
-也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/RuaMS/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
-（来自于 [Cosmic](https://github.com/P0nk/Cosmic)） 但是代码发生了多次更新可能存在BUG
-如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理
+- **Application.Resource** 资源：yaml配置文件（后期逐步移除）
 - **Application.Shared** 一些公用数据结构、类型
 - **XmlWzReader** xml格式的wz读取工具
 - **Application.Scripting** 脚本引擎
 - **Application.Scripting.JS** js脚本引擎
 - **Application.Scripting.Lua** lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）
 - **Application.Benchmark** 重构代码时，在该项目测试新代码的性能是否优于旧代码
+
+#### 资源说明
+
+##### script
+
+当前使用的`scripts`来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server)。
+如果有其他java项目的脚本资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理
+
+##### wz
+
+当前项目没有包含`wz`，为配合脚本，建议也使用[BeiDou](https://github.com/BeiDouMS/BeiDou-Server) 的wz。
 
 ### tools
 
@@ -83,11 +90,12 @@ docker run -itd \
 sigeer/ruams-standalone
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
-# 使用Mysql且非docker compose运行需要设置连接字符串
+
+# 使用Mysql需要设置数据库类型及连接字符串
 -e "RUA_MS_Database=MySql" \
 -e "RUA_MS_ConnectionStrings__MySql=" \
 
-# 公网运行运行需要修改`ChannelServerConfig.ChannelConfig`的Host
+# 公网运行运行需要修改`ChannelServerConfig.ServerHost`
 -e "RUA_MS_ChannelServerConfig__ServerHost=" \
 
 # 允许接入其他频道服务器
@@ -119,6 +127,5 @@ sigeer/ruams-standalone
 
 配置`UseExtraChannel=true`
 
-1. 登录服务器 与 频道服务器 在不同进程：master
-2. 一部分频道与登录服务器在同一进程（默认），一部分频道在其他进程：master-standalone
-3. 先启动`Application.Host`，启动完成后再启动`Application.Host.Channel`
+- 使用master版：仅登录服务器，必须启动`Application.Host.Channel`
+- 使用master-standalone版：登录服务器+频道服务器，通过启动`Application.Host.Channel`扩展

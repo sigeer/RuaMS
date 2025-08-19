@@ -929,7 +929,7 @@ public class Monster : AbstractLifeObject
 
                     foreach (int mid in toSpawn)
                     {
-                        var mob = LifeFactory.GetMonsterTrust(mid);
+                        var mob = LifeFactory.Instance.GetMonsterTrust(mid);
                         mob.setPosition(getPosition());
                         mob.setFh(getFh());
                         mob.setParentMobOid(getObjectId());

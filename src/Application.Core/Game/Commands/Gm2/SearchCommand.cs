@@ -1,5 +1,5 @@
-using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
+using Application.Resources;
 using server.quest;
 using System.Diagnostics;
 using System.Text;
@@ -8,20 +8,11 @@ namespace Application.Core.Game.Commands.Gm2;
 
 public class SearchCommand : CommandBase
 {
-    private Data npcStringData;
-    private Data mobStringData;
-    private Data skillStringData;
-    private Data mapStringData;
-
-    public SearchCommand() : base(2, "search")
+    readonly WzStringProvider _wzStringProvider;
+    public SearchCommand(WzStringProvider wzStringProvider) : base(2, "search")
     {
+        _wzStringProvider = wzStringProvider;
         Description = "Search string.wz.";
-
-        DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
-        npcStringData = dataProvider.getData("Npc.img");
-        mobStringData = dataProvider.getData("Mob.img");
-        skillStringData = dataProvider.getData("Skill.img");
-        mapStringData = dataProvider.getData("Map.img");
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -37,103 +28,59 @@ public class SearchCommand : CommandBase
         string search = joinStringFrom(paramsValue, 1);
         Stopwatch sw = new Stopwatch();
         sw.Start();
-        Data? data = null;
-        if (!paramsValue[0].Equals("ITEM", StringComparison.OrdinalIgnoreCase))
+        if (paramsValue[0].Equals("ITEM", StringComparison.OrdinalIgnoreCase))
         {
-            int searchType = 0;
+            foreach (var item in _wzStringProvider.GetAllItem().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
+            {
+                sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.Name).Append("\r\n");
+            }
+        }
+        else if (paramsValue[0].Equals("NPC", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var item in _wzStringProvider.GetAllNpcList().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
+            {
+                sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.Name).Append("\r\n");
+            }
+        }
+        else if (paramsValue[0].Equals("MOB", StringComparison.OrdinalIgnoreCase) || paramsValue[0].Equals("MONSTER", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var item in _wzStringProvider.GetAllMonster().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
+            {
+                sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.Name).Append("\r\n");
+            }
+        }
+        else if (paramsValue[0].Equals("SKILL", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var item in _wzStringProvider.GetAllSkillList().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
+            {
+                sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.Name).Append("\r\n");
+            }
+        }
+        else if (paramsValue[0].Equals("MAP", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var item in _wzStringProvider.GetAllMap().Where(x => x.PlaceName.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || x.StreetName.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
+            {
+                sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.StreetName).Append(" - ").Append(item.PlaceName).Append("\r\n");
+            }
+        }
+        else if (paramsValue[0].Equals("QUEST", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (Quest mq in Quest.getMatchedQuests(search))
+            {
+                sb.Append("#b").Append(mq.getId()).Append("#k - #r");
 
-            if (paramsValue[0].Equals("NPC", StringComparison.OrdinalIgnoreCase))
-            {
-                data = npcStringData;
-            }
-            else if (paramsValue[0].Equals("MOB", StringComparison.OrdinalIgnoreCase) || paramsValue[0].Equals("MONSTER", StringComparison.OrdinalIgnoreCase))
-            {
-                data = mobStringData;
-            }
-            else if (paramsValue[0].Equals("SKILL", StringComparison.OrdinalIgnoreCase))
-            {
-                data = skillStringData;
-            }
-            else if (paramsValue[0].Equals("MAP", StringComparison.OrdinalIgnoreCase))
-            {
-                data = mapStringData;
-                searchType = 1;
-            }
-            else if (paramsValue[0].Equals("QUEST", StringComparison.OrdinalIgnoreCase))
-            {
-                data = mapStringData;
-                searchType = 2;
-            }
-            else
-            {
-                sb.Append("#bInvalid search.\r\nSyntax: '!search [type] [name]', where [type] is MAP, QUEST, NPC, ITEM, MOB, or SKILL.");
-            }
-            if (data != null)
-            {
-                string name;
-
-                if (searchType == 0)
+                string parentName = mq.getParentName();
+                if (parentName.Count() > 0)
                 {
-                    foreach (Data searchData in data.getChildren())
-                    {
-                        name = DataTool.getString(searchData.getChildByPath("name")) ?? "NO-NAME";
-                        if (name.Contains(search, StringComparison.OrdinalIgnoreCase))
-                        {
-                            sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(name).Append("\r\n");
-                        }
-                    }
+                    sb.Append(parentName).Append(" - ");
                 }
-                else if (searchType == 1)
-                {
-                    string mapName, streetName;
-
-                    foreach (Data searchDataDir in data.getChildren())
-                    {
-                        foreach (Data searchData in searchDataDir.getChildren())
-                        {
-                            mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? "NO-NAME";
-                            streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? "NO-NAME";
-
-                            if (mapName.Contains(search, StringComparison.OrdinalIgnoreCase) || streetName.Contains(search, StringComparison.OrdinalIgnoreCase))
-                            {
-                                sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(streetName).Append(" - ").Append(mapName).Append("\r\n");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (Quest mq in Quest.getMatchedQuests(search))
-                    {
-                        sb.Append("#b").Append(mq.getId()).Append("#k - #r");
-
-                        string parentName = mq.getParentName();
-                        if (parentName.Count() > 0)
-                        {
-                            sb.Append(parentName).Append(" - ");
-                        }
-                        sb.Append(mq.getName()).Append("\r\n");
-                    }
-                }
+                sb.Append(mq.getName()).Append("\r\n");
             }
         }
         else
         {
-            foreach (var itemPair in ItemInformationProvider.getInstance().getAllItems())
-            {
-                if (sb.Length < 32654)
-                {//ohlol
-                    if (itemPair.Name.ToLower().Contains(search.ToLower()))
-                    {
-                        sb.Append("#b").Append(itemPair.Id).Append("#k - #r").Append(itemPair.Name).Append("\r\n");
-                    }
-                }
-                else
-                {
-                    sb.Append("#bCouldn't load all items, there are too many results.\r\n");
-                    break;
-                }
-            }
+            sb.Append("#bInvalid search.\r\nSyntax: '!search [type] [name]', where [type] is MAP, QUEST, NPC, ITEM, MOB, or SKILL.");
         }
         if (sb.Length == 0)
         {

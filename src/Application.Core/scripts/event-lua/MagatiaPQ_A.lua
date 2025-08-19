@@ -93,13 +93,13 @@ function Sample:respawnStages(eim)
         local mapobj = eim:getMapInstance(926110401);
         local mobcount = mapobj:countMonster(9300150);
         if (mobcount == 0) then
-            local mobobj = LifeFactory.getMonster(9300150);
+            local mobobj = LifeFactory:getMonster(9300150);
             mapobj:spawnMonsterOnGroundBelow(mobobj, Point(-278, -126));
 
-            mobobj = LifeFactory.getMonster(9300150);
+            mobobj = LifeFactory:getMonster(9300150);
             mapobj:spawnMonsterOnGroundBelow(mobobj, Point(-542, -126));
         elseif (mobcount == 1) then
-            local mobobj = LifeFactory.getMonster(9300150);
+            local mobobj = LifeFactory:getMonster(9300150);
             mapobj:spawnMonsterOnGroundBelow(mobobj, Point(-542, -126));
         end
     end
@@ -132,8 +132,8 @@ function Sample:yuleteAction(eim)
     mapobj:destroyNPC(2112010);
 
     for i = 1, 5 do
-        local mobobj1 = LifeFactory.getMonster(mob1);
-        local mobobj2 = LifeFactory.getMonster(mob2);
+        local mobobj1 = LifeFactory:getMonster(mob1);
+        local mobobj2 = LifeFactory:getMonster(mob2);
 
         mapobj:spawnMonsterOnGroundBelow(mobobj1, Point(-455, 135));
         mapobj:spawnMonsterOnGroundBelow(mobobj2, Point(-455, 135));
@@ -141,16 +141,16 @@ function Sample:yuleteAction(eim)
 
 
     for i = 1, 5 do
-        local mobobj1 = LifeFactory.getMonster(mob1);
-        local mobobj2 = LifeFactory.getMonster(mob2);
+        local mobobj1 = LifeFactory:getMonster(mob1);
+        local mobobj2 = LifeFactory:getMonster(mob2);
 
         mapobj.spawnMonsterOnGroundBelow(mobobj1, Point(0, 135));
         mapobj.spawnMonsterOnGroundBelow(mobobj2, Point(0, 135));
     end
 
     for i = 1, 5 do
-        local mobobj1 = LifeFactory.getMonster(mob1);
-        local mobobj2 = LifeFactory.getMonster(mob2);
+        local mobobj1 = LifeFactory:getMonster(mob1);
+        local mobobj2 = LifeFactory:getMonster(mob2);
 
         mapobj.spawnMonsterOnGroundBelow(mobobj1, Point(360, 135));
         mapobj.spawnMonsterOnGroundBelow(mobobj2, Point(360, 135));

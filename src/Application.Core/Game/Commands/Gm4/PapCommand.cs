@@ -14,6 +14,6 @@ public class PapCommand : CommandBase
         var player = c.OnlinedCharacter;
 
         // thanks Conrad for noticing mobid typo here
-        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.PAPULATUS_CLOCK), player.getPosition());
+        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PAPULATUS_CLOCK), player.getPosition());
     }
 }

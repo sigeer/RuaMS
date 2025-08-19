@@ -18,7 +18,7 @@ public class NpcCommand : CommandBase
             player.yellowMessage("Syntax: !npc <npcid>");
             return;
         }
-        var npc = LifeFactory.getNPC(int.Parse(paramsValue[0]));
+        var npc = LifeFactory.Instance.getNPC(int.Parse(paramsValue[0]));
         if (npc != null)
         {
             npc.setPosition(player.getPosition());

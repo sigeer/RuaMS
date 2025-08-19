@@ -81,13 +81,13 @@ public class GotoCommand : CommandBase
 
             foreach (var e in towns)
             {
-                GOTO_TOWNS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.loadPlaceName(e.Value)) + "#k\r\n");
+                GOTO_TOWNS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.Instance.loadPlaceName(e.Value)) + "#k\r\n");
             }
 
             var areas = GOTO_AREAS.OrderBy(x => x.Value).ToArray();
             foreach (var e in areas)
             {
-                GOTO_AREAS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.loadPlaceName(e.Value)) + "#k\r\n");
+                GOTO_AREAS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.Instance.loadPlaceName(e.Value)) + "#k\r\n");
             }
         }
         catch (Exception e)

@@ -362,30 +362,4 @@ public class SkillFactory
         }
         return ret;
     }
-
-    public static string? getSkillName(int skillid)
-    {
-        var data = DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Skill.img");
-        StringBuilder skill = new StringBuilder();
-        skill.Append(skillid);
-        if (skill.Length == 4)
-        {
-            skill.Remove(0, 4);
-            skill.Append("000").Append(skillid);
-        }
-
-        var inValue = data?.getChildByPath(skill.ToString());
-        if (inValue != null)
-        {
-            foreach (Data skilldata in inValue)
-            {
-                if (skilldata.getName() == "name")
-                {
-                    return DataTool.getString(skilldata);
-                }
-            }
-        }
-
-        return null;
-    }
 }

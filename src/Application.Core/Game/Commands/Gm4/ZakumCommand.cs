@@ -12,10 +12,10 @@ public class ZakumCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        player.getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.getMonster(MobId.ZAKUM_1), player.getPosition());
+        player.getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ZAKUM_1), player.getPosition());
         for (int mobId = MobId.ZAKUM_ARM_1; mobId <= MobId.ZAKUM_ARM_8; mobId++)
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(mobId), player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), player.getPosition());
         }
     }
 }

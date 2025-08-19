@@ -56,16 +56,16 @@ end
 function Sample:spawnBalrog(eim)
     local mapObj = eim:getInstanceMap(self.entryMap)
     local spawnPoint = Point(self.compositBoss.posX, self.compositBoss.posY)
-    mapObj:spawnFakeMonsterOnGroundBelow(LifeFactory.getMonster(self.compositBoss.fake), spawnPoint)
+    mapObj:spawnFakeMonsterOnGroundBelow(LifeFactory:getMonster(self.compositBoss.fake), spawnPoint)
 
     for _, partMobId in ipairs(self.compositBoss.part) do
-        mapObj:spawnMonsterOnGroundBelow(LifeFactory.getMonster(partMobId), spawnPoint)
+        mapObj:spawnMonsterOnGroundBelow(LifeFactory:getMonster(partMobId), spawnPoint)
     end
 end
 
 function Sample:spawnSealedBalrog(eim)
     local spawnPoint = Point(self.compositBoss.posX, self.compositBoss.posY)
-    eim:getInstanceMap(self.entryMap):spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.compositBoss.main),
+    eim:getInstanceMap(self.entryMap):spawnMonsterOnGroundBelow(LifeFactory:getMonster(self.compositBoss.main),
         spawnPoint)
 end
 

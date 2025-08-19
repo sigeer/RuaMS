@@ -2020,7 +2020,7 @@ public class MapleMap : IMap
 
     public void spawnMonsterOnGroundBelow(int id, int x, int y)
     {
-        var mob = LifeFactory.getMonster(id);
+        var mob = LifeFactory.Instance.getMonster(id);
         spawnMonsterOnGroundBelow(mob, new Point(x, y));
     }
 
@@ -4507,10 +4507,10 @@ public class MapleMap : IMap
 
     public void spawnHorntailOnGroundBelow(Point targetPoint)
     {   // ayy lmao
-        var htIntro = LifeFactory.getMonster(MobId.SUMMON_HORNTAIL)!;
+        var htIntro = LifeFactory.Instance.getMonster(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
 
-        var ht = LifeFactory.getMonster(MobId.HORNTAIL)!;
+        var ht = LifeFactory.Instance.getMonster(MobId.HORNTAIL)!;
         ht.setParentMobOid(htIntro.getObjectId());
         ht.addListener(new ActualMonsterListener()
         {
@@ -4528,7 +4528,7 @@ public class MapleMap : IMap
 
         for (int mobId = MobId.HORNTAIL_HEAD_A; mobId <= MobId.HORNTAIL_TAIL; mobId++)
         {
-            Monster m = LifeFactory.getMonster(mobId)!;
+            Monster m = LifeFactory.Instance.getMonster(mobId)!;
             m.setParentMobOid(htIntro.getObjectId());
 
             m.addListener(new ActualMonsterListener()

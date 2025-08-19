@@ -65,7 +65,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             return;
                         }
 
-                        var mob = LifeFactory.GetMonsterTrust(mobs[num].Key);
+                        var mob = LifeFactory.Instance.GetMonsterTrust(mobs[num].Key);
                         if (c.OnlinedCharacter.MCTeam != null)
                         {
                             if (!c.OnlinedCharacter.MCTeam.CanSummon())

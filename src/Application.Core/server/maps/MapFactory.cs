@@ -25,7 +25,9 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Resources;
 using Application.Shared.WzEntity;
+using Microsoft.Extensions.DependencyInjection;
 using scripting.Event;
 using server.life;
 using server.partyquest;
@@ -35,18 +37,30 @@ using tools;
 
 namespace server.maps;
 
-public class MapFactory
+public class MapFactory : IStaticService
 {
-    private static Data nameData;
-    private static DataProvider mapSource;
+    private static MapFactory? _instance;
 
-    static MapFactory()
+    public static MapFactory Instance => _instance ?? throw new BusinessFatalException("MapFactory 未注册");
+
+    public void Register(IServiceProvider sp)
     {
-        nameData = DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Map.img");
+        if (_instance != null)
+            return;
+
+        _instance = sp.GetService<MapFactory>() ?? throw new BusinessFatalException("MapFactory 未注册");
+    }
+
+    private DataProvider mapSource;
+
+    readonly WzStringProvider _wzStringProvider;
+    public MapFactory(WzStringProvider wzStringProvider)
+    {
+        _wzStringProvider = wzStringProvider;
         mapSource = DataProviderFactory.getDataProvider(WZFiles.MAP);
     }
 
-    private static void loadLifeFromWz(IMap map, Data mapData)
+    private void loadLifeFromWz(IMap map, Data mapData)
     {
         foreach (var life in mapData.getChildByPath("life"))
         {
@@ -79,7 +93,7 @@ public class MapFactory
         }
     }
 
-    private static void loadLifeFromDb(IMap map)
+    private void loadLifeFromDb(IMap map)
     {
         var dataList = map.ChannelServer.Container.DataService.LoadPLife(map.Id);
 
@@ -89,7 +103,7 @@ public class MapFactory
         }
     }
 
-    private static void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
+    private void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
     {
         AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
         if (myLife is Monster monster)
@@ -112,7 +126,7 @@ public class MapFactory
         }
     }
 
-    public static IMap loadMapFromWz(int mapid, WorldChannel worldChannel, EventInstanceManager? evt)
+    public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, EventInstanceManager? evt)
     {
         IMap map;
 
@@ -395,9 +409,9 @@ public class MapFactory
         return map;
     }
 
-    private static AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
+    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
     {
-        AbstractLifeObject myLife = LifeFactory.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
+        AbstractLifeObject myLife = LifeFactory.Instance.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
         myLife.setCy(cy);
         myLife.setF(f);
         myLife.setFh(fh);
@@ -411,7 +425,7 @@ public class MapFactory
         return myLife;
     }
 
-    private static Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)
+    private Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)
     {
         var reactorId = int.Parse(id);
         Reactor myReactor = new Reactor(ReactorFactory.getReactor(reactorId), reactorId);
@@ -425,7 +439,7 @@ public class MapFactory
         return myReactor;
     }
 
-    private static string GetMapImg(int mapid)
+    private string GetMapImg(int mapid)
     {
         string mapName = StringUtil.getLeftPaddedStr(mapid.ToString(), '0', 9);
         StringBuilder builder = new StringBuilder("Map/Map");
@@ -438,111 +452,8 @@ public class MapFactory
         return mapName;
     }
 
-    public static MapName? FindMapStringName(int mapId)
-    {
-        foreach (var mapleland in MapleLand.AllLands)
-        {
-            var imgPath = $"{mapleland}/{mapId}";
-            var node = nameData.getChildByPath(imgPath);
-            if (node != null)
-                return new MapName(DataTool.getString("streetName", node) ?? "", DataTool.getString("mapName", node) ?? "");
-        }
-        return null;
-    }
+    public string loadPlaceName(int mapid) => _wzStringProvider.GetMapNameById(mapid).PlaceName;
 
-    private static string getMapStringName(int mapid)
-    {
-        StringBuilder builder = new StringBuilder();
-        if (mapid < 100000000)
-        {
-            builder.Append(MapleLand.Maple);
-        }
-        else if (mapid >= 100000000 && mapid < MapId.ORBIS)
-        {
-            builder.Append(MapleLand.Victoria);
-        }
-        else if (mapid >= MapId.ORBIS && mapid < MapId.ELLIN_FOREST)
-        {
-            builder.Append(MapleLand.Ossyria);
-        }
-        else if (mapid >= MapId.ELLIN_FOREST && mapid < 400000000)
-        {
-            builder.Append(MapleLand.Elin);
-        }
-        else if (mapid >= MapId.SINGAPORE && mapid < 560000000)
-        {
-            builder.Append(MapleLand.Singapore);
-        }
-        else if (mapid >= MapId.NEW_LEAF_CITY && mapid < 620000000)
-        {
-            builder.Append(MapleLand.MasteriaGL);
-        }
-        else if (mapid >= 677000000 && mapid < 677100000)
-        {
-            builder.Append(MapleLand.Episode1GL);
-        }
-        else if (mapid >= 670000000 && mapid < 682000000)
-        {
-            if ((mapid >= 674030000 && mapid < 674040000) || (mapid >= 680100000 && mapid < 680200000))
-            {
-                builder.Append(MapleLand.Etc);
-            }
-            else
-            {
-                builder.Append(MapleLand.WeddingGL);
-            }
-        }
-        else if (mapid >= 682000000 && mapid < 683000000)
-        {
-            builder.Append(MapleLand.HalloweenGL);
-        }
-        else if (mapid >= 683000000 && mapid < 684000000)
-        {
-            builder.Append(MapleLand.Event);
-        }
-        else if (mapid >= MapId.MUSHROOM_SHRINE && mapid < 900000000)
-        {
-            if ((mapid >= 889100000 && mapid < 889200000))
-            {
-                builder.Append(MapleLand.Etc);
-            }
-            else
-            {
-                builder.Append(MapleLand.JP);
-            }
-        }
-        else
-        {
-            builder.Append(MapleLand.Etc);
-        }
-        builder.Append("/").Append(mapid);
-        return builder.ToString();
-    }
-
-    public static string loadPlaceName(int mapid)
-    {
-        try
-        {
-            return DataTool.getString("mapName", nameData.getChildByPath(getMapStringName(mapid))) ?? "";
-        }
-        catch (Exception e)
-        {
-            LogFactory.GetLogger(LogType.MapData).Error(e.ToString());
-            return "";
-        }
-    }
-
-    public static string loadStreetName(int mapid)
-    {
-        try
-        {
-            return DataTool.getString("streetName", nameData.getChildByPath(getMapStringName(mapid))) ?? "";
-        }
-        catch (Exception e)
-        {
-            LogFactory.GetLogger(LogType.MapData).Error(e.ToString());
-            return "";
-        }
-    }
+    public string loadStreetName(int mapid) => _wzStringProvider.GetMapNameById(mapid).StreetName;
 
 }

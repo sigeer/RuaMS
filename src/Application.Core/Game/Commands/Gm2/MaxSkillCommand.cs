@@ -1,22 +1,25 @@
 using Application.Core.Game.Skills;
+using Application.Resources;
 
 namespace Application.Core.Game.Commands.Gm2;
 
 public class MaxSkillCommand : CommandBase
 {
-    public MaxSkillCommand() : base(2, "maxskill")
+    readonly WzStringProvider _wzStringProvider;
+    public MaxSkillCommand(WzStringProvider wzStringReader) : base(2, "maxskill")
     {
+        _wzStringProvider = wzStringReader;
         Description = "Max out all job skills.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (Data skill_ in DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Skill.img").getChildren())
+        foreach (var skillId in _wzStringProvider.GetAllSkillIdList())
         {
             try
             {
-                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()));
+                Skill skill = SkillFactory.GetSkillTrust(skillId);
                 player.changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)

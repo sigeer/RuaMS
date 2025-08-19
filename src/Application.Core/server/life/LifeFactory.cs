@@ -24,29 +24,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
+using Application.Resources;
 using Application.Shared.WzEntity;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using tools;
 
 namespace server.life;
 
 
-public class LifeFactory
+public class LifeFactory : IStaticService
 {
+    private static LifeFactory? _instance;
+
+    public static LifeFactory Instance => _instance ?? throw new BusinessFatalException("LifeFactory 未注册");
+
+    public void Register(IServiceProvider sp)
+    {
+        if (_instance != null)
+            return;
+
+        _instance = sp.GetService<LifeFactory>() ?? throw new BusinessFatalException("LifeFactory 未注册");
+    }
+
+
     private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
-    private static DataProvider stringDataWZ = DataProviderFactory.getDataProvider(WZFiles.STRING);
-    private static Data mobStringData = stringDataWZ.getData("Mob.img");
-    private static Data npcStringData = stringDataWZ.getData("Npc.img");
-    private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
-    private static HashSet<int> hpbarBosses = getHpBarBosses();
 
-    private static HashSet<int> getHpBarBosses()
+    private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
+
+    Data uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI).getData("UIWindow.img");
+    private HashSet<int> hpbarBosses;
+
+    readonly WzStringProvider _wzStringProvider;
+    public LifeFactory(WzStringProvider wzStringProvider)
+    {
+        _wzStringProvider = wzStringProvider;
+        hpbarBosses = getHpBarBosses();
+    }
+
+    private HashSet<int> getHpBarBosses()
     {
         HashSet<int> ret = new();
 
-        DataProvider uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI);
-        foreach (var bossData in uiDataWZ.getData("UIWindow.img").getChildByPath("MobGage/Mob").getChildren())
+        foreach (var bossData in uiDataWZ.getChildByPath("MobGage/Mob").getChildren())
         {
             if (int.TryParse(bossData.getName(), out var d))
                 ret.Add(d);
@@ -55,7 +76,7 @@ public class LifeFactory
         return ret;
     }
 
-    public static AbstractLifeObject? getLife(int id, string type)
+    public AbstractLifeObject? getLife(int id, string type)
     {
         if (type.Equals(LifeType.NPC, StringComparison.CurrentCultureIgnoreCase))
         {
@@ -72,7 +93,7 @@ public class LifeFactory
         }
     }
 
-    private static void setMonsterAttackInfo(int mid, List<MobAttackInfoHolder> attackInfos)
+    private void setMonsterAttackInfo(int mid, List<MobAttackInfoHolder> attackInfos)
     {
         if (attackInfos.Count > 0)
         {
@@ -86,7 +107,7 @@ public class LifeFactory
         }
     }
 
-    private static MonsterCore? getMonsterStats(int mid)
+    private MonsterCore? getMonsterStats(int mid)
     {
         var monsterData = data.getData(StringUtil.getLeftPaddedStr(mid + ".img", '0', 11));
         if (monsterData == null)
@@ -125,7 +146,7 @@ public class LifeFactory
         stats.setExplosiveReward(DataTool.getIntConvert("explosiveReward", monsterInfoData, stats.isExplosiveReward() ? 1 : 0) > 0);
         stats.setFfaLoot(DataTool.getIntConvert("publicReward", monsterInfoData, stats.isFfaLoot() ? 1 : 0) > 0);
         stats.setUndead(DataTool.getIntConvert("undead", monsterInfoData, stats.isUndead() ? 1 : 0) > 0);
-        stats.setName(DataTool.getString(mid + "/name", mobStringData) ?? "MISSINGNO");
+        stats.setName(_wzStringProvider.GetMonsterName(mid));
         stats.setBuffToGive(DataTool.getIntConvert("buff", monsterInfoData, stats.getBuffToGive()));
         stats.setCP(DataTool.getIntConvert("getCP", monsterInfoData, stats.getCP()));
         stats.setRemoveOnMiss(DataTool.getIntConvert("removeOnMiss", monsterInfoData, stats.removeOnMiss() ? 1 : 0) > 0);
@@ -268,7 +289,7 @@ public class LifeFactory
         return new(stats, attackInfos);
     }
 
-    public static Monster? getMonster(int mid)
+    public Monster? getMonster(int mid)
     {
         try
         {
@@ -293,9 +314,9 @@ public class LifeFactory
         }
     }
 
-    public static Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
+    public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
 
-    public static int getMonsterLevel(int mid)
+    public int getMonsterLevel(int mid)
     {
         try
         {
@@ -331,18 +352,18 @@ public class LifeFactory
         }
     }
 
-    public static NPC getNPC(int nid)
+    public NPC getNPC(int nid)
     {
         return new NPC(nid, GetNPCStats(nid));
     }
 
-    public static string getNPCDefaultTalk(int nid)
+    public string getNPCDefaultTalk(int nid)
     {
-        return DataTool.getString(nid + "/d0", npcStringData) ?? "(...)";
+        return _wzStringProvider.GetNpcString(nid).DefaultTalk;
     }
 
-    public static NPCStats GetNPCStats(int npcId)
+    public NPCStats GetNPCStats(int npcId)
     {
-        return new NPCStats(DataTool.getString(npcId + "/name", npcStringData) ?? "MISSINGNO");
+        return new NPCStats(_wzStringProvider.GetNpcString(npcId).Name);
     }
 }

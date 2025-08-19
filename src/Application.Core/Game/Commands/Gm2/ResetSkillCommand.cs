@@ -1,21 +1,24 @@
 using Application.Core.Game.Skills;
+using Application.Resources;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class ResetSkillCommand : CommandBase
 {
-    public ResetSkillCommand() : base(2, "resetskill")
+    readonly WzStringProvider _wzStringProvider;
+    public ResetSkillCommand(WzStringProvider wzStringProvider) : base(2, "resetskill")
     {
+        _wzStringProvider = wzStringProvider;
         Description = "Set all skill levels to 0.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (Data skill_ in DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Skill.img").getChildren())
+        foreach (var skillId in _wzStringProvider.GetAllSkillIdList())
         {
             try
             {
-                var skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()!));
+                var skill = SkillFactory.GetSkillTrust(skillId);
                 player.changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception e)

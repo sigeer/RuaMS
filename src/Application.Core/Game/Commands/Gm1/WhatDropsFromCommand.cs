@@ -22,9 +22,8 @@ public class WhatDropsFromCommand : CommandBase
         var dataList = MonsterInformationProvider.getInstance().getMobsIDsFromName(monsterName).Take(limit);
         foreach (var data in dataList)
         {
-
-            int mobId = data.Key;
-            string mobName = data.Value;
+            int mobId = data.Id;
+            string mobName = data.Name;
             output += mobName + " drops the following items:\r\n\r\n";
             foreach (var drop in MonsterInformationProvider.getInstance().retrieveDrop(mobId))
             {

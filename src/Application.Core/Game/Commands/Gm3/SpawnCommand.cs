@@ -1,3 +1,4 @@
+using Application.Core.Channel.ServerData;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using server.life;
@@ -7,8 +8,10 @@ namespace Application.Core.Game.Commands.Gm3;
 
 public class SpawnCommand : CommandBase
 {
-    public SpawnCommand() : base(3, "spawn")
+    readonly WzStringQueryService _wzManager;
+    public SpawnCommand(WzStringQueryService wzManager) : base(3, "spawn")
     {
+        _wzManager = wzManager;
         Description = "Spawn mob(s) on your location.";
     }
 
@@ -23,7 +26,7 @@ public class SpawnCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var mobId))
         {
-            var list = ResManager.FindMobIdByName(paramsValue[0]);
+            var list = _wzManager.FindMobIdByName(paramsValue[0]);
             if (list.BestMatch != null)
             {
                 mobId = list.BestMatch.Id;
@@ -70,7 +73,7 @@ public class SpawnCommand : CommandBase
 
         for (int i = 0; i < monsterCount; i++)
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(mobId), player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), player.getPosition());
         }
     }
 }

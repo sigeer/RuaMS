@@ -18,7 +18,7 @@ public class BombCommand : CommandBase
             var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
             if (victim != null && victim.IsOnlined)
             {
-                victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
+                victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
                 c.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(5, player.getName() + " used !bomb on " + victim.getName()));
             }
             else
@@ -28,7 +28,7 @@ public class BombCommand : CommandBase
         }
         else
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.ARPQ_BOMB), player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ARPQ_BOMB), player.getPosition());
         }
     }
 }

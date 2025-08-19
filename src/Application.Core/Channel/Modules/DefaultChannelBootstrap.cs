@@ -1,4 +1,3 @@
-using Application.Core.Channel.Infrastructures;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;

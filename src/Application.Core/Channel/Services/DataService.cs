@@ -549,7 +549,7 @@ namespace Application.Core.Channel.Services
         {
             if (lifeType == LifeType.Monster)
             {
-                var mob = LifeFactory.getMonster(lifeId);
+                var mob = LifeFactory.Instance.getMonster(lifeId);
                 if (mob == null || string.IsNullOrEmpty(mob.getName()) || mob.getName().Equals("MISSINGNO"))
                 {
                     chr.dropMessage("You have entered an invalid mob id.");
@@ -559,7 +559,7 @@ namespace Application.Core.Channel.Services
 
             if (lifeType == LifeType.NPC)
             {
-                var npc = LifeFactory.getNPC(lifeId);
+                var npc = LifeFactory.Instance.getNPC(lifeId);
                 if (npc == null || string.IsNullOrEmpty(npc.getName()) || npc.getName().Equals("MISSINGNO"))
                 {
                     chr.dropMessage("You have entered an invalid npc id.");
@@ -604,7 +604,7 @@ namespace Application.Core.Channel.Services
                     var map = ch.getMapFactory().getMap(data.Data.MapId);
                     if (data.Data.Type == LifeType.NPC)
                     {
-                        var npc = LifeFactory.getNPC(data.Data.LifeId);
+                        var npc = LifeFactory.Instance.getNPC(data.Data.LifeId);
                         if (npc != null && npc.getName() == "MISSINGNO")
                         {
                             npc.setPosition(new Point(data.Data.X, data.Data.Y));
@@ -620,7 +620,7 @@ namespace Application.Core.Channel.Services
                     }
                     else if (data.Data.Type == LifeType.Monster)
                     {
-                        var mob = LifeFactory.getMonster(data.Data.LifeId);
+                        var mob = LifeFactory.Instance.getMonster(data.Data.LifeId);
                         if (mob != null && !mob.getName().Equals("MISSINGNO"))
                         {
                             mob.setPosition(new Point(data.Data.X, data.Data.Y));
