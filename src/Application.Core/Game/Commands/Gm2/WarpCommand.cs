@@ -1,25 +1,28 @@
-using Application.Core.Managers;
+using Application.Core.Channel.ServerData;
 using Application.Core.scripting.npc;
+using server.maps;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
 
 public class WarpCommand : ParamsCommandBase
 {
-    public WarpCommand() : base(["<mapid>"], 2, "warp")
+    readonly WzStringQueryService _wzManager;
+    public WarpCommand(WzStringQueryService wzManager) : base(["<mapid>"], 2, "warp")
     {
+        _wzManager = wzManager;
         Description = "Warp to a map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-
+        var mapFactory = c.CurrentServer.getMapFactory();
         try
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = ResManager.FindMapIdByName(paramsValue[0]);
+                var findResult = _wzManager.FindMapIdByName(paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;
@@ -39,7 +42,7 @@ public class WarpCommand : ParamsCommandBase
                             var mapItem = findResult.MatchedItems[idx];
                             ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
                             {
-                                WarpMapById(c, mapItem.Id);
+                                WarpMapById(player, mapFactory, mapItem.Id);
                                 ctx.dispose();
                             });
                         });
@@ -52,7 +55,7 @@ public class WarpCommand : ParamsCommandBase
                 }
             }
 
-            WarpMapById(c, mapId);
+            WarpMapById(player, mapFactory, mapId);
         }
         catch (Exception ex)
         {
@@ -61,34 +64,22 @@ public class WarpCommand : ParamsCommandBase
         }
     }
 
-    private void WarpMapById(IChannelClient c, int mapId)
+    private void WarpMapById(IPlayer admin, MapManager mapManager, int mapId)
     {
-        var player = c.OnlinedCharacter;
-
-        var target = c.getChannelServer().getMapFactory().getMap(mapId);
+        var target = mapManager.getMap(mapId);
         if (target == null)
         {
-            player.yellowMessage("Map ID " + mapId + " is invalid.");
+            admin.yellowMessage("Map ID " + mapId + " is invalid.");
             return;
         }
 
-        if (!player.isAlive())
+        var mapPlayers = target.getAllPlayers();
+        foreach (var player in mapPlayers)
         {
-            player.dropMessage(1, "This command cannot be used when you're dead.");
-            return;
+            player.saveLocationOnWarp();
+            player.changeMap(target, target.getRandomPlayerSpawnpoint());
         }
 
-        if (!player.isGM())
-        {
-            if (player.getEventInstance() != null || MiniDungeonInfo.isDungeonMap(player.getMapId()) || FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
-            {
-                player.dropMessage(1, "This command cannot be used in this map.");
-                return;
-            }
-        }
 
-        // expedition issue with this command detected thanks to Masterrulax
-        player.saveLocationOnWarp();
-        player.changeMap(target, target.getRandomPlayerSpawnpoint());
     }
 }

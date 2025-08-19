@@ -29,7 +29,7 @@ public class OnlineCommand : CommandBase
             sb.Append($"===> 频道{item.Key}：\r\n");
             foreach (var chr in item)
             {
-                sb.Append($"\r\n#L{i}# {chr.Name}：{MapFactory.loadPlaceName(chr.MapId)} - {MapFactory.loadStreetName(chr.MapId)} #l\r\n");
+                sb.Append($"\r\n#L{i}# {chr.Name}：{MapFactory.Instance.loadPlaceName(chr.MapId)} - {MapFactory.Instance.loadStreetName(chr.MapId)} #l\r\n");
                 list.Add(chr);
                 i++;
             }

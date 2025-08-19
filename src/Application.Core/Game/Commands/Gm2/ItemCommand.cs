@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using client.inventory.manipulator;
@@ -8,8 +9,10 @@ namespace Application.Core.Game.Commands.Gm2;
 
 public class ItemCommand : CommandBase
 {
-    public ItemCommand() : base(2, "item")
+    readonly WzStringQueryService _wzManager;
+    public ItemCommand(WzStringQueryService wzManager) : base(2, "item")
     {
+        _wzManager = wzManager;
         Description = "Spawn an item into your inventory.";
     }
 
@@ -25,7 +28,7 @@ public class ItemCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            var findResult = ResManager.FindItemIdByName(paramsValue[0]);
+            var findResult = _wzManager.FindItemIdByName(paramsValue[0]);
             if (findResult.BestMatch != null)
                 itemId = findResult.BestMatch.Id;
             else if (findResult.MatchedItems.Count > 0)

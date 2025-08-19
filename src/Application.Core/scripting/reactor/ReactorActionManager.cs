@@ -245,7 +245,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     {
         for (int i = 0; i < qty; i++)
         {
-            var monster = LifeFactory.getMonster(id);
+            var monster = LifeFactory.Instance.getMonster(id);
             if (monster == null)
             {
                 Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);
@@ -291,7 +291,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void spawnFakeMonster(int id)
     {
-        var monster = LifeFactory.getMonster(id);
+        var monster = LifeFactory.Instance.getMonster(id);
         if (monster == null)
         {
             Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);

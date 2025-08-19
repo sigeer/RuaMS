@@ -1,11 +1,14 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm1;
 
 public class WhoDropsCommand : CommandBase
 {
-    public WhoDropsCommand() : base(1, "whodrops")
+    readonly WzStringQueryService _wzManager;
+    public WhoDropsCommand(WzStringQueryService wzManager) : base(1, "whodrops")
     {
+        _wzManager = wzManager;
         Description = "Show what drops an item.";
     }
 
@@ -24,7 +27,7 @@ public class WhoDropsCommand : CommandBase
             {
                 string searchString = player.getLastCommandMessage();
                 string output = "";
-                var items = ItemInformationProvider.getInstance().getItemDataByName(searchString).Take(3);
+                var items = _wzManager.FindItemIdByName(searchString).MatchedItems.Take(3);
                 foreach (var data in items)
                 {
                     output += "#b" + data.Name + "#k is dropped by:\r\n";

@@ -21,11 +21,11 @@
  */
 
 
-using Application.Core.Channel.Infrastructures;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.ServerTransports;
+using Application.Resources;
 using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.Caching.Memory;
@@ -52,7 +52,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     readonly IChannelServerTransport _transport;
     readonly IMemoryCache _cache;
     readonly AutoBanDataManager _autoBanDataManager;
-    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<DataBootstrap> logger, AutoBanDataManager autoBanDataManager) : base(logger)
+    readonly WzStringProvider _wzStringProvider;
+    public ItemInformationProvider(IChannelServerTransport transport,
+        IMemoryCache cache,
+        ILogger<DataBootstrap> logger,
+        AutoBanDataManager autoBanDataManager,
+        WzStringProvider wzStringProvider) : base(logger)
     {
         Name = "物品数据";
 
@@ -62,17 +67,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
         equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
-        stringData = DataProviderFactory.getDataProvider(WZFiles.STRING);
         etcData = DataProviderFactory.getDataProvider(WZFiles.ETC);
-        cashStringData = stringData.getData("Cash.img");
-        consumeStringData = stringData.getData("Consume.img");
-        eqpStringData = stringData.getData("Eqp.img");
-        etcStringData = stringData.getData("Etc.img");
-        insStringData = stringData.getData("Ins.img");
-        petStringData = stringData.getData("Pet.img");
 
         isQuestItemCache.Add(0, false);
         isPartyQuestItemCache.Add(0, false);
+
+        _wzStringProvider = wzStringProvider;
     }
 
     public void Register(IServiceProvider sp)
@@ -87,14 +87,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     protected DataProvider itemData;
     protected DataProvider equipData;
-    protected DataProvider stringData;
     protected DataProvider etcData;
-    protected Data cashStringData;
-    protected Data consumeStringData;
-    protected Data eqpStringData;
-    protected Data etcStringData;
-    protected Data insStringData;
-    protected Data petStringData;
     protected Dictionary<int, short> slotMaxCache = new();
     protected Dictionary<int, StatEffect> itemEffects = new();
     protected Dictionary<int, Dictionary<string, int>> equipStatsCache = new();
@@ -106,9 +99,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     protected Dictionary<int, int> wholePriceCache = new();
     protected Dictionary<int, double> unitPriceCache = new();
     protected Dictionary<int, int> projectileWatkCache = new();
-    protected Dictionary<int, string?> nameCache = new();
+
     protected Dictionary<int, string> descCache = new();
-    protected Dictionary<int, string?> msgCache = new();
+
     protected Dictionary<int, bool> accountItemRestrictionCache = new();
     protected Dictionary<int, bool> dropRestrictionCache = new();
     protected Dictionary<int, bool> pickupRestrictionCache = new();
@@ -126,7 +119,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     protected Dictionary<int, int> mobHPCache = new();
     protected Dictionary<int, int> levelCache = new();
     protected Dictionary<int, KeyValuePair<int, List<RewardItem>>> rewardCache = new();
-    protected List<ItemInfoBase> itemNameCache = new();
     protected List<ItemInfoBase> etcItemCache = new List<ItemInfoBase>();
     protected Dictionary<int, bool> consumeOnPickupCache = new();
     protected Dictionary<int, bool> isQuestItemCache = new();
@@ -139,54 +131,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     protected Dictionary<int, ItemSkillDataPair> SkillUpgreadCache = [];
     protected Dictionary<int, KeyValuePair<int, HashSet<int>>?> cashPetFoodCache = new();
     protected Dictionary<int, QuestConsItem?> questItemConsCache = new();
-
-
-    public List<ItemInfoBase> getAllItems()
-    {
-        if (itemNameCache.Count > 0)
-        {
-            return itemNameCache;
-        }
-        List<ItemInfoBase> itemPairs = new();
-        var itemsData = stringData.getData("Cash.img");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            //DataTool.getString("name", xxx) : 子标签中的<string name="name">的value值
-
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-        itemsData = stringData.getData("Consume.img");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-        itemsData = stringData.getData("Eqp.img").getChildByPath("Eqp") ?? throw new BusinessResException("Eqp.img/Epq");
-        foreach (Data eqpType in itemsData.getChildren())
-        {
-            foreach (Data itemFolder in eqpType.getChildren())
-            {
-                itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-            }
-        }
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc") ?? throw new BusinessResException("Etc.img/Etc");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-        itemsData = stringData.getData("Ins.img");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-        itemsData = stringData.getData("Pet.img");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-
-        itemNameCache = itemPairs;
-        return itemPairs;
-    }
 
     //public List<ItemInfoBase> getAllEtcItems()
     //{
@@ -206,118 +150,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     //    etcItemCache = itemPairs;
     //    return itemPairs;
     //}
-
-    private Data? getStringData(int itemId)
-    {
-        string cat = "null";
-        Data theData;
-        if (itemId >= 5010000)
-        {
-            theData = cashStringData;
-        }
-        else if (itemId >= 2000000 && itemId < 3000000)
-        {
-            theData = consumeStringData;
-        }
-        else if (itemId >= 1010000 && itemId < 1040000 || itemId >= 1122000 && itemId < 1123000 || itemId >= 1132000 && itemId < 1133000 || itemId >= 1142000 && itemId < 1143000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Accessory";
-        }
-        else if (itemId >= 1000000 && itemId < 1010000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Cap";
-        }
-        else if (itemId >= 1102000 && itemId < 1103000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Cape";
-        }
-        else if (itemId >= 1040000 && itemId < 1050000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Coat";
-        }
-        else if (ItemConstants.isFace(itemId))
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Face";
-        }
-        else if (itemId >= 1080000 && itemId < 1090000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Glove";
-        }
-        else if (ItemConstants.isHair(itemId))
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Hair";
-        }
-        else if (itemId >= 1050000 && itemId < 1060000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Longcoat";
-        }
-        else if (itemId >= 1060000 && itemId < 1070000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Pants";
-        }
-        else if (itemId >= 1802000 && itemId < 1842000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/PetEquip";
-        }
-        else if (itemId >= 1112000 && itemId < 1120000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Ring";
-        }
-        else if (itemId >= 1092000 && itemId < 1100000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Shield";
-        }
-        else if (itemId >= 1070000 && itemId < 1080000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Shoes";
-        }
-        else if (itemId >= 1900000 && itemId < 2000000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Taming";
-        }
-        else if (itemId >= 1300000 && itemId < 1800000)
-        {
-            theData = eqpStringData;
-            cat = "Eqp/Weapon";
-        }
-        else if (itemId >= 4000000 && itemId < 5000000)
-        {
-            theData = etcStringData;
-            cat = "Etc";
-        }
-        else if (itemId >= 3000000 && itemId < 4000000)
-        {
-            theData = insStringData;
-        }
-        else if (ItemConstants.isPet(itemId))
-        {
-            theData = petStringData;
-        }
-        else
-        {
-            return null;
-        }
-        if (cat.Equals("null", StringComparison.OrdinalIgnoreCase))
-            return theData?.getChildByPath(itemId.ToString());
-        else
-        {
-            return theData.getChildByPath(cat + "/" + itemId);
-        }
-    }
 
     public bool noCancelMouse(int itemId)
     {
@@ -1449,36 +1281,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public string? getName(int itemId)
     {
-        if (nameCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        var strings = getStringData(itemId);
-        if (strings == null)
-        {
-            return null;
-        }
-        var ret = DataTool.getString("name", strings);
-        nameCache.Add(itemId, ret);
-        return ret;
+        return _wzStringProvider.GetItemNameById(itemId);
     }
 
     public string? getMsg(int itemId)
     {
-        if (msgCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        var strings = getStringData(itemId);
-        if (strings == null)
-        {
-            return null;
-        }
-        var ret = DataTool.getString("msg", strings);
-        msgCache.Add(itemId, ret);
-        return ret;
+        return _wzStringProvider.GetItemMsgById(itemId);
     }
 
     /// <summary>
@@ -2147,10 +1955,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return true;
     }
 
-    public List<ItemInfoBase> getItemDataByName(string name)
-    {
-        return getInstance().getAllItems().Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
-    }
 
     private Data? getEquipLevelInfo(int itemId)
     {

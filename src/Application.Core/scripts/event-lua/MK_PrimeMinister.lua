@@ -52,7 +52,7 @@ function Sample:respawn(eim)
 
         local weddinghall = eim:getMapInstance(self.entryMap);
         weddinghall:getPortal(self.entryPortal):setPortalState(false);
-        weddinghall:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.mobId), Point(292, 143));
+        weddinghall:spawnMonsterOnGroundBelow(LifeFactory:getMonster(self.mobId), Point(292, 143));
     else
         eim:schedule("respawn", 10000);
     end

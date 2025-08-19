@@ -1,3 +1,4 @@
+using Application.Core.Channel.ServerData;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using System.Text;
@@ -6,8 +7,10 @@ namespace Application.Core.Game.Commands.Gm3;
 
 public class WarpMapCommand : CommandBase
 {
-    public WarpMapCommand() : base(3, "warpmap")
+    readonly WzStringQueryService _wzManager;
+    public WarpMapCommand(WzStringQueryService wzManager) : base(3, "warpmap")
     {
+        _wzManager = wzManager;
         Description = "Warp all characters on current map to a new map.";
     }
 
@@ -24,7 +27,7 @@ public class WarpMapCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = ResManager.FindMapIdByName(paramsValue[0]);
+                var findResult = _wzManager.FindMapIdByName(paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;

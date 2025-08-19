@@ -64,7 +64,7 @@ public class MapManager : IDisposable
                 }
             }
 
-            map = MapFactory.loadMapFromWz(mapid, _channelServer, evt);
+            map = MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
 
             if (cache)
             {

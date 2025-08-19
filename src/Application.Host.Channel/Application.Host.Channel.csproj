@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
-    <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Maker.Channel\Application.Module.Maker.Channel.csproj" />
     <ProjectReference Include="..\modules\Application.Module.PlayerNPC.Channel\Application.Module.PlayerNPC.Channel.csproj" />

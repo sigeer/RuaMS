@@ -27,6 +27,7 @@ global using Application.Utility.Exceptions;
 global using Application.Utility.Extensions;
 global using Application.Utility.Loggers;
 global using Application.Utility.Tasks;
+global using Application.Utility.Inject;
 global using Serilog;
 global using System;
 global using System.Drawing;

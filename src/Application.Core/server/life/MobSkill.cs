@@ -402,7 +402,7 @@ public class MobSkill : ISkill
 
                 foreach (int mobId in summons.Take(summonLimit))
                 {
-                    var toSpawn = LifeFactory.getMonster(mobId);
+                    var toSpawn = LifeFactory.Instance.getMonster(mobId);
                     if (toSpawn != null)
                     {
                         if (bossRushMap)

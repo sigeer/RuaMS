@@ -15,11 +15,17 @@
   <ItemGroup>
     <Folder Include="CharacterCreator\" />
     <Folder Include="ServerData\Items\" />
+
+	  <!--<Content Include="..\Application.Resources\wz\String.wz\**">
+		  <Link>wz\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>-->
   </ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Application.Core.EF.MySQL\Application.Core.EF.MySQL.csproj" />
 	  <ProjectReference Include="..\Application.Core.EF.Sqlite\Application.Core.EF.Sqlite.csproj" />
+	  <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
 	</ItemGroup>
 
 

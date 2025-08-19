@@ -69,7 +69,7 @@ function Sample:BeforeStartEvent(eim)
 
     -- 生成怪物
     local mapObj = eim:getInstanceMap(670010700)
-    local mobObj = LifeFactory.getMonster(9400536)
+    local mobObj = LifeFactory:getMonster(9400536)
     mapObj:spawnMonsterOnGroundBelow(mobObj, Point(942, 478))
 end
 

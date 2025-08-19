@@ -1,4 +1,4 @@
-namespace Application.Core.Channel.Infrastructures
+namespace Application.Utility.Inject
 {
     /// <summary>
     /// 仅限单例类实现该接口

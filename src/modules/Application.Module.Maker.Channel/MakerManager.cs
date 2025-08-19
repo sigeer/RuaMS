@@ -88,7 +88,7 @@ namespace Application.Module.Maker.Channel
 
                 var droppers = MonsterInformationProvider.getInstance().FindDroppers(itemid);
                 if (droppers.Count > 0)
-                    itemid = getCrystalForLevel(LifeFactory.getMonsterLevel(droppers.First()));
+                    itemid = getCrystalForLevel(LifeFactory.Instance.getMonsterLevel(droppers.First()));
 
                 mobCrystalMakerCache.Add(leftoverId, itemid);
                 return itemid;

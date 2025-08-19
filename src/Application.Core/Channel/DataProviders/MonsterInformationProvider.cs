@@ -20,9 +20,9 @@
  */
 
 
-using Application.Core.Channel.Infrastructures;
 using Application.Core.Game.Life;
 using Application.Core.ServerTransports;
+using Application.Resources;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,11 +36,13 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 {
     readonly IChannelServerTransport _transport;
     readonly IMapper _mapper;
-    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger) : base(logger)
+    readonly WzStringProvider _wzStringProvider;
+    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger, WzStringProvider wzStringProvider) : base(logger)
     {
         Name = "怪物数据";
         _transport = transport;
         _mapper = mapper;
+        _wzStringProvider = wzStringProvider;
     }
 
     /// <summary>
@@ -261,29 +263,9 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
     Dictionary<int, string> allMobNameCache = [];
 
 
-    private void LoadAllMobNameCache()
+    public List<ObjectName> getMobsIDsFromName(string search)
     {
-        if (allMobNameCache.Count == 0)
-        {
-            DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
-            var data = dataProvider.getData("Mob.img");
-            List<KeyValuePair<int, string>> mobPairList = new();
-            foreach (var mobIdData in data.getChildren())
-            {
-                if (int.TryParse(mobIdData.getName(), out var mobIdFromData))
-                {
-                    string mobNameFromData = DataTool.getString(mobIdData.getChildByPath("name")) ?? "NO-NAME";
-                    mobPairList.Add(new(mobIdFromData, mobNameFromData));
-
-                    allMobNameCache[mobIdFromData] = mobNameFromData;
-                }
-            }
-        }
-    }
-    public List<KeyValuePair<int, string>> getMobsIDsFromName(string search)
-    {
-        LoadAllMobNameCache();
-        return allMobNameCache.Where(x => x.Value.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+        return _wzStringProvider.GetAllMonster().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     public bool isBoss(int id)
@@ -292,7 +274,7 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         {
             try
             {
-                boss = LifeFactory.getMonster(id)?.isBoss() ?? false;
+                boss = LifeFactory.Instance.getMonster(id)?.isBoss() ?? false;
             }
             catch (Exception e)
             {
@@ -310,19 +292,7 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 
     public string getMobNameFromId(int id)
     {
-        LoadAllMobNameCache();
-
-        var mobName = allMobNameCache.GetValueOrDefault(id);
-        if (mobName == null)
-        {
-            DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
-            var mobData = dataProvider.getData("Mob.img");
-
-            mobName = DataTool.getString(mobData.getChildByPath(id + "/name")) ?? "";
-            allMobNameCache.AddOrUpdate(id, mobName);
-        }
-
-        return mobName;
+        return _wzStringProvider.GetMonsterName(id);
     }
 
     public void clearDrops()

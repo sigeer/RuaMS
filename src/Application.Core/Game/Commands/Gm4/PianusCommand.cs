@@ -12,6 +12,6 @@ public class PianusCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.PIANUS_R), player.getPosition());
+        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PIANUS_R), player.getPosition());
     }
 }

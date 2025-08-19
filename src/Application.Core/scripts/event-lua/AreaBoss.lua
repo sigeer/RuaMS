@@ -104,7 +104,7 @@ function spawn(item)
     end
     local spawnpoint = Point(posX, rndPos.y)
 
-    local monster = LifeFactory.getMonster(item.mobId)
+    local monster = LifeFactory:getMonster(item.mobId)
     map:spawnMonsterOnGroundBelow(monster, spawnpoint)
     map:broadcastMessage(PacketCreator.serverNotice(6, item.msg))
     item.task = em:schedule(functionName, item.interval)

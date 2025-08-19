@@ -1087,7 +1087,7 @@ public class EventInstanceManager
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        NPC npc = LifeFactory.getNPC(npcId);
+        NPC npc = LifeFactory.Instance.getNPC(npcId);
         if (npc != null)
         {
             npc.setPosition(pos);
@@ -1121,7 +1121,7 @@ public class EventInstanceManager
 
     public Monster getMonster(int mid)
     {
-        return (LifeFactory.GetMonsterTrust(mid));
+        return (LifeFactory.Instance.GetMonsterTrust(mid));
     }
 
     private List<int> convertToIntegerList(List<object> objects)

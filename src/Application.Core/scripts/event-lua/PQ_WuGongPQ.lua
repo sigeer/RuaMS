@@ -38,7 +38,7 @@ function WuGongPQ:BeforeStartEvent(eim, level, lobbyId)
 end
 
 function WuGongPQ:spawnBossDynamic(eim, level)
-    local mob = LifeFactory.getMonster(self.bossConfig.id)
+    local mob = LifeFactory:getMonster(self.bossConfig.id)
     if mob then
         local map = eim:getMapInstance(self.entryMap)
         map:killAllMonsters()

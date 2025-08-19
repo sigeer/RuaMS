@@ -121,13 +121,13 @@ end
 
 function spawnBalrog(eim)
     local mapObj = eim:getInstanceMap(entryMap)
-    mapObj:spawnFakeMonsterOnGroundBelow(LifeFactory.getMonster(8830000), Point(412, 258))
-    mapObj:spawnMonsterOnGroundBelow(LifeFactory.getMonster(8830002), Point(412, 258))
-    mapObj:spawnMonsterOnGroundBelow(LifeFactory.getMonster(8830006), Point(412, 258))
+    mapObj:spawnFakeMonsterOnGroundBelow(LifeFactory:getMonster(8830000), Point(412, 258))
+    mapObj:spawnMonsterOnGroundBelow(LifeFactory:getMonster(8830002), Point(412, 258))
+    mapObj:spawnMonsterOnGroundBelow(LifeFactory:getMonster(8830006), Point(412, 258))
 end
 
 function spawnSealedBalrog(eim)
-    eim:getInstanceMap(entryMap):spawnMonsterOnGroundBelow(LifeFactory.getMonster(bossMobId), Point.new(412, 258))
+    eim:getInstanceMap(entryMap):spawnMonsterOnGroundBelow(LifeFactory:getMonster(bossMobId), Point.new(412, 258))
 end
 
 function playerEntry(eim, player)

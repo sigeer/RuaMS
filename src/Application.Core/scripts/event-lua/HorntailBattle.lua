@@ -32,11 +32,11 @@ function Sample:setup(level, lobbyid)
     eim:setProperty("defeatedHead", 0);
 
     local map1 = eim:getInstanceMap(240060000);
-    local mob1 = LifeFactory.getMonster(8810000);
+    local mob1 = LifeFactory:getMonster(8810000);
     map1.spawnMonsterOnGroundBelow(mob1, Point(960, 120));
 
     local map2 = eim.getInstanceMap(240060100);
-    local mob2 = LifeFactory.getMonster(8810001);
+    local mob2 = LifeFactory:getMonster(8810001);
     map2.spawnMonsterOnGroundBelow(mob2, Point(-420, 120));
     return eim
 end

@@ -818,7 +818,7 @@ public class EventManager
 
     public Monster? getMonster(int mid)
     {
-        return (LifeFactory.getMonster(mid));
+        return (LifeFactory.Instance.getMonster(mid));
     }
 
     private void exportReadyGuild(int guildId)

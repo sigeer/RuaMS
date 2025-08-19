@@ -54,7 +54,7 @@ public class UseSummonBagHandler : ChannelHandlerBase
             {
                 if (Randomizer.nextInt(100) < toSpawnChild[1])
                 {
-                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(toSpawnChild[0]), c.OnlinedCharacter.getPosition());
+                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild[0]), c.OnlinedCharacter.getPosition());
                 }
             }
         }
