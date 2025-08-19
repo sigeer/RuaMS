@@ -35,7 +35,7 @@ public class SearchCommand : CommandBase
                 sb.Append("#b").Append(item.Id).Append("#k - #r").Append(item.Name).Append("\r\n");
             }
         }
-        if (paramsValue[0].Equals("NPC", StringComparison.OrdinalIgnoreCase))
+        else if (paramsValue[0].Equals("NPC", StringComparison.OrdinalIgnoreCase))
         {
             foreach (var item in _wzStringProvider.GetAllNpcList().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Take(50))
             {
