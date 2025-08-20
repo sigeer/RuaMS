@@ -52,7 +52,7 @@ namespace ServiceTest.Infrastructure
         public void MapsterMapTest()
         {
             var model = new FredrickStoreModel { Meso = 1 };
-            Assert.That(model.Adapt<FredstorageEntity>().Meso == model.Meso);
+            Assert.That(model.Adapt<FredstorageEntity>(_mapsterConfig).Meso == model.Meso);
         }
 
         [Test]
@@ -62,18 +62,15 @@ namespace ServiceTest.Infrastructure
             Assert.That(_mapper.Map<FredstorageEntity>(model).Meso == model.Meso);
         }
 
-        /// <summary>
-        /// 性能更好但是不支持类似AutoMapper的MapExpression
-        /// https://github.com/MapsterMapper/Mapster/issues/517
-        /// </summary>
-        //[Test]
-        //public void MapsterMapExpressionTest()
-        //{
-        //    using var dbContext = _dbContextFactory.CreateDbContext();
-
-        //    var entityExpression = expression.Adapt<Expression<Func<FredstorageEntity, bool>>>(_mapsterConfig);
-        //    var dataFromDB = dbContext.Fredstorages.Where(entityExpression).AsNoTracking().ToList();
-        //    Assert.Pass();
-        //}
+        [Test]
+        public void MapsterMapExpressionTest()
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var queryable = dbContext.Fredstorages.AsNoTracking().ProjectToType<FredrickStoreModel>().Where(expression);
+            Console.WriteLine(queryable.ToQueryString());
+            var dataFromDB = queryable.ToList();
+            //可以考虑用Mapster替换AutoMapper
+            Assert.Pass();
+        }
     }
 }
