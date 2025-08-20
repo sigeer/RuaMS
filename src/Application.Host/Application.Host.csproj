@@ -35,6 +35,13 @@
     <ProjectReference Include="..\modules\Application.Module.PlayerNPC.Master\Application.Module.PlayerNPC.Master.csproj" />
   </ItemGroup>
 
+	<ItemGroup Condition="'$(IsStandalone)' == 'true'">
+		<Content Include="..\Application.Resources\scripts\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>scripts\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+
 	<ItemGroup>
 	  <Compile Remove="cache\**" />
 	  <Compile Remove="logs\**" />

@@ -121,7 +121,7 @@ try
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromSeconds(30),
                 ValidateIssuer = true,
-                ValidIssuer = "cosmic_dotnet",
+                ValidIssuer = "ruams",
 
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())),
