@@ -44,8 +44,8 @@ namespace ServiceTest.Infrastructure
                         UpdateTime = src.Timestamp.ToUnixTimeMilliseconds()
                     }); ;
 
-            //using var dbContext = _dbContextFactory.CreateDbContext();
-            //dbContext.Database.Migrate();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            dbContext.Database.Migrate();
         }
 
         [Test]
