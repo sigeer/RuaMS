@@ -150,6 +150,13 @@ namespace Application.Core.Login
         {
             var dbType = configuration.GetValue<string>(AppSettingKeys.Database)!;
             var connectString = configuration.GetConnectionString(dbType)!;
+            services.AddLoginServerDI(dbType, connectString);
+            services.AddHostedService<MasterHost>();
+            return services;
+        }
+
+        public static IServiceCollection AddLoginServerDI(this IServiceCollection services, string dbType, string connectString)
+        {
             services.AddDbContextFactory<DBContext>(o =>
             {
                 if (dbType == AppSettingKeys.ConnectStr_Mysql)
@@ -182,7 +189,6 @@ namespace Application.Core.Login
 
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
-            services.AddHostedService<MasterHost>();
             return services;
         }
     }

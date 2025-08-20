@@ -13,7 +13,7 @@ namespace Application.Host.Services
         public string GenerateToken()
         {
             var token = new JwtSecurityToken(
-                issuer:"cosmic_dotnet",
+                issuer:"ruams",
                 claims: [new Claim(ClaimTypes.NameIdentifier, "admin")],
                 notBefore: DateTime.Now,
                 expires: DateTime.Now.AddDays(1),

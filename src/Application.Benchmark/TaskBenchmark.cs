@@ -1,8 +1,6 @@
 using Application.Utility.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using net.server;
-using server;
 
 namespace Application.Benchmark
 {
@@ -14,14 +12,14 @@ namespace Application.Benchmark
         [Benchmark()]
         public async Task UseTask()
         {
-            var timeManager = await TimerManager.InitializeAsync(TaskEngine.Task, "Benchmark");
+            var timeManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Task, "Benchmark");
             await timeManager.Stop();
         }
 
         [Benchmark()]
         public async Task UseQuartz()
         {
-            var timeManager = await TimerManager.InitializeAsync(TaskEngine.Quartz, "Benchmark");
+            var timeManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, "Benchmark");
             await timeManager.Stop();
         }
     }

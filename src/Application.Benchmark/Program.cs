@@ -2,7 +2,8 @@
 using Application.Benchmark;
 using BenchmarkDotNet.Running;
 
-BenchmarkRunner.Run<ScriptBenchmark>();
+
+BenchmarkRunner.Run<MapperExpressionBenchrmark>();
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)
