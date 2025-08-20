@@ -16,10 +16,12 @@ namespace Application.Module.Fishing.Channel
     {
         readonly ILogger<FishingManager> _logger;
         private ConcurrentDictionary<IPlayer, int> fishingAttempters = new();
+        readonly WorldChannelServer _server;
 
         public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger)
             : base($"Fishing_{server.ServerName}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
+            _server = server;
             _logger = logger;
         }
 
@@ -63,7 +65,7 @@ namespace Application.Module.Fishing.Channel
 
         public double[] fetchFishingLikelihood()
         {
-            var dt = DateTimeOffset.UtcNow;
+            var dt = _server.GetCurrentTimeDateTimeOffSet();
             int dayOfYear = dt.DayOfYear;
 
             int hours = dt.Hour;

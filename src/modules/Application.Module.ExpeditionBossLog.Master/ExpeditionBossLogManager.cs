@@ -1,3 +1,4 @@
+using Application.Core.Login;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
@@ -11,11 +12,13 @@ namespace Application.Module.ExpeditionBossLog.Master
     {
         readonly ILogger<ExpeditionBossLogManager> _logger;
         List<PlayerBossLogModel> _dataSource = new();
+        readonly MasterServer _server;
 
         List<BossLogEntry> _allTypes = EnumClassUtils.GetValues<BossLogEntry>();
 
-        public ExpeditionBossLogManager(ILogger<ExpeditionBossLogManager> logger)
+        public ExpeditionBossLogManager(ILogger<ExpeditionBossLogManager> logger, MasterServer server)
         {
+            _server = server;
             _logger = logger;
         }
 
@@ -52,13 +55,13 @@ namespace Application.Module.ExpeditionBossLog.Master
             /*
             Boss logs resets 12am, weekly thursday 12AM - thanks Smitty Werbenjagermanjensen (superadlez) - https://www.reddit.com/r/Maplestory/comments/61tiup/about_reset_time/
             */
-            var thursday = DateTimeOffset.UtcNow.Date;
+            var thursday = _server.GetCurrentTimeDateTimeOffset().Date;
             int delta = ((int)DayOfWeek.Thursday - (int)thursday.DayOfWeek + 7) % 7;
             //if (delta <= 0)
             //    delta += 7; // 如加7天到下一个周四
             thursday = thursday.AddDays(delta);
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            DateTimeOffset now = _server.GetCurrentTimeDateTimeOffset();
             var deltaTime = now - thursday;
             if (deltaTime.TotalHours < 12)
             {
@@ -113,7 +116,7 @@ namespace Application.Module.ExpeditionBossLog.Master
 
             if (log)
             {
-                _dataSource.Add(new PlayerBossLogModel { BossName = boss.name(), CharacterId = cid, Time = DateTimeOffset.UtcNow });
+                _dataSource.Add(new PlayerBossLogModel { BossName = boss.name(), CharacterId = cid, Time = _server.GetCurrentTimeDateTimeOffset() });
             }
             return true;
         }

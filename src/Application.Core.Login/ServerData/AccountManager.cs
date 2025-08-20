@@ -76,7 +76,7 @@ namespace Application.Core.Login.Datas
         {
             var d = GetAccountLoginStatus(accId);
             d.State = newState;
-            d.DateTime = DateTimeOffset.UtcNow;
+            d.DateTime = _server.GetCurrentTimeDateTimeOffset();
 
             _dataStorage.SetAccountLoginRecord(new KeyValuePair<int, AccountLoginStatus>(accId, d));
             return d;

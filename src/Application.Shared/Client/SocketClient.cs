@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Shared.Client
 {
-    public abstract class SocketClient : ChannelHandlerAdapter, ISocketClient
+    public abstract class SocketClient : SimpleChannelInboundHandler<InPacket>, ISocketClient
     {
         public ISocketServer CurrentServerBase { get; protected set; }
         public long SessionId { get; }
@@ -108,15 +108,9 @@ namespace Application.Shared.Client
         }
 
         protected abstract void ProcessPacket(InPacket packet);
-        public override void ChannelRead(IChannelHandlerContext ctx, object msg)
+        protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
-            if (msg is not InPacket packet)
-            {
-                log.LogWarning("Received invalid message: {Packet}", msg);
-                return;
-            }
-
-            ProcessPacket(packet);
+            ProcessPacket(msg);
             LastPacket = DateTimeOffset.UtcNow;
         }
 

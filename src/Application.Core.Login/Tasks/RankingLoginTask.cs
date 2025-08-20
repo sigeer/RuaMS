@@ -39,12 +39,15 @@ namespace Application.Core.Login.Tasks;
 /// </summary>
 public class RankingLoginTask : AbstractRunnable
 {
-    private DateTimeOffset lastUpdate = DateTimeOffset.UtcNow;
+    private DateTimeOffset lastUpdate;
     readonly IDbContextFactory<DBContext> _dbContextFactory;
+    readonly MasterServer _server;
 
-    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory)
+    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
     {
         _dbContextFactory = dbContextFactory;
+        _server = server;
+        lastUpdate = _server.GetCurrentTimeDateTimeOffset();
     }
 
     private void resetMoveRank(DBContext dbContext)
@@ -105,7 +108,7 @@ public class RankingLoginTask : AbstractRunnable
             }
             dbTrans.Commit();
 
-            lastUpdate = DateTimeOffset.UtcNow;
+            lastUpdate = _server.GetCurrentTimeDateTimeOffset();
         }
         catch (Exception e)
         {

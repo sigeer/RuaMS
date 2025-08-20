@@ -16,7 +16,7 @@ public class TimeoutTask : AbstractRunnable
 
     public override void HandleRun()
     {
-        var time = _server.GetCurrentTimeDateTimeOffSet();
+        var time = DateTimeOffset.UtcNow;
         var chars = _server.PlayerStorage.getAllCharacters();
         foreach (var chr in chars)
         {
