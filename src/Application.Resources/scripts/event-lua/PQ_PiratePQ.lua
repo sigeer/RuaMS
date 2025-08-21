@@ -225,7 +225,7 @@ function PiratePQ:monsterKilled(mob, eim)
         if ((stage == 1 or stage == 3 or stage == 4) and self:passedGrindMode(map, eim)) then
             eim:showClearEffect(map:getId())
         elseif (stage == 5) then
-            if (map:getReactorByName("sMob1"):getState() >= 1 and map:getReactorByName("sMob2"):getState() >= 1 and map.getReactorByName("sMob3"):getState() >= 1 and map.getReactorByName("sMob4").getState() >= 1) then
+            if (map:getReactorByName("sMob1"):getState() >= 1 and map:getReactorByName("sMob2"):getState() >= 1 and map:getReactorByName("sMob3"):getState() >= 1 and map:getReactorByName("sMob4").getState() >= 1) then
                 eim:showClearEffect(map:getId())
             end
         end
