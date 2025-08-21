@@ -166,13 +166,13 @@ function monsterKilled(mob, eim)
             eim:giveEventPlayersStageReward(2);
             eim:setIntProperty("statusStg2", 1);
         end
-    elseif (map.getId() == 926110203 and eim:getIntProperty("statusStg1") == 1) then
+    elseif (map:getId() == 926110203 and eim:getIntProperty("statusStg1") == 1) then
         if (map:countMonsters() == 0) then
             eim:showClearEffect();
             eim:giveEventPlayersStageReward(5);
 
             generateStg6Combo(eim);
-            map.getReactorByName("jnr6_out").forceHitReactor(1);
+            map:getReactorByName("jnr6_out"):forceHitReactor(1);
         end
     elseif (mob:getId() == 9300151 or mob:getId() == 9300152) then
         eim:showClearEffect();
@@ -180,7 +180,7 @@ function monsterKilled(mob, eim)
 
         eim:spawnNpc(2112005, Point(-370, -150), map);
 
-        local gain = (eim:getIntProperty("escortFail") == 1) and 90000 or ((mob.getId() == 9300139) and 105000 or 140000);
+        local gain = (eim:getIntProperty("escortFail") == 1) and 90000 or ((mob:getId() == 9300139) and 105000 or 140000);
         eim:giveEventPlayersExp(gain);
 
         map:killAllMonstersNotFriendly();
