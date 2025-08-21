@@ -73,13 +73,6 @@ public class WarpCommand : ParamsCommandBase
             return;
         }
 
-        var mapPlayers = target.getAllPlayers();
-        foreach (var player in mapPlayers)
-        {
-            player.saveLocationOnWarp();
-            player.changeMap(target, target.getRandomPlayerSpawnpoint());
-        }
-
-
+        admin.changeMap(target, target.getRandomPlayerSpawnpoint());
     }
 }

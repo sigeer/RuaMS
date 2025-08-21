@@ -202,7 +202,7 @@ end
 -- 玩家进入事件
 function BasePQ:playerEntry(eim, player)
     local map = eim:getMapInstance(self.entryMap)
-    player:changeMap(map, map.getPortal(self.entryPortal))
+    player:changeMap(map, map:getPortal(self.entryPortal))
     self:noticePlayerEnter(eim, player)
 end
 
