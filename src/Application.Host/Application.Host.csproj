@@ -9,8 +9,8 @@
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(IsStandalone)' == 'true'">
-		<Version>$(Version)-standalone</Version>
 		<FileVersion>$(Version).1</FileVersion>
+		<Version>$(Version)-standalone</Version>
 		<DefineConstants>$(DefineConstants);IsStandalone</DefineConstants>
 	</PropertyGroup>
 
