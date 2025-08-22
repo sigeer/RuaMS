@@ -1,7 +1,6 @@
 using Application.Core.Login.Models.ChatRoom;
 using Application.Shared.Constants;
 using Application.Shared.Invitations;
-using AutoMapper;
 using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -103,12 +102,12 @@ namespace Application.Core.Login.ServerData
                 if (room.TryRemoveMember(request.MasterId, out var position))
                 {
                     var roomDto = MapDto(room);
-                    _server.Transport.BroadcastLeaveChatRoom(new Dto.LeaveChatRoomResponse 
-                    { 
-                        Code = 0, 
-                        Room = roomDto, 
-                        LeftPosition = position, 
-                        LeftPlayerID = request.MasterId 
+                    _server.Transport.BroadcastLeaveChatRoom(new Dto.LeaveChatRoomResponse
+                    {
+                        Code = 0,
+                        Room = roomDto,
+                        LeftPosition = position,
+                        LeftPlayerID = request.MasterId
                     });
                 }
                 if (room.Members.Count(x => x > 0) == 0)

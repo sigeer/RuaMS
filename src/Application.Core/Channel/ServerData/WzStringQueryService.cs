@@ -1,5 +1,4 @@
 using Application.Resources;
-using AutoMapper;
 using ZLinq;
 
 namespace Application.Core.Channel.ServerData

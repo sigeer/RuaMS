@@ -1,6 +1,5 @@
 using Application.EF;
 using Application.EF.Entities;
-using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

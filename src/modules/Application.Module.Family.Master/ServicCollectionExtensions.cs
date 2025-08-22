@@ -2,6 +2,7 @@ using Application.Core.Login.Events;
 using Application.Core.Login.Shared;
 using Application.Module.Family.Common;
 using Application.Module.Family.Master.Models;
+using Mapster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,7 @@ namespace Application.Module.Family.Master
         public static IServiceCollection AddFamilySystem(this IServiceCollection services, IConfigurationSection configuration)
         {
             services.AddOptions<FamilyConfigs>().Bind(configuration);
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
 
             services.AddSingleton<FamilyManager>();
             services.AddSingleton<IStorage, FamilyManager>(sp => sp.GetRequiredService<FamilyManager>());

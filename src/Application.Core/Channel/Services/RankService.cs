@@ -1,5 +1,4 @@
 using Application.Core.ServerTransports;
-using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Application.Core.Servers.Services

@@ -25,7 +25,6 @@
 
 using Application.Core.Game.Skills;
 using client.autoban;
-using constants.game;
 using tools;
 
 namespace client.processor.stat;

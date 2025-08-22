@@ -1,12 +1,9 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Constants;
 using Application.Shared.NewYear;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -35,27 +32,26 @@ namespace Application.Core.Login.ServerData
 
         public override List<NewYearCardModel> Query(Expression<Func<NewYearCardModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<NewYearCardEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dataFromDB = (from a in dbContext.Newyears.Where(entityExpression)
-                          join b in dbContext.Characters on a.SenderId equals b.Id into bss
-                          from bs in bss.DefaultIfEmpty()
-                          join c in dbContext.Characters on a.ReceiverId equals c.Id into css
-                          from cs in css
-                          select new NewYearCardModel
-                          {
-                              Id = a.Id,
-                              SenderId = a.SenderId,
-                              ReceiverId = a.ReceiverId,
-                              SenderName = bs == null ? StringConstants.CharacterUnknown : bs.Name,
-                              ReceiverName = cs == null ? StringConstants.CharacterUnknown : cs.Name,
-                              SenderDiscard = a.SenderDiscard,
-                              Message = a.Message,
-                              Received = a.Received,
-                              ReceiverDiscard = a.ReceiverDiscard,
-                              TimeReceived = a.TimeReceived,
-                              TimeSent = a.TimeSent
-                          }).ToList();
+            var dataFromDB = (from a in dbContext.Newyears.AsNoTracking().ProjectToType<NewYearCardModel>().Where(expression)
+                              join b in dbContext.Characters on a.SenderId equals b.Id into bss
+                              from bs in bss.DefaultIfEmpty()
+                              join c in dbContext.Characters on a.ReceiverId equals c.Id into css
+                              from cs in css
+                              select new NewYearCardModel
+                              {
+                                  Id = a.Id,
+                                  SenderId = a.SenderId,
+                                  ReceiverId = a.ReceiverId,
+                                  SenderName = bs == null ? StringConstants.CharacterUnknown : bs.Name,
+                                  ReceiverName = cs == null ? StringConstants.CharacterUnknown : cs.Name,
+                                  SenderDiscard = a.SenderDiscard,
+                                  Message = a.Message,
+                                  Received = a.Received,
+                                  ReceiverDiscard = a.ReceiverDiscard,
+                                  TimeReceived = a.TimeReceived,
+                                  TimeSent = a.TimeSent
+                              }).ToList();
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }

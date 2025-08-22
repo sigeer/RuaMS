@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using constants.game;
 using tools;
 
 namespace server.maps;

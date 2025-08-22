@@ -1,7 +1,6 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using tools;
 

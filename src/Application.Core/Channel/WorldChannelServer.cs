@@ -11,7 +11,6 @@ using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Config;
-using constants.game;
 using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -20,15 +19,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using net.server.guild;
-using net.server.task;
 using Polly;
-using Serilog;
 using server;
 using server.quest;
 using System.Diagnostics;
 using System.Net;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel
 {

@@ -7,8 +7,8 @@ using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Common.Models;
 using Application.Module.Marriage.Master.Models;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
+using Mapster;
+using MapsterMapper;
 using MarriageProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -71,7 +71,11 @@ namespace Application.Module.Marriage.Master
             };
 
             SetDirty(newModel.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, newModel));
-            return new MarriageProto.CreateMarriageRelationResponse { Data = _mapper.Map<MarriageProto.MarriageDto>(newModel) };
+
+            var dtoModel = _mapper.Map<MarriageProto.MarriageDto>(newModel);
+            dtoModel.WifeName = _server.CharacterManager.GetPlayerName(dtoModel.WifeId);
+            dtoModel.HusbandName = _server.CharacterManager.GetPlayerName(dtoModel.HusbandId);
+            return new MarriageProto.CreateMarriageRelationResponse { Data = dtoModel };
         }
 
         public MarriageProto.BreakMarriageResponse BreakMarriage(MarriageProto.BreakMarriageRequest request)
@@ -105,7 +109,7 @@ namespace Application.Module.Marriage.Master
                     MasterPartnerName = partner.Character.Name
                 });
 
-                wedding.Status = wedding.Status == (int)MarriageStatusEnum.Engaged ? (int)MarriageStatusEnum.EngagementCanceled :(int)MarriageStatusEnum.Divorced;
+                wedding.Status = wedding.Status == (int)MarriageStatusEnum.Engaged ? (int)MarriageStatusEnum.EngagementCanceled : (int)MarriageStatusEnum.Divorced;
                 wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
                 wedding.RingSourceId = 0;
 
@@ -133,10 +137,9 @@ namespace Application.Module.Marriage.Master
 
         public override List<MarriageModel> Query(Expression<Func<MarriageModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<MarriageEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dbList = dbContext.Marriages.AsNoTracking().Where(entityExpression).ToList();
+            var dbList = dbContext.Marriages.AsNoTracking().ProjectToType<MarriageModel>().Where(expression).ToList();
             var dataFromDB = _mapper.Map<List<MarriageModel>>(dbList);
 
             return QueryWithDirty(dataFromDB, expression.Compile());
@@ -149,7 +152,14 @@ namespace Application.Module.Marriage.Master
 
         public MarriageProto.LoadMarriageInfoResponse GetEffectMarriageModelRemote(MarriageProto.LoadMarriageInfoRequest request)
         {
-            return new LoadMarriageInfoResponse() { Data = _mapper.Map<MarriageProto.MarriageDto>(GetEffectMarriageModel(request.MasterId)) };
+            var sourceData = GetEffectMarriageModel(request.MasterId);
+            if (sourceData == null)
+                return new LoadMarriageInfoResponse();
+
+            var model = _mapper.Map<MarriageProto.MarriageDto>(sourceData);
+            model.WifeName = _server.CharacterManager.GetPlayerName(model.WifeId);
+            model.HusbandName = _server.CharacterManager.GetPlayerName(model.HusbandId);
+            return new LoadMarriageInfoResponse() { Data = model };
         }
 
         public void CompleteMarriage(MarriageModel model, RingSourceModel ringSource)

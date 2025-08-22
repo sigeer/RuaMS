@@ -1,8 +1,8 @@
 using Application.Shared.Constants;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using AutoMapper;
 using CashProto;
+using MapsterMapper;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData

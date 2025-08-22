@@ -1,7 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Buddy;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using tools;
 

@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using server.maps;
+using System.IO;
 
 namespace Application.Core.Game.Relation
 {
@@ -23,6 +24,15 @@ namespace Application.Core.Game.Relation
             _server = server;
             this.leaderId = leaderId;
             this.id = id;
+        }
+
+        public Team FromDto(TeamProto.TeamDto dto)
+        {
+            foreach (var member in dto.Members)
+            {
+                addMember(member.Adapt<TeamMember>());
+            }
+            return this;
         }
 
         public bool containsMembers(int memberId)

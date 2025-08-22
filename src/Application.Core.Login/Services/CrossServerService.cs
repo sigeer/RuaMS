@@ -1,7 +1,5 @@
 using Application.Core.Login.Models;
 using Application.Shared.Constants;
-using AutoMapper;
-using Dto;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Services

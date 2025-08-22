@@ -5,6 +5,7 @@ using Application.Module.Duey.Channel.Models;
 using Application.Module.Duey.Channel.Net.Handlers;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -16,7 +17,7 @@ namespace Application.Module.Duey.Channel
     {
         public static IServiceCollection AddDueyChannel(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
 
             services.AddSingleton<DueyManager>();

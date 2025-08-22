@@ -1,19 +1,19 @@
 using Application.EF.Entities;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.Maker.Master.Models
 {
-    public class Mapper : Profile
+    public class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<MakerCreatedataEntity, MakerProto.MakerCraftTable>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid)); 
-            CreateMap<MakerRecipedataEntity, MakerProto.MakerRequiredItem>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.ReqItem));
+            config.NewConfig<MakerCreatedataEntity, MakerProto.MakerCraftTable>()
+                .Map(dest => dest.ItemId, x => x.Itemid);
+            config.NewConfig<MakerRecipedataEntity, MakerProto.MakerRequiredItem>()
+                .Map(dest => dest.ItemId, x => x.ReqItem);
 
-            CreateMap<MakerReagentdataEntity, MakerProto.MakerItemStat>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid)); 
+            config.NewConfig<MakerReagentdataEntity, MakerProto.MakerItemStat>()
+                .Map(dest => dest.ItemId, x => x.Itemid);
         }
     }
 }

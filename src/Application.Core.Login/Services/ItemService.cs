@@ -1,14 +1,9 @@
-using Application.Core.EF.Entities.Items;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Constants.Item;
-using Application.Shared.Items;
 using Application.Shared.Message;
 using Application.Utility.Compatible.Atomics;
-using AutoMapper;
 using BaseProto;
 using Dto;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;

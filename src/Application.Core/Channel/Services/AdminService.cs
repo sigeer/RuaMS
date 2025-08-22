@@ -1,10 +1,7 @@
 using Application.Core.Models;
-using Application.Core.scripting.npc;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using Application.Shared.Login;
-using AutoMapper;
-using Dto;
 using Google.Protobuf.WellKnownTypes;
 using System.Text;
 using tools;

@@ -1,26 +1,23 @@
-using AutoMapper;
+using Mapster;
 using System.Drawing;
 
 namespace Application.Module.PlayerNPC.Channel.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<PlayerNPCProto.PlayerNPCEquip, PlayerNpcEquipObject>()
-                .ForMember(dest => dest.EquipId, src => src.MapFrom(x => x.ItemId))
-                .ForMember(dest => dest.EquipPos, src => src.MapFrom(x => x.Position))
-                .ReverseMap()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.EquipId))
-                .ForMember(dest => dest.Position, src => src.MapFrom(x => x.EquipPos));
+            config.NewConfig<PlayerNPCProto.PlayerNPCEquip, PlayerNpcEquipObject>()
+                .TwoWays()
+                .Map(dest => dest.EquipId, x => x.ItemId)
+                .Map(dest => dest.EquipPos, x => x.Position);
 
-            CreateMap<PlayerNPCProto.PlayerNPCDto, PlayerNpc>()
-                .AfterMap((src, dest) =>
+            config.NewConfig<PlayerNPCProto.PlayerNPCDto, PlayerNpc>()
+                .AfterMapping((src, dest) =>
                 {
                     dest.setObjectId(dest.Id);
                     dest.setPosition(new Point(dest.X, dest.Cy));
-                })
-                .ReverseMap();
+                });
 
         }
     }

@@ -1,24 +1,22 @@
 using Application.EF.Entities;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.BBS.Master.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<BbsThreadEntity, BBSThreadModel>()
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Threadid))
-                .ReverseMap()
-                .ForMember(dest => dest.Threadid, src => src.MapFrom(x => x.Id));
+            config.NewConfig<BbsThreadEntity, BBSThreadModel>()
+                .TwoWays()
+                .Map(dest => dest.Id, x => x.Threadid);
 
-            CreateMap<BbsReplyEntity, BBSReplyModel>()
-                .ForMember(dest => dest.Threadid, src => src.MapFrom(x => x.Threadid));
+            config.NewConfig<BbsReplyEntity, BBSReplyModel>();
 
-            CreateMap<BBSThreadModel, BBSProto.BBSThreadDto>();
-            CreateMap<BBSThreadModel, BBSProto.BBSThreadPreviewDto>()
-                .ForMember(dest => dest.ReplyCount, src => src.MapFrom(x => x.Replies.Count));
-            CreateMap<BBSReplyModel, BBSProto.BBSReplyDto>();
+            config.NewConfig<BBSThreadModel, BBSProto.BBSThreadDto>();
+            config.NewConfig<BBSThreadModel, BBSProto.BBSThreadPreviewDto>()
+                .Map(dest => dest.ReplyCount, x => x.Replies.Count);
+            config.NewConfig<BBSReplyModel, BBSProto.BBSReplyDto>();
         }
     }
 }

@@ -1,9 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using AutoMapper;
-using constants.game;
-using Dto;
 using GuildProto;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
@@ -146,8 +143,7 @@ namespace Application.Core.Channel.ServerData
                 return null;
             }
 
-            var guild = new Guild(_serverContainer, remoteData.GuildId);
-            _mapper.Map(remoteData, guild);
+            var guild = new Guild(_serverContainer, remoteData.GuildId).FromDto(remoteData);
             CachedData[guild.GuildId] = guild;
 
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
@@ -244,8 +240,7 @@ namespace Application.Core.Channel.ServerData
             {
                 return null;
             }
-            var localData = new Guild(_serverContainer, id);
-            _mapper.Map(remoteData.Model, localData);
+            var localData = new Guild(_serverContainer, id).FromDto(remoteData.Model);
             CachedData[localData.GuildId] = localData;
             return localData;
         }
@@ -456,8 +451,7 @@ namespace Application.Core.Channel.ServerData
             if (remoteAlliance.Model == null)
                 return null;
 
-            var localData = new Alliance(remoteAlliance.Model.AllianceId);
-            var alliance = _mapper.Map(remoteAlliance, localData);
+            var alliance = _mapper.Map<Alliance>(remoteAlliance.Model);
             if (alliance != null)
             {
                 var guildObjs = alliance.Guilds;
@@ -520,8 +514,7 @@ namespace Application.Core.Channel.ServerData
             if (remoteData == null)
                 return null;
 
-            var localData = new Alliance(id);
-            _mapper.Map(remoteData, localData);
+            var localData = _mapper.Map<Alliance>(remoteData);
             _allianceData[id] = localData;
             return localData;
         }

@@ -23,7 +23,6 @@
 using Application.Core.Game.Life;
 using Application.Core.ServerTransports;
 using Application.Resources;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server.life;

@@ -1,6 +1,5 @@
-using Application.Module.Duey.Master;
-using AutoMapper;
 using DueyDto;
+using MapsterMapper;
 
 namespace Application.Module.Duey.Channel.InProgress
 {

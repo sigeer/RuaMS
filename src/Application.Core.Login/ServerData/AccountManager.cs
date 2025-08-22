@@ -7,9 +7,8 @@ using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using AutoMapper;
 using Dto;
-using Google.Protobuf;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

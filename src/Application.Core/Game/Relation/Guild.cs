@@ -54,6 +54,29 @@ public class Guild
         this.members = [];
     }
 
+    public Guild FromDto(GuildProto.GuildDto dto)
+    {
+        Notice = dto.Notice;
+        Capacity = dto.Capacity;
+        GP = dto.Gp;
+        Leader = dto.Leader;
+        Logo = dto.Logo;
+        LogoBg = dto.LogoBg;
+        LogoBgColor = (short)dto.LogoBgColor;
+        LogoColor = (short)dto.LogoColor;
+        Name = dto.Name;
+        RankTitles = new string[5]
+        {
+            dto.Rank1Title,
+            dto.Rank2Title,
+            dto.Rank3Title,
+            dto.Rank4Title,
+            dto.Rank5Title
+        };
+        Signature = dto.Signature;
+        return this;
+    }
+
     /// <summary>
     /// 相当于原先的 notifications
     /// </summary>
@@ -114,7 +137,7 @@ public class Guild
             return;
         }
         members[member.Id] = member;
-        var chr = _serverContainer.Servers[member.Channel].Players.getCharacterById(member.Id);
+        var chr = _serverContainer.FindPlayerById(member.Id);
         if (chr != null)
         {
             chr.GuildRank = member.GuildRank;

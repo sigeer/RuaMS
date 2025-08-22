@@ -1,16 +1,16 @@
 using Application.Module.Marriage.Common.Models;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.Marriage.Channel.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<MarriageProto.WeddingInfoDto, WeddingInfo>();
+            config.NewConfig<MarriageProto.WeddingInfoDto, WeddingInfo>();
 
-            CreateMap<MarriageProto.MarriageDto, MarriageInfo>()
-                .ForMember(dest => dest.Status, src => src.MapFrom(x => (MarriageStatusEnum)x.Status));
+            config.NewConfig<MarriageProto.MarriageDto, MarriageInfo>()
+                .Map(dest => dest.Status, x => (MarriageStatusEnum)x.Status);
         }
     }
 }

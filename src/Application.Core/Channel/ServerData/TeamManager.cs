@@ -2,7 +2,6 @@ using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using tools;
@@ -48,8 +47,8 @@ namespace Application.Core.Channel.ServerData
                     player.dropMessage(5, "创建队伍失败：发生了未知错误");
                     return false;
                 }
-                party = new Team(_server, remoteData.Id, remoteData.LeaderId);
-                _mapper.Map(remoteData, party);
+                party = new Team(_server, remoteData.Id, remoteData.LeaderId).FromDto(remoteData);
+
                 TeamChannelStorage[party.getId()] = party;
                 player.setParty(party);
                 // player.setMPC(partyplayer);

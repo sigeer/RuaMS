@@ -1,5 +1,4 @@
 using Application.Core.Models;
-using AutoMapper;
 using net.packet.outs;
 
 namespace Application.Core.Channel.ServerData

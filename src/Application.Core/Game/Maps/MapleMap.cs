@@ -34,7 +34,6 @@ using Application.Shared.WzEntity;
 using client.autoban;
 using client.inventory;
 using client.status;
-using constants.game;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.Event;

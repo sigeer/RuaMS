@@ -2,8 +2,6 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -109,7 +107,14 @@ public class NoteManager : StorageBase<int, NoteModel>
 
         var notes = _mapper.Map<Dto.NoteDto[]>(Query(x => x.ToId == liveObject.Character.Id && !x.IsDeleted));
         if (notes.Length > 0)
+        {
+            foreach (var item in notes)
+            {
+                item.From = _server.CharacterManager.GetPlayerName(item.FromId);
+                item.To = liveObject.Character.Name;
+            }
             _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
+        }
     }
 
     public Dto.NoteDto? SetRead(int id)
@@ -120,7 +125,10 @@ public class NoteManager : StorageBase<int, NoteModel>
 
         model.IsDeleted = true;
         SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
-        return _mapper.Map<Dto.NoteDto>(model);
+        var dto = _mapper.Map<Dto.NoteDto>(model);
+        dto.From = _server.CharacterManager.GetPlayerName(model.FromId);
+        dto.To = _server.CharacterManager.GetPlayerName(model.ToId);
+        return dto;
     }
 
     public void removeFredrickReminders(List<int> expiredCids)
@@ -154,10 +162,7 @@ public class NoteManager : StorageBase<int, NoteModel>
     public override List<NoteModel> Query(Expression<Func<NoteModel, bool>> expression)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
-
-        var entityExpression = _mapper.MapExpression<Expression<Func<NoteEntity, bool>>>(expression);
-
-        var dataFromDB = _mapper.Map<List<NoteModel>>(dbContext.Notes.Where(entityExpression).AsNoTracking().ToList());
+        var dataFromDB = dbContext.Notes.AsNoTracking().ProjectToType<NoteModel>().Where(expression).ToList();
 
         return QueryWithDirty(dataFromDB, expression.Compile());
     }

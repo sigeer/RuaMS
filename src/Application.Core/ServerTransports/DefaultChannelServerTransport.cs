@@ -1,5 +1,7 @@
+using AllianceProto;
 using Application.Core.Channel;
 using Application.Shared.Login;
+using Application.Shared.Servers;
 using Application.Shared.Team;
 using BaseProto;
 using CashProto;
@@ -13,19 +15,14 @@ using Grpc.Net.Client;
 using GuildProto;
 using InvitationProto;
 using ItemProto;
+using LifeProto;
 using MessageProto;
+using Microsoft.Extensions.Options;
 using RankProto;
 using SyncProto;
 using System.Net;
 using SystemProto;
 using TeamProto;
-using AllianceProto;
-using Microsoft.Extensions.Options;
-using Application.Shared.Servers;
-using Grpc.Core;
-using Grpc.Core.Interceptors;
-using Application.Protos;
-using LifeProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -121,7 +118,7 @@ namespace Application.Core.ServerTransports
 
         public void RemoveGuildQueued(int guildId)
         {
-            _dataClient.RemoveGuildQueued(new QuildRequest { GuildId = guildId});
+            _dataClient.RemoveGuildQueued(new QuildRequest { GuildId = guildId });
         }
 
         public bool IsGuildQueued(int guildId)
@@ -234,7 +231,7 @@ namespace Application.Core.ServerTransports
 
         public LoadCharacterRankResponse LoadPlayerRanking(int topCount)
         {
-            return _gameClient.LoadCharacterRank(new LoadCharacterRankRequest { Count = topCount});
+            return _gameClient.LoadCharacterRank(new LoadCharacterRankRequest { Count = topCount });
         }
 
         public void SendToggleCoupon(int itemId)
@@ -373,7 +370,7 @@ namespace Application.Core.ServerTransports
 
         public GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
         {
-            var req = new CreateAllianceRequest() { Name  = allianceName};
+            var req = new CreateAllianceRequest() { Name = allianceName };
             req.Members.AddRange(masters);
             return _allianceClient.CreateAlliance(req);
         }

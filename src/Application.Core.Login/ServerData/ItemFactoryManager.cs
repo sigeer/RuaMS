@@ -4,7 +4,6 @@ using Application.EF;
 using Application.Shared.Items;
 using Application.Utility;
 using Application.Utility.Exceptions;
-using AutoMapper;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;

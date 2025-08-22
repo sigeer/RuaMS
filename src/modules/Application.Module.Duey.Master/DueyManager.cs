@@ -7,9 +7,9 @@ using Application.EF.Entities;
 using Application.Module.Duey.Master.Models;
 using Application.Shared.Items;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using DueyDto;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -45,10 +45,9 @@ namespace Application.Module.Duey.Master
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
-            var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).Where(entityExpression).ToList();
+            var dbList = dbContext.Dueypackages.AsNoTracking().ProjectToType<DueyPackageModel>().Where(expression).ToList();
 
-            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemType.Duey);
+            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.Id).ToArray(), ItemType.Duey);
 
             List<DueyPackageModel> dataFromDB = [];
             foreach (var item in dbList)
@@ -88,12 +87,14 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Request = request, Package = _mapper.Map<DueyDto.DueyPackageDto>(package) });
+            var dtoModel = _mapper.Map<DueyDto.DueyPackageDto>(package);
+            dtoModel.SenderName = _server.CharacterManager.GetPlayerName(dtoModel.SenderId);
+            _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Request = request, Package = dtoModel });
         }
 
         public void PackageUnfreeze(int chrId)
         {
-            var packages = Query(x => x.ReceiverId == chrId && x.IsFrozen);
+            var packages = Query(x => x.ReceiverId == chrId).Where(x => x.IsFrozen);
             foreach (var package in packages)
             {
                 package.IsFrozen.Set(false);
@@ -153,17 +154,16 @@ namespace Application.Module.Duey.Master
                 Type = request.Quick,
                 Checked = true,
                 TimeStamp = time,
-                Item = _mapper.Map<ItemModel>(request.Item, ctx =>
-                {
-                    ctx.Items["Type"] = (int)ItemType.Duey;
-                })
+                Item = request.Item.BuildAdapter().AddParameters("Type", (int)ItemType.Duey).AdaptToType<ItemModel>()
             };
 
             SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
 
+            var dtoModel = _mapper.Map<DueyDto.DueyPackageDto>(model);
+            dtoModel.SenderName = _server.CharacterManager.GetPlayerName(dtoModel.SenderId);
             _transport.SendCreatePackage(new DueyDto.CreatePackageBroadcast
             {
-                Package = _mapper.Map<DueyDto.DueyPackageDto>(model),
+                Package = dtoModel,
             });
             return new CreatePackageResponse();
         }
@@ -183,7 +183,13 @@ namespace Application.Module.Duey.Master
         public DueyDto.GetPlayerDueyPackageResponse GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
         {
             var res = new GetPlayerDueyPackageResponse();
-            res.List.AddRange(_mapper.Map<DueyDto.DueyPackageDto[]>(Query(x => x.ReceiverId == request.ReceiverId)));
+            var dataList = Query(x => x.ReceiverId == request.ReceiverId);
+            foreach (var item in dataList)
+            {
+                var obj = _mapper.Map<DueyDto.DueyPackageDto>(item);
+                obj.SenderName = _server.CharacterManager.GetPlayerName(obj.SenderId);
+                res.List.Add(obj);
+            }
             res.ReceiverId = request.ReceiverId;
             return res;
         }

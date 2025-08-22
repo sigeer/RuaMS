@@ -1,6 +1,3 @@
-using client.inventory;
-using client.inventory.manipulator;
-
 namespace Application.Core.Channel.ResourceTransaction.Handlers
 {
     internal class PlayerCostItemIdHandler : IResourceHandler

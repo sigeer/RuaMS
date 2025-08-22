@@ -1,14 +1,13 @@
 using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Shared;
 using Application.EF;
-using AutoMapper;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class GachaponManager: IStorage
+    public class GachaponManager : IStorage
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly ILogger<GachaponManager> _logger;

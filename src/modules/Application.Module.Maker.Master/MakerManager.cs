@@ -1,7 +1,7 @@
 using Application.EF;
 using Application.Shared.Constants.Item;
-using AutoMapper;
 using MakerProto;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -27,13 +27,14 @@ namespace Application.Module.Maker.Master
             if (dbModel == null)
                 return new MakerProto.QueryMakerCraftTableResponse();
 
-            int reqLevel = dbModel?.ReqLevel ?? -1;
-            int reqMakerLevel = dbModel?.ReqMakerLevel ?? -1;
-            int cost = dbModel?.ReqMeso ?? -1;
-            int toGive = dbModel?.Quantity ?? -1;
-
-            var model = new MakerProto.MakerCraftTable();
-            _mapper.Map(dbModel, model);
+            var model = new MakerProto.MakerCraftTable()
+            {
+                ReqMakerLevel = dbModel.ReqMakerLevel,
+                ItemId = request.ItemId,
+                Quantity = dbModel.Quantity,
+                ReqLevel = dbModel.ReqLevel,
+                ReqMeso = dbModel.ReqMeso,
+            };
 
             var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == request.ItemId).ToList();
             model.ReqItems = new MakerProto.MakerRequiredItems();
@@ -44,9 +45,9 @@ namespace Application.Module.Maker.Master
         public MakerProto.QueryMakerItemStatResponse GetMakerReagentStatUpgrade(MakerProto.ItemIdRequest request)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var data = _mapper.Map<MakerProto.MakerItemStat>(
-                dbContext.Makerreagentdata.Where(x => x.Itemid == request.ItemId).Select(x => new { x.Stat, x.Value }
-                ).FirstOrDefault());
+
+            var dbModel = dbContext.Makerreagentdata.Where(x => x.Itemid == request.ItemId).FirstOrDefault();
+            var data = _mapper.Map<MakerProto.MakerItemStat>(dbModel);
             return new MakerProto.QueryMakerItemStatResponse { Data = data };
         }
 

@@ -3,6 +3,7 @@ using Application.Core.Login.Shared;
 using Application.Module.PlayerNPC.Master.Models;
 using Application.Shared.Servers;
 using Application.Utility;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ namespace Application.Module.PlayerNPC.Master
     {
         public static IServiceCollection AddPlayerNPCMaster(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<IServerBootstrap, PlayerNPCMasterBootstrap>();
 
             services.AddSingleton<PlayerNPCManager>();

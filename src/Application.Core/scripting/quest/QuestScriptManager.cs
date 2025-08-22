@@ -25,7 +25,6 @@ using Application.Core.Channel;
 using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
 using client;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using server.quest;
 

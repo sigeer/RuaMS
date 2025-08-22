@@ -24,7 +24,6 @@
 using Application.Core.Game.Invites;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.game;
 using tools;
 
 namespace Application.Core.Game.Trades;

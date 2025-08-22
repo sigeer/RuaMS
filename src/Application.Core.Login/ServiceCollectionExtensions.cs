@@ -11,15 +11,16 @@ using Application.Core.Login.Shared;
 using Application.Core.Login.Tasks;
 using Application.EF;
 using Application.Protos;
-using Application.Resources;
 using Application.Shared.Servers;
 using Application.Utility;
-using AutoMapper.Extensions.ExpressionMapping;
+using FastExpressionCompiler;
+using Google.Protobuf.Collections;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Yitter.IdGenerator;
 
 namespace Application.Core.Login
 {
@@ -165,10 +166,19 @@ namespace Application.Core.Login
                     o.UseSqlite(connectString, o => o.MigrationsAssembly("Application.Core.EF.Sqlite"));
             });
 
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddExpressionMapping();
-            }, typeof(ProtoMapper).Assembly);
+
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(ProtoMapper).Assembly);
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
+            TypeAdapterConfig.GlobalSettings.Compile();
+            TypeAdapterConfig.GlobalSettings.CompileProjection();
+            // proto的 RepeatedField<> 是只读类型，此处处理
+            //TypeAdapterConfig.GlobalSettings.Default
+            //    .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+            //                       member.Type.IsGenericType &&
+            //                       member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
+
+            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+            services.AddSingleton<IMapper, Mapper>();
 
             services.AddLoginHandlers();
 

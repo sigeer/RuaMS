@@ -4,8 +4,8 @@ using Application.EF;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Buddy;
 using Application.Shared.Message;
-using AutoMapper;
 using Dto;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

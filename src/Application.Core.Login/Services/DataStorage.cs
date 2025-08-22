@@ -4,7 +4,6 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Login;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -37,7 +36,10 @@ namespace Application.Core.Login.Services
 
             try
             {
-                var character = _mapper.Map<CharacterEntity>(newCharacter.Character);
+                var obj = newCharacter.Character;
+                var character = new CharacterEntity(obj.AccountId, obj.Name, obj.Level, obj.Exp, obj.Gachaexp, obj.Str, obj.Dex, obj.Luk, obj.Int, obj.Hp, obj.Mp, obj.Maxhp, obj.Maxmp,
+                    obj.Meso, obj.JobId, obj.Skincolor, obj.Gender, obj.Hair, obj.Face, obj.Map, obj.Spawnpoint,
+                    obj.Ap, obj.Sp);
                 dbContext.Characters.Add(character);
                 dbContext.SaveChanges();
 

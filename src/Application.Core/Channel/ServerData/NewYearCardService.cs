@@ -1,6 +1,5 @@
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using AutoMapper;
 using Dto;
 using tools;
 

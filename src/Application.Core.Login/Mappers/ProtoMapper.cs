@@ -1,137 +1,129 @@
+using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
+using Application.Core.Login.ServerData;
+using Application.Shared.Constants;
 using Application.Shared.Items;
-using Application.Shared.NewYear;
-using AutoMapper;
+using Dto;
 using Google.Protobuf.WellKnownTypes;
+using Mapster;
 
 namespace Application.Core.Login.Mappers
 {
     /// <summary>
     /// Model &lt;=> proto
     /// </summary>
-    public class ProtoMapper : Profile
+    public class ProtoMapper : IRegister
     {
-        public ProtoMapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<Timestamp, DateTimeOffset?>()
-                .ConvertUsing(src => src == null ? (DateTimeOffset?)null : src.ToDateTimeOffset());
-            CreateMap<DateTimeOffset?, Timestamp>()
-                .ConvertUsing(src => src.HasValue ? Timestamp.FromDateTimeOffset(src.Value) : null!);
+            config.NewConfig<Timestamp, DateTimeOffset?>()
+                .MapWith(src => src == null ? (DateTimeOffset?)null : src.ToDateTimeOffset());
+            config.NewConfig<DateTimeOffset?, Timestamp>()
+                .MapWith(src => src.HasValue ? Timestamp.FromDateTimeOffset(src.Value) : null!);
 
-            CreateMap<Timestamp, DateTimeOffset>()
-                .ConvertUsing(src => src.ToDateTimeOffset());
-            CreateMap<DateTimeOffset, Timestamp>()
-                .ConvertUsing(src => Timestamp.FromDateTimeOffset(src));
+            config.NewConfig<Timestamp, DateTimeOffset>()
+                .MapWith(src => src.ToDateTimeOffset());
+            config.NewConfig<DateTimeOffset, Timestamp>()
+                .MapWith(src => Timestamp.FromDateTimeOffset(src));
 
-            CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
-            CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
+            config.NewConfig<DateTime, Timestamp>()
+                .MapWith(src => Timestamp.FromDateTime(src.ToUniversalTime()));
+            config.NewConfig<Timestamp, DateTime>()
+                .MapWith(src => src.ToDateTime());
 
-            CreateMap<CharacterModel, Dto.CharacterDto>()
-                .ReverseMap();
+            config.NewConfig<CharacterModel, Dto.CharacterDto>()
+                .TwoWays();
 
-            CreateMap<FameLogModel, Dto.FameLogRecordDto>().ReverseMap();
-            CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();
+            config.NewConfig<FameLogModel, Dto.FameLogRecordDto>().TwoWays();
+            config.NewConfig<PetIgnoreModel, Dto.PetIgnoreDto>().TwoWays();
 
-            CreateMap<EquipModel, Dto.EquipDto>()
-                .ReverseMap();
-            CreateMap<PetModel, Dto.PetDto>().ReverseMap();
-            CreateMap<RingSourceModel, ItemProto.RingDto>()
-                .ForMember(dest => dest.CharacterName1, src => src.MapFrom<RingCharacterName1ValueResolver>())
-                .ForMember(dest => dest.CharacterName2, src => src.MapFrom<RingCharacterName2ValueResolver>())
-                .ReverseMap();
-            CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
+            config.NewConfig<EquipModel, Dto.EquipDto>()
+                .TwoWays();
+            config.NewConfig<PetModel, Dto.PetDto>().TwoWays();
+            config.NewConfig<RingSourceModel, ItemProto.RingDto>().TwoWays();
+            config.NewConfig<ItemModel, Dto.ItemDto>().TwoWays();
 
-            CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
-            CreateMap<AccountGame, Dto.AccountGameDto>().ReverseMap();
-            CreateMap<StorageModel, Dto.StorageDto>().ReverseMap();
+            config.NewConfig<AccountCtrl, Dto.AccountCtrlDto>().TwoWays();
+            config.NewConfig<AccountGame, Dto.AccountGameDto>().TwoWays();
+            config.NewConfig<StorageModel, Dto.StorageDto>().TwoWays();
 
-            CreateMap<MonsterbookModel, Dto.MonsterbookDto>().ReverseMap();
-            CreateMap<TrockLocationModel, Dto.TrockLocationDto>().ReverseMap();
-            CreateMap<AreaModel, Dto.AreaDto>().ReverseMap();
-            CreateMap<EventModel, Dto.EventDto>().ReverseMap();
+            config.NewConfig<MonsterbookModel, Dto.MonsterbookDto>().TwoWays();
+            config.NewConfig<TrockLocationModel, Dto.TrockLocationDto>().TwoWays();
+            config.NewConfig<AreaModel, Dto.AreaDto>().TwoWays();
+            config.NewConfig<EventModel, Dto.EventDto>().TwoWays();
 
-            CreateMap<QuestStatusModel, Dto.QuestStatusDto>().ReverseMap();
-            CreateMap<QuestProgressModel, Dto.QuestProgressDto>().ReverseMap();
-            CreateMap<MedalMapModel, Dto.MedalMapDto>().ReverseMap();
+            config.NewConfig<QuestStatusModel, Dto.QuestStatusDto>().TwoWays();
+            config.NewConfig<QuestProgressModel, Dto.QuestProgressDto>().TwoWays();
+            config.NewConfig<MedalMapModel, Dto.MedalMapDto>().TwoWays();
 
-            CreateMap<SkillModel, Dto.SkillDto>().ReverseMap();
-            CreateMap<SkillMacroModel, Dto.SkillMacroDto>().ReverseMap();
-            CreateMap<CoolDownModel, Dto.CoolDownDto>().ReverseMap();
+            config.NewConfig<SkillModel, Dto.SkillDto>().TwoWays();
+            config.NewConfig<SkillMacroModel, Dto.SkillMacroDto>().TwoWays();
+            config.NewConfig<CoolDownModel, Dto.CoolDownDto>().TwoWays();
 
-            CreateMap<KeyMapModel, Dto.KeyMapDto>().ReverseMap();
-            CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
+            config.NewConfig<KeyMapModel, Dto.KeyMapDto>().TwoWays();
+            config.NewConfig<QuickSlotModel, Dto.QuickSlotDto>().TwoWays();
 
-            CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
-            CreateMap<BuddyModel, Dto.BuddyDto>()
-                .ConvertUsing<BuddyConverter>();
+            config.NewConfig<SavedLocationModel, Dto.SavedLocationDto>().TwoWays();
 
-            CreateMap<Dto.BuddyDto, BuddyModel>();
+            config.NewConfig<Dto.BuddyDto, BuddyModel>();
 
-            CreateMap<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().ReverseMap();
-            CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
-            CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
+            config.NewConfig<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().TwoWays();
+            config.NewConfig<BuffModel, Dto.BuffDto>().TwoWays();
+            config.NewConfig<DiseaseModel, Dto.DiseaseDto>().TwoWays();
 
-            CreateMap<CharacterLiveObject, SyncProto.PlayerGetterDto>()
-                .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
-            CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
+            config.NewConfig<CharacterLiveObject, SyncProto.PlayerGetterDto>()
+                .Map(dest => dest.BuddyList, x => x.BuddyList.Values);
+            config.NewConfig<CharacterLiveObject, Dto.PlayerViewDto>();
 
-            CreateMap<CharacterLiveObject, TeamProto.TeamMemberDto>()
-                .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
-                .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
-                .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
-                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
-                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Character.Map));
+            config.NewConfig<CharacterLiveObject, TeamProto.TeamMemberDto>()
+                .Map(dest => dest.Channel, x => x.Channel)
+                .Map(dest => dest.Id, x => x.Character.Id)
+                .Map(dest => dest.Name, x => x.Character.Name)
+                .Map(dest => dest.Job, x => x.Character.JobId)
+                .Map(dest => dest.Level, x => x.Character.Level)
+                .Map(dest => dest.MapId, x => x.Character.Map);
 
-            CreateMap<CharacterLiveObject, GuildProto.GuildMemberDto>()
-                .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
-                .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
-                .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
-                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
-                .ForMember(dest => dest.GuildRank, src => src.MapFrom(x => x.Character.GuildRank))
-                .ForMember(dest => dest.AllianceRank, src => src.MapFrom(x => x.Character.AllianceRank))
-                .ForMember(dest => dest.GuildId, src => src.MapFrom(x => x.Character.GuildId));
+            config.NewConfig<CharacterLiveObject, GuildProto.GuildMemberDto>()
+                .Map(dest => dest.Channel, x => x.Channel)
+                .Map(dest => dest.Id, x => x.Character.Id)
+                .Map(dest => dest.Name, x => x.Character.Name)
+                .Map(dest => dest.Job, x => x.Character.JobId)
+                .Map(dest => dest.Level, x => x.Character.Level)
+                .Map(dest => dest.GuildRank, x => x.Character.GuildRank)
+                .Map(dest => dest.AllianceRank, x => x.Character.AllianceRank)
+                .Map(dest => dest.GuildId, x => x.Character.GuildId);
 
-            CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
-                .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
-                .ForMember(dest => dest.Members, src => src.Ignore());
+            config.NewConfig<ChatRoomModel, Dto.ChatRoomDto>()
+                .Map(dest => dest.RoomId, x => x.Id);
 
-            CreateMap<GiftModel, ItemProto.GiftDto>()
-                .ForMember(dest => dest.FromName, src => src.MapFrom<GiftFromNameValueResolver>())
-                .ForMember(dest => dest.ToName, src => src.MapFrom<GiftToNameValueResolver>());
+            config.NewConfig<GiftModel, ItemProto.GiftDto>();
 
-            CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
-            CreateMap<PLifeModel, LifeProto.PLifeDto>()
-                .ForMember(dest => dest.LifeId, src => src.MapFrom(x => x.Life))
-                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map))
-                .ReverseMap()
-                .ForMember(dest => dest.Life, src => src.MapFrom(x => x.LifeId))
-                .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
-            CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
+            config.NewConfig<NewYearCardModel, Dto.NewYearCardDto>();
+            config.NewConfig<PLifeModel, LifeProto.PLifeDto>()
+                .TwoWays()
+                .Map(dest => dest.LifeId, x => x.Life)
+                .Map(dest => dest.MapId, x => x.Map);
+            config.NewConfig<ItemQuantity, BaseProto.ItemQuantity>();
 
-            CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
+            config.NewConfig<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().TwoWays();
 
-            CreateMap<ItemModel, ItemModel>(); 
-            CreateMap<PlayerShopItemModel, ItemModel>()
-                .IncludeMembers(src => src.Item)
-                .ForMember(dest => dest.Quantity, src => src.MapFrom(x => x.Bundles * x.Item.Quantity));
+            config.NewConfig<ItemModel, ItemModel>();
+            config.NewConfig<PlayerShopItemModel, ItemModel>()
+                .Map(dest => dest.Quantity, x => x.Bundles * x.Item.Quantity);
 
-            CreateMap<NoteModel, Dto.NoteDto>()
-                .ForMember(dest => dest.From, src => src.MapFrom<NoteSenderNameValueResolver>())
-                .ForMember(dest => dest.To, src => src.MapFrom<NoteReceiverNameValueResolver>());
+            config.NewConfig<NoteModel, Dto.NoteDto>();
 
-            CreateMap<CallbackModel, Dto.RemoteCallDto>();
-            CreateMap<CallbackParamModel, Dto.RemoteCallParamDto>();
+            config.NewConfig<CallbackModel, Dto.RemoteCallDto>();
+            config.NewConfig<CallbackParamModel, Dto.RemoteCallParamDto>();
 
-            CreateMap<GachaponPoolModel, ItemProto.GachaponPoolDto>();
-            CreateMap<GachaponPoolLevelChanceModel, ItemProto.GachaponPoolChanceDto>();
-            CreateMap<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
+            config.NewConfig<GachaponPoolModel, ItemProto.GachaponPoolDto>();
+            config.NewConfig<GachaponPoolLevelChanceModel, ItemProto.GachaponPoolChanceDto>();
+            config.NewConfig<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
 
-            CreateMap<CdkItemModel, ItemProto.CdkRewordPackageDto>();
+            config.NewConfig<CdkItemModel, ItemProto.CdkRewordPackageDto>();
         }
     }
 }

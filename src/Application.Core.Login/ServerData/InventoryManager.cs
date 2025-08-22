@@ -3,7 +3,6 @@ using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Datas
@@ -135,7 +134,7 @@ namespace Application.Core.Login.Datas
 
             dbContext.SaveChanges();
         }
-        
+
         public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var itemType = (byte)type.getValue();

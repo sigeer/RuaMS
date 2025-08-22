@@ -1,7 +1,7 @@
 using Application.Core.Login;
 using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Master.Models;
-using AutoMapper;
+using MapsterMapper;
 using MarriageProto;
 using System.Collections.Concurrent;
 
@@ -46,7 +46,7 @@ namespace Application.Module.Marriage.Master
                 return new ReserveWeddingResponse() { Code = (int)ReserveErrorCode.AlreadyReserved };
             }
 
-            var weddingInfo = new WeddingInfo(marriageInfo.Id, request.Channel, request.IsCathedral, request.IsPremium, 
+            var weddingInfo = new WeddingInfo(marriageInfo.Id, request.Channel, request.IsCathedral, request.IsPremium,
                 request.MasterId, marriageInfo.GetPartnerId(chr.Character.Id), [], request.StartTime + (long)TimeSpan.FromMinutes(30).TotalMilliseconds);
             registeredWedding[marriageInfo.Id] = weddingInfo;
 
@@ -158,7 +158,13 @@ namespace Application.Module.Marriage.Master
         {
             var data = registeredWedding.Values.Where(x => request.Id.Contains(x.Id)).ToArray();
             var res = new MarriageProto.WeddingInfoListDto();
-            res.List.AddRange(_mapper.Map<MarriageProto.WeddingInfoDto[]>(data));
+            foreach (var item in data)
+            {
+                var obj = _mapper.Map<MarriageProto.WeddingInfoDto>(item);
+                obj.GroomName = _server.CharacterManager.GetPlayerName(item.GroomId);
+                obj.BrideName = _server.CharacterManager.GetPlayerName(item.BrideId);
+                res.List.Add(obj);
+            }
             return res;
         }
     }

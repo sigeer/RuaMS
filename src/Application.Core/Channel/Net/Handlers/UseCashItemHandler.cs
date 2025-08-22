@@ -28,7 +28,6 @@ using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.stat;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using net.packet.outs;
 using tools;

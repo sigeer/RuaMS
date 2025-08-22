@@ -3,11 +3,10 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using CashProto;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
+using Quartz.Simpl;
 using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData
@@ -79,9 +78,16 @@ namespace Application.Core.Login.ServerData
             foreach (var gift in gifts)
             {
                 var dto = _mapper.Map<ItemProto.GiftDto>(gift);
+                dto.FromName = _server.CharacterManager.GetPlayerName(dto.From);
+                dto.ToName = _server.CharacterManager.GetPlayerName(dto.To);
 
                 var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
-                dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
+                if (ring != null)
+                {
+                    dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
+                    dto.Ring.CharacterName1 = _server.CharacterManager.GetPlayerName(ring.CharacterId1);
+                    dto.Ring.CharacterName2 = _server.CharacterManager.GetPlayerName(ring.CharacterId2);
+                }
                 res.List.Add(dto);
             }
             return res;
@@ -117,9 +123,9 @@ namespace Application.Core.Login.ServerData
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<GiftEntity, bool>>>(expression);
+            var dataFromDB = dbContext.Gifts.AsNoTracking().ProjectToType<GiftModel>().Where(expression).ToList();
 
-            return QueryWithDirty(_mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList()), expression.Compile());
+            return QueryWithDirty(dataFromDB, expression.Compile());
         }
     }
 }

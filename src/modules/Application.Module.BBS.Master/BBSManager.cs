@@ -5,9 +5,9 @@ using Application.EF.Entities;
 using Application.Module.BBS.Common;
 using Application.Module.BBS.Master.Models;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using BBSProto;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -38,10 +38,9 @@ namespace Application.Module.BBS.Master
 
         public override List<BBSThreadModel> Query(Expression<Func<BBSThreadModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<BbsThreadEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbList = dbContext.BbsThreads.Where(entityExpression).ToList();
-            var dbIdList = dbList.Select(x => x.Threadid).ToArray();
+            var dbList = dbContext.BbsThreads.AsNoTracking().ProjectToType<BBSThreadModel>().Where(expression).ToList();
+            var dbIdList = dbList.Select(x => x.Id).ToArray();
 
             var replies = dbContext.BbsReplies
                 .Where(x => dbIdList.Contains(x.Replyid))

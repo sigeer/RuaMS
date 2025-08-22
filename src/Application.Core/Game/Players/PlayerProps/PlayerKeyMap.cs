@@ -1,6 +1,5 @@
 using Application.Shared.KeyMaps;
 using client.keybind;
-using constants.game;
 using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps

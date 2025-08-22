@@ -30,7 +30,6 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.status;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using scripting;
 using server;

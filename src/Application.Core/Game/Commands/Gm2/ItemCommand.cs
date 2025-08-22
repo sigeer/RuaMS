@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
-using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using client.inventory.manipulator;
 using System.Text;

@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Trades;
-using AutoMapper;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;

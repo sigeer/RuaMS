@@ -6,6 +6,7 @@ using Application.Module.PlayerNPC.Channel.Commands.Gm6;
 using Application.Module.PlayerNPC.Channel.Models;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Servers;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -16,7 +17,7 @@ namespace Application.Module.PlayerNPC.Channel
     {
         public static IServiceCollection AddPlayerNPCChannel(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<PlayerNPCChannelModule>();
             services.AddSingleton<ChannelModule, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());
             services.AddSingleton<IPlayerNPCService, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());

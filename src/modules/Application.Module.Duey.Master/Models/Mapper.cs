@@ -1,22 +1,19 @@
+using Application.Core.Login.Datas;
 using Application.EF.Entities;
 using Application.Utility.Compatible.Atomics;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.Duey.Master.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<DueyPackageEntity, DueyPackageModel>()
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.PackageId))
-                .ForMember(dest => dest.IsFrozen, src => src.MapFrom(x => new AtomicBoolean(x.IsFrozen)))
-                .ReverseMap()
-                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
-                .ForMember(dest => dest.IsFrozen, src => src.MapFrom(x => x.IsFrozen.Get()));
-            CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()
-                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
-                .ForMember(dest => dest.SenderName, src => src.MapFrom<DueyPackageValueResolver>());
+            config.NewConfig<DueyPackageEntity, DueyPackageModel>()
+                .Map(dest => dest.Id, x => x.PackageId);
+
+            config.NewConfig<DueyPackageModel, DueyDto.DueyPackageDto>()
+                .Map(dest => dest.PackageId, x => x.Id);
         }
     }
 }

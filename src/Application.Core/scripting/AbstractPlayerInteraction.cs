@@ -33,7 +33,6 @@ using client;
 using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
-using constants.game;
 using scripting.Event;
 using server.expeditions;
 using server.life;

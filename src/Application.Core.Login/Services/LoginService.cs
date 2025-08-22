@@ -1,7 +1,6 @@
 using Application.EF;
 using Application.Shared.Login;
 using Application.Utility.Configs;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Services

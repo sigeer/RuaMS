@@ -5,7 +5,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
-using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
@@ -18,67 +17,67 @@ namespace Application.Core.Mappers
     /// <summary>
     /// Proto &lt;-&gt; Object
     /// </summary>
-    public class ProtoMapper : Profile
+    public class ProtoMapper : IRegister
     {
-        public ProtoMapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<Timestamp, DateTimeOffset?>()
-                .ConvertUsing(src => src == null ? (DateTimeOffset?)null : src.ToDateTimeOffset());
-            CreateMap<DateTimeOffset?, Timestamp>()
-                .ConvertUsing(src => src.HasValue ? Timestamp.FromDateTimeOffset(src.Value) : null!);
+            config.NewConfig<Timestamp, DateTimeOffset?>()
+                .MapWith(src => src == null ? (DateTimeOffset?)null : src.ToDateTimeOffset());
+            config.NewConfig<DateTimeOffset?, Timestamp>()
+                .MapWith(src => src.HasValue ? Timestamp.FromDateTimeOffset(src.Value) : null!);
 
-            CreateMap<Timestamp, DateTimeOffset>()
-                .ConvertUsing(src => src.ToDateTimeOffset());
-            CreateMap<DateTimeOffset, Timestamp>()
-                .ConvertUsing(src => Timestamp.FromDateTimeOffset(src));
+            config.NewConfig<Timestamp, DateTimeOffset>()
+                .MapWith(src => src.ToDateTimeOffset());
+            config.NewConfig<DateTimeOffset, Timestamp>()
+                .MapWith(src => Timestamp.FromDateTimeOffset(src));
 
-            CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
-            CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
+            config.NewConfig<DateTime, Timestamp>().MapWith(src => Timestamp.FromDateTime(src.ToUniversalTime()));
+            config.NewConfig<Timestamp, DateTime>().MapWith(src => src.ToDateTime());
 
-            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>()
-                .ForMember(dest => dest.Rank, src => src.MapFrom(x => x.Rank))
-                .ForMember(dest => dest.CharacterName, src => src.MapFrom(x => x.Name))
-                .ForMember(dest => dest.CharacterLevel, src => src.MapFrom(x => x.Level));
+            config.NewConfig<RankProto.RankCharacter, RankedCharacterInfo>()
+                .Map(dest => dest.Rank, x => x.Rank)
+                .Map(dest => dest.CharacterName, x => x.Name)
+                .Map(dest => dest.CharacterLevel, x => x.Level);
 
-            CreateMap<Dto.CharacterDto, Player>()
-                            .ForMember(x => x.MesoValue, opt => opt.MapFrom(x => new AtomicInteger(x.Meso)))
-                            .ForMember(x => x.ExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Exp)))
-                            .ForMember(x => x.GachaExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Gachaexp)))
-                            .ForMember(x => x.RemainingSp, opt => opt.MapFrom(x => TranslateArray(x.Sp)))
-                            .ForMember(x => x.HP, opt => opt.MapFrom(x => x.Hp))
-                            .ForMember(x => x.MP, opt => opt.MapFrom(x => x.Mp))
-                            .ForMember(x => x.MaxHP, opt => opt.MapFrom(x => x.Maxhp))
-                            .ForMember(x => x.MaxMP, opt => opt.MapFrom(x => x.Maxmp))
-                            .AfterMap((before, after) => after.Reload())
-                            .ReverseMap()
-                            .ForMember(x => x.Sp, opt => opt.MapFrom(x => string.Join(",", x.RemainingSp)))
-                            .ForMember(x => x.Meso, opt => opt.MapFrom(x => x.MesoValue.get()))
-                            .ForMember(x => x.Exp, opt => opt.MapFrom(x => x.ExpValue.get()))
-                            .ForMember(x => x.Gachaexp, opt => opt.MapFrom(x => x.GachaExpValue.get()))
-                            .ForMember(x => x.BuddyCapacity, opt => opt.MapFrom(x => x.BuddyList.Capacity))
-                            .ForMember(x => x.Equipslots, opt => opt.MapFrom(x => x.Bag[InventoryType.EQUIP].getSlotLimit()))
-                            .ForMember(x => x.Useslots, opt => opt.MapFrom(x => x.Bag[InventoryType.USE].getSlotLimit()))
-                            .ForMember(x => x.Etcslots, opt => opt.MapFrom(x => x.Bag[InventoryType.ETC].getSlotLimit()))
-                            .ForMember(x => x.Setupslots, opt => opt.MapFrom(x => x.Bag[InventoryType.SETUP].getSlotLimit()))
-                            .ForMember(x => x.MountLevel, opt => opt.MapFrom(x => x.MountModel == null ? 1 : x.MountModel.getLevel()))
-                            .ForMember(x => x.MountExp, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getExp()))
-                            .ForMember(x => x.Mounttiredness, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getTiredness()))
-                            .ForMember(x => x.Hp, opt => opt.MapFrom(x => x.HP))
-                            .ForMember(x => x.Mp, opt => opt.MapFrom(x => x.MP))
-                            .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
-                            .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
-            CreateMap<Dto.AccountCtrlDto, AccountCtrl>().ReverseMap();
+            config.NewConfig<Dto.CharacterDto, Player>()
+                            .ConstructUsing(src => new Player())
+                            .Map(x => x.MesoValue, x => new AtomicInteger(x.Meso))
+                            .Map(x => x.ExpValue, x => new AtomicInteger(x.Exp))
+                            .Map(x => x.GachaExpValue, x => new AtomicInteger(x.Gachaexp))
+                            .Map(x => x.RemainingSp, x => TranslateArray(x.Sp))
+                            .Map(x => x.HP, x => x.Hp)
+                            .Map(x => x.MP, x => x.Mp)
+                            .Map(x => x.MaxHP, x => x.Maxhp)
+                            .Map(x => x.MaxMP, x => x.Maxmp)
+                            .AfterMapping((before, after) => after.Reload());
+            config.NewConfig<Player, Dto.CharacterDto>()
+                            .Map(x => x.Sp, x => string.Join(",", x.RemainingSp))
+                            .Map(x => x.Meso, x => x.MesoValue.get())
+                            .Map(x => x.Exp, x => x.ExpValue.get())
+                            .Map(x => x.Gachaexp, x => x.GachaExpValue.get())
+                            .Map(x => x.BuddyCapacity, x => x.BuddyList.Capacity)
+                            .Map(x => x.Equipslots, x => x.Bag[InventoryType.EQUIP].getSlotLimit())
+                            .Map(x => x.Useslots, x => x.Bag[InventoryType.USE].getSlotLimit())
+                            .Map(x => x.Etcslots, x => x.Bag[InventoryType.ETC].getSlotLimit())
+                            .Map(x => x.Setupslots, x => x.Bag[InventoryType.SETUP].getSlotLimit())
+                            .Map(x => x.MountLevel, x => x.MountModel == null ? 1 : x.MountModel.getLevel())
+                            .Map(x => x.MountExp, x => x.MountModel == null ? 0 : x.MountModel.getExp())
+                            .Map(x => x.Mounttiredness, x => x.MountModel == null ? 0 : x.MountModel.getTiredness())
+                            .Map(x => x.Hp, x => x.HP)
+                            .Map(x => x.Mp, x => x.MP)
+                            .Map(x => x.Maxhp, x => x.MaxHP)
+                            .Map(x => x.Maxmp, x => x.MaxMP);
+            config.NewConfig<Dto.AccountCtrlDto, AccountCtrl>().TwoWays();
 
             #region Item
-            CreateMap<Dto.ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.PetInfo!.Petid
-                 ))
-                .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
-                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level)))
-                .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
-                .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
-                .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
-                .AfterMap((rs, dest) =>
+            config.NewConfig<Dto.ItemDto, Pet>()
+                 .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.PetInfo!.Petid))
+                .Map(x => x.Fullness, x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness))
+                .Map(x => x.Level, x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level))
+                .Map(x => x.Tameness, x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness))
+                .Map(x => x.PetAttribute, x => x.PetInfo!.Flag)
+                .Map(x => x.Summoned, x => x.PetInfo!.Summoned)
+                .AfterMapping((rs, dest) =>
                 {
                     dest.setOwner(rs.Owner);
                     dest.setQuantity((short)rs.Quantity);
@@ -87,9 +86,9 @@ namespace Application.Core.Mappers
                     dest.setGiftFrom(rs.GiftFrom);
 
                     dest.setName(rs.PetInfo!.Name ?? "");
-                })
-                .ReverseMap()
-                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new Dto.PetDto
+                }).Compile();
+            config.NewConfig<Pet, Dto.ItemDto>()
+                .Map(x => x.PetInfo, x => new Dto.PetDto
                 {
                     Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
                     Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
@@ -98,56 +97,40 @@ namespace Application.Core.Mappers
                     Name = x.getName(),
                     Summoned = x.Summoned,
                     Petid = x.getUniqueId()
-                }));
+                });
 
-            CreateMap<Dto.ItemDto, Item>()
-                .ConstructUsing((src, ctx) =>
-                {
-                    var mit = src.InventoryType.GetByType();
-                    if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
-                        return ctx.Mapper.Map<Equip>(src);
-
-                    if (src.PetInfo != null)
-                        return ctx.Mapper.Map<Pet>(src);
-
-                    return new Item(src.Itemid, (short)src.Position, (short)src.Quantity);
-                })
-                .AfterMap((rs, dest, ctx) =>
+            config.NewConfig<Dto.ItemDto, Item>()
+                .MapWith(src => MapItem(src))
+                .AfterMapping((rs, dest, ctx) =>
                 {
                     dest.setOwner(rs.Owner);
                     dest.setQuantity((short)rs.Quantity);
                     dest.setFlag((short)rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-                })
-                .ReverseMap()
-                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
-                .ForMember(dest => dest.Itemid, source => source.MapFrom(x => x.getItemId()))
-                .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
-                .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
-                .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
-                .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
-                .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
-                .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
-                {
-                    if (context.TryGetItems(out var items) && items.TryGetValue("InventoryType", out var invType))
-                        return Convert.ToSByte(invType);
-                    return 0;
-                }))
-                .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
-                {
-                    if (context.TryGetItems(out var items) && items.TryGetValue("Type", out var type))
-                        return Convert.ToSByte(type);
-                    return ItemFactory.INVENTORY.getValue();
-                }))
-                .Include<Equip, Dto.ItemDto>()
-                .Include<Pet, Dto.ItemDto>();
+                });
+            config.NewConfig<Item, Dto.ItemDto>()
+                .Map(dest => dest.Owner, x => x.getOwner())
+                .Map(dest => dest.Itemid, x => x.getItemId())
+                .Map(dest => dest.Quantity, x => x.getQuantity())
+                .Map(dest => dest.Flag, x => x.getFlag())
+                .Map(dest => dest.Expiration, x => x.getExpiration())
+                .Map(dest => dest.GiftFrom, x => x.getGiftFrom())
+                .Map(dest => dest.Position, x => x.getPosition())
+                .Map(dest => dest.InventoryType,
+                    src => MapContext.Current == null
+                        ? (sbyte)src.getInventoryType()
+                        : Convert.ToSByte(MapContext.Current.Parameters.GetValueOrDefault("InventoryType", (sbyte)src.getInventoryType())))
+                .Map(dest => dest.Type,
+                    src => MapContext.Current == null
+                        ? (int)ItemType.Inventory
+                        : Convert.ToSByte(MapContext.Current.Parameters.GetValueOrDefault("Type", (int)ItemType.Inventory)));
 
-            CreateMap<ItemProto.RingDto, RingSourceModel>().ReverseMap();
+            config.NewConfig<ItemProto.RingDto, RingSourceModel>().TwoWays();
 
-            CreateMap<Dto.ItemDto, Equip>()
+            config.NewConfig<Dto.ItemDto, Equip>()
                     .ConstructUsing(source => new Equip(source.Itemid, (short)source.Position))
-                    .AfterMap((rs, dest, ctx) =>
+                    .AfterMapping((rs, dest) =>
                     {
                         dest.setOwner(rs.Owner);
                         dest.setQuantity((short)rs.Quantity);
@@ -176,125 +159,119 @@ namespace Application.Core.Mappers
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
 
-                        dest.SetRing(rs.EquipInfo!.RingId, ctx.Mapper.Map<RingSourceModel>(rs.EquipInfo!.RingSourceInfo));
-                    })
-                    .ReverseMap()
-                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
-
-            CreateMap<Equip, Dto.EquipDto>()
-                .ForMember(dest => dest.Acc, source => source.MapFrom(x => x.getAcc()))
-                .ForMember(dest => dest.Avoid, source => source.MapFrom(x => x.getAvoid()))
-                .ForMember(dest => dest.Dex, source => source.MapFrom(x => x.getDex()))
-                .ForMember(dest => dest.Hands, source => source.MapFrom(x => x.getHands()))
-                .ForMember(dest => dest.Hp, source => source.MapFrom(x => x.getHp()))
-                .ForMember(dest => dest.Int, source => source.MapFrom(x => x.getInt()))
-                .ForMember(dest => dest.Jump, source => source.MapFrom(x => x.getJump()))
-                .ForMember(dest => dest.Vicious, source => source.MapFrom(x => x.getVicious()))
-                .ForMember(dest => dest.Luk, source => source.MapFrom(x => x.getLuk()))
-                .ForMember(dest => dest.Matk, source => source.MapFrom(x => x.getMatk()))
-                .ForMember(dest => dest.Mdef, source => source.MapFrom(x => x.getMdef()))
-                .ForMember(dest => dest.Mp, source => source.MapFrom(x => x.getMp()))
-                .ForMember(dest => dest.Speed, source => source.MapFrom(x => x.getSpeed()))
-                .ForMember(dest => dest.Str, source => source.MapFrom(x => x.getStr()))
-                .ForMember(dest => dest.Watk, source => source.MapFrom(x => x.getWatk()))
-                .ForMember(dest => dest.Wdef, source => source.MapFrom(x => x.getWdef()))
-                .ForMember(dest => dest.Upgradeslots, source => source.MapFrom(x => x.getUpgradeSlots()))
-                .ForMember(dest => dest.Level, source => source.MapFrom(x => x.getLevel()))
-                .ForMember(dest => dest.Itemlevel, source => source.MapFrom(x => x.getItemLevel()))
-                .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
-                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.RingId))
-                .ForMember(dest => dest.RingSourceInfo, source => source.MapFrom(x => x.RingSource));
+                        dest.SetRing(rs.EquipInfo!.RingId, rs.EquipInfo!.RingSourceInfo.Adapt<RingSourceModel>());
+                    });
+            config.NewConfig<Equip, Dto.ItemDto>()
+                .Map(dest => dest.EquipInfo, src => new Dto.EquipDto
+                {
+                    Acc = src.getAcc(),
+                    Avoid = src.getAvoid(),
+                    Dex = src.getDex(),
+                    Hands = src.getHands(),
+                    Int = src.getInt(),
+                    Luk = src.getLuk(),
+                    Str = src.getStr(),
+                    Hp = src.getHp(),
+                    Mp = src.getMp(),
+                    Watk = src.getWatk(),
+                    Matk = src.getMatk(),
+                    Speed = src.getSpeed(),
+                    Wdef = src.getWdef(),
+                    Mdef = src.getMdef(),
+                    Upgradeslots = src.getUpgradeSlots(),
+                    Level = src.getLevel(),
+                    Itemlevel = src.getItemLevel(),
+                    Itemexp = src.getItemExp(),
+                    Jump = src.getJump(),
+                    Vicious = src.getVicious(),
+                    RingId = src.RingId,
+                    RingSourceInfo = src.RingSource.Adapt<ItemProto.RingDto>(),
+                });
             #endregion 
 
-            CreateMap<Dto.StorageDto, Storage>()
-                .ConstructUsing((x, ctx) =>
-                {
-                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso);
-                })
-                .ReverseMap()
-                .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
-                .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
-                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));
+            config.NewConfig<Dto.StorageDto, Storage>()
+                .ConstructUsing(x => new Storage(x.Accountid, (byte)x.Slots, x.Meso));
+            config.NewConfig<Storage, Dto.StorageDto>()
+                .Map(dest => dest.Meso, x => x.getMeso())
+                .Map(dest => dest.Slots, x => x.getSlots())
+                .Map(dest => dest.Accountid, x => x.AccountId);
 
-            CreateMap<Dto.SkillMacroDto, SkillMacro>().ReverseMap();
-            CreateMap<Dto.FameLogRecordDto, FameLogObject>().ReverseMap();
-            CreateMap<Dto.BuddyDto, BuddyCharacter>().ReverseMap();
+            config.NewConfig<Dto.SkillMacroDto, SkillMacro>().TwoWays();
+            config.NewConfig<Dto.FameLogRecordDto, FameLogObject>().TwoWays();
+            config.NewConfig<Dto.BuddyDto, BuddyCharacter>().TwoWays();
 
-            CreateMap<PlayerCoolDownValueHolder, Dto.CoolDownDto>()
-                .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
-                .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
-                .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
+            config.NewConfig<PlayerCoolDownValueHolder, Dto.CoolDownDto>()
+                .Map(dest => dest.SkillId, x => x.skillId)
+                .Map(dest => dest.StartTime, x => x.startTime)
+                .Map(dest => dest.Length, x => x.length);
 
-            CreateMap<Dto.DropItemDto, DropEntry>()
-                .ConvertUsing((src, ctx) =>
-                {
-                    if (src.Type == (int)DropType.ReactorDrop)
-                        return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, (short)src.QuestId);
-                    if (src.Type == (int)DropType.MonsterDrop)
-                        return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
-                    if (src.Type == (int)DropType.GlobalDrop)
-                        return DropEntry.Global(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
-                    throw new BusinessFatalException("不支持的掉落类型");
-                });
+            config.NewConfig<Dto.DropItemDto, DropEntry>()
+                .MapWith(src => MapDrop(src));
 
-            CreateMap<Dto.NoteDto, NoteObject>()
-                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.Instance.GetNPCStats(x.FromId).getName() : x.From));
-            CreateMap<Dto.ShopDto, Shop>()
-                .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
-            CreateMap<Dto.ShopItemDto, ShopItem>()
+            config.NewConfig<Dto.NoteDto, NoteObject>()
+                .Map(x => x.From, x => x.FromId < 0 ? LifeFactory.Instance.GetNPCStats(x.FromId).getName() : x.From);
+            config.NewConfig<Dto.ShopDto, Shop>()
+                .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, src.Items.Adapt<List<ShopItem>>()));
+            config.NewConfig<Dto.ShopItemDto, ShopItem>()
                 .ConstructUsing((src, ctx) => new ShopItem((short)src.Buyable, src.ItemId, src.Price, src.Pitch));
 
-            CreateMap<ItemProto.GiftDto, GiftModel>();
-            CreateMap<CashProto.SpecialCashItemDto, SpecialCashItem>()
+            config.NewConfig<ItemProto.GiftDto, GiftModel>();
+            config.NewConfig<CashProto.SpecialCashItemDto, SpecialCashItem>()
                 .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
 
-            CreateMap<TeamProto.TeamMemberDto, TeamMember>();
-            CreateMap<TeamProto.TeamDto, Team>()
-                .AfterMap((src, dest, ctx) =>
-                {
-                    foreach (var member in src.Members)
-                    {
-                        dest.addMember(ctx.Mapper.Map<TeamMember>(member));
-                    }
-                });
+            config.NewConfig<TeamProto.TeamMemberDto, TeamMember>();
 
-            CreateMap<GuildProto.GuildMemberDto, GuildMember>();
-            CreateMap<GuildProto.GuildDto, Guild>()
-                .ForMember(dest => dest.RankTitles, src => src.MapFrom(x => new string[5]
-                {
-                    x.Rank1Title,
-                    x.Rank2Title,
-                    x.Rank3Title,
-                    x.Rank4Title,
-                    x.Rank5Title
-                }));
+            config.NewConfig<GuildProto.GuildMemberDto, GuildMember>();
+            config.NewConfig<AllianceProto.AllianceDto, Alliance>()
+                .ConstructUsing(src => new Alliance(src.AllianceId))
+                .Map(dest => dest.RankTitles, src => src.RankTitles.ToArray());
+            // Guild Team构造函数特殊，不通过映射
+            config.NewConfig<Dto.NewYearCardDto, NewYearCardObject>();
 
-            CreateMap<Dto.NewYearCardDto, NewYearCardObject>();
+            config.NewConfig<PlayerShopItem, ItemProto.PlayerShopItemDto>()
+                .Map(dest => dest.Bundles, x => x.getBundles())
+                .Map(dest => dest.Price, x => x.getPrice())
+                .Map(dest => dest.Item, x => x.getItem());
+            config.NewConfig<ItemProto.PlayerShopItemDto, PlayerShopItem>()
+                .ConstructUsing((src, ctx) => new PlayerShopItem(src.Item.Adapt<Item>(), (short)src.Bundles, src.Price));
 
-            CreateMap<Dto.DropItemDto, DropEntry>()
-                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
+            config.NewConfig<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
+                .Map(dest => dest.Mesos, x => x.Meso)
+                .Map(dest => dest.MapName, x => MapFactory.Instance.loadPlaceName(x.MapId));
+            config.NewConfig<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
+            config.NewConfig<ItemProto.OwlSearchResponse, OwlSearchResult>();
 
-            CreateMap<PlayerShopItem, ItemProto.PlayerShopItemDto>()
-                .ForMember(dest => dest.Bundles, src => src.MapFrom(x => x.getBundles()))
-                .ForMember(dest => dest.Price, src => src.MapFrom(x => x.getPrice()))
-                .ForMember(dest => dest.Item, src => src.MapFrom(x => x.getItem()))
-                .ReverseMap()
-                .ConstructUsing((src, ctx) => new PlayerShopItem(ctx.Mapper.Map<Item>(src.Item), (short)src.Bundles, src.Price));
-
-            CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
-                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso))
-                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.Instance.loadPlaceName(x.MapId)));
-            CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
-            CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
-
-            CreateMap<ItemProto.GachaponPoolDto, GachaponDataObject>();
-            CreateMap<ItemProto.GachaponPoolChanceDto, GachaponPoolLevelChanceDataObject>();
-            CreateMap<ItemProto.GachaponPoolItemDto, GachaponPoolItemDataObject>();
+            config.NewConfig<ItemProto.GachaponPoolDto, GachaponDataObject>();
+            config.NewConfig<ItemProto.GachaponPoolChanceDto, GachaponPoolLevelChanceDataObject>();
+            config.NewConfig<ItemProto.GachaponPoolItemDto, GachaponPoolItemDataObject>();
         }
 
         private int[] TranslateArray(string str)
         {
             return str.Split(",").Select(int.Parse).ToArray();
+        }
+
+        Item MapItem(Dto.ItemDto src)
+        {
+            var mit = src.InventoryType.GetByType();
+            if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
+                return src.Adapt<Equip>();
+
+            if (src.PetInfo != null)
+                return src.Adapt<Pet>();
+
+            return new Item(src.Itemid, (short)src.Position, (short)src.Quantity);
+        }
+
+        DropEntry MapDrop(Dto.DropItemDto src)
+        {
+            if (src.Type == (int)DropType.ReactorDrop)
+                return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, (short)src.QuestId);
+            if (src.Type == (int)DropType.MonsterDrop)
+                return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
+            if (src.Type == (int)DropType.GlobalDrop)
+                return DropEntry.Global(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
+            throw new BusinessFatalException("不支持的掉落类型");
         }
     }
 }

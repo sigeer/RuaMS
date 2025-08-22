@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ServerData;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Managers;

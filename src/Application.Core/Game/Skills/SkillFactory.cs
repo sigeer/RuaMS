@@ -22,7 +22,6 @@
 
 
 using server;
-using System.Text;
 
 namespace Application.Core.Game.Skills;
 

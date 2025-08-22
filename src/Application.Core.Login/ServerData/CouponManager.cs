@@ -1,9 +1,8 @@
 using Application.EF;
 using Application.Shared.Constants.Item;
-using AutoMapper;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
@@ -43,7 +42,7 @@ namespace Application.Core.Login.Datas
         #region coupon
         private async Task loadCouponRates(DBContext dbContext)
         {
-            couponRates =( await dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToListAsync()).ToDictionary(x => x.CouponId, x => x.Rate);
+            couponRates = (await dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToListAsync()).ToDictionary(x => x.CouponId, x => x.Rate);
         }
 
 

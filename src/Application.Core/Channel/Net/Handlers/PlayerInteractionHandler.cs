@@ -29,7 +29,6 @@ using Application.Core.Game.Trades;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
 

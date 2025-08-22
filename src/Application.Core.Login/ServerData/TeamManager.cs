@@ -1,6 +1,5 @@
 using Application.Core.Login.Models;
 using Application.Shared.Team;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 

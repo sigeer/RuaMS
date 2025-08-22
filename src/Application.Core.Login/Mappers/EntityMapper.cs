@@ -11,132 +11,126 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Login;
-using Application.Shared.NewYear;
-using AutoMapper;
 
 namespace Application.Core.Login.Mappers
 {
     /// <summary>
-    /// 实体 转 对象（将会被缓存）、或者proto（不会被缓存，直接传输）
+    /// 实体 转 对象（将会被缓存）、或者proto（不会被缓存，直接传输），
+    /// 尽量避免通过mapper转实体
     /// </summary>
-    public class EntityMapper : Profile
+    public class EntityMapper : IRegister
     {
-        public EntityMapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<CharacterEntity, CharacterModel>()
-                .ReverseMap();
-            CreateMap<Dto.CharacterDto, CharacterEntity>();
+            config.NewConfig<CharacterEntity, CharacterModel>();
 
-            CreateMap<AccountEntity, AccountCtrl>();
+            config.NewConfig<AccountEntity, AccountCtrl>();
 
-            CreateMap<MonsterbookEntity, MonsterbookModel>();
-            CreateMap<Trocklocation, TrockLocationModel>();
-            CreateMap<AreaInfo, AreaModel>();
-            CreateMap<Eventstat, EventModel>();
-            CreateMap<FamelogEntity, FameLogModel>()
-                .ForMember(dest => dest.ToId, src => src.MapFrom(x => x.CharacteridTo))
-                .ForMember(dest => dest.Time, src => src.MapFrom(x => x.When.ToUnixTimeMilliseconds()));
+            config.NewConfig<MonsterbookEntity, MonsterbookModel>();
+            config.NewConfig<Trocklocation, TrockLocationModel>();
+            config.NewConfig<AreaInfo, AreaModel>();
+            config.NewConfig<Eventstat, EventModel>();
+            config.NewConfig<FamelogEntity, FameLogModel>()
+                .Map(dest => dest.ToId, x => x.CharacteridTo)
+                .Map(dest => dest.Time, x => x.When.ToUnixTimeMilliseconds());
 
-            CreateMap<QuestStatusEntity, QuestStatusModel>()
-                .ForMember(x => x.QuestId, src => src.MapFrom(x => x.Quest))
-                .ForMember(x => x.Id, src => src.MapFrom(x => x.Queststatusid));
-            CreateMap<Questprogress, QuestProgressModel>()
-                .ForMember(dest => dest.ProgressId, source => source.MapFrom(x => x.Progressid));
-            CreateMap<Medalmap, MedalMapModel>();
-            CreateMap<QuestStatusEntityPair, QuestStatusModel>()
-                .ForMember(dest => dest.MedalMap, source => source.MapFrom(x => x.Medalmap))
-                .ForMember(dest => dest.Progress, source => source.MapFrom(x => x.Progress))
-                .IncludeMembers(source => source.QuestStatus);
+            config.NewConfig<QuestStatusEntity, QuestStatusModel>()
+                .Map(x => x.QuestId, x => x.Quest)
+                .Map(x => x.Id, x => x.Queststatusid);
+            config.NewConfig<Questprogress, QuestProgressModel>()
+                .Map(dest => dest.ProgressId, x => x.Progressid);
+            config.NewConfig<Medalmap, MedalMapModel>();
+            config.NewConfig<QuestStatusEntityPair, QuestStatusModel>()
+                .Map(dest => dest.MedalMap, x => x.Medalmap)
+                .Map(dest => dest.Progress, x => x.Progress);
 
-            CreateMap<SkillEntity, SkillModel>();
-            CreateMap<SkillMacroEntity, SkillMacroModel>();
-            CreateMap<CooldownEntity, CoolDownModel>();
+            config.NewConfig<SkillEntity, SkillModel>();
+            config.NewConfig<SkillMacroEntity, SkillMacroModel>();
+            config.NewConfig<CooldownEntity, CoolDownModel>();
 
-            CreateMap<KeyMapEntity, KeyMapModel>();
-            CreateMap<Quickslotkeymapped, QuickSlotModel>()
-                .ForMember(dest => dest.LongValue, source => source.MapFrom(x => x.Keymap));
+            config.NewConfig<KeyMapEntity, KeyMapModel>();
+            config.NewConfig<Quickslotkeymapped, QuickSlotModel>()
+                .Map(dest => dest.LongValue, x => x.Keymap);
 
-            CreateMap<SavedLocationEntity, SavedLocationModel>();
-            CreateMap<StorageEntity, StorageModel>();
+            config.NewConfig<SavedLocationEntity, SavedLocationModel>();
+            config.NewConfig<StorageEntity, StorageModel>();
 
-            CreateMap<PetEntity, PetModel>();
+            config.NewConfig<PetEntity, PetModel>();
 
 
-            CreateMap<Inventoryequipment, EquipModel>()
-                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
-                .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Inventoryequipmentid));
+            config.NewConfig<Inventoryequipment, EquipModel>()
+                .Map(dest => dest.InventoryItemId, x => x.Inventoryitemid)
+                .Map(dest => dest.Id, x => x.Inventoryequipmentid);
 
-            CreateMap<Inventoryitem, ItemModel>()
-                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
-                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype));
-            CreateMap<ItemEntityPair, ItemModel>()
-                .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
-                .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
-                .IncludeMembers(source => source.Item);
+            config.NewConfig<Inventoryitem, ItemModel>()
+                .Map(dest => dest.InventoryItemId, x => x.Inventoryitemid)
+                .Map(dest => dest.InventoryType, x => x.Inventorytype);
+            config.NewConfig<ItemEntityPair, ItemModel>()
+                .Map(des => des.EquipInfo, x => x.Equip)
+                .Map(des => des.PetInfo, x => x.Pet);
 
-            CreateMap<ReactorDropEntity, Dto.DropItemDto>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
-                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
-                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Reactorid))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.ReactorDrop))
-                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => 1))
-                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => 1))
-                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+            config.NewConfig<ReactorDropEntity, Dto.DropItemDto>()
+                .Map(dest => dest.ItemId, x => x.Itemid)
+                .Map(dest => dest.QuestId, x => x.Questid)
+                .Map(dest => dest.DropperId, x => x.Reactorid)
+                .Map(dest => dest.Type, x => DropType.ReactorDrop)
+                .Map(dest => dest.MinCount, x => 1)
+                .Map(dest => dest.MaxCount, x => 1)
+                .Map(dest => dest.Chance, x => x.Chance);
 
-            CreateMap<DropDataEntity, Dto.DropItemDto>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
-                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
-                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Dropperid))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.MonsterDrop))
-                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
-                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
-                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+            config.NewConfig<DropDataEntity, Dto.DropItemDto>()
+                .Map(dest => dest.ItemId, x => x.Itemid)
+                .Map(dest => dest.QuestId, x => x.Questid)
+                .Map(dest => dest.DropperId, x => x.Dropperid)
+                .Map(dest => dest.Type, x => DropType.MonsterDrop)
+                .Map(dest => dest.MinCount, x => x.MinimumQuantity)
+                .Map(dest => dest.MaxCount, x => x.MaximumQuantity)
+                .Map(dest => dest.Chance, x => x.Chance);
 
-            CreateMap<DropDataGlobal, Dto.DropItemDto>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
-                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
-                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Continent))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.GlobalDrop))
-                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
-                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
-                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+            config.NewConfig<DropDataGlobal, Dto.DropItemDto>()
+                .Map(dest => dest.ItemId, x => x.Itemid)
+                .Map(dest => dest.QuestId, x => x.Questid)
+                .Map(dest => dest.DropperId, x => x.Continent)
+                .Map(dest => dest.Type, x => DropType.GlobalDrop)
+                .Map(dest => dest.MinCount, x => x.MinimumQuantity)
+                .Map(dest => dest.MaxCount, x => x.MaximumQuantity)
+                .Map(dest => dest.Chance, x => x.Chance);
 
-            CreateMap<NoteEntity, NoteModel>()
-                .ForMember(dest => dest.IsDeleted, src => src.MapFrom(x => x.Deleted));
-            CreateMap<ShopEntity, Dto.ShopDto>();
-            CreateMap<Shopitem, Dto.ShopItemDto>();
+            config.NewConfig<NoteEntity, NoteModel>()
+                .Map(dest => dest.IsDeleted, x => x.Deleted);
+            config.NewConfig<ShopEntity, Dto.ShopDto>();
+            config.NewConfig<Shopitem, Dto.ShopItemDto>();
 
-            CreateMap<Ring_Entity, RingSourceModel>();
+            config.NewConfig<Ring_Entity, RingSourceModel>();
 
-            CreateMap<GiftEntity, GiftModel>()
-                .ForMember(dest => dest.To, src => src.MapFrom(x => x.ToId))
-                .ForMember(dest => dest.From, src => src.MapFrom(x => x.FromId));
+            config.NewConfig<GiftEntity, GiftModel>()
+                .Map(dest => dest.To, x => x.ToId)
+                .Map(dest => dest.From, x => x.FromId);
 
-            CreateMap<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
+            config.NewConfig<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
 
-            CreateMap<GuildEntity, GuildModel>();
-            CreateMap<AllianceEntity, AllianceModel>();
+            config.NewConfig<GuildEntity, GuildModel>();
+            config.NewConfig<AllianceEntity, AllianceModel>();
 
-            CreateMap<NewYearCardEntity, NewYearCardModel>().ReverseMap();
+            config.NewConfig<NewYearCardEntity, NewYearCardModel>().TwoWays();
 
-            CreateMap<PlifeEntity, PLifeModel>().ReverseMap();
+            config.NewConfig<PlifeEntity, PLifeModel>();
 
-            CreateMap<FredstorageEntity, FredrickStoreModel>()
-                .ForMember(dest => dest.UpdateTime, src => src.MapFrom(x => x.Timestamp.ToUnixTimeMilliseconds()))
-                .ReverseMap()
-                .ForMember(dest => dest.Timestamp, src => src.MapFrom(x => DateTimeOffset.FromUnixTimeMilliseconds(x.UpdateTime)));
+            config.NewConfig<FredstorageEntity, FredrickStoreModel>()
+                .Map(dest => dest.UpdateTime, x => x.Timestamp.ToUnixTimeMilliseconds());
 
-            CreateMap<AccountBindingsEntity, AccountHistoryModel>();
-            CreateMap<AccountBanEntity, AccountBanModel>()
-                .ForMember(dest => dest.BanLevel, src => src.MapFrom(x => (BanLevel)x.BanLevel));
+            config.NewConfig<AccountBindingsEntity, AccountHistoryModel>();
+            config.NewConfig<AccountBanEntity, AccountBanModel>()
+                .Map(dest => dest.BanLevel, x => (BanLevel)x.BanLevel);
 
-            CreateMap<GachaponPoolEntity, GachaponPoolModel>();
-            CreateMap<GachaponPoolLevelChanceEntity, GachaponPoolLevelChanceModel>();
-            CreateMap<GachaponPoolItemEntity, GachaponPoolItemModel>();
+            config.NewConfig<GachaponPoolEntity, GachaponPoolModel>();
+            config.NewConfig<GachaponPoolLevelChanceEntity, GachaponPoolLevelChanceModel>();
+            config.NewConfig<GachaponPoolItemEntity, GachaponPoolItemModel>();
 
-            CreateMap<CdkCodeEntity, CdkCodeModel>();
-            CreateMap<CdkItemEntity, CdkItemModel>();
-            CreateMap<CdkRecordEntity, CdkRecordModel>();
+            config.NewConfig<CdkCodeEntity, CdkCodeModel>();
+            config.NewConfig<CdkItemEntity, CdkItemModel>();
+            config.NewConfig<CdkRecordEntity, CdkRecordModel>();
+
 
         }
     }

@@ -1,6 +1,5 @@
 using Application.Core.Channel.ResourceTransaction.Handlers;
 using Application.Core.model;
-using Application.Shared.Constants.Item;
 using client.inventory;
 using System.Collections.Concurrent;
 using tools;

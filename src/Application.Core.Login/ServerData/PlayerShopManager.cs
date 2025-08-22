@@ -7,9 +7,9 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
 using Application.Utility.Configs;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using ItemProto;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
@@ -49,9 +49,7 @@ namespace Application.Core.Login.ServerData
         public override List<FredrickStoreModel> Query(Expression<Func<FredrickStoreModel, bool>> expression)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var entityExpression = _mapper.MapExpression<Expression<Func<FredstorageEntity, bool>>>(expression);
-            var dataFromDB = _mapper.Map<List<FredrickStoreModel>>(dbContext.Fredstorages.Where(entityExpression).AsNoTracking().ToList());
+            var dataFromDB = dbContext.Fredstorages.AsNoTracking().ProjectToType<FredrickStoreModel>().Where(expression).ToList();
 
             foreach (var item in dataFromDB)
             {

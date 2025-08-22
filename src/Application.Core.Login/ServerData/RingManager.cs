@@ -1,12 +1,10 @@
-using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
-using Google.Protobuf.WellKnownTypes;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -75,11 +73,9 @@ namespace Application.Core.Login.ServerData
 
         public override List<RingSourceModel> Query(Expression<Func<RingSourceModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<Ring_Entity, bool>>>(expression);
-
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.AsNoTracking().Where(entityExpression));
+            var dataFromDB = dbContext.Rings.AsNoTracking().ProjectToType<RingSourceModel>().Where(expression).ToList();
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
     }

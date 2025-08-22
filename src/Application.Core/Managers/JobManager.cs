@@ -1,5 +1,3 @@
-using constants.game;
-
 namespace Application.Core.Managers
 {
     public class JobManager

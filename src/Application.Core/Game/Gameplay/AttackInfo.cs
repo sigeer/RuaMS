@@ -1,6 +1,5 @@
 using Application.Core.Game.Skills;
 using client.autoban;
-using constants.game;
 using server;
 
 namespace Application.Core.Game.Gameplay

@@ -3,6 +3,7 @@ using Application.Core.Login.Shared;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Servers;
 using Application.Utility;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ namespace Application.Module.Marriage.Master
     {
         public static IServiceCollection AddMarriageMaster(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<MarriageManager>();
             services.AddSingleton<IStorage, MarriageManager>(sp => sp.GetRequiredService<MarriageManager>());
 

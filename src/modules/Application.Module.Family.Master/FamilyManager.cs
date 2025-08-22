@@ -5,12 +5,11 @@ using Application.EF.Entities;
 using Application.Module.Family.Common;
 using Application.Module.Family.Master.Models;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections.Frozen;
 using System.Linq.Expressions;
 
 namespace Application.Module.Family.Master
@@ -51,9 +50,7 @@ namespace Application.Module.Family.Master
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<FamilyCharacterEntity, bool>>>(expression);
-
-            var allData = _mapper.Map<List<FamilyCharacterModel>>(dbContext.FamilyCharacters.AsNoTracking().Where(entityExpression).ToList());
+            var allData = dbContext.FamilyCharacters.AsNoTracking().ProjectToType<FamilyCharacterModel>().Where(expression).ToList();
 
             var cids = allData.Select(x => x.Id).ToList();
             var useRecords = dbContext.FamilyEntitlements.AsNoTracking().Where(x => cids.Contains(x.Charid)).ToList();

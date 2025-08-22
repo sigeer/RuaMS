@@ -1,28 +1,25 @@
 using Application.EF.Entities;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.PlayerNPC.Master.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<PlayerNpcEquipModel, PlayerNPCProto.PlayerNPCEquip>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Equipid))
-                .ForMember(dest => dest.Position, src => src.MapFrom(x => x.Equippos))
-                .ReverseMap()
-                .ForMember(dest => dest.Equipid, src => src.MapFrom(x => x.ItemId))
-                .ForMember(dest => dest.Equippos, src => src.MapFrom(x => x.Position))
+            config.NewConfig<PlayerNpcEquipModel, PlayerNPCProto.PlayerNPCEquip>()
+                .TwoWays()
+                .Map(dest => dest.ItemId, x => x.Equipid)
+                .Map(dest => dest.Position, x => x.Equippos)
                 ;
-            CreateMap<PlayerNpcModel, PlayerNPCProto.PlayerNPCDto>()
-                .ForMember(dest=>dest.MapId, src => src.MapFrom(x => x.Map))
-                .ReverseMap()
-                .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
+            config.NewConfig<PlayerNpcModel, PlayerNPCProto.PlayerNPCDto>()
+                .TwoWays()
+                .Map(dest => dest.MapId, x => x.Map);
 
-            CreateMap<PlayerNpcEntity, PlayerNpcModel>()
-                .ReverseMap();
-            CreateMap<PlayerNpcsEquipEntity, PlayerNpcEquipModel>()
-                .ReverseMap();
+            config.NewConfig<PlayerNpcEntity, PlayerNpcModel>()
+                .TwoWays();
+            config.NewConfig<PlayerNpcsEquipEntity, PlayerNpcEquipModel>()
+                .TwoWays();
         }
     }
 }

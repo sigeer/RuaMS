@@ -27,14 +27,6 @@ namespace Application.Core.client.Characters
 
         public int Int { get; set; }
 
-        public int Hp { get; set; }
-
-        public int Mp { get; set; }
-
-        public int Maxhp { get; set; }
-
-        public int Maxmp { get; set; }
-
         public int Meso { get; set; }
 
         public int HpMpUsed { get; set; }

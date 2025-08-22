@@ -1,86 +1,108 @@
-using Application.Core.Login;
-using Application.Core.Login.Models.Items;
-using Application.EF.Entities;
-using AutoMapper;
 using BenchmarkDotNet.Attributes;
-using Facet;
+using BenchmarkDotNet.Order;
 using FastExpressionCompiler;
 using Mapster;
+using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Benchmark
 {
+    /**
+     * 
+     * | Method             | Mean      | Error      | StdDev    | Rank | Gen0   | Allocated |
+     * |------------------- |----------:|-----------:|----------:|-----:|-------:|----------:|
+     * | UseMapsterAdapt    |  31.44 ns |  11.966 ns |  3.107 ns |    1 | 0.0306 |      48 B |
+     * | UseMapsterMapper   |  44.12 ns |  17.455 ns |  4.533 ns |    2 | 0.0306 |      48 B |
+     * | UseAutoMapper      |  98.45 ns |   7.791 ns |  1.206 ns |    3 | 0.0305 |      48 B |
+     * | UseMapsterDIMapper | 234.95 ns | 147.506 ns | 38.307 ns |    4 | 0.2346 |     368 B |
+     */
+    [RankColumn]
+    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
+    [SimpleJob(warmupCount: 5, iterationCount: 5)]
     [MemoryDiagnoser]
-    public class MapperExpressionBenchrmark
+    public class MapperBenchrmark
     {
-        AutoMapper.IMapper _mapper;
-        private TypeAdapterConfig _mapsterConfig;
-
+        AutoMapper.IMapper _autoMapper;
+        MapsterMapper.IMapper _mapsterDIMapper;
+        MapsterMapper.IMapper _mapsterMapper;
+        TestSourceModel source;
         [GlobalSetup]
         public void Setup()
         {
             var services = new ServiceCollection();
 
-            services.AddLoginServerDI("Sqlite", "Data Source=benchmark.db");
+            TypeAdapterConfig.GlobalSettings.NewConfig<TestSourceModel, TestTargetModel>()
+                .Map(dest => dest.Time, x => x.DateTimeOffsetValue.ToUnixTimeMilliseconds());
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
+            TypeAdapterConfig.GlobalSettings.Compile();
+
+            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+            // 使用Mapper性能正常
+            services.AddSingleton<IMapper, ServiceMapper>();
 
             var provider = services.BuildServiceProvider();
-            _mapper = provider.GetRequiredService<IMapper>();
+            _mapsterMapper = new Mapper(TypeAdapterConfig.GlobalSettings);
+            _mapsterDIMapper = provider.GetRequiredService<IMapper>();
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
-            _mapsterConfig = new TypeAdapterConfig();
-            _mapsterConfig.Default.PreserveReference(true);
-            _mapsterConfig.NewConfig<FredrickStoreModel, FredstorageEntity>()
-                                    .MapWith(src => new FredstorageEntity(src.Id, src.Cid, src.Daynotes, src.Meso, DateTimeOffset.FromUnixTimeMilliseconds(src.UpdateTime))); ;
-            _mapsterConfig.NewConfig<FredstorageEntity, FredrickStoreModel>()
-                    .MapWith(src => new FredrickStoreModel
-                    {
-                        Id = src.Id,
-                        Cid = src.Cid,
-                        Daynotes = src.Daynotes,
-                        Meso = src.Meso,
-                        ItemMeso = src.ItemMeso,
-                        UpdateTime = src.Timestamp.ToUnixTimeMilliseconds()
-                    }); ;
+
+            _autoMapper = new AutoMapper.MapperConfiguration(opt =>
+            {
+                opt.CreateMap<TestSourceModel, TestTargetModel>()
+                    .ForMember(dest => dest.Time, src => src.MapFrom(x => x.DateTimeOffsetValue.ToUnixTimeMilliseconds()));
+            }).CreateMapper();
+
+
+            source = new TestSourceModel { DateTimeOffsetValue = DateTimeOffset.UtcNow };
+
         }
         [Benchmark()]
         public void UseAutoMapper()
         {
-            var model = new FredrickStoreModel { Meso = 1 };
-            _mapper.Map<FredstorageEntity>(model);
+            _autoMapper.Map<TestTargetModel>(source);
         }
 
         [Benchmark()]
-        public void UseMapster()
+        public void UseMapsterAdapt()
         {
-            var model = new FredrickStoreModel { Meso = 1 };
-            model.Adapt<FredstorageEntity>();
+            source.Adapt<TestTargetModel>();
         }
 
-        /// <summary>
-        /// 性能最佳，但是不支持双向映射。更倾向于创建复制类型而不是类型映射
-        /// </summary>
         [Benchmark()]
-        public void UseFacet()
+        public void UseMapsterDIMapper()
         {
-            var model = new FredrickStoreModel { Meso = 1 };
-            new FredstorageEntityLocal(model);
+            _mapsterDIMapper.Map<TestTargetModel>(source);
+        }
+
+        [Benchmark()]
+        public void UseMapsterMapper()
+        {
+            _mapsterMapper.Map<TestTargetModel>(source);
         }
     }
 
+    public class TestSourceModel
+    {
+        public int IntValue { get; set; }
+        public double DoubleValue { get; set; }
+        public string StringValue { get; set; }
+        public DateTimeOffset DateTimeOffsetValue { get; set; }
+    }
 
-    [Facet(typeof(FredrickStoreModel), nameof(FredrickStoreModel.Items))]
-    public partial class FredstorageEntityLocal { }
 
-    //public class FredstorageMapper : IFacetMapConfiguration<FredrickStoreModel, FredstorageEntity>
-    //{
-    //    public static void Map(FredrickStoreModel source, FredstorageEntity target)
-    //    {
-    //        target.Daynotes = source.Daynotes;
-    //        target.Cid = source.Cid;
-    //        target.Id = source.Id;
-    //        target.Meso = source.Meso;
-    //        target.ItemMeso = (int)source.ItemMeso;
-    //    }
-    //}
+    public class TestTargetModel
+    {
+        public int IntValue { get; set; }
+        public double DoubleValue { get; set; }
+        public string StringValue { get; set; }
+        public long Time { get; set; }
+    }
+
+    public class TestService
+    {
+        public int GetIntValue()
+        {
+            return Random.Shared.Next(10);
+        }
+    }
 
 }

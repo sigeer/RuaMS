@@ -11,6 +11,8 @@ using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Resources;
 using Application.Shared.Servers;
+using FastExpressionCompiler;
+using Google.Protobuf.Collections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using server.life;
@@ -140,7 +142,19 @@ namespace Application.Core.Channel
 
             services.AddSingleton<DataService>();
 
-            services.AddAutoMapper(typeof(ProtoMapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(ProtoMapper).Assembly);
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
+            TypeAdapterConfig.GlobalSettings.Compile();
+            TypeAdapterConfig.GlobalSettings.CompileProjection();
+            // proto的 RepeatedField<> 是只读类型，此处处理
+            //TypeAdapterConfig.GlobalSettings.Default
+            //    .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+            //                       member.Type.IsGenericType &&
+            //                       member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
+
+            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+            services.AddSingleton<IMapper, Mapper>();
+
             services.AddHostedService<ChannelHost>();
             return services;
         }

@@ -13,16 +13,13 @@ using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Utility.Configs;
-using AutoMapper;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using DueyDto;
+using MapsterMapper;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 using tools;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Module.Duey.Channel
 {
@@ -282,7 +279,7 @@ namespace Application.Module.Duey.Channel
 
 
 
-                _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true});
+                _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true });
                 _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
             }
             else

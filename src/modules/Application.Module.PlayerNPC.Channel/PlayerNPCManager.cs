@@ -6,14 +6,12 @@ using Application.Module.PlayerNPC.Channel.Net;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
-using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
 using Application.Shared.MapObjects;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using AutoMapper;
 using client.inventory;
-using Microsoft.Extensions.Caching.Memory;
+using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlayerNPCProto;
@@ -45,7 +43,7 @@ namespace Application.Module.PlayerNPC.Channel
 
         public void LoadAllData()
         {
-            _cache = _mapper.Map<List<PlayerNpc>>(_transport.GetAllPlayerNPCList(new GetAllPlayerNPCDataRequest()).List).GroupBy(x => x.Map).ToDictionary(x => x.Key, x=>x.ToList());
+            _cache = _mapper.Map<List<PlayerNpc>>(_transport.GetAllPlayerNPCList(new GetAllPlayerNPCDataRequest()).List).GroupBy(x => x.Map).ToDictionary(x => x.Key, x => x.ToList());
         }
 
         public List<PlayerNpc> GetMapPlayerNPCList(int mapId)

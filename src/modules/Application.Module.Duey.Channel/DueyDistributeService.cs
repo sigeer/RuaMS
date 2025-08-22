@@ -1,9 +1,9 @@
 using Application.Core.Channel.Services;
 using Application.Core.Game.Players;
 using Application.Shared.Constants;
-using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
+using MapsterMapper;
 
 namespace Application.Module.Duey.Channel
 {

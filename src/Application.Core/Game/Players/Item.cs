@@ -701,7 +701,7 @@ namespace Application.Core.Game.Players
                     return;
 
                 if (!condition.Invoke())
-                    return ;
+                    return;
 
                 CashShopModel.BuyCashItem(cashType, cItem);
             }

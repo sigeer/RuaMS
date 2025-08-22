@@ -24,13 +24,6 @@ namespace Application.Core.Game.Players
 
         public int Int { get; set; }
 
-        public int Hp { get; set; }
-
-        public int Mp { get; set; }
-
-        public int Maxhp { get; set; }
-
-        public int Maxmp { get; set; }
 
         public int Meso { get; set; }
 

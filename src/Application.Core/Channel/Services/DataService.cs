@@ -5,21 +5,16 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Map;
-using AutoMapper;
-using BaseProto;
 using client;
 using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
-using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
 using server.events;
 using server.life;
 using server.quest;
-using System.Collections.Generic;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -283,7 +278,7 @@ namespace Application.Core.Channel.Services
 
 
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
-            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
+            if (player.MapModel == null || player.CashShopModel.isOpened())
             {
                 playerDto.Map = player.Map;
             }
@@ -318,11 +313,11 @@ namespace Application.Core.Channel.Services
 
             #region inventory mapping
             var itemType = ItemFactory.INVENTORY.getValue();
-            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
+            var d = player.Bag.GetValues().SelectMany(x =>
             {
-                opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = itemType;
-            })).ToArray();
+                return x.list().BuildAdapter().AddParameters("Type", itemType).AddParameters("InventoryType", (int)x.getType()).AdaptToType<Dto.ItemDto[]>();
+            }).ToArray();
+
             #endregion
 
             var data = new SyncProto.PlayerSaveDto()
@@ -351,9 +346,9 @@ namespace Application.Core.Channel.Services
             data.InventoryItems.AddRange(d);
             data.AccountGame = new Dto.AccountGameDto()
             {
-                NxCredit = player.CashShopModel?.NxCredit ?? 0,
-                NxPrepaid = player.CashShopModel?.NxPrepaid ?? 0,
-                MaplePoint = player.CashShopModel?.MaplePoint ?? 0,
+                NxCredit = player.CashShopModel.NxCredit,
+                NxPrepaid = player.CashShopModel.NxPrepaid,
+                MaplePoint = player.CashShopModel.MaplePoint,
                 Id = playerDto.AccountId,
                 Storage = new Dto.StorageDto
                 {
@@ -363,31 +358,26 @@ namespace Application.Core.Channel.Services
                 },
                 QuickSlot = quickSlotDto,
             };
-            data.AccountGame.StorageItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.Storage.getItems(), opt =>
-            {
-                opt.Items["Type"] = ItemFactory.STORAGE.getValue();
-            }));
+            data.AccountGame.StorageItems.AddRange(player.Storage.getItems().BuildAdapter()
+                .AddParameters("Type", ItemFactory.STORAGE.getValue())
+                .AdaptToType<Dto.ItemDto[]>());
             var cashFactoryType = player.CashShopModel.Factory;
             if (cashFactoryType == ItemType.CashOverall)
-                data.AccountGame.CashOverallItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_OVERALL.getValue();
-                }));
+                data.AccountGame.CashOverallItems.AddRange(player.Storage.getItems().BuildAdapter()
+                .AddParameters("Type", cashFactoryType)
+                .AdaptToType<Dto.ItemDto[]>());
             if (cashFactoryType == ItemType.CashAran)
-                data.AccountGame.CashAranItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_ARAN.getValue();
-                }));
+                data.AccountGame.CashAranItems.AddRange(player.Storage.getItems().BuildAdapter()
+                .AddParameters("Type", cashFactoryType)
+                .AdaptToType<Dto.ItemDto[]>());
             if (cashFactoryType == ItemType.CashExplorer)
-                data.AccountGame.CashExplorerItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_EXPLORER.getValue();
-                }));
+                data.AccountGame.CashExplorerItems.AddRange(player.Storage.getItems().BuildAdapter()
+                .AddParameters("Type", cashFactoryType)
+                .AdaptToType<Dto.ItemDto[]>());
             if (cashFactoryType == ItemType.CashCygnus)
-                data.AccountGame.CashCygnusItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_CYGNUS.getValue();
-                }));
+                data.AccountGame.CashCygnusItems.AddRange(player.Storage.getItems().BuildAdapter()
+                .AddParameters("Type", cashFactoryType)
+                .AdaptToType<Dto.ItemDto[]>());
             return data;
         }
 
@@ -458,7 +448,7 @@ namespace Application.Core.Channel.Services
         public CreatorProto.NewPlayerSaveDto DeserializeNew(IPlayer player)
         {
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
-            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
+            if (player.MapModel == null || player.CashShopModel.isOpened())
             {
                 playerDto.Map = player.Map;
             }
@@ -493,11 +483,13 @@ namespace Application.Core.Channel.Services
 
             #region inventory mapping
             var itemType = ItemFactory.INVENTORY.getValue();
-            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
+            var d = player.Bag.GetValues().SelectMany(x =>
             {
-                opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = itemType;
-            })).ToArray();
+                return x.list().BuildAdapter()
+                    .AddParameters("Type", itemType)
+                    .AddParameters("InventoryType", (int)x.getType())
+                    .AdaptToType<Dto.ItemDto[]>();
+            }).ToArray();
 
             #endregion
 
