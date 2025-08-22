@@ -20,6 +20,8 @@ message GuildDto {
   int32 logoBg = 13;
   int32 logoBgColor = 14;
   google.protobuf.StringValue notice = 15;
+  int32 capacity = 16;
+  int64 signature = 17;
 }
 
 message GuildMemberDto {
