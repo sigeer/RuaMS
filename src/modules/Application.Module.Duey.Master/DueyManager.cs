@@ -46,7 +46,7 @@ namespace Application.Module.Duey.Master
             using var dbContext = _dbContextFactory.CreateDbContext();
 
             var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
-            var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).Where(entityExpression).ToList();
+            var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).ToList();
 
             var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemType.Duey);
 
@@ -93,7 +93,7 @@ namespace Application.Module.Duey.Master
 
         public void PackageUnfreeze(int chrId)
         {
-            var packages = Query(x => x.ReceiverId == chrId && x.IsFrozen);
+            var packages = Query(x => x.ReceiverId == chrId).Where(x => x.IsFrozen);
             foreach (var package in packages)
             {
                 package.IsFrozen.Set(false);

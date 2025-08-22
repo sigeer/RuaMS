@@ -1,3 +1,4 @@
+using AllianceProto;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
@@ -268,11 +269,9 @@ namespace Application.Core.Mappers
                     x.Rank4Title,
                     x.Rank5Title
                 }));
+            CreateMap<AllianceProto.AllianceDto, AllianceDto>();
 
             CreateMap<Dto.NewYearCardDto, NewYearCardObject>();
-
-            CreateMap<Dto.DropItemDto, DropEntry>()
-                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
 
             CreateMap<PlayerShopItem, ItemProto.PlayerShopItemDto>()
                 .ForMember(dest => dest.Bundles, src => src.MapFrom(x => x.getBundles()))

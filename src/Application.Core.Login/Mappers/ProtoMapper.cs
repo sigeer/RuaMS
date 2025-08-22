@@ -71,7 +71,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<Dto.BuddyDto, BuddyModel>();
 
             CreateMap<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().ReverseMap();
-            CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
+            CreateMap<BuffModel, Dto.BuffDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
             CreateMap<CharacterLiveObject, SyncProto.PlayerGetterDto>()
