@@ -67,7 +67,6 @@ namespace Application.Core.Game.Maps
         void checkMapOwnerActivity();
         bool claimOwnership(IPlayer chr);
         void clearDrops();
-        void clearDrops(IPlayer player);
         void clearMapObjects();
         void closeMapSpawnPoints();
         bool containsNPC(int npcid);
@@ -127,7 +126,6 @@ namespace Application.Core.Game.Maps
         int getHPDecProtect();
         int getId();
         List<IMapObject> getItems();
-        Dictionary<int, IPlayer> getMapAllPlayers();
         Rectangle getMapArea();
         string getMapName();
         IMapObject? getMapObject(int oid);
@@ -167,7 +165,6 @@ namespace Application.Core.Game.Maps
         string getStreetName();
         bool getSummonState();
         int getTimeLimit();
-        int getWorld();
         bool hasClock();
         bool hasEventNPC();
         void instanceMapForceRespawn();

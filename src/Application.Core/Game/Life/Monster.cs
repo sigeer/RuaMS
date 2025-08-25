@@ -667,7 +667,7 @@ public class Monster : AbstractLifeObject
         Dictionary<Team, Dictionary<IPlayer, long>> partyExpDist = new();
         Dictionary<IPlayer, long> soloExpDist = new();
 
-        Dictionary<int, IPlayer> mapPlayers = MapModel.getMapAllPlayers();
+        Dictionary<int, IPlayer> mapPlayers = MapModel.getMapPlayers();
 
         int totalEntries = 0;   // counts "participant parties", players who no longer are available in the map is an "independent party"
         foreach (var e in takenDamage)
@@ -880,7 +880,7 @@ public class Monster : AbstractLifeObject
             return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         }
 
-        Dictionary<int, IPlayer> pchars = MapModel.getMapAllPlayers();
+        Dictionary<int, IPlayer> pchars = MapModel.getMapPlayers();
 
         List<IPlayer> lootChars = new();
         foreach (int cid in takenDamage.Keys)
