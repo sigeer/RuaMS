@@ -14,7 +14,8 @@ public class WhereaMiCommand : CommandBase
         var allMapObjects = player.getMap().getMapObjects().GroupBy(x => x.getType());
 
 
-        player.yellowMessage("Map ID: " + player.getMap().getId());
+        player.yellowMessage("地图ID：" + player.getMap().getId());
+        player.yellowMessage("当前坐标：" + player.getPosition());
 
         foreach (var group in allMapObjects)
         {

@@ -10,7 +10,7 @@ public class ClearDropsCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        player.getMap().clearDrops(player);
+        player.getMap().clearDrops();
         player.dropMessage(5, "Cleared dropped items");
     }
 }

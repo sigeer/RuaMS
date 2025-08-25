@@ -68,15 +68,11 @@ public class MapleMap : IMap
     protected List<SpawnPoint> monsterSpawn = new();
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
-    public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
-
-
-    private Dictionary<int, IPlayer> characters = new();
 
     private Dictionary<int, Portal> portals = new();
     private Dictionary<int, int> backgroundTypes = new();
     private Dictionary<string, int> environment = new();
-    private Dictionary<MapItem, long> droppedItems = new();
+
     private List<WeakReference<IMapObject>> registeredDrops = new();
     private ConcurrentQueue<Action> statUpdateRunnables = new();
     private List<Rectangle> areas = new();
@@ -187,11 +183,6 @@ public class MapleMap : IMap
     public Rectangle getMapArea()
     {
         return mapArea;
-    }
-
-    public int getWorld()
-    {
-        return 0;
     }
 
     public void broadcastPacket(IPlayer source, Packet packet)
@@ -919,75 +910,6 @@ public class MapleMap : IMap
         }
     }
 
-    public int getDroppedItemCount()
-    {
-        return droppedItemCount.get();
-    }
-
-    private void instantiateItemDrop(MapItem mdrop)
-    {
-        if (droppedItemCount.get() >= YamlConfig.config.server.ITEM_LIMIT_ON_MAP)
-        {
-            IMapObject? mapobj;
-
-            do
-            {
-                mapobj = null;
-
-                objectLock.EnterWriteLock();
-                try
-                {
-                    while (mapobj == null)
-                    {
-                        if (registeredDrops.Count == 0)
-                        {
-                            break;
-                        }
-                        var item = registeredDrops[0];
-                        registeredDrops.RemoveAt(0);
-                        if (item?.TryGetTarget(out var d) ?? false)
-                            mapobj = d;
-                    }
-                }
-                finally
-                {
-                    objectLock.ExitWriteLock();
-                }
-            } while (!makeDisappearItemFromMap(mapobj));
-        }
-
-        objectLock.EnterWriteLock();
-        try
-        {
-            registerItemDrop(mdrop);
-            registeredDrops.Add(new(mdrop));
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
-
-        droppedItemCount.incrementAndGet();
-    }
-
-    private void registerItemDrop(MapItem mdrop)
-    {
-        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.Container.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
-    }
-
-    public void unregisterItemDrop(MapItem mdrop)
-    {
-        objectLock.EnterWriteLock();
-        try
-        {
-            droppedItems.Remove(mdrop);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
-    }
-
     private void makeDisappearExpiredItemDrops()
     {
         List<MapItem> toDisappear = new();
@@ -1028,43 +950,7 @@ public class MapleMap : IMap
             objectLock.ExitWriteLock();
         }
     }
-    private List<MapItem> getDroppedItems()
-    {
-        objectLock.EnterReadLock();
-        try
-        {
-            return new(droppedItems.Keys);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
-    }
-
-    public int getDroppedItemsCountById(int itemid)
-    {
-        int count = 0;
-        foreach (MapItem mmi in getDroppedItems())
-        {
-            if (mmi.getItemId() == itemid)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public void pickItemDrop(Packet pickupPacket, MapItem mdrop)
-    { // mdrop must be already locked and not-pickedup checked at this point
-        broadcastMessage(pickupPacket, mdrop.getPosition());
-
-        droppedItemCount.decrementAndGet();
-        this.removeMapObject(mdrop);
-        mdrop.setPickedUp(true);
-        unregisterItemDrop(mdrop);
-    }
-
+   
     public List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<IPlayer> partyMembers, IPlayer? partyLeaver)
     {
         List<MapItem> partyDrops = new();
@@ -1308,70 +1194,6 @@ public class MapleMap : IMap
         return getMonsters().OfType<Monster>().ToList();
     }
 
-    public int countItems()
-    {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)).Count;
-    }
-
-    public List<IMapObject> getItems()
-    {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
-    }
-
-    public int countPlayers()
-    {
-        return getPlayers().Count;
-    }
-
-    public List<IMapObject> getPlayers()
-    {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER));
-    }
-
-    public List<IPlayer> getAllPlayers()
-    {
-        chrLock.EnterReadLock();
-        try
-        {
-            return characters.Values.ToList();
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-    }
-
-    public Dictionary<int, IPlayer> getMapAllPlayers()
-    {
-        return characters;
-    }
-
-    public List<IPlayer> getPlayersInRange(Rectangle box)
-    {
-        List<IPlayer> character = new();
-        chrLock.EnterReadLock();
-        try
-        {
-            foreach (IPlayer chr in getAllPlayers())
-            {
-                if (box.Contains(chr.getPosition()))
-                {
-                    character.Add(chr);
-                }
-            }
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-
-        return character;
-    }
-
-    public int countAlivePlayers()
-    {
-        return getAllPlayers().Count(x => x.isAlive());
-    }
 
     public int countBosses()
     {
@@ -2537,280 +2359,6 @@ public class MapleMap : IMap
     }
 
 
-
-
-    public void addPlayer(IPlayer chr)
-    {
-        int chrSize;
-        var party = chr.getParty();
-        chrLock.EnterWriteLock();
-        try
-        {
-            if (characters.ContainsKey(chr.Id))
-            {
-                log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
-                return;
-            }
-
-            characters.Add(chr.Id, chr);
-            chrSize = characters.Count;
-
-            itemMonitorTimeout = 1;
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
-
-        chr.setMap(this);
-        chr.updateActiveEffects();
-
-        if (this.getHPDec() > 0)
-        {
-            getChannelServer().Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
-        }
-        else
-        {
-            getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
-        }
-
-        MapScriptManager msm = ChannelServer.MapScriptManager;
-        if (chrSize == 1)
-        {
-            if (!hasItemMonitor())
-            {
-                startItemMonitor();
-                aggroMonitor.startAggroCoordinator();
-            }
-
-            if (onFirstUserEnter.Length != 0)
-            {
-                msm.runMapScript(chr.getClient(), "onFirstUserEnter/" + onFirstUserEnter, true);
-            }
-        }
-        if (onUserEnter.Length != 0)
-        {
-            if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
-            {
-                chr.saveLocation("INTRO");
-            }
-
-            msm.runMapScript(chr.getClient(), "onUserEnter/" + onUserEnter, false);
-        }
-        if (FieldLimit.CANNOTUSEMOUNTS.check(fieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
-        {
-            chr.cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
-            chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
-        }
-
-        if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
-        { // To Ereve (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_ELLINIA_TO_EREVE)
-                {
-                    chr.changeMap(MapId.SKY_FERRY, 0);
-                }
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
-        { // To Victoria Island (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_EREVE_TO_ELLINIA)
-                {
-                    chr.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
-                }
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
-        { // To Orbis (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_EREVE_TO_ORBIS)
-                {
-                    chr.changeMap(MapId.ORBIS_STATION, 0);
-                }
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
-        { // To Ereve From Orbis (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_ORBIS_TO_EREVE)
-                {
-                    chr.changeMap(MapId.SKY_FERRY, 0);
-                }
-            }, travelTime);
-        }
-        else if (MiniDungeonInfo.isDungeonMap(mapid))
-        {
-            var mmd = chr.getClient().getChannelServer().getMiniDungeon(mapid);
-            if (mmd != null)
-            {
-                mmd.registerPlayer(chr);
-            }
-        }
-        else if (GameConstants.isAriantColiseumArena(mapid))
-        {
-            int pqTimer = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-            chr.sendPacket(PacketCreator.getClock(pqTimer / 1000));
-        }
-
-        Pet?[] pets = chr.getPets();
-        foreach (Pet? pet in pets)
-        {
-            if (pet != null)
-            {
-                pet.setPos(getGroundBelow(chr.getPosition()));
-                chr.sendPacket(PacketCreator.showPet(chr, pet, false, false));
-            }
-            else
-            {
-                break;
-            }
-        }
-        chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
-
-        if (chr.getMonsterCarnival() != null)
-        {
-            chr.sendPacket(PacketCreator.getClock(chr.getMonsterCarnival()!.getTimeLeftSeconds()));
-            if (isCPQMap())
-            {
-                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
-            }
-        }
-
-        chr.removeSandboxItems();
-
-        if (chr.getChalkboard() != null)
-        {
-            if (!GameConstants.isFreeMarketRoom(mapid))
-            {
-                chr.sendPacket(PacketCreator.useChalkboard(chr, false)); // update player's chalkboard when changing maps found thanks to Vcoc
-            }
-            else
-            {
-                chr.setChalkboard(null);
-            }
-        }
-
-        if (chr.isHidden())
-        {
-            broadcastGMSpawnPlayerMapObjectMessage(chr, chr, true);
-            chr.sendPacket(PacketCreator.getGMEffect(0x10, 1));
-
-            broadcastGMMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
-        }
-        else
-        {
-            broadcastSpawnPlayerMapObjectMessage(chr, chr, true);
-        }
-
-        sendObjectPlacement(chr.Client);
-
-        if (isStartingEventMap() && !eventStarted())
-        {
-            chr.getMap().getPortal("join00")!.setPortalStatus(false);
-        }
-        if (hasForcedEquip())
-        {
-            chr.sendPacket(PacketCreator.showForcedEquip(-1));
-        }
-        if (specialEquip())
-        {
-            chr.sendPacket(PacketCreator.coconutScore(0, 0));
-            chr.sendPacket(PacketCreator.showForcedEquip(chr.getTeam()));
-        }
-        objectLock.EnterWriteLock();
-        try
-        {
-            this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
-
-        // 访问商店/开店时应该没办法切换地图
-        //if (chr.VisitingShop != null)
-        //{
-        //    addMapObject(chr.VisitingShop);
-        //}
-
-        var dragon = chr.getDragon();
-        if (dragon != null)
-        {
-            dragon.setPosition(chr.getPosition());
-            this.addMapObject(dragon);
-            if (chr.isHidden())
-            {
-                this.broadcastGMPacket(chr, PacketCreator.spawnDragon(dragon));
-            }
-            else
-            {
-                this.broadcastPacket(chr, PacketCreator.spawnDragon(dragon));
-            }
-        }
-
-        StatEffect? summonStat = chr.getStatForBuff(BuffStat.SUMMON);
-        if (summonStat != null)
-        {
-            var summon = chr.getSummonByKey(summonStat.getSourceId())!;
-            summon.setPosition(chr.getPosition());
-            chr.getMap().spawnSummon(summon);
-            updateMapObjectVisibility(chr, summon);
-        }
-        if (mapEffect != null)
-        {
-            mapEffect.sendStartData(chr.getClient());
-        }
-        chr.sendPacket(PacketCreator.resetForcedStats());
-        if (MapId.isGodlyStatMap(mapid))
-        {
-            chr.sendPacket(PacketCreator.aranGodlyStats());
-        }
-        if (chr.getEventInstance() != null && chr.getEventInstance()!.isTimerStarted())
-        {
-            chr.sendPacket(PacketCreator.getClock((int)(chr.getEventInstance()!.getTimeLeft() / 1000)));
-        }
-        if (chr.Fitness != null && chr.Fitness.isTimerStarted())
-        {
-            chr.sendPacket(PacketCreator.getClock((int)(chr.Fitness.getTimeLeft() / 1000)));
-        }
-
-        if (chr.Ola != null && chr.Ola.isTimerStarted())
-        {
-            chr.sendPacket(PacketCreator.getClock((int)(chr.Ola.getTimeLeft() / 1000)));
-        }
-
-        if (mapid == MapId.EVENT_SNOWBALL)
-        {
-            chr.sendPacket(PacketCreator.rollSnowBall());
-        }
-
-        if (hasClock())
-        {
-            var cal = ChannelServer.Container.GetCurrentTimeDateTimeOffSet();
-            chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
-        }
-        if (hasBoat() > 0)
-        {
-            chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
-        }
-
-        chr.receivePartyMemberHP();
-        ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
-    }
-
     public Portal getRandomPlayerSpawnpoint()
     {
         var portal = Randomizer.Select(portals.Values.Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE));
@@ -2856,74 +2404,6 @@ public class MapleMap : IMap
         foreach (Monster mm in this.getAllMonsters())
         {
             mm.aggroRemovePuppet(player);
-        }
-    }
-
-    public void removePlayer(IPlayer chr)
-    {
-        var cserv = chr.getClient().getChannelServer();
-        chr.unregisterChairBuff();
-
-        var party = chr.getParty();
-        chrLock.EnterWriteLock();
-        try
-        {
-            characters.Remove(chr.Id);
-            if (XiGuai?.Controller == chr)
-                XiGuai = null;
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
-
-        if (MiniDungeonInfo.isDungeonMap(mapid))
-        {
-            var mmd = cserv.getMiniDungeon(mapid);
-            if (mmd != null)
-            {
-                if (!mmd.unregisterPlayer(chr))
-                {
-                    cserv.removeMiniDungeon(mapid);
-                }
-            }
-        }
-
-        removeMapObject(chr.getObjectId());
-        if (!chr.isHidden())
-        {
-            broadcastMessage(PacketCreator.removePlayerFromMap(chr.getId()));
-        }
-        else
-        {
-            broadcastGMMessage(PacketCreator.removePlayerFromMap(chr.getId()));
-        }
-
-        chr.leaveMap();
-
-        foreach (Summon summon in chr.getSummonsValues())
-        {
-            if (summon.isStationary())
-            {
-                chr.cancelEffectFromBuffStat(BuffStat.PUPPET);
-            }
-            else
-            {
-                removeMapObject(summon);
-            }
-        }
-
-        if (chr.getDragon() != null)
-        {
-            removeMapObject(chr.getDragon()!);
-            if (chr.isHidden())
-            {
-                this.broadcastGMPacket(chr, PacketCreator.removeDragon(chr.getId()));
-            }
-            else
-            {
-                this.broadcastPacket(chr, PacketCreator.removeDragon(chr.getId()));
-            }
         }
     }
 
@@ -3442,28 +2922,7 @@ public class MapleMap : IMap
         }
     }
 
-    public Dictionary<int, IPlayer> getMapPlayers()
-    {
-        return characters;
-    }
 
-    public IReadOnlyCollection<IPlayer> getCharacters()
-    {
-        return getAllPlayers();
-    }
-
-    public IPlayer? getCharacterById(int id)
-    {
-        chrLock.EnterReadLock();
-        try
-        {
-            return characters.GetValueOrDefault(id);
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-    }
 
     private static void updateMapObjectVisibility(IPlayer chr, IMapObject mo)
     {
@@ -4064,23 +3523,7 @@ public class MapleMap : IMap
         }
     }
 
-    public int getNumPlayersInArea(int index)
-    {
-        return getNumPlayersInRect(getArea(index));
-    }
 
-    public int getNumPlayersInRect(Rectangle rect)
-    {
-        chrLock.EnterReadLock();
-        try
-        {
-            return getAllPlayers().Count(x => rect.Contains(x.getPosition()));
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-    }
 
     //private interface DelayedPacketCreation
     //{
@@ -4251,16 +3694,6 @@ public class MapleMap : IMap
         this.fieldType = fieldType;
     }
 
-    public void clearDrops(IPlayer player)
-    {
-        foreach (IMapObject i in getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
-        {
-            droppedItemCount.decrementAndGet();
-            removeMapObject(i);
-            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, player.getId()));
-        }
-    }
-
     public void clearDrops()
     {
         foreach (IMapObject i in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
@@ -4268,6 +3701,8 @@ public class MapleMap : IMap
             droppedItemCount.decrementAndGet();
             removeMapObject(i);
             this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, 0));
+            if (i is MapItem mapItem)
+                droppedItems.Remove(mapItem);
         }
     }
 
@@ -4633,11 +4068,6 @@ public class MapleMap : IMap
 
     }
 
-    public List<IMapObject> getAllPlayer()
-    {
-        return getPlayers();
-    }
-
     public bool isCPQMap()
     {
         switch (this.getId())
@@ -4810,4 +4240,564 @@ public class MapleMap : IMap
             chrLock.ExitWriteLock();
         }
     }
+
+    #region Objects: Player
+    private Dictionary<int, IPlayer> characters = new();
+    public List<IMapObject> getAllPlayer()
+    {
+        return getPlayers();
+    }
+
+    public int countPlayers()
+    {
+        return getPlayers().Count;
+    }
+
+    public List<IMapObject> getPlayers()
+    {
+        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER));
+    }
+
+    public List<IPlayer> getAllPlayers()
+    {
+        chrLock.EnterReadLock();
+        try
+        {
+            return characters.Values.ToList();
+        }
+        finally
+        {
+            chrLock.ExitReadLock();
+        }
+    }
+
+    public int getNumPlayersInArea(int index)
+    {
+        return getNumPlayersInRect(getArea(index));
+    }
+
+    public int getNumPlayersInRect(Rectangle rect)
+    {
+        chrLock.EnterReadLock();
+        try
+        {
+            return getAllPlayers().Count(x => rect.Contains(x.getPosition()));
+        }
+        finally
+        {
+            chrLock.ExitReadLock();
+        }
+    }
+
+    public void addPlayer(IPlayer chr)
+    {
+        int chrSize;
+        var party = chr.getParty();
+        chrLock.EnterWriteLock();
+        try
+        {
+            if (characters.ContainsKey(chr.Id))
+            {
+                log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
+                return;
+            }
+
+            characters.Add(chr.Id, chr);
+            chrSize = characters.Count;
+
+            itemMonitorTimeout = 1;
+        }
+        finally
+        {
+            chrLock.ExitWriteLock();
+        }
+
+        chr.setMap(this);
+        chr.updateActiveEffects();
+
+        if (this.getHPDec() > 0)
+        {
+            getChannelServer().Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
+        }
+        else
+        {
+            getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
+        }
+
+        MapScriptManager msm = ChannelServer.MapScriptManager;
+        if (chrSize == 1)
+        {
+            if (!hasItemMonitor())
+            {
+                startItemMonitor();
+                aggroMonitor.startAggroCoordinator();
+            }
+
+            if (onFirstUserEnter.Length != 0)
+            {
+                msm.runMapScript(chr.getClient(), "onFirstUserEnter/" + onFirstUserEnter, true);
+            }
+        }
+        if (onUserEnter.Length != 0)
+        {
+            if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
+            {
+                chr.saveLocation("INTRO");
+            }
+
+            msm.runMapScript(chr.getClient(), "onUserEnter/" + onUserEnter, false);
+        }
+        if (FieldLimit.CANNOTUSEMOUNTS.check(fieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
+        {
+            chr.cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
+            chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
+        }
+
+        if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
+        { // To Ereve (SkyFerry)
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
+            ChannelServer.Container.TimerManager.schedule(() =>
+            {
+                if (chr.getMapId() == MapId.FROM_ELLINIA_TO_EREVE)
+                {
+                    chr.changeMap(MapId.SKY_FERRY, 0);
+                }
+            }, travelTime);
+        }
+        else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
+        { // To Victoria Island (SkyFerry)
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
+            ChannelServer.Container.TimerManager.schedule(() =>
+            {
+                if (chr.getMapId() == MapId.FROM_EREVE_TO_ELLINIA)
+                {
+                    chr.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
+                }
+            }, travelTime);
+        }
+        else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
+        { // To Orbis (SkyFerry)
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
+            ChannelServer.Container.TimerManager.schedule(() =>
+            {
+                if (chr.getMapId() == MapId.FROM_EREVE_TO_ORBIS)
+                {
+                    chr.changeMap(MapId.ORBIS_STATION, 0);
+                }
+            }, travelTime);
+        }
+        else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
+        { // To Ereve From Orbis (SkyFerry)
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
+            ChannelServer.Container.TimerManager.schedule(() =>
+            {
+                if (chr.getMapId() == MapId.FROM_ORBIS_TO_EREVE)
+                {
+                    chr.changeMap(MapId.SKY_FERRY, 0);
+                }
+            }, travelTime);
+        }
+        else if (MiniDungeonInfo.isDungeonMap(mapid))
+        {
+            var mmd = chr.getClient().getChannelServer().getMiniDungeon(mapid);
+            if (mmd != null)
+            {
+                mmd.registerPlayer(chr);
+            }
+        }
+        else if (GameConstants.isAriantColiseumArena(mapid))
+        {
+            int pqTimer = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+            chr.sendPacket(PacketCreator.getClock(pqTimer / 1000));
+        }
+
+        Pet?[] pets = chr.getPets();
+        foreach (Pet? pet in pets)
+        {
+            if (pet != null)
+            {
+                pet.setPos(getGroundBelow(chr.getPosition()));
+                chr.sendPacket(PacketCreator.showPet(chr, pet, false, false));
+            }
+            else
+            {
+                break;
+            }
+        }
+        chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
+
+        if (chr.getMonsterCarnival() != null)
+        {
+            chr.sendPacket(PacketCreator.getClock(chr.getMonsterCarnival()!.getTimeLeftSeconds()));
+            if (isCPQMap())
+            {
+                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
+            }
+        }
+
+        chr.removeSandboxItems();
+
+        if (chr.getChalkboard() != null)
+        {
+            if (!GameConstants.isFreeMarketRoom(mapid))
+            {
+                chr.sendPacket(PacketCreator.useChalkboard(chr, false)); // update player's chalkboard when changing maps found thanks to Vcoc
+            }
+            else
+            {
+                chr.setChalkboard(null);
+            }
+        }
+
+        if (chr.isHidden())
+        {
+            broadcastGMSpawnPlayerMapObjectMessage(chr, chr, true);
+            chr.sendPacket(PacketCreator.getGMEffect(0x10, 1));
+
+            broadcastGMMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
+        }
+        else
+        {
+            broadcastSpawnPlayerMapObjectMessage(chr, chr, true);
+        }
+
+        sendObjectPlacement(chr.Client);
+
+        if (isStartingEventMap() && !eventStarted())
+        {
+            chr.getMap().getPortal("join00")!.setPortalStatus(false);
+        }
+        if (hasForcedEquip())
+        {
+            chr.sendPacket(PacketCreator.showForcedEquip(-1));
+        }
+        if (specialEquip())
+        {
+            chr.sendPacket(PacketCreator.coconutScore(0, 0));
+            chr.sendPacket(PacketCreator.showForcedEquip(chr.getTeam()));
+        }
+        objectLock.EnterWriteLock();
+        try
+        {
+            this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
+        }
+        finally
+        {
+            objectLock.ExitWriteLock();
+        }
+
+        // 访问商店/开店时应该没办法切换地图
+        //if (chr.VisitingShop != null)
+        //{
+        //    addMapObject(chr.VisitingShop);
+        //}
+
+        var dragon = chr.getDragon();
+        if (dragon != null)
+        {
+            dragon.setPosition(chr.getPosition());
+            this.addMapObject(dragon);
+            if (chr.isHidden())
+            {
+                this.broadcastGMPacket(chr, PacketCreator.spawnDragon(dragon));
+            }
+            else
+            {
+                this.broadcastPacket(chr, PacketCreator.spawnDragon(dragon));
+            }
+        }
+
+        StatEffect? summonStat = chr.getStatForBuff(BuffStat.SUMMON);
+        if (summonStat != null)
+        {
+            var summon = chr.getSummonByKey(summonStat.getSourceId())!;
+            summon.setPosition(chr.getPosition());
+            chr.getMap().spawnSummon(summon);
+            updateMapObjectVisibility(chr, summon);
+        }
+        if (mapEffect != null)
+        {
+            mapEffect.sendStartData(chr.getClient());
+        }
+        chr.sendPacket(PacketCreator.resetForcedStats());
+        if (MapId.isGodlyStatMap(mapid))
+        {
+            chr.sendPacket(PacketCreator.aranGodlyStats());
+        }
+        if (chr.getEventInstance() != null && chr.getEventInstance()!.isTimerStarted())
+        {
+            chr.sendPacket(PacketCreator.getClock((int)(chr.getEventInstance()!.getTimeLeft() / 1000)));
+        }
+        if (chr.Fitness != null && chr.Fitness.isTimerStarted())
+        {
+            chr.sendPacket(PacketCreator.getClock((int)(chr.Fitness.getTimeLeft() / 1000)));
+        }
+
+        if (chr.Ola != null && chr.Ola.isTimerStarted())
+        {
+            chr.sendPacket(PacketCreator.getClock((int)(chr.Ola.getTimeLeft() / 1000)));
+        }
+
+        if (mapid == MapId.EVENT_SNOWBALL)
+        {
+            chr.sendPacket(PacketCreator.rollSnowBall());
+        }
+
+        if (hasClock())
+        {
+            var cal = ChannelServer.Container.GetCurrentTimeDateTimeOffSet();
+            chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
+        }
+        if (hasBoat() > 0)
+        {
+            chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
+        }
+
+        chr.receivePartyMemberHP();
+        ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
+    }
+
+    public void removePlayer(IPlayer chr)
+    {
+        var cserv = chr.getClient().getChannelServer();
+        chr.unregisterChairBuff();
+
+        var party = chr.getParty();
+        chrLock.EnterWriteLock();
+        try
+        {
+            characters.Remove(chr.Id);
+            if (XiGuai?.Controller == chr)
+                XiGuai = null;
+        }
+        finally
+        {
+            chrLock.ExitWriteLock();
+        }
+
+        if (MiniDungeonInfo.isDungeonMap(mapid))
+        {
+            var mmd = cserv.getMiniDungeon(mapid);
+            if (mmd != null)
+            {
+                if (!mmd.unregisterPlayer(chr))
+                {
+                    cserv.removeMiniDungeon(mapid);
+                }
+            }
+        }
+
+        removeMapObject(chr.getObjectId());
+        if (!chr.isHidden())
+        {
+            broadcastMessage(PacketCreator.removePlayerFromMap(chr.getId()));
+        }
+        else
+        {
+            broadcastGMMessage(PacketCreator.removePlayerFromMap(chr.getId()));
+        }
+
+        chr.leaveMap();
+
+        foreach (Summon summon in chr.getSummonsValues())
+        {
+            if (summon.isStationary())
+            {
+                chr.cancelEffectFromBuffStat(BuffStat.PUPPET);
+            }
+            else
+            {
+                removeMapObject(summon);
+            }
+        }
+
+        if (chr.getDragon() != null)
+        {
+            removeMapObject(chr.getDragon()!);
+            if (chr.isHidden())
+            {
+                this.broadcastGMPacket(chr, PacketCreator.removeDragon(chr.getId()));
+            }
+            else
+            {
+                this.broadcastPacket(chr, PacketCreator.removeDragon(chr.getId()));
+            }
+        }
+    }
+
+    public Dictionary<int, IPlayer> getMapPlayers()
+    {
+        return characters;
+    }
+
+    public IReadOnlyCollection<IPlayer> getCharacters()
+    {
+        return getAllPlayers();
+    }
+
+    public IPlayer? getCharacterById(int id)
+    {
+        chrLock.EnterReadLock();
+        try
+        {
+            return characters.GetValueOrDefault(id);
+        }
+        finally
+        {
+            chrLock.ExitReadLock();
+        }
+    }
+
+    public List<IPlayer> getPlayersInRange(Rectangle box)
+    {
+        List<IPlayer> character = new();
+        chrLock.EnterReadLock();
+        try
+        {
+            foreach (IPlayer chr in getAllPlayers())
+            {
+                if (box.Contains(chr.getPosition()))
+                {
+                    character.Add(chr);
+                }
+            }
+        }
+        finally
+        {
+            chrLock.ExitReadLock();
+        }
+
+        return character;
+    }
+
+    public int countAlivePlayers()
+    {
+        return getAllPlayers().Count(x => x.isAlive());
+    }
+    #endregion
+
+    #region Objects: MapItem
+    private Dictionary<MapItem, long> droppedItems = new();
+    public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
+
+    public int getDroppedItemCount()
+    {
+        return droppedItemCount.get();
+    }
+
+    private void instantiateItemDrop(MapItem mdrop)
+    {
+        if (droppedItemCount.get() >= YamlConfig.config.server.ITEM_LIMIT_ON_MAP)
+        {
+            IMapObject? mapobj;
+
+            do
+            {
+                mapobj = null;
+
+                objectLock.EnterWriteLock();
+                try
+                {
+                    while (mapobj == null)
+                    {
+                        if (registeredDrops.Count == 0)
+                        {
+                            break;
+                        }
+                        var item = registeredDrops[0];
+                        registeredDrops.RemoveAt(0);
+                        if (item?.TryGetTarget(out var d) ?? false)
+                            mapobj = d;
+                    }
+                }
+                finally
+                {
+                    objectLock.ExitWriteLock();
+                }
+            } while (!makeDisappearItemFromMap(mapobj));
+        }
+
+        objectLock.EnterWriteLock();
+        try
+        {
+            registerItemDrop(mdrop);
+            registeredDrops.Add(new(mdrop));
+        }
+        finally
+        {
+            objectLock.ExitWriteLock();
+        }
+
+        droppedItemCount.incrementAndGet();
+    }
+
+    private void registerItemDrop(MapItem mdrop)
+    {
+        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.Container.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
+    }
+
+    public void unregisterItemDrop(MapItem mdrop)
+    {
+        objectLock.EnterWriteLock();
+        try
+        {
+            droppedItems.Remove(mdrop);
+        }
+        finally
+        {
+            objectLock.ExitWriteLock();
+        }
+    }
+
+    private List<MapItem> getDroppedItems()
+    {
+        objectLock.EnterReadLock();
+        try
+        {
+            return new(droppedItems.Keys);
+        }
+        finally
+        {
+            objectLock.ExitReadLock();
+        }
+    }
+
+    public int getDroppedItemsCountById(int itemid)
+    {
+        int count = 0;
+        foreach (MapItem mmi in getDroppedItems())
+        {
+            if (mmi.getItemId() == itemid)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public void pickItemDrop(Packet pickupPacket, MapItem mdrop)
+    { // mdrop must be already locked and not-pickedup checked at this point
+        broadcastMessage(pickupPacket, mdrop.getPosition());
+
+        droppedItemCount.decrementAndGet();
+        this.removeMapObject(mdrop);
+        mdrop.setPickedUp(true);
+        unregisterItemDrop(mdrop);
+    }
+
+    public int countItems()
+    {
+        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)).Count;
+    }
+
+    public List<IMapObject> getItems()
+    {
+        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+    }
+    #endregion
 }

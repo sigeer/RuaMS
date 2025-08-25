@@ -1,7 +1,10 @@
+using System.Collections.Concurrent;
+
 namespace Application.Utility.Tasks
 {
     public interface ITimerManager
     {
+        ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; }
         Task Start();
         Task Stop();
         ScheduledFuture register(AbstractRunnable r, long repeatTime, long? delay = null);

@@ -376,5 +376,10 @@ namespace Application.Core.Channel.Services
 
         //    TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
         //}
+
+        public List<string> GetChannelServerTasks()
+        {
+            return _server.TimerManager.TaskScheduler.Keys.ToList();
+        }
     }
 }
