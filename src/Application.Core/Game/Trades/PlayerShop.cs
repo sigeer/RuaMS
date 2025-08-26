@@ -576,7 +576,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public override MapObjectType getType()
     {
-        return MapObjectType.SHOP;
+        return MapObjectType.PLAYER_SHOP;
     }
 
     Lock tradeLock = new();

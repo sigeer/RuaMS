@@ -20,7 +20,7 @@ namespace Application.Core.Login.Datas
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer, DataStorage chrStorage)
-            : base("DataStorage", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+            : base("MasterServer_ServerManager", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;

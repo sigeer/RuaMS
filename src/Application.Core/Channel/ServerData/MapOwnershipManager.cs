@@ -7,8 +7,8 @@ public class MapOwnershipManager : TaskBase
 
     private HashSet<IMap> ownedMaps = new();
 
-    public MapOwnershipManager(WorldChannelServer worldChannel)
-        : base($"MapOwnershipTask_{worldChannel.ServerName}",
+    public MapOwnershipManager(WorldChannelServer server)
+        : base($"ChannelServer:{server.ServerName}_{nameof(MapOwnershipManager)}",
               TimeSpan.FromSeconds(20),
               TimeSpan.FromSeconds(20))
     {

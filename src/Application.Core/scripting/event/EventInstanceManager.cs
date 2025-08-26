@@ -703,7 +703,7 @@ public class EventInstanceManager
             log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDisconnected", em.getName());
         }
 
-        chr.Client.CurrentServer.EventRecallManager.storeEventInstance(chr.Id, this);
+        chr.Client.CurrentServer.EventRecallManager?.storeEventInstance(chr.Id, this);
     }
 
     public void monsterKilled(IPlayer chr, Monster mob)

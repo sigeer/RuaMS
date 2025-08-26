@@ -24,6 +24,7 @@ namespace Application.Core.Channel;
 
 public partial class WorldChannel : ISocketServer
 {
+    public int Id => channel;
     public string ServerName { get; }
     string _serverLogName;
     private ILogger log;
@@ -111,9 +112,9 @@ public partial class WorldChannel : ISocketServer
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
-    public EventRecallManager EventRecallManager { get; }
+    public EventRecallManager? EventRecallManager { get; private set; }
 
-    RespawnTask _respawnTask;
+    RespawnTask? _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
@@ -144,7 +145,7 @@ public partial class WorldChannel : ISocketServer
         MatchChecker = new MatchCheckerCoordinator(this);
 
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
-        _respawnTask = new RespawnTask(this);
+
 
         DojoInstance = new DojoInstance(this);
 
@@ -162,8 +163,6 @@ public partial class WorldChannel : ISocketServer
         PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
-
-        EventRecallManager = new EventRecallManager(this);
     }
 
     public int getTransportationTime(double travelTime)
@@ -266,7 +265,10 @@ public partial class WorldChannel : ISocketServer
         eventSM.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件...完成", _serverLogName);
 
+        _respawnTask = new RespawnTask(this);
         _respawnTask.Register(Container.TimerManager);
+
+        EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(Container.TimerManager);
 
         log.Information("[{ServerName}] 初始化完成", _serverLogName);

@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Players;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Map;
@@ -19,7 +20,7 @@ namespace Application.Module.Fishing.Channel
         readonly WorldChannelServer _server;
 
         public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger)
-            : base($"Fishing_{server.ServerName}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+            : base($"ChannelServer:{server.ServerName}_{nameof(FishingManager)}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
             _server = server;
             _logger = logger;

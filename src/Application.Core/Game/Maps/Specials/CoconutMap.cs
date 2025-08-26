@@ -1,3 +1,5 @@
+using Application.Core.Channel;
+using scripting.Event;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials
@@ -19,6 +21,10 @@ namespace Application.Core.Game.Maps.Specials
         public const string DefaultSoundWin = "Coconut/Victory";
         public const string DefaultSoundLose = "Coconut/Failed";
 
+        public CoconutMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
+        {
+        }
+
         public string EffectWin { get; set; } = DefaultEffectWin;
         public string EffectLose { get; set; } = DefaultEffectLose;
         public string SoundWin { get; set; } = DefaultSoundWin;
@@ -33,9 +39,6 @@ namespace Application.Core.Game.Maps.Specials
         public int CountHit { get; set; }
 
         public Coconut? Coconut { get; set; }
-        public CoconutMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
-        {
-        }
 
         public string GetDefaultSoundWin()
         {

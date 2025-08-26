@@ -1,5 +1,7 @@
+using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Shared.Events;
+using scripting.Event;
 using server.maps;
 using server.partyquest;
 using static server.partyquest.CarnivalFactory;
@@ -53,6 +55,10 @@ namespace Application.Core.Game.Maps.Specials
         private List<Point> takenSpawns = new();
         private List<KeyValuePair<int, int>> mobsToSpawn = new();
 
+        public MonsterCarnivalMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
+        {
+        }
+
         public int MaxMobs { get; set; }
         public int MaxReactors { get; set; }
         public int DeathCP { get; set; }
@@ -69,9 +75,6 @@ namespace Application.Core.Game.Maps.Specials
         public int ReactorBlue { get; set; }
 
 
-        public MonsterCarnivalMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
-        {
-        }
 
         public string GetDefaultSoundWin()
         {

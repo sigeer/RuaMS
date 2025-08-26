@@ -72,5 +72,24 @@ namespace Application.Shared.Constants.Map
             builder.Append("/").Append(mapid);
             return builder.ToString();
         }
+
+        public static bool IsCPQMap(int mapId)
+        {
+            switch (mapId)
+            {
+                case 980000101:
+                case 980000201:
+                case 980000301:
+                case 980000401:
+                case 980000501:
+                case 980000601:
+
+                case 980031100:
+                case 980032100:
+                case 980033100:
+                    return true;
+            }
+            return false;
+        }
     }
 }

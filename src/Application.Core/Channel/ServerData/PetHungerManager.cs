@@ -8,7 +8,7 @@ namespace Application.Core.Channel.ServerData
 
         readonly WorldChannelServer _server;
 
-        public PetHungerManager(WorldChannelServer server) : base($"PetHungerController_{server.ServerName}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public PetHungerManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(PetHungerManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
             petUpdate = DateTimeOffset.UtcNow;
             this._server = server;
