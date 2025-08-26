@@ -4190,8 +4190,13 @@ public class MapleMap : IMap
         return _activeCounter >= 0;
     }
 
+    bool disposed = false;
     public virtual void Dispose()
     {
+        if (disposed)
+            return;
+
+        disposed = true;
         foreach (Monster mm in this.getAllMonsters())
         {
             mm.dispose();
@@ -4236,6 +4241,7 @@ public class MapleMap : IMap
         finally
         {
             chrLock.ExitWriteLock();
+            log.Debug("{MapInstance}已释放", InstanceName);
         }
     }
 

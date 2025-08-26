@@ -110,8 +110,13 @@ public class MapManager : IDisposable
         }
     }
 
+    bool disposed = false;
     public void Dispose()
     {
+        if (disposed)
+            return;
+
+        disposed = true;
         foreach (IMap map in getMaps().Values)
         {
             map.Dispose();
@@ -122,10 +127,13 @@ public class MapManager : IDisposable
 
     public void CheckActive()
     {
-        foreach (var map in getMaps().Values)
+        foreach (var map in getMaps())
         {
-            if (!map.IsActive())
-                map.Dispose();
+            if (!map.Value.IsActive())
+            {
+                map.Value.Dispose();
+                maps.TryRemove(map.Key, out _);
+            }
         }
     }
 }
