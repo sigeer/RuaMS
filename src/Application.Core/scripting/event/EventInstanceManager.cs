@@ -849,28 +849,23 @@ public class EventInstanceManager
     {
         return name;
     }
-
+    /// <summary>
+    /// 和 getMapInstance 有什么区别？
+    /// 没有打乱箱子？
+    /// </summary>
+    /// <param name="mapid"></param>
+    /// <returns></returns>
+    public IMap? getInstanceMap(int mapid)
+    {
+        if (disposed)
+        {
+            return null;
+        }
+        return mapManager.getMap(mapid);
+    }
     public IMap getMapInstance(int mapId)
     {
-        IMap map = mapManager.getMap(mapId);
-        map.setEventInstance(this);
-
-        if (!mapManager.isMapLoaded(mapId))
-        {
-            Monitor.Enter(scriptLock);
-            try
-            {
-                if (em.getProperty("shuffleReactors") == "true")
-                {
-                    map.shuffleReactors();
-                }
-            }
-            finally
-            {
-                Monitor.Exit(scriptLock);
-            }
-        }
-        return map;
+        return mapManager.getMap(mapId);
     }
 
     public void setIntProperty(string key, int value)
@@ -1021,20 +1016,6 @@ public class EventInstanceManager
         return (chr.getId() == getLeaderId());
     }
 
-    /// <summary>
-    /// 和 getMapInstance 有什么区别？
-    /// 获得的map没有绑定eim
-    /// </summary>
-    /// <param name="mapid"></param>
-    /// <returns></returns>
-    public IMap? getInstanceMap(int mapid)
-    {
-        if (disposed)
-        {
-            return null;
-        }
-        return mapManager.getMap(mapid);
-    }
 
     public bool disposeIfPlayerBelow(byte size, int towarp)
     {

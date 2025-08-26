@@ -1,3 +1,6 @@
+using Application.Core.scripting.npc;
+using System.Text;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class WhereaMiCommand : CommandBase
@@ -13,18 +16,21 @@ public class WhereaMiCommand : CommandBase
 
         var allMapObjects = player.getMap().getMapObjects().GroupBy(x => x.getType());
 
-
-        player.yellowMessage("地图ID：" + player.getMap().getId());
-        player.yellowMessage("当前坐标：" + player.getPosition());
-
+        var sb = new StringBuilder();
+        sb.Append("我在...\r\n");
+        sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
+        sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
+        sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)
         {
-            player.yellowMessage($"{group.Key} on this map:");
+            sb.Append(group.Key).Append("===>\r\n");
 
             foreach (var obj in group)
             {
-                player.dropMessage(5, ">> " + obj.GetName() + " - Id: " + obj.GetSourceId() + " - Oid: " + obj.getObjectId());
+                sb.Append(">> ").Append(obj.GetName()).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId()).Append("\r\n");
             }
         }
+
+        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

@@ -69,10 +69,10 @@ function LudiPQ:afterSetup(eim)
 end
 
 function LudiPQ:scheduledTimeout(eim)
-    if (eim.getProperty("9stageclear")) then
+    if (eim:getProperty("9stageclear")) then
         local curStage = 922011000
         local toStage = 922011100
-        eim.warpEventTeam(curStage, toStage)
+        eim:warpEventTeam(curStage, toStage)
     else
         BaseEvent.endEvent(self, eim)
     end

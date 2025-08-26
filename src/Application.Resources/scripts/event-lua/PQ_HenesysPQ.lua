@@ -67,7 +67,7 @@ end
 
 function HenesysPQ:friendlyItemDrop(eim, mob)
     if (mob:getId() == 9300061) then
-        local cakes = eim.getIntProperty("bunnyCake") + 1;
+        local cakes = eim:getIntProperty("bunnyCake") + 1;
         eim:setIntProperty("bunnyCake", cakes);
         mob:getMap():broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny made rice cake number " .. cakes .. "."));
     end
@@ -75,7 +75,7 @@ end
 
 function HenesysPQ:friendlyDamaged(eim, mob)
     if (mob:getId() == 9300061) then
-        local bunnyDamage = eim.getIntProperty("bunnyDamaged") + 1;
+        local bunnyDamage = eim:getIntProperty("bunnyDamaged") + 1;
         if (bunnyDamage > 5) then
             mob:getMap():broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny is feeling sick. Please protect it so it can make delicious rice cakes."));
             eim:setIntProperty("bunnyDamaged", 0);

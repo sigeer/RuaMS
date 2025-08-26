@@ -30,7 +30,7 @@ function Event:respawnStages(eim)
     end
     checkHogHealth(eim);
 
-    eim.schedule("respawnStages", 10 * 1000);
+    eim:schedule("respawnStages", 10 * 1000);
 end
 
 function checkHogHealth(eim)

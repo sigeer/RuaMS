@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -56,7 +56,7 @@ function action(mode, type, selection) {
         if (status == 0) {
             if (cm.haveItem(4031013, 30)) {
                 completed = true;
-                cm.sendOk("你是一个真正的英雄！拿着这个，雅典娜会承认你的。");
+                cm.sendOk("你是一个真正的英雄！拿着这个，赫丽娜会承认你的。");
             } else {
                 completed = false;
                 cm.sendSimple("你需要收集 #b30 #t4031013##k。祝你好运。\r\n#b#L1#我想离开#l");

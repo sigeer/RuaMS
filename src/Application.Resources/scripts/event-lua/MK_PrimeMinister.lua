@@ -35,7 +35,7 @@ function Sample:setup(level, lobbyid)
 end
 
 function Sample:primeMinisterCheck(eim)
-    local map = eim.getMapInstance(self.entryMap);
+    local map = eim:getMapInstance(self.entryMap);
 
     for _, player in ipairs(map:getAllPlayers()) do
         if (player:getQuestStatus(2333) == 1 and player:getAbstractPlayerInteraction():getQuestProgressInt(2333, self.mobId) == 0) then

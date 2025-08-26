@@ -39,11 +39,11 @@ function EllinPQ:respawnStages(eim)
 end
 
 function EllinPQ:isPoisonGolem(mob)
-    return (mob.getId() == 9300182);
+    return (mob:getId() == 9300182);
 end
 
 function EllinPQ:monsterKilled(mob, eim, hasKiller)
-    local map = mob.getMap();
+    local map = mob:getMap();
 
     if (self:isPoisonGolem(mob)) then
         eim:showClearEffect(map:getId());

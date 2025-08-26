@@ -67,7 +67,7 @@ function PiratePQ:BeforeStartEvent(eim, level, lobbyId)
     eim:setProperty("openedChests", "0")
     eim:setProperty("openedBoxes", "0")
 
-    local map = eim.getInstanceMap(925100200)
+    local map = eim:getInstanceMap(925100200)
 
     for i = 1, 5 do
         local mob = em:getMonster(9300124)
@@ -88,7 +88,7 @@ function PiratePQ:BeforeStartEvent(eim, level, lobbyId)
         map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238))
     end
 
-    map = eim.getInstanceMap(925100201)
+    map = eim:getInstanceMap(925100201)
     for i = 1, 10 do
         local mob = em:getMonster(9300112)
         local mob2 = em:getMonster(9300113)
@@ -100,7 +100,7 @@ function PiratePQ:BeforeStartEvent(eim, level, lobbyId)
         map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238))
     end
 
-    map = eim.getInstanceMap(925100300)
+    map = eim:getInstanceMap(925100300)
     for i = 1, 5 do
         local mob = em:getMonster(9300124)
         local mob2 = em:getMonster(9300125)
@@ -119,7 +119,7 @@ function PiratePQ:BeforeStartEvent(eim, level, lobbyId)
         map:spawnMonsterOnGroundBelow(mob3, Point(430, 238))
         map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238))
     end
-    map = eim.getInstanceMap(925100301)
+    map = eim:getInstanceMap(925100301)
 
     for i = 1, 10 do
         local mob = em:getMonster(9300112)
@@ -145,32 +145,32 @@ function PiratePQ:respawnStages(eim)
 end
 
 function PiratePQ:changedMapInside(eim, mapid)
-    local stage = eim.getIntProperty("curStage")
+    local stage = eim:getIntProperty("curStage")
 
     if (stage == 1) then
         if (mapid == 925100100) then
-            eim.restartEventTimer(6 * 60 * 1000)
-            eim.setIntProperty("curStage", 2)
+            eim:restartEventTimer(6 * 60 * 1000)
+            eim:setIntProperty("curStage", 2)
         end
     elseif (stage == 2) then
         if (mapid == 925100200) then
-            eim.restartEventTimer(6 * 60 * 1000)
-            eim.setIntProperty("curStage", 3)
+            eim:restartEventTimer(6 * 60 * 1000)
+            eim:setIntProperty("curStage", 3)
         end
     elseif (stage == 3) then
         if (mapid == 925100300) then
-            eim.restartEventTimer(6 * 60 * 1000)
-            eim.setIntProperty("curStage", 4)
+            eim:restartEventTimer(6 * 60 * 1000)
+            eim:setIntProperty("curStage", 4)
         end
     elseif (stage == 4) then
         if (mapid == 925100400) then
-            eim.restartEventTimer(6 * 60 * 1000)
-            eim.setIntProperty("curStage", 5)
+            eim:restartEventTimer(6 * 60 * 1000)
+            eim:setIntProperty("curStage", 5)
         end
     elseif (stage == 5) then
         if (mapid == 925100500) then
-            eim.restartEventTimer(8 * 60 * 1000)
-            eim.setIntProperty("curStage", 6)
+            eim:restartEventTimer(8 * 60 * 1000)
+            eim:setIntProperty("curStage", 6)
         end
     end
 end
@@ -193,14 +193,14 @@ end
 function PiratePQ:clearPQ(eim)
     BaseEvent.clearPQ(self, eim)
 
-    local chests = tonumber(eim.getProperty("openedChests"))
+    local chests = tonumber(eim:getProperty("openedChests"))
     local expSet = { 28000, 35000, 42000 }
     local expGain = expSet[chests + 1]
     eim:giveEventPlayersExp(expGain)
 end
 
 function PiratePQ:isLordPirate(mob)
-    local mobid = mob.getId()
+    local mobid = mob:getId()
     return (mobid == 9300105) or (mobid == 9300106) or (mobid == 9300107) or (mobid == 9300119)
 end
 
