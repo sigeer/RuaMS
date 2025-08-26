@@ -33,11 +33,11 @@ function Sample:setup(level, lobbyid)
 
     local map1 = eim:getInstanceMap(240060000);
     local mob1 = LifeFactory:getMonster(8810000);
-    map1.spawnMonsterOnGroundBelow(mob1, Point(960, 120));
+    map1:spawnMonsterOnGroundBelow(mob1, Point(960, 120));
 
     local map2 = eim.getInstanceMap(240060100);
     local mob2 = LifeFactory:getMonster(8810001);
-    map2.spawnMonsterOnGroundBelow(mob2, Point(-420, 120));
+    map2:spawnMonsterOnGroundBelow(mob2, Point(-420, 120));
     return eim
 end
 
@@ -74,7 +74,7 @@ function monsterKilled(mob, eim)
         eim:dispatchRaiseQuestMobCount(8810018, 240060200);
         map:broadcastHorntailVictory();
     elseif (isHorntailHead(mob)) then
-        local killed = eim.getIntProperty("defeatedHead");
+        local killed = eim:getIntProperty("defeatedHead");
         eim:setIntProperty("defeatedHead", killed + 1);
         eim:showClearEffect(mob:getMap():getId());
     end

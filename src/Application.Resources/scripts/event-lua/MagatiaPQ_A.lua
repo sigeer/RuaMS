@@ -67,8 +67,8 @@ function Sample:setup(level, lobbyid)
     eim:setIntProperty("statusStg6", 0);
     eim:setIntProperty("statusStg7", 0);
 
-    eim:getInstanceMap(926110201).shuffleReactors(2518000, 2612004);
-    eim:getInstanceMap(926110202).shuffleReactors(2518000, 2612004);
+    eim:getInstanceMap(926110201):shuffleReactors(2518000, 2612004);
+    eim:getInstanceMap(926110202):shuffleReactors(2518000, 2612004);
     eim:spawnNpc(2112010, Point(252, 243), eim:getInstanceMap(926110203));
     eim:spawnNpc(2112010, Point(200, 100), eim:getInstanceMap(926110401));
     eim:spawnNpc(2112011, Point(200, 100), eim:getInstanceMap(926110500));
@@ -144,21 +144,21 @@ function Sample:yuleteAction(eim)
         local mobobj1 = LifeFactory:getMonster(mob1);
         local mobobj2 = LifeFactory:getMonster(mob2);
 
-        mapobj.spawnMonsterOnGroundBelow(mobobj1, Point(0, 135));
-        mapobj.spawnMonsterOnGroundBelow(mobobj2, Point(0, 135));
+        mapobj:spawnMonsterOnGroundBelow(mobobj1, Point(0, 135));
+        mapobj:spawnMonsterOnGroundBelow(mobobj2, Point(0, 135));
     end
 
     for i = 1, 5 do
         local mobobj1 = LifeFactory:getMonster(mob1);
         local mobobj2 = LifeFactory:getMonster(mob2);
 
-        mapobj.spawnMonsterOnGroundBelow(mobobj1, Point(360, 135));
-        mapobj.spawnMonsterOnGroundBelow(mobobj2, Point(360, 135));
+        mapobj:spawnMonsterOnGroundBelow(mobobj1, Point(360, 135));
+        mapobj:spawnMonsterOnGroundBelow(mobobj2, Point(360, 135));
     end
 end
 
 function monsterKilled(mob, eim)
-    local map = mob.getMap();
+    local map = mob:getMap();
 
     if (map:getId() == 926110001 and eim:getIntProperty("statusStg1") == 1) then
         if (map:countMonsters() == 0) then
@@ -221,7 +221,7 @@ function generateStg6Combo(eim)
             comb = comb .. r;
         end
 
-        eim.setProperty("stage6_comb" + (i + 1), comb);
+        eim:setProperty("stage6_comb" + (i + 1), comb);
     end
 end
 

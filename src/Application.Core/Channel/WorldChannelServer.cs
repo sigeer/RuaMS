@@ -126,9 +126,10 @@ namespace Application.Core.Channel
         ScheduledFuture? invitationTask;
         ScheduledFuture? playerShopTask;
         ScheduledFuture? timeoutTask;
+        ScheduledFuture? checkMapActiveTask;
 
-        public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
-        public BatchSyncManager<SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
+        public BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
+        public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -180,8 +181,8 @@ namespace Application.Core.Channel
             _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
             _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
 
-            BatchSynMapManager = new BatchSyncManager<SyncProto.MapSyncDto>(50, 100, data => Transport.BatchSyncMap(data));
-            BatchSyncPlayerManager = new BatchSyncManager<SyncProto.PlayerSaveDto>(50, 100, data => Transport.BatchSyncPlayer(data));
+            BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
+            BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
         }
 
         #region 时间
@@ -360,6 +361,7 @@ namespace Application.Core.Channel
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
             playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            checkMapActiveTask = TimerManager.register(new DisposeCheckTask(this), TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
 #if !DEBUG
             timeoutTask = TimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif

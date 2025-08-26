@@ -22,7 +22,7 @@ namespace Application.Core.Login.ServerData
         ConcurrentDictionary<string, ConcurrentDictionary<int, InviteRequest>> _allRequests = new();
         readonly InviteMasterHandlerRegistry _inviteMasterHandlerRegistry;
         public InvitationManager(MasterServer server, ILogger<InvitationManager> logger, InviteMasterHandlerRegistry inviteMasterHandlerRegistry)
-            : base("InvitationExpireCheckTask", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30))
+            : base("MasterServer_InvitationExpireCheckTask", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30))
         {
             _server = server;
             _logger = logger;

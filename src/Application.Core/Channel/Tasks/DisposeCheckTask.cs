@@ -1,10 +1,10 @@
 namespace Application.Core.Channel.Tasks
 {
-    public class PlayerShopTask : AbstractRunnable
+    public class DisposeCheckTask : AbstractRunnable
     {
         readonly WorldChannelServer _server;
-
-        public PlayerShopTask(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(PlayerShopTask)}")
+        public DisposeCheckTask(WorldChannelServer server) : base(
+            $"ChannelServer:{server.ServerName}_{nameof(DisposeCheckTask)}")
         {
             _server = server;
         }
@@ -13,7 +13,7 @@ namespace Application.Core.Channel.Tasks
         {
             foreach (var ch in _server.Servers.Values)
             {
-                ch.PlayerShopManager.CheckExpired();
+                ch.getMapFactory().CheckActive();
             }
         }
     }

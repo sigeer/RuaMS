@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -47,21 +47,21 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (cm.isQuestCompleted(100010)) {
-                cm.sendOk("你真是一个真正的英雄！");
+                cm.sendOk("你是一个真正的英雄！");
                 cm.dispose();
             } else if (cm.isQuestCompleted(100009)) {
-                cm.sendNext("好的，我会让你进去！打败里面的怪物，收集30个黑暗弹珠，然后和我同事里面的一个同事交谈。他会给你#b英雄的证明#k，这是你通过测试的证明。祝你好运。");
+                cm.sendNext("好的，我会让你进去！打败里面的怪物，收集30个黑珠，然后和里面的我的同事对话。他会给你#b英雄证书#k，证明你通过了试验。祝你好运。");
                 status = 3;
             } else if (cm.isQuestStarted(100009)) {
-                cm.sendNext("哦，这不是来自#b黑暗领主#k的一封信吗？");
+                cm.sendNext("哦，这不是#b达克鲁的信件#k吗？");
             } else {
-                cm.sendOk("一旦你准备好了，我可以告诉你路线。");
+                cm.sendOk("一旦你准备好了，我可以带你过去。");
                 cm.dispose();
             }
         } else if (status == 1) {
             cm.sendNextPrev("所以你想证明你的技能？好吧...");
         } else if (status == 2) {
-            cm.sendAcceptDecline("I will give you a chance if you're ready.");
+            cm.sendAcceptDecline("如果你准备好了，我会给你一个机会。");
         } else if (status == 3) {
             cm.sendOk("你需要收集 #b30 个 #t4031013#。祝你好运。");
             cm.completeQuest(100009);

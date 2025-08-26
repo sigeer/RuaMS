@@ -41,7 +41,7 @@ function Sample:setup(level, lobbyid)
     local eim = BaseEvent.setup(self, level, lobbyid)
     eim:setProperty("boss", 0)
 
-    eim.schedule("releaseLeftClaw", 60000)
+    eim:schedule("releaseLeftClaw", 60000)
     return eim
 end
 

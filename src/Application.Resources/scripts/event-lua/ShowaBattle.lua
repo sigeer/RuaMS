@@ -69,13 +69,13 @@ function Sample:playerDead(eim, player)
 end
 
 function Sample:clearPQ(eim)
-    eim:getInstanceMap(801040100).killAllMonsters();
+    eim:getInstanceMap(801040100):killAllMonsters();
 
     BaseEvent.clearPQ(self, eim)
 
-    if (eim.getIntProperty("playerDied") == 0) then
+    if (eim:getIntProperty("playerDied") == 0) then
         local mob = eim:getMonster(9400114);
-        eim:getMapInstance(801040101).spawnMonsterOnGroundBelow(mob, Point(500, -50));
+        eim:getMapInstance(801040101):spawnMonsterOnGroundBelow(mob, Point(500, -50));
         eim:dropMessage(5, "Konpei: The Boss has been defeated with no casualties, well done! We found a suspicious machine inside, we're moving it out.");
     end
 end

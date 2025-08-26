@@ -6,7 +6,7 @@ namespace Application.Core.Login.Tasks
     public class DueyFredrickTask : AbstractRunnable
     {
         readonly MasterServer _server;
-        public DueyFredrickTask(MasterServer server)
+        public DueyFredrickTask(MasterServer server) : base($"MasterServer_{nameof(DueyFredrickTask)}")
         {
             _server = server;
         }

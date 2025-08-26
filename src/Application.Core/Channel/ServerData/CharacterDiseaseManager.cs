@@ -8,7 +8,7 @@ namespace Application.Core.Channel.ServerData
 
         readonly WorldChannelServer _server;
 
-        public CharacterDiseaseManager(WorldChannelServer server) : base($"CharacterDiseaseController_{server.ServerName}",
+        public CharacterDiseaseManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(CharacterDiseaseManager)}",
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL),
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL))
         {

@@ -128,7 +128,7 @@ public class MapFactory : IStaticService
 
     public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, EventInstanceManager? evt)
     {
-        IMap map;
+        IMap? map = null;
 
         string mapImg = GetMapImg(mapid);
         var mapData = mapSource.getData(mapImg);    // source.getData issue with giving nulls in rare ocasions found thanks to MedicOP
@@ -144,17 +144,24 @@ public class MapFactory : IStaticService
             mapImg = GetMapImg(int.Parse(link));
             mapData = mapSource.getData(mapImg);
         }
-        map = new MapleMap(mapid, worldChannel, DataTool.getInt("returnMap", infoData));
+
+        var returnMap = DataTool.getInt("returnMap", infoData);
+
 
         var eventInfo = mapData.getChildByPath("monsterCarnival");
-        if (map.isCPQMap() && eventInfo != null)
-            map = new MonsterCarnivalMap(map);
+        if (MapConstants.IsCPQMap(mapid) && eventInfo != null)
+            map = new MonsterCarnivalMap(mapid, worldChannel, returnMap, evt);
 
         eventInfo = mapData.getChildByPath("coconut");
         if (eventInfo != null)
-            map = new CoconutMap(map);
+            map = new CoconutMap(mapid, worldChannel, returnMap, evt);
 
-        map.setEventInstance(evt);
+        eventInfo = mapData.getChildByPath("snowBall");
+        if (eventInfo != null)
+            map = new SnowBallMap(mapid, worldChannel, returnMap, evt);
+
+        if (map == null)
+            map = new MapleMap(mapid, worldChannel, returnMap, evt);
 
         var mapStr = mapid.ToString();
         var onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter"));
@@ -370,7 +377,7 @@ public class MapFactory : IStaticService
 
         map.setClock(mapData.getChildByPath("clock") != null);
         map.setEverlast(DataTool.getIntConvert("everlast", infoData, 0) != 0); // thanks davidlafriniere for noticing value 0 accounting as true
-        map.setTown(DataTool.getIntConvert("town", infoData, 0) != 0);
+        map.IsTown = DataTool.GetBoolean("town", infoData);
         map.setHPDec(DataTool.getIntConvert("decHP", infoData, 0));
         map.setHPDecProtect(DataTool.getIntConvert("protectItem", infoData, 0));
         map.setForcedReturnMap(DataTool.getInt(infoData?.getChildByPath("forcedReturn"), MapId.NONE));

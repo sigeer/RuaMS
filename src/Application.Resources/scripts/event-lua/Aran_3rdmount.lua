@@ -21,7 +21,7 @@ function Event:ResetMap(eim)
 end
 
 function Event:monsterKilled(mob, eim)
-    if (eim.getInstanceMap(self.entryMap):countMonsters() == 0) then
+    if (eim:getInstanceMap(self.entryMap):countMonsters() == 0) then
         eim:showClearEffect();
     end
 end

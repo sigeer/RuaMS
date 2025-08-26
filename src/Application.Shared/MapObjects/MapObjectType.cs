@@ -29,7 +29,7 @@ public enum MapObjectType
     PLAYER,
     DOOR,
     SUMMON,
-    SHOP,
+    PLAYER_SHOP,
     MINI_GAME,
     MIST,
     REACTOR,

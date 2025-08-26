@@ -16,6 +16,10 @@ namespace Application.Core.Game.Maps
     public interface IMap : IDisposable
     {
         int Id { get; }
+        /// <summary>
+        /// "ChannelId_EventInstanceName_MapId";
+        /// </summary>
+        string InstanceName { get; }
         XiGuai? XiGuai { get; set; }
         public WorldChannel ChannelServer { get; }
         /// <summary>
@@ -29,6 +33,8 @@ namespace Application.Core.Game.Maps
         /// 似乎并没有派上用
         /// </summary>
         public TimeMob? TimeMob { get; set; }
+        bool IsTown { get; set; }
+        EventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 
         void addMapleArea(Rectangle rec);
@@ -187,7 +193,6 @@ namespace Application.Core.Game.Maps
         bool isOxQuiz();
         bool isPurpleCPQMap();
         bool isStartingEventMap();
-        bool isTown();
         void killAllMonsters();
         void killAllMonstersNotFriendly();
         void killFriendlies(Monster mob);
@@ -252,7 +257,6 @@ namespace Application.Core.Game.Maps
         void setStreetName(string streetName);
 
         void setTimeLimit(int timeLimit);
-        void setTown(bool isTown);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
         void softKillAllMonsters();
@@ -290,5 +294,7 @@ namespace Application.Core.Game.Maps
         void warpEveryone(int to);
         void warpEveryone(int to, int pto);
         void warpOutByTeam(int team, int mapid);
+
+        bool IsActive();
     }
 }

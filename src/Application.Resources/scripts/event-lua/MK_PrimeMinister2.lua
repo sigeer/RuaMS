@@ -34,7 +34,7 @@ function Sample:setup(level, lobbyid)
 end
 
 function Sample:primeMinisterCheck(eim)
-    local map = eim.getMapInstance(self.entryMap);
+    local map = eim:getMapInstance(self.entryMap);
 
     return map:getAllPlayers().Length > 0;
 end

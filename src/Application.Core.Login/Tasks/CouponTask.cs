@@ -33,7 +33,7 @@ public class CouponTask : AbstractRunnable
 {
     readonly MasterServer _server;
 
-    public CouponTask(MasterServer server)
+    public CouponTask(MasterServer server): base($"MasterServer_{nameof(CouponTask)}")
     {
         _server = server;
     }

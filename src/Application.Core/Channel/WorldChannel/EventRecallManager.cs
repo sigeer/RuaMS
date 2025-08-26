@@ -18,6 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Channel.ServerData;
 using scripting.Event;
 using System.Collections.Concurrent;
 
@@ -32,7 +33,7 @@ public class EventRecallManager : TaskBase
     private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();
 
     public EventRecallManager(WorldChannel worldChannel)
-        : base($"EventRecallController_{worldChannel.ServerName}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+        : base($"Channel:{worldChannel.Id}_{nameof(EventRecallManager)}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
     {
     }
 

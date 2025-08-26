@@ -43,7 +43,7 @@ public class RankingLoginTask : AbstractRunnable
     readonly IDbContextFactory<DBContext> _dbContextFactory;
     readonly MasterServer _server;
 
-    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
+    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory, MasterServer server) : base($"MasterServer_{nameof(RankingLoginTask)}")
     {
         _dbContextFactory = dbContextFactory;
         _server = server;

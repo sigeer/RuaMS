@@ -30,7 +30,7 @@ public class RankingCommandTask : AbstractRunnable
 {
     readonly RankService _rankService;
 
-    public RankingCommandTask(RankService rankService)
+    public RankingCommandTask(RankService rankService) : base($"MasterServer_{nameof(RankService)}")
     {
         _rankService = rankService;
     }

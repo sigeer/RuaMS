@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -197,7 +197,7 @@ function action(mode, type, selection) {
             if (job == 410) {
                 cm.sendNext("好的，从现在开始你就是#b刺客#k了。刺客有灵活的双手和敏捷的双脚来征服敌人。请继续训练。我会让你比现在更强大！");
             } else {
-                cm.sendNext("好的，从现在开始你就是#b强盗了。强盗们喜欢在阴影和黑暗中游走，等待合适的时机将匕首突然而迅速地刺入敌人的心脏……请继续训练。我会让你比现在更强大。");
+                cm.sendNext("好的，从现在开始你就是#b侠客#k了。侠客们喜欢在阴影和黑暗中游走，等待合适的时机将匕首突然而迅速地刺入敌人的心脏……请继续训练。我会让你比现在更强大。");
             }
 
             if (cm.getJobId() != job) {

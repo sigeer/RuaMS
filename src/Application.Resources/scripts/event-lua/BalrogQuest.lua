@@ -48,7 +48,7 @@ function Sample:playerEntry(eim, player)
     mapObj:instanceMapForceRespawn();
     mapObj:closeMapSpawnPoints();
 
-    player.changeMap(self.entryMap, 1);
+    player:changeMap(self.entryMap, 1);
     em:setProperty("noEntry", "true");
     player:sendPacket(PacketCreator.getClock(self.eventTime * 60));
     eim:startEventTimer(self.eventTime * 60000);

@@ -3462,7 +3462,7 @@ public partial class Player
             {  // thanks Conrad for noticing missing FieldLimit check
                 int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
 
-                if (MapModel.isTown())
+                if (MapModel.IsTown)
                 {    // thanks MindLove, SIayerMonkey, HaItsNotOver for noting players only lose 1% on town maps
                     XPdummy /= 100;
                 }

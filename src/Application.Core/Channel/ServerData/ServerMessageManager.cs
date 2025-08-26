@@ -9,7 +9,7 @@ namespace Application.Core.Channel.ServerData
 
         readonly WorldChannelServer _server;
 
-        public ServerMessageManager(WorldChannelServer server) : base($"ServerMessageController_{server.ServerName}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+        public ServerMessageManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(ServerMessageManager)}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
             this._server = server;
         }

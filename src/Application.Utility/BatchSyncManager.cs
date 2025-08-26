@@ -1,35 +1,32 @@
 namespace Application.Utility
 {
-    public class BatchSyncManager<T>
+    public class BatchSyncManager<TKey, TModel>
     {
         private readonly object _lock = new();
-        private readonly List<T> _batchItems = new();
+        private readonly Dictionary<TKey, TModel> _itemMap = new();
+        private readonly Func<TModel, TKey> _keySelector;
         private readonly int _delayMs;
         private readonly int _maxBatchSize;
-        private readonly Action<List<T>> _processBatch;
+        private readonly Action<List<TModel>> _processBatch;
         private Task _lastFlushTask = Task.CompletedTask;
         private Timer? _timer;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="delayMs">等待时长</param>
-        /// <param name="maxBatchSize">每批最多<paramref name="maxBatchSize"/>条数据</param>
-        /// <param name="processBatchAsync"></param>
-        public BatchSyncManager(int delayMs, int maxBatchSize, Action<List<T>> processBatchAsync)
+        public BatchSyncManager(int delayMs, int maxBatchSize, Func<TModel, TKey> keySelector, Action<List<TModel>> processBatch)
         {
             _delayMs = delayMs;
             _maxBatchSize = maxBatchSize;
-            _processBatch = processBatchAsync;
+            _keySelector = keySelector;
+            _processBatch = processBatch;
         }
 
-        public void Enqueue(T item)
+        public void Enqueue(TModel item)
         {
             lock (_lock)
             {
-                _batchItems.Add(item);
+                var key = _keySelector(item);
+                _itemMap[key] = item; // 覆盖旧数据，保留最后一次
 
-                if (_batchItems.Count >= _maxBatchSize)
+                if (_itemMap.Count >= _maxBatchSize)
                 {
                     FlushNow();
                     return;
@@ -47,9 +44,7 @@ namespace Application.Utility
             lock (_lock)
             {
                 _lastFlushTask = Task.CompletedTask;
-
-                _batchItems.Clear();
-
+                _itemMap.Clear();
                 _timer?.Dispose();
                 _timer = null;
             }
@@ -57,25 +52,25 @@ namespace Application.Utility
 
         private void FlushNow()
         {
-            List<T> itemsToFlush;
+            List<TModel> itemsToFlush;
 
             lock (_lock)
             {
-                if (_batchItems.Count == 0)
+                if (_itemMap.Count == 0)
                     return;
 
-                itemsToFlush = new List<T>(_batchItems);
-                _batchItems.Clear();
+                itemsToFlush = new List<TModel>(_itemMap.Values);
+                _itemMap.Clear();
 
                 _timer?.Dispose();
                 _timer = null;
             }
 
-            // 异步处理批量数据（避免阻塞调用线程）
             _lastFlushTask = _lastFlushTask.ContinueWith(_ =>
             {
                 _processBatch(itemsToFlush);
             });
         }
     }
+
 }

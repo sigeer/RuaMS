@@ -40,9 +40,9 @@ public class MapManager : IDisposable
         this.evt = eim;
     }
 
-    public IMap resetMap(int mapid)
+    public IMap resetMap(int mapid, out IMap? oldMap)
     {
-        maps.Remove(mapid);
+        maps.TryRemove(mapid, out oldMap);
 
         return getMap(mapid);
     }
@@ -110,8 +110,13 @@ public class MapManager : IDisposable
         }
     }
 
+    bool disposed = false;
     public void Dispose()
     {
+        if (disposed)
+            return;
+
+        disposed = true;
         foreach (IMap map in getMaps().Values)
         {
             map.Dispose();
@@ -120,4 +125,15 @@ public class MapManager : IDisposable
         this.evt = null;
     }
 
+    public void CheckActive()
+    {
+        foreach (var map in getMaps())
+        {
+            if (!map.Value.IsActive())
+            {
+                map.Value.Dispose();
+                maps.TryRemove(map.Key, out _);
+            }
+        }
+    }
 }

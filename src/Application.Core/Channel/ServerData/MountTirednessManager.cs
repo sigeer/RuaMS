@@ -9,7 +9,7 @@ namespace Application.Core.Channel.ServerData
 
         readonly WorldChannelServer _server;
 
-        public MountTirednessManager(WorldChannelServer server) : base($"MountTirednessController_{server.ServerName}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public MountTirednessManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(MountTirednessManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
             mountUpdate = DateTime.UtcNow;
             this._server = server;

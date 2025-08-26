@@ -56,7 +56,6 @@ public class ServerConfig
     public bool USE_AUTOBAN;
     public bool USE_AUTOBAN_LOG;
     public bool USE_EXP_GAIN_LOG;
-    public bool USE_AUTOSAVE;
     public bool USE_SERVER_AUTOASSIGNER;
     public bool USE_REFRESH_RANK_MOVE;
     public bool USE_ENFORCE_ADMIN_ACCOUNT;

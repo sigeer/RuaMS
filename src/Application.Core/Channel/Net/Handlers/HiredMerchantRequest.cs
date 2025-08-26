@@ -48,7 +48,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
 
         try
         {
-            if (chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.SHOP)).Count > 0)
+            if (chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER_SHOP)).Count > 0)
             {
                 chr.sendPacket(PacketCreator.getMiniRoomError(13));
                 return;

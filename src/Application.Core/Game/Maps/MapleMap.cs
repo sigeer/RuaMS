@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -43,18 +44,22 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
+using SyncProto;
 using System.Collections.Concurrent;
 using System.Text;
 using tools;
+using ZLinq;
 
 
 namespace Application.Core.Game.Maps;
 
 public class MapleMap : IMap
 {
+    public string InstanceName { get; }
+
     protected ILogger log;
     private static List<MapObjectType> rangedMapobjectTypes = [
-        MapObjectType.SHOP,
+        MapObjectType.PLAYER_SHOP,
         MapObjectType.ITEM,
         MapObjectType.NPC,
         MapObjectType.MONSTER,
@@ -87,7 +92,7 @@ public class MapleMap : IMap
     private bool clock;
     private bool boat;
     private bool docked = false;
-    private EventInstanceManager? @event = null;
+    public EventInstanceManager? EventInstanceManager { get; private set; }
     private string mapName;
     private string streetName;
     private MapEffect? mapEffect = null;
@@ -97,7 +102,7 @@ public class MapleMap : IMap
     private int decHP = 0;
     private float recovery = 1.0f;
     private int protectItem = 0;
-    private bool town;
+    public bool IsTown { get; set; }
 
 
     private bool dropsOn = true;
@@ -146,7 +151,7 @@ public class MapleMap : IMap
 
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
-    public MapleMap(int mapid, WorldChannel worldChannel, int returnMapId)
+    public MapleMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim)
     {
         Id = mapid;
         this.mapid = mapid;
@@ -158,9 +163,14 @@ public class MapleMap : IMap
         onUserEnter = mapid.ToString();
         mapName = "";
         streetName = "";
-
+        EventInstanceManager = eim;
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
+
+        if (EventInstanceManager == null)
+            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
+        else
+            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}";
 
         ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
     }
@@ -172,12 +182,12 @@ public class MapleMap : IMap
 
     public void setEventInstance(EventInstanceManager? eim)
     {
-        @event = eim;
+        EventInstanceManager = eim;
     }
 
     public EventInstanceManager? getEventInstance()
     {
-        return @event;
+        return EventInstanceManager;
     }
 
     public Rectangle getMapArea()
@@ -834,7 +844,7 @@ public class MapleMap : IMap
                 return;
             }
 
-            itemMonitor = ChannelServer.Container.TimerManager.register(() =>
+            itemMonitor = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
             {
                 chrLock.EnterWriteLock();
                 try
@@ -881,13 +891,13 @@ public class MapleMap : IMap
                 {
                     cleanItemMonitor();
                 }
-            }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
+            }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = ChannelServer.Container.TimerManager.register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops),
+            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "ItemExpireCheck", makeDisappearExpiredItemDrops),
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
-            characterStatUpdateTask = ChannelServer.Container.TimerManager.register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
+            characterStatUpdateTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "UpdateMapCharacterStat", UpdateMapCharacterStat), 200, 200);
 
             itemMonitorTimeout = 1;
         }
@@ -2143,11 +2153,12 @@ public class MapleMap : IMap
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
         var tMan = ChannelServer.Container.TimerManager;
-        ScheduledFuture? poisonSchedule;
+        ScheduledFuture? poisonSchedule = null;
+        Action? poisonTask = null;
         if (poison)
         {
             var playerMist = (mist as PlayerMist)!;
-            Action poisonTask = () =>
+            poisonTask = () =>
             {
                 List<IMapObject> affectedMonsters = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.MONSTER));
                 foreach (IMapObject mo in affectedMonsters)
@@ -2159,12 +2170,12 @@ public class MapleMap : IMap
                     }
                 }
             };
-            poisonSchedule = tMan.register(poisonTask, 2000, 2500);
+
         }
         else if (recovery)
         {
             var playerMist = (mist as PlayerMist)!;
-            Action poisonTask = () =>
+            poisonTask = () =>
             {
                 List<IMapObject> players = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.PLAYER));
                 foreach (IMapObject mo in players)
@@ -2179,12 +2190,10 @@ public class MapleMap : IMap
                     }
                 }
             };
-            poisonSchedule = tMan.register(poisonTask, 2000, 2500);
         }
-        else
-        {
-            poisonSchedule = null;
-        }
+
+        if (poisonTask != null)
+            poisonSchedule = tMan.register(new MapTaskBase(this, "PoisonTask", poisonTask), 2000, 2500);
 
         Action mistSchedule = () =>
         {
@@ -2712,17 +2721,12 @@ public class MapleMap : IMap
         objectLock.EnterReadLock();
         try
         {
-            return mapobjects.Values.Where(func).ToList();
+            return mapobjects.Values.AsValueEnumerable().Where(func).ToList();
         }
         finally
         {
             objectLock.ExitReadLock();
         }
-    }
-
-    private static List<IMapObject> getMapObjectsInRange(List<IMapObject> allMapObjects, Point from, double rangeSq, List<MapObjectType> types)
-    {
-        return allMapObjects.Where(x => IsObjectInRange(x, from, rangeSq, types)).ToList();
     }
 
     private static bool IsObjectInRange(IMapObject obj, Point from, double rangeSq, List<MapObjectType> types)
@@ -2732,15 +2736,7 @@ public class MapleMap : IMap
 
     public List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types)
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return getMapObjectsInRange(getMapObjects(), from, rangeSq, types);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return GetMapObjects(x => IsObjectInRange(x, from, rangeSq, types));
     }
 
     public List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types)
@@ -3054,16 +3050,6 @@ public class MapleMap : IMap
     public bool hasClock()
     {
         return clock;
-    }
-
-    public void setTown(bool isTown)
-    {
-        this.town = isTown;
-    }
-
-    public bool isTown()
-    {
-        return town;
     }
 
     public bool isMuted()
@@ -4191,9 +4177,26 @@ public class MapleMap : IMap
     {
         statUpdateRunnables.Enqueue(r);
     }
+    public int _activeCounter;
+    public bool IsActive()
+    {
+        var exceptTypes = new List<MapObjectType> { MapObjectType.MONSTER, MapObjectType.NPC, MapObjectType.PLAYER_NPC, MapObjectType.REACTOR };
+        var isActive = GetMapObjects(x => !exceptTypes.Contains(x.getType())).Count > 0;
+        if (isActive)
+            _activeCounter = 5;
+        else
+            _activeCounter--;
 
+        return _activeCounter >= 0;
+    }
+
+    bool disposed = false;
     public virtual void Dispose()
     {
+        if (disposed)
+            return;
+
+        disposed = true;
         foreach (Monster mm in this.getAllMonsters())
         {
             mm.dispose();
@@ -4204,7 +4207,7 @@ public class MapleMap : IMap
         ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;
 
 
-        @event = null;
+        EventInstanceManager = null;
         footholds = null;
         portals.Clear();
         mapEffect = null;
@@ -4238,6 +4241,7 @@ public class MapleMap : IMap
         finally
         {
             chrLock.ExitWriteLock();
+            log.Debug("{MapInstance}已释放", InstanceName);
         }
     }
 

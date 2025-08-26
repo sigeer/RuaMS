@@ -1,3 +1,5 @@
+using Application.Core.Channel;
+using scripting.Event;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials
@@ -26,7 +28,7 @@ namespace Application.Core.Game.Maps.Specials
         private Snowball? snowball0 = null;
         private Snowball? snowball1 = null;
 
-        public SnowBallMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
+        public SnowBallMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
         {
         }
 
