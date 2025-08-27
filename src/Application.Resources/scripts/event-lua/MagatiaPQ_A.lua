@@ -221,7 +221,7 @@ function generateStg6Combo(eim)
             comb = comb .. r;
         end
 
-        eim:setProperty("stage6_comb" + (i + 1), comb);
+        eim:setProperty("stage6_comb" .. (i + 1), comb);
     end
 end
 

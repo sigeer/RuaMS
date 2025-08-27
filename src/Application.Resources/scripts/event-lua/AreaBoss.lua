@@ -76,7 +76,7 @@ function start()
 end
 
 function spawn(item)
-    local map = em:getChannelServer():getMapFactory():getMap(item.mapId)
+    local map = em:GetMap(item.mapId)
 
     local functionName = "spawn" .. item.name
     if item.checkMobs then 

@@ -34,11 +34,11 @@ function Sample:BeforeStartEvent(eim, level, lobbyid)
 end
 
 function Sample:noticePlayerEnter(eim, player)
-    eim:dropMessage(5, "[Expedition] " + player.Name + " has entered the map.")
+    eim:dropMessage(5, "[Expedition] " .. player.Name .. " has entered the map.")
 end
 
 function Sample:noticePlayerLeft(eim, player)
-    eim:dropMessage(5, "[Expedition] " + player.Name + " has left the instance.")
+    eim:dropMessage(5, "[Expedition] " .. player.Name .. " has left the instance.")
 end
 
 function Sample:noticeMemberCount(eim, player)
@@ -54,13 +54,13 @@ end
 
 function Sample:clearPQ(eim)
     BaseEvent.clearPQ(self, eim)
-    em:getChannelServer():getMapFactory():getMap(211042300):getReactorById(2118002):forceHitReactor(0)
+    em:GetMap(211042300):getReactorById(2118002):forceHitReactor(0)
 end
 
 function Sample:dispose(eim)
     BaseEvent.clearPQ(self, eim)
     if (eim:isEventCleared()) then
-        em:getChannelServer():getMapFactory():getMap(211042300):getReactorById(2118002):forceHitReactor(0)
+        em:GetMap(211042300):getReactorById(2118002):forceHitReactor(0)
     end
 end
 

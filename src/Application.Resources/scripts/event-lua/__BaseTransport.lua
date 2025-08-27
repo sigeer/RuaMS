@@ -156,11 +156,11 @@ function BaseTransport:takeoff()
     if self.invasionConfig then
         -- 随机决定是否会有蝙蝠魔船只接近
         if (math.random() < self.invasionConfig.rateA) then
-            em:schedule("invasionApproachA", self.invasionConfig.startTime + math.random(self.invasionConfig.delayTime));
+            em:schedule("invasionApproachA", em:getTransportationTime(self.invasionConfig.startTime + math.random(self.invasionConfig.delayTime)));
         end
         -- 之前是2船一样，这里调整分开计算概率
         if (math.random() < self.invasionConfig.rateB) then
-            em:schedule("invasionApproachB", self.invasionConfig.startTime + math.random(self.invasionConfig.delayTime));
+            em:schedule("invasionApproachB", em:getTransportationTime(self.invasionConfig.startTime + math.random(self.invasionConfig.delayTime)));
         end
     end
 
@@ -209,7 +209,7 @@ function BaseTransport:invasionApproachA()
     -- 更改背景音乐
     self.transportationAMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobA", self.invasionConfig.delay);
+    em:schedule("invasionSpawnMobA", em:getTransportationTime(self.invasionConfig.delay));
 end
 
 function BaseTransport:invasionApproachB()
@@ -218,7 +218,7 @@ function BaseTransport:invasionApproachB()
     -- 更改背景音乐
     self.transportationBMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobB", self.invasionConfig.delay);
+    em:schedule("invasionSpawnMobB", em:getTransportationTime(self.invasionConfig.delay));
 end
 
 -- 生成蝙蝠魔
