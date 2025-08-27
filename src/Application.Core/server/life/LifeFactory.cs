@@ -178,7 +178,7 @@ public class LifeFactory : IStaticService
         int firstAttack = 0;
         if (firstAttackData != null)
         {
-            if (firstAttackData.getType() == DataType.FLOAT)
+            if (firstAttackData.DataType == DataType.FLOAT)
             {
                 firstAttack = (int)Math.Round(DataTool.getFloat(firstAttackData));
             }

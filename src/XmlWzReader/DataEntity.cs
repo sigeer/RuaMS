@@ -27,9 +27,8 @@ namespace XmlWzReader;
 public interface DataEntity
 {
     /// <summary>
-    /// µ±Ç°±êÇ©µÄnameÊôĞÔ
+    /// å½“å‰æ ‡ç­¾çš„nameå±æ€§
     /// </summary>
     /// <returns></returns>
     string? getName();
-    DataEntity? getParent();
 }

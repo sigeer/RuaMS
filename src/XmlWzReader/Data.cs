@@ -29,7 +29,8 @@ namespace XmlWzReader;
 
 public interface Data : DataEntity, IEnumerable<Data>
 {
-    DataType? getType();
+    DataType DataType { get; }
+    string Name { get; }
     List<Data> getChildren();
     Data? getChildByPath(string path);
     object? getData();
