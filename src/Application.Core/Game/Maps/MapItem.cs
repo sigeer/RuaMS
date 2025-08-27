@@ -243,6 +243,6 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public override void sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), 1, 0));
+        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  MapItemRemoveAnimation.None, 0));
     }
 }

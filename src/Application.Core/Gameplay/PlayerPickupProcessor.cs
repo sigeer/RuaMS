@@ -19,7 +19,8 @@ namespace Application.Core.Gameplay
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
-        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? 5 : 2, _player.Id, IsPetPickup, _petIndex);
+        protected virtual Packet GetPickupPacket(MapItem mapItem) => 
+            PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? MapItemRemoveAnimation.PickupByPet : MapItemRemoveAnimation.PickupByPlayer, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
         {

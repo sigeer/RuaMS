@@ -151,7 +151,7 @@ public class PlayerNPCPodium : IPlayerPositioner
                 return null;
             }
 
-            var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
+            var mmoList = map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC);
             var podimuData = encodePodiumData(podiumStep + 1, podiumCount + 1);
             UpdateNextPositionData(podimuData);
             return reorganizePlayerNpcs(map, podiumStep + 1, mmoList);

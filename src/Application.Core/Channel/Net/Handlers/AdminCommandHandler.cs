@@ -124,7 +124,7 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x15: // Kill
                 int mobToKill = p.readInt();
                 int amount = p.readInt();
-                List<IMapObject> monsterx = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+                List<IMapObject> monsterx = c.OnlinedCharacter.getMap().GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
                 for (int x = 0; x < amount; x++)
                 {
                     var monster = (Monster)monsterx[x];
@@ -148,7 +148,7 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x18: // Maple & Mobhp
                 int mobHp = p.readInt();
                 c.OnlinedCharacter.dropMessage("Monsters HP");
-                List<IMapObject> monsters = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+                List<IMapObject> monsters = c.OnlinedCharacter.getMap().GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
                 foreach (var mobs in monsters)
                 {
                     Monster monster = (Monster)mobs;

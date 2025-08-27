@@ -10,7 +10,7 @@ public class LootCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        var items = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+        var items = c.OnlinedCharacter.getMap().GetMapObjects(x => x.getType() == MapObjectType.ITEM);
         foreach (var item in items)
         {
             MapItem mapItem = (MapItem)item;

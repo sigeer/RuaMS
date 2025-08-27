@@ -22,7 +22,7 @@ namespace Application.Core.Managers
         /// <returns>击杀数</returns>
         public static int KillAllMonster(IPlayer player, IMap map)
         {
-            var monsters = map.getMapObjectsInRange(Point.Empty, double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+            var monsters = map.GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
             int count = 0;
             foreach (var monstermo in monsters)
             {
