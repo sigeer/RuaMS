@@ -108,7 +108,7 @@ public class MapItem : AbstractMapObject, IItemProp
     public int getClientsideOwnerId()
     {
         // thanks nozphex (RedHat) for noting an issue with collecting party items
-        if (IsPartyDrop)
+        if (!IsPartyDrop)
         {
             return this.character_ownerid;
         }
