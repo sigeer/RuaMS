@@ -23,6 +23,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.WHISPER, sp.GetRequiredService<WhisperHandler>()},
                 {(short)RecvOpcode.NPC_TALK, sp.GetRequiredService<NPCTalkHandler>()},
                 {(short)RecvOpcode.NPC_TALK_MORE, sp.GetRequiredService<NPCMoreTalkHandler>()},
+                {(short)RecvOpcode.USER_CALC_DAMAGE_STAT_SET_REQUEST, sp.GetRequiredService<ApplyMonsterCardEffectHandler>()},
                 {(short)RecvOpcode.QUEST_ACTION, sp.GetRequiredService<QuestActionHandler>()},
                 {(short)RecvOpcode.GRENADE_EFFECT, sp.GetRequiredService<GrenadeEffectHandler>()},
                 {(short)RecvOpcode.NPC_SHOP, sp.GetRequiredService<NPCShopHandler>()},
