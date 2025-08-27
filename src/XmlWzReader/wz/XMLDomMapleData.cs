@@ -160,7 +160,7 @@ public class XMLDomMapleData : Data
             case "null":
                 return DataType.IMG_0x00;
         }
-        throw new NotSupportedException();
+        return DataType.NONE;
 
     }
 
