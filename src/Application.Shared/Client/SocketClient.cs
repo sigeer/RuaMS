@@ -165,7 +165,7 @@ namespace Application.Shared.Client
                 if (cause is BusinessFatalException)
                     CloseSession();
                 else
-                    sendPacket(PacketCommon.serverNotice(1, cause.Message));
+                    sendPacket(PacketCommon.serverNotice(5, cause.Message));
             }
         }
 
