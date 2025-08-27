@@ -292,7 +292,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public IMapObject? getPlayerNPCByScriptid(int scriptId)
     {
-        foreach (var pnpcObj in getPlayer().getMap().getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC)))
+        foreach (var pnpcObj in getPlayer().getMap().GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC))
         {
             if (pnpcObj.GetSourceId() == scriptId)
             {

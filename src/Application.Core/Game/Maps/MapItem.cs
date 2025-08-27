@@ -108,7 +108,7 @@ public class MapItem : AbstractMapObject, IItemProp
     public int getClientsideOwnerId()
     {
         // thanks nozphex (RedHat) for noting an issue with collecting party items
-        if (IsPartyDrop)
+        if (!IsPartyDrop)
         {
             return this.character_ownerid;
         }
@@ -243,6 +243,6 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public override void sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), 1, 0));
+        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  MapItemRemoveAnimation.None, 0));
     }
 }

@@ -39,7 +39,7 @@ public class DebugCommand : CommandBase
                 break;
 
             case "monster":
-                List<IMapObject> monsters = player.getMap().getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+                List<IMapObject> monsters = player.getMap().GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
                 foreach (var monstermo in monsters)
                 {
                     var monster = (Monster)monstermo;

@@ -42,11 +42,11 @@ function Sample:setup(level, lobbyid)
 end
 
 function Sample:noticePlayerEnter(eim, player)
-    eim:dropMessage(5, "[Expedition] " + player.Name + " has entered the map.")
+    eim:dropMessage(5, "[Expedition] " .. player.Name .. " has entered the map.")
 end
 
 function Sample:noticePlayerLeft(eim, player)
-    eim:dropMessage(5, "[Expedition] " + player.Name + " has left the instance.")
+    eim:dropMessage(5, "[Expedition] " .. player.Name .. " has left the instance.")
 end
 
 function Sample:noticeMemberCount(eim, player)

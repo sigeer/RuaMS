@@ -923,13 +923,7 @@ public class AbstractPlayerInteraction
 
     public virtual void resetMap(int mapid)
     {
-        getMap(mapid).resetReactors();
-        getMap(mapid).killAllMonsters();
-        foreach (var i in getMap(mapid).getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
-        {
-            getMap(mapid).removeMapObject(i);
-            getMap(mapid).broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, c.OnlinedCharacter.getId()));
-        }
+        getMap(mapid).clearMapObjects();
     }
 
     public void useItem(int id)

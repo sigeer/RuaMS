@@ -22,148 +22,116 @@
 
 
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Drawing;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace XmlWzReader.wz;
 
 
 public class XMLDomMapleData : Data
 {
-    private XmlNode node;
+    public XMLDomMapleData? Parent { get; set; }
+    public DataType DataType { get; private set; }
+    public string Name { get; private set; }
+    public object? Value { get; private set; }
+    List<Data> _children;
     public XMLDomMapleData(FileStream fis)
     {
-        XmlDocument document = new XmlDocument();
-        document.Load(fis);
-        this.node = document.DocumentElement!;
-    }
+        Parent = null;
+        _children = [];
+        var rootNode = XDocument.Load(fis).Root!;
 
-    private XMLDomMapleData(XmlNode node)
-    {
-        this.node = node;
-    }
-
-    private string GetXPathFromPath(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path)) return string.Empty;
-
-        // 判断路径是否以 ".." 开头，表示从父节点开始
-        bool isRelativeToParent = path.StartsWith("../");
-
-        // 移除 ".." 前缀，如果存在
-        if (isRelativeToParent)
+        Name = rootNode.Attribute("name")!.Value;
+        var children = rootNode.Elements();
+        foreach (var child in children)
         {
-            path = path.Substring(3);  // 去掉 "../"
+            _children.Add(new XMLDomMapleData(this, child));
         }
-
-        // 分割路径为多个段
-        string[] segments = path.Split('/');
-
-        // 构建 XPath 查询
-        string xpath = isRelativeToParent ? ".." : ".";  // 如果路径以 ".." 开头，前缀是 "../"
-
-
-        // 遍历后续路径段，继续拼接 XPath 查询
-        for (int i = 0; i < segments.Length; i++)
-        {
-            xpath += "/*[@name='" + segments[i] + "']";  // 查找子节点，name 为路径中的下一个部分
-        }
-
-        return xpath;
-    }
-
-    public Data? getChildByPath(string path)
-    {
-        var xPath = GetXPathFromPath(path);
-        var xNode = node.SelectSingleNode(xPath);
-        if (xNode != null)
-            return new XMLDomMapleData(xNode);
-        return null;
     }
 
 
-    List<Data>? cachedChildren = null;
-    public List<Data> getChildren()
+    public XMLDomMapleData(XMLDomMapleData parent, XElement node)
     {
-        if (cachedChildren != null)
-            return cachedChildren;
+        Parent = parent;
+        DataType = getType(node);
+        Name = node.Attribute("name")!.Value;
 
-        XmlNodeList childNodes = node.ChildNodes;
-        BlockingCollection<Data> ret = new();
-        Parallel.For(0, childNodes.Count, i =>
+        switch (DataType)
         {
-            XmlNode? childNode = childNodes.Item(i);
-            if (childNode != null && childNode.NodeType == XmlNodeType.Element)
-            {
-                    ret.Add(new XMLDomMapleData(childNode));
-            }
-        });
-        return cachedChildren = ret.ToList();
-    }
-    object? cachedData;
-    public object? getData()
-    {
-        if (cachedData != null)
-            return cachedData;
-
-        var attributes = node.Attributes!;
-        var type = getType();
-        switch (type)
-        {
-
             case DataType.DOUBLE:
+                Value = Convert.ToDouble(node.Attribute("value")?.Value);
+                break;
             case DataType.FLOAT:
+                Value = Convert.ToSingle(node.Attribute("value")?.Value);
+                break;
             case DataType.INT:
+                Value = Convert.ToInt32(node.Attribute("value")?.Value);
+                break;
             case DataType.SHORT:
-                {
-                    var value = attributes.GetNamedItem("value")?.Value;
-                    if (value == null)
-                        break;
-
-                    switch (type)
-                    {
-                        case DataType.DOUBLE:
-                            cachedData = double.Parse(value);
-                            break;
-                        case DataType.FLOAT:
-                            cachedData = float.Parse(value);
-                            break;
-                        case DataType.INT:
-                            cachedData = int.Parse(value);
-                            break;
-                        case DataType.SHORT:
-                            cachedData = short.Parse(value);
-                            break;
-                        default:
-                            cachedData = 0;
-                            break;
-                    }
-                }
+                Value = Convert.ToInt16(node.Attribute("value")?.Value);
                 break;
             case DataType.STRING:
             case DataType.UOL:
-                {
-                    var value = attributes.GetNamedItem("value")?.Value;
-                    cachedData = value;
-                    break;
-                }
+                Value = node.Attribute("value")?.Value;
+                break;
             case DataType.VECTOR:
-                {
-                    string x = attributes.GetNamedItem("x")?.Value ?? "0";
-                    string y = attributes.GetNamedItem("y")?.Value ?? "0";
-                    cachedData = new Point(int.Parse(x), int.Parse(y));
-                    break;
-                }
+                string x = node.Attribute("x")?.Value ?? "0";
+                string y = node.Attribute("y")?.Value ?? "0";
+                Value = new Point(int.Parse(x), int.Parse(y));
+                break;
             default:
                 break;
         }
-        return cachedData;
+
+        _children = [];
+        var children = node.Elements();
+        foreach (var child in children)
+        {
+            _children.Add(new XMLDomMapleData(this, child));
+        }
+
     }
 
-    public DataType? getType()
+
+    public Data? getChildByPath(string path)
     {
-        string nodeName = node.Name;
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        // 处理 ../ 的情况
+        if (path.StartsWith("../"))
+        {
+            if (Parent == null) return null;
+            return Parent.getChildByPath(path.Substring(3));
+        }
+
+        // 分割路径
+        string[] segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        XMLDomMapleData? current = this;
+
+        foreach (var seg in segments)
+        {
+            // 在当前节点的 children 里找 name = seg 的节点
+            current = current._children
+                .FirstOrDefault(c => c.Name == seg) as XMLDomMapleData;
+
+            if (current == null) return null; // 找不到就返回 null
+        }
+
+        return current;
+    }
+
+
+    public List<Data> getChildren()
+    {
+        return _children;
+    }
+
+
+    public static DataType getType(XElement node)
+    {
+        string nodeName = node.Name.LocalName;
 
         switch (nodeName)
         {
@@ -192,38 +160,27 @@ public class XMLDomMapleData : Data
             case "null":
                 return DataType.IMG_0x00;
         }
-        return null;
+        throw new NotSupportedException();
 
     }
 
-    public DataEntity getParent()
-    {
-        var parentNode = node.ParentNode;
-        if (parentNode == null || parentNode.NodeType == XmlNodeType.Document)
-        {
-            return null!;
-        }
-        return new XMLDomMapleData(parentNode);
-
-    }
-
-    string? _name;
     public string? getName()
     {
-        if (!string.IsNullOrEmpty(_name))
-            return _name;
-
-        _name = node.Attributes?.GetNamedItem("name")?.Value;
-        return _name;
+        return Name;
     }
     public IEnumerator<Data> GetEnumerator()
     {
-        return new XMLDomDataEnumerator(getChildren());
+        return new XMLDomDataEnumerator(_children);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public object? getData()
+    {
+        return Value;
     }
 }
 

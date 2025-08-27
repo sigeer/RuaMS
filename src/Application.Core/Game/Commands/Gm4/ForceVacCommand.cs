@@ -13,7 +13,7 @@ public class ForceVacCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var items = player.getMap().getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+        var items = player.getMap().GetMapObjects(x => x.getType() == MapObjectType.ITEM);
         var p = new PlayerPickupProcessor(player);
         p.Flags = PickupCheckFlags.None;
         foreach (var item in items)

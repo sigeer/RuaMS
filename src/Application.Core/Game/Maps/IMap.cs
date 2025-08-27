@@ -27,13 +27,13 @@ namespace Application.Core.Game.Maps
         /// </summary>
         public float MonsterRate { get; set; }
         float ActualMonsterRate { get; }
-        AtomicInteger droppedItemCount { get; set; }
         public OxQuiz? Ox { get; set; }
         /// <summary>
         /// 似乎并没有派上用
         /// </summary>
         public TimeMob? TimeMob { get; set; }
         bool IsTown { get; set; }
+        bool IsTrackedByEvent { get; set; }
         EventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 
@@ -121,7 +121,6 @@ namespace Application.Core.Game.Maps
         int getDroppedItemsCountById(int itemid);
         IDictionary<string, int> getEnvironment();
         EventInstanceManager? getEventInstance();
-        string? getEventNPC();
         bool getEverlast();
         int getFieldLimit();
         FootholdTree? getFootholds();
@@ -131,7 +130,7 @@ namespace Application.Core.Game.Maps
         int getHPDec();
         int getHPDecProtect();
         int getId();
-        List<IMapObject> getItems();
+        List<MapItem> getItems();
         Rectangle getMapArea();
         string getMapName();
         IMapObject? getMapObject(int oid);
@@ -172,7 +171,6 @@ namespace Application.Core.Game.Maps
         bool getSummonState();
         int getTimeLimit();
         bool hasClock();
-        bool hasEventNPC();
         void instanceMapForceRespawn();
         void instanceMapRespawn();
         bool isAllReactorState(int reactorId, int state);
@@ -186,7 +184,6 @@ namespace Application.Core.Game.Maps
         bool isCPQMap();
         bool isCPQMap2();
         bool isCPQWinnerMap();
-        bool isEventMap();
         bool isHorntailDefeated();
         bool isMuted();
         bool isOwnershipRestricted(IPlayer chr);

@@ -183,7 +183,7 @@ public class PlayerNPCPositioner : IPlayerPositioner
     private Point? getNextPlayerNpcPosition(IMap map, int initStep)
     {
         // automated playernpc position thanks to Ronan
-        var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
+        var mmoList = map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC);
         List<Point> otherPlayerNpcs = new();
         foreach (var mmo in mmoList)
         {

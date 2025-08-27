@@ -93,6 +93,8 @@ public class MapleMap : IMap
     private bool boat;
     private bool docked = false;
     public EventInstanceManager? EventInstanceManager { get; private set; }
+    public bool IsTrackedByEvent { get; set; }
+
     private string mapName;
     private string streetName;
     private MapEffect? mapEffect = null;
@@ -893,7 +895,7 @@ public class MapleMap : IMap
                 }
             }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "ItemExpireCheck", makeDisappearExpiredItemDrops),
+            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", makeDisappearExpiredItemDrops),
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
@@ -1180,17 +1182,17 @@ public class MapleMap : IMap
 
     public int countReactors()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.REACTOR)).Count;
+        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR).Count;
     }
 
     public List<IMapObject> getReactors()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.REACTOR));
+        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR);
     }
 
     public List<IMapObject> getMonsters()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+        return GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
     }
 
     public List<Reactor> getAllReactors()
@@ -1720,7 +1722,7 @@ public class MapleMap : IMap
 
     public void destroyNPC(int npcid)
     {     // assumption: there's at most one of the same NPC in a map.
-        var npcs = getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.NPC));
+        var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
 
         chrLock.EnterReadLock();
         objectLock.EnterWriteLock();
@@ -3157,7 +3159,7 @@ public class MapleMap : IMap
                     return true;
                 }
 
-                pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), 0, 0), mapitem);
+                pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem);
                 return true;
             }
             finally
@@ -3254,9 +3256,8 @@ public class MapleMap : IMap
                             _map.unregisterItemDrop(mapitem);
 
                             reactor.setShouldCollect(false);
-                            _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(), 0, 0), mapitem.getPosition());
+                            _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(),  MapItemRemoveAnimation.Expired, 0), mapitem.getPosition());
 
-                            _map.droppedItemCount.decrementAndGet();
                             _map.removeMapObject(mapitem);
 
                             reactor.hitReactor(c);
@@ -3682,13 +3683,11 @@ public class MapleMap : IMap
 
     public void clearDrops()
     {
-        foreach (IMapObject i in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
+        foreach (IMapObject i in GetMapObjects(x => x.getType() == MapObjectType.ITEM))
         {
-            droppedItemCount.decrementAndGet();
             removeMapObject(i);
-            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, 0));
-            if (i is MapItem mapItem)
-                droppedItems.Remove(mapItem);
+            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), MapItemRemoveAnimation.Expired, 0));
+            unregisterItemDrop((MapItem)i);
         }
     }
 
@@ -3789,47 +3788,10 @@ public class MapleMap : IMap
         this.eventstarted = @event;
     }
 
-    public string? getEventNPC()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("Talk to ");
-        if (mapid == MapId.SOUTHPERRY)
-        {
-            sb.Append("Paul!");
-        }
-        else if (mapid == MapId.LITH_HARBOUR)
-        {
-            sb.Append("Jean!");
-        }
-        else if (mapid == MapId.ORBIS)
-        {
-            sb.Append("Martin!");
-        }
-        else if (mapid == MapId.LUDIBRIUM)
-        {
-            sb.Append("Tony!");
-        }
-        else
-        {
-            return null;
-        }
-        return sb.ToString();
-    }
-
-    public bool hasEventNPC()
-    {
-        return this.mapid == 60000 || this.mapid == MapId.LITH_HARBOUR || this.mapid == MapId.ORBIS || this.mapid == MapId.LUDIBRIUM;
-    }
-
     public bool isStartingEventMap()
     {
         return this.mapid == MapId.EVENT_PHYSICAL_FITNESS || this.mapid == MapId.EVENT_OX_QUIZ ||
                 this.mapid == MapId.EVENT_FIND_THE_JEWEL || this.mapid == MapId.EVENT_OLA_OLA_0 || this.mapid == MapId.EVENT_OLA_OLA_1;
-    }
-
-    public bool isEventMap()
-    {
-        return this.mapid >= MapId.EVENT_FIND_THE_JEWEL && this.mapid < MapId.EVENT_WINNER || this.mapid > MapId.EVENT_EXIT && this.mapid <= 109090000;
     }
 
     public void toggleHiddenNPC(int id)
@@ -4259,7 +4221,7 @@ public class MapleMap : IMap
 
     public List<IMapObject> getPlayers()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER));
+        return GetMapObjects(x => x.getType() == MapObjectType.PLAYER);
     }
 
     public List<IPlayer> getAllPlayers()
@@ -4685,17 +4647,16 @@ public class MapleMap : IMap
     #endregion
 
     #region Objects: MapItem
-    private Dictionary<MapItem, long> droppedItems = new();
-    public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
+    private ConcurrentDictionary<MapItem, long> droppedItems = new();
 
     public int getDroppedItemCount()
     {
-        return droppedItemCount.get();
+        return countItems();
     }
 
     private void instantiateItemDrop(MapItem mdrop)
     {
-        if (droppedItemCount.get() >= YamlConfig.config.server.ITEM_LIMIT_ON_MAP)
+        if (droppedItems.Count >= YamlConfig.config.server.ITEM_LIMIT_ON_MAP)
         {
             IMapObject? mapobj;
 
@@ -4735,13 +4696,11 @@ public class MapleMap : IMap
         {
             objectLock.ExitWriteLock();
         }
-
-        droppedItemCount.incrementAndGet();
     }
 
     private void registerItemDrop(MapItem mdrop)
     {
-        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.Container.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
+        droppedItems[mdrop] = !everlast ? ChannelServer.Container.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue;
     }
 
     public void unregisterItemDrop(MapItem mdrop)
@@ -4749,7 +4708,7 @@ public class MapleMap : IMap
         objectLock.EnterWriteLock();
         try
         {
-            droppedItems.Remove(mdrop);
+            droppedItems.TryRemove(mdrop, out _);
         }
         finally
         {
@@ -4785,10 +4744,10 @@ public class MapleMap : IMap
     }
 
     public void pickItemDrop(Packet pickupPacket, MapItem mdrop)
-    { // mdrop must be already locked and not-pickedup checked at this point
+    {
+        // mdrop must be already locked and not-pickedup checked at this point
         broadcastMessage(pickupPacket, mdrop.getPosition());
 
-        droppedItemCount.decrementAndGet();
         this.removeMapObject(mdrop);
         mdrop.setPickedUp(true);
         unregisterItemDrop(mdrop);
@@ -4796,12 +4755,12 @@ public class MapleMap : IMap
 
     public int countItems()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)).Count;
+        return droppedItems.Count;
     }
 
-    public List<IMapObject> getItems()
+    public List<MapItem> getItems()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+        return droppedItems.Keys.ToList();
     }
     #endregion
 }

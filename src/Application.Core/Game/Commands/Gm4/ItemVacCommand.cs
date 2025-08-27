@@ -10,7 +10,7 @@ public class ItemVacCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var list = player.getMap().getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+        var list = player.getMap().GetMapObjects(x => x.getType() == MapObjectType.ITEM);
         foreach (var item in list)
         {
             player.pickupItem(item);

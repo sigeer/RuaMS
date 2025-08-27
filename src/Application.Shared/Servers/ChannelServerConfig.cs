@@ -21,11 +21,20 @@ namespace Application.Shared.Servers
         /// </summary>
         public string ServerHost { get; set; } = "127.0.0.1";
         public List<ChannelConfig> ChannelConfig { get; set; } = [];
+        public ChannelServerSystemConfig SystemConfig { get; set; } = new ChannelServerSystemConfig();
     }
 
     public class RegisteredChannelConfig: ChannelConfig
     {
         public string ServerHost { get; set; } = "127.0.0.1";
         public string ServerName { get; set; } = null!;
+    }
+
+    public class ChannelServerSystemConfig
+    {
+        /// <summary>
+        /// 自动清理不活跃地图
+        /// </summary>
+        public bool AutoClearMap { get; set; }
     }
 }

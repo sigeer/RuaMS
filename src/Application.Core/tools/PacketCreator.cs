@@ -2503,7 +2503,7 @@ public class PacketCreator
 
     public static Packet silentRemoveItemFromMap(int objId)
     {
-        return removeItemFromMap(objId, 1, 0);
+        return removeItemFromMap(objId, MapItemRemoveAnimation.None, 0);
     }
 
     /// <summary>
@@ -2521,12 +2521,13 @@ public class PacketCreator
     /// <param name="pet">true will make a pet pick up the item.</param>
     /// <param name="slot"></param>
     /// <returns></returns>
-    public static Packet removeItemFromMap(int objId, int animation, int chrId, bool pet = false, int slot = 0)
+    public static Packet removeItemFromMap(int objId, MapItemRemoveAnimation animation, int chrId, bool pet = false, int slot = 0)
     {
+        var animationValue = (byte)animation;
         OutPacket p = OutPacket.create(SendOpcode.REMOVE_ITEM_FROM_MAP);
-        p.writeByte(animation); // expire
+        p.writeByte(animationValue);
         p.writeInt(objId);
-        if (animation >= 2)
+        if (animationValue >= 2)
         {
             p.writeInt(chrId);
             if (pet)

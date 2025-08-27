@@ -70,7 +70,7 @@ public class DataTool
         {
             return def;
         }
-        else if (data.getType() == DataType.STRING)
+        else if (data.DataType == DataType.STRING)
         {
             if (int.TryParse(getString(data), out var d))
                 return d;
@@ -97,7 +97,7 @@ public class DataTool
         {
             return def;
         }
-        if (data.getType() == DataType.STRING)
+        if (data.DataType == DataType.STRING)
         {
             string dd = getString(data) ?? "0";
             if (dd.EndsWith("%"))
@@ -136,17 +136,5 @@ public class DataTool
     public static Point? getPoint(string path, Data? data, Point? def = null)
     {
         return getPoint(data?.getChildByPath(path)) ?? def;
-    }
-
-    public static string getFullDataPath(Data data)
-    {
-        string path = "";
-        DataEntity? myData = data;
-        while (myData != null)
-        {
-            path = myData.getName() + "/" + path;
-            myData = myData.getParent();
-        }
-        return path.Substring(0, path.Length - 1);
     }
 }

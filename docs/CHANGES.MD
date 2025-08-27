@@ -146,3 +146,4 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 - [ ] wz相关数据读取的整理，整理一些可以放在MasterServer的wz
 - [ ] 重构创建角色（MasterServer的请求，却依赖了wz，不得不请求频道服务器）
 - [ ] OpenApi （一些数据涉及到wz，但是MasterServer上没有wz）
+- [ ] 重构`XmlWzReader`: wz中比如地图有很多节用不上，但是都被`XMLDomMapleData`保留了

@@ -209,7 +209,9 @@ public class EventManager
 
     public IMap GetMap(int mapId)
     {
-        return getChannelServer().getMapFactory().getMap(mapId);
+        var map = getChannelServer().getMapFactory().getMap(mapId);
+        map.IsTrackedByEvent = true;
+        return map;
     }
 
     public IEngine getIv()
