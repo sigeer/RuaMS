@@ -93,6 +93,8 @@ public class MapleMap : IMap
     private bool boat;
     private bool docked = false;
     public EventInstanceManager? EventInstanceManager { get; private set; }
+    public bool IsTrackedByEvent { get; set; }
+
     private string mapName;
     private string streetName;
     private MapEffect? mapEffect = null;
@@ -893,7 +895,7 @@ public class MapleMap : IMap
                 }
             }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "ItemExpireCheck", makeDisappearExpiredItemDrops),
+            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", makeDisappearExpiredItemDrops),
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 

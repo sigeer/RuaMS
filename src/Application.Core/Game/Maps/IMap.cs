@@ -34,6 +34,7 @@ namespace Application.Core.Game.Maps
         /// </summary>
         public TimeMob? TimeMob { get; set; }
         bool IsTown { get; set; }
+        bool IsTrackedByEvent { get; set; }
         EventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 

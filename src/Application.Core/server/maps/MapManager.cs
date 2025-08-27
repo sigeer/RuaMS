@@ -124,4 +124,16 @@ public class MapManager : IDisposable
 
         this.evt = null;
     }
+
+    public void CheckActive()
+    {
+        foreach (var map in getMaps())
+        {
+            if (!map.Value.IsTrackedByEvent && map.Value.EventInstanceManager == null && !map.Value.IsActive())
+            {
+                map.Value.Dispose();
+                maps.TryRemove(map.Key, out _);
+            }
+        }
+    }
 }
