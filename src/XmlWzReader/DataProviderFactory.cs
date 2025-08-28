@@ -30,14 +30,9 @@ namespace XmlWzReader;
 
 public class DataProviderFactory
 {
-    static ConcurrentDictionary<string, XMLWZFileProvider> cached = new();
-    private static DataProvider getWZ(string inValue)
-    {
-        return cached.GetOrAdd(inValue, (key) => new XMLWZFileProvider(key));
-    }
-
+    static ConcurrentDictionary<WZFiles, XMLWZFileProvider> cached = new();
     public static DataProvider getDataProvider(WZFiles inValue)
     {
-        return getWZ(inValue.getFile());
+        return cached.GetOrAdd(inValue, (key) => new XMLWZFileProvider(inValue));
     }
 }

@@ -9,7 +9,10 @@ public class WZFiles
     public static readonly WZFiles STRING = new("String");
     public static readonly WZFiles LIST = new("List");
     public static readonly WZFiles MOB = new("Mob");
-    public static readonly WZFiles MAP = new("Map");
+    /// <summary>
+    /// 地图，UseCache：true。由于MapFactory中没有使用缓存，在这一级缓存。
+    /// </summary>
+    public static readonly WZFiles MAP = new("Map", true);
     public static readonly WZFiles NPC = new("Npc");
     public static readonly WZFiles REACTOR = new("Reactor");
     public static readonly WZFiles SKILL = new("Skill");
@@ -19,20 +22,17 @@ public class WZFiles
     public readonly static string DIRECTORY = getWzDirectory();
 
     private string fileName;
+    public bool UseCache { get; init; }
 
-    WZFiles(string name)
+    WZFiles(string name, bool useCache = false)
     {
         this.fileName = name + ".wz";
+        UseCache = useCache;
     }
 
     public string getFile()
     {
         return Path.Combine(DIRECTORY, fileName);
-    }
-
-    public string getFilePath()
-    {
-        return getFile().ToString();
     }
 
     private static string getWzDirectory()
