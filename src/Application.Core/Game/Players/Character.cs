@@ -4850,16 +4850,15 @@ public partial class Player
         berserkSchedule = null;
 
         unregisterChairBuff();
-        cancelBuffExpireTask();
-        cancelDiseaseExpireTask();
-        cancelSkillCooldownTask();
-        cancelExpirationTask();
+
+        StopPlayerTask();
 
         if (questExpireTask != null)
         {
             questExpireTask.cancel(true);
         }
         questExpireTask = null;
+        questExpirations.Clear();
 
         if (recoveryTask != null)
         {
@@ -4885,22 +4884,6 @@ public partial class Player
 
         _pickerProcessor.Clear();
         clearCpqTimer();
-
-        Monitor.Enter(evtLock);
-        try
-        {
-            if (questExpireTask != null)
-            {
-                questExpireTask.cancel(false);
-                questExpireTask = null;
-
-                questExpirations.Clear();
-            }
-        }
-        finally
-        {
-            Monitor.Exit(evtLock);
-        }
 
         if (MountModel != null)
         {

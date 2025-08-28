@@ -81,6 +81,10 @@ public class EnterCashShopHandler : ChannelHandlerBase
             _dataService.SaveBuff(mc);
             mc.setAwayFromChannelWorld();
 
+            mc.cancelAllBuffs(true);
+            mc.cancelAllDebuffs();
+            mc.forfeitExpirableQuests();
+
             mc.StopPlayerTask();
 
             c.sendPacket(PacketCreator.openCashShop(c, false));

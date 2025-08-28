@@ -117,14 +117,10 @@ namespace Application.Core.Game.Players
 
         public void StopPlayerTask()
         {
-            cancelAllBuffs(true);
-            cancelAllDebuffs();
             cancelBuffExpireTask();
             cancelDiseaseExpireTask();
             cancelSkillCooldownTask();
             cancelExpirationTask();
-
-            forfeitExpirableQuests();
             cancelQuestExpirationTask();
         }
         public override int GetSourceId()
