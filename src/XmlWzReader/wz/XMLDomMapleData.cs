@@ -97,6 +97,11 @@ public class XMLDomMapleData : Data
                 string y = reader.GetAttribute("y") ?? "0";
                 Value = new Point(int.Parse(x), int.Parse(y));
                 break;
+            case DataType.CANVAS:
+                string width = reader.GetAttribute("width") ?? "0";
+                string height = reader.GetAttribute("height") ?? "0";
+                Value = new Point(int.Parse(width), int.Parse(height));
+                break;
         }
 
         // 递归处理子节点
