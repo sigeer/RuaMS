@@ -104,7 +104,7 @@ public class XMLWZFileProvider : DataProvider
         try
         {
             var dataFile = Path.Combine(root.getFile(), path + ".xml");
-            using var fis = new FileStream(dataFile, FileMode.Open);
+            using var fis = new FileStream(dataFile, FileMode.Open, FileAccess.Read, FileShare.Read);
             return new XMLDomMapleData(fis);
         }
         catch (FileNotFoundException)
