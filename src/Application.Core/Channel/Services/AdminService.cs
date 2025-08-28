@@ -379,7 +379,7 @@ namespace Application.Core.Channel.Services
 
         public List<string> GetChannelServerTasks()
         {
-            return _server.TimerManager.TaskScheduler.Keys.ToList();
+            return _server.TimerManager.TaskScheduler.Keys.OrderBy(x => x).ToList();
         }
     }
 }

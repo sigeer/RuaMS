@@ -419,10 +419,7 @@ namespace Application.Core.Channel.Net
             Character.cancelAllBuffs(true);
             Character.cancelAllDebuffs();
 
-            Character.cancelBuffExpireTask();
-            Character.cancelDiseaseExpireTask();
-            Character.cancelSkillCooldownTask();
-            Character.cancelQuestExpirationTask();
+            Character.StopPlayerTask();
             //Cancelling magicdoor? Nope
             //Cancelling mounts? Noty
 
