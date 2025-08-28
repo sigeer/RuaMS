@@ -23,7 +23,7 @@
 
 using System.Collections;
 using System.Drawing;
-using System.Xml.Linq;
+using System.Xml;
 
 namespace XmlWzReader.wz;
 
@@ -38,58 +38,88 @@ public class XMLDomMapleData : Data
     public XMLDomMapleData(FileStream fis)
     {
         Parent = null;
-        _children = [];
-        var rootNode = XDocument.Load(fis).Root!;
 
-        Name = rootNode.Attribute("name")!.Value;
-        var children = rootNode.Elements();
-        foreach (var child in children)
+        using (var reader = XmlReader.Create(fis, new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true }))
         {
-            _children.Add(new XMLDomMapleData(this, child));
+            reader.MoveToContent(); // 定位到第一个元素
+            Name = reader.GetAttribute("name") ?? "";
+            DataType = DataType.PROPERTY;
+
+            _children = [];
+            // 递归解析子元素
+            if (!reader.IsEmptyElement)
+            {
+                using (var subTree = reader.ReadSubtree())
+                {
+                    subTree.Read(); // 进入根节点
+                    while (subTree.Read())
+                    {
+                        if (subTree.NodeType == XmlNodeType.Element)
+                        {
+                            var child = new XMLDomMapleData(this, subTree);
+                            _children.Add(child);
+                        }
+                    }
+                }
+            }
         }
     }
 
 
-    public XMLDomMapleData(XMLDomMapleData parent, XElement node)
+    public XMLDomMapleData(XMLDomMapleData parent, XmlReader reader)
     {
         Parent = parent;
-        DataType = getType(node);
-        Name = node.Attribute("name")!.Value;
+        _children = new();
+
+        Name = reader.GetAttribute("name") ?? "";
+        DataType = getType(reader.Name);
 
         switch (DataType)
         {
             case DataType.DOUBLE:
-                Value = Convert.ToDouble(node.Attribute("value")?.Value);
+                Value = Convert.ToDouble(reader.GetAttribute("value"));
                 break;
             case DataType.FLOAT:
-                Value = Convert.ToSingle(node.Attribute("value")?.Value);
+                Value = Convert.ToSingle(reader.GetAttribute("value"));
                 break;
             case DataType.INT:
-                Value = Convert.ToInt32(node.Attribute("value")?.Value);
+                Value = Convert.ToInt32(reader.GetAttribute("value"));
                 break;
             case DataType.SHORT:
-                Value = Convert.ToInt16(node.Attribute("value")?.Value);
+                Value = Convert.ToInt16(reader.GetAttribute("value"));
                 break;
             case DataType.STRING:
             case DataType.UOL:
-                Value = node.Attribute("value")?.Value;
+                Value = reader.GetAttribute("value");
                 break;
             case DataType.VECTOR:
-                string x = node.Attribute("x")?.Value ?? "0";
-                string y = node.Attribute("y")?.Value ?? "0";
+                string x = reader.GetAttribute("x") ?? "0";
+                string y = reader.GetAttribute("y") ?? "0";
                 Value = new Point(int.Parse(x), int.Parse(y));
                 break;
-            default:
+            case DataType.CANVAS:
+                string width = reader.GetAttribute("width") ?? "0";
+                string height = reader.GetAttribute("height") ?? "0";
+                Value = new Point(int.Parse(width), int.Parse(height));
                 break;
         }
 
-        _children = [];
-        var children = node.Elements();
-        foreach (var child in children)
+        // 递归处理子节点
+        if (!reader.IsEmptyElement)
         {
-            _children.Add(new XMLDomMapleData(this, child));
+            using (var subTree = reader.ReadSubtree())
+            {
+                subTree.Read(); // 进入当前节点
+                while (subTree.Read())
+                {
+                    if (subTree.NodeType == XmlNodeType.Element)
+                    {
+                        var child = new XMLDomMapleData(this, subTree);
+                        _children.Add(child);
+                    }
+                }
+            }
         }
-
     }
 
 
@@ -129,10 +159,8 @@ public class XMLDomMapleData : Data
     }
 
 
-    public static DataType getType(XElement node)
+    static DataType getType(string nodeName)
     {
-        string nodeName = node.Name.LocalName;
-
         switch (nodeName)
         {
             case "imgdir":

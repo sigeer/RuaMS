@@ -20,18 +20,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Concurrent;
+
 namespace XmlWzReader.wz;
 
 public class XMLWZFileProvider : DataProvider
 {
-    private string root;
+    private WZFiles root;
     private WZDirectoryEntry rootForNavigation;
 
-    public XMLWZFileProvider(string fileIn)
+    public XMLWZFileProvider(WZFiles source)
     {
-        root = fileIn;
-        rootForNavigation = new WZDirectoryEntry(Path.GetFileName(fileIn), 0, 0, null);
-        fillMapleDataEntitys(root, rootForNavigation);
+        root = source;
+        rootForNavigation = new WZDirectoryEntry(Path.GetFileName(root.getFile()), 0, 0, null);
+        fillMapleDataEntitys(root.getFile(), rootForNavigation);
     }
 
     private void fillMapleDataEntitys(string lroot, WZDirectoryEntry wzdir)
@@ -63,28 +65,57 @@ public class XMLWZFileProvider : DataProvider
         }
     }
 
-    private object readFileLock = new object();
+    //private object readFileLock = new object();
+    //public Data getData(string path)
+    //{
+    //    lock (readFileLock)
+    //    {
+    //        try
+    //        {
+    //            var dataFile = Path.Combine(root, path + ".xml");
+    //            using var fis = new FileStream(dataFile, FileMode.Open);
+    //            return new XMLDomMapleData(fis);
+    //        }
+    //        catch (FileNotFoundException)
+    //        {
+    //            throw new Exception("Datafile " + path + " does not exist in " + Path.GetFullPath(root));
+    //        }
+    //        catch (Exception)
+    //        {
+    //            throw;
+    //        }
+    //    }
+    //}
+
+    ConcurrentDictionary<string, Data> _cache = new ConcurrentDictionary<string, Data>();
     public Data getData(string path)
     {
-        lock (readFileLock)
+        if (root.UseCache)
         {
-            try
-            {
-                var dataFile = Path.Combine(root, path + ".xml");
-                using var fis = new FileStream(dataFile, FileMode.Open);
-                return new XMLDomMapleData(fis);
-            }
-            catch (FileNotFoundException)
-            {
-                throw new Exception("Datafile " + path + " does not exist in " + Path.GetFullPath(root));
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return _cache.GetOrAdd(path, GetDataFromFile);
         }
+
+        return GetDataFromFile(path);
     }
 
+
+    Data GetDataFromFile(string path)
+    {
+        try
+        {
+            var dataFile = Path.Combine(root.getFile(), path + ".xml");
+            using var fis = new FileStream(dataFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return new XMLDomMapleData(fis);
+        }
+        catch (FileNotFoundException)
+        {
+            throw new Exception("Datafile " + path + " does not exist in " + Path.GetFullPath(root.getFile()));
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
     public DataDirectoryEntry getRoot()
     {
         return rootForNavigation;
