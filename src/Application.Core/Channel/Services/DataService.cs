@@ -136,6 +136,7 @@ namespace Application.Core.Channel.Services
             var mapManager = c.CurrentServer.getMapFactory();
             player.setMap(mapManager.getMap(player.Map) ?? mapManager.getMap(MapId.HENESYS));
 
+            player.InitialSpawnPoint = o.Character.Spawnpoint;
             var portal = player.MapModel.getPortal(player.InitialSpawnPoint);
             if (portal == null)
             {
