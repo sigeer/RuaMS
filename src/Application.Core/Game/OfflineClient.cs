@@ -13,11 +13,11 @@ namespace Application.Core.Game
     {
         public WorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
 
-        public int Channel => throw new BusinessCharacterOfflineException();
+        public int Channel => 0;
 
-        public int ActualChannel => throw new BusinessCharacterOfflineException();
+        public int ActualChannel => 0;
 
-        public IPlayer? Character => throw new BusinessCharacterOfflineException();
+        public IPlayer? Character => null;
 
         public IPlayer OnlinedCharacter => throw new BusinessCharacterOfflineException();
 
@@ -47,7 +47,7 @@ namespace Application.Core.Game
 
         public int AccountGMLevel => throw new BusinessCharacterOfflineException();
 
-        public AccountCtrl AccountEntity { get; set; }
+        public AccountCtrl? AccountEntity { get; set; }
 
 
         public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();

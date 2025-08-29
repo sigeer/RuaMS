@@ -216,6 +216,10 @@ public class ChangeMapHandler : ChannelHandlerBase
 
     }
 
+    /// <summary>
+    /// 离开商城
+    /// </summary>
+    /// <param name="c"></param>
     private void enterFromCashShop(IChannelClient c)
     {
         var chr = c.OnlinedCharacter;

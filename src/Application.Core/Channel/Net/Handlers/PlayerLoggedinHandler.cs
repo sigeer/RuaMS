@@ -102,12 +102,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
             */
 
-            // 换线，离开商城拍卖回到主世界
-            if (!newcomer)
-            {
-                player.LinkNewChannelClient(c);
-            }
-
             cserv.addPlayer(player);
 
             player.setEnteredChannelWorld(c.Channel);

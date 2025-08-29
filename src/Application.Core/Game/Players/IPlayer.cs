@@ -81,6 +81,8 @@ namespace Application.Core.Game.Players
         public AtomicInteger RewardNxCredit { get; set; }
         public List<FameLogObject> FameLogs { get; }
 
+        Dictionary<Quest, long> QuestExpirations { get; set; }
+
         public object SaveToDBLock { get; set; }
 
         public event EventHandler<IPlayer>? OnLevelUp;
@@ -514,7 +516,6 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void LinkNewChannelClient(IChannelClient newClient);
         void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
         void pickupItem(IMapObject? ob, int petIndex = -1);

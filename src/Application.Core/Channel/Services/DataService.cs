@@ -194,6 +194,7 @@ namespace Application.Core.Channel.Services
                     status.addMedalMap(medalMap.MapId);
                 }
             }
+            player.QuestExpirations = o.RunningTimerQuests.ToDictionary(x => Quest.getInstance(x.QuestId), x => x.ExpiredTime);
 
             player.Skills.LoadData(o.Skills);
 
@@ -327,7 +328,7 @@ namespace Application.Core.Channel.Services
 
             var data = new SyncProto.PlayerSaveDto()
             {
-                Channel = player.ActualChannel,
+                Channel = player.Channel,
                 Character = playerDto
             };
             data.FameLogs.AddRange(_mapper.Map<Dto.FameLogRecordDto[]>(player.FameLogs));
@@ -340,6 +341,7 @@ namespace Application.Core.Channel.Services
             data.TrockLocations.AddRange(player.PlayerTrockLocation.ToDto());
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
             data.QuestStatuses.AddRange(questStatusList);
+            data.RunningTimerQuests.AddRange(player.QuestExpirations.Select(x => new SyncProto.PlayerTimerQuestDto { QuestId = x.Key.getId(), ExpiredTime = x.Value }));
             data.PetIgnores.AddRange(player.getExcluded().Select(x =>
             {
                 var m = new Dto.PetIgnoreDto { PetId = x.Key };

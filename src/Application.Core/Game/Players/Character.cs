@@ -505,19 +505,6 @@ public partial class Player
         channelServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
     }
 
-    public void LinkNewChannelClient(IChannelClient newClient)
-    {
-        RemoveWorldWatcher();
-
-        this.setClient(newClient);
-
-        AddWorldWatcher();
-        this.setMap(newClient.CurrentServer.getMapFactory().getMap(getMapId()));
-        var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
-        this.setPosition(portal.getPosition());
-        this.InitialSpawnPoint = portal.getId();
-    }
-
     public string getMedalText()
     {
         var medalItem = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
@@ -4849,16 +4836,9 @@ public partial class Player
         }
         berserkSchedule = null;
 
-        unregisterChairBuff();
-
         StopPlayerTask();
 
-        if (questExpireTask != null)
-        {
-            questExpireTask.cancel(true);
-        }
-        questExpireTask = null;
-        questExpirations.Clear();
+        QuestExpirations.Clear();
 
         if (recoveryTask != null)
         {
@@ -4894,12 +4874,12 @@ public partial class Player
         partyQuest = null;
 
         TeamModel = null;
-        // Bag.Dispose();
+        RemoveWorldWatcher();
+        Bag.Dispose();
     }
 
     public void logOff()
     {
-        RemoveWorldWatcher();
         Client.CurrentServerContainer.Transport.SendAccountLogout(AccountId);
         setClient(new OfflineClient());
     }
@@ -5050,7 +5030,6 @@ public partial class Player
         if (GuildModel == null)
             return;
 
-        GuildModel.setOnline(Id, false, -1);
         if (GuildRank > 1)
         {
             Client.CurrentServerContainer.GuildManager.LeaveMember(this);

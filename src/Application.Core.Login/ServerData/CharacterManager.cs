@@ -95,6 +95,7 @@ namespace Application.Core.Login.Datas
                 origin.MonsterBooks = _mapper.Map<MonsterbookModel[]>(obj.MonsterBooks);
                 origin.PetIgnores = _mapper.Map<PetIgnoreModel[]>(obj.PetIgnores);
                 origin.QuestStatuses = _mapper.Map<QuestStatusModel[]>(obj.QuestStatuses);
+                origin.RunningTimerQuests = _mapper.Map<TimerQuestModel[]>(obj.RunningTimerQuests);
                 origin.SavedLocations = _mapper.Map<SavedLocationModel[]>(obj.SavedLocations);
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
