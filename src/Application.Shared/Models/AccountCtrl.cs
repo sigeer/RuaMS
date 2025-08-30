@@ -27,5 +27,10 @@ namespace Application.Shared.Models
         public string CurrentMac { get; set; } = null!;
         public string CurrentHwid { get; set; } = null!;
 
+        public string GetSessionRemoteHost()
+        {
+            return $"{CurrentIP}-{CurrentHwid}";
+        }
+
     }
 }

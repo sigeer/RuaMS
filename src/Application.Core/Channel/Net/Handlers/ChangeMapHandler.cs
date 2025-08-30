@@ -57,7 +57,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         bool enteringMapFromCashShop = p.available() == 0;
         if (enteringMapFromCashShop)
         {
-            enterFromCashShop(c);
+            c.LeaveCashShop();
             return;
         }
 
@@ -214,37 +214,5 @@ public class ChangeMapHandler : ChannelHandlerBase
             _logger.LogError(e.ToString());
         }
 
-    }
-
-    /// <summary>
-    /// 离开商城
-    /// </summary>
-    /// <param name="c"></param>
-    private void enterFromCashShop(IChannelClient c)
-    {
-        var chr = c.OnlinedCharacter;
-
-        if (!chr.getCashShop().isOpened())
-        {
-            c.Disconnect(false, false);
-            return;
-        }
-        var socket = c.CurrentServer.getIP();
-        if (socket == null)
-        {
-            c.enableCSActions();
-            return;
-        }
-        chr.getCashShop().open(false);
-
-        chr.setSessionTransitionState();
-        try
-        {
-            c.sendPacket(PacketCreator.getChannelChange(socket));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.ToString());
-        }
     }
 }

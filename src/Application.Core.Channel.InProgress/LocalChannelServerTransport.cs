@@ -18,6 +18,7 @@ using ItemProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
+using SyncProto;
 using System.Net;
 using SystemProto;
 
@@ -673,6 +674,11 @@ namespace Application.Core.Channel.InProgress
         public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data)
         {
             _server.CharacterManager.BatchUpdate(data);
+        }
+
+        public void SyncPlayer(PlayerSaveDto data)
+        {
+            _server.CharacterManager.Update(data);
         }
 
         public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)

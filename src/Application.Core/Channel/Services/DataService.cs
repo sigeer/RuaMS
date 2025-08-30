@@ -6,6 +6,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Map;
+using Application.Shared.Events;
 using AutoMapper;
 using BaseProto;
 using client;
@@ -13,6 +14,7 @@ using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
@@ -43,14 +45,18 @@ namespace Application.Core.Channel.Services
             return _transport.GetPlayerData(clientSession, cid);
         }
 
-        public void SaveChar(Player player, int? setChannel = null)
+        public void SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var dto = Deserialize(player);
-            if (setChannel != null)
+            if (trigger == SyncCharacterTrigger.Logoff)
             {
-                dto.Channel = setChannel.Value;
+                dto.Channel = 0;
             }
-            _server.BatchSyncPlayerManager.Enqueue(dto);
+            dto.Trigger = (int)trigger;
+            if (trigger == SyncCharacterTrigger.ChangeServer)
+                _transport.SyncPlayer(dto); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
+            else
+                _server.BatchSyncPlayerManager.Enqueue(dto);
         }
 
         public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)

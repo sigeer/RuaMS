@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
 using Application.Shared.Team;
@@ -919,7 +920,7 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
 
-            saveCharToDB();
+            saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
 
             // setMPC(new PartyCharacter(this));
 
@@ -3062,7 +3063,7 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
 
-            saveCharToDB();
+            saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
 
             MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
             // setMPC(new PartyCharacter(this));
@@ -4874,15 +4875,17 @@ public partial class Player
         partyQuest = null;
 
         TeamModel = null;
-        RemoveWorldWatcher();
         Bag.Dispose();
     }
 
     public void logOff()
     {
-        Client.CurrentServerContainer.Transport.SendAccountLogout(AccountId);
+        // 切换频道/退出商城的保存不能放在断开连接时处理
+        saveCharToDB(SyncCharacterTrigger.Logoff);
+        RemoveWorldWatcher();
         setClient(new OfflineClient());
     }
+
 
     public void setLoginTime(DateTimeOffset time)
     {

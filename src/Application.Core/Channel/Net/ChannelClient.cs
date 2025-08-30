@@ -1,12 +1,11 @@
 using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.Net.Logging;
-using Application.Shared.Team;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
-using net.server.guild;
 using scripting;
 using scripting.Event;
 using scripting.npc;
@@ -45,9 +44,7 @@ namespace Application.Core.Channel.Net
 
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
-            CurrentServerContainer.UpdateAccountState(AccountEntity!.Id, LoginStage.PlayerServerTransition);
             IsServerTransition = true;
-            CurrentServerContainer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
 
         bool _isDisconnecting = false;
@@ -90,9 +87,9 @@ namespace Application.Core.Channel.Net
                 finally
                 {
                     CurrentServerContainer.RemovePlayer(Character.Id);
+
                     if (!IsServerTransition)
                         Character.logOff();
-                    Character.saveCharToDB();
                 }
             }
 
@@ -349,7 +346,6 @@ namespace Application.Core.Channel.Net
             if (Character == null)
                 return;
 
-
             if (Character.isBanned())
             {
                 Disconnect(false, false);
@@ -378,13 +374,40 @@ namespace Application.Core.Channel.Net
             {
                 CurrentServer.Container.DataService.SaveBuff(Character);
                 SetCharacterOnSessionTransitionState(Character.getId());
-
+                Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
                 sendPacket(PacketCreator.getChannelChange(socket));
             }
             catch (IOException e)
             {
                 log.LogError(e.ToString());
             }
+        }
+
+        /// <summary>
+        /// 离开商城
+        /// </summary>
+        /// <param name="c"></param>
+        public void LeaveCashShop()
+        {
+            if (Character == null)
+                return;
+
+            if (!Character.getCashShop().isOpened())
+            {
+                Disconnect(false, false);
+                return;
+            }
+            var socket = CurrentServer.getIP();
+            if (socket == null)
+            {
+                enableCSActions();
+                return;
+            }
+            Character.getCashShop().open(false);
+
+            SetCharacterOnSessionTransitionState(Character.getId());
+            Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
+            sendPacket(PacketCreator.getChannelChange(socket));
         }
 
         int csattempt = 0;

@@ -104,8 +104,7 @@ namespace Application.Core.Mappers
             CreateMap<Dto.ItemDto, Item>()
                 .ConstructUsing((src, ctx) =>
                 {
-                    var mit = src.InventoryType.GetByType();
-                    if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
+                    if (src.EquipInfo != null)
                         return ctx.Mapper.Map<Equip>(src);
 
                     if (src.PetInfo != null)

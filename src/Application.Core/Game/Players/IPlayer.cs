@@ -11,6 +11,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
+using Application.Shared.Events;
 using Application.Shared.Objects;
 using client;
 using client.autoban;
@@ -554,7 +555,7 @@ namespace Application.Core.Game.Players
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
-        void saveCharToDB(bool notAutosave = true, int? setChannel = null);
+        void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown);
         void saveLocation(string type);
         void saveLocationOnWarp();
         int sellAllItemsFromName(sbyte invTypeId, string name);

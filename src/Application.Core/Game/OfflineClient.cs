@@ -179,6 +179,11 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
+        public void LeaveCashShop()
+        {
+            throw new NotImplementedException();
+        }
+
         public void lockClient()
         {
             throw new BusinessCharacterOfflineException();

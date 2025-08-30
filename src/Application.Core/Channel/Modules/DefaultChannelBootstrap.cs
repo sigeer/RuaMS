@@ -10,7 +10,7 @@ namespace Application.Core.Channel.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
-            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+            Environment.SetEnvironmentVariable("ms-wz", "C:\\Demo\\MS\\wz");
 
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
                     app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),

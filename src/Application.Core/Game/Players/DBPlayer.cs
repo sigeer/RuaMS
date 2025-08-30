@@ -1,3 +1,7 @@
+using Application.Shared.Events;
+using System.Security.Cryptography.Xml;
+using XmlWzReader;
+
 namespace Application.Core.Game.Players
 {
     public partial class Player
@@ -157,7 +161,7 @@ namespace Application.Core.Game.Players
         //}
 
         object saveCharLock = new object();
-        public void saveCharToDB(bool notAutosave = true, int? setChannel = null)
+        public void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             lock (saveCharLock)
             {
@@ -166,7 +170,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                Client.CurrentServer.Container.DataService.SaveChar(this, setChannel);
+                Client.CurrentServer.Container.DataService.SaveChar(this, trigger);
             }
         }
     }

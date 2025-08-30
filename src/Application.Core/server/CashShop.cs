@@ -196,9 +196,6 @@ public class CashShop
     public void open(bool b)
     {
         opened = b;
-
-        if (!opened)
-            Owner.saveCharToDB();
     }
 
     public List<Item> getInventory()

@@ -43,4 +43,5 @@ message PlayerSaveDto {
   repeated int32 wishItems = 19;
   repeated Dto.FameLogRecordDto fameLogs = 20;
   repeated PlayerTimerQuestDto runningTimerQuests = 21;
+  int32 Trigger = 22;
 }
