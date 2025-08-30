@@ -706,5 +706,6 @@ namespace Application.Core.Game.Players
         void CommitUseItem(Item item);
         Ring? GetRingBySourceId(int sourceId);
         void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition);
+        bool isRecvPartySearchInviteEnabled();
     }
 }

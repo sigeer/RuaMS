@@ -5042,4 +5042,13 @@ public partial class Player
             Client.CurrentServerContainer.GuildManager.Disband(this);
         }
     }
+
+    /// <summary>
+    /// 功能已被移除，供js调用
+    /// </summary>
+    /// <returns></returns>
+    public bool isRecvPartySearchInviteEnabled()
+    {
+        return false;
+    }
 }
