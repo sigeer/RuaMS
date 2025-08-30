@@ -4,18 +4,24 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
 using Application.Shared.Constants;
+using Application.Shared.Events;
 using Application.Shared.Items;
+using Application.Shared.Login;
 using Application.Shared.Team;
 using Application.Utility;
+using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Serilog;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -95,6 +101,7 @@ namespace Application.Core.Login.Datas
                 origin.MonsterBooks = _mapper.Map<MonsterbookModel[]>(obj.MonsterBooks);
                 origin.PetIgnores = _mapper.Map<PetIgnoreModel[]>(obj.PetIgnores);
                 origin.QuestStatuses = _mapper.Map<QuestStatusModel[]>(obj.QuestStatuses);
+                origin.RunningTimerQuests = _mapper.Map<TimerQuestModel[]>(obj.RunningTimerQuests);
                 origin.SavedLocations = _mapper.Map<SavedLocationModel[]>(obj.SavedLocations);
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
@@ -102,7 +109,22 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
-                _logger.LogDebug("频道{Channel} 玩家{PlayerName}已缓存", obj.Channel, obj.Character.Name);
+                var trigger = (SyncCharacterTrigger)obj.Trigger;
+                _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}",
+                    obj.Character.Name, GetTriggerDetail(trigger, origin.Channel, obj.Channel));
+                if (trigger == SyncCharacterTrigger.Logoff)
+                {
+                    _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.LOGIN_NOTLOGGEDIN);
+                }
+                else if (trigger == SyncCharacterTrigger.ChangeServer)
+                {
+                    _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.PlayerServerTransition);
+                    if (YamlConfig.config.server.USE_IP_VALIDATION)
+                    {
+                        var accInfo  =_masterServer.AccountManager.GetAccountDto(obj.Character.AccountId)!;
+                        _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
+                    }
+                }
                 _dataStorage.SetCharacter(origin);
 
                 if (oldCharacterData.Level != origin.Character.Level)
@@ -178,6 +200,37 @@ namespace Application.Core.Login.Datas
                     _masterServer.BuddyManager.BroadcastNotify(origin);
                     _masterServer.InvitationManager.RemovePlayerInvitation(origin.Character.Id);
                 }
+            }
+        }
+
+        static string GetTriggerDetail(SyncCharacterTrigger trigger, int oldChannel, int newChannel)
+        {
+            switch (trigger)
+            {
+                case SyncCharacterTrigger.Logoff:
+                    return "离线";
+                case SyncCharacterTrigger.ChangeServer:
+                    {
+                        if (oldChannel == 0)
+                            return $"上线";
+                        else if (oldChannel == -1)
+                            return $"退出商城";
+                        else if (newChannel == -1)
+                            return $"进入商城（从频道{oldChannel}）";
+                        else if (newChannel == 0)
+                            return "下线";
+                        return $"切换频道（从频道{oldChannel}）";
+                    }
+                case SyncCharacterTrigger.LevelChanged:
+                    return "等级变化";
+                case SyncCharacterTrigger.JobChanged:
+                    return "职业变化";
+                case SyncCharacterTrigger.Auto:
+                    return "自动";
+                case SyncCharacterTrigger.System:
+                    return "系统";
+                default:
+                    return "未知";
             }
         }
 

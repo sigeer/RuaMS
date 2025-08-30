@@ -116,10 +116,12 @@ namespace Application.Shared.Client
 
         public override void UserEventTriggered(IChannelHandlerContext ctx, object evt)
         {
+#if !DEBUG
             if (evt is IdleStateEvent idleEvent)
             {
                 CheckIfIdle(idleEvent);
             }
+#endif
         }
 
         private void CheckIfIdle(IdleStateEvent evt)

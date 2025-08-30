@@ -11,6 +11,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
+using Application.Shared.Events;
 using Application.Shared.Objects;
 using client;
 using client.autoban;
@@ -80,6 +81,8 @@ namespace Application.Core.Game.Players
         // 未使用
         public AtomicInteger RewardNxCredit { get; set; }
         public List<FameLogObject> FameLogs { get; }
+
+        Dictionary<Quest, long> QuestExpirations { get; set; }
 
         public object SaveToDBLock { get; set; }
 
@@ -514,7 +517,6 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void LinkNewChannelClient(IChannelClient newClient);
         void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
         void pickupItem(IMapObject? ob, int petIndex = -1);
@@ -553,7 +555,7 @@ namespace Application.Core.Game.Players
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
-        void saveCharToDB(bool notAutosave = true, int? setChannel = null);
+        void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown);
         void saveLocation(string type);
         void saveLocationOnWarp();
         int sellAllItemsFromName(sbyte invTypeId, string name);
@@ -704,5 +706,6 @@ namespace Application.Core.Game.Players
         void CommitUseItem(Item item);
         Ring? GetRingBySourceId(int sourceId);
         void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition);
+        bool isRecvPartySearchInviteEnabled();
     }
 }

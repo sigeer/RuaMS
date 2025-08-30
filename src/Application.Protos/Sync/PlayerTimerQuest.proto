@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package SyncProto;
+
+message PlayerTimerQuestDto {
+  int32 questId = 1;
+  int64 expiredTime = 2;
+}

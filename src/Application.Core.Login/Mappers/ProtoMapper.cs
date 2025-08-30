@@ -56,6 +56,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<QuestStatusModel, Dto.QuestStatusDto>().ReverseMap();
             CreateMap<QuestProgressModel, Dto.QuestProgressDto>().ReverseMap();
             CreateMap<MedalMapModel, Dto.MedalMapDto>().ReverseMap();
+            CreateMap<TimerQuestModel, SyncProto.PlayerTimerQuestDto>().ReverseMap();
 
             CreateMap<SkillModel, Dto.SkillDto>().ReverseMap();
             CreateMap<SkillMacroModel, Dto.SkillMacroDto>().ReverseMap();

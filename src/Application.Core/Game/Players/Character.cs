@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
 using Application.Shared.Team;
@@ -505,19 +506,6 @@ public partial class Player
         channelServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
     }
 
-    public void LinkNewChannelClient(IChannelClient newClient)
-    {
-        RemoveWorldWatcher();
-
-        this.setClient(newClient);
-
-        AddWorldWatcher();
-        this.setMap(newClient.CurrentServer.getMapFactory().getMap(getMapId()));
-        var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
-        this.setPosition(portal.getPosition());
-        this.InitialSpawnPoint = portal.getId();
-    }
-
     public string getMedalText()
     {
         var medalItem = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
@@ -932,7 +920,7 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
 
-            saveCharToDB();
+            saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
 
             // setMPC(new PartyCharacter(this));
 
@@ -3075,7 +3063,7 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
 
-            saveCharToDB();
+            saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
 
             MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
             // setMPC(new PartyCharacter(this));
@@ -4849,16 +4837,9 @@ public partial class Player
         }
         berserkSchedule = null;
 
-        unregisterChairBuff();
-
         StopPlayerTask();
 
-        if (questExpireTask != null)
-        {
-            questExpireTask.cancel(true);
-        }
-        questExpireTask = null;
-        questExpirations.Clear();
+        QuestExpirations.Clear();
 
         if (recoveryTask != null)
         {
@@ -4894,15 +4875,17 @@ public partial class Player
         partyQuest = null;
 
         TeamModel = null;
-        // Bag.Dispose();
+        Bag.Dispose();
     }
 
     public void logOff()
     {
+        // 切换频道/退出商城的保存不能放在断开连接时处理
+        saveCharToDB(SyncCharacterTrigger.Logoff);
         RemoveWorldWatcher();
-        Client.CurrentServerContainer.Transport.SendAccountLogout(AccountId);
         setClient(new OfflineClient());
     }
+
 
     public void setLoginTime(DateTimeOffset time)
     {
@@ -5050,7 +5033,6 @@ public partial class Player
         if (GuildModel == null)
             return;
 
-        GuildModel.setOnline(Id, false, -1);
         if (GuildRank > 1)
         {
             Client.CurrentServerContainer.GuildManager.LeaveMember(this);
@@ -5059,5 +5041,14 @@ public partial class Player
         {
             Client.CurrentServerContainer.GuildManager.Disband(this);
         }
+    }
+
+    /// <summary>
+    /// 功能已被移除，供js调用
+    /// </summary>
+    /// <returns></returns>
+    public bool isRecvPartySearchInviteEnabled()
+    {
+        return false;
     }
 }

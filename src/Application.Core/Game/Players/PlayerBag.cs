@@ -70,7 +70,6 @@ namespace Application.Core.Game.Players
         {
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
 
         public void RemoveFromSlot(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)

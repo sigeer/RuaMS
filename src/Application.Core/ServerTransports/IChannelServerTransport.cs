@@ -188,6 +188,7 @@ namespace Application.Core.ServerTransports
 
         ItemProto.GacheponDataDto GetGachaponData();
         NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
+        void SyncPlayer(PlayerSaveDto data);
         void BatchSyncPlayer(List<PlayerSaveDto> data);
         #region Buddy
         AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request);

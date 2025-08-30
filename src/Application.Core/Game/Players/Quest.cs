@@ -9,7 +9,7 @@ namespace Application.Core.Game.Players
         private List<KeyValuePair<DelayedQuestUpdate, object[]>> npcUpdateQuests = new();
 
         private ScheduledFuture? questExpireTask = null;
-        private Dictionary<Quest, long> questExpirations = new();
+        public Dictionary<Quest, long> QuestExpirations { get; set; } = new();
         private Dictionary<short, QuestStatus> quests;
         public Dictionary<short, QuestStatus> Quests
         {
@@ -336,12 +336,12 @@ namespace Application.Core.Game.Players
             Monitor.Enter(evtLock);
             try
             {
-                foreach (Quest quest in questExpirations.Keys)
+                foreach (Quest quest in QuestExpirations.Keys)
                 {
                     quest.forfeit(this);
                 }
 
-                questExpirations.Clear();
+                QuestExpirations.Clear();
             }
             finally
             {
@@ -354,7 +354,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(evtLock);
             try
             {
-                if (questExpirations.Count > 0)
+                if (QuestExpirations.Count > 0)
                 {
                     if (questExpireTask == null)
                     {
@@ -380,7 +380,7 @@ namespace Application.Core.Game.Players
                 long timeNow = Client.CurrentServerContainer.getCurrentTime();
                 List<Quest> expireList = new();
 
-                foreach (var qe in questExpirations)
+                foreach (var qe in QuestExpirations)
                 {
                     if (qe.Value <= timeNow)
                     {
@@ -393,10 +393,10 @@ namespace Application.Core.Game.Players
                     foreach (Quest quest in expireList)
                     {
                         expireQuest(quest);
-                        questExpirations.Remove(quest);
+                        QuestExpirations.Remove(quest);
                     }
 
-                    if (questExpirations.Count == 0)
+                    if (QuestExpirations.Count == 0)
                     {
                         questExpireTask?.cancel(false);
                         questExpireTask = null;
@@ -423,7 +423,7 @@ namespace Application.Core.Game.Players
                     }, TimeSpan.FromSeconds(10));
                 }
 
-                questExpirations.AddOrUpdate(quest, (long)(Client.CurrentServerContainer.getCurrentTime() + time.TotalMilliseconds));
+                QuestExpirations.AddOrUpdate(quest, (long)(Client.CurrentServerContainer.getCurrentTime() + time.TotalMilliseconds));
             }
             finally
             {

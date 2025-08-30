@@ -287,7 +287,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
             if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
             {
-                chr.saveCharToDB(false);
+                chr.saveCharToDB();
             }
         }
     }

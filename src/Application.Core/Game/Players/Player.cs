@@ -13,7 +13,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
-        public int Channel => awayFromWorld ? -1 : Client.CurrentServer.getId();
+        public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.CurrentServer.getId();
         public IChannelClient Client { get; private set; }
         public bool IsOnlined => Client.IsOnlined;

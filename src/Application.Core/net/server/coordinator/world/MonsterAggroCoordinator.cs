@@ -19,8 +19,9 @@
 */
 
 
-using Application.Core.Channel;
+using Application.Core.Channel.Tasks;
 using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 
 namespace net.server.coordinator.world;
 
@@ -31,7 +32,6 @@ namespace net.server.coordinator.world;
  */
 public class MonsterAggroCoordinator
 {
-    readonly WorldChannel _channelServer;
     private object lockObj = new object();
     private object idleLock = new object();
     private long lastStopTime;
@@ -42,11 +42,11 @@ public class MonsterAggroCoordinator
     private Dictionary<Monster, List<PlayerAggroEntry>> mobSortedAggros = new();
 
     private HashSet<int> mapPuppetEntries = new();
-
-    public MonsterAggroCoordinator(WorldChannel channelServer)
+    MapleMap Map { get; }
+    public MonsterAggroCoordinator(MapleMap map)
     {
-        _channelServer = channelServer;
-        lastStopTime = _channelServer.Container.getCurrentTime();
+        Map = map;
+        lastStopTime = map.ChannelServer.Container.getCurrentTime();
     }
 
     private class PlayerAggroEntry(int cid)
@@ -80,7 +80,7 @@ public class MonsterAggroCoordinator
             Monitor.Exit(idleLock);
         }
 
-        lastStopTime = _channelServer.Container.getCurrentTime();
+        lastStopTime = Map.ChannelServer.Container.getCurrentTime();
     }
 
     public void startAggroCoordinator()
@@ -93,18 +93,18 @@ public class MonsterAggroCoordinator
                 return;
             }
 
-            aggroMonitor = _channelServer.Container.TimerManager.register(() =>
+            aggroMonitor = Map.ChannelServer.Container.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
             {
                 runAggroUpdate(1);
                 runSortLeadingCharactersAggro();
-            }, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+            }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
         }
         finally
         {
             Monitor.Exit(idleLock);
         }
 
-        int timeDelta = (int)Math.Ceiling((double)(_channelServer.Container.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+        int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Container.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
         if (timeDelta > 0)
         {
             runAggroUpdate(timeDelta);
@@ -292,7 +292,7 @@ public class MonsterAggroCoordinator
                         if (toRemoveIdx.Count > 0)
                         {
                             // last to first indexes
-                            toRemoveIdx.Sort((p1, p2) => p1 < p2 ? 1 : p1.Equals(p2) ? 0 : -1);
+                            toRemoveIdx.Sort((p1, p2) => p2.CompareTo(p1));
 
                             foreach (int idx in toRemoveIdx)
                             {
@@ -322,30 +322,11 @@ public class MonsterAggroCoordinator
 
     private static void insertionSortAggroList(List<PlayerAggroEntry> paeList)
     {
-        for (int i = 1; i < paeList.Count; i++)
+        paeList.Sort((a, b) => b.accumulatedDamage.CompareTo(a.accumulatedDamage));
+
+        for (int i = 0; i < paeList.Count; i++)
         {
-            PlayerAggroEntry pae = paeList.get(i);
-            long curAccDmg = pae.accumulatedDamage;
-
-            int j = i - 1;
-            while (j >= 0 && curAccDmg > paeList.get(j).accumulatedDamage)
-            {
-                j -= 1;
-            }
-
-            j += 1;
-            if (j != i)
-            {
-                paeList.RemoveAt(i);
-                paeList.Insert(j, pae);
-            }
-        }
-
-        int d = 0;
-        foreach (PlayerAggroEntry pae in paeList)
-        {
-            pae.entryRank = d;
-            d += 1;
+            paeList[i].entryRank = i;
         }
     }
 

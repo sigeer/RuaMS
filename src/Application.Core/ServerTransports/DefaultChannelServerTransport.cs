@@ -692,6 +692,11 @@ namespace Application.Core.ServerTransports
             _syncClient.BatchPushCharacter(req);
         }
 
+
+        public void SyncPlayer(PlayerSaveDto data)
+        {
+            _syncClient.PushCharacter(data);
+        }
         public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
         {
             return _buddyClient.AddBuddyByName(request);

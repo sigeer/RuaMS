@@ -46,5 +46,6 @@ namespace Application.Core.Client
 
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
+        void LeaveCashShop();
     }
 }

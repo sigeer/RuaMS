@@ -6,6 +6,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Map;
+using Application.Shared.Events;
 using AutoMapper;
 using BaseProto;
 using client;
@@ -13,6 +14,7 @@ using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
@@ -43,14 +45,18 @@ namespace Application.Core.Channel.Services
             return _transport.GetPlayerData(clientSession, cid);
         }
 
-        public void SaveChar(Player player, int? setChannel = null)
+        public void SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var dto = Deserialize(player);
-            if (setChannel != null)
+            if (trigger == SyncCharacterTrigger.Logoff)
             {
-                dto.Channel = setChannel.Value;
+                dto.Channel = 0;
             }
-            _server.BatchSyncPlayerManager.Enqueue(dto);
+            dto.Trigger = (int)trigger;
+            if (trigger == SyncCharacterTrigger.ChangeServer)
+                _transport.SyncPlayer(dto); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
+            else
+                _server.BatchSyncPlayerManager.Enqueue(dto);
         }
 
         public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
@@ -136,6 +142,7 @@ namespace Application.Core.Channel.Services
             var mapManager = c.CurrentServer.getMapFactory();
             player.setMap(mapManager.getMap(player.Map) ?? mapManager.getMap(MapId.HENESYS));
 
+            player.InitialSpawnPoint = o.Character.Spawnpoint;
             var portal = player.MapModel.getPortal(player.InitialSpawnPoint);
             if (portal == null)
             {
@@ -194,6 +201,7 @@ namespace Application.Core.Channel.Services
                     status.addMedalMap(medalMap.MapId);
                 }
             }
+            player.QuestExpirations = o.RunningTimerQuests.ToDictionary(x => Quest.getInstance(x.QuestId), x => x.ExpiredTime);
 
             player.Skills.LoadData(o.Skills);
 
@@ -327,7 +335,7 @@ namespace Application.Core.Channel.Services
 
             var data = new SyncProto.PlayerSaveDto()
             {
-                Channel = player.ActualChannel,
+                Channel = player.Channel,
                 Character = playerDto
             };
             data.FameLogs.AddRange(_mapper.Map<Dto.FameLogRecordDto[]>(player.FameLogs));
@@ -340,6 +348,7 @@ namespace Application.Core.Channel.Services
             data.TrockLocations.AddRange(player.PlayerTrockLocation.ToDto());
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
             data.QuestStatuses.AddRange(questStatusList);
+            data.RunningTimerQuests.AddRange(player.QuestExpirations.Select(x => new SyncProto.PlayerTimerQuestDto { QuestId = x.Key.getId(), ExpiredTime = x.Value }));
             data.PetIgnores.AddRange(player.getExcluded().Select(x =>
             {
                 var m = new Dto.PetIgnoreDto { PetId = x.Key };

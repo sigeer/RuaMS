@@ -160,7 +160,7 @@ public class MapleMap : IMap
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
         this.MonsterRate = 1;
-        aggroMonitor = new MonsterAggroCoordinator(worldChannel);
+        aggroMonitor = new MonsterAggroCoordinator(this);
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
         mapName = "";

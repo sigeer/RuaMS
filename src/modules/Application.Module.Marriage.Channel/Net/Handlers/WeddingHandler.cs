@@ -114,7 +114,7 @@ public class WeddingHandler : ChannelHandlerBase
                                         {
                                             if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
                                             {
-                                                chr.saveCharToDB(false);
+                                                chr.saveCharToDB();
                                             }
                                             _weddingManager.StoreGifts(marriage, groomWishlist);
                                         }

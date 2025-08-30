@@ -281,7 +281,7 @@ namespace Application.Core.Channel.Services
         {
             foreach (var chr in _server.PlayerStorage.getAllCharacters())
             {
-                chr.saveCharToDB(setChannel: chr.Channel);
+                chr.saveCharToDB(trigger: SyncCharacterTrigger.System);
             }
             _server.BroadcastGMPacket(PacketCreator.serverNotice(5, "玩家数据已同步"));
         }

@@ -31,4 +31,10 @@ namespace Application.Core.Login.Models
     {
         public int MapId { get; set; }
     }
+
+    public class TimerQuestModel
+    {
+        public int QuestId { get; set; }
+        public long ExpiredTime { get; set; }
+    }
 }
