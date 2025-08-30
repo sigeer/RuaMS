@@ -172,7 +172,7 @@ public class MapleMap : IMap
         if (EventInstanceManager == null)
             InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
         else
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}";
+            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}_{GetHashCode()}";
 
         ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
     }
