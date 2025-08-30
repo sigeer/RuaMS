@@ -170,7 +170,7 @@ public class MapleMap : IMap
         log = LogFactory.GetLogger($"Map/{range}");
 
         if (EventInstanceManager == null)
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
+            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}_{GetHashCode()}";
         else
             InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}";
 
