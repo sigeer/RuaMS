@@ -259,7 +259,7 @@ namespace Application.Core.Game.Players
         {
             if (_diseaseExpireTask == null)
             {
-                _diseaseExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
+                _diseaseExpireTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
                 {
                     HashSet<Disease> toExpire = new();
 
@@ -286,7 +286,7 @@ namespace Application.Core.Game.Players
                         dispelDebuff(d);
                     }
 
-                }, 1500);
+                }), 1500);
             }
         }
     }

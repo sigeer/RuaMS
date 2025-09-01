@@ -166,7 +166,7 @@ namespace Application.Core.Game.Players
         {
             if (_skillCooldownTask == null)
             {
-                _skillCooldownTask = Client.CurrentServerContainer.TimerManager.register(() =>
+                _skillCooldownTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
                 {
                     HashSet<KeyValuePair<int, CooldownValueHolder>> es;
 
@@ -192,7 +192,7 @@ namespace Application.Core.Game.Players
                             sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
                         }
                     }
-                }, 1500);
+                }), 1500);
             }
         }
 

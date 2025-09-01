@@ -26,7 +26,7 @@ namespace Application.Core.Game.Players
         {
             if (itemExpireTask == null)
             {
-                itemExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
+                itemExpireTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_ItemExpireTask", () =>
                 {
                     bool deletedCoupon = false;
 
@@ -120,7 +120,7 @@ namespace Application.Core.Game.Players
                         }
                     }
 
-                }, 60000);
+                }), 60000);
             }
         }
 

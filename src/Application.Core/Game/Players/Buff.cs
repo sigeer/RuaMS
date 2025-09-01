@@ -210,7 +210,7 @@ namespace Application.Core.Game.Players
         {
             if (_buffExpireTask == null)
             {
-                _buffExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
+                _buffExpireTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
                 {
                     HashSet<KeyValuePair<int, long>> es;
                     List<BuffStatValueHolder> toCancel = new();
@@ -241,7 +241,7 @@ namespace Application.Core.Game.Players
                         cancelEffect(mbsvh.effect, false, mbsvh.startTime);
                     }
 
-                }, 1500);
+                }), 1500);
             }
         }
 
