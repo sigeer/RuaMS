@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var theForestOfEvil2 = em.getChannelServer().getMapFactory().getMap(100040106);
+    var theForestOfEvil2 = em.GetMap(100040106);
     var faust2 = LifeFactory.getMonster(5220002);
 
     if (theForestOfEvil2.getMonsterById(5220002) != null) {

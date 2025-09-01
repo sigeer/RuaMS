@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
 					   Matthias Butz <matze@odinms.de>
@@ -43,7 +43,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var theSeaweedTower = em.getChannelServer().getMapFactory().getMap(230020100);
+    var theSeaweedTower = em.GetMap(230020100);
     var seruf = LifeFactory.getMonster(4220001);
 
     if (theSeaweedTower.getMonsterById(4220001) != null) {

@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -31,9 +31,9 @@ var fightTime = 60;
 var timer = 1000 * 60 * fightTime;
 
 function init() {
-    exitMap = em.getChannelServer().getMapFactory().getMap(103040400);
-    entryMap = em.getChannelServer().getMapFactory().getMap(103040410);
-    otherMap = em.getChannelServer().getMapFactory().getMap(103040420);
+    exitMap = em.GetMap(103040400);
+    entryMap = em.GetMap(103040410);
+    otherMap = em.GetMap(103040420);
 }
 
 function setup(level, lobbyid) {

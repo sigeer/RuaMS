@@ -4,6 +4,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 local config = {
     -- 注册的事件名
     name = "",
+    instanceName = "",
     minPlayers = 1,
     maxPlayers = 6,
     minLevel = 1,
@@ -11,6 +12,7 @@ local config = {
     entryMap = 0,
     entryPortal = 0,
     exitMap = 0,
+    exitPortal = 0,
     recruitMap = 0,
     clearMap = 0,
     warpTeamWhenClear = false,
@@ -70,24 +72,4 @@ function Sample:setup(level, lobbyid)
 end
 
 -- 创建事件实例
-local event = Sample:new(config)
-
--- 导出所有方法到全局环境（包括继承的方法）
-local function exportMethods(obj)
-    local exported = {}
-    local current = obj
-    while current do
-        for k, v in pairs(current) do
-            if type(v) == "function" and not exported[k] then
-                _ENV[k] = function(...) return v(event, ...) end
-                exported[k] = true
-            end
-        end
-        current = getmetatable(current)
-        if current then
-            current = current.__index
-        end
-    end
-end
-
-exportMethods(event)
+Sample:new(config)

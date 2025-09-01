@@ -30,7 +30,7 @@
 var hotSand;
 
 function init() {
-    hotSand = em.getChannelServer().getMapFactory().getMap(110040000);
+    hotSand = em.GetMap(110040000);
     scheduleNew();
 }
 

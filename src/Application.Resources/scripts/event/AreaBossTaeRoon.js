@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var territoryOfWanderingBear = em.getChannelServer().getMapFactory().getMap(250010304);
+    var territoryOfWanderingBear = em.GetMap(250010304);
     var taeRoon = LifeFactory.getMonster(7220000);
 
     if (territoryOfWanderingBear.getMonsterById(7220000) != null) {

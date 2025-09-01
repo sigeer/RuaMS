@@ -28,42 +28,42 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
-    em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
+    em.GetMap(222020100).resetReactors();
+    em.GetMap(222020200).resetReactors();
 
     em.setProperty("current", "222020100");
     scheduleNew();
 }
 
 function scheduleNew() {
-    em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
-    em.getChannelServer().getMapFactory().getMap(222020200).setReactorState();
+    em.GetMap(222020100).resetReactors();
+    em.GetMap(222020200).setReactorState();
     em.schedule("goingUpNow", beginTime);
 }
 
 function goingUpNow() {
     em.setProperty("current", "222020111");
-    em.getChannelServer().getMapFactory().getMap(222020110).warpEveryone(222020111);
+    em.GetMap(222020110).warpEveryone(222020111);
 
     em.schedule("isUpNow", rideTime);
 
-    em.getChannelServer().getMapFactory().getMap(222020100).setReactorState();
+    em.GetMap(222020100).setReactorState();
 }
 
 function goingDownNow() {
     em.setProperty("current", "222020211");
-    em.getChannelServer().getMapFactory().getMap(222020210).warpEveryone(222020211);
+    em.GetMap(222020210).warpEveryone(222020211);
 
     em.schedule("isDownNow", rideTime);
 
-    em.getChannelServer().getMapFactory().getMap(222020200).setReactorState();
+    em.GetMap(222020200).setReactorState();
 }
 
 function isUpNow() {
     em.setProperty("current", "222020200");
 
-    em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
-    em.getChannelServer().getMapFactory().getMap(222020111).warpEveryone(222020200, 0);
+    em.GetMap(222020200).resetReactors();
+    em.GetMap(222020111).warpEveryone(222020200, 0);
 
     em.schedule("goingDownNow", beginTime);
 }
@@ -71,8 +71,8 @@ function isUpNow() {
 function isDownNow() {
     em.setProperty("current", "222020100");
 
-    em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
-    em.getChannelServer().getMapFactory().getMap(222020211).warpEveryone(222020100, 4);
+    em.GetMap(222020100).resetReactors();
+    em.GetMap(222020211).warpEveryone(222020100, 4);
 
     em.schedule("goingUpNow", beginTime);
 }

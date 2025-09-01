@@ -1,4 +1,4 @@
-﻿var KC_bfd;
+var KC_bfd;
 var Plane_to_CBD;
 var CBD_docked;
 var CBD_bfd;
@@ -15,12 +15,12 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    KC_bfd = em.getChannelServer().getMapFactory().getMap(540010100);
-    CBD_bfd = em.getChannelServer().getMapFactory().getMap(540010001);
-    Plane_to_CBD = em.getChannelServer().getMapFactory().getMap(540010101);
-    Plane_to_KC = em.getChannelServer().getMapFactory().getMap(540010002);
-    CBD_docked = em.getChannelServer().getMapFactory().getMap(540010000);
-    KC_docked = em.getChannelServer().getMapFactory().getMap(103000000);
+    KC_bfd = em.GetMap(540010100);
+    CBD_bfd = em.GetMap(540010001);
+    Plane_to_CBD = em.GetMap(540010101);
+    Plane_to_KC = em.GetMap(540010002);
+    CBD_docked = em.GetMap(540010000);
+    KC_docked = em.GetMap(103000000);
     scheduleNew();
 }
 

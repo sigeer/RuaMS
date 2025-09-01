@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -43,7 +43,7 @@ function start() {
     var bossMapid = 677000012;
     var bossMsg = "Astaroth has appeared!";
 
-    var map = em.getChannelServer().getMapFactory().getMap(bossMapid);
+    var map = em.GetMap(bossMapid);
     if (map.getMonsterById(bossMobid) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);
         return;

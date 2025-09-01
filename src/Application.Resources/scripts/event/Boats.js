@@ -28,15 +28,15 @@ function init() {
     invasionDelayTime = em.getTransportationTime(invasionDelayTime);
 
     // 获取地图实例
-    Orbis_btf = em.getChannelServer().getMapFactory().getMap(200000112);    //候船室<开往魔法密林>
-    Ellinia_btf = em.getChannelServer().getMapFactory().getMap(101000301);  //候船室<开往天空之城>
-    Boat_to_Orbis = em.getChannelServer().getMapFactory().getMap(200090010);    //开往天空之城
-    Boat_to_Ellinia = em.getChannelServer().getMapFactory().getMap(200090000);  //开往魔法密林
-    Orbis_Boat_Cabin = em.getChannelServer().getMapFactory().getMap(200090011); //船仓<开往天空之城>
-    Ellinia_Boat_Cabin = em.getChannelServer().getMapFactory().getMap(200090001);   //船仓<开往魔法密林>
-    Ellinia_docked = em.getChannelServer().getMapFactory().getMap(101000300);   //魔法密林码头
-    Orbis_Station = em.getChannelServer().getMapFactory().getMap(200000100);    //天空之城售票处
-    Orbis_docked = em.getChannelServer().getMapFactory().getMap(200000111);     //码头<开往魔法密林>
+    Orbis_btf = em.GetMap(200000112);    //候船室<开往魔法密林>
+    Ellinia_btf = em.GetMap(101000301);  //候船室<开往天空之城>
+    Boat_to_Orbis = em.GetMap(200090010);    //开往天空之城
+    Boat_to_Ellinia = em.GetMap(200090000);  //开往魔法密林
+    Orbis_Boat_Cabin = em.GetMap(200090011); //船仓<开往天空之城>
+    Ellinia_Boat_Cabin = em.GetMap(200090001);   //船仓<开往魔法密林>
+    Ellinia_docked = em.GetMap(101000300);   //魔法密林码头
+    Orbis_Station = em.GetMap(200000100);    //天空之城售票处
+    Orbis_docked = em.GetMap(200000111);     //码头<开往魔法密林>
 
     // 设置码头状态为已停靠
     Ellinia_docked.setDocked(true);

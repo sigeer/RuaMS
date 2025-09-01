@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var labSecretBasementPath = em.getChannelServer().getMapFactory().getMap(261030000);
+    var labSecretBasementPath = em.GetMap(261030000);
     var chimera = LifeFactory.getMonster(8220002);
 
     if (labSecretBasementPath.getMonsterById(8220002) != null) {
