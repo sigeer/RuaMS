@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -215,7 +215,7 @@ function allMonstersDead(eim) {}
 function cancelSchedule() {}
 
 function updateGateState(newState) {    // thanks Conrad for noticing missing gate update
-    em.getChannelServer().getMapFactory().getMap(211042300).getReactorById(2118002).forceHitReactor(newState);
+    em.GetMap(211042300).getReactorById(2118002).forceHitReactor(newState);
 }
 
 function dispose(eim) {

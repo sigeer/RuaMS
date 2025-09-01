@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -41,7 +41,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var thicketAroundTheBeach3 = em.getChannelServer().getMapFactory().getMap(104000400);
+    var thicketAroundTheBeach3 = em.GetMap(104000400);
     var mano = LifeFactory.getMonster(2220000);
     if (thicketAroundTheBeach3.getMonsterById(2220000) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);

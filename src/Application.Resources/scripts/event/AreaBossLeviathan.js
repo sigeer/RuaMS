@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var leviathansCanyon = em.getChannelServer().getMapFactory().getMap(240040401);
+    var leviathansCanyon = em.GetMap(240040401);
     var leviathan = LifeFactory.getMonster(8220003);
     if (leviathansCanyon.getMonsterById(8220003) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);

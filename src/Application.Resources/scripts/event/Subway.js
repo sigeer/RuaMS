@@ -1,4 +1,4 @@
-﻿var KC_Waiting;
+var KC_Waiting;
 var Subway_to_KC;
 var KC_docked;
 var NLC_Waiting;
@@ -15,12 +15,12 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    KC_Waiting = em.getChannelServer().getMapFactory().getMap(600010004);
-    NLC_Waiting = em.getChannelServer().getMapFactory().getMap(600010002);
-    Subway_to_KC = em.getChannelServer().getMapFactory().getMap(600010003);
-    Subway_to_NLC = em.getChannelServer().getMapFactory().getMap(600010005);
-    KC_docked = em.getChannelServer().getMapFactory().getMap(103000100);
-    NLC_docked = em.getChannelServer().getMapFactory().getMap(600010001);
+    KC_Waiting = em.GetMap(600010004);
+    NLC_Waiting = em.GetMap(600010002);
+    Subway_to_KC = em.GetMap(600010003);
+    Subway_to_NLC = em.GetMap(600010005);
+    KC_docked = em.GetMap(103000100);
+    NLC_docked = em.GetMap(600010001);
     scheduleNew();
 }
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var dangeroudCroko1 = em.getChannelServer().getMapFactory().getMap(107000300);
+    var dangeroudCroko1 = em.GetMap(107000300);
     if (dangeroudCroko1.getMonsterById(6220000) != null) {
         setupTask = em.schedule("start", 3 * 60 * 60 * 1000);
         return;

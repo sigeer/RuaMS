@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
 					   Matthias Butz <matze@odinms.de>
@@ -43,7 +43,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var lostTime2 = em.getChannelServer().getMapFactory().getMap(220050200);
+    var lostTime2 = em.GetMap(220050200);
     var timer3 = LifeFactory.getMonster(5220003);
 
     if (lostTime2.getMonsterById(5220003) != null) {

@@ -38,13 +38,13 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    Orbis_btf = em.getChannelServer().getMapFactory().getMap(200000152);
-    Ariant_btf = em.getChannelServer().getMapFactory().getMap(260000110);
-    Genie_to_Orbis = em.getChannelServer().getMapFactory().getMap(200090410);
-    Genie_to_Ariant = em.getChannelServer().getMapFactory().getMap(200090400);
-    Orbis_docked = em.getChannelServer().getMapFactory().getMap(200000151);
-    Ariant_docked = em.getChannelServer().getMapFactory().getMap(260000100);
-    Orbis_Station = em.getChannelServer().getMapFactory().getMap(200000100);
+    Orbis_btf = em.GetMap(200000152);
+    Ariant_btf = em.GetMap(260000110);
+    Genie_to_Orbis = em.GetMap(200090410);
+    Genie_to_Ariant = em.GetMap(200090400);
+    Orbis_docked = em.GetMap(200000151);
+    Ariant_docked = em.GetMap(260000100);
+    Orbis_Station = em.GetMap(200000100);
 
     scheduleNew();
 }

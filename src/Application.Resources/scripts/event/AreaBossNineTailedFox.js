@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var moonRidge = em.getChannelServer().getMapFactory().getMap(222010310);
+    var moonRidge = em.GetMap(222010310);
     var nineTailedFox = LifeFactory.getMonster(7220001);
     if (moonRidge.getMonsterById(7220001) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);

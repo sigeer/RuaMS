@@ -1,11 +1,11 @@
-﻿var entryMap;
+var entryMap;
 var exitMap;
 var eventLength = 20;
 
 function init() {
     em.setProperty("noEntry", "false");
-    entryMap = em.getChannelServer().getMapFactory().getMap(922000000);
-    exitMap = em.getChannelServer().getMapFactory().getMap(922000009);
+    entryMap = em.GetMap(922000000);
+    exitMap = em.GetMap(922000009);
 }
 
 function setup(level, lobbyid) {

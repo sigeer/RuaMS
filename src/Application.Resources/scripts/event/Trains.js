@@ -18,14 +18,14 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    Orbis_btf = em.getChannelServer().getMapFactory().getMap(200000122);
-    Ludibrium_btf = em.getChannelServer().getMapFactory().getMap(220000111);
-    Train_to_Orbis = em.getChannelServer().getMapFactory().getMap(200090110);
-    Train_to_Ludibrium = em.getChannelServer().getMapFactory().getMap(200090100);
-    Orbis_docked = em.getChannelServer().getMapFactory().getMap(200000121);
-    Ludibrium_docked = em.getChannelServer().getMapFactory().getMap(220000110);
-    Orbis_Station = em.getChannelServer().getMapFactory().getMap(200000100);
-    Ludibrium_Station = em.getChannelServer().getMapFactory().getMap(220000100);
+    Orbis_btf = em.GetMap(200000122);
+    Ludibrium_btf = em.GetMap(220000111);
+    Train_to_Orbis = em.GetMap(200090110);
+    Train_to_Ludibrium = em.GetMap(200090100);
+    Orbis_docked = em.GetMap(200000121);
+    Ludibrium_docked = em.GetMap(220000110);
+    Orbis_Station = em.GetMap(200000100);
+    Ludibrium_Station = em.GetMap(220000100);
 
     scheduleNew();
 }

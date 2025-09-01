@@ -57,14 +57,14 @@ function init() {
     beginTime = em.getTransportationTime(beginTime);
     rideTime = em.getTransportationTime(rideTime);
 
-    Orbis_btf = em.getChannelServer().getMapFactory().getMap(200000132);
-    Leafre_btf = em.getChannelServer().getMapFactory().getMap(240000111);
-    Cabin_to_Orbis = em.getChannelServer().getMapFactory().getMap(200090210);
-    Cabin_to_Leafre = em.getChannelServer().getMapFactory().getMap(200090200);
-    Orbis_docked = em.getChannelServer().getMapFactory().getMap(200000131);
-    Leafre_docked = em.getChannelServer().getMapFactory().getMap(240000110);
-    Orbis_Station = em.getChannelServer().getMapFactory().getMap(200000100);
-    Leafre_Station = em.getChannelServer().getMapFactory().getMap(240000100);
+    Orbis_btf = em.GetMap(200000132);
+    Leafre_btf = em.GetMap(240000111);
+    Cabin_to_Orbis = em.GetMap(200090210);
+    Cabin_to_Leafre = em.GetMap(200090200);
+    Orbis_docked = em.GetMap(200000131);
+    Leafre_docked = em.GetMap(240000110);
+    Orbis_Station = em.GetMap(200000100);
+    Leafre_Station = em.GetMap(240000100);
 
     scheduleNew();
 }

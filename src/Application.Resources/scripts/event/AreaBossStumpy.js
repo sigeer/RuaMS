@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var eastRockyMountain5 = em.getChannelServer().getMapFactory().getMap(101030404);
+    var eastRockyMountain5 = em.GetMap(101030404);
     var stumpy = LifeFactory.getMonster(3220000);
 
     if (eastRockyMountain5.getMonsterById(3220000) != null) {

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -41,7 +41,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var herbGarden = em.getChannelServer().getMapFactory().getMap(251010102);
+    var herbGarden = em.GetMap(251010102);
 
     if (herbGarden.getMonsterById(5220004) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);

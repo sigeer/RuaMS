@@ -42,7 +42,7 @@ function cancelSchedule() {
 }
 
 function start() {
-    var goblinForest2 = em.getChannelServer().getMapFactory().getMap(250010504);
+    var goblinForest2 = em.GetMap(250010504);
     var kingSageCat = LifeFactory.getMonster(7220002);
 
     if (goblinForest2.getMonsterById(7220002) != null) {

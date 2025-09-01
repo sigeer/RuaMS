@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -45,7 +45,7 @@ function cancelSchedule() {
 
 function start() {
     var eliza = LifeFactory.getMonster(8220000);
-    var stairwayToTheSky2 = em.getChannelServer().getMapFactory().getMap(200010300);
+    var stairwayToTheSky2 = em.GetMap(200010300);
 
     if (stairwayToTheSky2.getMonsterById(8220000) != null) {
         em.schedule("start", 3 * 60 * 60 * 1000);
