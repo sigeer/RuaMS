@@ -358,11 +358,8 @@ namespace Application.Core.Game.Players
                 {
                     if (questExpireTask == null)
                     {
-                        questExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
-                        {
-                            runQuestExpireTask();
-
-                        }, TimeSpan.FromSeconds(10));
+                        questExpireTask = Client.CurrentServerContainer.TimerManager.register(
+                            new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", runQuestExpireTask), TimeSpan.FromSeconds(10));
                     }
                 }
             }
