@@ -30,19 +30,10 @@ public class MinTamenessRequirement : AbstractQuestRequirement
     private int minTameness;
 
 
-    public MinTamenessRequirement(Quest quest, Data data) : base(QuestRequirementType.MIN_PET_TAMENESS)
+    public MinTamenessRequirement(Quest quest, int data) : base(QuestRequirementType.MIN_PET_TAMENESS)
     {
-        processData(data);
+        minTameness = data;
     }
-
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        minTameness = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

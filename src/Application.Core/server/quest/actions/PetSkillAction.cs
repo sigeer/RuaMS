@@ -32,18 +32,13 @@ public class PetSkillAction : AbstractQuestAction
 {
     int flag;
 
-    public PetSkillAction(Quest quest, Data data) : base(QuestActionType.PETSKILL, quest)
+    public PetSkillAction(Quest quest, int data) : base(QuestActionType.PETSKILL, quest)
     {
 
         questID = quest.getId();
-        processData(data);
+        flag = data;
     }
 
-
-    public override void processData(Data data)
-    {
-        flag = DataTool.getInt("petskill", data);
-    }
 
     public override bool check(IPlayer chr, int? extSelection)
     {

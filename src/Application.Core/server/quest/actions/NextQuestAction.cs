@@ -33,17 +33,11 @@ public class NextQuestAction : AbstractQuestAction
 {
     int nextQuest;
 
-    public NextQuestAction(Quest quest, Data data) : base(QuestActionType.NEXTQUEST, quest)
+    public NextQuestAction(Quest quest, int data) : base(QuestActionType.NEXTQUEST, quest)
     {
-
-        processData(data);
+        nextQuest = data;
     }
 
-
-    public override void processData(Data data)
-    {
-        nextQuest = DataTool.getInt(data);
-    }
 
     public override void run(IPlayer chr, int? extSelection)
     {

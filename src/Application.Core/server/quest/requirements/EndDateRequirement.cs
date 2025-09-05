@@ -20,6 +20,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using System.Globalization;
+
 namespace server.quest.requirements;
 
 
@@ -29,26 +31,21 @@ namespace server.quest.requirements;
  */
 public class EndDateRequirement : AbstractQuestRequirement
 {
-    private string timeStr;
+    private DateTimeOffset timeStr;
 
 
-    public EndDateRequirement(Quest quest, Data data) : base(QuestRequirementType.END_DATE)
+    public EndDateRequirement(Quest quest, string dateString) : base(QuestRequirementType.END_DATE)
     {
-        processData(data);
+        DateTime dateTime = DateTime.ParseExact(
+            dateString,
+            "yyyyMMddHH",
+            CultureInfo.InvariantCulture
+        );
+
+        timeStr = new DateTimeOffset(dateTime, TimeSpan.Zero);
     }
-
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        timeStr = DataTool.getString(data);
-    }
-
-
     public override bool check(IPlayer chr, int? npcid)
     {
-        var dt = DateTimeOffset.Parse(timeStr);
-        return dt >= chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
+        return timeStr >= chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
     }
 }

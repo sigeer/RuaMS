@@ -26,6 +26,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using server.quest;
 using tools;
+using static Application.Templates.Quest.QuestAct;
 
 namespace server.quest.actions;
 
@@ -37,44 +38,9 @@ public class ItemAction : AbstractQuestAction
 {
     List<ItemData> items = new();
 
-    public ItemAction(Quest quest, Data data) : base(QuestActionType.ITEM, quest)
+    public ItemAction(Quest quest, ActItem[] data) : base(QuestActionType.ITEM, quest)
     {
-
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        foreach (Data iEntry in data.getChildren())
-        {
-            int id = DataTool.getInt(iEntry.getChildByPath("id"));
-            int count = DataTool.getInt(iEntry.getChildByPath("count"), 1);
-            int period = DataTool.getInt(iEntry.getChildByPath("period"), 0);
-
-            int? prop = null;
-            var propData = iEntry.getChildByPath("prop");
-            if (propData != null)
-            {
-                prop = DataTool.getInt(propData);
-            }
-
-            int gender = 2;
-            if (iEntry.getChildByPath("gender") != null)
-            {
-                gender = DataTool.getInt(iEntry.getChildByPath("gender"));
-            }
-
-            int job = -1;
-            if (iEntry.getChildByPath("job") != null)
-            {
-                job = DataTool.getInt(iEntry.getChildByPath("job"));
-            }
-
-            items.Add(new ItemData(int.Parse(iEntry.getName()), id, count, prop, job, gender, period));
-        }
-
-        items.Sort((o1, o2) => o1.map - o2.map);
+        items.AddRange(data.Select(x => new ItemData(x.ItemID, x.Count, x.Prop, x.Job, x.Gender, x.Period)));
     }
 
     public override void run(IPlayer chr, int? extSelection)
@@ -378,12 +344,11 @@ public class ItemAction : AbstractQuestAction
 
     private class ItemData
     {
-        public int map, id, count, job, gender, period;
+        public int id, count, job, gender, period;
         private int? prop;
 
-        public ItemData(int map, int id, int count, int? prop, int job, int gender, int period)
+        public ItemData(int id, int count, int? prop, int job, int gender, int period)
         {
-            this.map = map;
             this.id = id;
             this.count = count;
             this.prop = prop;

@@ -20,6 +20,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using static Application.Templates.Quest.QuestDemand;
+
 namespace server.quest.requirements;
 
 
@@ -33,18 +35,9 @@ public class PetRequirement : AbstractQuestRequirement
     List<int> petIDs = new();
 
 
-    public PetRequirement(Quest quest, Data data) : base(QuestRequirementType.PET)
+    public PetRequirement(Quest quest, PetInfo[] data) : base(QuestRequirementType.PET)
     {
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        foreach (Data petData in data.getChildren())
-        {
-            petIDs.Add(DataTool.getInt(petData.getChildByPath("id")));
-        }
+        petIDs.AddRange(data.Select(x => x.PetID));
     }
 
 

@@ -26,14 +26,13 @@ namespace server.quest.actions;
 public class PetSpeedAction : AbstractQuestAction
 {
 
-    public PetSpeedAction(Quest quest, Data data) : base(QuestActionType.PETTAMENESS, quest)
+    public PetSpeedAction(Quest quest, int data) : base(QuestActionType.PETTAMENESS, quest)
     {
 
         questID = quest.getId();
     }
 
 
-    public override void processData(Data data) { }
 
     public override void run(IPlayer chr, int? extSelection)
     {

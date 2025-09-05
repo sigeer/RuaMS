@@ -28,18 +28,12 @@ public class InfoAction : AbstractQuestAction
 
     private string info;
 
-    public InfoAction(Quest quest, Data data) : base(QuestActionType.INFO, quest)
+    public InfoAction(Quest quest, string data) : base(QuestActionType.INFO, quest)
     {
 
         questID = quest.getId();
-        processData(data);
+        info = data;
     }
-
-    public override void processData(Data data)
-    {
-        info = DataTool.getString(data) ?? "";
-    }
-
 
     public override void run(IPlayer chr, int? extSelection)
     {

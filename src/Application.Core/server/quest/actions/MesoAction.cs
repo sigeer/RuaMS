@@ -29,18 +29,13 @@ public class MesoAction : AbstractQuestAction
 {
     int mesos;
 
-    public MesoAction(Quest quest, Data data) : base(QuestActionType.MESO, quest)
+    public MesoAction(Quest quest, int data) : base(QuestActionType.MESO, quest)
     {
 
         questID = quest.getId();
-        processData(data);
+        mesos = data;
     }
 
-
-    public override void processData(Data data)
-    {
-        mesos = DataTool.getInt(data);
-    }
 
     public override void run(IPlayer chr, int? extSelection)
     {

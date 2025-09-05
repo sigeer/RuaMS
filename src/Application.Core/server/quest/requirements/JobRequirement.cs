@@ -30,22 +30,11 @@ namespace server.quest.requirements;
  */
 public class JobRequirement : AbstractQuestRequirement
 {
-    List<int> jobs = new();
+    int[] jobs;
 
-    public JobRequirement(Quest quest, Data data) : base(QuestRequirementType.JOB)
+    public JobRequirement(Quest quest, int[] data) : base(QuestRequirementType.JOB)
     {
-        processData(data);
-    }
-
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        foreach (Data jobEntry in data.getChildren())
-        {
-            jobs.Add(DataTool.getInt(jobEntry));
-        }
+        jobs = data;
     }
 
 
