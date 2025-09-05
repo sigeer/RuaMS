@@ -67,7 +67,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
         equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
-        etcData = DataProviderFactory.getDataProvider(WZFiles.ETC);
 
         isQuestItemCache.Add(0, false);
         isPartyQuestItemCache.Add(0, false);
@@ -87,7 +86,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     protected DataProvider itemData;
     protected DataProvider equipData;
-    protected DataProvider etcData;
+
     protected Dictionary<int, short> slotMaxCache = new();
     protected Dictionary<int, StatEffect> itemEffects = new();
     protected Dictionary<int, Dictionary<string, int>> equipStatsCache = new();
