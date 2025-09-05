@@ -17,12 +17,7 @@ namespace Application.Templates.XmlWzReader.Provider
             _files = Directory.GetFiles(GetPath());
         }
 
-        protected override void GetDataFromImg(string path)
-        {
-            LoadAll();
-        }
-
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
             List<QuestInfoTemplate> infoList = [];
             List<QuestActTemplate> actList = [];
@@ -87,6 +82,12 @@ namespace Application.Templates.XmlWzReader.Provider
             {
                 InsertItem(item);
             }
+            return allData;
+        }
+
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
+        {
+            return GetDataFromImg(string.Empty);
         }
 
         private static void ProcessCheck(List<QuestCheckTemplate> checkList, XElement xDoc)
@@ -337,6 +338,25 @@ namespace Application.Templates.XmlWzReader.Provider
                                     list.Add(itemModel);
                                 }
                                 act.Skills = list.ToArray();
+                            }
+
+                            else if (propName == "quest")
+                            {
+                                List<ActQuest> list = [];
+                                foreach (var itemNode in stepPropNode.Elements())
+                                {
+                                    var itemModel = new ActQuest();
+                                    foreach (var itemProp in itemNode.Elements())
+                                    {
+                                        var itemPropName = itemProp.GetName();
+                                        if (itemPropName == "id")
+                                            itemModel.QuestId = itemProp.GetIntValue();
+                                        else if (itemPropName == "state")
+                                            itemModel.State = itemProp.GetIntValue();
+                                    }
+                                    list.Add(itemModel);
+                                }
+                                act.Quests = list.ToArray();
                             }
                         }
 

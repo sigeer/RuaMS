@@ -14,10 +14,10 @@ namespace Application.Templates.Quest
 
     public sealed class QuestDemand
     {
-        public int Npc { get; set; } = -1;
-        public int LevelMin { get; set; } = -1;
-        public int LevelMax { get; set; } = -1;
-        public int Interval { get; set; } = -1;
+        public int? Npc { get; set; }
+        public int? LevelMin { get; set; }
+        public int? LevelMax { get; set; }
+        public int? Interval { get; set; }
         /// <summary>
         /// yyyyMMddHH
         /// </summary>
@@ -36,14 +36,15 @@ namespace Application.Templates.Quest
         public PetInfo[] Pet { get; set; }
         public int[] FieldEnter { get; set; }
         public bool NormalAutoStart { get; set; }
-        public int PetTamenessMin { get; set; } = -1;
-        public int InfoNumber { get; set; } = -1;
+        public int? PetTamenessMin { get; set; }
+        public int? InfoNumber { get; set; }
         public QuestInfoEx[] InfoEx { get; set; }
-        public int QuestComplete { get; set; } = -1;
+        public int? QuestComplete { get; set; }
         public bool DayByDay { get; set; }
-        public int Buff { get; set; } = -1;
-        public int ExceptBuff { get; set; } = -1;
-        public int Meso { get; set; } = -1;
+        public int? Buff { get; set; }
+        public int? ExceptBuff { get; set; }
+        public int? Meso { get; set; }
+        public int? MinMonsterBook { get; set; }
         public QuestDemand()
         {
             DemandQuest = Array.Empty<QuestRecord>();

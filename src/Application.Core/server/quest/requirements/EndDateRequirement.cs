@@ -21,6 +21,7 @@
  */
 
 using System.Globalization;
+using System.Net.WebSockets;
 
 namespace server.quest.requirements;
 
@@ -36,9 +37,10 @@ public class EndDateRequirement : AbstractQuestRequirement
 
     public EndDateRequirement(Quest quest, string dateString) : base(QuestRequirementType.END_DATE)
     {
+        var format = dateString.Length == 10 ? "yyyyMMddHH" : "yyyyMMddHHmm";
         DateTime dateTime = DateTime.ParseExact(
             dateString,
-            "yyyyMMddHH",
+            format,
             CultureInfo.InvariantCulture
         );
 

@@ -15,21 +15,25 @@ namespace Application.Templates.XmlWzReader.Provider
             return Path.Combine(GetPath(), key.ToString().PadLeft(7, '0') + ".img.xml");
         }
 
-        protected override void GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
             if (int.TryParse(Path.GetFileName(path).Substring(0, 7), out var npcId))
             {
                 var model = new NpcTemplate(npcId);
                 InsertItem(model);
+                return [model];
             }
+            return [];
         }
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = [];
             var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
             foreach (var item in files)
             {
-                GetDataFromImg(item.FullName);
+                all.AddRange(GetDataFromImg(item.FullName));
             }
+            return all;
         }
 
     }

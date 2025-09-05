@@ -7,13 +7,9 @@ namespace Application.Templates.XmlWzReader.Provider
     public class SkillProvider : AbstractProvider<SkillTemplate>
     {
         public override ProviderType ProviderName => ProviderType.Skill;
-        private readonly Dictionary<int, List<int>> _skillsByJob = new Dictionary<int, List<int>>();
-
-        public List<int> GetJobSkills(int nJobID)
-            => !_skillsByJob.ContainsKey(nJobID)
-                ? new List<int>()
-                : _skillsByJob[nJobID];
-
+        public SkillProvider(TemplateOptions options): base(options)
+        {
+        }
 
         protected override string GetImgPathByTemplateId(int key)
         {
@@ -22,8 +18,9 @@ namespace Application.Templates.XmlWzReader.Provider
             return Path.Combine(GetPath(), jobStr + ".img.xml");
         }
 
-        protected override void GetDataFromImg(string filePath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string filePath)
         {
+            List<AbstractTemplate> imgData = [];
             using var fis = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
@@ -78,24 +75,26 @@ namespace Application.Templates.XmlWzReader.Provider
 
                         }
                         InsertItem(pEntry);
+                        imgData.Add(pEntry);
                     }
 
                 }
             }
+
+            return imgData;
         }
 
 
-        public SkillProvider(TemplateOptions options)
-            : base(options)
-        { }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = [];
             var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
             foreach (var item in files)
             {
-                GetDataFromImg(item.FullName);
+                all.AddRange(GetDataFromImg(item.FullName));
             }
+            return all;
         }
 
         private SkillEffectData[] ProcessEffectData(XElement skillProp)

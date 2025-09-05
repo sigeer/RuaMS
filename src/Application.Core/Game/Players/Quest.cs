@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Packets;
 using client;
 using server.quest;
@@ -286,7 +287,7 @@ namespace Application.Core.Game.Players
             {
                 Quest mquest = qs.getQuest();
                 short questid = mquest.getId();
-                if (!mquest.isSameDayRepeatable() && !Quest.isExploitableQuest(questid))
+                if (!mquest.isSameDayRepeatable() && !QuestFactory.Instance.isExploitableQuest(questid))
                 {
                     awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_QUEST_COMPLETE);
                 }

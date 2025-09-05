@@ -22,6 +22,7 @@ namespace Application.Core.Channel.Modules
             {
                 option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions() { UseCache = false }));
             });
 
             var staticServices = app.Services.GetServices<IStaticService>();

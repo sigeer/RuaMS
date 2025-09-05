@@ -14,12 +14,18 @@ namespace Application.Templates.XmlWzReader.Provider
             _imgPath = Path.Combine(GetPath(), "MobSkill.img.xml");
         }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            return GetDataFromImg(string.Empty);
+        }
+
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        {
+            List<AbstractTemplate> all = [];
             using var fis = new FileStream(_imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var reader = XmlReader.Create(fis, new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true });
             if (reader.IsEmptyElement)
-                return;
+                return all;
 
             XmlReaderUtils.ReadChildNode(reader, skillNode =>
             {
@@ -71,18 +77,10 @@ namespace Application.Templates.XmlWzReader.Provider
                         }
                     });
                     InsertItem(pEntry);
+                    all.Add(pEntry);
                 }
             });
-        }
-
-        protected override string GetImgPathByTemplateId(int key)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void GetDataFromImg(string path)
-        {
-            throw new NotImplementedException();
+            return all;
         }
     }
 }

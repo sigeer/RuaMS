@@ -22,6 +22,7 @@
 
 
 using client;
+using static Application.Templates.Quest.QuestAct;
 
 namespace server.quest.actions;
 
@@ -35,22 +36,10 @@ public class QuestAction : AbstractQuestAction
 {
     Dictionary<int, int> quests = new();
 
-    public QuestAction(Quest quest, Data data) : base(QuestActionType.QUEST, quest)
+    public QuestAction(Quest quest, ActQuest[] data) : base(QuestActionType.QUEST, quest)
     {
-
         questID = quest.getId();
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        foreach (Data qEntry in data)
-        {
-            int questid = DataTool.getInt(qEntry.getChildByPath("id"));
-            int stat = DataTool.getInt(qEntry.getChildByPath("state"));
-            quests.AddOrUpdate(questid, stat);
-        }
+        quests = data.ToDictionary(x => x.QuestId, x => x.State);
     }
 
     public override void run(IPlayer chr, int? extSelection)

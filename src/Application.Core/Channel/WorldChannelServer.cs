@@ -335,14 +335,6 @@ namespace Application.Core.Channel
                 _logger.LogDebug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
             });
 
-            _ = Task.Run(() =>
-            {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                Quest.loadAllQuests();
-                sw.Stop();
-                _logger.LogDebug("WZ - 任务加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
-            });
 
             DataService.LoadAllPLife();
 

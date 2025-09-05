@@ -19,13 +19,13 @@ namespace Application.Templates.XmlWzReader.Provider
             return _itemFiles.FirstOrDefault(x => x.EndsWith(fileName));
         }
 
-        protected override void GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
             if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 8), out var equipItemId))
-                return;
+                return [];
 
             var pEntry = new EquipTemplate(equipItemId);
             foreach (var rootPropNode in xDoc.Elements())
@@ -68,14 +68,17 @@ namespace Application.Templates.XmlWzReader.Provider
             }
 
             InsertItem(pEntry);
+            return [pEntry];
         }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = new List<AbstractTemplate>(_itemFiles.Length);
             foreach (var item in _itemFiles)
             {
-                GetDataFromImg(item);
+                all.AddRange(GetDataFromImg(item));
             }
+            return all;
         }
     }
 }

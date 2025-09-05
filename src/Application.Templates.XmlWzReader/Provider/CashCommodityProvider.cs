@@ -15,18 +15,14 @@ namespace Application.Templates.XmlWzReader.Provider
             _imgPath = Path.Combine(GetPath(), "Commodity.img.xml");
         }
 
-        protected override void GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
-            LoadAll();
-        }
-
-        protected override void LoadAllInternal()
-        {
-            using var fis = new FileStream(_imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var reader = XmlReader.Create(fis, new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true });
             if (reader.IsEmptyElement)
-                return;
+                return [];
 
+            List<CashCommodityTemplate> all = [];
             XmlReaderUtils.ReadChildNode(reader, itemNode =>
             {
                 if (int.TryParse(itemNode.GetAttribute("name"), out var index))
@@ -56,9 +52,16 @@ namespace Application.Templates.XmlWzReader.Provider
                         else if (name == "Class")
                             pEntry.Classification = Convert.ToInt32(value);
                     });
+                    all.Add(pEntry);
                     InsertItem(pEntry);
                 }
             });
+            return all;
+        }
+
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
+        {
+            return GetDataFromImg(_imgPath);
         }
     }
 }

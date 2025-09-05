@@ -16,43 +16,17 @@ namespace Application.Templates.XmlWzReader.Provider
         }
 
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = [];
             foreach (var file in _files)
             {
-                using var fis = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var xDoc = XDocument.Load(fis).Root!;
-
-                var fileType = xDoc.Attribute("name")?.Value;
-                switch (fileType)
-                {
-                    case StringTemplateType.Cash:
-                    case StringTemplateType.Consume:
-                    case StringTemplateType.Eqp:
-                    case StringTemplateType.Etc:
-                    case StringTemplateType.Ins:
-                    case StringTemplateType.Pet:
-                        ProcessStringXml(StringCategory.Item, fileType, xDoc);
-                        break;
-                    case StringTemplateType.Map:
-                        ProcessStringXml(StringCategory.Map, fileType, xDoc);
-                        break;
-                    case StringTemplateType.Mob:
-                        ProcessStringXml(StringCategory.Mob, fileType, xDoc);
-                        break;
-                    case StringTemplateType.Npc:
-                        ProcessStringXml(StringCategory.Npc, fileType, xDoc);
-                        break;
-                    case StringTemplateType.Skill:
-                        ProcessStringXml(StringCategory.Skill, fileType, xDoc);
-                        break;
-                    default:
-                        break;
-                }
+                all.AddRange(GetDataFromImg(file));
             }
+            return all;
         }
 
-        void ProcessStringXml(StringCategory type, string fileType, XElement rootNode)
+        IEnumerable<AbstractTemplate> ProcessStringXml(StringCategory type, string fileType, XElement rootNode)
         {
             var intType = (int)(type);
             if (!Contains((int)type))
@@ -66,7 +40,9 @@ namespace Application.Templates.XmlWzReader.Provider
                     {
                         foreach (var itemElement in typeElement.Elements())
                         {
-                            SetStringTemplate(type, rootNode, itemElement);
+                            var data = SetStringTemplate(type, rootNode, itemElement);
+                            if (data != null)
+                                yield return data;
                         }
                     }
                 }
@@ -77,7 +53,9 @@ namespace Application.Templates.XmlWzReader.Provider
                 {
                     foreach (var itemElement in etc.Elements())
                     {
-                        SetStringTemplate(type, rootNode, itemElement);
+                        var data = SetStringTemplate(type, rootNode, itemElement);
+                        if (data != null)
+                            yield return data;
                     }
                 }
             }
@@ -85,12 +63,14 @@ namespace Application.Templates.XmlWzReader.Provider
             {
                 foreach (var itemElement in rootNode.Elements())
                 {
-                    SetStringTemplate(type, rootNode, itemElement);
+                    var data = SetStringTemplate(type, rootNode, itemElement);
+                    if (data != null)
+                        yield return data;
                 }
             }
         }
 
-        private void SetStringTemplate(StringCategory type, XElement rootNode, XElement item)
+        private StringTemplate? SetStringTemplate(StringCategory type, XElement rootNode, XElement item)
         {
             if (int.TryParse(item.Attribute("name")?.Value, out var id))
             {
@@ -109,6 +89,36 @@ namespace Application.Templates.XmlWzReader.Provider
                         template.StreetName = infoPropValue;
                 }
                 this[type].Add(template);
+                return template;
+            }
+            return null;
+        }
+
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        {
+            using var fis = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var xDoc = XDocument.Load(fis).Root!;
+
+            var fileType = xDoc.Attribute("name")?.Value;
+            switch (fileType)
+            {
+                case StringTemplateType.Cash:
+                case StringTemplateType.Consume:
+                case StringTemplateType.Eqp:
+                case StringTemplateType.Etc:
+                case StringTemplateType.Ins:
+                case StringTemplateType.Pet:
+                    return ProcessStringXml(StringCategory.Item, fileType, xDoc);
+                case StringTemplateType.Map:
+                    return ProcessStringXml(StringCategory.Map, fileType, xDoc);
+                case StringTemplateType.Mob:
+                    return ProcessStringXml(StringCategory.Mob, fileType, xDoc);
+                case StringTemplateType.Npc:
+                    return ProcessStringXml(StringCategory.Npc, fileType, xDoc);
+                case StringTemplateType.Skill:
+                    return ProcessStringXml(StringCategory.Skill, fileType, xDoc);
+                default:
+                    return [];
             }
         }
 

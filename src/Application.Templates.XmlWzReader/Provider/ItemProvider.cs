@@ -4,6 +4,7 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Install;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -19,12 +20,14 @@ namespace Application.Templates.XmlWzReader.Provider
             _itemFiles = Directory.GetFiles(GetPath(), "*", SearchOption.AllDirectories);
         }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = new List<AbstractTemplate>(_itemFiles.Length);
             foreach (var item in _itemFiles)
             {
-                GetDataFromImg(item);
+                all.AddRange(GetDataFromImg(item));
             }
+            return all;
         }
 
         protected override string GetImgPathByTemplateId(int key)
@@ -39,29 +42,30 @@ namespace Application.Templates.XmlWzReader.Provider
             return _itemFiles.Where(x => x == str).FirstOrDefault();
         }
 
-        protected override void GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
             if (path.Contains("Cash"))
-                IterateCashBundleItem(path);
+                return IterateCashBundleItem(path);
             else if (path.Contains("Consume"))
-                LoadConsume(path);
+                return LoadConsume(path);
             else if (path.Contains("Pet"))
-                LoadPets(path);
+                return LoadPets(path);
             else if (path.Contains("Install"))
-                LoadInstall(path);
+                return LoadInstall(path);
             else if (path.Contains("Etc"))
-                LoadEtc(path);
+                return LoadEtc(path);
+            return [];
             //else if (path.Contains("Special"))
             //    LoadSpecial(path);
         }
 
-        private void LoadPets(string imgPath)
+        private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
             if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 7), out var petItemId))
-                return;
+                return [];
 
             var pEntry = new PetItemTemplate(petItemId);
             foreach (var rootPropNode in xDoc.Elements())
@@ -103,13 +107,15 @@ namespace Application.Templates.XmlWzReader.Provider
             }
 
             InsertItem(pEntry);
+            return [pEntry];
         }
 
-        private void LoadInstall(string imgPath)
+        private IEnumerable<AbstractTemplate> LoadInstall(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
+            List<AbstractTemplate> all = [];
             foreach (var itemNode in xDoc.Elements())
             {
                 if (int.TryParse(itemNode.Attribute("name")?.Value, out var installId))
@@ -138,15 +144,18 @@ namespace Application.Templates.XmlWzReader.Provider
                         }
                     }
                     InsertItem(template);
+                    all.Add(template);
                 }
             }
+            return all;
         }
 
-        private void LoadEtc(string imgPath)
+        private IEnumerable<AbstractTemplate> LoadEtc(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
+            List<AbstractTemplate> all = [];
             foreach (var itemNode in xDoc.Elements())
             {
                 if (int.TryParse(itemNode.Attribute("name")?.Value, out var itemId))
@@ -171,15 +180,18 @@ namespace Application.Templates.XmlWzReader.Provider
                         }
                     }
                     InsertItem(template);
+                    all.Add(template);
                 }
             }
+            return all;
         }
 
-        private void LoadConsume(string imgPath)
+        private IEnumerable<AbstractTemplate> LoadConsume(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
+            List<AbstractTemplate> all = [];
             foreach (var itemNode in xDoc.Elements())
             {
                 if (int.TryParse(itemNode.Attribute("name")?.Value, out var itemId))
@@ -200,15 +212,18 @@ namespace Application.Templates.XmlWzReader.Provider
                         }
                     }
                     InsertItem(template);
+                    all.Add(template);
                 }
             }
+            return all;
         }
 
-        private void IterateCashBundleItem(string imgPath)
+        private IEnumerable<AbstractTemplate> IterateCashBundleItem(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
+            List<AbstractTemplate> all = [];
             foreach (var itemNode in xDoc.Elements())
             {
                 if (int.TryParse(itemNode.Attribute("name")?.Value, out var itemId))
@@ -238,9 +253,10 @@ namespace Application.Templates.XmlWzReader.Provider
                         }
                     }
                     InsertItem(template);
+                    all.Add(template);
                 }
-
             }
+            return all;
         }
     }
 }

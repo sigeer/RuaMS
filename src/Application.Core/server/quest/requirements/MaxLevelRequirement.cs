@@ -35,15 +35,6 @@ public class MaxLevelRequirement : AbstractQuestRequirement
         maxLevel = data;
     }
 
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        maxLevel = DataTool.getInt(data);
-    }
-
-
     public override bool check(IPlayer chr, int? npcid)
     {
         return maxLevel >= chr.getLevel();

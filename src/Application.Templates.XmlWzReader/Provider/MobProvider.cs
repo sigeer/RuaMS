@@ -18,13 +18,13 @@ namespace Application.Templates.XmlWzReader.Provider
             return Path.Combine(GetPath(), fileName);
         }
 
-        protected override void GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
             if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 7), out var mobId))
-                return;
+                return [];
 
             var pEntry = new MobTemplate(mobId);
             foreach (var rootItem in xDoc.Elements())
@@ -207,6 +207,8 @@ namespace Application.Templates.XmlWzReader.Provider
                     }
                 }
             }
+            InsertItem(pEntry);
+            return [pEntry];
         }
 
         private static void ProcessAttackInfo(XElement infoProp, string infoPropName)
@@ -253,14 +255,16 @@ namespace Application.Templates.XmlWzReader.Provider
             }
         }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = [];
             var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
 
             foreach (var item in files)
             {
-                GetDataFromImg(item.FullName);
+                all.AddRange(GetDataFromImg(item.FullName));
             }
+            return all;
         }
     }
 }

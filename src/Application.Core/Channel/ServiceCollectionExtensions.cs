@@ -83,6 +83,10 @@ namespace Application.Core.Channel
             services.AddSingleton<MapFactory>();
             services.AddSingleton<IStaticService, MapFactory>(sp => sp.GetRequiredService<MapFactory>());
 
+            services.AddSingleton<QuestFactory>();
+            services.AddSingleton<IStaticService, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
+            services.AddSingleton<DataBootstrap, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
+
             services.AddSingleton<LifeFactory>();
             services.AddSingleton<IStaticService, LifeFactory>(sp => sp.GetRequiredService<LifeFactory>());
 

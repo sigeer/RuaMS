@@ -12,13 +12,15 @@ namespace Application.Templates.XmlWzReader.Provider
             : base(options)
         { }
 
-        protected override void LoadAllInternal()
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
+            List<AbstractTemplate> all = [];
             var files = new DirectoryInfo(Path.Combine(GetPath(), "Map")).GetFiles("*.xml", SearchOption.AllDirectories);
             foreach (var item in files)
             {
-                GetDataFromImg(item.FullName);
+                all.AddRange(GetDataFromImg(item.FullName));
             }
+            return all;
         }
 
         protected override string GetImgPathByTemplateId(int mapId)
@@ -28,13 +30,13 @@ namespace Application.Templates.XmlWzReader.Provider
             return Path.Combine(GetPath(), "Map", mapArea, fileName);
         }
 
-        protected override void GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
             if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 9), out var mapId))
-                return;
+                return [];
 
             var mapTemplate = new MapTemplate(mapId);
             foreach (var item in xDoc.Elements())
@@ -197,6 +199,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 }
             }
             InsertItem(mapTemplate);
+            return [mapTemplate];
         }
 
         private static void ProcessMapBack(MapTemplate mapTemplate, XElement item)

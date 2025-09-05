@@ -21,13 +21,12 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Packets;
-using Application.Core.server.quest;
 using Application.Templates.Quest;
 using client;
 using server.quest.actions;
 using server.quest.requirements;
-using System.Collections.Generic;
 using tools;
 using static Application.Core.Game.Players.Player;
 using static client.QuestStatus;
@@ -40,21 +39,6 @@ namespace server.quest;
  */
 public class Quest
 {
-
-    private static volatile Dictionary<int, int> infoNumberQuests = new();
-    private static Dictionary<short, int> medals = new();
-
-    private static HashSet<short> exploitableQuests = new();
-    static ILogger _questDataLogger = LogFactory.GetLogger(LogType.QuestData);
-
-    static Quest()
-    {
-        exploitableQuests.Add(2338);    // there are a lot more exploitable quests, they need to be nit-picked
-        exploitableQuests.Add(3637);
-        exploitableQuests.Add(3714);
-        exploitableQuests.Add(21752);
-    }
-
     protected short id;
     protected int timeLimit, timeLimit2;
     protected Dictionary<QuestRequirementType, AbstractQuestRequirement> startReqs = new();
@@ -65,11 +49,8 @@ public class Quest
     private bool autoStart;
     private bool autoPreComplete, autoComplete;
     private bool repeatable = false;
-    private string name = "", parent = "";
-    private static DataProvider questData = DataProviderFactory.getDataProvider(WZFiles.QUEST);
-    private static Data questInfo = questData.getData("QuestInfo.img");
-    private static Data questAct = questData.getData("Act.img");
-    private static Data questCheck = questData.getData("Check.img");
+    public string Name { get; set; }
+    public string? Parent { get; set; }
     public bool IsValid { get; } = true;
 
     public Quest(QuestTemplate template)
@@ -78,8 +59,8 @@ public class Quest
         autoComplete = template.Info.AutoComplete;
         autoStart = template.Info.AutoStart;
         autoPreComplete = template.Info.AutoPreComplete;
-        name = template.Info.Name;
-        parent = template.Info.Parent ?? "";
+        Name = template.Info.Name;
+        Parent = template.Info.Parent ?? "";
         timeLimit = template.Info.TimeLimit;
         timeLimit2 = template.Info.TimeLimit2;
         if (template.Info.ViewMedalItem > 0)
@@ -88,7 +69,7 @@ public class Quest
         if (template.Check?.StartDemand != null)
         {
             var data = template.Check.StartDemand;
-                repeatable = data.Interval > 0;
+            repeatable = data.Interval > 0;
             if (data.DemandMob.Length > 0)
                 relevantMobs.AddRange(data.DemandMob.Select(x => x.MobID));
             startReqs = GetRequirement(this, data);
@@ -132,10 +113,7 @@ public class Quest
         return QuestFactory.Instance.GetInstance(id);
     }
 
-    public static Quest getInstanceFromInfoNumber(int infoNumber)
-    {
-        return getInstance(infoNumberQuests.GetValueOrDefault(infoNumber, infoNumber));
-    }
+
 
     public bool isSameDayRepeatable()
     {
@@ -434,37 +412,39 @@ public class Quest
             dict[QuestRequirementType.QUEST] = new QuestRequirement(q, data.DemandQuest);
         if (data.FieldEnter.Length > 0)
             dict[QuestRequirementType.FIELD_ENTER] = new FieldEnterRequirement(q, data.FieldEnter);
-        if (data.InfoNumber > 0)
-            dict[QuestRequirementType.INFO_NUMBER] = new InfoNumberRequirement(q, data.InfoNumber);
+        if (data.InfoNumber != null)
+            dict[QuestRequirementType.INFO_NUMBER] = new InfoNumberRequirement(q, data.InfoNumber.Value);
         if (data.InfoEx.Length > 0)
             dict[QuestRequirementType.INFO_EX] = new InfoExRequirement(q, data.InfoEx);
-        if (data.Interval > 0)
-            dict[QuestRequirementType.INTERVAL] = new IntervalRequirement(q, data.Interval);
-        if (data.QuestComplete > 0)
-            dict[QuestRequirementType.COMPLETED_QUEST] = new CompletedQuestRequirement(q, data.QuestComplete);
+        if (data.Interval != null)
+            dict[QuestRequirementType.INTERVAL] = new IntervalRequirement(q, data.Interval.Value);
+        if (data.QuestComplete != null)
+            dict[QuestRequirementType.COMPLETED_QUEST] = new CompletedQuestRequirement(q, data.QuestComplete.Value);
         if (data.DemandItem.Length > 0)
             dict[QuestRequirementType.ITEM] = new ItemRequirement(q, data.DemandItem);
-        if (data.LevelMax > 0)
-            dict[QuestRequirementType.MAX_LEVEL] = new MaxLevelRequirement(q, data.LevelMax);
-        if (data.LevelMin > 0)
-            dict[QuestRequirementType.MIN_LEVEL] = new MinLevelRequirement(q, data.LevelMin);
-        if (data.Meso > 0)
-            dict[QuestRequirementType.MESO] = new MesoRequirement(q, data.Meso);
-        if (data.PetTamenessMin > 0)
-            dict[QuestRequirementType.MIN_PET_TAMENESS] = new MinTamenessRequirement(q, data.PetTamenessMin);
+        if (data.LevelMax != null)
+            dict[QuestRequirementType.MAX_LEVEL] = new MaxLevelRequirement(q, data.LevelMax.Value);
+        if (data.LevelMin != null)
+            dict[QuestRequirementType.MIN_LEVEL] = new MinLevelRequirement(q, data.LevelMin.Value);
+        if (data.Meso != null)
+            dict[QuestRequirementType.MESO] = new MesoRequirement(q, data.Meso.Value);
+        if (data.MinMonsterBook != null)
+            dict[QuestRequirementType.MESO] = new MonsterBookCountRequirement(q, data.MinMonsterBook.Value);
+        if (data.PetTamenessMin != null)
+            dict[QuestRequirementType.MIN_PET_TAMENESS] = new MinTamenessRequirement(q, data.PetTamenessMin.Value);
         if (data.DemandMob.Length > 0)
             dict[QuestRequirementType.MOB] = new MobRequirement(q, data.DemandMob);
-        if (data.Meso > 0)
-            dict[QuestRequirementType.MONSTER_BOOK] = new MesoRequirement(q, data.Meso);
-        if (data.Npc > 0)
-            dict[QuestRequirementType.NPC] = new NpcRequirement(q, data.Npc);
+        if (data.Meso != null)
+            dict[QuestRequirementType.MONSTER_BOOK] = new MesoRequirement(q, data.Meso.Value);
+        if (data.Npc != null)
+            dict[QuestRequirementType.NPC] = new NpcRequirement(q, data.Npc.Value);
         if (data.Pet.Length > 0)
             dict[QuestRequirementType.PET] = new PetRequirement(q, data.Pet);
-        if (data.Buff > 0)
-            dict[QuestRequirementType.BUFF] = new BuffRequirement(q, data.Buff);
-        if (data.ExceptBuff > 0)
-            dict[QuestRequirementType.EXCEPT_BUFF] = new BuffExceptRequirement(q, data.ExceptBuff);
-        if (data.StartScript !=null)
+        if (data.Buff != null)
+            dict[QuestRequirementType.BUFF] = new BuffRequirement(q, data.Buff.Value);
+        if (data.ExceptBuff != null)
+            dict[QuestRequirementType.EXCEPT_BUFF] = new BuffExceptRequirement(q, data.ExceptBuff.Value);
+        if (data.StartScript != null)
             dict[QuestRequirementType.SCRIPT] = new ScriptRequirement(q, data.StartScript);
         if (data.EndScript != null)
             dict[QuestRequirementType.SCRIPT] = new ScriptRequirement(q, data.EndScript);
@@ -472,31 +452,31 @@ public class Quest
         return dict;
     }
 
-    private static Dictionary<QuestActionType, AbstractQuestAction> GetAction(Quest q, QuestAct  data)
+    private static Dictionary<QuestActionType, AbstractQuestAction> GetAction(Quest q, QuestAct data)
     {
         Dictionary<QuestActionType, AbstractQuestAction> dict = new();
-        if (data.BuffItemID > 0)
-            dict[QuestActionType.BUFF] = new BuffAction(q, data.BuffItemID);
-        if (data.Exp > 0)
-            dict[QuestActionType.EXP] = new ExpAction(q, data.Exp);
-        if (data.Fame != 0)
-            dict[QuestActionType.FAME] = new FameAction(q, data.Fame);
+        if (data.BuffItemID != null)
+            dict[QuestActionType.BUFF] = new BuffAction(q, data.BuffItemID.Value);
+        if (data.Exp != null)
+            dict[QuestActionType.EXP] = new ExpAction(q, data.Exp.Value);
+        if (data.Fame != null)
+            dict[QuestActionType.FAME] = new FameAction(q, data.Fame.Value);
         if (data.Items.Length > 0)
             dict[QuestActionType.ITEM] = new ItemAction(q, data.Items);
-        if (data.Money != 0)
-            dict[QuestActionType.MESO] = new MesoAction(q, data.Money);
-        if (data.NextQuest > 0)
-            dict[QuestActionType.NEXTQUEST] = new NextQuestAction(q, data.NextQuest);
-        if (data.PetSkill > 0)
-            dict[QuestActionType.PETSKILL] = new PetSkillAction(q, data.PetSkill);
-        //if (data.NextQuest > 0)
-        //    dict[QuestActionType.QUEST] = new QuestAction(q, data.BuffItemID);
+        if (data.Money != null)
+            dict[QuestActionType.MESO] = new MesoAction(q, data.Money.Value);
+        if (data.NextQuest != null)
+            dict[QuestActionType.NEXTQUEST] = new NextQuestAction(q, data.NextQuest.Value);
+        if (data.PetSkill != null)
+            dict[QuestActionType.PETSKILL] = new PetSkillAction(q, data.PetSkill.Value);
+        if (data.Quests.Length > 0)
+            dict[QuestActionType.QUEST] = new QuestAction(q, data.Quests);
         if (data.Skills.Length > 0)
             dict[QuestActionType.SKILL] = new SkillAction(q, data.Skills);
-        if (data.PetTameness > 0)
-            dict[QuestActionType.PETTAMENESS] = new PetTamenessAction(q, data.PetTameness);
-        if (data.PetSpeed > 0)
-            dict[QuestActionType.PETSPEED] = new PetSpeedAction(q, data.PetSpeed);
+        if (data.PetTameness != null)
+            dict[QuestActionType.PETTAMENESS] = new PetTamenessAction(q, data.PetTameness.Value);
+        if (data.PetSpeed != null)
+            dict[QuestActionType.PETSPEED] = new PetSpeedAction(q, data.PetSpeed.Value);
         if (data.Info != null)
             dict[QuestActionType.INFO] = new InfoAction(q, data.Info);
 
@@ -517,10 +497,6 @@ public class Quest
         return false;
     }
 
-    public int getMedalRequirement()
-    {
-        return medals.GetValueOrDefault(id, -1);
-    }
 
     public int getNpcRequirement(bool checkEnd)
     {
@@ -559,66 +535,4 @@ public class Quest
         return mqa != null;
     }
 
-    public string getName()
-    {
-        return name;
-    }
-
-    public string getParentName()
-    {
-        return parent;
-    }
-
-    public static bool isExploitableQuest(short questid)
-    {
-        return exploitableQuests.Contains(questid);
-    }
-
-    public static List<Quest> getMatchedQuests(string search)
-    {
-        List<Quest> ret = new();
-
-        foreach (Quest mq in quests.Values)
-        {
-            if (mq.name.Contains(search, StringComparison.OrdinalIgnoreCase) || mq.parent.Contains(search, StringComparison.OrdinalIgnoreCase))
-            {
-                ret.Add(mq);
-            }
-        }
-
-        return ret;
-    }
-
-    public static void loadAllQuests()
-    {
-        var allWZData = questInfo.getChildren();
-        _questDataLogger.Debug($"QuestCount: {allWZData.Count}");
-
-        Dictionary<int, Quest> loadedQuests = new();
-        Dictionary<int, int> loadedInfoNumberQuests = new();
-
-        foreach (Data quest in allWZData)
-        {
-            Quest q = new Quest(quest);
-            int questID = q.getId();
-            loadedQuests.AddOrUpdate(questID, q);
-
-            int infoNumber;
-
-            infoNumber = q.getInfoNumber(Status.STARTED);
-            if (infoNumber > 0)
-            {
-                loadedInfoNumberQuests.AddOrUpdate(infoNumber, questID);
-            }
-
-            infoNumber = q.getInfoNumber(Status.COMPLETED);
-            if (infoNumber > 0)
-            {
-                loadedInfoNumberQuests.AddOrUpdate(infoNumber, questID);
-            }
-        }
-
-        Quest.quests = loadedQuests;
-        Quest.infoNumberQuests = loadedInfoNumberQuests;
-    }
 }
