@@ -39,7 +39,6 @@ public abstract class AbstractQuestAction
     }
 
     public abstract void run(IPlayer chr, int? extSelection);
-    public abstract void processData(Data data);
 
     public virtual bool check(IPlayer chr, int? extSelection)
     {

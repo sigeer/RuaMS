@@ -18,7 +18,9 @@
 */
 
 
+using Application.Templates.Quest;
 using client;
+using static Application.Templates.Quest.QuestDemand;
 
 namespace server.quest.requirements;
 
@@ -32,24 +34,10 @@ public class QuestRequirement : AbstractQuestRequirement
 {
     Dictionary<int, int> quests = new();
 
-    public QuestRequirement(Quest quest, Data data) : base(QuestRequirementType.QUEST)
+    public QuestRequirement(Quest quest, QuestRecord[] data) : base(QuestRequirementType.QUEST)
     {
-        processData(data);
+        quests = data.ToDictionary(x => x.QuestID, x => x.State);
     }
-
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        foreach (Data questEntry in data.getChildren())
-        {
-            int questID = DataTool.getInt(questEntry.getChildByPath("id"));
-            int stateReq = DataTool.getInt(questEntry.getChildByPath("state"));
-            quests.AddOrUpdate(questID, stateReq);
-        }
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

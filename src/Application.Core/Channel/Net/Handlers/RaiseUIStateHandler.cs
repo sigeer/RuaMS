@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using client;
 using server.quest;
 using static Application.Core.Game.Players.Player;
@@ -18,7 +19,7 @@ public class RaiseUIStateHandler : ChannelHandlerBase
             try
             {
                 var chr = c.OnlinedCharacter;
-                Quest quest = Quest.getInstanceFromInfoNumber(infoNumber);
+                Quest quest = QuestFactory.Instance.GetInstanceFromInfoNumber(infoNumber);
                 QuestStatus mqs = chr.getQuest(quest);
 
                 c.CurrentServer.QuestScriptManager.raiseOpen(c, (short)infoNumber, mqs.getNpc());

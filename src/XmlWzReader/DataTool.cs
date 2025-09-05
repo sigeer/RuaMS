@@ -121,10 +121,10 @@ public class DataTool
         return getIntConvert(d, def);
     }
 
-    public static bool GetBoolean(string path, Data? data, int def = 0)
+    public static bool GetBoolean(string path, Data? data)
     {
         var d = data?.getChildByPath(path);
-        return getIntConvert(d, def) != 0;
+        return getIntConvert(d) != 0;
     }
 
 

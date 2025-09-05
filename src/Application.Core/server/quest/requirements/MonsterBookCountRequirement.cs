@@ -30,16 +30,10 @@ public class MonsterBookCountRequirement : AbstractQuestRequirement
     private int reqCards;
 
 
-    public MonsterBookCountRequirement(Quest quest, Data data) : base(QuestRequirementType.MONSTER_BOOK)
+    public MonsterBookCountRequirement(Quest quest, int data) : base(QuestRequirementType.MONSTER_BOOK)
     {
-        processData(data);
+        reqCards = data;
     }
-
-    public override void processData(Data data)
-    {
-        reqCards = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

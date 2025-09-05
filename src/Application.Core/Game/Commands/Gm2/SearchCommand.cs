@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
 using Application.Resources;
 using server.quest;
@@ -66,16 +67,14 @@ public class SearchCommand : CommandBase
         }
         else if (paramsValue[0].Equals("QUEST", StringComparison.OrdinalIgnoreCase))
         {
-            foreach (Quest mq in Quest.getMatchedQuests(search))
+            foreach (Quest mq in QuestFactory.Instance.getMatchedQuests(search))
             {
                 sb.Append("#b").Append(mq.getId()).Append("#k - #r");
-
-                string parentName = mq.getParentName();
-                if (parentName.Count() > 0)
+                if (!string.IsNullOrEmpty(mq.Parent))
                 {
-                    sb.Append(parentName).Append(" - ");
+                    sb.Append(mq.Parent).Append(" - ");
                 }
-                sb.Append(mq.getName()).Append("\r\n");
+                sb.Append(mq.Name).Append("\r\n");
             }
         }
         else

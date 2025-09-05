@@ -29,15 +29,10 @@ public class InfoNumberRequirement : AbstractQuestRequirement
     private short infoNumber;
     private int questID;
 
-    public InfoNumberRequirement(Quest quest, Data data) : base(QuestRequirementType.INFO_NUMBER)
+    public InfoNumberRequirement(Quest quest, int data) : base(QuestRequirementType.INFO_NUMBER)
     {
         questID = quest.getId();
-        processData(data);
-    }
-
-    public override void processData(Data data)
-    {
-        infoNumber = (short)DataTool.getIntConvert(data, 0);
+        infoNumber = (short)data;
     }
 
 

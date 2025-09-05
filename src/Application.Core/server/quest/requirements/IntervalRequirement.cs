@@ -33,22 +33,16 @@ public class IntervalRequirement : AbstractQuestRequirement
     private long interval = -1;
     private int questID;
 
-    public IntervalRequirement(Quest quest, Data data) : base(QuestRequirementType.INTERVAL)
+    public IntervalRequirement(Quest quest, int data) : base(QuestRequirementType.INTERVAL)
     {
         questID = quest.getId();
-        processData(data);
+        interval = data * 60 * 1000;
     }
 
     public long getInterval()
     {
         return interval;
     }
-
-    public override void processData(Data data)
-    {
-        interval = (DataTool.getInt(data)) * 60 * 1000;
-    }
-
     private static string getIntervalTimeLeft(IPlayer chr, IntervalRequirement r)
     {
         long futureTime = chr.getQuest(Quest.getInstance(r.questID)).getCompletionTime() + r.getInterval();

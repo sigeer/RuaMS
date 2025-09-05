@@ -27,19 +27,12 @@ public class PetTamenessAction : AbstractQuestAction
 {
     int tameness;
 
-    public PetTamenessAction(Quest quest, Data data) : base(QuestActionType.PETTAMENESS, quest)
+    public PetTamenessAction(Quest quest, int data) : base(QuestActionType.PETTAMENESS, quest)
     {
 
         questID = quest.getId();
-        processData(data);
+        tameness = data;
     }
-
-
-    public override void processData(Data data)
-    {
-        tameness = DataTool.getInt(data);
-    }
-
     public override void run(IPlayer chr, int? extSelection)
     {
         var c = chr.getClient();

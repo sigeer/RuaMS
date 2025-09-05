@@ -37,7 +37,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 Dictionary<int, int> consumables = consItem.items;
 
                 var chr = c.OnlinedCharacter;
-                Quest quest = Quest.getInstanceFromInfoNumber(infoNumber);
+                var quest = QuestFactory.Instance.GetInstanceFromInfoNumber(infoNumber);
                 if (!chr.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED))
                 {
                     c.sendPacket(PacketCreator.enableActions());

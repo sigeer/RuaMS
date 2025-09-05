@@ -20,9 +20,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using static Application.Templates.Quest.QuestDemand;
+
 namespace server.quest.requirements;
-
-
 
 
 /**
@@ -34,20 +34,10 @@ public class InfoExRequirement : AbstractQuestRequirement
     private int questID;
 
 
-    public InfoExRequirement(Quest quest, Data data) : base(QuestRequirementType.INFO_EX)
+    public InfoExRequirement(Quest quest, QuestInfoEx[] data) : base(QuestRequirementType.INFO_EX)
     {
         questID = quest.getId();
-        processData(data);
-    }
-
-    public override void processData(Data data)
-    {
-        // Because we have to...
-        foreach (Data infoEx in data.getChildren())
-        {
-            var value = infoEx.getChildByPath("value");
-            infoExpected.Add(DataTool.getString(value) ?? "");
-        }
+        infoExpected.AddRange(data.Select(x => x.Value));
     }
 
 

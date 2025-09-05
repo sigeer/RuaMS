@@ -30,15 +30,9 @@ public class MinLevelRequirement : AbstractQuestRequirement
     private int minLevel;
 
 
-    public MinLevelRequirement(Quest quest, Data data) : base(QuestRequirementType.MIN_LEVEL)
+    public MinLevelRequirement(Quest quest, int data) : base(QuestRequirementType.MIN_LEVEL)
     {
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        minLevel = DataTool.getInt(data);
+        minLevel = data;
     }
 
 

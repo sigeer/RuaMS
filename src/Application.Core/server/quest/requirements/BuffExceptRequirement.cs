@@ -27,15 +27,9 @@ public class BuffExceptRequirement : AbstractQuestRequirement
 {
     private int buffId = -1;
 
-    public BuffExceptRequirement(Quest quest, Data data) : base(QuestRequirementType.BUFF)
+    public BuffExceptRequirement(Quest quest, int data) : base(QuestRequirementType.BUFF)
     {
-        processData(data);
-    }
-
-    public override void processData(Data data)
-    {
-        // item buffs are negative
-        buffId = -1 * int.Parse(DataTool.getString(data));
+        buffId = -data;
     }
 
     public override bool check(IPlayer chr, int? npcid)

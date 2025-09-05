@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using scripting;
 using server.quest;
 
@@ -18,7 +19,7 @@ public class ClearCacheCommand : ParamsCommandBase
 
         if (p.Equals("quest", StringComparison.OrdinalIgnoreCase))
         {
-            Quest.clearCache();
+            QuestFactory.Instance.clearCache();
             c.OnlinedCharacter.dropMessage(5, "Quest Cache Cleared.");
         }
 

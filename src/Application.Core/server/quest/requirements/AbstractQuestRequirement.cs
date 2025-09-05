@@ -45,13 +45,6 @@ public abstract class AbstractQuestRequirement
      */
     public abstract bool check(IPlayer chr, int? npcid);
 
-    /**
-     * Processes the data and stores it in the class for future use.
-     *
-     * @param data The data to process.
-     */
-    public abstract void processData(Data data);
-
     public QuestRequirementType getType()
     {
         return type;

@@ -27,14 +27,9 @@ public class ScriptRequirement : AbstractQuestRequirement
 {
     private bool reqScript;
 
-    public ScriptRequirement(Quest quest, Data data) : base(QuestRequirementType.BUFF)
+    public ScriptRequirement(Quest quest, string? data) : base(QuestRequirementType.BUFF)
     {
-        processData(data);
-    }
-
-    public override void processData(Data data)
-    {
-        reqScript = !string.IsNullOrEmpty(DataTool.getString(data));
+        reqScript = true;
     }
 
     public override bool check(IPlayer chr, int? npcid)

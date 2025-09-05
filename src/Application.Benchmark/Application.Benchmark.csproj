@@ -20,6 +20,7 @@
   <ItemGroup>
 	  <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
+    <ProjectReference Include="..\Application.Templates.XmlWzReader\Application.Templates.XmlWzReader.csproj" />
   </ItemGroup>
 
 </Project>

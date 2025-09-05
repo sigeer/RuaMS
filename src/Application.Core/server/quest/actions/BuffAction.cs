@@ -31,22 +31,15 @@ public class BuffAction : AbstractQuestAction
 {
     int itemEffect;
 
-    public BuffAction(Quest quest, Data data) : base(QuestActionType.BUFF, quest)
+    public BuffAction(Quest quest, int data) : base(QuestActionType.BUFF, quest)
     {
-
-        processData(data);
+        itemEffect = data;
     }
 
     public override bool check(IPlayer chr, int? extSelection)
     {
         return true;
     }
-
-    public override void processData(Data data)
-    {
-        itemEffect = DataTool.getInt(data);
-    }
-
     public override void run(IPlayer chr, int? extSelection)
     {
         ItemInformationProvider.getInstance().getItemEffect(itemEffect).applyTo(chr);

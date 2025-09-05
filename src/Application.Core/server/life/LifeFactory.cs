@@ -53,7 +53,7 @@ public class LifeFactory : IStaticService
 
     private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
 
-    Data uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI).getData("UIWindow.img");
+
     private HashSet<int> hpbarBosses;
 
     readonly WzStringProvider _wzStringProvider;
@@ -66,7 +66,7 @@ public class LifeFactory : IStaticService
     private HashSet<int> getHpBarBosses()
     {
         HashSet<int> ret = new();
-
+        Data uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI).getData("UIWindow.img");
         foreach (var bossData in uiDataWZ.getChildByPath("MobGage/Mob").getChildren())
         {
             if (int.TryParse(bossData.getName(), out var d))

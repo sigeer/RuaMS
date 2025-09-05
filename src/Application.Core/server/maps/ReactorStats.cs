@@ -61,7 +61,7 @@ public class ReactorStats
             timeoutInfo.AddOrUpdate(state, timeOut);
     }
 
-    public void addState(sbyte state, int type, ItemQuantity? reactItem, sbyte nextState, int timeOut, byte canTouch)
+    public void addState(sbyte state, int type, ItemQuantity? reactItem, sbyte nextState, int timeOut)
     {
         stateInfo.AddOrUpdate(state, [new StateData(type, reactItem, null, nextState)]);
     }
