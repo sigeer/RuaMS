@@ -16,11 +16,14 @@ namespace Application.Templates.XmlWzReader.Provider
         protected override string GetImgPathByTemplateId(int itemId)
         {
             string fileName = itemId.ToString().PadLeft(8, '0') + ".img.xml";
-            return _itemFiles.FirstOrDefault(x => x.EndsWith(fileName));
+            return _itemFiles.FirstOrDefault(x => x.EndsWith(fileName)) ?? string.Empty;
         }
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
+            if (!File.Exists(imgPath))
+                return [];
+
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
@@ -36,39 +39,156 @@ namespace Application.Templates.XmlWzReader.Provider
                     foreach (var infoPropNode in rootPropNode.Elements())
                     {
                         var infoPropName = infoPropNode.Attribute("name")?.Value;
-                        var infoPropValue = infoPropNode.Attribute("value")?.Value;
                         if (infoPropName == "reqLevel")
-                            pEntry.ReqLevel = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqLevel = infoPropNode.GetIntValue();
                         else if (infoPropName == "reqJob")
-                            pEntry.ReqJob = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqJob = infoPropNode.GetIntValue();
                         else if (infoPropName == "reqSTR")
-                            pEntry.ReqSTR = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqSTR = infoPropNode.GetIntValue();
                         else if (infoPropName == "reqDEX")
-                            pEntry.ReqDEX = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqDEX = infoPropNode.GetIntValue();
                         else if (infoPropName == "reqINT")
-                            pEntry.ReqINT = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqINT = infoPropNode.GetIntValue();
                         else if (infoPropName == "reqLUK")
-                            pEntry.ReqLUK = Convert.ToInt32(infoPropValue);
+                            pEntry.ReqLUK = infoPropNode.GetIntValue();
+                        else if (infoPropName == "reqPOP")
+                            pEntry.ReqPOP = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incSTR")
+                            pEntry.IncSTR = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incDEX")
+                            pEntry.IncDEX = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incINT")
+                            pEntry.IncINT = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incLUK")
+                            pEntry.IncLUK = infoPropNode.GetIntValue();
                         else if (infoPropName == "incPAD")
-                            pEntry.incPAD = Convert.ToInt32(infoPropValue);
+                            pEntry.IncPAD = infoPropNode.GetIntValue();
                         else if (infoPropName == "incPDD")
-                            pEntry.incPDD = Convert.ToInt32(infoPropValue);
+                            pEntry.IncPDD = infoPropNode.GetIntValue();
                         else if (infoPropName == "incMAD")
-                            pEntry.incMAD = Convert.ToInt32(infoPropValue);
+                            pEntry.IncMAD = infoPropNode.GetIntValue();
                         else if (infoPropName == "incMDD")
-                            pEntry.incMDD = Convert.ToInt32(infoPropValue);
+                            pEntry.IncMDD = infoPropNode.GetIntValue();
                         else if (infoPropName == "incJump")
-                            pEntry.incJump = Convert.ToInt32(infoPropValue);
+                            pEntry.IncJump = infoPropNode.GetIntValue();
                         else if (infoPropName == "incSpeed")
-                            pEntry.incSpeed = Convert.ToInt32(infoPropValue);
+                            pEntry.IncSpeed = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incMHP")
+                            pEntry.IncMHP = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incMMP")
+                            pEntry.IncMMP = infoPropNode.GetIntValue();
+                        else if (infoPropName == "tuc")
+                            pEntry.TUC = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incACC")
+                            pEntry.IncACC = infoPropNode.GetIntValue();
+                        else if (infoPropName == "incEVA")
+                            pEntry.IncEVA = infoPropNode.GetIntValue();
+                        else if (infoPropName == "islot")
+                            pEntry.Islot = infoPropNode.GetStringValue();
+                        else if (infoPropName == "equipTradeBlock")
+                            pEntry.EquipTradeBlock = infoPropNode.GetBoolValue();
+                        else if (infoPropName == "fs")
+                            pEntry.Fs = infoPropNode.GetIntValue();
+                        else if (infoPropName == "level")
+                        {
+                            ProcessEquipLevelData(pEntry, infoPropNode);
+                        }
                         else
-                            SetItemTemplate(pEntry, infoPropName, infoPropValue);
+                            SetItemTemplateInfo(pEntry, infoPropName, infoPropNode);
                     }
                 }
             }
 
             InsertItem(pEntry);
             return [pEntry];
+        }
+
+        private static void ProcessEquipLevelData(EquipTemplate pEntry, XElement infoPropNode)
+        {
+            List<EquipLevelData> list = [];
+            foreach (var item in infoPropNode.Elements())
+            {
+                if (item.GetName() == "info")
+                {
+                    foreach (var levelData in item.Elements())
+                    {
+                        if (int.TryParse(levelData.GetName(), out var level))
+                        {
+                            var model = new EquipLevelData(level);
+                            foreach (var levelDataProp in levelData.Elements())
+                            {
+                                var levelDataPropName = levelDataProp.GetName();
+                                if (levelDataPropName == "exp")
+                                    model.Exp = levelDataProp.GetIntValue();
+                                else
+                                {
+                                    pEntry.IsElemental = true;
+                                    if (levelDataPropName == "incSTRMin")
+                                        model.IncSTRMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incSTRMax")
+                                        model.IncSTRMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incINTMin")
+                                        model.IncINTMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incINTMax")
+                                        model.IncINTMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incDEXMin")
+                                        model.IncDEXMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incDEXMax")
+                                        model.IncDEXMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incLUKMin")
+                                        model.IncLUKMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incLUKMax")
+                                        model.IncLUKMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incPADMin")
+                                        model.IncPADMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incPADMax")
+                                        model.IncPADMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incPDDMin")
+                                        model.IncPDDMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incPDDMax")
+                                        model.IncPDDMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMADMin")
+                                        model.IncMADMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMADMax")
+                                        model.IncMADMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMDDMin")
+                                        model.IncMDDMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMDDMax")
+                                        model.IncMDDMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incACCMin")
+                                        model.IncACCMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incACCMax")
+                                        model.IncACCMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incEVAMin")
+                                        model.IncEVAMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incEVAMax")
+                                        model.IncEVAMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incSpeedMin")
+                                        model.IncSpeedMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incSpeedMax")
+                                        model.IncSpeedMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incJumpMin")
+                                        model.IncJumpMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incJumpMax")
+                                        model.IncJumpMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMMPMin")
+                                        model.IncMMPMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMMPMax")
+                                        model.IncMMPMax = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMHPMin")
+                                        model.IncMHPMin = levelDataProp.GetIntValue();
+                                    else if (levelDataPropName == "incMHPMax")
+                                        model.IncMHPMax = levelDataProp.GetIntValue();
+                                }
+                            }
+                            list.Add(model);
+                        }
+
+                    }
+                    break;
+                }
+            }
+            pEntry.LevelData = list.ToArray();
         }
 
         protected override IEnumerable<AbstractTemplate> LoadAllInternal()

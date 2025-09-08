@@ -3,7 +3,7 @@ using Application.Benchmark;
 using BenchmarkDotNet.Running;
 
 
-BenchmarkRunner.Run<XmlWzReadBenchmark>();
+BenchmarkRunner.Run<XmlWzMapperBenchmark>();
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)

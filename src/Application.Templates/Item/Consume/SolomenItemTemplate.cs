@@ -3,6 +3,7 @@ namespace Application.Templates.Item.Consume
     /// <summary>
     /// 237
     /// </summary>
+    [GenerateTag]
     public sealed class SolomenItemTemplate : ConsumeItemTemplate
     {
         public SolomenItemTemplate(int templateId) : base(templateId)

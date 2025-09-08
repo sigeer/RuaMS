@@ -463,7 +463,8 @@ public class StatEffect
             lt = (Point)ltd.getData()!;
             rb = (Point)source!.getChildByPath("rb")!.getData()!;
 
-            if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
+            if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO 
+                && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
             {
                 lt = new Point(int.MinValue, int.MinValue);
                 rb = new Point(int.MaxValue, int.MaxValue);

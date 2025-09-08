@@ -63,7 +63,10 @@ namespace Application.Core.Channel.DataProviders
         private Dictionary<int, Quest> quests = new();
         public Quest GetInstance(int id)
         {
-            return quests.GetValueOrDefault(id) ?? new Quest(new QuestTemplate(new QuestInfoTemplate(id)));
+            if (quests.TryGetValue(id, out var q))
+                return q;
+
+            return quests[id] = new Quest(ProviderFactory.GetProvider<QuestProvider>().GetItem(id) ?? new QuestTemplate(new QuestInfoTemplate(id)));
         }
 
         public Quest GetInstanceFromInfoNumber(int infoNumber)

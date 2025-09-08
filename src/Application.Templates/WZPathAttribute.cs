@@ -1,7 +1,7 @@
 namespace Application.Templates
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    internal class WZPathAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+    public class WZPathAttribute : Attribute
     {
         public WZPathAttribute(string path)
         {

@@ -3,6 +3,7 @@ namespace Application.Templates.Item.Consume
     /// <summary>
     /// 227
     /// </summary>
+    [GenerateTag]
     public sealed class CatchMobItemTemplate : ConsumeItemTemplate
     {
         public CatchMobItemTemplate(int templateId) : base(templateId)

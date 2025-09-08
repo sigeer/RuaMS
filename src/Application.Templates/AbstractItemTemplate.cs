@@ -11,6 +11,9 @@ namespace Application.Templates
         [WZPath("info/cash")]
         public bool Cash { get; set; }
 
+        /// <summary>
+        /// 不可交易
+        /// </summary>
         [WZPath("info/tradeBlock")]
         public bool TradeBlock { get; set; }
 
@@ -25,6 +28,8 @@ namespace Application.Templates
 
         [WZPath("info/price")]
         public int Price { get; set; }
+        [WZPath("info/unitPrice")]
+        public double? UnitPrice { get; set; }
 
         [WZPath("info/expireOnLogout")]
         public bool ExpireOnLogout { get; set; }
@@ -36,56 +41,28 @@ namespace Application.Templates
         public int Max { get; set; }
 
         [WZPath("info/time")]
-        public int Time { get; set; }
+        public virtual int Time { get; set; } = -1;
 
         [WZPath("info/mcType")]
         public int MCType { get; set; }
         [WZPath("info/pquest")]
         public bool PartyQuest { get; set; }
 
-        public string PickupMessage { get; set; } // custom attribute not in wz
-
+        [WZPath("info/replace")]
+        public ReplaceItemTemplate? ReplaceItem { get; set; }
         protected AbstractItemTemplate(int templateId)
             : base(templateId)
         {
-            PickupMessage = "";
         }
     }
 
-    public sealed class BridleItemTemplate : AbstractItemTemplate
+    public sealed class ReplaceItemTemplate
     {
-        /*
-		 * 00000000 CItemInfo::BRIDLEITEM struc ; (sizeof=0x3C, align=0x4, copyof_5431)
-		   00000000 dwTargetMobID dd ?
-		   00000004 nItemID dd ?
-		   00000008 rc  tagRECT ?
-		   00000018 nCreateItemID dd ?
-		   0000001C nCreateItemPeriod dd ?
-		   00000020 nCatchPercentageHP dd ?
-		   00000024 nBridleMsgType dd ?
-		   00000028 fBridleProb dd ?
-		   0000002C fBridleProbAdj dd ?
-		   00000030 tUseDelay dd ?
-		   00000034 sDeleyMsg ZXString<char> ?
-		   00000038 sNoMobMsg ZXString<char> ?
-		   0000003C CItemInfo::BRIDLEITEM ends
-		 */
-
-        public int TargetMobID { get; set; }
-        public int CreateItemID { get; set; }
-        public int CreateItemPeriod { get; set; }
-        public int CatchPercentageHP { get; set; }
-        public int BridleMsgType { get; set; }
-        public int BridleProb { get; set; }
-        public int BridleProbAdj { get; set; }
-        public int UseDelay { get; set; }
-        public string DelayMsg { get; set; }
-        public string NoMobMsg { get; set; }
-
-        public BridleItemTemplate(int templateId) : base(templateId)
-        {
-
-        }
+        [WZPath("info/replace/itemid")]
+        public int ItemId { get; set; }
+        [WZPath("info/replace/msg")]
+        public string Message { get; set; } = string.Empty;
+        public int Period { get; set; }
     }
 
     public sealed class LotteryItemTemplate : AbstractItemTemplate

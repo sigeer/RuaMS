@@ -22,17 +22,25 @@ namespace Application.Templates.XmlWzReader
 
         public static int GetIntValue(this XElement element)
         {
-            return Convert.ToInt32(element.GetStringValue());
+            var v = element.GetStringValue();
+            return v == null ? 0 : int.Parse(v);
         }
 
         public static float GetFloatValue(this XElement element)
         {
-            return Convert.ToSingle(element.GetStringValue());
+            var v = element.GetStringValue();
+            return v == null ? 0 : float.Parse(v);
+        }
+
+        public static double GetDoubleValue(this XElement element)
+        {
+            var v = element.GetStringValue();
+            return v == null ? 0 : double.Parse(v.Replace(',', '.'));
         }
 
         public static bool GetBoolValue(this XElement element)
         {
-            return Convert.ToInt32(element.GetStringValue()) > 0;
+            return element.GetIntValue() > 0;
         }
 
         public static Point GetVectorValue(this XElement element)

@@ -4,7 +4,6 @@ namespace Application.Templates.Item.Cash
 {
     public class CashItemTemplate : AbstractItemTemplate
     {
-
         [WZPath("info/protectTime")]
         public int ProtectTime { get; set; }
 

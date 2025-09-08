@@ -4,7 +4,12 @@ namespace Application.Templates.Character
     {
         public override int SlotMax { get; set; } = 1;
         /// <summary>
-        /// Total upgrade count
+        /// 装备位置
+        /// </summary>
+        [WZPath("info/islot")]
+        public string? Islot { get; set; }
+        /// <summary>
+        /// 可升级次数
         /// </summary>
         [WZPath("info/tuc")]
         public int TUC { get; set; }
@@ -13,62 +18,79 @@ namespace Application.Templates.Character
         public int ReqLevel { get; set; }
 
         [WZPath("info/incSTR")]
-        public int incSTR { get; set; }
+        public int IncSTR { get; set; }
 
         [WZPath("info/incDEX")]
-        public int incDEX { get; set; }
+        public int IncDEX { get; set; }
 
         [WZPath("info/incINT")]
-        public int incINT { get; set; }
+        public int IncINT { get; set; }
 
         [WZPath("info/incLUK")]
-        public int incLUK { get; set; }
-
-        [WZPath("info/incMHP")]
-        public int incMHP { get; set; }
-
-        [WZPath("info/incMMP")]
-        public int incMMP { get; set; }
+        public int IncLUK { get; set; }
 
         [WZPath("info/incPAD")]
-        public int incPAD { get; set; }
+        public int IncPAD { get; set; }
+
+        /// <summary>
+        /// 提升MaxHP
+        /// </summary>
+        [WZPath("info/incMHP")]
+        public int IncMHP { get; set; }
+        /// <summary>
+        /// 提升MaxMP
+        /// </summary>
+
+        [WZPath("info/incMMP")]
+        public int IncMMP { get; set; }
 
         [WZPath("info/incMAD")]
-        public int incMAD { get; set; }
+        public int IncMAD { get; set; }
 
         [WZPath("info/incPDD")]
-        public int incPDD { get; set; }
+        public int IncPDD { get; set; }
 
         [WZPath("info/incMDD")]
-        public int incMDD { get; set; }
+        public int IncMDD { get; set; }
 
         [WZPath("info/incACC")]
-        public int incACC { get; set; }
+        public int IncACC { get; set; }
 
         [WZPath("info/incEVA")]
-        public int incEVA { get; set; }
+        public int IncEVA { get; set; }
 
         [WZPath("info/incCraft")]
         public int incCraft { get; set; }
 
         [WZPath("info/incSpeed")]
-        public int incSpeed { get; set; }
+        public int IncSpeed { get; set; }
 
         [WZPath("info/incJump")]
-        public int incJump { get; set; }
+        public int IncJump { get; set; }
+        /// <summary>
+        /// 装备后不可交易
+        /// </summary>
 
         [WZPath("info/equipTradeBlock")]
         public bool EquipTradeBlock { get; set; }
 
-        [WZPath("info/notExtend")]
-        public bool NotExtend { get; set; }
         public int ReqJob { get; set; }
         public int ReqSTR { get; set; }
         public int ReqDEX { get; set; }
         public int ReqINT { get; set; }
         public int ReqLUK { get; set; }
+        public int ReqPOP { get; set; }
+        /// <summary>
+        /// 不明
+        /// </summary>
+        [WZPath("info/fs")]
+        public int Fs { get; set; }
 
         public EquipLevelData[] LevelData { get; set; }
+        /// <summary>
+        /// 等级数据（LevelData）中有增加属性（有不止Exp的其他项存在）
+        /// </summary>
+        public bool IsElemental { get; set; }
         public EquipTemplate(int templateId)
             : base(templateId)
         {
