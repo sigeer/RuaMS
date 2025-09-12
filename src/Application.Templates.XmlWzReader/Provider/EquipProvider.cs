@@ -19,6 +19,52 @@ namespace Application.Templates.XmlWzReader.Provider
             return _itemFiles.FirstOrDefault(x => x.EndsWith(fileName)) ?? string.Empty;
         }
 
+        static void SetItemTemplateInfo(EquipTemplate itemTemplate, string? propName, XElement node)
+        {
+            if (propName == "tradeBlock")
+                itemTemplate.TradeBlock = node.GetBoolValue();
+            else if (propName == "cash")
+                itemTemplate.Cash = node.GetBoolValue();
+            else if (propName == "notSale")
+                itemTemplate.NotSale = node.GetBoolValue();
+            else if (propName == "quest")
+                itemTemplate.Quest = node.GetBoolValue();
+            else if (propName == "price")
+                itemTemplate.Price = node.GetIntValue();
+            else if (propName == "only")
+                itemTemplate.Only = node.GetBoolValue();
+            else if (propName == "timeLimited")
+                itemTemplate.TimeLimited = node.GetBoolValue();
+            else if (propName == "slotMax")
+                itemTemplate.SlotMax = node.GetIntValue();
+            else if (propName == "time")
+                itemTemplate.Time = node.GetIntValue();
+            else if (propName == "accountSharable")
+                itemTemplate.AccountSharable = node.GetBoolValue();
+            else if (propName == "tradeAvailable")
+                itemTemplate.TradeAvailable = node.GetBoolValue();
+            else if (propName == "expireOnLogout")
+                itemTemplate.ExpireOnLogout = node.GetBoolValue();
+            else if (propName == "timeLimited")
+                itemTemplate.TimeLimited = node.GetBoolValue();
+
+            else if (propName == "replace")
+            {
+                var model = new ReplaceItemTemplate();
+                foreach (var replaceProp in node.Elements())
+                {
+                    var replacePropName = replaceProp.GetName();
+                    if (replacePropName == "itemid")
+                        model.ItemId = replaceProp.GetIntValue();
+                    else if (replacePropName == "msg")
+                        model.Message = replaceProp.GetStringValue() ?? "";
+                    else if (replacePropName == "period")
+                        model.Period = replaceProp.GetIntValue();
+                }
+                itemTemplate.ReplaceItem = model;
+            }
+        }
+
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
             if (!File.Exists(imgPath))
@@ -31,73 +77,75 @@ namespace Application.Templates.XmlWzReader.Provider
                 return [];
 
             var pEntry = new EquipTemplate(equipItemId);
-            foreach (var rootPropNode in xDoc.Elements())
-            {
-                var rootPropName = rootPropNode.Attribute("name")?.Value;
-                if (rootPropName == "info")
-                {
-                    foreach (var infoPropNode in rootPropNode.Elements())
-                    {
-                        var infoPropName = infoPropNode.Attribute("name")?.Value;
-                        if (infoPropName == "reqLevel")
-                            pEntry.ReqLevel = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqJob")
-                            pEntry.ReqJob = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqSTR")
-                            pEntry.ReqSTR = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqDEX")
-                            pEntry.ReqDEX = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqINT")
-                            pEntry.ReqINT = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqLUK")
-                            pEntry.ReqLUK = infoPropNode.GetIntValue();
-                        else if (infoPropName == "reqPOP")
-                            pEntry.ReqPOP = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incSTR")
-                            pEntry.IncSTR = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incDEX")
-                            pEntry.IncDEX = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incINT")
-                            pEntry.IncINT = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incLUK")
-                            pEntry.IncLUK = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incPAD")
-                            pEntry.IncPAD = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incPDD")
-                            pEntry.IncPDD = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incMAD")
-                            pEntry.IncMAD = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incMDD")
-                            pEntry.IncMDD = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incJump")
-                            pEntry.IncJump = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incSpeed")
-                            pEntry.IncSpeed = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incMHP")
-                            pEntry.IncMHP = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incMMP")
-                            pEntry.IncMMP = infoPropNode.GetIntValue();
-                        else if (infoPropName == "tuc")
-                            pEntry.TUC = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incACC")
-                            pEntry.IncACC = infoPropNode.GetIntValue();
-                        else if (infoPropName == "incEVA")
-                            pEntry.IncEVA = infoPropNode.GetIntValue();
-                        else if (infoPropName == "islot")
-                            pEntry.Islot = infoPropNode.GetStringValue();
-                        else if (infoPropName == "equipTradeBlock")
-                            pEntry.EquipTradeBlock = infoPropNode.GetBoolValue();
-                        else if (infoPropName == "fs")
-                            pEntry.Fs = infoPropNode.GetIntValue();
-                        else if (infoPropName == "level")
-                        {
-                            ProcessEquipLevelData(pEntry, infoPropNode);
-                        }
-                        else
-                            SetItemTemplateInfo(pEntry, infoPropName, infoPropNode);
-                    }
-                }
-            }
+            EquipTemplateGenerated.ApplyProperties(pEntry, xDoc);
+
+            //foreach (var rootPropNode in xDoc.Elements())
+            //{
+            //    var rootPropName = rootPropNode.Attribute("name")?.Value;
+            //    if (rootPropName == "info")
+            //    {
+            //        foreach (var infoPropNode in rootPropNode.Elements())
+            //        {
+            //            var infoPropName = infoPropNode.Attribute("name")?.Value;
+            //            if (infoPropName == "reqLevel")
+            //                pEntry.ReqLevel = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqJob")
+            //                pEntry.ReqJob = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqSTR")
+            //                pEntry.ReqSTR = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqDEX")
+            //                pEntry.ReqDEX = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqINT")
+            //                pEntry.ReqINT = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqLUK")
+            //                pEntry.ReqLUK = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "reqPOP")
+            //                pEntry.ReqPOP = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incSTR")
+            //                pEntry.IncSTR = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incDEX")
+            //                pEntry.IncDEX = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incINT")
+            //                pEntry.IncINT = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incLUK")
+            //                pEntry.IncLUK = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incPAD")
+            //                pEntry.IncPAD = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incPDD")
+            //                pEntry.IncPDD = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incMAD")
+            //                pEntry.IncMAD = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incMDD")
+            //                pEntry.IncMDD = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incJump")
+            //                pEntry.IncJump = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incSpeed")
+            //                pEntry.IncSpeed = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incMHP")
+            //                pEntry.IncMHP = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incMMP")
+            //                pEntry.IncMMP = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "tuc")
+            //                pEntry.TUC = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incACC")
+            //                pEntry.IncACC = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "incEVA")
+            //                pEntry.IncEVA = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "islot")
+            //                pEntry.Islot = infoPropNode.GetStringValue();
+            //            else if (infoPropName == "equipTradeBlock")
+            //                pEntry.EquipTradeBlock = infoPropNode.GetBoolValue();
+            //            else if (infoPropName == "fs")
+            //                pEntry.Fs = infoPropNode.GetIntValue();
+            //            else if (infoPropName == "level")
+            //            {
+            //                ProcessEquipLevelData(pEntry, infoPropNode);
+            //            }
+            //            else
+            //                SetItemTemplateInfo(pEntry, infoPropName, infoPropNode);
+            //        }
+            //    }
+            //}
 
             InsertItem(pEntry);
             return [pEntry];
@@ -114,7 +162,7 @@ namespace Application.Templates.XmlWzReader.Provider
                     {
                         if (int.TryParse(levelData.GetName(), out var level))
                         {
-                            var model = new EquipLevelData(level);
+                            var model = new EquipLevelData() { Level = level };
                             foreach (var levelDataProp in levelData.Elements())
                             {
                                 var levelDataPropName = levelDataProp.GetName();

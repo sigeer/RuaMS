@@ -2,11 +2,7 @@ namespace Application.Templates.Character
 {
     public sealed class EquipLevelData
     {
-        public EquipLevelData(int level)
-        {
-            Level = level;
-        }
-
+        [WZPath("info/level/info/-/$name")]
         public int Level { get; set; }
         public int Exp { get; set; }
         public int IncSTRMin { get; set; }
@@ -23,7 +19,6 @@ namespace Application.Templates.Character
         public int IncEVAMin { get; set; }
         public int IncSpeedMin { get; set; }
         public int IncJumpMin { get; set; }
-
         public int IncSTRMax { get; set; }
         public int IncDEXMax { get; set; }
         public int IncINTMax { get; set; }

@@ -1,6 +1,7 @@
 namespace Application.Templates.Item.Install
 {
-    public sealed class InstallItemTemplate : AbstractItemTemplate
+    [GenerateTag]
+    public sealed class InstallItemTemplate : ItemTemplateBase
     {
         [WZPath("info/recoveryHP")]
         public int RecoveryHP { get; set; }
@@ -10,9 +11,9 @@ namespace Application.Templates.Item.Install
 
         [WZPath("info/reqLevel")]
         public int ReqLevel { get; set; }
+        [WZPath("info/replace")]
+        public ReplaceItemTemplate? ReplaceItem { get; set; }
 
-        [WZPath("info/tamingMob")]
-        public int TamingMob { get; set; }
 
         public InstallItemTemplate(int templateId)
             : base(templateId)

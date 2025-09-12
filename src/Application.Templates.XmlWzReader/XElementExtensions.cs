@@ -23,7 +23,10 @@ namespace Application.Templates.XmlWzReader
         public static int GetIntValue(this XElement element)
         {
             var v = element.GetStringValue();
-            return v == null ? 0 : int.Parse(v);
+            if (int.TryParse(v, out int result))
+                return result;
+
+            return (int)double.Parse(v);
         }
 
         public static float GetFloatValue(this XElement element)

@@ -28,8 +28,7 @@ namespace Application.Templates
 
         [WZPath("info/price")]
         public int Price { get; set; }
-        [WZPath("info/unitPrice")]
-        public double? UnitPrice { get; set; }
+
 
         [WZPath("info/expireOnLogout")]
         public bool ExpireOnLogout { get; set; }
@@ -37,19 +36,13 @@ namespace Application.Templates
         [WZPath("info/timeLimited")]
         public bool TimeLimited { get; set; }
 
-        [WZPath("info/max")]
-        public int Max { get; set; }
 
-        [WZPath("info/time")]
+        [WZPath("spec/time")]
         public virtual int Time { get; set; } = -1;
 
-        [WZPath("info/mcType")]
-        public int MCType { get; set; }
-        [WZPath("info/pquest")]
-        public bool PartyQuest { get; set; }
 
-        [WZPath("info/replace")]
-        public ReplaceItemTemplate? ReplaceItem { get; set; }
+
+
         protected AbstractItemTemplate(int templateId)
             : base(templateId)
         {

@@ -2,17 +2,43 @@
 
 #### Cash 501 - 599
 
-503：雇佣商人  
+501：装饰  
+502：装饰  
+503：雇佣商人`HiredMerchantItemTemplate`  
 504：缩地石  
 505：洗点卷轴  
+506：特殊消耗道具  
 507：喇叭  
 508：风筝  
+509：消息  
+510：音乐盒  
+512：场景特效，场景buff`MapBuffItemTemplate`  
+513：护符（特殊消耗道具）`SafetyCharmItemTemplate`  
 514：个人商店  
-521：经验倍率  
+515：美容美发卡（特殊消耗道具）  
+516：表情（装饰）  
+517：宠物改名（特殊消耗道具）  
+518：生命水（特殊消耗道具）  
+519：宠物技能（特殊消耗道具）  
+520：金币袋`MesoBagItemTemplate`  
+521：经验倍率`CouponItemTemplate`  
+522：各种门票（特殊消耗道具）  
 523：猫头鹰  
-524：宠物饲料  
-530：变身  
-536：爆率倍率  
+524：宠物饲料`CashPetFoodItemTemplate`  
+525：婚礼道具 （特殊消耗道具）  
+528：范围特效`AreaEffectItemTemplate`  
+530：变身`MorphItemTemplate`  
+536：爆率倍率`CouponItemTemplate`  
+550：魔法沙漏`ExtendItemTimeItemTemplate`  
+557：金锤子
+
+##### 节点
+
+stateChangeItem: 触发道具效果  
+protectTime: 封印时长（封印之锁）
+soldInform: 售出后通知？（雇佣商人）
+info/rate: 倍率  
+spec/expR:
 
 
 #### Consume 200 - 245
@@ -63,7 +89,7 @@ respectFS: 伤害加成
 defenseAtt: 属性攻击抗性  
 defenseState: 暗属性、诅咒、昏迷、虚弱抗性  
 thaw: ？  
-
+timeLimited: 时间限制  
 
 ### Skill.wz
 

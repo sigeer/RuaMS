@@ -2,7 +2,7 @@ using Application.Templates.Item.Data;
 
 namespace Application.Templates.Item.Consume
 {
-    public class ConsumeItemTemplate : AbstractItemTemplate
+    public class ConsumeItemTemplate : ItemTemplateBase
     {
 
         [WZPath("info/monsterBook")]
@@ -36,13 +36,11 @@ namespace Application.Templates.Item.Consume
 
         [WZPath("info/type")]
         public int InfoType { get; set; }
-
-        [WZPath("reward/-")]
-        public RewardData[] Reward { get; set; } // TODO hook this up to a provider
-
+        [WZPath("info/unitPrice")]
+        public double? UnitPrice { get; set; }
         public ConsumeItemTemplate(int templateId) : base(templateId)
         {
-            Reward = Array.Empty<RewardData>();
+
         }
     }
 }

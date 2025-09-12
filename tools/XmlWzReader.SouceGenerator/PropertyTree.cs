@@ -10,6 +10,7 @@ namespace XmlWzReader.SouceGenerator
         public string Name { get; set; }
         public PropertyData Value { get; set; }          // 挂 AAA 对象
         public List<TreeNode> Children { get; set; } = new();
+        public TreeNode Parent { get; set; }
         public int Depth { get; set; }
 
         public TreeNode(string name, int depth)
@@ -18,7 +19,7 @@ namespace XmlWzReader.SouceGenerator
             Depth = depth;
         }
 
-        static List<TreeNode> BuildTreeCore(Dictionary<string, PropertyData> dict)
+        public static List<TreeNode> BuildTreeCore(Dictionary<string, PropertyData> dict)
         {
             var roots = new List<TreeNode>();
 

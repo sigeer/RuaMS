@@ -1,12 +1,12 @@
-namespace Application.Templates.Item.Consume
+namespace Application.Templates.Item.Cash
 {
     /// <summary>
-    /// 212
+    /// 524
     /// </summary>
     [GenerateTag]
-    public sealed class PetFoodItemTemplate : ConsumeItemTemplate
+    public class CashPetFoodItemTemplate : CashItemTemplate
     {
-        public PetFoodItemTemplate(int templateId) : base(templateId)
+        public CashPetFoodItemTemplate(int templateId) : base(templateId)
         {
             Pet = Array.Empty<int>();
         }

@@ -10,8 +10,6 @@ namespace Application.Templates.Item.Consume
         {
             Con = Array.Empty<ConData>();
         }
-        [WZPath("spec/time")]
-        public override int Time { get; set; } = -1;
 
         [WZPath("info/mob")]
         public int MobId { get; set; }

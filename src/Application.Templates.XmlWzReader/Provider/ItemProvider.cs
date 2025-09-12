@@ -4,9 +4,7 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Install;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
-using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
-using static Application.Templates.Item.Consume.MonsterCardItemTemplate;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
@@ -37,7 +35,7 @@ namespace Application.Templates.XmlWzReader.Provider
             if (shortCode != 500)
                 str = shortCode.ToString().PadLeft(4, '0');
 
-            str+= ".img.xml";
+            str += ".img.xml";
             return _itemFiles.Where(x => x.EndsWith(str)).FirstOrDefault();
         }
 
@@ -67,43 +65,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 return [];
 
             var pEntry = new PetItemTemplate(petItemId);
-            foreach (var rootPropNode in xDoc.Elements())
-            {
-                var rootPropName = rootPropNode.Attribute("name")?.Value;
-                if (rootPropName == "info")
-                {
-                    foreach (var infoPropNode in rootPropNode.Elements())
-                    {
-                        var infoPropName = infoPropNode.Attribute("name")?.Value;
-                        if (infoPropName == "hungry")
-                            pEntry.Hungry = infoPropNode.GetIntValue();
-                        else
-                            SetItemTemplateInfo(pEntry, infoPropName, infoPropNode);
-                    }
-                }
-                else if (rootPropName == "interact")
-                {
-                    List<PetInterActData> list = [];
-                    foreach (var itemNode in rootPropNode.Elements())
-                    {
-                        if (int.TryParse(itemNode.Attribute("name")?.Value, out var idx))
-                        {
-                            var item = new PetInterActData() { Id = idx };
-                            foreach (var itemPropNode in itemNode.Elements())
-                            {
-                                var itemPropName = itemPropNode.Attribute("name")?.Value;
-                                if (itemPropName == "prob")
-                                    item.Prob = itemPropNode.GetIntValue();
-                                else if (itemPropName == "inc")
-                                    item.Inc = itemPropNode.GetIntValue();
-                            }
-                            list.Add(item);
-                        }
-                    }
-                    pEntry.InterActs = list.ToArray();
-                }
-            }
-
+            PetItemTemplateGenerated.ApplyProperties(pEntry, xDoc);
             InsertItem(pEntry);
             return [pEntry];
         }
@@ -114,40 +76,16 @@ namespace Application.Templates.XmlWzReader.Provider
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
+
             foreach (var itemNode in xDoc.Elements())
             {
-                foreach (var sourceNode in itemNode.Elements())
+                if (int.TryParse(itemNode.GetName(), out var installId))
                 {
-                    if (int.TryParse(sourceNode.Attribute("name")?.Value, out var installId))
-                    {
-                        var template = new InstallItemTemplate(installId);
-                        foreach (var propNode in sourceNode.Elements())
-                        {
-                            var nodeName = propNode.Attribute("name")?.Value;
-                            if (nodeName == "info")
-                            {
-                                foreach (var infoPropNode in propNode.Elements())
-                                {
-                                    var infoPropName = infoPropNode.Attribute("name")?.Value;
-                                    var infoPropValue = infoPropNode.Attribute("value")?.Value;
-                                    if (infoPropName == "recoveryMP")
-                                        template.RecoveryMP = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                    else if (infoPropName == "recoveryHP")
-                                        template.RecoveryHP = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                    else if (infoPropName == "reqLevel")
-                                        template.ReqLevel = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                    else if (infoPropName == "tamingMob")
-                                        template.TamingMob = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                    else
-                                        SetItemTemplateInfo(template, infoPropName, infoPropNode);
-                                }
-                            }
-                        }
-                        InsertItem(template);
-                        all.Add(template);
-                    }
+                    var template = new InstallItemTemplate(installId);
+                    InstallItemTemplateGenerated.ApplyProperties(template, itemNode);
+                    InsertItem(template);
+                    all.Add(template);
                 }
-
             }
             return all;
         }
@@ -157,29 +95,26 @@ namespace Application.Templates.XmlWzReader.Provider
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
-            List<AbstractTemplate> all = [];
+            List<AbstractItemTemplate> all = [];
+            if (!int.TryParse(xDoc.GetName()?.Substring(0, 4), out var groupId))
+                return all;
+
             foreach (var itemNode in xDoc.Elements())
             {
-                if (int.TryParse(itemNode.Attribute("name")?.Value, out var itemId))
+                if (int.TryParse(itemNode.GetName(), out var itemId))
                 {
-                    var template = new EtcItemTemplate(itemId);
-                    foreach (var propNode in itemNode.Elements())
+                    AbstractItemTemplate template;
+                    if (groupId == 422)
                     {
-                        var nodeName = propNode.Attribute("name")?.Value;
-                        if (nodeName == "info")
-                        {
-                            foreach (var infoPropNode in propNode.Elements())
-                            {
-                                var infoPropName = infoPropNode.Attribute("name")?.Value;
-                                var infoPropValue = infoPropNode.Attribute("value")?.Value;
-                                if (infoPropName == "exp")
-                                    template.Exp = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                else if (infoPropName == "lv")
-                                    template.lv = Convert.ToInt32(infoPropNode.Attribute("value")?.Value);
-                                else
-                                    SetItemTemplateInfo(template, infoPropName, infoPropNode);
-                            }
-                        }
+                        var m = new IncubatorItemTemplate(itemId);
+                        IncubatorItemTemplateGenerated.ApplyProperties(m, itemNode);
+                        template = m;
+                    }
+                    else
+                    {
+                        var m = new EtcItemTemplate(itemId);
+                        EtcItemTemplateGenerated.ApplyProperties(m, itemNode);
+                        template = m;
                     }
                     InsertItem(template);
                     all.Add(template);
@@ -251,7 +186,10 @@ namespace Application.Templates.XmlWzReader.Provider
                         return template;
                     }
                 default:
-                    return new ConsumeItemTemplate(itemId);
+                    {
+                        var template = new ConsumeItemTemplate(itemId);
+                        return template;
+                    }
             }
         }
 
@@ -260,34 +198,6 @@ namespace Application.Templates.XmlWzReader.Provider
             var template = new ScriptItemTemplate(itemId);
             ScriptItemTemplateGenerated.ApplyProperties(template, itemNode);
             return template;
-            //foreach (var propNode in itemNode.Elements())
-            //{
-            //    var propName = propNode.GetName();
-            //    if (propName == "info")
-            //    {
-            //        foreach (var infoPropNode in propNode.Elements())
-            //        {
-            //            SetItemTemplateInfo(template, infoPropNode.GetName(), infoPropNode);
-            //        }
-            //    }
-            //    else if (propName == "spec")
-            //    {
-            //        foreach (var infoPropNode in propNode.Elements())
-            //        {
-            //            var infoPropName = infoPropNode.GetName();
-            //            if (infoPropName == "script")
-            //                template.Script = infoPropNode.GetStringValue();
-            //            else if (infoPropName == "npc")
-            //                template.Npc = infoPropNode.GetIntValue();
-            //            else if (infoPropName == "runOnPickup")
-            //                template.RunOnPickup = infoPropNode.GetBoolValue();
-            //            else
-            //                SetItemTemplateSpec(template, infoPropNode.GetName(), infoPropNode);
-            //        }
-            //    }
-            //}
-
-            //return template;
         }
 
         private ConsumeItemTemplate ProcessMonsterCard(int itemId, XElement itemNode)
@@ -353,39 +263,88 @@ namespace Application.Templates.XmlWzReader.Provider
         }
         #endregion
 
+        AbstractItemTemplate ProcessCashItemByGroup(int groupId, int itemId, XElement itemNode)
+        {
+            switch (groupId)
+            {
+                case 503:
+                    {
+                        var template = new HiredMerchantItemTemplate(itemId);
+                        HiredMerchantItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 512:
+                    {
+                        var template = new MapBuffItemTemplate(itemId);
+                        MapBuffItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 513:
+                    {
+                        var template = new SafetyCharmItemTemplate(itemId);
+                        SafetyCharmItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 520:
+                    {
+                        var template = new MesoBagItemTemplate(itemId);
+                        MesoBagItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 521:
+                case 536:
+                    {
+                        var template = new CouponItemTemplate(itemId);
+                        CouponItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 524:
+                    {
+                        var template = new CashPetFoodItemTemplate(itemId);
+                        CashPetFoodItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 528:
+                    {
+                        var template = new AreaEffectItemTemplate(itemId);
+                        AreaEffectItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 530:
+                    {
+                        var template = new MorphItemTemplate(itemId);
+                        MorphItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 550:
+                    {
+                        var template = new ExtendItemTimeItemTemplate(itemId);
+                        ExtendItemTimeItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                default:
+                    {
+                        var template = new CashItemTemplate(itemId);
+                        CashItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+            }
+        }
+
         private IEnumerable<AbstractTemplate> IterateCashBundleItem(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
-            foreach (var itemNode in xDoc.Elements())
+            if (!int.TryParse(xDoc.GetName()?.Substring(0, 4), out var groupId))
+                return all;
+
+            foreach (var rootNode in xDoc.Elements())
             {
-                if (int.TryParse(itemNode.Attribute("name")?.Value, out var itemId))
+                if (int.TryParse(rootNode.GetName(), out var itemId))
                 {
-                    var template = new CashItemTemplate(itemId);
-                    foreach (var propNode in itemNode.Elements())
-                    {
-                        var nodeName = propNode.Attribute("name")?.Value;
-                        if (nodeName == "info")
-                        {
-                            foreach (var infoPropNode in propNode.Elements())
-                            {
-                                var infoPropName = infoPropNode.Attribute("name")?.Value;
-                                SetItemTemplateInfo(template, infoPropName, infoPropNode);
-                            }
-                        }
-
-                        else if (nodeName == "spec")
-                        {
-                            foreach (var specPropNode in propNode.Elements())
-                            {
-                                var specPropName = specPropNode.Attribute("name")?.Value;
-                                var specPropValue = specPropNode.Attribute("value")?.Value;
-
-                            }
-                        }
-                    }
+                    var template = ProcessCashItemByGroup(groupId, itemId, rootNode);
                     InsertItem(template);
                     all.Add(template);
                 }

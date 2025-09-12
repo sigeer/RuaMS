@@ -1,3 +1,5 @@
+using Application.Templates.Item.Data;
+
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
@@ -9,7 +11,11 @@ namespace Application.Templates.Item.Consume
         public PotionItemTemplate(int templateId) : base(templateId)
         {
             MorphRandom = Array.Empty<MorphRandomData>();
+            Reward = Array.Empty<RewardData>();
         }
+
+        [WZPath("reward/-")]
+        public RewardData[] Reward { get; set; }
 
         [WZPath("spec/hp")]
         public int HP { get; set; }

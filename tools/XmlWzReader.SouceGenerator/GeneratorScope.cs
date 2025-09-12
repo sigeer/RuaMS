@@ -78,9 +78,20 @@ namespace XmlWzReader.SouceGenerator
             //没有Attribute时，根据结构层次查找，有Attribute时，以Attribute的结构层次查找
             SearchTree("", classSymbol);
 
-            var sourceTree = TreeNode.BuildTree(_properyMapping);
+            var sourceTree = TreeNode.BuildTreeCore(_properyMapping);
 
-            ProcessObject(sb, sourceTree, instanceName, "elementNode", true);
+            var nodeVariableName = "rootNode";
+            sb.AppendLine($"        foreach (var {nodeVariableName} in elementNode.Elements())");
+            sb.AppendLine("        {");
+
+            var nodeNameValue = "rootNodeName";
+            sb.AppendLine($"            var {nodeNameValue} = {nodeVariableName}.GetName();");
+            foreach (var item in sourceTree)
+            {
+                ProcessObject(sb, item, instanceName, nodeVariableName, nodeNameValue);
+            }
+
+            sb.AppendLine("        }");
             sb.AppendLine("    }");
             sb.AppendLine("}");
 
@@ -109,7 +120,7 @@ namespace XmlWzReader.SouceGenerator
                 {
                     var elementType = arrayType.ElementType;
 
-                    if (elementType is INamedTypeSymbol named && named.TypeKind == TypeKind.Class)
+                    if (elementType is INamedTypeSymbol named && named.TypeKind == TypeKind.Class && named.SpecialType != SpecialType.System_String)
                     {
                         // 对象数组
                         var path = propAttrValue;
@@ -162,226 +173,143 @@ namespace XmlWzReader.SouceGenerator
         }
 
 
-        void ProcessObject(StringBuilder sb, TreeNode node, string instanceName, string rootNodeName, bool isDir)
+        void ProcessObject(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
         {
-            var objProps = node.Children.Where(x => x.Value == null).ToArray();
-            var nodeVariableName = $"nodeInner{node.Depth}";
+            //一些通过WZPath跳过的中间节点
+            var isDir = node.Value == null && node.Children.Count > 0;
             if (isDir)
             {
-                sb.AppendLineWithPreSpace($"        foreach (var {nodeVariableName} in {rootNodeName}.Elements())", node.Depth);
-                sb.AppendLineWithPreSpace("        {", node.Depth);
+                sb.AppendLine($"            if ({nodeNameValue} == \"{node.Name}\")");
+                sb.AppendLine("            {");
             }
-            var currentNode = isDir ? nodeVariableName : rootNodeName;
-            foreach (var objNode in objProps)
+
+            var arrItem = node.Children.FirstOrDefault(x => x.Value != null && (x.Value.Type == 1 || x.Value.Type == 2));
+            var listName = $"listArr{node.Depth}";
+            if (arrItem != null)
             {
-                if (isDir)
+                sb.AppendLineWithPreSpace($"                List<{arrItem.Value.DataType.TrimEnd('?')}> {listName} = new List<{arrItem.Value.DataType.TrimEnd('?')}>();", node.Depth);
+            }
+
+            var innerNodeName = $"node{node.Depth}";
+            var innerNodeNameValue = $"nodeName{node.Depth}";
+
+            sb.AppendLineWithPreSpace($"                foreach (var {innerNodeName} in {currentNode}.Elements())", node.Depth);
+            sb.AppendLineWithPreSpace("                {", node.Depth);
+            sb.AppendLineWithPreSpace($"                    var {innerNodeNameValue} = {innerNodeName}.GetName();", node.Depth);
+
+            foreach (var objNode in node.Children)
+            {
+                if (objNode.Value == null)
                 {
-                    sb.AppendLineWithPreSpace($"            if ({currentNode}.GetName() == \"{objNode.Name}\")", node.Depth);
-                    sb.AppendLineWithPreSpace("            {", node.Depth);
+                    ProcessObject(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
                 }
-
-                var needDir = objNode.Children.Any(x => x.Value == null)
-                    || (objNode.Children.Where(y => y.Value != null).Any(y => y.Value.Type == 0) && !objNode.Children.Where(y => y.Value != null).Any(y => y.Value.Type == 1));
-                ProcessObject(sb, objNode, instanceName, currentNode, needDir);
-
-                if (isDir)
+                else
                 {
-                    sb.AppendLineWithPreSpace("            }", node.Depth);
+                    ProcessBaseDataType(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
+                    ProcessInnerObject(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
                 }
-
             }
 
-            var baseTypeData = node.Children.Where(x => x.Value != null && x.Value.Type == 0).ToList();
-            var baseArrData = node.Children.Where(x => x.Value != null && x.Value.Type == 1).ToList();
-            if (baseTypeData.Count > 0 && baseArrData.Count > 0)
+            // 数组、对象数组同级只会存在一条
+            if (arrItem != null)
             {
-                ProcessMixed(sb, node.Depth + 1, baseArrData, baseTypeData, instanceName, currentNode);
-            }
-            else if (baseTypeData.Count > 0)
-            {
-                ProcessBaseDataType(sb, node.Depth + 1, baseTypeData, instanceName, currentNode);
-            }
-            else if (baseArrData.Count > 0)
-            {
-                ProcessIntArrayType(sb, node.Depth + 1, baseArrData, instanceName, currentNode);
+                ProcessArrayType(sb, arrItem, listName, innerNodeName, innerNodeNameValue);
+                ProcessObjectArrayType(sb, arrItem, listName, innerNodeName, innerNodeNameValue);
             }
 
-            var objArrPropData = node.Children.Where(x => x.Value != null && x.Value.Type == 2).ToList();
-            if (objArrPropData.Count > 0)
-            {
-                ProcessObjectArrayType(sb, node.Depth + 1, objArrPropData, instanceName, currentNode);
-            }
+            sb.AppendLineWithPreSpace("                }", node.Depth);
 
-            var objPropData = node.Children.Where(x => x.Value != null && x.Value.Type == 3).ToList();
-            if (objPropData.Count > 0)
+            if (arrItem != null)
             {
-                ProcessInnerObject(sb, node.Depth + 1, objPropData, instanceName, currentNode);
+                sb.AppendLineWithPreSpace($"                {instanceName}.{arrItem.Value.DataName} = {listName}.ToArray();", node.Depth);
             }
 
             if (isDir)
             {
-                sb.AppendLineWithPreSpace("        }", node.Depth);
+                sb.AppendLine("            }");
             }
         }
 
-        void ProcessBaseDataType(StringBuilder sb, int depth, List<TreeNode> baseDatas, string instanceName, string currentNode)
+        string GetBaseFunction(string dataType)
         {
-
-            var nodeVariableName = $"nodeProp{depth}";
-            sb.AppendLineWithPreSpace($"        switch({currentNode}.GetName())", depth);
-            sb.AppendLineWithPreSpace("        {", depth);
-            foreach (var prop in baseDatas)
+            string getter = dataType switch
             {
-                string getter = prop.Value.DataType switch
+                "string" => "GetStringValue()",
+                "string?" => "GetStringValue()",
+                "int" => "GetIntValue()",
+                "int?" => "GetIntValue()",
+                "bool" => "GetBoolValue()",
+                "System.Drawing.Point" => "GetVectorValue()",
+                "double" => "GetDoubleValue()",
+                "double?" => "GetDoubleValue()",
+                "float" => "GetFloatValue()",
+                "float?" => "GetFloatValue()",
+                _ => "GetStringValue()"
+            };
+            return getter;
+        }
+
+        void ProcessBaseDataType(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
+        {
+            if (node.Value != null && node.Value.Type == 0)
+            {
+                if (node.Name == "$name")
                 {
-                    "string" => "GetStringValue()",
-                    "string?" => "GetStringValue()",
-                    "int" => "GetIntValue()",
-                    "bool" => "GetBoolValue()",
-                    "Point" => "GetVectorValue()",
-                    "double" => "GetDoubleValue()",
-                    "double?" => "GetDoubleValue()",
-                    "float" => "GetFloatValue()",
-                    _ => "GetStringValue()"
-                };
-                sb.AppendLineWithPreSpace($"                case \"{prop.Name}\": {instanceName}.{prop.Value.DataName} = {currentNode}.{getter}; break;", depth);
-            }
+                    sb.AppendLineWithPreSpace($"        {instanceName}.{node.Value.DataName} = idx;", node.Depth);
+                }
+                else
+                {
+                    sb.AppendLineWithPreSpace($"        if ({nodeNameValue} == \"{node.Name}\")", node.Depth);
+                    sb.AppendLineWithPreSpace($"            {instanceName}.{node.Value.DataName} = {currentNode}.{GetBaseFunction(node.Value.DataType)};", node.Depth);
+                }
 
-            sb.AppendLineWithPreSpace($"                default: break;", depth);
-            sb.AppendLineWithPreSpace("        }", depth);
+            }
         }
 
-        void ProcessIntArrayType(StringBuilder sb, int depth, List<TreeNode> baseDatas, string instanceName, string currentNode)
+        void ProcessArrayType(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
         {
-            int localId = 0;
-            var nodeVariableName = $"nodeItem{depth}";
+            if (node.Value == null || node.Value.Type != 1)
+                return;
 
-            foreach (var prop in baseDatas)
-            {
-                var listName = $"listInt{depth}_{localId}";
-
-                //if (prop.Value.Name != "-")
-                //{
-                //    sb.AppendLineWithPreSpace($"        if ({currentNode}.GetName() == \"{prop.Value.Name}\")", node.Depth);
-                //    sb.AppendLineWithPreSpace("        {", node.Depth);
-                //}
-
-                sb.AppendLineWithPreSpace($"            List<int> {listName} = new List<int>();", depth);
-                sb.AppendLineWithPreSpace($"            foreach (var {nodeVariableName} in {currentNode}.Elements())", depth);
-                sb.AppendLineWithPreSpace("            {", depth);
-                sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeVariableName}.GetName(), out var _))", depth);
-                sb.AppendLineWithPreSpace("                {", depth);
-                sb.AppendLineWithPreSpace($"                     {listName}.Add({nodeVariableName}.GetIntValue());", depth);
-                sb.AppendLineWithPreSpace("                }", depth);
-                sb.AppendLineWithPreSpace("            }", depth);
-                sb.AppendLineWithPreSpace($"            {instanceName}.{prop.Value.DataName} = {listName}.ToArray();", depth);
-
-                //if (prop.Value.Name != "-")
-                //{
-                //    sb.AppendLineWithPreSpace("        }", node.Depth);
-                //}
-
-                localId++;
-            }
-
-
+            sb.AppendLineWithPreSpace($"                if (int.TryParse({currentNode}.GetName(), out var _))", node.Depth);
+            sb.AppendLineWithPreSpace("                {", node.Depth);
+            sb.AppendLineWithPreSpace($"                     {instanceName}.Add({currentNode}.{GetBaseFunction(node.Value.DataType)});", node.Depth);
+            sb.AppendLineWithPreSpace("                }", node.Depth);
         }
 
-        void ProcessObjectArrayType(StringBuilder sb, int depth, List<TreeNode> baseDatas, string instanceName, string currentNode)
+        void ProcessObjectArrayType(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
         {
-            var nodeVariableName = $"nodeItem{depth}";
+            if (node.Value == null || node.Value.Type != 2)
+                return;
 
-            int localId = 0;
-            foreach (var prop in baseDatas)
-            {
-                var modelName = $"modelArr{depth}_{localId}";
-                var listName = $"listObj{depth}_{localId}";
+            var modelName = $"modelArr{node.Depth}";
 
-                //sb.AppendLineWithPreSpace($"        if ({currentNode}.GetName() == \"{prop.Value.Name}\")", depth);
-                //sb.AppendLineWithPreSpace("        {", depth);
-
-                sb.AppendLineWithPreSpace($"            List<{prop.Value.DataType.TrimEnd('?')}> {listName} = new List<{prop.Value.DataType.TrimEnd('?')}>();", depth);
-                sb.AppendLineWithPreSpace($"            foreach (var {nodeVariableName} in {currentNode}.Elements())", depth);
-                sb.AppendLineWithPreSpace("            {", depth);
-                sb.AppendLineWithPreSpace($"                var {modelName} = new {prop.Value.DataType.TrimEnd('?')}();", depth);
-                sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeVariableName}.GetName(), out var idx))", depth);
-                sb.AppendLineWithPreSpace("                {", depth);
-                var newObjSB = new StringBuilder();
-                ProcessObject(newObjSB, prop, modelName, nodeVariableName, true);
-                sb.Append(newObjSB.ToString());
-                sb.AppendLineWithPreSpace($"                     {listName}.Add({modelName});", depth);
-                sb.AppendLineWithPreSpace("                }", depth);
-                sb.AppendLineWithPreSpace("            }", depth);
-                sb.AppendLineWithPreSpace($"            {instanceName}.{prop.Value.DataName} = {listName}.ToArray();", depth);
-
-                //sb.AppendLineWithPreSpace("        }", depth);
-
-                localId++;
-            }
-
+            sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeNameValue}, out var idx))", node.Depth);
+            sb.AppendLineWithPreSpace("                {", node.Depth);
+            sb.AppendLineWithPreSpace($"                    var {modelName} = new {node.Value.DataType}();", node.Depth);
+            ProcessObject(sb, node, modelName, currentNode, nodeNameValue);
+            sb.AppendLineWithPreSpace($"                     {instanceName}.Add({modelName});", node.Depth);
+            sb.AppendLineWithPreSpace("                }", node.Depth);
 
         }
 
-        void ProcessInnerObject(StringBuilder sb, int depth, List<TreeNode> baseDatas, string instanceName, string currentNode)
+        void ProcessInnerObject(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
         {
 
-            int localId = 0;
-            foreach (var prop in baseDatas)
-            {
-                var modelName = $"modelArr{depth}_{localId}";
+            if (node.Value == null || node.Value.Type != 3)
+                return;
 
-                sb.AppendLineWithPreSpace($"        if ({currentNode}.GetName() == \"{prop.Value.Name}\")", depth);
-                sb.AppendLineWithPreSpace("        {", depth);
+            var modelName = $"modelInnerObj{node.Depth}";
+            var innerNodeName = $"modelInnerNode{node.Depth}";
+            var innerNodeNameValue = $"modelInnerNodeName{node.Depth}";
 
-                sb.AppendLineWithPreSpace($"            var {modelName} = new {prop.Value.DataType.TrimEnd('?')}();", depth);
-                ProcessObject(sb, prop, modelName, currentNode, true);
-                sb.AppendLineWithPreSpace($"            {instanceName}.{prop.Value.DataName} = {modelName};", depth);
-
-                sb.AppendLineWithPreSpace("        }", depth);
-                localId++;
-            }
+            sb.AppendLineWithPreSpace($"        if ({nodeNameValue} == \"{node.Name}\")", node.Depth);
+            sb.AppendLineWithPreSpace("        {", node.Depth);
+            sb.AppendLineWithPreSpace($"            var {modelName} = new {node.Value.DataType.TrimEnd('?')}();", node.Depth);
+            ProcessObject(sb, node, modelName, currentNode, nodeNameValue);
+            sb.AppendLineWithPreSpace($"            {instanceName}.{node.Value.DataName} = {modelName};", node.Depth);
+            sb.AppendLineWithPreSpace("        }", node.Depth);
         }
-
-        /// <summary>
-        /// 同时包含普通数组和object
-        /// </summary>
-        /// <param name="sb"></param>
-        /// <param name="depth"></param>
-        /// <param name="baseDatas"></param>
-        /// <param name="instanceName"></param>
-        /// <param name="currentNode"></param>
-        void ProcessMixed(StringBuilder sb, int depth, List<TreeNode> arrayItems, List<TreeNode> propItems, string instanceName, string currentNode)
-        {
-            int localId = 0;
-
-            foreach (var prop in arrayItems)
-            {
-                var listName = $"listMixedInt{depth}_{localId}";
-                var nodeVariableName = $"nodeItem{depth}_{localId}";
-                var nodeVariableNameValue = $"{nodeVariableName}_value";
-
-                sb.AppendLineWithPreSpace($"            List<int> {listName} = new List<int>();", depth);
-                sb.AppendLineWithPreSpace($"            foreach (var {nodeVariableName} in {currentNode}.Elements())", depth);
-                sb.AppendLineWithPreSpace("            {", depth);
-                sb.AppendLineWithPreSpace($"                var {nodeVariableNameValue} = {nodeVariableName}.GetName();", depth);
-                sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeVariableNameValue}, out var idx))", depth);
-                sb.AppendLineWithPreSpace("                {", depth);
-                sb.AppendLineWithPreSpace($"                     {listName}.Add({nodeVariableName}.GetIntValue());", depth);
-                sb.AppendLineWithPreSpace("                }", depth);
-                sb.AppendLineWithPreSpace("                else", depth);
-                sb.AppendLineWithPreSpace("                {", depth);
-                ProcessBaseDataType(sb, depth, propItems, instanceName, nodeVariableName);
-                sb.AppendLineWithPreSpace("                }", depth);
-                sb.AppendLineWithPreSpace("            }", depth);
-                sb.AppendLineWithPreSpace($"            {instanceName}.{prop.Value.DataName} = {listName}.ToArray();", depth);
-
-
-                localId++;
-            }
-
-
-        }
-
         public void Dispose()
         {
             _properyMapping.Clear();

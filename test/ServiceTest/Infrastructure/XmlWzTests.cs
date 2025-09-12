@@ -1,12 +1,17 @@
+using Application.Shared.Constants.Map;
+using Application.Templates.Character;
+using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Data;
-using Application.Templates.XmlWzReader;
+using Application.Templates.Item.Etc;
 using Application.Templates.XmlWzReader.Provider;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text;
-using System.Xml.Linq;
-using System.Xml.Schema;
+using System.Text.Json;
 using XmlWzReader;
+using XmlWzReader.wz;
 
 namespace ServiceTest.Infrastructure
 {
@@ -51,7 +56,49 @@ namespace ServiceTest.Infrastructure
         }
 
         [Test]
-        public void ConsumeItemTemplateMapCheck()
+        public void CashItemTemplateDataCheck()
+        {
+            var provider = new ItemProvider(new Application.Templates.TemplateOptions());
+
+            var areaEffectItem = provider.GetRequiredItem<AreaEffectItemTemplate>(5281000)!;
+            Assert.That(areaEffectItem.Time, Is.EqualTo(60));
+            Assert.That(areaEffectItem.LT, Is.EqualTo(new Point(-110, -82)));
+            Assert.That(areaEffectItem.RB, Is.EqualTo(new Point(110, 83)));
+
+            var petFoodItem = provider.GetRequiredItem<CashPetFoodItemTemplate>(5240005)!;
+            Assert.That(petFoodItem.PetfoodInc, Is.EqualTo(100));
+            Assert.That(petFoodItem.Pet, Does.Contain(5000007));
+
+            var couponItem = provider.GetRequiredItem<CouponItemTemplate>(5211004)!;
+            Assert.That(couponItem.Rate, Is.EqualTo(2));
+            Assert.That(couponItem.Time, Is.EqualTo(int.MaxValue));
+            Assert.That(couponItem.TimeRange, Does.Contain("TUE:07-11"));
+
+            var extendItem = provider.GetRequiredItem<ExtendItemTimeItemTemplate>(05500002)!;
+            Assert.That(extendItem.AddTime, Is.EqualTo(1728000));
+            Assert.That(extendItem.MaxDays, Is.EqualTo(30));
+
+
+            var hiredItem = provider.GetRequiredItem<HiredMerchantItemTemplate>(05030008)!;
+            Assert.That(hiredItem.NotifyWhenSold, Is.EqualTo(true));
+
+            var mapBuffItem = provider.GetRequiredItem<MapBuffItemTemplate>(05121009)!;
+            Assert.That(mapBuffItem.StateChangeItem, Is.EqualTo(2022154));
+
+            var mesoItem = provider.GetRequiredItem<MesoBagItemTemplate>(05200001)!;
+            Assert.That(mesoItem.Meso, Is.EqualTo(5000000));
+
+            var morphItem = provider.GetRequiredItem<MorphItemTemplate>(05300002)!;
+            Assert.That(morphItem.Morph, Is.EqualTo(3));
+            Assert.That(morphItem.Time, Is.EqualTo(600000));
+            Assert.That(morphItem.HP, Is.EqualTo(50));
+
+            var safetyCharmItem = provider.GetRequiredItem<SafetyCharmItemTemplate>(05130000)!;
+            Assert.That(safetyCharmItem.RecoveryRate, Is.EqualTo(30));
+        }
+
+        [Test]
+        public void ConsumeItemTemplateDataCheck()
         {
             var provider = new ItemProvider(new Application.Templates.TemplateOptions());
             var townScrollItem = provider.GetRequiredItem<TownScrollItemTemplate>(2031000);
@@ -106,6 +153,54 @@ namespace ServiceTest.Infrastructure
 
             var potionItem_2050004 = provider.GetRequiredItem<PotionItemTemplate>(2050004)!;
             Assert.That(potionItem_2050004.Cure_Curse, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void EtcItemTemplateDataCheck()
+        {
+            var provider = new ItemProvider(new Application.Templates.TemplateOptions());
+
+            var item = provider.GetRequiredItem<EtcItemTemplate>(4000113)!;
+            Assert.That(item.lv, Is.EqualTo(34));
+
+            var incubatorItem = provider.GetRequiredItem<IncubatorItemTemplate>(4220129)!;
+            Assert.That(incubatorItem.Grade, Is.EqualTo(3));
+            Assert.That(incubatorItem.QuestID, Is.EqualTo(8252));
+            Assert.That(incubatorItem.ConsumeItems, Has.Some.Matches<IncubatorConsumeItem>(p => p.ItemId == 4032135 && p.Value == 1));
+        }
+
+
+        [Test]
+        public void EquipItemTemplateDataCheck()
+        {
+            var provider = new EquipProvider(new Application.Templates.TemplateOptions());
+            var item = provider.GetRequiredItem<EquipTemplate>(01002430)!;
+
+            Console.WriteLine(JsonSerializer.Serialize(item));
+            Assert.That(item.ReqLevel, Is.EqualTo(60));
+            
+        }
+
+        [Test]
+        public void MapEqualCheck()
+        {
+            var oldProvider = DataProviderFactory.getDataProvider(WZFiles.MAP);
+
+            var oldData = oldProvider.getData(GetMapImg(mapId));
+            var infoData = oldData.getChildByPath("info")!;
+            var newProvider = new MapProvider(new Application.Templates.TemplateOptions());
+            var newData = newProvider.GetItem(mapId)!;
+
+            Assert.That(newData.HasClock, Is.EqualTo(oldData.getChildByPath("clock") != null));
+            Assert.That(newData.OnUserEnter, Is.EqualTo(DataTool.getString(infoData?.getChildByPath("onUserEnter"))));
+            Assert.That(newData.Everlast, Is.EqualTo(DataTool.getIntConvert("everlast", infoData, 0) != 0));
+            Assert.That(newData.Town, Is.EqualTo(DataTool.GetBoolean("town", infoData)));
+            Assert.That(newData.DecHP, Is.EqualTo(DataTool.getIntConvert("decHP", infoData, 0)));
+            Assert.That(newData.ProtectItem, Is.EqualTo(DataTool.getIntConvert("protectItem", infoData, 0)));
+            Assert.That(newData.ForcedReturn, Is.EqualTo(DataTool.getInt(infoData?.getChildByPath("forcedReturn"), MapId.NONE)));
+            Assert.That(newData.TimeLimit, Is.EqualTo(DataTool.getIntConvert("timeLimit", infoData, -1)));
+            Assert.That(newData.FieldType, Is.EqualTo(DataTool.getIntConvert("fieldType", infoData, 0)));
+            Assert.That(newData.FixedMobCapacity, Is.EqualTo(DataTool.getIntConvert("fixedMobCapacity", infoData, 500)));
         }
     }
 }

@@ -1,13 +1,18 @@
 namespace Application.Templates.Item.Etc
 {
-    public class EtcItemTemplate : AbstractItemTemplate
+    [GenerateTag]
+    public class EtcItemTemplate : ItemTemplateBase
     {
         [WZPath("info/lv")]
         public int lv { get; set; }
+        [WZPath("info/exp")]
         public int Exp { get; set; }
 
         [WZPath("info/pickUpBlock")]
         public bool PickupBlock { get; set; }
+
+        [WZPath("info/replace")]
+        public ReplaceItemTemplate? ReplaceItem { get; set; }
         public EtcItemTemplate(int templateId) : base(templateId)
         {
         }

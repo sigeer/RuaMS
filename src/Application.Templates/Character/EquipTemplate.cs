@@ -1,8 +1,8 @@
 namespace Application.Templates.Character
 {
+    [GenerateTag]
     public sealed class EquipTemplate : AbstractItemTemplate
     {
-        public override int SlotMax { get; set; } = 1;
         /// <summary>
         /// 装备位置
         /// </summary>
@@ -74,22 +74,31 @@ namespace Application.Templates.Character
         [WZPath("info/equipTradeBlock")]
         public bool EquipTradeBlock { get; set; }
 
+        [WZPath("info/reqJob")]
         public int ReqJob { get; set; }
+        [WZPath("info/reqSTR")]
         public int ReqSTR { get; set; }
+        [WZPath("info/reqDEX")]
         public int ReqDEX { get; set; }
+        [WZPath("info/reqINT")]
         public int ReqINT { get; set; }
+        [WZPath("info/reqLUK")]
         public int ReqLUK { get; set; }
+        [WZPath("info/reqPOP")]
         public int ReqPOP { get; set; }
         /// <summary>
         /// 不明
         /// </summary>
         [WZPath("info/fs")]
         public int Fs { get; set; }
-
+        [WZPath("info/level/info/-")]
         public EquipLevelData[] LevelData { get; set; }
+        [WZPath("info/replace")]
+        public ReplaceItemTemplate? ReplaceItem { get; set; }
         /// <summary>
         /// 等级数据（LevelData）中有增加属性（有不止Exp的其他项存在）
         /// </summary>
+        [GenerateIgnoreProperty]
         public bool IsElemental { get; set; }
         public EquipTemplate(int templateId)
             : base(templateId)
