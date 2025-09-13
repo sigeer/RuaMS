@@ -21,7 +21,9 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Packets;
+using Application.Templates.Quest;
 using client;
 using server.quest.actions;
 using server.quest.requirements;
@@ -37,21 +39,6 @@ namespace server.quest;
  */
 public class Quest
 {
-    private static volatile Dictionary<int, Quest> quests = new();
-    private static volatile Dictionary<int, int> infoNumberQuests = new();
-    private static Dictionary<short, int> medals = new();
-
-    private static HashSet<short> exploitableQuests = new();
-    static ILogger _questDataLogger = LogFactory.GetLogger(LogType.QuestData);
-
-    static Quest()
-    {
-        exploitableQuests.Add(2338);    // there are a lot more exploitable quests, they need to be nit-picked
-        exploitableQuests.Add(3637);
-        exploitableQuests.Add(3714);
-        exploitableQuests.Add(21752);
-    }
-
     protected short id;
     protected int timeLimit, timeLimit2;
     protected Dictionary<QuestRequirementType, AbstractQuestRequirement> startReqs = new();
@@ -62,151 +49,54 @@ public class Quest
     private bool autoStart;
     private bool autoPreComplete, autoComplete;
     private bool repeatable = false;
-    private string name = "", parent = "";
-    private static DataProvider questData = DataProviderFactory.getDataProvider(WZFiles.QUEST);
-    private static Data questInfo = questData.getData("QuestInfo.img");
-    private static Data questAct = questData.getData("Act.img");
-    private static Data questCheck = questData.getData("Check.img");
+    public string Name { get; set; }
+    public string? Parent { get; set; }
     public bool IsValid { get; } = true;
 
-    private Quest(Data? reqInfo, short? questId = null)
+    public Quest(QuestTemplate template)
     {
-        if (reqInfo == null && questId == null)
-            throw new BusinessException();
+        id = (short)template.TemplateId;
+        autoComplete = template.Info.AutoComplete;
+        autoStart = template.Info.AutoStart;
+        autoPreComplete = template.Info.AutoPreComplete;
+        Name = template.Info.Name;
+        Parent = template.Info.Parent ?? "";
+        timeLimit = template.Info.TimeLimit;
+        timeLimit2 = template.Info.TimeLimit2;
+        if (template.Info.ViewMedalItem > 0)
+            QuestFactory.Instance.AddMedal(id, template.Info.ViewMedalItem);
 
-        string idString;
-        if (reqInfo == null)
+        if (template.Check?.StartDemand != null)
         {
-            this.id = questId!.Value;
-            idString = this.id.ToString();
-            reqInfo = questInfo?.getChildByPath(idString);
-        }
-        else
-        {
-            idString = reqInfo.getName()!;
-            this.id = short.Parse(idString);
-        }
-
-        if (reqInfo != null)
-        {
-            name = DataTool.getString("name", reqInfo) ?? "";
-            parent = DataTool.getString("parent", reqInfo) ?? "";
-
-            timeLimit = DataTool.getInt("timeLimit", reqInfo, 0);
-            timeLimit2 = DataTool.getInt("timeLimit2", reqInfo, 0);
-            autoStart = DataTool.getInt("autoStart", reqInfo, 0) == 1;
-            autoPreComplete = DataTool.getInt("autoPreComplete", reqInfo, 0) == 1;
-            autoComplete = DataTool.getInt("autoComplete", reqInfo, 0) == 1;
-
-            int medalid = DataTool.getInt("viewMedalItem", reqInfo, 0);
-            if (medalid != 0)
-            {
-                medals.AddOrUpdate(this.id, medalid);
-            }
-        }
-        else
-        {
-            IsValid = false;
-            _questDataLogger.Error("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
+            var data = template.Check.StartDemand;
+            repeatable = data.Interval > 0;
+            if (data.DemandMob.Length > 0)
+                relevantMobs.AddRange(data.DemandMob.Select(x => x.MobID));
+            startReqs = GetRequirement(this, data);
         }
 
-        var checkData = questCheck.getChildByPath(id.ToString());
-        if (checkData == null)
+        if (template.Check?.EndDemand != null)
         {
-            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in Check.img", id);
-            return;
+            var data = template.Check.EndDemand;
+            if (data.DemandMob.Length > 0)
+                relevantMobs.AddRange(data.DemandMob.Select(x => x.MobID));
+            completeReqs = GetRequirement(this, data);
         }
 
-        var startReqData = checkData.getChildByPath("0");
-        if (startReqData != null)
+
+        if (template.Act?.StartAct != null)
         {
-            foreach (Data startReq in startReqData.getChildren())
-            {
-                QuestRequirementType type = QuestRequirementTypeUtils.getByWZName(startReq.getName());
-                switch (type)
-                {
-                    case QuestRequirementType.INTERVAL:
-                        repeatable = true;
-                        break;
-                    case QuestRequirementType.MOB:
-                        foreach (Data mob in startReq.getChildren())
-                        {
-                            relevantMobs.Add(DataTool.getInt(mob.getChildByPath("id")));
-                        }
-                        break;
-                }
-
-                var req = this.getRequirement(type, startReq);
-                if (req == null)
-                {
-                    continue;
-                }
-
-                startReqs.AddOrUpdate(type, req);
-            }
+            var data = template.Act.StartAct;
+            startActs = GetAction(this, data);
         }
 
-        var completeReqData = checkData.getChildByPath("1");
-        if (completeReqData != null)
+        if (template.Act?.EndAct != null)
         {
-            foreach (Data completeReq in completeReqData.getChildren())
-            {
-                QuestRequirementType type = QuestRequirementTypeUtils.getByWZName(completeReq.getName());
-
-                var req = this.getRequirement(type, completeReq);
-                if (req == null)
-                {
-                    continue;
-                }
-
-                if (type.Equals(QuestRequirementType.MOB))
-                {
-                    foreach (Data mob in completeReq.getChildren())
-                    {
-                        relevantMobs.Add(DataTool.getInt(mob.getChildByPath("id")));
-                    }
-                }
-                completeReqs.AddOrUpdate(type, req);
-            }
-        }
-        var actData = questAct.getChildByPath(id.ToString());
-        if (actData == null)
-        {
-            return;
-        }
-        var startActData = actData.getChildByPath("0");
-        if (startActData != null)
-        {
-            foreach (Data startAct in startActData.getChildren())
-            {
-                QuestActionType questActionType = QuestActionTypeUtils.getByWZName(startAct.getName());
-                var act = this.getAction(questActionType, startAct);
-
-                if (act == null)
-                {
-                    continue;
-                }
-
-                startActs.AddOrUpdate(questActionType, act);
-            }
-        }
-        var completeActData = actData.getChildByPath("1");
-        if (completeActData != null)
-        {
-            foreach (Data completeAct in completeActData.getChildren())
-            {
-                QuestActionType questActionType = QuestActionTypeUtils.getByWZName(completeAct.getName());
-                var act = this.getAction(questActionType, completeAct);
-
-                if (act == null)
-                {
-                    continue;
-                }
-
-                completeActs.AddOrUpdate(questActionType, act);
-            }
+            var data = template.Act.EndAct;
+            completeActs = GetAction(this, data);
         }
     }
+
 
     public bool isAutoComplete()
     {
@@ -220,19 +110,10 @@ public class Quest
 
     public static Quest getInstance(int id)
     {
-        var ret = quests.GetValueOrDefault(id);
-        if (ret == null)
-        {
-            ret = new Quest(null, (short)id);
-            quests.AddOrUpdate(id, ret);
-        }
-        return ret;
+        return QuestFactory.Instance.GetInstance(id);
     }
 
-    public static Quest getInstanceFromInfoNumber(int infoNumber)
-    {
-        return getInstance(infoNumberQuests.GetValueOrDefault(infoNumber, infoNumber));
-    }
+
 
     public bool isSameDayRepeatable()
     {
@@ -515,138 +396,91 @@ public class Quest
         return timeLimit;
     }
 
-    public static void clearCache(int quest)
+
+
+
+
+
+    private static Dictionary<QuestRequirementType, AbstractQuestRequirement> GetRequirement(Quest q, QuestDemand data)
     {
-        quests.Remove(quest);
+        var dict = new Dictionary<QuestRequirementType, AbstractQuestRequirement>();
+        if (!string.IsNullOrEmpty(data.End))
+            dict[QuestRequirementType.END_DATE] = new EndDateRequirement(q, data.End);
+        if (data.Job.Length > 0)
+            dict[QuestRequirementType.JOB] = new JobRequirement(q, data.Job);
+        if (data.DemandQuest.Length > 0)
+            dict[QuestRequirementType.QUEST] = new QuestRequirement(q, data.DemandQuest);
+        if (data.FieldEnter.Length > 0)
+            dict[QuestRequirementType.FIELD_ENTER] = new FieldEnterRequirement(q, data.FieldEnter);
+        if (data.InfoNumber != null)
+            dict[QuestRequirementType.INFO_NUMBER] = new InfoNumberRequirement(q, data.InfoNumber.Value);
+        if (data.InfoEx.Length > 0)
+            dict[QuestRequirementType.INFO_EX] = new InfoExRequirement(q, data.InfoEx);
+        if (data.Interval != null)
+            dict[QuestRequirementType.INTERVAL] = new IntervalRequirement(q, data.Interval.Value);
+        if (data.QuestComplete != null)
+            dict[QuestRequirementType.COMPLETED_QUEST] = new CompletedQuestRequirement(q, data.QuestComplete.Value);
+        if (data.DemandItem.Length > 0)
+            dict[QuestRequirementType.ITEM] = new ItemRequirement(q, data.DemandItem);
+        if (data.LevelMax != null)
+            dict[QuestRequirementType.MAX_LEVEL] = new MaxLevelRequirement(q, data.LevelMax.Value);
+        if (data.LevelMin != null)
+            dict[QuestRequirementType.MIN_LEVEL] = new MinLevelRequirement(q, data.LevelMin.Value);
+        if (data.Meso != null)
+            dict[QuestRequirementType.MESO] = new MesoRequirement(q, data.Meso.Value);
+        if (data.MinMonsterBook != null)
+            dict[QuestRequirementType.MESO] = new MonsterBookCountRequirement(q, data.MinMonsterBook.Value);
+        if (data.PetTamenessMin != null)
+            dict[QuestRequirementType.MIN_PET_TAMENESS] = new MinTamenessRequirement(q, data.PetTamenessMin.Value);
+        if (data.DemandMob.Length > 0)
+            dict[QuestRequirementType.MOB] = new MobRequirement(q, data.DemandMob);
+        if (data.Meso != null)
+            dict[QuestRequirementType.MONSTER_BOOK] = new MesoRequirement(q, data.Meso.Value);
+        if (data.Npc != null)
+            dict[QuestRequirementType.NPC] = new NpcRequirement(q, data.Npc.Value);
+        if (data.Pet.Length > 0)
+            dict[QuestRequirementType.PET] = new PetRequirement(q, data.Pet);
+        if (data.Buff != null)
+            dict[QuestRequirementType.BUFF] = new BuffRequirement(q, data.Buff.Value);
+        if (data.ExceptBuff != null)
+            dict[QuestRequirementType.EXCEPT_BUFF] = new BuffExceptRequirement(q, data.ExceptBuff.Value);
+        if (data.StartScript != null)
+            dict[QuestRequirementType.SCRIPT] = new ScriptRequirement(q, data.StartScript);
+        if (data.EndScript != null)
+            dict[QuestRequirementType.SCRIPT] = new ScriptRequirement(q, data.EndScript);
+
+        return dict;
     }
 
-    public static void clearCache()
+    private static Dictionary<QuestActionType, AbstractQuestAction> GetAction(Quest q, QuestAct data)
     {
-        quests.Clear();
-    }
+        Dictionary<QuestActionType, AbstractQuestAction> dict = new();
+        if (data.BuffItemID != null)
+            dict[QuestActionType.BUFF] = new BuffAction(q, data.BuffItemID.Value);
+        if (data.Exp != null)
+            dict[QuestActionType.EXP] = new ExpAction(q, data.Exp.Value);
+        if (data.Fame != null)
+            dict[QuestActionType.FAME] = new FameAction(q, data.Fame.Value);
+        if (data.Items.Length > 0)
+            dict[QuestActionType.ITEM] = new ItemAction(q, data.Items);
+        if (data.Money != null)
+            dict[QuestActionType.MESO] = new MesoAction(q, data.Money.Value);
+        if (data.NextQuest != null)
+            dict[QuestActionType.NEXTQUEST] = new NextQuestAction(q, data.NextQuest.Value);
+        if (data.PetSkill != null)
+            dict[QuestActionType.PETSKILL] = new PetSkillAction(q, data.PetSkill.Value);
+        if (data.Quests.Length > 0)
+            dict[QuestActionType.QUEST] = new QuestAction(q, data.Quests);
+        if (data.Skills.Length > 0)
+            dict[QuestActionType.SKILL] = new SkillAction(q, data.Skills);
+        if (data.PetTameness != null)
+            dict[QuestActionType.PETTAMENESS] = new PetTamenessAction(q, data.PetTameness.Value);
+        if (data.PetSpeed != null)
+            dict[QuestActionType.PETSPEED] = new PetSpeedAction(q, data.PetSpeed.Value);
+        if (data.Info != null)
+            dict[QuestActionType.INFO] = new InfoAction(q, data.Info);
 
-    private AbstractQuestRequirement? getRequirement(QuestRequirementType type, Data data)
-    {
-        AbstractQuestRequirement? ret = null;
-        switch (type)
-        {
-            case QuestRequirementType.END_DATE:
-                ret = new EndDateRequirement(this, data);
-                break;
-            case QuestRequirementType.JOB:
-                ret = new JobRequirement(this, data);
-                break;
-            case QuestRequirementType.QUEST:
-                ret = new QuestRequirement(this, data);
-                break;
-            case QuestRequirementType.FIELD_ENTER:
-                ret = new FieldEnterRequirement(this, data);
-                break;
-            case QuestRequirementType.INFO_NUMBER:
-                ret = new InfoNumberRequirement(this, data);
-                break;
-            case QuestRequirementType.INFO_EX:
-                ret = new InfoExRequirement(this, data);
-                break;
-            case QuestRequirementType.INTERVAL:
-                ret = new IntervalRequirement(this, data);
-                break;
-            case QuestRequirementType.COMPLETED_QUEST:
-                ret = new CompletedQuestRequirement(this, data);
-                break;
-            case QuestRequirementType.ITEM:
-                ret = new ItemRequirement(this, data);
-                break;
-            case QuestRequirementType.MAX_LEVEL:
-                ret = new MaxLevelRequirement(this, data);
-                break;
-            case QuestRequirementType.MESO:
-                ret = new MesoRequirement(this, data);
-                break;
-            case QuestRequirementType.MIN_LEVEL:
-                ret = new MinLevelRequirement(this, data);
-                break;
-            case QuestRequirementType.MIN_PET_TAMENESS:
-                ret = new MinTamenessRequirement(this, data);
-                break;
-            case QuestRequirementType.MOB:
-                ret = new MobRequirement(this, data);
-                break;
-            case QuestRequirementType.MONSTER_BOOK:
-                ret = new MonsterBookCountRequirement(this, data);
-                break;
-            case QuestRequirementType.NPC:
-                ret = new NpcRequirement(this, data);
-                break;
-            case QuestRequirementType.PET:
-                ret = new PetRequirement(this, data);
-                break;
-            case QuestRequirementType.BUFF:
-                ret = new BuffRequirement(this, data);
-                break;
-            case QuestRequirementType.EXCEPT_BUFF:
-                ret = new BuffExceptRequirement(this, data);
-                break;
-            case QuestRequirementType.SCRIPT:
-                ret = new ScriptRequirement(this, data);
-                break;
-            case QuestRequirementType.NORMAL_AUTO_START:
-            case QuestRequirementType.START:
-            case QuestRequirementType.END:
-                break;
-            default:
-                //FilePrinter.printError(FilePrinter.EXCEPTION_CAUGHT, "Unhandled Requirement Type: " + type.ToString() + " QuestID: " + this.getId());
-                break;
-        }
-        return ret;
-    }
-
-    private AbstractQuestAction? getAction(QuestActionType type, Data data)
-    {
-        AbstractQuestAction? ret = null;
-        switch (type)
-        {
-            case QuestActionType.BUFF:
-                ret = new BuffAction(this, data);
-                break;
-            case QuestActionType.EXP:
-                ret = new ExpAction(this, data);
-                break;
-            case QuestActionType.FAME:
-                ret = new FameAction(this, data);
-                break;
-            case QuestActionType.ITEM:
-                ret = new ItemAction(this, data);
-                break;
-            case QuestActionType.MESO:
-                ret = new MesoAction(this, data);
-                break;
-            case QuestActionType.NEXTQUEST:
-                ret = new NextQuestAction(this, data);
-                break;
-            case QuestActionType.PETSKILL:
-                ret = new PetSkillAction(this, data);
-                break;
-            case QuestActionType.QUEST:
-                ret = new QuestAction(this, data);
-                break;
-            case QuestActionType.SKILL:
-                ret = new SkillAction(this, data);
-                break;
-            case QuestActionType.PETTAMENESS:
-                ret = new PetTamenessAction(this, data);
-                break;
-            case QuestActionType.PETSPEED:
-                ret = new PetSpeedAction(this, data);
-                break;
-            case QuestActionType.INFO:
-                ret = new InfoAction(this, data);
-                break;
-            default:
-                //FilePrinter.printError(FilePrinter.EXCEPTION_CAUGHT, "Unhandled Action Type: " + type.ToString() + " QuestID: " + this.getId());
-                break;
-        }
-        return ret;
+        return dict;
     }
 
     public bool restoreLostItem(IPlayer chr, int itemid)
@@ -663,10 +497,6 @@ public class Quest
         return false;
     }
 
-    public int getMedalRequirement()
-    {
-        return medals.GetValueOrDefault(id, -1);
-    }
 
     public int getNpcRequirement(bool checkEnd)
     {
@@ -705,66 +535,4 @@ public class Quest
         return mqa != null;
     }
 
-    public string getName()
-    {
-        return name;
-    }
-
-    public string getParentName()
-    {
-        return parent;
-    }
-
-    public static bool isExploitableQuest(short questid)
-    {
-        return exploitableQuests.Contains(questid);
-    }
-
-    public static List<Quest> getMatchedQuests(string search)
-    {
-        List<Quest> ret = new();
-
-        foreach (Quest mq in quests.Values)
-        {
-            if (mq.name.Contains(search, StringComparison.OrdinalIgnoreCase) || mq.parent.Contains(search, StringComparison.OrdinalIgnoreCase))
-            {
-                ret.Add(mq);
-            }
-        }
-
-        return ret;
-    }
-
-    public static void loadAllQuests()
-    {
-        var allWZData = questInfo.getChildren();
-        _questDataLogger.Debug($"QuestCount: {allWZData.Count}");
-
-        Dictionary<int, Quest> loadedQuests = new();
-        Dictionary<int, int> loadedInfoNumberQuests = new();
-
-        foreach (Data quest in allWZData)
-        {
-            Quest q = new Quest(quest);
-            int questID = q.getId();
-            loadedQuests.AddOrUpdate(questID, q);
-
-            int infoNumber;
-
-            infoNumber = q.getInfoNumber(Status.STARTED);
-            if (infoNumber > 0)
-            {
-                loadedInfoNumberQuests.AddOrUpdate(infoNumber, questID);
-            }
-
-            infoNumber = q.getInfoNumber(Status.COMPLETED);
-            if (infoNumber > 0)
-            {
-                loadedInfoNumberQuests.AddOrUpdate(infoNumber, questID);
-            }
-        }
-
-        Quest.quests = loadedQuests;
-        Quest.infoNumberQuests = loadedInfoNumberQuests;
-    }
 }

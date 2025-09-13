@@ -27,16 +27,10 @@ public class MesoRequirement : AbstractQuestRequirement
 {
     private int meso = 0;
 
-    public MesoRequirement(Quest quest, Data data) : base(QuestRequirementType.MESO)
+    public MesoRequirement(Quest quest, int data) : base(QuestRequirementType.MESO)
     {
-        processData(data);
+        meso = data;
     }
-
-    public override void processData(Data data)
-    {
-        meso = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

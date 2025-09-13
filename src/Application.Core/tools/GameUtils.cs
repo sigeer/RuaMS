@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using server.quest;
 
@@ -44,7 +45,7 @@ namespace Application.Core.tools
 
         public static bool isMedalQuest(short questid)
         {
-            return Quest.getInstance(questid).getMedalRequirement() != -1;
+            return QuestFactory.Instance.GetMedalRequirement(questid) != -1;
         }
 
         public static bool isMerchantLocked(IMap map)

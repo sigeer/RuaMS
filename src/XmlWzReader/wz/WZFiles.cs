@@ -10,7 +10,7 @@ public class WZFiles
     public static readonly WZFiles LIST = new("List");
     public static readonly WZFiles MOB = new("Mob");
     /// <summary>
-    /// 地图，UseCache：true。由于MapFactory中没有使用缓存，在这一级缓存。
+    /// 地图，UseCache：true（不同频道/不同事件加载同一地图）。由于MapFactory中没有使用缓存，在这一级缓存。其他类型有上级类型缓存，无需在这一级缓存
     /// </summary>
     public static readonly WZFiles MAP = new("Map", true);
     public static readonly WZFiles NPC = new("Npc");

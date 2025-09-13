@@ -30,20 +30,10 @@ public class FieldEnterRequirement : AbstractQuestRequirement
     private int mapId = -1;
 
 
-    public FieldEnterRequirement(Quest quest, Data data) : base(QuestRequirementType.FIELD_ENTER)
+    public FieldEnterRequirement(Quest quest, int[] data) : base(QuestRequirementType.FIELD_ENTER)
     {
-        processData(data);
+        mapId = data[0];
     }
-
-    public override void processData(Data data)
-    {
-        var zeroField = data.getChildByPath("0");
-        if (zeroField != null)
-        {
-            mapId = DataTool.getInt(zeroField);
-        }
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

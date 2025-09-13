@@ -21,16 +21,23 @@
  */
 
 
+using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Resources;
+using Application.Shared.MapObjects;
+using Application.Shared.Objects;
 using Application.Shared.WzEntity;
+using Application.Templates.Map;
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using scripting.Event;
 using server.life;
 using server.partyquest;
+using System.Numerics;
 using System.Text;
 using tools;
 
@@ -51,25 +58,23 @@ public class MapFactory : IStaticService
         _instance = sp.GetService<MapFactory>() ?? throw new BusinessFatalException("MapFactory 未注册");
     }
 
-    private DataProvider mapSource;
+    private MapProvider mapSource;
 
     readonly WzStringProvider _wzStringProvider;
     public MapFactory(WzStringProvider wzStringProvider)
     {
         _wzStringProvider = wzStringProvider;
-        mapSource = DataProviderFactory.getDataProvider(WZFiles.MAP);
+        mapSource = ProviderFactory.GetProvider<MapProvider>();
     }
 
-    private void loadLifeFromWz(IMap map, Data mapData)
+    private void loadLifeFromWz(IMap map, MapTemplate mapData)
     {
-        foreach (var life in mapData.getChildByPath("life"))
+        foreach (var life in mapData.Life)
         {
-            var id = DataTool.getString(life.getChildByPath("id")) ?? "0";
-            var type = DataTool.getString(life.getChildByPath("type"));
-            int team = DataTool.getInt("team", life, -1);
-            if (map.isCPQMap2() && type == LifeType.Monster)
+            int team = life.Team;
+            if (map.isCPQMap2() && life.Type == LifeType.Monster)
             {
-                if ((int.Parse(life.getName()) % 2) == 0)
+                if ((life.Index % 2) == 0)
                 {
                     team = 0;
                 }
@@ -78,18 +83,8 @@ public class MapFactory : IStaticService
                     team = 1;
                 }
             }
-            int cy = DataTool.getInt(life.getChildByPath("cy"));
-            var dF = life.getChildByPath("f");
-            int f = (dF != null) ? DataTool.getInt(dF) : 0;
-            int fh = DataTool.getInt(life.getChildByPath("fh"));
-            int rx0 = DataTool.getInt(life.getChildByPath("rx0"));
-            int rx1 = DataTool.getInt(life.getChildByPath("rx1"));
-            int x = DataTool.getInt(life.getChildByPath("x"));
-            int y = DataTool.getInt(life.getChildByPath("y"));
-            int hide = DataTool.getInt("hide", life, 0);
-            int mobTime = DataTool.getInt("mobTime", life, 0);
 
-            loadLifeRaw(map, int.Parse(id), type, cy, f, fh, rx0, rx1, x, y, hide, mobTime, team);
+            loadLifeRaw(map, life.Id, life.Type, life.CY, life.F, life.Foothold, life.RX0, life.RX1, life.X, life.Y, life.Hide, life.MobTime, team);
         }
     }
 
@@ -99,11 +94,11 @@ public class MapFactory : IStaticService
 
         foreach (var rs in dataList)
         {
-            loadLifeRaw(map, rs.LifeId, rs.Type, rs.Cy, rs.F, rs.Fh, rs.Rx0, rs.Rx1, rs.X, rs.Y, rs.Hide, rs.Mobtime, rs.Team);
+            loadLifeRaw(map, rs.LifeId, rs.Type, rs.Cy, rs.F, rs.Fh, rs.Rx0, rs.Rx1, rs.X, rs.Y, rs.Hide == 1, rs.Mobtime, rs.Team);
         }
     }
 
-    private void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
+    private void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide, int mobTime, int team)
     {
         AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
         if (myLife is Monster monster)
@@ -130,77 +125,115 @@ public class MapFactory : IStaticService
     {
         IMap? map = null;
 
-        string mapImg = GetMapImg(mapid);
-        var mapData = mapSource.getData(mapImg);    // source.getData issue with giving nulls in rare ocasions found thanks to MedicOP
+        var mapData = mapSource.GetItem(mapid); 
         if (mapData == null)
-            throw new BusinessResException($"Map {mapImg} not existed");
+            throw new BusinessResException($"Map {mapid} not existed");
 
-        var infoData = mapData.getChildByPath("info");
 
-        string link = DataTool.getString(infoData?.getChildByPath("link")) ?? "";
-        if (!string.IsNullOrEmpty(link))
+        if (MapConstants.IsCPQMap(mapid) && mapData.MonsterCarnival != null)
         {
-            //nexon made hundreds of dojo maps so to reduce the size they added links.
-            mapImg = GetMapImg(int.Parse(link));
-            mapData = mapSource.getData(mapImg);
+            var cpqMap = new MonsterCarnivalMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            var mcData = mapData.MonsterCarnival;
+            cpqMap.DeathCP = mcData.DeathCP;
+            cpqMap.MaxMobs = mcData.MaxMobs;    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
+
+            cpqMap.MaxReactors = mcData.MaxReactors;
+
+            cpqMap.RewardMapWin = mcData.RewardMapWin;
+            cpqMap.RewardMapLose = mcData.RewardMapLose;
+            cpqMap.ReactorRed = mcData.ReactorRed;
+            cpqMap.ReactorBlue = mcData.ReactorBlue;
+
+            cpqMap.TimeDefault = mcData.TimeDefault;
+            cpqMap.TimeExpand = mcData.TimeExpand;
+            cpqMap.TimeFinish = mcData.TimeFinish;
+
+            cpqMap.SoundWin = mcData.SoundWin ?? cpqMap.GetDefaultSoundWin();
+            cpqMap.SoundLose = mcData.SoundLose ?? cpqMap.GetDefaultSoundLose();
+            cpqMap.EffectWin = mcData.EffectWin ?? cpqMap.GetDefaultEffectWin();
+            cpqMap.EffectLose = mcData.EffectLose ?? cpqMap.GetDefaultEffectLose();
+
+            foreach (var item in mcData.Guardians)
+            {
+                GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(item.X, item.Y));
+                pt.setTeam(item.Team);
+                pt.setTaken(false);
+                cpqMap.AddGuardianSpawnPoint(pt);
+            }
+
+            foreach (var item in mcData.Skills)
+            {
+                cpqMap.AddSkillId(item);
+            }
+
+            foreach (var item in mcData.Mobs)
+            {
+                cpqMap.AddMobSpawn(item.Id, item.SpendCP);
+            }
+
+            map = cpqMap;
         }
 
-        var returnMap = DataTool.getInt("returnMap", infoData);
+        else if (mapData.Coconut != null)
+        {
+            var coconutMap = new CoconutMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            coconutMap.CountFalling = mapData.Coconut.CountFalling;
+            coconutMap.CountBombing = mapData.Coconut.CountBombing;
+            coconutMap.CountStopped = mapData.Coconut.CountStopped;
+            coconutMap.CountHit = mapData.Coconut.CountHit;
 
+            coconutMap.TimeDefault = mapData.Coconut.TimeDefault;
+            coconutMap.TimeExpand = mapData.Coconut.TimeExpand;
+            coconutMap.TimeFinish = mapData.Coconut.TimeFinish;
 
-        var eventInfo = mapData.getChildByPath("monsterCarnival");
-        if (MapConstants.IsCPQMap(mapid) && eventInfo != null)
-            map = new MonsterCarnivalMap(mapid, worldChannel, returnMap, evt);
+            coconutMap.SoundWin = mapData.Coconut.SoundWin ?? coconutMap.GetDefaultSoundWin();
+            coconutMap.SoundLose = mapData.Coconut.SoundLose ?? coconutMap.GetDefaultSoundLose();
+            coconutMap.EffectWin = mapData.Coconut.EffectWin ?? coconutMap.GetDefaultEffectWin();
+            coconutMap.EffectLose = mapData.Coconut.EffectLose ?? coconutMap.GetDefaultEffectLose();
+            map = coconutMap;
+        }
 
-        eventInfo = mapData.getChildByPath("coconut");
-        if (eventInfo != null)
-            map = new CoconutMap(mapid, worldChannel, returnMap, evt);
+        else if (mapData.Snowball != null)
+        {
+            var snowBallMap = new SnowBallMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            snowBallMap.DamageSnowBall = mapData.Snowball.DamageSnowBall;
+            snowBallMap.DamageSnowMan0 = mapData.Snowball.DamageSnowMan0;
+            snowBallMap.DamageSnowMan1 = mapData.Snowball.DamageSnowMan1;
+            snowBallMap.RecoveryAmount = mapData.Snowball.RecoveryAmount;
+            snowBallMap.SnowManHP = mapData.Snowball.SnowManHP;
+            snowBallMap.SnowManWait = mapData.Snowball.SnowManWait;
+            map = snowBallMap;
+        }
 
-        eventInfo = mapData.getChildByPath("snowBall");
-        if (eventInfo != null)
-            map = new SnowBallMap(mapid, worldChannel, returnMap, evt);
-
-        if (map == null)
-            map = new MapleMap(mapid, worldChannel, returnMap, evt);
+        else
+            map = new MapleMap(mapid, worldChannel, mapData.ReturnMap, evt);
 
         var mapStr = mapid.ToString();
-        var onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter"));
-        map.setOnFirstUserEnter(string.IsNullOrEmpty(onFirstEnter) ? mapStr : onFirstEnter);
+        map.setOnFirstUserEnter(mapData.OnFirstUserEnter ?? mapStr);
+        map.setOnUserEnter(mapData.OnUserEnter ?? mapStr);
 
-        var onEnter = DataTool.getString(infoData?.getChildByPath("onUserEnter")) ?? mapStr;
-        map.setOnUserEnter(string.IsNullOrEmpty(onEnter) ? mapStr : onEnter);
-
-        map.setFieldLimit(DataTool.getInt(infoData?.getChildByPath("fieldLimit"), 0));
-        map.setMobInterval((short)DataTool.getInt(infoData?.getChildByPath("createMobInterval"), 5000));
+        map.setFieldLimit(mapData.FieldLimit);
+        map.setMobInterval((short)mapData.CreateMobInterval);
         PortalFactory portalFactory = new PortalFactory();
-        foreach (var portal in mapData.getChildByPath("portal"))
+        foreach (var item in mapData.Portals)
         {
-            map.addPortal(portalFactory.makePortal(DataTool.getInt(portal.getChildByPath("pt")), portal));
-        }
-        var timeMob = infoData?.getChildByPath("timeMob");
-        if (timeMob != null)
-        {
-            map.TimeMob = new TimeMob(DataTool.getInt(timeMob.getChildByPath("id")),
-                DataTool.getString(timeMob.getChildByPath("message")) ?? "",
-                DataTool.getInt(timeMob.getChildByPath("startHour")),
-                DataTool.getInt(timeMob.getChildByPath("endHour")));
+            map.addPortal(portalFactory.makePortal(item.nPortalType, item));
         }
 
-        int[] bounds = new int[4];
-        bounds[0] = DataTool.getInt(infoData?.getChildByPath("VRTop"));
-        bounds[1] = DataTool.getInt(infoData?.getChildByPath("VRBottom"));
+        if (mapData.TimeMob != null)
+        {
+            map.TimeMob = new TimeMob(mapData.TimeMob.Id,
+                mapData.TimeMob.Message ?? "",
+                mapData.TimeMob.StartHour,
+                mapData.TimeMob.EndHour);
+        }
 
-        if (bounds[0] == bounds[1])
+        if (mapData.VRTop == mapData.VRBottom)
         {    // old-style baked map
-            var minimapData = mapData.getChildByPath("miniMap");
-            if (minimapData != null)
-            {
-                bounds[0] = DataTool.getInt(minimapData.getChildByPath("centerX")) * -1;
-                bounds[1] = DataTool.getInt(minimapData.getChildByPath("centerY")) * -1;
-                bounds[2] = DataTool.getInt(minimapData.getChildByPath("height"));
-                bounds[3] = DataTool.getInt(minimapData.getChildByPath("width"));
 
-                map.setMapPointBoundings(bounds[0], bounds[1], bounds[2], bounds[3]);
+            if (mapData.MiniMap != null)
+            {
+                map.setMapPointBoundings(-mapData.MiniMap.CenterX, -mapData.MiniMap.CenterY, mapData.MiniMap.Height, mapData.MiniMap.Width);
             }
             else
             {
@@ -210,70 +243,50 @@ public class MapFactory : IStaticService
         }
         else
         {
-            bounds[2] = DataTool.getInt(infoData?.getChildByPath("VRLeft"));
-            bounds[3] = DataTool.getInt(infoData?.getChildByPath("VRRight"));
-
-            map.setMapLineBoundings(bounds[0], bounds[1], bounds[2], bounds[3]);
+            map.setMapLineBoundings(mapData.VRTop, mapData.VRBottom, mapData.VRLeft, mapData.VRRight);
         }
 
         List<Foothold> allFootholds = new();
         Point lBound = new Point();
         Point uBound = new Point();
-        foreach (var footRoot in mapData.getChildByPath("foothold"))
+
+        foreach (var item in mapData.Footholds)
         {
-            foreach (Data footCat in footRoot)
+            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.TemplateId);
+            fh.setPrev(item.Prev);
+            fh.setNext(item.Next);
+            if (fh.getX1() < lBound.X)
             {
-                foreach (Data footHold in footCat)
-                {
-                    int x1 = DataTool.getInt(footHold.getChildByPath("x1"));
-                    int y1 = DataTool.getInt(footHold.getChildByPath("y1"));
-                    int x2 = DataTool.getInt(footHold.getChildByPath("x2"));
-                    int y2 = DataTool.getInt(footHold.getChildByPath("y2"));
-                    Foothold fh = new Foothold(new Point(x1, y1), new Point(x2, y2), int.Parse(footHold.getName()));
-                    fh.setPrev(DataTool.getInt(footHold.getChildByPath("prev")));
-                    fh.setNext(DataTool.getInt(footHold.getChildByPath("next")));
-                    if (fh.getX1() < lBound.X)
-                    {
-                        lBound.X = fh.getX1();
-                    }
-                    if (fh.getX2() > uBound.X)
-                    {
-                        uBound.X = fh.getX2();
-                    }
-                    if (fh.getY1() < lBound.Y)
-                    {
-                        lBound.Y = fh.getY1();
-                    }
-                    if (fh.getY2() > uBound.Y)
-                    {
-                        uBound.Y = fh.getY2();
-                    }
-                    allFootholds.Add(fh);
-                }
+                lBound.X = fh.getX1();
             }
+            if (fh.getX2() > uBound.X)
+            {
+                uBound.X = fh.getX2();
+            }
+            if (fh.getY1() < lBound.Y)
+            {
+                lBound.Y = fh.getY1();
+            }
+            if (fh.getY2() > uBound.Y)
+            {
+                uBound.Y = fh.getY2();
+            }
+            allFootholds.Add(fh);
         }
+
         FootholdTree fTree = new FootholdTree(lBound, uBound);
         foreach (Foothold fh in allFootholds)
         {
             fTree.insert(fh);
         }
         map.setFootholds(fTree);
-        if (mapData.getChildByPath("area") != null)
+
+        foreach (var area in mapData.Areas)
         {
-            foreach (var area in mapData.getChildByPath("area")!)
-            {
-                int x1 = DataTool.getInt(area.getChildByPath("x1"));
-                int y1 = DataTool.getInt(area.getChildByPath("y1"));
-                int x2 = DataTool.getInt(area.getChildByPath("x2"));
-                int y2 = DataTool.getInt(area.getChildByPath("y2"));
-                map.addMapleArea(new Rectangle(x1, y1, (x2 - x1), (y2 - y1)));
-            }
+            map.addMapleArea(new Rectangle(area.X1, area.Y1, (area.X2 - area.X1), (area.Y2 - area.Y1)));
         }
-        if (mapData.getChildByPath("seat") != null)
-        {
-            int seats = mapData.getChildByPath("seat")!.getChildren().Count;
-            map.setSeats(seats);
-        }
+
+        map.setSeats(mapData.SeatCount);
         if (evt == null)
         {
             map.ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(map);
@@ -282,127 +295,32 @@ public class MapFactory : IStaticService
         loadLifeFromWz(map, mapData);
         loadLifeFromDb(map);
 
-        if (map is IGroupEffectEventMap effectMap)
+
+        foreach (var item in mapData.Reactors)
         {
-            effectMap.EffectWin = DataTool.getString("effectWin", eventInfo) ?? effectMap.GetDefaultEffectWin();
-            effectMap.EffectLose = DataTool.getString("effectLose", eventInfo) ?? effectMap.GetDefaultEffectLose();
-        }
-
-        if (map is IGroupSoundEventMap soundMap)
-        {
-            soundMap.SoundWin = DataTool.getString("soundWin", eventInfo) ?? soundMap.GetDefaultSoundWin();
-            soundMap.SoundLose = DataTool.getString("soundLose", eventInfo) ?? soundMap.GetDefaultSoundLose();
-        }
-
-        if (map is ITimeLimitedEventMap timedMap)
-        {
-            timedMap.TimeDefault = (DataTool.getIntConvert("timeDefault", eventInfo, 0));
-            timedMap.TimeExpand = (DataTool.getIntConvert("timeExpand", eventInfo, 0));
-            timedMap.TimeFinish = (DataTool.getIntConvert("timeFinish", eventInfo, 10));
-        }
-
-        if (map is ICoconutMap coconutMap)
-        {
-            coconutMap.CountFalling = (DataTool.getIntConvert("countFalling", eventInfo, 0));
-            coconutMap.CountBombing = (DataTool.getIntConvert("countBombing", eventInfo, 0));
-            coconutMap.CountStopped = (DataTool.getIntConvert("countStopped", eventInfo, 0));
-            coconutMap.CountHit = (DataTool.getIntConvert("countHit", eventInfo, 0));
-        }
-
-        if (map is ISnowBallMap snowBallMap)
-        {
-            snowBallMap.DamageSnowBall = DataTool.getIntConvert("damageSnowBall", eventInfo, 0);
-            snowBallMap.DamageSnowMan0 = DataTool.getIntConvert("damageSnowMan0", eventInfo, 0);
-            snowBallMap.DamageSnowMan1 = DataTool.getIntConvert("damageSnowMan1", eventInfo, 0);
-            snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
-            snowBallMap.SnowManHP = DataTool.getIntConvert("snowManHP", eventInfo, 0);
-            snowBallMap.SnowManWait = DataTool.getIntConvert("snowManWait", eventInfo, 0);
-            snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
-        }
-
-        if (map is ICPQMap cpqMap)
-        {
-            cpqMap.DeathCP = (DataTool.getIntConvert("deathCP", eventInfo, 0));
-            cpqMap.MaxMobs = (DataTool.getIntConvert("mobGenMax", eventInfo, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
-
-            cpqMap.MaxReactors = (DataTool.getIntConvert("guardianGenMax", eventInfo, 16));
-
-            cpqMap.RewardMapWin = DataTool.getIntConvert("rewardMapWin", eventInfo, mapid + (!map.isCPQMap2() ? 2 : 200));
-            cpqMap.RewardMapLose = DataTool.getIntConvert("rewardMapLose", eventInfo, mapid + (!map.isCPQMap2() ? 3 : 300));
-            cpqMap.ReactorRed = DataTool.getIntConvert("reactorRed", eventInfo, 9980000);
-            cpqMap.ReactorBlue = DataTool.getIntConvert("reactorBlue", eventInfo, 9980001);
-
-            var guardianGenData = eventInfo!.getChildByPath("guardianGenPos");
-            foreach (Data node in guardianGenData.getChildren())
-            {
-                GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(DataTool.getIntConvert("x", node), DataTool.getIntConvert("y", node)));
-                pt.setTeam(DataTool.getIntConvert("team", node, -1));
-                pt.setTaken(false);
-                cpqMap.AddGuardianSpawnPoint(pt);
-            }
-            if (eventInfo.getChildByPath("skill") != null)
-            {
-                foreach (var area in eventInfo.getChildByPath("skill")!)
-                {
-                    cpqMap.AddSkillId(DataTool.getInt(area));
-                }
-            }
-
-            if (eventInfo.getChildByPath("mob") != null)
-            {
-                foreach (var area in eventInfo.getChildByPath("mob")!)
-                {
-                    cpqMap.AddMobSpawn(DataTool.getInt(area.getChildByPath("id")), DataTool.getInt(area.getChildByPath("spendCP")));
-                }
-            }
-
-        }
-
-        var imgReactor = mapData.getChildByPath("reactor");
-        if (imgReactor != null)
-        {
-            foreach (var reactor in imgReactor)
-            {
-                var id = DataTool.getString(reactor.getChildByPath("id"));
-                if (id != null)
-                {
-                    Reactor newReactor = loadReactor(reactor, id, (sbyte)DataTool.getInt(reactor.getChildByPath("f"), 0));
-                    map.spawnReactor(newReactor);
-                }
-            }
+            Reactor newReactor = loadReactor(item);
+            map.spawnReactor(newReactor);
         }
 
         map.setMapName(loadPlaceName(mapid));
         map.setStreetName(loadStreetName(mapid));
 
-        map.setClock(mapData.getChildByPath("clock") != null);
-        map.setEverlast(DataTool.getIntConvert("everlast", infoData, 0) != 0); // thanks davidlafriniere for noticing value 0 accounting as true
-        map.IsTown = DataTool.GetBoolean("town", infoData);
-        map.setHPDec(DataTool.getIntConvert("decHP", infoData, 0));
-        map.setHPDecProtect(DataTool.getIntConvert("protectItem", infoData, 0));
-        map.setForcedReturnMap(DataTool.getInt(infoData?.getChildByPath("forcedReturn"), MapId.NONE));
-        map.setBoat(mapData.getChildByPath("shipObj") != null);
-        map.setTimeLimit(DataTool.getIntConvert("timeLimit", infoData, -1));
-        map.setFieldType(DataTool.getIntConvert("fieldType", infoData, 0));
-        map.setMobCapacity(DataTool.getIntConvert("fixedMobCapacity", infoData, 500));//Is there a map that contains more than 500 mobs?
-
-        var recData = infoData?.getChildByPath("recovery");
-        if (recData != null)
-        {
-            map.setRecovery(DataTool.getFloat(recData));
-        }
+        map.setClock(mapData.HasClock);
+        map.setEverlast(mapData.Everlast); // thanks davidlafriniere for noticing value 0 accounting as true
+        map.IsTown = mapData.Town;
+        map.setHPDec(mapData.DecHP);
+        map.setHPDecProtect(mapData.ProtectItem);
+        map.setForcedReturnMap(mapData.ForcedReturn);
+        map.setBoat(mapData.HasShip);
+        map.setTimeLimit(mapData.TimeLimit);
+        map.setFieldType(mapData.FieldType);
+        map.setMobCapacity(mapData.FixedMobCapacity);//Is there a map that contains more than 500 mobs?
+        map.setRecovery(mapData.RecoveryRate);
 
         Dictionary<int, int> backTypes = new();
         try
         {
-            foreach (var layer in mapData.getChildByPath("back"))
-            {
-                // yolo
-                int layerNum = int.Parse(layer.getName());
-                int btype = DataTool.getInt(layer.getChildByPath("type"), 0);
-
-                backTypes.AddOrUpdate(layerNum, btype);
-            }
+            backTypes = mapData.Backs.ToDictionary(x => x.Index, x => x.Type);
         }
         catch (Exception e)
         {
@@ -416,7 +334,7 @@ public class MapFactory : IStaticService
         return map;
     }
 
-    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
+    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
     {
         AbstractLifeObject myLife = LifeFactory.Instance.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
         myLife.setCy(cy);
@@ -425,10 +343,7 @@ public class MapFactory : IStaticService
         myLife.setRx0(rx0);
         myLife.setRx1(rx1);
         myLife.setPosition(new Point(x, y));
-        if (hide == 1)
-        {
-            myLife.setHide(true);
-        }
+        myLife.setHide(hide);
         return myLife;
     }
 
@@ -442,6 +357,17 @@ public class MapFactory : IStaticService
         myReactor.setPosition(new Point(x, y));
         myReactor.setDelay((DataTool.getInt(mapReactor.getChildByPath("reactorTime"))) * 1000);
         myReactor.setName(DataTool.getString(mapReactor.getChildByPath("name")) ?? "");
+        myReactor.resetReactorActions(0);
+        return myReactor;
+    }
+
+    private Reactor loadReactor(MapReactorTemplate mapReactor)
+    {
+        Reactor myReactor = new Reactor(ReactorFactory.getReactor(mapReactor.Id), mapReactor.Id);
+        myReactor.setFacingDirection((sbyte)mapReactor.F);
+        myReactor.setPosition(new Point(mapReactor.X, mapReactor.Y));
+        myReactor.setDelay(mapReactor.ReactorTime * 1000);
+        myReactor.setName(mapReactor.Name ?? "");
         myReactor.resetReactorActions(0);
         return myReactor;
     }

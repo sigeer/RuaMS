@@ -355,3 +355,5 @@ healthchecksdb
 /src/Application.Host/cache
 /src/Application.Host/logs
 /src/Application.Host/database.db
+/src/Application.Host/database.db-wal
+/src/Application.Host/database.db-shm

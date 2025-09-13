@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Templates.Map;
+
 namespace server.maps;
 
 
@@ -46,6 +48,34 @@ public class PortalFactory
         }
         loadPortal(ret, portal);
         return ret;
+    }
+
+    public Portal makePortal(int type, MapPortalTemplate portal)
+    {
+        GenericPortal? myPortal = null;
+        if (type == PortalConstants.MAP_PORTAL)
+        {
+            myPortal = new MapPortal();
+        }
+        else
+        {
+            myPortal = new GenericPortal(type);
+        }
+        myPortal.setName(portal.sPortalName);
+        myPortal.setTarget(portal.sTargetName);
+        myPortal.setTargetMapId(portal.nTargetMap);
+        myPortal.setPosition(new Point(portal.nX, portal.nY));
+        myPortal.setScriptName(portal.Script);
+        if (myPortal.getType() == PortalConstants.DOOR_PORTAL)
+        {
+            myPortal.setId(nextDoorPortal);
+            nextDoorPortal++;
+        }
+        else
+        {
+            myPortal.setId(portal.nIndex);
+        }
+        return myPortal;
     }
 
     private void loadPortal(GenericPortal myPortal, Data portal)

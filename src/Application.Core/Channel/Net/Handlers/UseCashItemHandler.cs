@@ -557,7 +557,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
         }
         else if (itemType == 550)
-        { //Extend item expiration
+        { 
+            //Extend item expiration
             c.sendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 552)
@@ -576,7 +577,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             remove(c, position, itemId);
             c.sendPacket(PacketCreator.enableActions());
         }
-        else if (itemType == 552)
+        else if (itemType == 553)
         { //DS EGG THING
             c.sendPacket(PacketCreator.enableActions());
         }

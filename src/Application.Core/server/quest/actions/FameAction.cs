@@ -29,18 +29,12 @@ public class FameAction : AbstractQuestAction
 {
     int fame;
 
-    public FameAction(Quest quest, Data data) : base(QuestActionType.FAME, quest)
+    public FameAction(Quest quest, int data) : base(QuestActionType.FAME, quest)
     {
-
         questID = quest.getId();
-        processData(data);
+        fame = data;
     }
 
-
-    public override void processData(Data data)
-    {
-        fame = DataTool.getInt(data);
-    }
 
     public override void run(IPlayer chr, int? extSelection)
     {

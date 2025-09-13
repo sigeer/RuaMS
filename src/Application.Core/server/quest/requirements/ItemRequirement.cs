@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using client.inventory;
+using static Application.Templates.Quest.QuestDemand;
 
 namespace server.quest.requirements;
 
@@ -34,26 +35,13 @@ namespace server.quest.requirements;
  */
 public class ItemRequirement : AbstractQuestRequirement
 {
-    Dictionary<int, int> items = new();
+    Dictionary<int, int> items;
 
 
-    public ItemRequirement(Quest quest, Data data) : base(QuestRequirementType.ITEM)
+    public ItemRequirement(Quest quest, ItemInfo[] data) : base(QuestRequirementType.ITEM)
     {
-        processData(data);
+        items = data.ToDictionary(x => x.ItemID, x => x.Count);
     }
-
-    public override void processData(Data data)
-    {
-        foreach (Data itemEntry in data.getChildren())
-        {
-            int itemId = DataTool.getInt(itemEntry.getChildByPath("id"));
-            int count = DataTool.getInt(itemEntry.getChildByPath("count"), 0);
-
-            items.AddOrUpdate(itemId, count);
-        }
-    }
-
-
     public override bool check(IPlayer chr, int? npcid)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();

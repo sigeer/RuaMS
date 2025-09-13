@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using static Application.Templates.Quest.QuestAct;
 
 namespace server.quest.actions;
 
@@ -38,38 +39,10 @@ public class SkillAction : AbstractQuestAction
     int itemEffect;
     Dictionary<int, SkillData> skillData = new();
 
-    public SkillAction(Quest quest, Data data) : base(QuestActionType.SKILL, quest)
+    public SkillAction(Quest quest, ActSkill[] data) : base(QuestActionType.SKILL, quest)
     {
 
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        foreach (Data sEntry in data)
-        {
-            byte skillLevel = 0;
-            int skillid = DataTool.getInt(sEntry.getChildByPath("id"));
-            var skillLevelData = sEntry.getChildByPath("skillLevel");
-            if (skillLevelData != null)
-            {
-                skillLevel = (byte)DataTool.getInt(skillLevelData);
-            }
-            int masterLevel = DataTool.getInt(sEntry.getChildByPath("masterLevel"));
-            List<int> jobs = new();
-
-            var applicableJobs = sEntry.getChildByPath("job");
-            if (applicableJobs != null)
-            {
-                foreach (Data applicableJob in applicableJobs.getChildren())
-                {
-                    jobs.Add(DataTool.getInt(applicableJob));
-                }
-            }
-
-            skillData.AddOrUpdate(skillid, new SkillData(skillid, skillLevel, masterLevel, jobs));
-        }
+        skillData = data.ToDictionary(x => x.SkillID, x => new SkillData(x.SkillID, x.SkillLevel, x.MasterLevel, x.Job.ToList()));
     }
 
     public override void run(IPlayer chr, int? extSelection)

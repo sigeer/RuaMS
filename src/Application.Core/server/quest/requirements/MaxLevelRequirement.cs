@@ -30,19 +30,10 @@ public class MaxLevelRequirement : AbstractQuestRequirement
     private int maxLevel;
 
 
-    public MaxLevelRequirement(Quest quest, Data data) : base(QuestRequirementType.MAX_LEVEL)
+    public MaxLevelRequirement(Quest quest, int data) : base(QuestRequirementType.MAX_LEVEL)
     {
-        processData(data);
+        maxLevel = data;
     }
-
-    /**
-     * @param data
-     */
-    public override void processData(Data data)
-    {
-        maxLevel = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

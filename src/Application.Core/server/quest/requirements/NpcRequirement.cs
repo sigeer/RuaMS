@@ -29,16 +29,10 @@ public class NpcRequirement : AbstractQuestRequirement
 {
     private int reqNPC;
 
-    public NpcRequirement(Quest quest, Data data) : base(QuestRequirementType.NPC)
+    public NpcRequirement(Quest quest, int data) : base(QuestRequirementType.NPC)
     {
-        processData(data);
+        reqNPC = data;
     }
-
-    public override void processData(Data data)
-    {
-        reqNPC = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

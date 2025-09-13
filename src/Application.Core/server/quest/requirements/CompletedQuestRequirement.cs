@@ -30,16 +30,10 @@ public class CompletedQuestRequirement : AbstractQuestRequirement
     private int reqQuest;
 
 
-    public CompletedQuestRequirement(Quest quest, Data data) : base(QuestRequirementType.COMPLETED_QUEST)
+    public CompletedQuestRequirement(Quest quest, int data) : base(QuestRequirementType.COMPLETED_QUEST)
     {
-        processData(data);
+        reqQuest = data;
     }
-
-    public override void processData(Data data)
-    {
-        reqQuest = DataTool.getInt(data);
-    }
-
 
     public override bool check(IPlayer chr, int? npcid)
     {

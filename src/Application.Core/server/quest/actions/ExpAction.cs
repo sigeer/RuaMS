@@ -29,16 +29,10 @@ public class ExpAction : AbstractQuestAction
 {
     int exp;
 
-    public ExpAction(Quest quest, Data data) : base(QuestActionType.EXP, quest)
+    public ExpAction(Quest quest, int data) : base(QuestActionType.EXP, quest)
     {
 
-        processData(data);
-    }
-
-
-    public override void processData(Data data)
-    {
-        exp = DataTool.getInt(data);
+        exp = data;
     }
 
     public override void run(IPlayer chr, int? extSelection)
