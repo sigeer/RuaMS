@@ -4,7 +4,10 @@ using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Data;
 using Application.Templates.Item.Etc;
+using Application.Templates.Map;
+using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
+using server.maps;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Drawing;
@@ -179,6 +182,55 @@ namespace ServiceTest.Infrastructure
             Console.WriteLine(JsonSerializer.Serialize(item));
             Assert.That(item.ReqLevel, Is.EqualTo(60));
             
+        }
+
+        [Test]
+        public void MapTemplateDataCheck()
+        {
+            var provider = new MapProvider(new Application.Templates.TemplateOptions());
+            var cpqMap = provider.GetItem(980000101)!;
+
+            Assert.That(cpqMap.MonsterCarnival.Skills, Does.Contain(1));
+            Assert.That(cpqMap.MonsterCarnival.Skills, Does.Contain(7));
+
+            Assert.That(cpqMap.MonsterCarnival.Mobs, Has.Some.Matches<MonsterCarnivalMobData>(p => p.Id == 9300128 && p.SpendCP == 7));
+            Assert.That(cpqMap.MonsterCarnival.Guardians, Has.Some.Matches<MonsterCarnivalGuardianData>(p => p.X == -538 && p.Y == -135));
+
+            Assert.That(cpqMap.MonsterCarnival.RewardMapWin, Is.EqualTo(980000103));
+            Assert.That(cpqMap.MonsterCarnival.EffectWin, Is.EqualTo("quest/carnival/win"));
+            Assert.That(cpqMap.MonsterCarnival.SoundWin, Is.EqualTo("MobCarnival/Win"));
+            Assert.That(cpqMap.MonsterCarnival.TimeDefault, Is.EqualTo(610));
+        }
+
+        [Test]
+        public void ReactorEqualCheck()
+        {
+            ProviderFactory.Initilaize(o =>
+            {
+                o.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions()));
+            });
+            var newRactor = ReactorFactory.getReactor(1008003);
+            var newRactorStr = JsonSerializer.Serialize(newRactor);
+
+            var oldReactor = OldReactorFactory.getReactor(1008003);
+            var oldactorStr = JsonSerializer.Serialize(newRactor);
+            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
+
+            // link
+            newRactor = ReactorFactory.getReactor(1020005);
+            newRactorStr = JsonSerializer.Serialize(newRactor);
+
+            oldReactor = OldReactorFactory.getReactor(1020005);
+            oldactorStr = JsonSerializer.Serialize(newRactor);
+            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
+
+            // mc
+            newRactor = ReactorFactory.getReactorS(9980000);
+            newRactorStr = JsonSerializer.Serialize(newRactor);
+
+            oldReactor = OldReactorFactory.getReactorS(9980000);
+            oldactorStr = JsonSerializer.Serialize(newRactor);
+            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
         }
 
         [Test]
