@@ -12,7 +12,7 @@ namespace Application.Templates.Map
         public string? sPortalName { get; set; }
         public int nX { get; set; }
 
-        public short nY { get; set; }
+        public int nY { get; set; }
 
         public string? Script { get; set; }
 
