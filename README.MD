@@ -31,6 +31,8 @@
 - **Application.Resource** 资源：yaml配置文件（后期逐步移除）
 - **Application.Shared** 一些公用数据结构、类型
 - **XmlWzReader** xml格式的wz读取工具
+- **Application.Templates** wz数据模板，附[Template.md](https://github.com/sigeer/RuaMS/blob/master/src/Application.Templates/Template.md)
+- **Application.Templates.XmlWzReader** wz数据模板数据绑定 wz/xml读取实现
 - **Application.Scripting** 脚本引擎
 - **Application.Scripting.JS** js脚本引擎
 - **Application.Scripting.Lua** lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）

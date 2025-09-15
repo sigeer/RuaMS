@@ -266,16 +266,18 @@ namespace Application.Templates.XmlWzReader.Provider
                     var name = portalProp.GetName();
                     if (name == "pn")
                         model.sPortalName = portalProp.GetStringValue();
-                    if (name == "tn")
+                    else if (name == "tn")
                         model.sTargetName = portalProp.GetStringValue();
-                    if (name == "script")
+                    else if (name == "script")
                         model.Script = portalProp.GetStringValue();
-                    if (name == "pt")
+                    else if (name == "pt")
                         model.nPortalType = portalProp.GetIntValue();
-                    if (name == "tm")
+                    else if (name == "tm")
                         model.nTargetMap = portalProp.GetIntValue();
-                    if (name == "x")
+                    else if (name == "x")
                         model.nX = portalProp.GetIntValue();
+                    else if (name == "y")
+                        model.nY = portalProp.GetIntValue();
                 }
                 list.Add(model);
             }

@@ -24,6 +24,8 @@ on:
       - 'src/Application.Scripting.JS/**'
       - 'src/Application.Scripting.Lua/**'
       - 'src/XmlWzReader/**'
+      - 'src/Application.Templates/**'
+      - 'src/Application.Templates.XmlWzReader/**'
       - 'test/ServiceTest/**'
 
 jobs:
