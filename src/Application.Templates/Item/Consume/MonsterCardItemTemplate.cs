@@ -4,7 +4,7 @@ namespace Application.Templates.Item.Consume
     /// 238
     /// </summary>
     [GenerateTag]
-    public class MonsterCardItemTemplate : ConsumeItemTemplate
+    public class MonsterCardItemTemplate : PotionItemTemplate, IMesoUpEffect, IItemUpEffect, IMapProtectEffect
     {
         public MonsterCardItemTemplate(int templateId) : base(templateId)
         {
@@ -14,10 +14,19 @@ namespace Application.Templates.Item.Consume
         [WZPath("info/mob")]
         public int MobId { get; set; }
 
-        [WZPath("spec/itemupbyitem")]
-        public bool ItemUpByItem { get; set; }
         [WZPath("spec/itemCode")]
-        public int ItemCode { get; set; }
+        public int ItemCode { get; set; } = 1;
+        [WZPath("spec/itemRange")]
+        public int ItemRange { get; set; } = 1;
+        [WZPath("spec/respectPimmune")]
+        public string? RespectPimmune { get; set; }
+        [WZPath("spec/respectMimmune")]
+        public string? RespectMimmune { get; set; }
+        [WZPath("spec/defenseAtt")]
+        public string? DefenseAtt { get; set; }
+        [WZPath("spec/defenseState")]
+        public string? DefenseState { get; set; }
+
         [WZPath("spec/con/-")]
         public ConData[] Con { get; set; }
     }
@@ -29,7 +38,7 @@ namespace Application.Templates.Item.Consume
         [WZPath("spec/con/-/eMap")]
         public int EndMap { get; set; }
         [WZPath("spec/con/-/type")]
-        public int Type { get; set; }
+        public int Type { get; set; } = -1;
         [WZPath("spec/con/-/inParty")]
         public bool InParty { get; set; }
     }

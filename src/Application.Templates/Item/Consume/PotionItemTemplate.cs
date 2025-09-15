@@ -1,16 +1,13 @@
-using Application.Templates.Item.Data;
-
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
     /// 治疗、解除debuff、附加增益buff
     /// </summary>
     [GenerateTag]
-    public class PotionItemTemplate : ConsumeItemTemplate
+    public class PotionItemTemplate : ConsumeItemTemplate, IPackagedItem, IMesoUpEffect, IItemUpEffect
     {
         public PotionItemTemplate(int templateId) : base(templateId)
         {
-            MorphRandom = Array.Empty<MorphRandomData>();
             Reward = Array.Empty<RewardData>();
         }
 
@@ -111,8 +108,9 @@ namespace Application.Templates.Item.Consume
         public bool MesoUpByItem { get; set; }
 
         [WZPath("spec/itemupbyitem")]
-        public bool ItemUpByItem { get; set; }
-
+        public int ItemUpByItem { get; set; }
+        [WZPath("spec/prob")]
+        public int Prob { get; set; } = 1;
 
         [WZPath("spec/expBuff")]
         public int ExpBuffRate { get; set; }
@@ -126,25 +124,34 @@ namespace Application.Templates.Item.Consume
 
         [WZPath("spec/incFatigue")]
         public int IncFatigue { get; set; }
-        [WZPath("spec/ghost")]
-        public int Ghost { get; set; }
-        [WZPath("spec/morph")]
-        public int Morph { get; set; }
-        [WZPath("spec/repeatEffect")]
-        public bool RepeatEffect { get; set; }
+
+
+        //[WZPath("spec/repeatEffect")]
+        //public bool RepeatEffect { get; set; }
         [WZPath("spec/barrier")]
         public int Barrier { get; set; }
         [WZPath("spec/booster")]
         public int Booster { get; set; }
         [WZPath("spec/berserk")]
         public int Berserk { get; set; }
-        [WZPath("spec/morphRandom/-")]
-        public MorphRandomData[] MorphRandom { get; set; }
 
-        public sealed class MorphRandomData
-        {
-            public int Morph { get; set; }
-            public int Prob { get; set; }
-        }
+        [WZPath("specEx/0")]
+        public MobSkillEffectData? MobSkill { get; set; }
+
+        [WZPath("spec/thaw")]
+        public int Thaw { get; set; }
+    }
+
+    public sealed class MorphRandomData
+    {
+        public int Morph { get; set; }
+        public int Prob { get; set; }
+    }
+
+    public sealed class MobSkillEffectData
+    {
+        public int MobSkill { get; set; }
+        public int Level { get; set; }
+        public int Target { set; get; }
     }
 }

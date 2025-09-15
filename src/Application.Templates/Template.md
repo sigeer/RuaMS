@@ -30,15 +30,16 @@
 530：变身`MorphItemTemplate`  
 536：爆率倍率`CouponItemTemplate`  
 550：魔法沙漏`ExtendItemTimeItemTemplate`  
+553：`CashPackagedItemTemplate`  
 557：金锤子
 
 ##### 节点
 
 stateChangeItem: 触发道具效果  
-protectTime: 封印时长（封印之锁）
-soldInform: 售出后通知？（雇佣商人）
+protectTime: 封印时长（封印之锁）  
+soldInform: 售出后通知？（雇佣商人）  
 info/rate: 倍率  
-spec/expR:
+spec/expR: 名称上看是经验倍率，但是有些与`info/rate`不同，比如`05211048`，String.wz中提到是双倍，但是`spec/expR`是3  
 
 
 #### Consume 200 - 245
@@ -54,7 +55,7 @@ spec/expR:
 212：宠物饲料`PetFoodItemTemplate`  
 216：新年贺卡  
 219：测谎仪  
-221：变身药水  `PotionItemTemplate`  
+221：变身药水  `MorphItemTemplate`  
 224：结婚道具  
 226：坐骑回复疲劳`PotionItemTemplate`  
 227：捕捉怪物道具`CatchMobItemTemplate`  
@@ -62,7 +63,7 @@ spec/expR:
 229：能手册`MasteryItemTemplate`  
 233：子弹`BulletItemTemplate`  
 234：祝福卷轴  
-236：幽灵变身`PotionItemTemplate`  
+236：幽灵变身`GhostItemTemplate`  
 237：经验书`SolomenItemTemplate`  
 238：怪物卡片`MonsterCardItemTemplate`  
 243：任务用到的消耗道具？`ScriptItemTemplate`  
@@ -75,8 +76,8 @@ spec/expR:
 402：母矿  
 403、408：小游戏道具  
 413：制作辅助剂  
-425：制作技能道具
-426：怪物结晶
+425：制作技能道具  
+426：怪物结晶  
 
 #### 节点作用
 

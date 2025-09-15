@@ -11,8 +11,6 @@ namespace Application.Templates.Item.Install
 
         [WZPath("info/reqLevel")]
         public int ReqLevel { get; set; }
-        [WZPath("info/replace")]
-        public ReplaceItemTemplate? ReplaceItem { get; set; }
 
 
         public InstallItemTemplate(int templateId)

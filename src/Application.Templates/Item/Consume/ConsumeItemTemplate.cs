@@ -1,5 +1,3 @@
-using Application.Templates.Item.Data;
-
 namespace Application.Templates.Item.Consume
 {
     public class ConsumeItemTemplate : ItemTemplateBase
@@ -8,9 +6,10 @@ namespace Application.Templates.Item.Consume
         [WZPath("info/monsterBook")]
         public bool MonsterBook { get; set; }
 
-        [WZPath("specEx/consumeOnPickup")]
         [WZPath("spec/consumeOnPickup")]
         public bool ConsumeOnPickup { get; set; }
+        [WZPath("specEx/consumeOnPickup")]
+        public bool ConsumeOnPickupEx { get; set; }
         [WZPath("info/noCancelMouse")]
         public bool NoCancelMouse { get; set; }
 
@@ -18,9 +17,6 @@ namespace Application.Templates.Item.Consume
         [WZPath("spec/expinc")]
         public int ExpInc { get; set; }
 
-
-        [WZPath("spec/prob")]
-        public int Prob { get; set; }
 
         [WZPath("info/incCraft")]
         public int IncCraft { get; set; }

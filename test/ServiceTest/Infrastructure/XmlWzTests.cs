@@ -1,18 +1,22 @@
+using Application.Core.Channel.DataProviders;
 using Application.Shared.Constants.Map;
 using Application.Templates.Character;
+using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
-using Application.Templates.Item.Data;
 using Application.Templates.Item.Etc;
 using Application.Templates.Map;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
+using client.inventory;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using server;
 using server.maps;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Drawing;
+using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using XmlWzReader;
 using XmlWzReader.wz;
 
@@ -112,10 +116,10 @@ namespace ServiceTest.Infrastructure
             Assert.That(petFoodItem.PetfoodInc, Is.EqualTo(30));
             Assert.That(petFoodItem.Pet, Does.Contain(5000005));
 
-            var scrollItem = provider.GetRequiredItem<ScrollItemTemplate>(2040017)!;
-            Assert.That(scrollItem.SuccessRate, Is.EqualTo(60));
+            var scrollItem = provider.GetRequiredItem<ScrollItemTemplate>(02040111)!;
+            Assert.That(scrollItem.Success, Is.EqualTo(60));
             Assert.That(scrollItem.IncDEX, Is.EqualTo(1));
-            Assert.That(scrollItem.IncACC, Is.EqualTo(2));
+            Assert.That(scrollItem.Req, Does.Contain(1012017));
 
             var solomenItem = provider.GetRequiredItem<SolomenItemTemplate>(2370009)!;
             Assert.That(solomenItem.MaxLevel, Is.EqualTo(50));
@@ -179,9 +183,9 @@ namespace ServiceTest.Infrastructure
             var provider = new EquipProvider(new Application.Templates.TemplateOptions());
             var item = provider.GetRequiredItem<EquipTemplate>(01002430)!;
 
-            Console.WriteLine(JsonSerializer.Serialize(item));
+            Console.WriteLine(JsonConvert.SerializeObject(item));
             Assert.That(item.ReqLevel, Is.EqualTo(60));
-            
+
         }
 
         [Test]
@@ -209,27 +213,32 @@ namespace ServiceTest.Infrastructure
             {
                 o.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions()));
             });
+            var options = new JsonSerializerSettings
+            {
+                ContractResolver = new PrivateContractResolver(),
+                Formatting = Formatting.Indented
+            };
             var newRactor = ReactorFactory.getReactor(1008003);
-            var newRactorStr = JsonSerializer.Serialize(newRactor);
+            var newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
             var oldReactor = OldReactorFactory.getReactor(1008003);
-            var oldactorStr = JsonSerializer.Serialize(newRactor);
+            var oldactorStr = JsonConvert.SerializeObject(newRactor, options);
             Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
 
             // link
             newRactor = ReactorFactory.getReactor(1020005);
-            newRactorStr = JsonSerializer.Serialize(newRactor);
+            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
             oldReactor = OldReactorFactory.getReactor(1020005);
-            oldactorStr = JsonSerializer.Serialize(newRactor);
+            oldactorStr = JsonConvert.SerializeObject(newRactor, options);
             Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
 
             // mc
             newRactor = ReactorFactory.getReactorS(9980000);
-            newRactorStr = JsonSerializer.Serialize(newRactor);
+            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
             oldReactor = OldReactorFactory.getReactorS(9980000);
-            oldactorStr = JsonSerializer.Serialize(newRactor);
+            oldactorStr = JsonConvert.SerializeObject(newRactor, options);
             Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
         }
 
@@ -253,6 +262,76 @@ namespace ServiceTest.Infrastructure
             Assert.That(newData.TimeLimit, Is.EqualTo(DataTool.getIntConvert("timeLimit", infoData, -1)));
             Assert.That(newData.FieldType, Is.EqualTo(DataTool.getIntConvert("fieldType", infoData, 0)));
             Assert.That(newData.FixedMobCapacity, Is.EqualTo(DataTool.getIntConvert("fixedMobCapacity", infoData, 500)));
+        }
+
+        [Test]
+        public void ItemEffectEqualCheck()
+        {
+            var oldProvider = DataProviderFactory.getDataProvider(WZFiles.ITEM);
+            ProviderFactory.Initilaize(o =>
+            {
+                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
+            });
+            var newProvider = ProviderFactory.GetProvider<ItemProvider>();
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new PrivateContractResolver(),
+                Formatting = Formatting.Indented
+            };
+
+            var getOldCategory = (int itemId) =>
+            {
+                if (itemId / 10000 == 530)
+                    return "Cash";
+                return "Consume";
+            };
+
+            var getOldStr = (int itemId) =>
+            {
+                var path = (itemId / 10000).ToString("D4");
+                var img = oldProvider.getData($"{getOldCategory(itemId)}/{path}.img").getChildByPath(itemId.ToString("D8"))!;
+                var effectData = img.getChildByPath("specEx") ?? img.getChildByPath("spec");
+                var oldEffect = StatEffect.loadItemEffectFromData(effectData, itemId);
+                return JsonConvert.SerializeObject(oldEffect, settings);
+            };
+
+            var getNewStr = (int itemId) =>
+            {
+                var item = newProvider.GetItem(itemId)!;
+                var newEffect = new StatEffect(item);
+                return JsonConvert.SerializeObject(newEffect, settings);
+            };
+
+            var allItems = newProvider.LoadAll().OfType<IEffectItem>();
+            foreach (var _ in Enumerable.Range(0, 20))
+            {
+                var testItem = allItems.OrderBy(x => Guid.NewGuid()).FirstOrDefault()!;
+                var oldStr = getOldStr(testItem.TemplateId);
+                var newStr = getNewStr(testItem.TemplateId);
+
+                Assert.That(newStr, Is.EqualTo(oldStr), message: $"TemplateId: {testItem.TemplateId}");
+            }
+        }
+    }
+
+    public class PrivateContractResolver : DefaultContractResolver
+    {
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            // 获取所有字段（包含私有的）
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            var props = fields
+                .Select(f => base.CreateProperty(f, memberSerialization))
+                .ToList();
+
+            foreach (var p in props)
+            {
+                p.Readable = true;
+                p.Writable = true;
+            }
+
+            return props;
         }
     }
 }

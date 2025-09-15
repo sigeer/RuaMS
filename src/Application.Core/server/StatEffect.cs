@@ -28,6 +28,10 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
+using Application.Templates;
+using Application.Templates.Item;
+using Application.Templates.Item.Cash;
+using Application.Templates.Item.Consume;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;
@@ -51,22 +55,22 @@ public class StatEffect
     private short mhpRRate, mmpRRate, mobSkill, mobSkillLevel;
     private byte mhpR, mmpR;
     private short mpCon, hpCon;
-    private int duration, target, barrier, mob;
+    private int duration = -1, target, barrier;
     public int ExpBuff { get; set; }
-    private bool overTime, repeatEffect;
+    private bool overTime;
     private int sourceid;
-    private int moveTo;
+    private int moveTo = -1;
     private int cp, nuffSkill;
     private List<Disease> cureDebuffs;
     private bool skill;
     private List<BuffStatValue> statups;
     private Dictionary<MonsterStatus, int> monsterStatus;
-    private int x, y, mobCount, moneyCon, cooldown, morphId = 0, ghost, fatigue, berserk, booster;
-    private double prop;
+    private int x, y, mobCount = 1, moneyCon, cooldown, morphId = 0, ghost, fatigue, berserk, booster;
+    private double prop = 1.0;
     private int itemCon, itemConNo;
-    private int damage, attackCount, fixdamage;
+    private int damage = 100, attackCount = 1, fixdamage = -1;
     private Point? lt, rb;
-    private short bulletCount, bulletConsume;
+    private short bulletCount = 1, bulletConsume;
     private byte mapProtection;
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
@@ -185,6 +189,260 @@ public class StatEffect
         }
     }
 
+    public StatEffect(AbstractItemTemplate item)
+    {
+        duration = item.Time;
+        sourceid = item.TemplateId;
+        skill = false;
+        if (duration > -1)
+            overTime = true;
+        else
+            duration *= 1000;
+
+            cureDebuffs = new List<Disease>();
+        statups = new List<BuffStatValue>();
+        monsterStatus = new Dictionary<MonsterStatus, int>();
+
+        if (item is PotionItemTemplate potion)
+        {
+            hp = (short)potion.HP;
+            hpR = potion.HPR / 100.0;
+            mp = (short)potion.MP;
+            mpR = potion.MPR / 100.0;
+
+            ExpBuff = potion.ExpBuffRate;
+            cp = potion.CP;
+            nuffSkill = potion.CPSkill;
+
+            if (potion.Cure_Curse)
+                cureDebuffs.Add(Disease.CURSE);
+            if (potion.Cure_Darkness)
+                cureDebuffs.Add(Disease.DARKNESS);
+            if (potion.Cure_Poison)
+                cureDebuffs.Add(Disease.POISON);
+            if (potion.Cure_Seal)
+                cureDebuffs.Add(Disease.SEAL);
+            if (potion.Cure_Weakness)
+            {
+                cureDebuffs.Add(Disease.WEAKEN);
+                cureDebuffs.Add(Disease.SLOW);
+            }
+
+            fatigue = potion.IncFatigue;
+
+            if (potion.MobSkill != null)
+            {
+                mobSkill = (short)potion.MobSkill.MobSkill;
+                mobSkillLevel = (short)potion.MobSkill.Level;
+                target = potion.MobSkill.Target;
+            }
+
+            watk = (short)potion.PAD;
+            wdef = (short)potion.PDD;
+            matk = (short)potion.MAD;
+            mdef = (short)potion.MDD;
+            acc = (short)potion.ACC;
+            avoid = (short)potion.EVA;
+            speed = (short)potion.Speed;
+            jump = (short)potion.Jump;
+
+            barrier = potion.Barrier;
+
+            if (ItemId.isPyramidBuff(sourceid))
+            {
+                berserk = potion.Berserk;
+                booster = potion.Booster;
+            }
+            else if (ItemId.isDojoBuff(sourceid) || isHpMpRecovery(sourceid))
+            {
+                mhpR = (byte)potion.MHPR;
+                mhpRRate = (short)(potion.MHPRate * 100);
+                mmpR = (byte)potion.MMPR;
+                mmpRRate = (short)(potion.MMPRate * 100);
+            }
+            else if (ItemId.isExpIncrease(sourceid))
+            {
+                // 02022442 也有这个节点 但是不被isExpIncrease包含
+                addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_INCREASE, potion.ExpInc);
+            }
+        }
+
+        if (item is MonsterCardItemTemplate mobCard)
+        {
+            int prob = 0, itemupCode = int.MaxValue;
+            List<KeyValuePair<int, int>>? areas = null;
+            bool inParty = false;
+
+            if (mobCard.Con.Length > 0)
+            {
+                areas = new(3);
+
+                foreach (var conData in mobCard.Con)
+                {
+                    if (conData.Type == 0)
+                    {
+                        areas.Add(new(conData.StartMap, conData.EndMap));
+                    }
+                    else if (conData.Type == 2)
+                    {
+                        inParty = true;
+                    }
+                }
+
+                if (areas.Count == 0)
+                {
+                    areas = null;
+                }
+            }
+
+            if (mobCard.MesoUpByItem)
+            {
+                if (overTime)
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, 4);
+                prob = mobCard.Prob;
+            }
+
+            if (mobCard.ItemUpByItem > 0)
+            {
+                if (overTime)
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.ITEM_UP_BY_ITEM, 4);
+                prob = mobCard.Prob;
+
+                switch (mobCard.ItemUpByItem)
+                {
+                    case 2:
+                        itemupCode = mobCard.ItemCode;
+                        break;
+
+                    case 3:
+                        itemupCode = mobCard.ItemRange;    // 3 digits
+                        break;
+                }
+            }
+
+            if (overTime)
+            {
+                cardStats = new CardItemupStats(itemupCode, prob, areas, inParty);
+
+                // TODO: 这4个抗性加成功能似乎没有实现
+                if (!string.IsNullOrEmpty(mobCard.RespectPimmune))
+                {
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.RESPECT_PIMMUNE, 4);
+                }
+
+                if (!string.IsNullOrEmpty(mobCard.RespectMimmune))
+                {
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.RESPECT_MIMMUNE, 4);
+                }
+
+                if (!string.IsNullOrEmpty(mobCard.DefenseAtt))
+                {
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_ATT, 4);
+                }
+
+                if (!string.IsNullOrEmpty(mobCard.DefenseState))
+                {
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, 4);
+                }
+            }
+        }
+
+        if (item is CouponItemTemplate coupon)
+        {
+            if (coupon.IsExp && overTime)
+            {
+                switch (coupon.Rate)
+                {
+                    case 1:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP1, 1);
+                        break;
+
+                    case 2:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP2, 1);
+                        break;
+
+                    case 3:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP3, 1);
+                        break;
+
+                    case 4:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP4, 1);
+                        break;
+                }
+            }
+            if (coupon.IsDrop && overTime)
+            {
+                switch (coupon.Rate)
+                {
+                    case 1:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP1, 1);
+                        break;
+
+                    case 2:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP2, 1);
+                        break;
+
+                    case 3:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP3, 1);
+                        break;
+                }
+            }
+        }
+
+        if (item is MorphItemTemplate morph)
+        {
+            morphId = morph.Morph;
+            hp = (short)morph.HP;
+
+        }
+
+        if (item is GhostItemTemplate ghostTemplate)
+        {
+            ghost = ghostTemplate.Ghost;
+        }
+
+        if (item is TownScrollItemTemplate scroll)
+        {
+            moveTo = scroll.MoveTo;
+        }
+
+        if (item is IMapProtectEffect mapProtect)
+        {
+            if (mapProtect.Thaw != 0)
+            {
+                mapProtection = (byte)(mapProtect.Thaw > 0 ? 1 : 2);
+            }
+        }
+
+        if (overTime)
+        {
+            addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, berserk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, booster);
+
+            addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
+
+            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, ExpBuff);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MDEF, mdef);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.ACC, acc);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.AVOID, avoid);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, speed);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
+
+            addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, ghost);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, morphId);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, mapProtection);
+        }
+
+        statups.TrimExcess();
+
+
+    }
+
     private StatEffect(Data? source, int sourceid, bool skill, bool overTime)
     {
         duration = DataTool.getIntConvert("time", source, -1);
@@ -229,7 +487,6 @@ public class StatEffect
         morphId = DataTool.getInt("morph", source, 0);
         ghost = DataTool.getInt("ghost", source, 0);
         fatigue = DataTool.getInt("incFatigue", source, 0);
-        repeatEffect = DataTool.getInt("repeatEffect", source, 0) > 0;
 
         var mdd = source?.getChildByPath("0");
         if (mdd != null && mdd.getChildren().Count > 0)
@@ -245,14 +502,6 @@ public class StatEffect
             target = 0;
         }
 
-        var mdds = source?.getChildByPath("mob");
-        if (mdds != null)
-        {
-            if (mdds.getChildren().Count > 0)
-            {
-                mob = DataTool.getInt("mob", mdds, 0);
-            }
-        }
         this.sourceid = sourceid;
         this.skill = skill;
         if (!this.skill && duration > -1)

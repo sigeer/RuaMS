@@ -60,24 +60,24 @@ public class ItemId
     }
 
     // Potion
-    public static int WHITE_POTION = 2000002;
-    public static int BLUE_POTION = 2000003;
-    public static int ORANGE_POTION = 2000001;
-    public static int MANA_ELIXIR = 2000006;
+    public const int WHITE_POTION = 2000002;
+    public const int BLUE_POTION = 2000003;
+    public const int ORANGE_POTION = 2000001;
+    public const int MANA_ELIXIR = 2000006;
 
     // HP/MP recovery
-    public static int SORCERERS_POTION = 2022337;
-    public static int RUSSELLONS_PILLS = 2022198;
+    public const int SORCERERS_POTION = 2022337;
+    public const int RUSSELLONS_PILLS = 2022198;
 
     // Environment
-    public static int RED_BEAN_PORRIDGE = 2022001;
-    public static int SOFT_WHITE_BUN = 2022186;
-    public static int AIR_BUBBLE = 2022040;
+    public const int RED_BEAN_PORRIDGE = 2022001;
+    public const int SOFT_WHITE_BUN = 2022186;
+    public const int AIR_BUBBLE = 2022040;
 
     // Chair
-    public static int RELAXER = 3010000;
-    private static int CHAIR_MIN = RELAXER;
-    private static int CHAIR_MAX = FISHING_CHAIR;
+    public const int RELAXER = 3010000;
+    private const int CHAIR_MIN = RELAXER;
+    private const int CHAIR_MAX = FISHING_CHAIR;
 
     public static bool isChair(int itemId)
     {

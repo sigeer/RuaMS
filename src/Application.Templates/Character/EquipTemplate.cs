@@ -93,8 +93,6 @@ namespace Application.Templates.Character
         public int Fs { get; set; }
         [WZPath("info/level/info/-")]
         public EquipLevelData[] LevelData { get; set; }
-        [WZPath("info/replace")]
-        public ReplaceItemTemplate? ReplaceItem { get; set; }
         /// <summary>
         /// 等级数据（LevelData）中有增加属性（有不止Exp的其他项存在）
         /// </summary>

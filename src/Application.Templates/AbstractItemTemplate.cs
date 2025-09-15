@@ -40,7 +40,8 @@ namespace Application.Templates
         [WZPath("spec/time")]
         public virtual int Time { get; set; } = -1;
 
-
+        [WZPath("info/replace")]
+        public ReplaceItemTemplate? ReplaceItem { get; set; }
 
 
         protected AbstractItemTemplate(int templateId)
