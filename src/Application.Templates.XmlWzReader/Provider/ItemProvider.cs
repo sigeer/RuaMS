@@ -1,3 +1,4 @@
+using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
@@ -145,7 +146,7 @@ namespace Application.Templates.XmlWzReader.Provider
         }
 
         #region Consume
-        public ConsumeItemTemplate ProcessConsumeItem(int groupId, int itemId, XElement itemNode)
+        public ItemTemplateBase ProcessConsumeItem(int groupId, int itemId, XElement itemNode)
         {
             switch (groupId)
             {
@@ -172,13 +173,23 @@ namespace Application.Templates.XmlWzReader.Provider
                     return ProcessMonsterCard(itemId, itemNode);
                 case 243:
                     return ProcessScriptedItem(itemId, itemNode);
+                case 221:
+                    {
+                        var template = new MorphItemTemplate(itemId);
+                        MorphItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 236:
+                    {
+                        var template = new GhostItemTemplate(itemId);
+                        GhostItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
                 case 200:
                 case 201:
                 case 202:
                 case 205:
-                case 221:
                 case 226:
-                case 236:
                 case 245:
                     {
                         var template = new PotionItemTemplate(itemId);
@@ -320,6 +331,12 @@ namespace Application.Templates.XmlWzReader.Provider
                     {
                         var template = new ExtendItemTimeItemTemplate(itemId);
                         ExtendItemTimeItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 553:
+                    {
+                        var template = new CashPackagedItemTemplate(itemId);
+                        CashPackagedItemTemplateGenerated.ApplyProperties(template, itemNode);
                         return template;
                     }
                 default:

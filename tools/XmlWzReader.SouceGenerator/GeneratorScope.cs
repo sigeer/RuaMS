@@ -112,8 +112,13 @@ namespace XmlWzReader.SouceGenerator
                 var wzAttr = propSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "WZPathAttribute");
                 var propAttrValue = wzAttr == null ? null : wzAttr.ConstructorArguments[0].Value as string;
 
+                // 标注了GenerateIgnoreProperty不参与构建
                 var ignoreAttr = propSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "GenerateIgnorePropertyAttribute");
                 if (ignoreAttr != null)
+                    continue;
+
+                // 只读字段不参与构建
+                if (propSymbol.SetMethod == null)
                     continue;
 
                 if (propSymbol.Type is IArrayTypeSymbol arrayType) // 数组

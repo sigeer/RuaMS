@@ -16,5 +16,9 @@ namespace Application.Templates.Item.Cash
 
         [WZPath("info/time/-")]
         public string[] TimeRange { get; set; }
+        [WZPath("spec/expR")]
+        public bool IsExp { get; set; }
+        [WZPath("spec/drpR")]
+        public bool IsDrop { get; set; }
     }
 }

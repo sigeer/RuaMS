@@ -11,8 +11,6 @@ namespace Application.Templates.Item.Etc
         [WZPath("info/pickUpBlock")]
         public bool PickupBlock { get; set; }
 
-        [WZPath("info/replace")]
-        public ReplaceItemTemplate? ReplaceItem { get; set; }
         public EtcItemTemplate(int templateId) : base(templateId)
         {
         }

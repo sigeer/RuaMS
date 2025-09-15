@@ -12,12 +12,14 @@ namespace Application.Templates.Item.Consume
         }
 
         [WZPath("info/success")]
-        public int SuccessRate { get; set; }
+        public int Success { get; set; }
+        public double SuccessRate => Success / 100.0;
         /// <summary>
         /// 破坏几率
         /// </summary>
         [WZPath("info/cursed")]
-        public int CursedRate { get; set; }
+        public int Cursed { get; set; }
+        public double CursedRate => Cursed / 100.0;
 
         [WZPath("info/incMHP")]
         public int IncMHP { get; set; }
@@ -32,6 +34,8 @@ namespace Application.Templates.Item.Consume
 
         [WZPath("info/incPDD")]
         public int IncPDD { get; set; }
+        [WZPath("info/incPAD")]
+        public int IncPAD { get; set; }
 
         [WZPath("info/incMDD")]
         public int IncMDD { get; set; }
@@ -72,7 +76,7 @@ namespace Application.Templates.Item.Consume
         /// <summary>
         /// 对特定道具生效
         /// </summary>
-        [WZPath("info/req/-")]
+        [WZPath("req/-")]
         public int[] Req { get; set; }
     }
 }
