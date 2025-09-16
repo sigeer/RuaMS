@@ -118,7 +118,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool noCancelMouse(int itemId)
     {
-        return _itemProvider.GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;
+        return GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;
     }
 
     private static int getExtraSlotMaxFromPlayer(IChannelClient c, int itemId)
@@ -150,7 +150,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return (short)((GetProvider(itemId).GetItem(itemId)?.SlotMax ?? 1) + getExtraSlotMaxFromPlayer(c, itemId));
     }
 
-    public MesoBagItemTemplate? GetMesoBagItemTemplate(int itemId) => _itemProvider.GetRequiredItem<MesoBagItemTemplate>(itemId);
+    public MesoBagItemTemplate? GetMesoBagItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<MesoBagItemTemplate>(itemId);
 
 
 
@@ -244,7 +244,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public double getUnitPrice(int itemId)
     {
-        return _itemProvider.GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 1;
+        return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 1;
     }
 
     public int getPrice(int itemId, int quantity)
@@ -271,12 +271,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public int getEquipLevelReq(int itemId)
     {
-        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.ReqLevel ?? 0;
+        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.ReqLevel ?? 0;
     }
 
     public int[] getScrollReqs(int itemId)
     {
-        return _itemProvider.GetRequiredItem<ScrollItemTemplate>(itemId)?.Req ?? [];
+        return GetProvider(itemId).GetRequiredItem<ScrollItemTemplate>(itemId)?.Req ?? [];
     }
 
     public WeaponType getWeaponType(int itemId)
@@ -643,7 +643,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     */
     public bool canUseCleanSlate(Equip equip)
     {
-        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equip.getItemId());
+        var equipTemplate = GetProvider(equip.getItemId()).GetRequiredItem<EquipTemplate>(equip.getItemId());
         if (equipTemplate == null)
         {
             return false;
@@ -833,7 +833,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     {
         var nEquip = new Equip(equipId, 0, ringId);
         nEquip.setQuantity(1);
-        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
+        var equipTemplate = GetProvider(equipId).GetRequiredItem<EquipTemplate>(equipId);
         if (equipTemplate != null)
         {
             nEquip.setStr(equipTemplate.IncSTR);
@@ -946,7 +946,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (itemEffects.TryGetValue(itemId, out var data))
             return data;
 
-        var item = _itemProvider.GetItem(itemId);
+        var item = GetProvider(itemId).GetItem(itemId);
         if (item == null)
             return null;
         return itemEffects[itemId] = new StatEffect(item);
@@ -954,11 +954,11 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public StatEffect GetItemEffectTrust(int itemId) => getItemEffect(itemId) ?? throw new BusinessResException($"getItemEffect({itemId})");
 
-    public SummonMobItemTemplate? GetSummonMobItemTemplate(int itemId) => _itemProvider.GetRequiredItem<SummonMobItemTemplate>(itemId);
+    public SummonMobItemTemplate? GetSummonMobItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<SummonMobItemTemplate>(itemId);
 
     public int getWatkForProjectile(int itemId)
     {
-        return _itemProvider.GetRequiredItem<BulletItemTemplate>(itemId)?.IncPAD ?? 0;
+        return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.IncPAD ?? 0;
     }
 
     public string? getName(int itemId)
@@ -1018,9 +1018,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return GetProvider(itemId).GetItem(itemId)?.Only ?? false;
     }
 
-    public MasteryItemTemplate? GetMasteryItemTemplate(int itemId) => _itemProvider.GetRequiredItem<MasteryItemTemplate>(itemId);
+    public MasteryItemTemplate? GetMasteryItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<MasteryItemTemplate>(itemId);
 
-    public CashPetFoodItemTemplate? GetCashPetFoodTemplate(int itemId) => _itemProvider.GetRequiredItem<CashPetFoodItemTemplate>(itemId);
+    public CashPetFoodItemTemplate? GetCashPetFoodTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<CashPetFoodItemTemplate>(itemId);
 
     /// <summary>
     /// 任务道具
@@ -1034,7 +1034,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isPartyQuestItem(int itemId)
     {
-        return _itemProvider.GetRequiredItem<ItemTemplateBase>(itemId)?.PartyQuest ?? false;
+        return GetProvider(itemId).GetRequiredItem<ItemTemplateBase>(itemId)?.PartyQuest ?? false;
     }
 
     private void loadCardIdData()
@@ -1054,28 +1054,28 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isUntradeableOnEquip(int itemId)
     {
-        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.EquipTradeBlock ?? false;
+        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.EquipTradeBlock ?? false;
     }
 
-    public ScriptItemTemplate? GetScriptItemTemplate(int itemId) => _itemProvider.GetRequiredItem<ScriptItemTemplate>(itemId);
+    public ScriptItemTemplate? GetScriptItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ScriptItemTemplate>(itemId);
 
     public bool isKarmaAble(int itemId)
     {
         return GetProvider(itemId).GetItem(itemId)?.TradeAvailable ?? false;
     }
 
-    public CashItemTemplate? GetCashItemTemplate(int itemId) => _itemProvider.GetRequiredItem<CashItemTemplate>(itemId);
+    public CashItemTemplate? GetCashItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<CashItemTemplate>(itemId);
 
     public int getStateChangeItem(int itemId)
     {
-        return _itemProvider.GetRequiredItem<MapBuffItemTemplate>(itemId)?.StateChangeItem ?? 0;
+        return GetProvider(itemId).GetRequiredItem<MapBuffItemTemplate>(itemId)?.StateChangeItem ?? 0;
     }
-    public CatchMobItemTemplate? GetCatchMobItemTemplate(int itemId) => _itemProvider.GetRequiredItem<CatchMobItemTemplate>(itemId);
-    public SolomenItemTemplate? GetSolomenItemTemplate(int itemId) => _itemProvider.GetRequiredItem<SolomenItemTemplate>(itemId);
+    public CatchMobItemTemplate? GetCatchMobItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<CatchMobItemTemplate>(itemId);
+    public SolomenItemTemplate? GetSolomenItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<SolomenItemTemplate>(itemId);
 
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
-        var data = _itemProvider.GetItem(itemId) as IPackagedItem;
+        var data = GetProvider(itemId).GetItem(itemId) as IPackagedItem;
         if (data == null)
             return new KeyValuePair<int, List<RewardItem>>();
 
@@ -1101,7 +1101,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isConsumeOnPickup(int itemId)
     {
-        var item = _itemProvider.GetRequiredItem<ConsumeItemTemplate>(itemId);
+        var item = GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId);
         if (item == null)
             return false;
 
@@ -1196,7 +1196,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         {
             Equip equip = (Equip)item;
 
-            var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equip.getItemId())!;
+            var equipTemplate = GetProvider(equip.getItemId()).GetRequiredItem<EquipTemplate>(equip.getItemId())!;
             int reqLevel = equipTemplate.ReqLevel;
             if (highfivestamp)
             {
@@ -1257,7 +1257,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return false;
         }
 
-        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(id);
+        var equipTemplate = GetProvider(id).GetRequiredItem<EquipTemplate>(id);
         if (equipTemplate == null)
             return false;
 
@@ -1327,22 +1327,22 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool IsEquipElemental(int itemId)
     {
-        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.IsElemental ?? false;
+        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.IsElemental ?? false;
     }
 
     public int getEquipLevel(int itemId, bool getMaxLevel)
     {
-        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        var equipTemplate = GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId);
         if (equipTemplate == null)
             return 1;
 
-        return equipTemplate.LevelData.Max(x => (int?)x.Level) ?? 1;
+        return equipTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 1;
     }
 
     public List<KeyValuePair<string, int>> getItemLevelupStats(int itemId, int level)
     {
         List<KeyValuePair<string, int>> list = new();
-        var template = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        var template = GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId);
         if (template == null)
             return new List<KeyValuePair<string, int>>();
 
@@ -1431,7 +1431,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public QuestConsItem? getQuestConsumablesInfo(int itemId)
     {
-        var template = _itemProvider.GetRequiredItem<IncubatorItemTemplate>(itemId);
+        var template = GetProvider(itemId).GetRequiredItem<IncubatorItemTemplate>(itemId);
         if (template == null)
             return null;
 

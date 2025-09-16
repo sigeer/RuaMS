@@ -3,6 +3,8 @@ namespace Application.Templates.Character
     [GenerateTag]
     public sealed class EquipTemplate : AbstractItemTemplate
     {
+        [WZPath("info/slotMax")]
+        public override int SlotMax { get; set; } = 1;
         /// <summary>
         /// 装备位置
         /// </summary>
