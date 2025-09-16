@@ -2,6 +2,7 @@ namespace Application.Templates.Map
 {
     public sealed class MapReactorTemplate
     {
+        [WZPath("reactor/-/$name")]
         public int Index { get; set; }
         public int Id { get; set; }
         public string? Name { get; set; }
@@ -9,10 +10,5 @@ namespace Application.Templates.Map
         public int F { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-
-        public MapReactorTemplate(int index)
-        {
-            Index = index;
-        }
     }
 }

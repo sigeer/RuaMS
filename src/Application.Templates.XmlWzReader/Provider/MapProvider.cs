@@ -78,8 +78,6 @@ namespace Application.Templates.XmlWzReader.Provider
 
                         else if (name == "decHP")
                             mapTemplate.DecHP = infoPropNode.GetIntValue();
-                        else if (name == "decMP")
-                            mapTemplate.DecMP = infoPropNode.GetIntValue();
                         else if (name == "decInterval")
                             mapTemplate.DecInterval = infoPropNode.GetIntValue();
                         else if (name == "protectItem")
@@ -116,7 +114,7 @@ namespace Application.Templates.XmlWzReader.Provider
                     }
                 }
 
-                else if (nodeType == "ship")
+                else if (nodeType == "shipObj")
                     mapTemplate.HasShip = true;
                 else if (nodeType == "clock")
                     mapTemplate.HasClock = true;
@@ -231,7 +229,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 {
                     foreach (var fhItemNode in fhList2.Elements())
                     {
-                        var fhItem = new MapFootholdTemplate(fhItemNode.GetIntName());
+                        var fhItem = new MapFootholdTemplate() { Index = fhItemNode.GetIntName() };
                         foreach (var fhProp in fhItemNode.Elements())
                         {
                             var name = fhProp.GetName();
@@ -260,7 +258,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var list = new List<MapPortalTemplate>();
             foreach (var portalItem in item.Elements())
             {
-                var model = new MapPortalTemplate(portalItem.GetIntName());
+                var model = new MapPortalTemplate() { nIndex = portalItem.GetIntName() };
                 foreach (var portalProp in portalItem.Elements())
                 {
                     var name = portalProp.GetName();
@@ -289,7 +287,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var list = new List<MapReactorTemplate>();
             foreach (var reactorItem in item.Elements())
             {
-                var model = new MapReactorTemplate(reactorItem.GetIntName());
+                var model = new MapReactorTemplate() { Index = reactorItem.GetIntName() };
                 foreach (var reactorProp in reactorItem.Elements())
                 {
                     var name = reactorProp.GetName();
@@ -316,7 +314,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var list = new List<MapLifeTemplate>();
             foreach (var lifeItem in item.Elements())
             {
-                var model = new MapLifeTemplate(lifeItem.GetIntName());
+                var model = new MapLifeTemplate() { Index = lifeItem.GetIntName() };
                 foreach (var lifeProp in lifeItem.Elements())
                 {
                     var name = lifeProp.GetName();
