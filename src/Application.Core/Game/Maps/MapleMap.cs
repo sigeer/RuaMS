@@ -2845,12 +2845,19 @@ public class MapleMap : IMap
         }
     }
 
+    /// <summary>
+    /// 有mobTime > 0的野怪
+    /// </summary>
+    bool _hasLongLifeMob;
     public void addAllMonsterSpawn(Monster monster, int mobTime, int team)
     {
         Point newpos = calcPointBelow(monster.getPosition())!.Value;
         newpos.Y -= 1;
         SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
         allMonsterSpawn.Add(sp);
+
+        if (!_hasLongLifeMob && mobTime > 0)
+            _hasLongLifeMob = true;
     }
 
     public void removeMonsterSpawn(int mobId, int x, int y)
@@ -4142,6 +4149,9 @@ public class MapleMap : IMap
     public int _activeCounter;
     public bool IsActive()
     {
+        if (_hasLongLifeMob)
+            return true;
+
         var exceptTypes = new List<MapObjectType> { MapObjectType.MONSTER, MapObjectType.NPC, MapObjectType.PLAYER_NPC, MapObjectType.REACTOR };
         var isActive = GetMapObjects(x => !exceptTypes.Contains(x.getType())).Count > 0;
         if (isActive)
