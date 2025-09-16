@@ -5,6 +5,7 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Install;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -55,6 +56,11 @@ namespace Application.Templates.XmlWzReader.Provider
             return [];
             //else if (path.Contains("Special"))
             //    LoadSpecial(path);
+        }
+
+        public List<MonsterCardItemTemplate> GetAllMonsterCard()
+        {
+            return LoadConsume(_itemFiles.FirstOrDefault(x => x.EndsWith("0238.img.xml"))!).OfType<MonsterCardItemTemplate>().ToList();
         }
 
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)

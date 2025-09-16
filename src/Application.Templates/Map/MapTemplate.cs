@@ -1,63 +1,87 @@
 namespace Application.Templates.Map
 {
+    // [GenerateTag] 代码生成器没有适配foothold的格式
     public sealed class MapTemplate : AbstractTemplate, ILinkTemplate<MapTemplate>
     {
+        [WZPath("info/createMobInterval")]
         public int CreateMobInterval { get; set; } = 5000;
+        [WZPath("info/VRTop")]
         public int VRTop { get; set; }
+        [WZPath("info/VRLeft")]
         public int VRLeft { get; set; }
+        [WZPath("info/VRBottom")]
         public int VRBottom { get; set; }
+        [WZPath("info/VRRight")]
         public int VRRight { get; set; }
+        [WZPath("info/everlast")]
         public bool Everlast { get; set; }
+        [WZPath("info/forcedReturn")]
         public int ForcedReturn { get; set; }
-
+        [WZPath("info/returnMap")]
         public int ReturnMap { get; set; }
 
-
+        [WZPath("info/fly")]
         public bool FlyMap { get; set; }
-
+        [WZPath("info/town")]
         public bool Town { get; set; }
-
+        [WZPath("info/onFirstUserEnter")]
         public string? OnFirstUserEnter { get; set; }
-
+        [WZPath("info/onUserEnter")]
         public string? OnUserEnter { get; set; }
 
-
+        [WZPath("info/fieldType")]
         public int FieldType { get; set; }
-
+        [WZPath("info/decHP")]
         public int DecHP { get; set; }
 
-        public int DecMP { get; set; }
-
+        [WZPath("info/decInterval")]
         public int DecInterval { get; set; }
-
+        [WZPath("info/protectItem")]
         public int ProtectItem { get; set; }
-
+        [WZPath("info/fieldLimit")]
         public int FieldLimit { get; set; }
-
+        [WZPath("info/timeLimit")]
         public int TimeLimit { get; set; } = -1;
-
-        public bool HasClock { get; set; }
-        public bool HasShip { get; set; }
-        public int FixedMobCapacity { get; set; } = 500;
-        public float RecoveryRate { get; set; } = 1;
-        public int SeatCount { get; set; }
-        public MapPortalTemplate[] Portals { get; set; }
-
-        public MapReactorTemplate[] Reactors { get; set; }
-
-
-        public MapLifeTemplate[] Life { get; set; }
-
-        public MapFootholdTemplate[] Footholds { get; set; }
-        public MapBackTemplate[] Backs { get; set; }
-        public MapAreaTemplate[] Areas { get; set; }
-        public MapMonsterCarnivalTemplate? MonsterCarnival { get; set; }
-        public MapSnowballTemplate? Snowball { get; set; }
-        public MapCoconutTemplate? Coconut { get; set; }
         [WZPath("info/timeMob")]
         public MapTimeMobTemplate? TimeMob { get; set; }
+        [WZPath("info/fixedMobCapacity")]
+        public int FixedMobCapacity { get; set; } = 500;
+        [WZPath("info/recovery")]
+        public float RecoveryRate { get; set; } = 1;
+
+
+        [WZPath("clock/$existed")]
+        public bool HasClock { get; set; }
+        [WZPath("shipObj/$existed")]
+        public bool HasShip { get; set; }
+
+
+        [WZPath("seat/$length")]
+        public int SeatCount { get; set; }
+        [WZPath("portal/-")]
+        public MapPortalTemplate[] Portals { get; set; }
+        [WZPath("reactor/-")]
+        public MapReactorTemplate[] Reactors { get; set; }
+
+        [WZPath("life/-")]
+        public MapLifeTemplate[] Life { get; set; }
+        [WZPath("foothold/-")]
+        public MapFootholdTemplate[] Footholds { get; set; }
+        [WZPath("back/-")]
+        public MapBackTemplate[] Backs { get; set; }
+        [WZPath("area/-")]
+        public MapAreaTemplate[] Areas { get; set; }
+
+
+        [WZPath("miniMap")]
         public MapMiniMapTemplate? MiniMap { get; set; }
 
+        [WZPath("monsterCarnival")]
+        public MapMonsterCarnivalTemplate? MonsterCarnival { get; set; }
+        [WZPath("snowBall")]
+        public MapSnowballTemplate? Snowball { get; set; }
+        [WZPath("coconut")]
+        public MapCoconutTemplate? Coconut { get; set; }
         public MapTemplate(int nMapId)
             : base(nMapId)
         {

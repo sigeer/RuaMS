@@ -1,7 +1,11 @@
 namespace Application.Templates.Map
 {
-    public sealed class MapCoconutTemplate : MapEffectTemplateBase
+    public sealed class MapCoconutTemplate
     {
+        public string? EffectWin { get; set; }
+        public string? EffectLose { get; set; }
+        public string? SoundWin { get; set; }
+        public string? SoundLose { get; set; }
         public int TimeDefault { get; set; }
         public int TimeExpand { get; set; }
         public int TimeFinish { get; set; }

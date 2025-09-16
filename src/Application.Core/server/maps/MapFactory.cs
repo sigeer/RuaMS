@@ -252,7 +252,7 @@ public class MapFactory : IStaticService
 
         foreach (var item in mapData.Footholds)
         {
-            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.TemplateId);
+            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.Index);
             fh.setPrev(item.Prev);
             fh.setNext(item.Next);
             if (fh.getX1() < lBound.X)

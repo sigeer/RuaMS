@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.EF;
 using Application.Shared.Constants.Map;
 using Application.Templates.Character;
 using Application.Templates.Item;
@@ -9,6 +10,7 @@ using Application.Templates.Map;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using client.inventory;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using server;
@@ -204,6 +206,7 @@ namespace ServiceTest.Infrastructure
             Assert.That(cpqMap.MonsterCarnival.EffectWin, Is.EqualTo("quest/carnival/win"));
             Assert.That(cpqMap.MonsterCarnival.SoundWin, Is.EqualTo("MobCarnival/Win"));
             Assert.That(cpqMap.MonsterCarnival.TimeDefault, Is.EqualTo(610));
+
         }
 
         [Test]
@@ -311,6 +314,32 @@ namespace ServiceTest.Infrastructure
 
                 Assert.That(newStr, Is.EqualTo(oldStr), message: $"TemplateId: {testItem.TemplateId}");
             }
+        }
+
+        [Test]
+        public void MonsterCardTest()
+        {
+            ProviderFactory.Initilaize(o =>
+            {
+                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
+            });
+
+            var newProvider = ProviderFactory.GetProvider<ItemProvider>();
+
+            var dict = newProvider.GetAllMonsterCard().OrderBy(x => x.TemplateId).ToDictionary(x => x.TemplateId, x => x.MobId);
+            var str1 = JsonConvert.SerializeObject(dict);
+
+            var options = new DbContextOptionsBuilder<DBContext>()
+                    .UseSqlite("Data Source=database.db")
+                    .Options;
+
+            using var dbContext = new DBContext(options);
+            var dataFromDb = dbContext.Monstercarddata.OrderBy(x => x.Cardid).ToList().ToDictionary(x => x.Cardid, x => x.Mobid);
+            var str2 = JsonConvert.SerializeObject(dataFromDb);
+            // db的数据似乎有大量不准确的，可以放弃使用这张表
+            Console.WriteLine(str1);
+            Console.WriteLine(str2);
+            Assert.That(dict.Count, Is.EqualTo(dataFromDb.Count));
         }
     }
 

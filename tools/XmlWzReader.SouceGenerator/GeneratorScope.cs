@@ -79,7 +79,7 @@ namespace XmlWzReader.SouceGenerator
             SearchTree("", classSymbol);
 
             var sourceTree = TreeNode.BuildTreeCore(_properyMapping);
-
+            // ProcessObject(sb, sourceTree, instanceName, "elementNode", "");
             var nodeVariableName = "rootNode";
             sb.AppendLine($"        foreach (var {nodeVariableName} in elementNode.Elements())");
             sb.AppendLine("        {");
@@ -88,10 +88,16 @@ namespace XmlWzReader.SouceGenerator
             sb.AppendLine($"            var {nodeNameValue} = {nodeVariableName}.GetName();");
             foreach (var item in sourceTree)
             {
-                ProcessObject(sb, item, instanceName, nodeVariableName, nodeNameValue);
+                if (item.Value != null && item.Value.Type == 0)
+                    ProcessBaseDataType(sb, item, instanceName, nodeVariableName, nodeNameValue);
+                else if (item.Value != null && item.Value.Type == 3)
+                    ProcessInnerObject(sb, item, instanceName, nodeVariableName, nodeNameValue);
+                else
+                    ProcessObject(sb, item, instanceName, nodeVariableName, nodeNameValue);
             }
 
             sb.AppendLine("        }");
+
             sb.AppendLine("    }");
             sb.AppendLine("}");
 
@@ -178,14 +184,18 @@ namespace XmlWzReader.SouceGenerator
         }
 
 
-        void ProcessObject(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue)
+        void ProcessObject(StringBuilder sb, TreeNode node, string instanceName, string currentNode, string nodeNameValue, bool ignoreDir = false)
         {
-            //一些通过WZPath跳过的中间节点
-            var isDir = node.Value == null && node.Children.Count > 0;
+            var isDir = !ignoreDir && (node.Value == null || node.Value.Type == 3) && node.Children.Count > 0;
             if (isDir)
             {
                 sb.AppendLine($"            if ({nodeNameValue} == \"{node.Name}\")");
                 sb.AppendLine("            {");
+            }
+
+            if (node.Value?.Name == "$existed")
+            {
+                sb.AppendLineWithPreSpace($"                    {instanceName}.{node.Value.DataName} = true;", node.Depth);
             }
 
             var arrItem = node.Children.FirstOrDefault(x => x.Value != null && (x.Value.Type == 1 || x.Value.Type == 2));
@@ -195,24 +205,30 @@ namespace XmlWzReader.SouceGenerator
                 sb.AppendLineWithPreSpace($"                List<{arrItem.Value.DataType.TrimEnd('?')}> {listName} = new List<{arrItem.Value.DataType.TrimEnd('?')}>();", node.Depth);
             }
 
-            var innerNodeName = $"node{node.Depth}";
-            var innerNodeNameValue = $"nodeName{node.Depth}";
+            var innerNodeName = currentNode;
+            var innerNodeNameValue = nodeNameValue;
 
-            sb.AppendLineWithPreSpace($"                foreach (var {innerNodeName} in {currentNode}.Elements())", node.Depth);
-            sb.AppendLineWithPreSpace("                {", node.Depth);
-            sb.AppendLineWithPreSpace($"                    var {innerNodeNameValue} = {innerNodeName}.GetName();", node.Depth);
+            var children = node.Children.Where(x => x.Value == null || x.Value.Type != 4).ToList();
+            if (children.Count > 0)
+            {
+                innerNodeName = $"node{node.Depth}";
+                innerNodeNameValue = $"nodeName{node.Depth}";
+
+                sb.AppendLineWithPreSpace($"                foreach (var {innerNodeName} in {currentNode}.Elements())", node.Depth);
+                sb.AppendLineWithPreSpace("                {", node.Depth);
+                sb.AppendLineWithPreSpace($"                    var {innerNodeNameValue} = {innerNodeName}.GetName();", node.Depth);
+            }
 
             foreach (var objNode in node.Children)
             {
-                if (objNode.Value == null)
-                {
-                    ProcessObject(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
-                }
-                else
-                {
+                if (objNode.Value != null && objNode.Value.Type == 0)
                     ProcessBaseDataType(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
+                else if (objNode.Value != null && objNode.Value.Type == 3)
                     ProcessInnerObject(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
-                }
+                else if (objNode.Value != null && objNode.Name == "-")
+                    continue; // arrItem单独处理
+                else
+                    ProcessObject(sb, objNode, instanceName, innerNodeName, innerNodeNameValue);
             }
 
             // 数组、对象数组同级只会存在一条
@@ -222,12 +238,14 @@ namespace XmlWzReader.SouceGenerator
                 ProcessObjectArrayType(sb, arrItem, listName, innerNodeName, innerNodeNameValue);
             }
 
-            sb.AppendLineWithPreSpace("                }", node.Depth);
+            if (children.Count > 0)
+                sb.AppendLineWithPreSpace("                }", node.Depth);
 
             if (arrItem != null)
             {
                 sb.AppendLineWithPreSpace($"                {instanceName}.{arrItem.Value.DataName} = {listName}.ToArray();", node.Depth);
             }
+
 
             if (isDir)
             {
@@ -235,7 +253,7 @@ namespace XmlWzReader.SouceGenerator
             }
         }
 
-        string GetBaseFunction(string dataType)
+        string GetValueFunction(string dataType)
         {
             string getter = dataType switch
             {
@@ -258,16 +276,8 @@ namespace XmlWzReader.SouceGenerator
         {
             if (node.Value != null && node.Value.Type == 0)
             {
-                if (node.Name == "$name")
-                {
-                    sb.AppendLineWithPreSpace($"        {instanceName}.{node.Value.DataName} = idx;", node.Depth);
-                }
-                else
-                {
-                    sb.AppendLineWithPreSpace($"        if ({nodeNameValue} == \"{node.Name}\")", node.Depth);
-                    sb.AppendLineWithPreSpace($"            {instanceName}.{node.Value.DataName} = {currentNode}.{GetBaseFunction(node.Value.DataType)};", node.Depth);
-                }
-
+                sb.AppendLineWithPreSpace($"        if ({nodeNameValue} == \"{node.Name}\")", node.Depth);
+                sb.AppendLineWithPreSpace($"            {instanceName}.{node.Value.DataName} = {currentNode}.{GetValueFunction(node.Value.DataType)};", node.Depth);
             }
         }
 
@@ -278,7 +288,7 @@ namespace XmlWzReader.SouceGenerator
 
             sb.AppendLineWithPreSpace($"                if (int.TryParse({currentNode}.GetName(), out var _))", node.Depth);
             sb.AppendLineWithPreSpace("                {", node.Depth);
-            sb.AppendLineWithPreSpace($"                     {instanceName}.Add({currentNode}.{GetBaseFunction(node.Value.DataType)});", node.Depth);
+            sb.AppendLineWithPreSpace($"                     {instanceName}.Add({currentNode}.{GetValueFunction(node.Value.DataType)});", node.Depth);
             sb.AppendLineWithPreSpace("                }", node.Depth);
         }
 
@@ -288,10 +298,24 @@ namespace XmlWzReader.SouceGenerator
                 return;
 
             var modelName = $"modelArr{node.Depth}";
+            var idxName = $"idx{node.Depth}";
 
-            sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeNameValue}, out var idx))", node.Depth);
+            sb.AppendLineWithPreSpace($"                if (int.TryParse({nodeNameValue}, out var {idxName}))", node.Depth);
             sb.AppendLineWithPreSpace("                {", node.Depth);
             sb.AppendLineWithPreSpace($"                    var {modelName} = new {node.Value.DataType}();", node.Depth);
+
+            var idx = node.Children.FirstOrDefault(x => x.Value != null && x.Value.Name == "$name");
+            if (idx != null)
+            {
+                sb.AppendLineWithPreSpace($"                    {modelName}.{idx.Value.DataName} = {idxName};", node.Depth);
+            }
+
+            var len = node.Children.FirstOrDefault(x => x.Value != null && x.Value.Name == "$length");
+            if (len != null)
+            {
+                sb.AppendLineWithPreSpace($"                    {modelName}.{len.Value.DataName} = {currentNode}.Elements().Count();", node.Depth);
+            }
+
             ProcessObject(sb, node, modelName, currentNode, nodeNameValue);
             sb.AppendLineWithPreSpace($"                     {instanceName}.Add({modelName});", node.Depth);
             sb.AppendLineWithPreSpace("                }", node.Depth);
@@ -305,16 +329,15 @@ namespace XmlWzReader.SouceGenerator
                 return;
 
             var modelName = $"modelInnerObj{node.Depth}";
-            var innerNodeName = $"modelInnerNode{node.Depth}";
-            var innerNodeNameValue = $"modelInnerNodeName{node.Depth}";
 
             sb.AppendLineWithPreSpace($"        if ({nodeNameValue} == \"{node.Name}\")", node.Depth);
             sb.AppendLineWithPreSpace("        {", node.Depth);
             sb.AppendLineWithPreSpace($"            var {modelName} = new {node.Value.DataType.TrimEnd('?')}();", node.Depth);
-            ProcessObject(sb, node, modelName, currentNode, nodeNameValue);
+            ProcessObject(sb, node, modelName, currentNode, nodeNameValue, true);
             sb.AppendLineWithPreSpace($"            {instanceName}.{node.Value.DataName} = {modelName};", node.Depth);
             sb.AppendLineWithPreSpace("        }", node.Depth);
         }
+
         public void Dispose()
         {
             _properyMapping.Clear();
@@ -325,17 +348,20 @@ namespace XmlWzReader.SouceGenerator
     {
 
         /// <summary>
-        /// 0. 基本类型 1. 普通数组 2. 对象数组 3. 对象
+        /// 0. 基本类型 1. 普通数组 2. 对象数组 3. 对象 4. 特殊属性
         /// </summary>
         public PropertyData(int type, string name, string dataType, string dataName)
         {
             Type = type;
             Name = name;
+            if (name.StartsWith("$"))
+                Type = 4;
+
             DataType = dataType;
             DataName = dataName;
         }
         /// <summary>
-        /// 0. 基本类型 1. 普通数组 2. 对象数组 3. 对象
+        /// 0. 基本类型 1. 普通数组 2. 对象数组 3. 对象 4. 特殊属性
         /// </summary>
         public int Type { get; set; }
         /// <summary>
