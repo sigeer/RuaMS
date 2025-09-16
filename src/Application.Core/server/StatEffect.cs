@@ -32,6 +32,7 @@ using Application.Templates;
 using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
+using Application.Templates.Skill;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;
@@ -199,7 +200,7 @@ public class StatEffect
         else
             duration *= 1000;
 
-            cureDebuffs = new List<Disease>();
+        cureDebuffs = new List<Disease>();
         statups = new List<BuffStatValue>();
         monsterStatus = new Dictionary<MonsterStatus, int>();
 
@@ -712,7 +713,7 @@ public class StatEffect
             lt = (Point)ltd.getData()!;
             rb = (Point)source!.getChildByPath("rb")!.getData()!;
 
-            if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO 
+            if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO
                 && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
             {
                 lt = new Point(int.MinValue, int.MinValue);

@@ -37,8 +37,7 @@ public class ScriptedItemHandler : ChannelHandlerBase
         short itemSlot = p.readShort(); // item slot, thanks RMZero213
         int itemId = p.readInt();
 
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        var info = ii.getScriptedItemInfo(itemId);
+        var info = ItemInformationProvider.getInstance().GetScriptItemTemplate(itemId);
         if (info == null)
         {
             return;
@@ -50,7 +49,6 @@ public class ScriptedItemHandler : ChannelHandlerBase
             return;
         }
 
-        ItemScriptManager ism = ItemScriptManager.getInstance();
-        ism.runItemScript(c, info);
+        ItemScriptManager.getInstance().runItemScript(c, info);
     }
 }

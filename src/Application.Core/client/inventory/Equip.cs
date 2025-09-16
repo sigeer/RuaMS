@@ -71,7 +71,7 @@ public class Equip : Item
         this.itemExp = 0;
         this.itemLevel = 1;
 
-        IsElemental = (ItemInformationProvider.getInstance().getEquipLevel(id, false) > 1);
+        IsElemental = ItemInformationProvider.getInstance().IsEquipElemental(id);
     }
 
     public override Item copy()

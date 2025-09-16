@@ -41,7 +41,10 @@ public class UseSolomonHandler : ChannelHandlerBase
         p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+
+        var itemTemplate = ItemInformationProvider.getInstance().GetSolomenItemTemplate(itemId);
+        if (itemTemplate == null)
+            return;
 
         if (c.tryacquireClient())
         {
@@ -58,16 +61,15 @@ public class UseSolomonHandler : ChannelHandlerBase
                         return;
                     }
 
-                    long gachaexp = ii.getExpById(itemId);
-                    if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > ii.getMaxLevelById(itemId))
+                    if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
                     {
                         return;
                     }
-                    if (gachaexp + chr.getGachaExp() > int.MaxValue)
+                    if (itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
                     {
                         return;
                     }
-                    chr.addGachaExp((int)gachaexp);
+                    chr.addGachaExp(itemTemplate.Exp);
                     InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
                 }
                 finally

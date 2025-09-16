@@ -92,8 +92,8 @@ public class ScrollHandler : ChannelHandlerBase
                     return;
                 }
 
-                List<int> scrollReqs = ii.getScrollReqs(scroll.getItemId());
-                if (scrollReqs.Count > 0 && !scrollReqs.Contains(toScroll.getItemId()))
+                var scrollReqs = ii.getScrollReqs(scroll.getItemId());
+                if (scrollReqs.Length > 0 && !scrollReqs.Contains(toScroll.getItemId()))
                 {
                     announceCannotScroll(c, legendarySpirit);
                     return;

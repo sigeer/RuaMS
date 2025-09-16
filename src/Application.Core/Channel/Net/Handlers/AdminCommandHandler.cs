@@ -58,12 +58,12 @@ public class AdminCommandHandler : ChannelHandlerBase
         switch (mode)
         {
             case 0x00: // Level1~Level8 & Package1~Package2
-                int[][] toSpawn = ItemInformationProvider.getInstance().getSummonMobs(p.readInt());
-                foreach (int[] toSpawnChild in toSpawn)
+                var toSpawn = ItemInformationProvider.getInstance().GetSummonMobItemTemplate(p.readInt())!;
+                foreach (var toSpawnChild in toSpawn.SummonData)
                 {
-                    if (Randomizer.nextInt(100) < toSpawnChild[1])
+                    if (Randomizer.nextInt(100) < toSpawnChild.Prob)
                     {
-                        c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild[0]), c.OnlinedCharacter.getPosition());
+                        c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
                     }
                 }
                 c.sendPacket(PacketCreator.enableActions());

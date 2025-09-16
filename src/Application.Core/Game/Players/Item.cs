@@ -96,11 +96,11 @@ namespace Application.Core.Game.Players
                             foreach (Item item in toberemove)
                             {
                                 List<int> toadd = new();
-                                var replace = ii.getReplaceOnExpire(item.getItemId());
-                                if (replace.Id > 0)
+                                var replace = ii.GetReplaceItemTemplate(item.getItemId());
+                                if (replace != null)
                                 {
-                                    toadd.Add(replace.Id);
-                                    if (replace.Message.Length > 0)
+                                    toadd.Add(replace.ItemId);
+                                    if (!string.IsNullOrEmpty(replace.Message))
                                     {
                                         dropMessage(replace.Message);
                                     }

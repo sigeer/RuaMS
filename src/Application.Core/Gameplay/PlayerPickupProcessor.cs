@@ -197,8 +197,8 @@ namespace Application.Core.Gameplay
 
             else if (ItemId.HasScript(mapItem.getItemId()))
             {
-                var info = ItemInformationProvider.getInstance().getScriptedItemInfo(mapItem.getItemId());
-                if (info != null && info.runOnPickup())
+                var info = ItemInformationProvider.getInstance().GetScriptItemTemplate(mapItem.getItemId());
+                if (info != null && info.RunOnPickup)
                 {
                     ItemScriptManager.getInstance().runItemScript(_player.Client, info);
                     return true;

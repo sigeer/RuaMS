@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.EF;
 using Application.Shared.Constants.Map;
 using Application.Templates.Character;
@@ -11,6 +12,8 @@ using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using server;
@@ -304,6 +307,7 @@ namespace ServiceTest.Infrastructure
                 var newEffect = new StatEffect(item);
                 return JsonConvert.SerializeObject(newEffect, settings);
             };
+            // 几个存在"specEx"节的逻辑不同，旧代码会仅读取"specEx"，新代码仍读取到了spec/time
 
             var allItems = newProvider.LoadAll().OfType<IEffectItem>();
             foreach (var _ in Enumerable.Range(0, 20))
@@ -340,6 +344,51 @@ namespace ServiceTest.Infrastructure
             Console.WriteLine(str1);
             Console.WriteLine(str2);
             Assert.That(dict.Count, Is.EqualTo(dataFromDb.Count));
+        }
+
+        [Test]
+        public void EquipTest()
+        {
+            ProviderFactory.Initilaize(o =>
+            {
+                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
+            });
+            var options = new JsonSerializerSettings
+            {
+                ContractResolver = new PrivateContractResolver(),
+                Formatting = Formatting.Indented
+            };
+            var rand = new Random();
+
+            var oldProvider = new OldItemInformationProvider();
+            var newProvider = new ItemInformationProvider(
+                new Mock<ILogger<DataBootstrap>>().Object,
+                null,
+                new Application.Resources.WzStringProvider()
+                );
+            newProvider.Register(newProvider);
+            var provider = ProviderFactory.GetProvider<EquipProvider>();
+
+            int testCount = 10;
+            while (testCount > 0)
+            {
+                var randomItemId = rand.Next(1000000, 2000000);
+
+                var item = provider.GetItem(randomItemId);
+                if (item != null)
+                {
+                    testCount--;
+
+                    var oldData = oldProvider.getEquipById(randomItemId);
+                    var oldStr = JsonConvert.SerializeObject(oldData, options);
+                    var newData = newProvider.getEquipById(randomItemId);
+                    var newStr = JsonConvert.SerializeObject(newData, options);
+
+                    Assert.That(oldStr, Is.EqualTo(newStr));
+                }
+            }
+
         }
     }
 

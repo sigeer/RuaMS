@@ -1,6 +1,6 @@
 namespace Application.Templates.Map
 {
-    // [GenerateTag] 代码生成器没有适配foothold的格式
+    //[GenerateTag] // 代码生成器没有适配foothold的格式
     public sealed class MapTemplate : AbstractTemplate, ILinkTemplate<MapTemplate>
     {
         [WZPath("info/createMobInterval")]
@@ -65,7 +65,7 @@ namespace Application.Templates.Map
 
         [WZPath("life/-")]
         public MapLifeTemplate[] Life { get; set; }
-        [WZPath("foothold/-")]
+        [WZPath("foothold/-/-")]
         public MapFootholdTemplate[] Footholds { get; set; }
         [WZPath("back/-")]
         public MapBackTemplate[] Backs { get; set; }

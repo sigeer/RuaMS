@@ -45,16 +45,20 @@ public class UseSummonBagHandler : ChannelHandlerBase
         p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
+
+        var itemTemplate = ItemInformationProvider.getInstance().GetSummonMobItemTemplate(itemId);
+        if (itemTemplate == null)
+            return;
+
         var toUse = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);
         if (toUse != null && toUse.getQuantity() > 0 && toUse.getItemId() == itemId)
         {
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-            int[][] toSpawn = ItemInformationProvider.getInstance().getSummonMobs(itemId);
-            foreach (int[] toSpawnChild in toSpawn)
+            foreach (var toSpawnChild in itemTemplate.SummonData)
             {
-                if (Randomizer.nextInt(100) < toSpawnChild[1])
+                if (Randomizer.nextInt(100) < toSpawnChild.Prob)
                 {
-                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild[0]), c.OnlinedCharacter.getPosition());
+                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
                 }
             }
         }

@@ -59,52 +59,59 @@ public class SkillBookHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                var skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
-                if (skilldata == null)
+
+                var template = ItemInformationProvider.getInstance().GetMasteryItemTemplate(toUse.getItemId());
+                // var skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
+                if (template == null)
                 {
                     return;
                 }
 
-                var targetSkillId = skilldata.GetValueOrDefault("skillid");
-                var skill2 = SkillFactory.getSkill(targetSkillId);
+                var targetSkillId = template.Skills.FirstOrDefault(x => x / 10000 == c.OnlinedCharacter.getJob().getId());
                 if (targetSkillId == 0)
                 {
                     canuse = false;
                 }
-                else if ((player.getSkillLevel(skill2) >= skilldata.GetValueOrDefault("reqSkillLevel") || skilldata.GetValueOrDefault("reqSkillLevel") == 0) && player.getMasterLevel(skill2) < skilldata.GetValueOrDefault("masterLevel"))
+                else
                 {
-                    inv.lockInventory();
-                    try
+                    var skill2 = SkillFactory.getSkill(targetSkillId);
+                    if ((player.getSkillLevel(skill2) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
+                        && player.getMasterLevel(skill2) < template.MasterLevel)
                     {
-                        var used = inv.getItem(slot);
-                        if (used != toUse || toUse.getQuantity() < 1)
-                        {    // thanks ClouD for noticing skillbooks not being usable when stacked
-                            return;
+                        inv.lockInventory();
+                        try
+                        {
+                            var used = inv.getItem(slot);
+                            if (used != toUse || toUse.getQuantity() < 1)
+                            {    // thanks ClouD for noticing skillbooks not being usable when stacked
+                                return;
+                            }
+
+                            InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+                        }
+                        finally
+                        {
+                            inv.unlockInventory();
                         }
 
-                        InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-                    }
-                    finally
-                    {
-                        inv.unlockInventory();
-                    }
-
-                    canuse = true;
-                    if (ItemInformationProvider.rollSuccessChance(skilldata.GetValueOrDefault("success")))
-                    {
-                        success = true;
-                        player.changeSkillLevel(skill2, player.getSkillLevel(skill2), Math.Max(skilldata.GetValueOrDefault("masterLevel"), player.getMasterLevel(skill2)), -1);
+                        canuse = true;
+                        if (ItemInformationProvider.rollSuccessChance(template.SuccessRate))
+                        {
+                            success = true;
+                            player.changeSkillLevel(skill2, player.getSkillLevel(skill2), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
+                        }
+                        else
+                        {
+                            success = false;
+                            //player.dropMessage("The skill book lights up, but the skill winds up as if nothing happened.");
+                        }
                     }
                     else
                     {
-                        success = false;
-                        //player.dropMessage("The skill book lights up, but the skill winds up as if nothing happened.");
+                        canuse = false;
                     }
                 }
-                else
-                {
-                    canuse = false;
-                }
+
             }
             finally
             {

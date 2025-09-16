@@ -23,12 +23,17 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using Application.Core.model;
-using Application.Core.ServerTransports;
 using Application.Resources;
+using Application.Templates;
+using Application.Templates.Character;
+using Application.Templates.Item;
+using Application.Templates.Item.Cash;
+using Application.Templates.Item.Consume;
+using Application.Templates.Item.Etc;
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server;
@@ -49,27 +54,22 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return _instance ?? throw new BusinessFatalException("ItemInformationProvider 未注册");
     }
 
-    readonly IChannelServerTransport _transport;
-    readonly IMemoryCache _cache;
+
+
     readonly AutoBanDataManager _autoBanDataManager;
     readonly WzStringProvider _wzStringProvider;
-    public ItemInformationProvider(IChannelServerTransport transport,
-        IMemoryCache cache,
+
+    readonly EquipProvider _equipProvider = ProviderFactory.GetProvider<EquipProvider>();
+    readonly ItemProvider _itemProvider = ProviderFactory.GetProvider<ItemProvider>();
+    public ItemInformationProvider(
         ILogger<DataBootstrap> logger,
         AutoBanDataManager autoBanDataManager,
         WzStringProvider wzStringProvider) : base(logger)
     {
         Name = "物品数据";
 
-        _transport = transport;
-        _cache = cache;
+
         _autoBanDataManager = autoBanDataManager;
-
-        itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
-        equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
-
-        isQuestItemCache.Add(0, false);
-        isPartyQuestItemCache.Add(0, false);
 
         _wzStringProvider = wzStringProvider;
     }
@@ -79,57 +79,19 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         _instance = sp.GetService<ItemInformationProvider>() ?? throw new BusinessFatalException("ItemInformationProvider 未注册");
     }
 
+    public void Register(ItemInformationProvider instance)
+    {
+        _instance = instance;
+    }
+
     protected override void LoadDataInternal()
     {
         loadCardIdData();
     }
 
-    protected DataProvider itemData;
-    protected DataProvider equipData;
 
-    protected Dictionary<int, short> slotMaxCache = new();
     protected Dictionary<int, StatEffect> itemEffects = new();
-    protected Dictionary<int, Dictionary<string, int>> equipStatsCache = new();
-    protected Dictionary<int, Equip> equipCache = new();
-    protected Dictionary<int, Data?> equipLevelInfoCache = new();
-    protected Dictionary<int, int> equipLevelReqCache = new();
-    protected Dictionary<int, int> equipMaxLevelCache = new();
-    protected Dictionary<int, List<int>> scrollReqsCache = new();
-    protected Dictionary<int, int> wholePriceCache = new();
-    protected Dictionary<int, double> unitPriceCache = new();
-    protected Dictionary<int, int> projectileWatkCache = new();
-
-    protected Dictionary<int, string> descCache = new();
-
-    protected Dictionary<int, bool> accountItemRestrictionCache = new();
-    protected Dictionary<int, bool> dropRestrictionCache = new();
-    protected Dictionary<int, bool> pickupRestrictionCache = new();
-    protected Dictionary<int, int> getMesoCache = new();
     protected Dictionary<int, int> monsterBookID = new();
-    protected Dictionary<int, bool> untradeableCache = new();
-    protected Dictionary<int, bool> onEquipUntradeableCache = new();
-    protected Dictionary<int, ScriptedItem> scriptedItemCache = new();
-    protected Dictionary<int, bool> karmaCache = new();
-    protected Dictionary<int, int> triggerItemCache = new();
-    protected Dictionary<int, int> expCache = new();
-    protected Dictionary<int, int> createItemCache = new();
-    protected Dictionary<int, int> mobItemCache = new();
-    protected Dictionary<int, int> useDelayCache = new();
-    protected Dictionary<int, int> mobHPCache = new();
-    protected Dictionary<int, int> levelCache = new();
-    protected Dictionary<int, KeyValuePair<int, List<RewardItem>>> rewardCache = new();
-    protected List<ItemInfoBase> etcItemCache = new List<ItemInfoBase>();
-    protected Dictionary<int, bool> consumeOnPickupCache = new();
-    protected Dictionary<int, bool> isQuestItemCache = new();
-    protected Dictionary<int, bool> isPartyQuestItemCache = new();
-    protected Dictionary<int, ItemMessage> replaceOnExpireCache = new();
-    protected Dictionary<int, string> equipmentSlotCache = new();
-    protected Dictionary<int, bool> noCancelMouseCache = new();
-
-
-    protected Dictionary<int, ItemSkillDataPair> SkillUpgreadCache = [];
-    protected Dictionary<int, KeyValuePair<int, HashSet<int>>?> cashPetFoodCache = new();
-    protected Dictionary<int, QuestConsItem?> questItemConsCache = new();
 
     //public List<ItemInfoBase> getAllEtcItems()
     //{
@@ -149,74 +111,14 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     //    etcItemCache = itemPairs;
     //    return itemPairs;
     //}
+    ItemProviderBase GetProvider(int itemId)
+    {
+        return itemId < 2000000 ? _equipProvider : _itemProvider;
+    }
 
     public bool noCancelMouse(int itemId)
     {
-        if (noCancelMouseCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        var item = getItemData(itemId);
-        if (item == null)
-        {
-            noCancelMouseCache.Add(itemId, false);
-            return false;
-        }
-
-        bool blockMouse = DataTool.getIntConvert("info/noCancelMouse", item, 0) == 1;
-        noCancelMouseCache.Add(itemId, blockMouse);
-        return blockMouse;
-    }
-
-    Dictionary<int, Data?> itemCache = [];
-
-    private Data? getItemData(int itemId)
-    {
-        if (itemCache.TryGetValue(itemId, out var value))
-            return value;
-
-        Data? ret = null;
-        string idStr = "0" + itemId;
-        DataDirectoryEntry root = itemData.getRoot();
-        foreach (DataDirectoryEntry topDir in root.getSubdirectories())
-        {
-            foreach (DataFileEntry iFile in topDir.getFiles())
-            {
-                if (iFile.getName() == idStr.Substring(0, 4) + ".img")
-                {
-                    ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
-                    if (ret == null)
-                    {
-                        itemCache[itemId] = null;
-                        return null;
-                    }
-                    ret = ret.getChildByPath(idStr);
-                    itemCache[itemId] = ret;
-                    return ret;
-                }
-                else if (iFile.getName() == idStr.Substring(1) + ".img")
-                {
-                    ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
-                    itemCache[itemId] = ret;
-                    return ret;
-                }
-            }
-        }
-        root = equipData.getRoot();
-        foreach (DataDirectoryEntry topDir in root.getSubdirectories())
-        {
-            foreach (DataFileEntry iFile in topDir.getFiles())
-            {
-                if (iFile.getName() == idStr + ".img")
-                {
-                    ret = equipData.getData(topDir.getName() + "/" + iFile.getName());
-                    itemCache[itemId] = ret;
-                    return ret;
-                }
-            }
-        }
-        return ret;
+        return _itemProvider.GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;
     }
 
     private static int getExtraSlotMaxFromPlayer(IChannelClient c, int itemId)
@@ -245,56 +147,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public short getSlotMax(IChannelClient c, int itemId)
     {
-        if (slotMaxCache.TryGetValue(itemId, out var slotMax))
-            return (short)(slotMax + getExtraSlotMaxFromPlayer(c, itemId));
-
-        short ret = 0;
-        var item = getItemData(itemId);
-        if (item != null)
-        {
-            var smEntry = item.getChildByPath("info/slotMax");
-            if (smEntry == null)
-            {
-                if (ItemConstants.getInventoryType(itemId).getType() == InventoryType.EQUIP.getType())
-                {
-                    ret = 1;
-                }
-                else
-                {
-                    ret = 100;
-                }
-            }
-            else
-            {
-                ret = (short)DataTool.getInt(smEntry);
-            }
-        }
-
-        slotMaxCache.Add(itemId, ret);
-        return (short)(ret + getExtraSlotMaxFromPlayer(c, itemId));
+        return (short)((GetProvider(itemId).GetItem(itemId)?.SlotMax ?? 1) + getExtraSlotMaxFromPlayer(c, itemId));
     }
 
-    public int getMeso(int itemId)
-    {
-        if (getMesoCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        var item = getItemData(itemId);
-        if (item == null)
-        {
-            return -1;
-        }
+    public MesoBagItemTemplate? GetMesoBagItemTemplate(int itemId) => _itemProvider.GetRequiredItem<MesoBagItemTemplate>(itemId);
 
-        var pData = item.getChildByPath("info/meso");
-        if (pData == null)
-        {
-            return -1;
-        }
-        var pEntry = DataTool.getInt(pData);
-        getMesoCache.Add(itemId, pEntry);
-        return pEntry;
-    }
+
 
     private static double getRoundedUnitPrice(double unitPrice, int max)
     {
@@ -343,60 +201,50 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
-    private KeyValuePair<int, double> getItemPriceData(int itemId)
-    {
-        var item = getItemData(itemId);
-        if (item == null)
-        {
-            wholePriceCache.AddOrUpdate(itemId, -1);
-            unitPriceCache.AddOrUpdate(itemId, 0.0);
-            return new(-1, 0.0);
-        }
+    //private KeyValuePair<int, double> getItemPriceData(int itemId)
+    //{
+    //    var item = getItemData(itemId);
+    //    if (item == null)
+    //    {
+    //        wholePriceCache.AddOrUpdate(itemId, -1);
+    //        unitPriceCache.AddOrUpdate(itemId, 0.0);
+    //        return new(-1, 0.0);
+    //    }
 
-        int pEntry = -1;
-        var pData = item.getChildByPath("info/price");
-        if (pData != null)
-        {
-            pEntry = DataTool.getInt(pData);
-        }
+    //    int pEntry = -1;
+    //    var pData = item.getChildByPath("info/price");
+    //    if (pData != null)
+    //    {
+    //        pEntry = DataTool.getInt(pData);
+    //    }
 
-        double fEntry = 0.0f;
-        pData = item.getChildByPath("info/unitPrice");
-        if (pData != null)
-        {
-            try
-            {
-                fEntry = getRoundedUnitPrice(DataTool.getDouble(pData), 5);
-            }
-            catch (Exception)
-            {
-                fEntry = DataTool.getInt(pData);
-            }
-        }
+    //    double fEntry = 0.0f;
+    //    pData = item.getChildByPath("info/unitPrice");
+    //    if (pData != null)
+    //    {
+    //        try
+    //        {
+    //            fEntry = getRoundedUnitPrice(DataTool.getDouble(pData), 5);
+    //        }
+    //        catch (Exception)
+    //        {
+    //            fEntry = DataTool.getInt(pData);
+    //        }
+    //    }
 
-        wholePriceCache.AddOrUpdate(itemId, pEntry);
-        unitPriceCache.AddOrUpdate(itemId, fEntry);
-        return new(pEntry, fEntry);
-    }
+    //    wholePriceCache.AddOrUpdate(itemId, pEntry);
+    //    unitPriceCache.AddOrUpdate(itemId, fEntry);
+    //    return new(pEntry, fEntry);
+    //}
 
     public int getWholePrice(int itemId)
     {
-        if (wholePriceCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        return getItemPriceData(itemId).Key;
+        return GetProvider(itemId).GetItem(itemId)?.Price ?? 1;
     }
 
     public double getUnitPrice(int itemId)
     {
-        if (unitPriceCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        return getItemPriceData(itemId).Value;
+        return _itemProvider.GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 1;
     }
 
     public int getPrice(int itemId, int quantity)
@@ -419,134 +267,16 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return retPrice;
     }
 
-    public ItemMessage getReplaceOnExpire(int itemId)
-    {
-        // thanks to GabrielSin
-        if (replaceOnExpireCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        var data = getItemData(itemId);
-        int itemReplacement = DataTool.getInt("info/replace/itemid", data, 0);
-        string msg = DataTool.getString("info/replace/msg", data) ?? "";
-
-        var ret = new ItemMessage(itemReplacement, msg);
-        replaceOnExpireCache.Add(itemId, ret);
-
-        return ret;
-    }
-
-    protected string? getEquipmentSlot(int itemId)
-    {
-        if (equipmentSlotCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        var item = getItemData(itemId);
-        if (item == null)
-        {
-            return null;
-        }
-
-        var info = item.getChildByPath("info");
-
-        if (info == null)
-        {
-            return null;
-        }
-
-        var ret = DataTool.getString("islot", info) ?? "";
-
-        equipmentSlotCache.Add(itemId, ret);
-
-        return ret;
-    }
-
-    public Dictionary<string, int>? getEquipStats(int itemId)
-    {
-        if (equipStatsCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        Dictionary<string, int> ret = new();
-        var item = getItemData(itemId);
-        if (item == null)
-        {
-            return null;
-        }
-        var info = item.getChildByPath("info");
-        if (info == null)
-        {
-            return null;
-        }
-        foreach (Data data in info.getChildren())
-        {
-            if (data.getName()?.StartsWith("inc") ?? false)
-                ret.AddOrUpdate(data.getName()!.Substring(3), DataTool.getIntConvert(data));
-        }
-        /*else if (data.getName().startsWith("req"))
-         ret.Add(data.getName(), DataTool.getInt(data.getName(), info, 0));*/
-
-        ret.AddOrUpdate("reqJob", DataTool.getInt("reqJob", info, 0));
-        ret.AddOrUpdate("reqLevel", DataTool.getInt("reqLevel", info, 0));
-        ret.AddOrUpdate("reqDEX", DataTool.getInt("reqDEX", info, 0));
-        ret.AddOrUpdate("reqSTR", DataTool.getInt("reqSTR", info, 0));
-        ret.AddOrUpdate("reqINT", DataTool.getInt("reqINT", info, 0));
-        ret.AddOrUpdate("reqLUK", DataTool.getInt("reqLUK", info, 0));
-        ret.AddOrUpdate("reqPOP", DataTool.getInt("reqPOP", info, 0));
-        ret.AddOrUpdate("cash", DataTool.getInt("cash", info, 0));
-        ret.AddOrUpdate("tuc", DataTool.getInt("tuc", info, 0));
-        ret.AddOrUpdate("cursed", DataTool.getInt("cursed", info, 0));
-        ret.AddOrUpdate("success", DataTool.getInt("success", info, 0));
-        ret.AddOrUpdate("fs", DataTool.getInt("fs", info, 0));
-        equipStatsCache.Add(itemId, ret);
-        return ret;
-    }
+    public ReplaceItemTemplate? GetReplaceItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId)?.ReplaceItem;
 
     public int getEquipLevelReq(int itemId)
     {
-        if (equipLevelReqCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        int ret = 0;
-        var item = getItemData(itemId);
-        if (item != null)
-        {
-            var info = item.getChildByPath("info");
-            if (info != null)
-            {
-                ret = DataTool.getInt("reqLevel", info, 0);
-            }
-        }
-
-        equipLevelReqCache.Add(itemId, ret);
-        return ret;
+        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.ReqLevel ?? 0;
     }
 
-    public List<int> getScrollReqs(int itemId)
+    public int[] getScrollReqs(int itemId)
     {
-        if (scrollReqsCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        List<int> ret = new();
-        var data = getItemData(itemId);
-        data = data?.getChildByPath("req");
-        if (data != null)
-        {
-            foreach (Data req in data.getChildren())
-            {
-                ret.Add(DataTool.getInt(req));
-            }
-        }
-
-        scrollReqsCache.Add(itemId, ret);
-        return ret;
+        return _itemProvider.GetRequiredItem<ScrollItemTemplate>(itemId)?.Req ?? [];
     }
 
     public WeaponType getWeaponType(int itemId)
@@ -913,12 +643,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     */
     public bool canUseCleanSlate(Equip equip)
     {
-        var eqStats = getEquipStats(equip.getItemId());
-        if (eqStats == null || eqStats.GetValueOrDefault("tuc") == 0)
+        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equip.getItemId());
+        if (equipTemplate == null)
         {
             return false;
         }
-        int totalUpgradeCount = eqStats.GetValueOrDefault("tuc");
+        int totalUpgradeCount = equipTemplate.TUC;
         int freeUpgradeCount = equip.getUpgradeSlots();
         int viciousCount = equip.getVicious();
         int appliedScrollCount = equip.getLevel();
@@ -938,13 +668,15 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     {
         bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
 
+        var scrollTemplate = _itemProvider.GetRequiredItem<ScrollItemTemplate>(scrollId);
+        if (scrollTemplate == null)
+            return equip;
+
         if (equip is Equip nEquip)
         {
-            var stats = getEquipStats(scrollId);
-
             if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
             {
-                double prop = stats?.GetValueOrDefault("success") ?? throw new BusinessResException($"卷轴没有成功率数据，SrollId = {scrollId}");
+                double prop = scrollTemplate.SuccessRate;
 
                 switch (vegaItemId)
                 {
@@ -994,7 +726,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                             break;
 
                         default:
-                            improveEquipStats(nEquip, stats);
+                            improveEquipStats(nEquip, scrollTemplate);
                             break;
                     }
                     if (!ItemConstants.isCleanSlate(scrollId))
@@ -1012,7 +744,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                     {
                         nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
                     }
-                    if (Randomizer.nextInt(100) < stats.GetValueOrDefault("cursed"))
+                    if (Randomizer.nextInt(100) < scrollTemplate.CursedRate)
                     {
                         return null;
                     }
@@ -1020,6 +752,27 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             }
         }
         return equip;
+    }
+
+    public static void improveEquipStats(Equip nEquip, ScrollItemTemplate scrollTemplate)
+    {
+        nEquip.setStr(getShortMaxIfOverflow(nEquip.getStr() + scrollTemplate.IncSTR));
+        nEquip.setDex(getShortMaxIfOverflow(nEquip.getDex() + scrollTemplate.IncDEX));
+        nEquip.setInt(getShortMaxIfOverflow(nEquip.getInt() + scrollTemplate.IncINT));
+        nEquip.setLuk(getShortMaxIfOverflow(nEquip.getLuk() + scrollTemplate.IncLUK));
+
+        nEquip.setWatk(getShortMaxIfOverflow(nEquip.getWatk() + scrollTemplate.IncPAD));
+        nEquip.setWdef(getShortMaxIfOverflow(nEquip.getWdef() + scrollTemplate.IncPDD));
+        nEquip.setMatk(getShortMaxIfOverflow(nEquip.getMatk() + scrollTemplate.IncMAD));
+        nEquip.setMdef(getShortMaxIfOverflow(nEquip.getMdef() + scrollTemplate.IncMDD));
+
+        nEquip.setAcc(getShortMaxIfOverflow(nEquip.getAcc() + scrollTemplate.IncACC));
+        nEquip.setAvoid(getShortMaxIfOverflow(nEquip.getAvoid() + scrollTemplate.IncEVA));
+
+        nEquip.setSpeed(getShortMaxIfOverflow(nEquip.getSpeed() + scrollTemplate.IncSpeed));
+        nEquip.setJump(getShortMaxIfOverflow(nEquip.getJump() + scrollTemplate.IncJump));
+        nEquip.setHp(getShortMaxIfOverflow(nEquip.getHp() + scrollTemplate.IncMHP));
+        nEquip.setMp(getShortMaxIfOverflow(nEquip.getMp() + scrollTemplate.IncMMP));
     }
 
     public static void improveEquipStats(Equip nEquip, Dictionary<string, int> stats)
@@ -1078,91 +831,45 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public Item getEquipById(int equipId, int ringId = -1)
     {
-        Equip nEquip;
-        nEquip = new Equip(equipId, 0, ringId);
+        var nEquip = new Equip(equipId, 0, ringId);
         nEquip.setQuantity(1);
-        var stats = getEquipStats(equipId);
-        if (stats != null)
+        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
+        if (equipTemplate != null)
         {
-            foreach (var stat in stats)
+            nEquip.setStr(equipTemplate.IncSTR);
+            nEquip.setDex(equipTemplate.IncDEX);
+            nEquip.setInt(equipTemplate.IncINT);
+            nEquip.setLuk(equipTemplate.IncLUK);
+
+            nEquip.setWatk(equipTemplate.IncPAD);
+            nEquip.setWdef(equipTemplate.IncPDD);
+            nEquip.setMatk(equipTemplate.IncMAD);
+            nEquip.setMdef(equipTemplate.IncMDD);
+
+            nEquip.setAcc(equipTemplate.IncACC);
+            nEquip.setAvoid(equipTemplate.IncEVA);
+
+            nEquip.setSpeed(equipTemplate.IncSpeed);
+            nEquip.setJump(equipTemplate.IncJump);
+            nEquip.setHp(equipTemplate.IncMHP);
+            nEquip.setMp(equipTemplate.IncMMP);
+            nEquip.setUpgradeSlots(equipTemplate.TUC);
+
+            if (isUntradeableRestricted(equipId))
+            {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
+                short flag = nEquip.getFlag();
+                flag |= ItemConstants.UNTRADEABLE;
+                nEquip.setFlag(flag);
+            }
+            if (equipTemplate.Fs > 0)
             {
-                var val = (short)stat.Value;
-                if (stat.Key.Equals("STR"))
-                {
-                    nEquip.setStr(val);
-                }
-                else if (stat.Key.Equals("DEX"))
-                {
-                    nEquip.setDex(val);
-                }
-                else if (stat.Key.Equals("INT"))
-                {
-                    nEquip.setInt(val);
-                }
-                else if (stat.Key.Equals("LUK"))
-                {
-                    nEquip.setLuk(val);
-                }
-                else if (stat.Key.Equals("PAD"))
-                {
-                    nEquip.setWatk(val);
-                }
-                else if (stat.Key.Equals("PDD"))
-                {
-                    nEquip.setWdef(val);
-                }
-                else if (stat.Key.Equals("MAD"))
-                {
-                    nEquip.setMatk(val);
-                }
-                else if (stat.Key.Equals("MDD"))
-                {
-                    nEquip.setMdef(val);
-                }
-                else if (stat.Key.Equals("ACC"))
-                {
-                    nEquip.setAcc(val);
-                }
-                else if (stat.Key.Equals("EVA"))
-                {
-                    nEquip.setAvoid(val);
-                }
-                else if (stat.Key.Equals("Speed"))
-                {
-                    nEquip.setSpeed(val);
-                }
-                else if (stat.Key.Equals("Jump"))
-                {
-                    nEquip.setJump(val);
-                }
-                else if (stat.Key.Equals("MHP"))
-                {
-                    nEquip.setHp(val);
-                }
-                else if (stat.Key.Equals("MMP"))
-                {
-                    nEquip.setMp(val);
-                }
-                else if (stat.Key.Equals("tuc"))
-                {
-                    nEquip.setUpgradeSlots((byte)val);
-                }
-                else if (isUntradeableRestricted(equipId))
-                {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
-                    short flag = nEquip.getFlag();
-                    flag |= ItemConstants.UNTRADEABLE;
-                    nEquip.setFlag(flag);
-                }
-                else if (stats.GetValueOrDefault("fs") > 0)
-                {
-                    short flag = nEquip.getFlag();
-                    flag |= ItemConstants.SPIKES;
-                    nEquip.setFlag(flag);
-                    equipCache.AddOrUpdate(equipId, nEquip);
-                }
+                short flag = nEquip.getFlag();
+                flag |= ItemConstants.SPIKES;
+                nEquip.setFlag(flag);
             }
         }
-        return nEquip.copy(); // Q.为什么要用copy？
+        return nEquip;
+        //return nEquip.copy(); // Q.为什么要用copy？
     }
 
     /// <summary>
@@ -1236,46 +943,22 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public StatEffect? getItemEffect(int itemId)
     {
-        var ret = itemEffects.GetValueOrDefault(itemId);
-        if (ret == null)
-        {
-            var item = getItemData(itemId);
-            if (item == null)
-            {
-                return null;
-            }
-            var spec = item.getChildByPath("specEx") ?? item.getChildByPath("spec");
+        if (itemEffects.TryGetValue(itemId, out var data))
+            return data;
 
-            ret = StatEffect.loadItemEffectFromData(spec, itemId);
-            itemEffects.AddOrUpdate(itemId, ret);
-        }
-        return ret;
+        var item = _itemProvider.GetItem(itemId);
+        if (item == null)
+            return null;
+        return itemEffects[itemId] = new StatEffect(item);
     }
 
     public StatEffect GetItemEffectTrust(int itemId) => getItemEffect(itemId) ?? throw new BusinessResException($"getItemEffect({itemId})");
 
-    public int[][] getSummonMobs(int itemId)
-    {
-        var data = getItemData(itemId);
-        int theInt = data?.getChildByPath("mob")?.getChildren()?.Count ?? 0;
-        int[][] mobs2spawn = new int[theInt][];
-        for (int x = 0; x < theInt; x++)
-        {
-            mobs2spawn[x][0] = DataTool.getIntConvert("mob/" + x + "/id", data);
-            mobs2spawn[x][1] = DataTool.getIntConvert("mob/" + x + "/prob", data);
-        }
-        return mobs2spawn;
-    }
+    public SummonMobItemTemplate? GetSummonMobItemTemplate(int itemId) => _itemProvider.GetRequiredItem<SummonMobItemTemplate>(itemId);
 
     public int getWatkForProjectile(int itemId)
     {
-        if (projectileWatkCache.TryGetValue(itemId, out var atk))
-            return atk;
-
-        var data = getItemData(itemId);
-        atk = DataTool.getInt("info/incPAD", data, 0);
-        projectileWatkCache.Add(itemId, atk);
-        return atk;
+        return _itemProvider.GetRequiredItem<BulletItemTemplate>(itemId)?.IncPAD ?? 0;
     }
 
     public string? getName(int itemId)
@@ -1295,44 +978,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isUntradeableRestricted(int itemId)
     {
-        if (untradeableCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        bool bRestricted = false;
-        if (itemId != 0)
-        {
-            var data = getItemData(itemId);
-            if (data != null)
-            {
-                bRestricted = DataTool.getIntConvert("info/tradeBlock", data, 0) == 1;
-            }
-        }
-
-        untradeableCache.Add(itemId, bRestricted);
-        return bRestricted;
+        return GetProvider(itemId).GetItem(itemId)?.TradeBlock ?? false;
     }
 
     public bool isAccountRestricted(int itemId)
     {
-        if (accountItemRestrictionCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        bool bRestricted = false;
-        if (itemId != 0)
-        {
-            var data = getItemData(itemId);
-            if (data != null)
-            {
-                bRestricted = DataTool.getIntConvert("info/accountSharable", data, 0) == 1;
-            }
-        }
-
-        accountItemRestrictionCache.Add(itemId, bRestricted);
-        return bRestricted;
+        return GetProvider(itemId).GetItem(itemId)?.AccountSharable ?? false;
     }
 
     /// <summary>
@@ -1342,27 +993,10 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     private bool isLootRestricted(int itemId)
     {
-        if (dropRestrictionCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        bool bRestricted = false;
-        if (itemId != 0)
-        {
-            var data = getItemData(itemId);
-            if (data != null)
-            {
-                bRestricted = DataTool.getIntConvert("info/tradeBlock", data, 0) == 1;
-                if (!bRestricted)
-                {
-                    bRestricted = isAccountRestricted(itemId);
-                }
-            }
-        }
-
-        dropRestrictionCache.Add(itemId, bRestricted);
-        return bRestricted;
+        var item = GetProvider(itemId).GetItem(itemId);
+        if (item == null)
+            return false;
+        return item.TradeBlock || item.AccountSharable;
     }
     /// <summary>
     /// 丢弃限制（不可交易，包含任务道具）
@@ -1381,132 +1015,13 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isPickupRestricted(int itemId)
     {
-        if (pickupRestrictionCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-
-        bool bRestricted = false;
-        if (itemId != 0)
-        {
-            var data = getItemData(itemId);
-            if (data != null)
-            {
-                bRestricted = DataTool.getIntConvert("info/only", data, 0) == 1;
-            }
-        }
-
-        pickupRestrictionCache.Add(itemId, bRestricted);
-        return bRestricted;
+        return GetProvider(itemId).GetItem(itemId)?.Only ?? false;
     }
 
-    private ItemSkillDataPair? getSkillStatsInternal(int itemId)
-    {
-        var cachedData = SkillUpgreadCache.GetValueOrDefault(itemId);
-        if (cachedData != null)
-            return cachedData;
+    public MasteryItemTemplate? GetMasteryItemTemplate(int itemId) => _itemProvider.GetRequiredItem<MasteryItemTemplate>(itemId);
 
-        var item = getItemData(itemId);
-        if (item != null)
-        {
-            var info = item.getChildByPath("info");
-            if (info != null)
-            {
-                var ret = new Dictionary<string, int>();
+    public CashPetFoodItemTemplate? GetCashPetFoodTemplate(int itemId) => _itemProvider.GetRequiredItem<CashPetFoodItemTemplate>(itemId);
 
-                foreach (Data data in info.getChildren())
-                {
-                    var dataName = data.getName();
-                    if (dataName != null && dataName.StartsWith("inc"))
-                    {
-                        ret.AddOrUpdate("inc", DataTool.getIntConvert(data));
-                    }
-                }
-                ret.AddOrUpdate("masterLevel", DataTool.getInt("masterLevel", info, 0));
-                ret.AddOrUpdate("reqSkillLevel", DataTool.getInt("reqSkillLevel", info, 0));
-                ret.AddOrUpdate("success", DataTool.getInt("success", info, 0));
-
-                var retSkill = info.getChildByPath("skill") ?? throw new BusinessResException($"itemId = {itemId}, /info/skill"); ;
-
-                var model = new ItemSkillDataPair(retSkill, ret);
-                SkillUpgreadCache.Add(itemId, model);
-                return model;
-            }
-        }
-        return null;
-    }
-
-    public Dictionary<string, int>? getSkillStats(int itemId, double playerJob)
-    {
-        var retData = getSkillStatsInternal(itemId);
-        if (retData == null)
-            return null;
-
-        if (retData.SkillInfo.Count == 0)
-        {
-            return null;
-        }
-
-        Dictionary<string, int> ret = new(retData.SkillInfo);
-        var skill = retData.SkillWzData;
-        int curskill;
-        for (int i = 0; i < skill.getChildren().Count; i++)
-        {
-            curskill = DataTool.getInt(i.ToString(), skill, 0);
-            if (curskill == 0)
-            {
-                break;
-            }
-            if (curskill / 10000 == playerJob)
-            {
-                ret.AddOrUpdate("skillid", curskill);
-                break;
-            }
-        }
-        if (!ret.ContainsKey("skillid"))
-        {
-            ret.AddOrUpdate("skillid", 0);
-        }
-        return ret;
-    }
-
-    public PetCanConsumePair canPetConsume(int petId, int itemId)
-    {
-        var foodData = cashPetFoodCache.GetValueOrDefault(itemId);
-        if (foodData == null)
-        {
-            HashSet<int> pets = new(4);
-            int inc = 1;
-
-            var data = getItemData(itemId);
-            if (data != null)
-            {
-                var specData = data.getChildByPath("spec");
-                foreach (Data specItem in specData.getChildren())
-                {
-                    var itemName = specItem.getName();
-
-                    if (int.TryParse(itemName, out var _))
-                    {
-                        int petid = DataTool.getInt(specItem, 0);
-                        pets.Add(petid);
-                    }
-                    else
-                    {
-                        if (itemName == "inc")
-                        {
-                            inc = DataTool.getInt(specItem, 1);
-                        }
-                    }
-                }
-            }
-
-            foodData = new(inc, pets);
-            cashPetFoodCache.AddOrUpdate(itemId, foodData);
-        }
-
-        return new(foodData.Value.Key, foodData.Value.Value.Contains(petId));
-    }
     /// <summary>
     /// 任务道具
     /// </summary>
@@ -1514,29 +1029,17 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isQuestItem(int itemId)
     {
-        if (isQuestItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        bool questItem = DataTool.getIntConvert("info/quest", getItemData(itemId), 0) == 1;
-        isQuestItemCache.Add(itemId, questItem);
-        return questItem;
+        return GetProvider(itemId).GetItem(itemId)?.Quest ?? false;
     }
 
     public bool isPartyQuestItem(int itemId)
     {
-        if (isPartyQuestItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        bool partyquestItem = DataTool.getIntConvert("info/pquest", getItemData(itemId), 0) == 1;
-        isPartyQuestItemCache.AddOrUpdate(itemId, partyquestItem);
-        return partyquestItem;
+        return _itemProvider.GetRequiredItem<ItemTemplateBase>(itemId)?.PartyQuest ?? false;
     }
 
     private void loadCardIdData()
     {
-        monsterBookID = _transport.RequestMonsterCardData().List.ToDictionary(x => x.CardId, x => x.MobId);
+        monsterBookID = _itemProvider.GetAllMonsterCard().ToDictionary(x => x.TemplateId, x => x.MobId);
     }
 
     public int getCardMobId(int id)
@@ -1551,181 +1054,58 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isUntradeableOnEquip(int itemId)
     {
-        if (onEquipUntradeableCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        bool untradeableOnEquip = DataTool.getIntConvert("info/equipTradeBlock", getItemData(itemId), 0) > 0;
-        onEquipUntradeableCache.AddOrUpdate(itemId, untradeableOnEquip);
-        return untradeableOnEquip;
+        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.EquipTradeBlock ?? false;
     }
 
-    public ScriptedItem? getScriptedItemInfo(int itemId)
-    {
-        if (scriptedItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        if (!ItemId.HasScript(itemId))
-        {
-            return null;
-        }
-        var itemInfo = getItemData(itemId);
-        ScriptedItem script = new ScriptedItem(
-                DataTool.getInt("spec/npc", itemInfo, 0),
-                DataTool.getString("spec/script", itemInfo) ?? "",
-                DataTool.getInt("spec/runOnPickup", itemInfo, 0) == 1);
-        scriptedItemCache.AddOrUpdate(itemId, script);
-        return scriptedItemCache[itemId];
-    }
+    public ScriptItemTemplate? GetScriptItemTemplate(int itemId) => _itemProvider.GetRequiredItem<ScriptItemTemplate>(itemId);
 
     public bool isKarmaAble(int itemId)
     {
-        if (karmaCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        bool bRestricted = DataTool.getIntConvert("info/tradeAvailable", getItemData(itemId), 0) > 0;
-        karmaCache.Add(itemId, bRestricted);
-        return bRestricted;
+        return GetProvider(itemId).GetItem(itemId)?.TradeAvailable ?? false;
     }
+
+    public CashItemTemplate? GetCashItemTemplate(int itemId) => _itemProvider.GetRequiredItem<CashItemTemplate>(itemId);
 
     public int getStateChangeItem(int itemId)
     {
-        if (triggerItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int triggerItem = DataTool.getIntConvert("info/stateChangeItem", getItemData(itemId), 0);
-            triggerItemCache.Add(itemId, triggerItem);
-            return triggerItem;
-        }
+        return _itemProvider.GetRequiredItem<MapBuffItemTemplate>(itemId)?.StateChangeItem ?? 0;
     }
-
-    public int getCreateItem(int itemId)
-    {
-        if (createItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int itemFrom = DataTool.getIntConvert("info/create", getItemData(itemId), 0);
-            createItemCache.Add(itemId, itemFrom);
-            return itemFrom;
-        }
-    }
-
-    public int getMobItem(int itemId)
-    {
-        if (mobItemCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int mobItemCatch = DataTool.getIntConvert("info/mob", getItemData(itemId), 0);
-            mobItemCache.Add(itemId, mobItemCatch);
-            return mobItemCatch;
-        }
-    }
-
-    public int getUseDelay(int itemId)
-    {
-        if (useDelayCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int mobUseDelay = DataTool.getIntConvert("info/useDelay", getItemData(itemId), 0);
-            useDelayCache.Add(itemId, mobUseDelay);
-            return mobUseDelay;
-        }
-    }
-
-    public int getMobHP(int itemId)
-    {
-        if (mobHPCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int mobHPItem = DataTool.getIntConvert("info/mobHP", getItemData(itemId), 0);
-            mobHPCache.Add(itemId, mobHPItem);
-            return mobHPItem;
-        }
-    }
-
-    public int getExpById(int itemId)
-    {
-        if (expCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int exp = DataTool.getIntConvert("spec/exp", getItemData(itemId), 0);
-            expCache.Add(itemId, exp);
-            return exp;
-        }
-    }
-
-    public int getMaxLevelById(int itemId)
-    {
-        if (levelCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            int level = DataTool.getIntConvert("info/maxLevel", getItemData(itemId), 256);
-            levelCache.Add(itemId, level);
-            return level;
-        }
-    }
+    public CatchMobItemTemplate? GetCatchMobItemTemplate(int itemId) => _itemProvider.GetRequiredItem<CatchMobItemTemplate>(itemId);
+    public SolomenItemTemplate? GetSolomenItemTemplate(int itemId) => _itemProvider.GetRequiredItem<SolomenItemTemplate>(itemId);
 
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
-        //Thanks Celino - used some stuffs :)
-        if (rewardCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
+        var data = _itemProvider.GetItem(itemId) as IPackagedItem;
+        if (data == null)
+            return new KeyValuePair<int, List<RewardItem>>();
+
         int totalprob = 0;
         List<RewardItem> rewards = new();
-        foreach (Data child in getItemData(itemId).getChildByPath("reward").getChildren())
+        foreach (var child in data.Reward)
         {
-            RewardItem reward = new RewardItem();
-            reward.itemid = DataTool.getInt("item", child, 0);
-            reward.prob = (byte)DataTool.getInt("prob", child, 0);
-            reward.quantity = (short)DataTool.getInt("count", child, 0);
-            reward.effect = DataTool.getString("Effect", child) ?? "";
-            reward.worldmsg = DataTool.getString("worldMsg", child);
-            reward.period = DataTool.getInt("period", child, -1);
-
+            RewardItem reward = new RewardItem()
+            {
+                effect = child.Effect,
+                itemid = child.ItemID,
+                period = child.Period,
+                prob = (short)child.Prob,
+                quantity = (short)child.Count,
+                worldmsg = child.WorldMessage
+            };
             totalprob += reward.prob;
 
             rewards.Add(reward);
         }
-        KeyValuePair<int, List<RewardItem>> hmm = new(totalprob, rewards);
-        rewardCache.Add(itemId, hmm);
-        return hmm;
+        return new(totalprob, rewards);
     }
 
     public bool isConsumeOnPickup(int itemId)
     {
-        if (consumeOnPickupCache.TryGetValue(itemId, out var value))
-        {
-            return value;
-        }
-        var data = getItemData(itemId);
-        bool consume = DataTool.getIntConvert("spec/consumeOnPickup", data, 0) == 1 || DataTool.getIntConvert("specEx/consumeOnPickup", data, 0) == 1;
-        consumeOnPickupCache.Add(itemId, consume);
-        return consume;
+        var item = _itemProvider.GetRequiredItem<ConsumeItemTemplate>(itemId);
+        if (item == null)
+            return false;
+
+        return item.ConsumeOnPickup || item.ConsumeOnPickupEx;
     }
 
     public bool isTwoHanded(int itemId)
@@ -1745,18 +1125,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isCash(int itemId)
     {
-        int itemType = itemId / 1000000;
-        if (itemType == 5)
-        {
-            return true;
-        }
-        if (itemType != 1)
-        {
-            return false;
-        }
-
-        var eqpStats = getEquipStats(itemId);
-        return eqpStats != null && eqpStats.GetValueOrDefault("cash") == 1;
+        return GetProvider(itemId).GetItem(itemId)?.Cash ?? false;
     }
 
     public bool isUpgradeable(int itemId)
@@ -1826,7 +1195,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         foreach (Item item in items)
         {
             Equip equip = (Equip)item;
-            int reqLevel = getEquipLevelReq(equip.getItemId());
+
+            var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(equip.getItemId())!;
+            int reqLevel = equipTemplate.ReqLevel;
             if (highfivestamp)
             {
                 reqLevel -= 5;
@@ -1835,7 +1206,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                     reqLevel = 0;
                 }
             }
-            var equipState = getEquipStats(equip.getItemId());
             /*
              int reqJob = getEquipStats(equip.getItemId()).get("reqJob");
              if (reqJob != 0) {
@@ -1846,23 +1216,23 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             {
                 continue;
             }
-            else if (equipState?.GetValueOrDefault("reqDEX") > tdex)
+            else if (equipTemplate.ReqDEX > tdex)
             {
                 continue;
             }
-            else if (equipState?.GetValueOrDefault("reqSTR") > tstr)
+            else if (equipTemplate.ReqSTR > tstr)
             {
                 continue;
             }
-            else if (equipState?.GetValueOrDefault("reqLUK") > tluk)
+            else if (equipTemplate.ReqLUK > tluk)
             {
                 continue;
             }
-            else if (equipState?.GetValueOrDefault("reqINT") > tint)
+            else if (equipTemplate.ReqINT > tint)
             {
                 continue;
             }
-            var reqPOP = equipState?.GetValueOrDefault("reqPOP");
+            var reqPOP = equipTemplate.ReqPOP;
             if (reqPOP > 0)
             {
                 if (reqPOP > fame)
@@ -1887,8 +1257,11 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return false;
         }
 
-        var islot = getEquipmentSlot(id);
-        if (!EquipSlot.getFromTextSlot(islot).isAllowed(dst, isCash(id)))
+        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(id);
+        if (equipTemplate == null)
+            return false;
+
+        if (!EquipSlot.getFromTextSlot(equipTemplate.Islot).isAllowed(dst, isCash(id)))
         {
             equip.wear(false);
             var itemName = getInstance().getName(equip.getItemId());
@@ -1907,36 +1280,34 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         bool highfivestamp = chr.Bag[InventoryType.CASH].HasItem(5590000);
 
-        int reqLevel = getEquipLevelReq(equip.getItemId());
+        int reqLevel = equipTemplate.ReqLevel;
         if (highfivestamp)
         {
             reqLevel -= 5;
         }
         int i = 0; //lol xD
                    //Removed job check. Shouldn't really be needed.
-
-        var equipState = getEquipStats(equip.getItemId());
         if (reqLevel > chr.getLevel())
         {
             i++;
         }
-        else if (equipState?.GetValueOrDefault("reqDEX") > chr.getTotalDex())
+        else if (equipTemplate.ReqDEX > chr.getTotalDex())
         {
             i++;
         }
-        else if (equipState?.GetValueOrDefault("reqSTR") > chr.getTotalStr())
+        else if (equipTemplate.ReqSTR > chr.getTotalStr())
         {
             i++;
         }
-        else if (equipState?.GetValueOrDefault("reqLUK") > chr.getTotalLuk())
+        else if (equipTemplate.ReqLUK > chr.getTotalLuk())
         {
             i++;
         }
-        else if (equipState?.GetValueOrDefault("reqINT") > chr.getTotalInt())
+        else if (equipTemplate.ReqINT > chr.getTotalInt())
         {
             i++;
         }
-        var reqPOP = equipState?.GetValueOrDefault("reqPOP");
+        var reqPOP = equipTemplate.ReqPOP;
         if (reqPOP > 0)
         {
             if (reqPOP > chr.getFame())
@@ -1954,139 +1325,58 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return true;
     }
 
-
-    private Data? getEquipLevelInfo(int itemId)
+    public bool IsEquipElemental(int itemId)
     {
-        if (equipLevelInfoCache.TryGetValue(itemId, out var value) && value != null)
-            return value;
-
-        var iData = getItemData(itemId);
-        if (iData != null)
-        {
-            var data = iData.getChildByPath("info/level");
-            if (data != null)
-            {
-                value = data.getChildByPath("info");
-            }
-        }
-
-        equipLevelInfoCache.AddOrUpdate(itemId, value);
-        return value;
+        return _equipProvider.GetRequiredItem<EquipTemplate>(itemId)?.IsElemental ?? false;
     }
 
     public int getEquipLevel(int itemId, bool getMaxLevel)
     {
-        if (!equipMaxLevelCache.TryGetValue(itemId, out var eqLevel))
-        {
-            eqLevel = 1;    // greater than 1 means that it was supposed to levelup on GMS
+        var equipTemplate = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        if (equipTemplate == null)
+            return 1;
 
-            var data = getEquipLevelInfo(itemId);
-            if (data != null)
-            {
-                if (getMaxLevel)
-                {
-                    int curLevel = 1;
-
-                    while (true)
-                    {
-                        var data2 = data.getChildByPath(curLevel.ToString());
-                        if (data2 == null || data2.getChildren().Count <= 1)
-                        {
-                            eqLevel = curLevel;
-                            equipMaxLevelCache.Add(itemId, eqLevel);
-                            break;
-                        }
-
-                        curLevel++;
-                    }
-                }
-                else
-                {
-                    var data2 = data.getChildByPath("1");
-                    if (data2 != null && data2.getChildren().Count > 1)
-                    {
-                        eqLevel = 2;
-                    }
-                }
-            }
-        }
-
-        return eqLevel;
+        return equipTemplate.LevelData.Max(x => (int?)x.Level) ?? 1;
     }
 
     public List<KeyValuePair<string, int>> getItemLevelupStats(int itemId, int level)
     {
         List<KeyValuePair<string, int>> list = new();
-        var data = getEquipLevelInfo(itemId);
-        if (data != null)
+        var template = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        if (template == null)
+            return new List<KeyValuePair<string, int>>();
+
+        var levelData = template.LevelData.FirstOrDefault(x => x.Level == level);
+        if (levelData != null)
         {
-            var data2 = data.getChildByPath(level.ToString());
-            if (data2 != null)
-            {
-                foreach (Data da in data2.getChildren())
-                {
-                    if (Randomizer.nextDouble() < 0.9)
-                    {
-                        var dataName = da.getName() ?? "";
-                        if (dataName.StartsWith("incDEXMin"))
-                        {
-                            list.Add(new("incDEX", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incDEXMax")))));
-                        }
-                        else if (dataName.StartsWith("incSTRMin"))
-                        {
-                            list.Add(new("incSTR", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incSTRMax")))));
-                        }
-                        else if (dataName.StartsWith("incINTMin"))
-                        {
-                            list.Add(new("incINT", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incINTMax")))));
-                        }
-                        else if (dataName.StartsWith("incLUKMin"))
-                        {
-                            list.Add(new("incLUK", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incLUKMax")))));
-                        }
-                        else if (dataName.StartsWith("incMHPMin"))
-                        {
-                            list.Add(new("incMHP", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMHPMax")))));
-                        }
-                        else if (dataName.StartsWith("incMMPMin"))
-                        {
-                            list.Add(new("incMMP", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMMPMax")))));
-                        }
-                        else if (dataName.StartsWith("incPADMin"))
-                        {
-                            list.Add(new("incPAD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incPADMax")))));
-                        }
-                        else if (dataName.StartsWith("incMADMin"))
-                        {
-                            list.Add(new("incMAD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMADMax")))));
-                        }
-                        else if (dataName.StartsWith("incPDDMin"))
-                        {
-                            list.Add(new("incPDD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incPDDMax")))));
-                        }
-                        else if (dataName.StartsWith("incMDDMin"))
-                        {
-                            list.Add(new("incMDD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMDDMax")))));
-                        }
-                        else if (dataName.StartsWith("incACCMin"))
-                        {
-                            list.Add(new("incACC", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incACCMax")))));
-                        }
-                        else if (dataName.StartsWith("incEVAMin"))
-                        {
-                            list.Add(new("incEVA", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incEVAMax")))));
-                        }
-                        else if (dataName.StartsWith("incSpeedMin"))
-                        {
-                            list.Add(new("incSpeed", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incSpeedMax")))));
-                        }
-                        else if (dataName.StartsWith("incJumpMin"))
-                        {
-                            list.Add(new("incJump", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incJumpMax")))));
-                        }
-                    }
-                }
-            }
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incDEX", Randomizer.rand(levelData.IncDEXMin, levelData.IncDEXMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incSTR", Randomizer.rand(levelData.IncSTRMin, levelData.IncSTRMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incINT", Randomizer.rand(levelData.IncINTMin, levelData.IncINTMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incLUK", Randomizer.rand(levelData.IncLUKMin, levelData.IncLUKMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incMHP", Randomizer.rand(levelData.IncMHPMin, levelData.IncMHPMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incMMP", Randomizer.rand(levelData.IncMMPMin, levelData.IncMMPMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incPAD", Randomizer.rand(levelData.IncPADMin, levelData.IncPADMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incMAD", Randomizer.rand(levelData.IncMADMin, levelData.IncMADMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incPDD", Randomizer.rand(levelData.IncPDDMin, levelData.IncPDDMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incMDD", Randomizer.rand(levelData.IncMDDMin, levelData.IncMDDMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incACC", Randomizer.rand(levelData.IncACCMin, levelData.IncACCMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incEVA", Randomizer.rand(levelData.IncEVAMin, levelData.IncEVAMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incSpeed", Randomizer.rand(levelData.IncSpeedMin, levelData.IncSpeedMax)));
+            if (Randomizer.nextDouble() < 0.9)
+                list.Add(new("incJump", Randomizer.rand(levelData.IncJumpMin, levelData.IncJumpMax)));
         }
 
         return list;
@@ -2094,15 +1384,21 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     private bool canUseSkillBook(IPlayer player, int skillBookId)
     {
-        var skilldata = getSkillStats(skillBookId, player.getJob().getId());
-        if (skilldata == null || skilldata.GetValueOrDefault("skillid") == 0)
+        var template = GetMasteryItemTemplate(skillBookId);
+        if (template == null)
         {
             return false;
         }
 
-        var skill2 = SkillFactory.getSkill(skilldata.GetValueOrDefault("skillid"));
-        return (player.getSkillLevel(skill2) >= skilldata.GetValueOrDefault("reqSkillLevel") || skilldata.GetValueOrDefault("reqSkillLevel") == 0)
-            && player.getMasterLevel(skill2) < skilldata.GetValueOrDefault("masterLevel");
+        var targetSkillId = template.Skills.FirstOrDefault(x => x / 10000 == player.getJob().getId());
+        if (targetSkillId == 0)
+        {
+            return false;
+        }
+
+        var skill2 = SkillFactory.getSkill(targetSkillId);
+        return (player.getSkillLevel(skill2) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
+            && player.getMasterLevel(skill2) < template.MasterLevel;
     }
 
     public List<int> usableMasteryBooks(IPlayer player)
@@ -2135,38 +1431,17 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public QuestConsItem? getQuestConsumablesInfo(int itemId)
     {
-        if (questItemConsCache.TryGetValue(itemId, out var value))
+        var template = _itemProvider.GetRequiredItem<IncubatorItemTemplate>(itemId);
+        if (template == null)
+            return null;
+
+        return new QuestConsItem
         {
-            return value;
-        }
-        var data = getItemData(itemId);
-        QuestConsItem? qcItem = null;
-
-        var infoData = data?.getChildByPath("info");
-        if (infoData?.getChildByPath("uiData") != null)
-        {
-            qcItem = new QuestConsItem();
-            qcItem.exp = DataTool.getInt("exp", infoData);
-            qcItem.grade = DataTool.getInt("grade", infoData);
-            qcItem.questid = DataTool.getInt("questId", infoData);
-            qcItem.items = new(2);
-
-            Dictionary<int, int> cItems = qcItem.items;
-            var ciData = infoData.getChildByPath("consumeItem");
-            if (ciData != null)
-            {
-                foreach (Data ciItem in ciData.getChildren())
-                {
-                    int itemid = DataTool.getInt("0", ciItem);
-                    int qty = DataTool.getInt("1", ciItem);
-
-                    cItems.AddOrUpdate(itemid, qty);
-                }
-            }
-        }
-
-        questItemConsCache.AddOrUpdate(itemId, qcItem);
-        return qcItem;
+            exp = template.Exp,
+            grade = template.Grade,
+            items = template.ConsumeItems.ToDictionary(x => x.ItemId, x => x.Value),
+            questid = template.QuestID
+        };
     }
 
     public class ScriptedItem
