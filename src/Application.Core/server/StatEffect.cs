@@ -54,7 +54,7 @@ public class StatEffect
     private short hp, mp;
     private double hpR, mpR;
     private short mhpRRate, mmpRRate, mobSkill, mobSkillLevel;
-    private byte mhpR, mmpR;
+    private sbyte mhpR, mmpR;
     private short mpCon, hpCon;
     private int duration = -1, target, barrier;
     public int ExpBuff { get; set; }
@@ -215,19 +215,19 @@ public class StatEffect
             cp = potion.CP;
             nuffSkill = potion.CPSkill;
 
-            if (potion.Cure_Curse)
-                cureDebuffs.Add(Disease.CURSE);
-            if (potion.Cure_Darkness)
-                cureDebuffs.Add(Disease.DARKNESS);
             if (potion.Cure_Poison)
                 cureDebuffs.Add(Disease.POISON);
             if (potion.Cure_Seal)
                 cureDebuffs.Add(Disease.SEAL);
+            if (potion.Cure_Darkness)
+                cureDebuffs.Add(Disease.DARKNESS);
             if (potion.Cure_Weakness)
             {
                 cureDebuffs.Add(Disease.WEAKEN);
                 cureDebuffs.Add(Disease.SLOW);
             }
+            if (potion.Cure_Curse)
+                cureDebuffs.Add(Disease.CURSE);
 
             fatigue = potion.IncFatigue;
 
@@ -256,9 +256,9 @@ public class StatEffect
             }
             else if (ItemId.isDojoBuff(sourceid) || isHpMpRecovery(sourceid))
             {
-                mhpR = (byte)potion.MHPR;
+                mhpR = (sbyte)potion.MHPR;
                 mhpRRate = (short)(potion.MHPRate * 100);
-                mmpR = (byte)potion.MMPR;
+                mmpR = (sbyte)potion.MMPR;
                 mmpRRate = (short)(potion.MMPRate * 100);
             }
             else if (ItemId.isExpIncrease(sourceid))
@@ -326,12 +326,12 @@ public class StatEffect
                 cardStats = new CardItemupStats(itemupCode, prob, areas, inParty);
 
                 // TODO: 这4个抗性加成功能似乎没有实现
-                if (!string.IsNullOrEmpty(mobCard.RespectPimmune))
+                if (mobCard.RespectPimmune)
                 {
                     addBuffStatPairToListIfNotZero(statups, BuffStat.RESPECT_PIMMUNE, 4);
                 }
 
-                if (!string.IsNullOrEmpty(mobCard.RespectMimmune))
+                if (mobCard.RespectMimmune)
                 {
                     addBuffStatPairToListIfNotZero(statups, BuffStat.RESPECT_MIMMUNE, 4);
                 }
@@ -547,9 +547,9 @@ public class StatEffect
                 }
                 else if (ItemId.isDojoBuff(sourceid) || isHpMpRecovery(sourceid))
                 {
-                    mhpR = (byte)DataTool.getInt("mhpR", source, 0);
+                    mhpR = (sbyte)DataTool.getInt("mhpR", source, 0);
                     mhpRRate = (short)(DataTool.getInt("mhpRRate", source, 0) * 100);
-                    mmpR = (byte)DataTool.getInt("mmpR", source, 0);
+                    mmpR = (sbyte)DataTool.getInt("mmpR", source, 0);
                     mmpRRate = (short)(DataTool.getInt("mmpRRate", source, 0) * 100);
 
                     addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
@@ -2387,12 +2387,12 @@ public class StatEffect
         return mpR;
     }
 
-    public byte getHpR()
+    public sbyte getHpR()
     {
         return mhpR;
     }
 
-    public byte getMpR()
+    public sbyte getMpR()
     {
         return mmpR;
     }

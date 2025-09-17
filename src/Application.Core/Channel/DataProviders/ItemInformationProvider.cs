@@ -239,12 +239,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public int getWholePrice(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.Price ?? 1;
+        return GetProvider(itemId).GetItem(itemId)?.Price ?? -1;
     }
 
     public double getUnitPrice(int itemId)
     {
-        return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 1;
+        return getRoundedUnitPrice(GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 0, 5);
     }
 
     public int getPrice(int itemId, int quantity)
@@ -716,7 +716,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                         case ItemId.CLEAN_SLATE_20:
                             if (canUseCleanSlate(nEquip))
                             {
-                                nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() + 1));
+                                nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
                             }
                             break;
                         case ItemId.CHAOS_SCROll_60:
@@ -733,7 +733,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                     {
                         if (!assertGM && !ItemConstants.isModifierScroll(scrollId))
                         {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                            nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
+                            nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                         }
                         nEquip.setLevel((byte)(nEquip.getLevel() + 1));
                     }
@@ -742,7 +742,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                 {
                     if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId))
                     {
-                        nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
+                        nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                     }
                     if (Randomizer.nextInt(100) < scrollTemplate.CursedRate)
                     {
@@ -1073,11 +1073,19 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public CatchMobItemTemplate? GetCatchMobItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<CatchMobItemTemplate>(itemId);
     public SolomenItemTemplate? GetSolomenItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<SolomenItemTemplate>(itemId);
 
+    public RewardData[] GetItemRewardData(int itemId)
+    {
+        var data = GetProvider(itemId).GetItem(itemId) as IPackagedItem;
+        if (data == null)
+            return [];
+
+        return data.Reward;
+    }
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
         var data = GetProvider(itemId).GetItem(itemId) as IPackagedItem;
         if (data == null)
-            return new KeyValuePair<int, List<RewardItem>>();
+            return new KeyValuePair<int, List<RewardItem>>(0, []);
 
         int totalprob = 0;
         List<RewardItem> rewards = new();
@@ -1125,6 +1133,16 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isCash(int itemId)
     {
+        int itemType = itemId / 1000000;
+        if (itemType == 5)
+        {
+            return true;
+        }
+        if (itemType != 1)
+        {
+            return false;
+        }
+
         return GetProvider(itemId).GetItem(itemId)?.Cash ?? false;
     }
 
@@ -1336,7 +1354,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (equipTemplate == null)
             return 1;
 
-        return equipTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 1;
+        return (equipTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1;
     }
 
     public List<KeyValuePair<string, int>> getItemLevelupStats(int itemId, int level)
@@ -1432,7 +1450,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public QuestConsItem? getQuestConsumablesInfo(int itemId)
     {
         var template = GetProvider(itemId).GetRequiredItem<IncubatorItemTemplate>(itemId);
-        if (template == null)
+        if (template == null || !template.HasUIData)
             return null;
 
         return new QuestConsItem

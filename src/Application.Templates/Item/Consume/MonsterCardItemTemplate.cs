@@ -19,9 +19,9 @@ namespace Application.Templates.Item.Consume
         [WZPath("spec/itemRange")]
         public int ItemRange { get; set; } = 1;
         [WZPath("spec/respectPimmune")]
-        public string? RespectPimmune { get; set; }
+        public bool RespectPimmune { get; set; }
         [WZPath("spec/respectMimmune")]
-        public string? RespectMimmune { get; set; }
+        public bool RespectMimmune { get; set; }
         [WZPath("spec/defenseAtt")]
         public string? DefenseAtt { get; set; }
         [WZPath("spec/defenseState")]

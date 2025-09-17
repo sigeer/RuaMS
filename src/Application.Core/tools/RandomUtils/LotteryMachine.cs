@@ -35,4 +35,37 @@ namespace Application.Core.tools.RandomUtils
         public TKey Key { get; set; }
         public int Chance { get; set; }
     }
+
+    public class LotteryMachine<TSource, TKey>
+    {
+        private readonly List<TSource> _items;
+        private readonly Func<TSource, int> _chanceSelector;
+        private readonly int _sum;
+
+        public LotteryMachine(
+            IEnumerable<TSource> items,
+            Func<TSource, int> chanceSelector)
+        {
+            _items = items.ToList();
+            _chanceSelector = chanceSelector ?? throw new ArgumentNullException(nameof(chanceSelector));
+
+            _sum = _items.Sum(_chanceSelector);
+            if (_sum <= 0)
+                throw new ArgumentException("总概率必须大于 0", nameof(items));
+        }
+
+        public TSource GetRandomItem()
+        {
+            var value = Randomizer.nextInt(_sum);
+            foreach (var item in _items)
+            {
+                var chance = _chanceSelector(item);
+                if (value < chance)
+                    return item;
+                value -= chance;
+            }
+            return _items.Last();
+        }
+    }
+
 }

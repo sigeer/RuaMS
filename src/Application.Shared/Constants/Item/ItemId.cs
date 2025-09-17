@@ -168,10 +168,19 @@ public class ItemId
     public const int SPIKES_SCROLL = 2040727;
     public const int VEGAS_SPELL_10 = 5610000;
     public const int VEGAS_SPELL_60 = 5610001;
+    /// <summary>
+    /// 混沌卷轴
+    /// </summary>
     public const int CHAOS_SCROll_60 = 2049100;
     public const int LIAR_TREE_SAP = 2049101;
     public const int MAPLE_SYRUP = 2049102;
+    /// <summary>
+    /// 祝福卷轴
+    /// </summary>
     public const int WHITE_SCROLL = 2340000;
+    /// <summary>
+    /// 白医卷轴
+    /// </summary>
     public const int CLEAN_SLATE_1 = 2049000;
     public const int CLEAN_SLATE_3 = 2049001;
     public const int CLEAN_SLATE_5 = 2049002;

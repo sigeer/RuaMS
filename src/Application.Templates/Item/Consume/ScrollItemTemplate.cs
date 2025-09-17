@@ -78,5 +78,16 @@ namespace Application.Templates.Item.Consume
         /// </summary>
         [WZPath("req/-")]
         public int[] Req { get; set; }
+        /// <summary>
+        /// 是否恢复可强化次数（白医卷轴）
+        /// </summary>
+        [WZPath("info/recover")]
+        public bool Recover { get; set; }
+        /// <summary>
+        /// 是否随机强化属性（混沌卷轴）
+        /// </summary>
+        [WZPath("info/randstat")]
+        public bool RandStat { get; set; }
+
     }
 }

@@ -27,7 +27,7 @@ namespace Application.Templates
         public bool Only { get; set; }
 
         [WZPath("info/price")]
-        public int Price { get; set; }
+        public int Price { get; set; } = -1;
 
 
         [WZPath("info/expireOnLogout")]

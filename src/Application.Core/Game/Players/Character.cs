@@ -227,7 +227,7 @@ public partial class Player
     private bool useCS;  //chaos scroll upon crafting item.
     private long npcCd;
 
-    private byte extraHpRec = 0, extraMpRec = 0;
+    private sbyte extraHpRec = 0, extraMpRec = 0;
     private short extraRecInterval;
     private int targetHpBarHash = 0;
     private long targetHpBarTime = 0;
@@ -1433,7 +1433,7 @@ public partial class Player
         }
     }
 
-    private void startExtraTask(byte healHP, byte healMP, short healInterval)
+    private void startExtraTask(sbyte healHP, sbyte healMP, short healInterval)
     {
         chLock.EnterReadLock();
         try
@@ -1446,7 +1446,7 @@ public partial class Player
         }
     }
 
-    private void startExtraTaskInternal(byte healHP, byte healMP, short healInterval)
+    private void startExtraTaskInternal(sbyte healHP, sbyte healMP, short healInterval)
     {
         extraRecInterval = healInterval;
 

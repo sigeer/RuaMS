@@ -1329,7 +1329,7 @@ namespace Application.Core.Game.Players
             else if (effect.isRecovery())
             {
                 int healInterval = (YamlConfig.config.server.USE_ULTRA_RECOVERY) ? 2000 : 5000;
-                byte heal = (byte)effect.getX();
+                var heal = (sbyte)effect.getX();
 
                 chLock.EnterReadLock();
                 try

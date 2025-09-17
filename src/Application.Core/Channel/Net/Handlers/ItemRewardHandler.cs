@@ -38,8 +38,8 @@ public class ItemRewardHandler : ChannelHandlerBase
 {
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        byte slot = (byte)p.readShort();
-        int itemId = p.readInt(); // will load from xml I don't care.
+        var slot = p.readShort();
+        var itemId = p.readInt(); // will load from xml I don't care.
 
         var it = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);   // null check here thanks to Thora
         if (it == null || it.getItemId() != itemId || c.OnlinedCharacter.getInventory(InventoryType.USE).countById(itemId) < 1)

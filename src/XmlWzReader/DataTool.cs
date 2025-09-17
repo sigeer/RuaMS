@@ -72,8 +72,8 @@ public class DataTool
         }
         else if (data.DataType == DataType.STRING)
         {
-            if (int.TryParse(getString(data), out var d))
-                return d;
+            if (double.TryParse(getString(data), out var d))
+                return (int)d;
 
             return def;
         }

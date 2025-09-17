@@ -945,7 +945,7 @@ public class OldItemInformationProvider
                         case ItemId.CLEAN_SLATE_20:
                             if (canUseCleanSlate(nEquip))
                             {
-                                nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() + 1));
+                                nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
                             }
                             break;
                         case ItemId.CHAOS_SCROll_60:
@@ -962,7 +962,7 @@ public class OldItemInformationProvider
                     {
                         if (!assertGM && !ItemConstants.isModifierScroll(scrollId))
                         {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                            nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
+                            nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                         }
                         nEquip.setLevel((byte)(nEquip.getLevel() + 1));
                     }
@@ -971,7 +971,7 @@ public class OldItemInformationProvider
                 {
                     if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId))
                     {
-                        nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
+                        nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                     }
                     if (Randomizer.nextInt(100) < stats.GetValueOrDefault("cursed"))
                     {
@@ -1106,7 +1106,7 @@ public class OldItemInformationProvider
                 }
                 else if (stat.Key.Equals("tuc"))
                 {
-                    nEquip.setUpgradeSlots((byte)val);
+                    nEquip.setUpgradeSlots(val);
                 }
                 else if (isUntradeableRestricted(equipId))
                 {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
@@ -1222,8 +1222,7 @@ public class OldItemInformationProvider
         int[][] mobs2spawn = new int[theInt][];
         for (int x = 0; x < theInt; x++)
         {
-            mobs2spawn[x][0] = DataTool.getIntConvert("mob/" + x + "/id", data);
-            mobs2spawn[x][1] = DataTool.getIntConvert("mob/" + x + "/prob", data);
+            mobs2spawn[x] = new int[2] { DataTool.getIntConvert("mob/" + x + "/id", data), DataTool.getIntConvert("mob/" + x + "/prob", data) };
         }
         return mobs2spawn;
     }
@@ -1631,13 +1630,17 @@ public class OldItemInformationProvider
         {
             return value;
         }
+
+        var rewardData = getItemData(itemId)?.getChildByPath("reward");
+        if (rewardData == null)
+            return new KeyValuePair<int, List<RewardItem>>(0, []);
         int totalprob = 0;
         List<RewardItem> rewards = new();
-        foreach (Data child in getItemData(itemId).getChildByPath("reward").getChildren())
+        foreach (Data child in rewardData.getChildren())
         {
             RewardItem reward = new RewardItem();
             reward.itemid = DataTool.getInt("item", child, 0);
-            reward.prob = (byte)DataTool.getInt("prob", child, 0);
+            reward.prob = (short)DataTool.getInt("prob", child, 0);
             reward.quantity = (short)DataTool.getInt("count", child, 0);
             reward.effect = DataTool.getString("Effect", child) ?? "";
             reward.worldmsg = DataTool.getString("worldMsg", child);
@@ -2015,10 +2018,14 @@ public class OldItemInformationProvider
             {
                 foreach (Data ciItem in ciData.getChildren())
                 {
-                    int itemid = DataTool.getInt("0", ciItem);
-                    int qty = DataTool.getInt("1", ciItem);
+                    if (int.TryParse(ciItem.getName(), out var idx))
+                    {
+                        int itemid = DataTool.getInt("0", ciItem);
+                        int qty = DataTool.getInt("1", ciItem);
 
-                    cItems.AddOrUpdate(itemid, qty);
+                        cItems.AddOrUpdate(itemid, qty);
+                    }
+
                 }
             }
         }

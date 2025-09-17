@@ -600,7 +600,7 @@ namespace Application.Core.Game.Players
                             {
                                 if (!(isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
                                 {
-                                    it.setUpgradeSlots((byte)(it.getUpgradeSlots() + 1));
+                                    it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                                 }
                                 item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
                             }

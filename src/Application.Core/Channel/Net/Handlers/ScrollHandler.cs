@@ -68,8 +68,8 @@ public class ScrollHandler : ChannelHandlerBase
                     return;
                 }
 
-                byte oldLevel = toScroll.getLevel();
-                byte oldSlots = toScroll.getUpgradeSlots();
+                var oldLevel = toScroll.getLevel();
+                var oldSlots = toScroll.getUpgradeSlots();
                 Inventory useInventory = chr.getInventory(InventoryType.USE);
                 Item? scroll = useInventory.getItem(scrollSlot);
 

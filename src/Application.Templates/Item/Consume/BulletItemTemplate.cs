@@ -10,5 +10,7 @@ namespace Application.Templates.Item.Consume
         public int IncPAD { get; set; }
         [WZPath("info/reqLevel")]
         public int ReqLevel { get; set; }
+        [WZPath("info/unitPrice")]
+        public double? UnitPrice { get; set; } = 0;
     }
 }
