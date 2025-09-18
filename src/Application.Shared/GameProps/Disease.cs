@@ -8,16 +8,34 @@ namespace Application.Shared.GameProps
     {
         // 定义静态的常量实例
         public static readonly Disease NULL = new(0x0);
+        /// <summary>
+        /// 减速
+        /// </summary>
         public static readonly Disease SLOW = new(0x1, MobSkillType.SLOW);
         public static readonly Disease SEDUCE = new(0x80, MobSkillType.SEDUCE);
         public static readonly Disease FISHABLE = new(0x100);
         public static readonly Disease ZOMBIFY = new(0x4000);
         public static readonly Disease CONFUSE = new(0x80000, MobSkillType.REVERSE_INPUT);
         public static readonly Disease STUN = new(0x2000000000000L, MobSkillType.STUN);
+        /// <summary>
+        /// 中毒
+        /// </summary>
         public static readonly Disease POISON = new(0x4000000000000L, MobSkillType.POISON);
+        /// <summary>
+        /// 封印
+        /// </summary>
         public static readonly Disease SEAL = new(0x8000000000000L, MobSkillType.SEAL);
+        /// <summary>
+        /// 暗黑
+        /// </summary>
         public static readonly Disease DARKNESS = new(0x10000000000000L, MobSkillType.DARKNESS);
+        /// <summary>
+        /// 虚弱
+        /// </summary>
         public static readonly Disease WEAKEN = new(0x4000000000000000L, MobSkillType.WEAKNESS);
+        /// <summary>
+        /// 诅咒
+        /// </summary>
         public static readonly Disease CURSE = new(0x8000000000000000L, MobSkillType.CURSE);
 
         private ulong i;

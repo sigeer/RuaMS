@@ -33,14 +33,14 @@ namespace Application.Core.Game.Players
         {
             return getQuests().Where(x => x.getStatus() == QuestStatus.Status.COMPLETED).ToList();
         }
-        public byte getQuestStatus(int quest)
+        public sbyte getQuestStatus(int quest)
         {
             lock (quests)
             {
                 QuestStatus? mqs = quests.GetValueOrDefault((short)quest);
                 if (mqs != null)
                 {
-                    return (byte)mqs.getStatus();
+                    return (sbyte)mqs.getStatus();
                 }
                 else
                 {

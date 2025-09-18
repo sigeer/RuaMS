@@ -93,7 +93,7 @@ public class QuestScriptManager : AbstractScriptManager
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
-                engine.CallFunction("start", (byte)1, (byte)0, 0);
+                engine.CallFunction("start", 1, 0, 0);
             }
         }
         catch (Exception t)
@@ -161,7 +161,7 @@ public class QuestScriptManager : AbstractScriptManager
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
-                engine.CallFunction("end", (byte)1, (byte)0, 0);
+                engine.CallFunction("end", 1, 0, 0);
             }
         }
         catch (Exception t)

@@ -399,7 +399,7 @@ namespace Application.Core.Game.Players
         QuestStatus? getQuestNAdd(Quest quest);
         QuestStatus? getQuestNoAdd(Quest quest);
         QuestStatus? getQuestRemove(Quest quest);
-        byte getQuestStatus(int quest);
+        sbyte getQuestStatus(int quest);
         int getRank();
         int getRankMove();
         float getRawDropRate();

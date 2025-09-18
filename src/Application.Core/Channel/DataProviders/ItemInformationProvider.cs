@@ -700,34 +700,30 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                 if (assertGM || rollSuccessChance(prop))
                 {
                     short flag = nEquip.getFlag();
-                    switch (scrollId)
+                    if (scrollTemplate.PreventSlip)
                     {
-                        case ItemId.SPIKES_SCROLL:
-                            flag |= ItemConstants.SPIKES;
-                            nEquip.setFlag((byte)flag);
-                            break;
-                        case ItemId.COLD_PROTECTION_SCROLl:
-                            flag |= ItemConstants.COLD;
-                            nEquip.setFlag((byte)flag);
-                            break;
-                        case ItemId.CLEAN_SLATE_1:
-                        case ItemId.CLEAN_SLATE_3:
-                        case ItemId.CLEAN_SLATE_5:
-                        case ItemId.CLEAN_SLATE_20:
-                            if (canUseCleanSlate(nEquip))
-                            {
-                                nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
-                            }
-                            break;
-                        case ItemId.CHAOS_SCROll_60:
-                        case ItemId.LIAR_TREE_SAP:
-                        case ItemId.MAPLE_SYRUP:
-                            scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
-                            break;
-
-                        default:
-                            improveEquipStats(nEquip, scrollTemplate);
-                            break;
+                        flag |= ItemConstants.SPIKES;
+                        nEquip.setFlag((byte)flag);
+                    }
+                    if (scrollTemplate.PreventSlip)
+                    {
+                        flag |= ItemConstants.COLD;
+                        nEquip.setFlag((byte)flag);
+                    }
+                    if (scrollTemplate.Recover)
+                    {
+                        if (canUseCleanSlate(nEquip))
+                        {
+                            nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
+                        }
+                    }
+                    if (scrollTemplate.RandStat)
+                    {
+                        scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
+                    }
+                    else
+                    {
+                        improveEquipStats(nEquip, scrollTemplate);
                     }
                     if (!ItemConstants.isCleanSlate(scrollId))
                     {
