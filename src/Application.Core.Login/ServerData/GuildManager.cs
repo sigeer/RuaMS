@@ -76,7 +76,7 @@ namespace Application.Core.Login.ServerData
             if (header == null || header.Character.GuildId > 0)
                 return null;
 
-            var guildModel = new GuildModel() { GuildId = Interlocked.Increment(ref _currentGuildId), Name = guildName, Leader = leaderId };
+            var guildModel = new GuildModel() { GuildId = Interlocked.Increment(ref _currentGuildId), Name = guildName, Leader = leaderId, Signature = _server.getCurrentTime() };
 
             _idGuildDataSource[guildModel.GuildId] = guildModel;
             _nameGuildDataSource[guildModel.Name] = guildModel;

@@ -13,7 +13,8 @@ namespace Application.Utility.Tasks
         ScheduledFuture register(Action r, long repeatTime, long? delay = null);
         ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null);
 
-
+        Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, long repeatTime, long? delay = null);
+        Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null);
         ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay);
         ScheduledFuture schedule(Action r, TimeSpan delay);
         ScheduledFuture schedule(Action r, long delay);

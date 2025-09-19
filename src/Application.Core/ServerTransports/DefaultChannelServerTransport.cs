@@ -26,6 +26,7 @@ using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Application.Protos;
 using LifeProto;
+using ServerProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -48,7 +49,8 @@ namespace Application.Core.ServerTransports
         {
             _config = options.Value;
             var channel = GrpcChannel.ForAddress(_config.MasterServerGrpcAddress);
-            _systemClient = new ServiceProto.SystemService.SystemServiceClient(channel);
+            var callInvoker = channel.Intercept(new GlobalHeaderInterceptor("x-server-name", _config.ServerName));
+            _systemClient = new ServiceProto.SystemService.SystemServiceClient(callInvoker);
             _gameClient = new ServiceProto.GameService.GameServiceClient(channel);
             _syncClient = new ServiceProto.SyncService.SyncServiceClient(channel);
             _guildClient = new ServiceProto.GuildService.GuildServiceClient(channel);
@@ -740,6 +742,11 @@ namespace Application.Core.ServerTransports
         public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
         {
             return _gameClient.UseCDK(useCdkRequest);
+        }
+
+        public void HealthCheck(MonitorData data)
+        {
+            _systemClient.HealthCheck(data);
         }
     }
 }

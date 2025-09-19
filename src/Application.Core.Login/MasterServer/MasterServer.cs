@@ -41,7 +41,7 @@ namespace Application.Core.Login
         /// <summary>
         /// 频道服务器，Key：频道服务器名
         /// </summary>
-        public Dictionary<string, ChannelServerWrapper> ChannelServerList { get; }
+        public Dictionary<string, ChannelServerNode> ChannelServerList { get; }
         /// <summary>
         /// 频道（一个频道服务器上可能运行多个频道）
         /// </summary>
@@ -357,7 +357,7 @@ namespace Application.Core.Login
         }
 
 
-        public int AddChannel(ChannelServerWrapper channel)
+        public int AddChannel(ChannelServerNode channel)
         {
             if (ChannelServerList.TryAdd(channel.ServerName, channel))
             {
@@ -395,9 +395,9 @@ namespace Application.Core.Login
         /// <param name="dataList">玩家id及其所在频道</param>
         /// <param name="exceptServer"></param>
         /// <returns>服务器: 服务器上的玩家</returns>
-        public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
+        public Dictionary<ChannelServerNode, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
         {
-            var result = new Dictionary<ChannelServerWrapper, List<int>>();
+            var result = new Dictionary<ChannelServerNode, List<int>>();
 
             foreach (var player in dataList)
             {
@@ -418,9 +418,9 @@ namespace Application.Core.Login
             return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
 
-        public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<int> cidList)
+        public Dictionary<ChannelServerNode, int[]> GroupPlayer(IEnumerable<int> cidList)
         {
-            var result = new Dictionary<ChannelServerWrapper, List<int>>();
+            var result = new Dictionary<ChannelServerNode, List<int>>();
 
             foreach (var cid in cidList)
             {
@@ -442,7 +442,7 @@ namespace Application.Core.Login
             return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
 
-        public ChannelServerWrapper GetChannelServer(int channelId)
+        public ChannelServerNode GetChannelServer(int channelId)
         {
             return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName)!;
         }

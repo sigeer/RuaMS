@@ -65,6 +65,31 @@ public class TaskTimerManager : ITimerManager
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
     public ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
 
+    public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, long repeatTime, long? delay = null) =>
+        await RegisterAsync(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
+
+    public Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
+    {
+        var ctx = new TimerTaskStatus();
+        _ = Task.Run(async () =>
+        {
+            if (delay != null)
+                await Task.Delay(delay.Value, ctx.LinkedCts.Token);
+
+            while (!ctx.GracefulCts.IsCancellationRequested)
+            {
+                await r.RunAsync();
+                await Task.Delay(repeatTime, ctx.LinkedCts.Token);
+            }
+        }, ctx.ImmediateCts.Token)
+                        .ContinueWith(t =>
+                        {
+                            if (TaskScheduler.TryRemove(r.Name, out var p))
+                                Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
+                        });
+        return Task.FromResult(TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx));
+    }
+
     public ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay)
     {
         var ctx = new TimerTaskStatus();
