@@ -63,6 +63,12 @@ namespace Application.Templates.XmlWzReader.Provider
             return LoadConsume(_itemFiles.FirstOrDefault(x => x.EndsWith("0238.img.xml"))!).OfType<MonsterCardItemTemplate>().ToList();
         }
 
+        public List<MasteryItemTemplate> GetAllSkillBook()
+        {
+            return LoadConsume(_itemFiles.FirstOrDefault(x => x.EndsWith("0228.img.xml") || x.EndsWith("0229.img.xml"))!).OfType<MasteryItemTemplate>().ToList();
+        }
+
+
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -205,6 +211,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 default:
                     {
                         var template = new ConsumeItemTemplate(itemId);
+                        ConsumeItemTemplateGenerated.ApplyProperties(template, itemNode);
                         return template;
                     }
             }

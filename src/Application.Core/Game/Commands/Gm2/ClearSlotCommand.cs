@@ -58,14 +58,14 @@ public class ClearSlotCommand : CommandBase
     private void RemovePlayerSlot(IChannelClient c, InventoryType type)
     {
         bool isFromDrop = false;
-        for (int i = 0; i < 101; i++)
+        for (short i = 0; i < 101; i++)
         {
-            var tempItem = c.OnlinedCharacter.getInventory(type).getItem((byte)i);
+            var tempItem = c.OnlinedCharacter.getInventory(type).getItem(i);
             if (tempItem == null)
             {
                 continue;
             }
-            InventoryManipulator.removeFromSlot(c, type, (byte)i, tempItem.getQuantity(), isFromDrop, false);
+            InventoryManipulator.removeFromSlot(c, type, i, tempItem.getQuantity(), isFromDrop, false);
         }
     }
 }

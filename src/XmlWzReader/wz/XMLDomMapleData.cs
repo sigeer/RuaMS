@@ -77,10 +77,10 @@ public class XMLDomMapleData : Data
         switch (DataType)
         {
             case DataType.DOUBLE:
-                Value = Convert.ToDouble(reader.GetAttribute("value"));
+                Value = Convert.ToDouble(reader.GetAttribute("value")?.Replace(",", "."));
                 break;
             case DataType.FLOAT:
-                Value = Convert.ToSingle(reader.GetAttribute("value"));
+                Value = Convert.ToSingle(reader.GetAttribute("value")?.Replace(",", "."));
                 break;
             case DataType.INT:
                 Value = Convert.ToInt32(reader.GetAttribute("value"));

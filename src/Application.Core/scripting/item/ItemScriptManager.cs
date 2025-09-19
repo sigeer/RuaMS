@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Templates.Item.Consume;
 using static Application.Core.Channel.DataProviders.ItemInformationProvider;
 
 namespace scripting.item;
@@ -35,8 +36,8 @@ public class ItemScriptManager
         return instance;
     }
 
-    public void runItemScript(IChannelClient c, ScriptedItem scriptItem)
+    public void runItemScript(IChannelClient c, ScriptItemTemplate scriptItem)
     {
-        c.CurrentServer.NPCScriptManager.start(c, scriptItem, null);
+        c.CurrentServer.NPCScriptManager.StartScriptByItem(c, scriptItem.Npc, scriptItem.Script);
     }
 }

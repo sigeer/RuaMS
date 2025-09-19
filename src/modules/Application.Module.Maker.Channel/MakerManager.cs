@@ -510,7 +510,7 @@ namespace Application.Module.Maker.Channel
             {
                 if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
                 {
-                    eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
+                    eqp.setUpgradeSlots(eqp.getUpgradeSlots() + 1);
                 }
                 item = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
             }

@@ -15,6 +15,8 @@ namespace Application.Templates.Item.Etc
 
         [WZPath("info/questId")]
         public int QuestID { get; set; }
+        [WZPath("info/uiData/$existed")]
+        public bool HasUIData { get; set; }
 
         [WZPath("info/consumeItem/-")]
         public IncubatorConsumeItem[] ConsumeItems { get; set; }

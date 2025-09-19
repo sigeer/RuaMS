@@ -7,7 +7,7 @@ namespace Application.Templates
         [WZPath("info/tradeAvailable")]
         public bool TradeAvailable { get; set; }
         [WZPath("info/slotMax")]
-        public virtual int SlotMax { get; set; }
+        public virtual int SlotMax { get; set; } = 200;
         [WZPath("info/cash")]
         public bool Cash { get; set; }
 
@@ -27,7 +27,7 @@ namespace Application.Templates
         public bool Only { get; set; }
 
         [WZPath("info/price")]
-        public int Price { get; set; }
+        public int Price { get; set; } = -1;
 
 
         [WZPath("info/expireOnLogout")]

@@ -108,7 +108,7 @@ namespace Application.Core.Game.Players
 
                     if (HP < ActualMaxHP)
                     {
-                        byte recHP = (byte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
+                        var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
                         sendPacket(PacketCreator.showOwnRecovery(recHP));
                         MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);

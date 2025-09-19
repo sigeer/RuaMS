@@ -2,7 +2,7 @@ namespace Application.Templates.Map
 {
     public sealed class MapFootholdTemplate
     {
-        [WZPath("foothold/-/$name")]
+        [WZPath("foothold/-/-/$name")]
         public int Index { get; set; }
         public int Next { get; set; }
         public int Prev { get; set; }

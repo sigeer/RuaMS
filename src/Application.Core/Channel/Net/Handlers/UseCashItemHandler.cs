@@ -416,8 +416,10 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 520)
         {
-            player.gainMeso(ii.getMeso(itemId), true, false, true);
-            remove(c, position, itemId);
+            if (player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, true, false, true))
+            {
+                remove(c, position, itemId);
+            }
             c.sendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 523)
@@ -429,16 +431,19 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 524)
         {
+            var template = ItemInformationProvider.getInstance().GetCashPetFoodTemplate(itemId);
+            if (template == null)
+                return;
+
+
             for (byte i = 0; i < 3; i++)
             {
                 var pet = player.getPet(i);
                 if (pet != null)
                 {
-                    var pair = pet.canConsume(itemId);
-
-                    if (pair.CanConsume)
+                    if (template.Pet.Contains(pet.getItemId()))
                     {
-                        pet.gainTamenessFullness(player, pair.PetId, 100, 1, true);
+                        pet.gainTamenessFullness(player, template.PetfoodInc, 100, 1, true);
                         remove(c, position, itemId);
                         break;
                     }

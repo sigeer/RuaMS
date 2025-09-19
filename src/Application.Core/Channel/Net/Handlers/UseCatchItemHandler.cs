@@ -51,6 +51,13 @@ public class UseCatchItemHandler : ChannelHandlerBase
         {
             return;
         }
+
+        var itemTemplate = ItemInformationProvider.getInstance().GetCatchMobItemTemplate(itemId);
+        if (itemTemplate == null)
+        {
+            return;
+        }
+
         switch (itemId)
         {
             case ItemId.PHEROMONE_PERFUME:
@@ -226,28 +233,20 @@ public class UseCatchItemHandler : ChannelHandlerBase
                 break;
             default:
                 // proper Fish catch, thanks to Dragohe4rt
-
-                ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                int itemGanho = ii.getCreateItem(itemId);
-                int mobItem = ii.getMobItem(itemId);
-
-                if (itemGanho != 0 && mobItem == mob.getId())
+                if (itemTemplate.Create != 0 && itemTemplate.Mob == mob.getId())
                 {
-                    int timeCatch = ii.getUseDelay(itemId);
-                    int mobHp = ii.getMobHP(itemId);
-
-                    if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < c.CurrentServerContainer.getCurrentTime())
+                    if (itemTemplate.UseDelay != 0 && (abm.getLastSpam(10) + itemTemplate.UseDelay) < c.CurrentServerContainer.getCurrentTime())
                     {
-                        if (mobHp != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * mobHp))
+                        if (itemTemplate.MobHP != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * itemTemplate.MobHP))
                         {
                             chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                             mob.getMap().killMonster(mob, null, false);
                             InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                            InventoryManipulator.addById(c, itemGanho, 1, "");
+                            InventoryManipulator.addById(c, itemTemplate.Create, 1, "");
                         }
                         else if (mob.getId() != MobId.P_JUNIOR)
                         {
-                            if (mobHp != 0)
+                            if (itemTemplate.MobHP != 0)
                             {
                                 abm.spam(10);
                                 c.sendPacket(PacketCreator.catchMessage(0));

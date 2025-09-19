@@ -266,11 +266,6 @@ public class Pet : Item
         }
     }
 
-    public PetCanConsumePair canConsume(int itemId)
-    {
-        return ItemInformationProvider.getInstance().canPetConsume(getItemId(), itemId);
-    }
-
     public void updatePosition(List<LifeMovementFragment> movement)
     {
         foreach (LifeMovementFragment move in movement)

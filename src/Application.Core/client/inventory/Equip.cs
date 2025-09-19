@@ -49,7 +49,7 @@ public class Equip : Item
     }
 
 
-    private byte upgradeSlots;
+    private sbyte upgradeSlots;
     private byte level, itemLevel;
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
@@ -67,11 +67,11 @@ public class Equip : Item
     public Equip(int id, short position, int slots) : base(id, position, 1)
     {
         log = LogFactory.GetLogger(LogType.Equip);
-        this.upgradeSlots = (byte)slots;
+        this.upgradeSlots = (sbyte)slots;
         this.itemExp = 0;
         this.itemLevel = 1;
 
-        IsElemental = (ItemInformationProvider.getInstance().getEquipLevel(id, false) > 1);
+        IsElemental = ItemInformationProvider.getInstance().IsEquipElemental(id);
     }
 
     public override Item copy()
@@ -112,7 +112,7 @@ public class Equip : Item
         return 1;
     }
 
-    public byte getUpgradeSlots()
+    public sbyte getUpgradeSlots()
     {
         return upgradeSlots;
     }
@@ -280,11 +280,6 @@ public class Equip : Item
     public void setVicious(int vicious)
     {
         this.vicious = vicious;
-    }
-
-    public void setUpgradeSlots(byte upgradeSlots)
-    {
-        this.upgradeSlots = upgradeSlots;
     }
 
     public byte getLevel()
@@ -597,7 +592,7 @@ public class Equip : Item
                     gotVicious = true;
                     break;
                 case StatUpgrade.incSlot:
-                    upgradeSlots += (byte)stat.Value;
+                    upgradeSlots += (sbyte)stat.Value;
                     gotSlot = true;
                     break;
             }
@@ -823,7 +818,7 @@ public class Equip : Item
 
     public void setUpgradeSlots(int i)
     {
-        this.upgradeSlots = (byte)i;
+        this.upgradeSlots = (sbyte)i;
     }
     public long getRingId()
     {

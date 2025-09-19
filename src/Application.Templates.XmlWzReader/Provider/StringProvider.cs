@@ -26,6 +26,7 @@ namespace Application.Templates.XmlWzReader.Provider
             return all;
         }
 
+
         IEnumerable<AbstractTemplate> ProcessStringXml(StringCategory type, string fileType, XElement rootNode)
         {
             var intType = (int)(type);

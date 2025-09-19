@@ -9,18 +9,18 @@ namespace Application.Templates
     /// <typeparam name="TValue">Collection value of type AbstractTemplate</typeparam>
     public class GenericKeyedTemplate<TValue> : AbstractTemplate where TValue : AbstractTemplate
     {
-        protected Dictionary<int, TValue> _templates;
+        protected Dictionary<int, TValue> _categoryData;
 
         public GenericKeyedTemplate(int templateId) : base(templateId)
         {
-            _templates = new Dictionary<int, TValue>();
+            _categoryData = new Dictionary<int, TValue>();
         }
 
-        public int Count => _templates.Count;
+        public int Count => _categoryData.Count;
 
         public TValue this[int key] =>
-            _templates.ContainsKey(key)
-                ? _templates[key]
+            _categoryData.ContainsKey(key)
+                ? _categoryData[key]
                 : default;
 
         public void Add(TValue value)
@@ -31,11 +31,12 @@ namespace Application.Templates
 
             if (existing == null) // trying to insert VIP shields twice for some reason??
             {
-                _templates.Add(value.TemplateId, value);
+                _categoryData.Add(value.TemplateId, value);
             }
         }
 
-        public Dictionary<int, TValue>.Enumerator GetEnumerator() => _templates.GetEnumerator();
+        public Dictionary<int, TValue>.Enumerator GetEnumerator() => _categoryData.GetEnumerator();
+        public Dictionary<int, TValue>.ValueCollection Values => _categoryData.Values;
 
         protected virtual int GetKeyForItem(TValue value) => value.TemplateId;
     }

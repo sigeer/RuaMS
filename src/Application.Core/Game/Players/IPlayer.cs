@@ -236,7 +236,7 @@ namespace Application.Core.Game.Players
         /// <returns></returns>
         bool TryGainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false);
         /// <summary>
-        /// 获取金币并返回未获取到的部分（取代gainMeso）
+        /// 获取金币并返回未获取到的部分（超过上限，取代gainMeso）
         /// </summary>
         /// <param name="gain"></param>
         /// <param name="show"></param>
@@ -399,7 +399,7 @@ namespace Application.Core.Game.Players
         QuestStatus? getQuestNAdd(Quest quest);
         QuestStatus? getQuestNoAdd(Quest quest);
         QuestStatus? getQuestRemove(Quest quest);
-        byte getQuestStatus(int quest);
+        sbyte getQuestStatus(int quest);
         int getRank();
         int getRankMove();
         float getRawDropRate();

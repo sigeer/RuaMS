@@ -6174,7 +6174,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showOwnRecovery(byte heal)
+    public static Packet showOwnRecovery(sbyte heal)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
         p.writeByte(0x0A);
@@ -6182,7 +6182,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showRecovery(int chrId, byte amount)
+    public static Packet showRecovery(int chrId, sbyte amount)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
         p.writeInt(chrId);
