@@ -279,9 +279,13 @@ namespace Application.Core.Channel.ServerData
             if (TeamChannelStorage.TryGetValue(party, out var d) && d != null)
                 return d;
 
-            var dataRemote = _mapper.Map<Team>(_transport.GetTeam(party).Model);
-            TeamChannelStorage[party] = dataRemote;
-            return dataRemote;
+            var dataRemote = _transport.GetTeam(party).Model;
+            d = new Team(_server, party, dataRemote.LeaderId);
+            foreach (var member in dataRemote.Members)
+            {
+                d.addMember(_mapper.Map<TeamMember>(member));
+            }
+            return TeamChannelStorage[party] = d;
         }
 
         public void CreateInvite(IPlayer fromChr, string toName)

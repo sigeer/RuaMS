@@ -8,6 +8,7 @@ using GuildProto;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -15,8 +16,8 @@ namespace Application.Core.Channel.ServerData
 {
     public class GuildManager
     {
-        private ConcurrentDictionary<int, Guild?> CachedData { get; set; } = new();
-        ConcurrentDictionary<int, Alliance> _allianceData;
+        private ConcurrentDictionary<int, Guild?> _localGuilds { get; set; } = new();
+        ConcurrentDictionary<int, Alliance> _localAlliance;
 
         readonly ILogger<GuildManager> _logger;
         readonly IMapper _mapper;
@@ -28,7 +29,7 @@ namespace Application.Core.Channel.ServerData
             _mapper = mapper;
             _transport = transport;
             _serverContainer = serverContainer;
-            _allianceData = new ConcurrentDictionary<int, Alliance>();
+            _localAlliance = new ConcurrentDictionary<int, Alliance>();
         }
 
         public bool CheckGuildName(string name)
@@ -146,9 +147,22 @@ namespace Application.Core.Channel.ServerData
                 return null;
             }
 
-            var guild = new Guild(_serverContainer, remoteData.GuildId);
-            _mapper.Map(remoteData, guild);
-            CachedData[guild.GuildId] = guild;
+            var guild = new Guild(_serverContainer, remoteData.GuildId)
+            {
+                RankTitles = [remoteData.Rank1Title, remoteData.Rank2Title, remoteData.Rank3Title, remoteData.Rank4Title, remoteData.Rank5Title],
+                Capacity = remoteData.Capacity,
+                GP = remoteData.Gp,
+                Leader = remoteData.Leader,
+                Logo = remoteData.Logo,
+                LogoBg = remoteData.LogoBg,
+                LogoBgColor = (short)remoteData.LogoBgColor,
+                LogoColor = (short)remoteData.LogoColor,
+                Name = remoteData.Name,
+                Notice = remoteData.Notice,
+                Signature = remoteData.Signature,
+                AllianceId = remoteData.AllianceId
+            };
+            _localGuilds[guild.GuildId] = guild;
 
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
@@ -236,7 +250,7 @@ namespace Application.Core.Channel.ServerData
 
         public Guild? GetGuildById(int id)
         {
-            if (CachedData.TryGetValue(id, out var d) && d != null)
+            if (_localGuilds.TryGetValue(id, out var d) && d != null)
                 return d;
 
             var remoteData = _transport.GetGuild(id);
@@ -244,9 +258,22 @@ namespace Application.Core.Channel.ServerData
             {
                 return null;
             }
-            var localData = new Guild(_serverContainer, id);
-            _mapper.Map(remoteData.Model, localData);
-            CachedData[localData.GuildId] = localData;
+            var localData = new Guild(_serverContainer, id)
+            {
+                RankTitles = [remoteData.Model.Rank1Title, remoteData.Model.Rank2Title, remoteData.Model.Rank3Title, remoteData.Model.Rank4Title, remoteData.Model.Rank5Title],
+                Capacity = remoteData.Model.Capacity,
+                GP = remoteData.Model.Gp,
+                Leader = remoteData.Model.Leader,
+                Logo = remoteData.Model.Logo,
+                LogoBg = remoteData.Model.LogoBg,
+                LogoBgColor = (short)remoteData.Model.LogoBgColor,
+                LogoColor = (short)remoteData.Model.LogoColor,
+                Name = remoteData.Model.Name,
+                Notice = remoteData.Model.Notice,
+                Signature = remoteData.Model.Signature,
+                AllianceId = remoteData.Model.AllianceId
+            };
+            _localGuilds[localData.GuildId] = localData;
             return localData;
         }
 
@@ -401,7 +428,7 @@ namespace Application.Core.Channel.ServerData
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
                 guild =>
                 {
-                    if (CachedData.TryRemove(guild.GuildId, out _))
+                    if (_localGuilds.TryRemove(guild.GuildId, out _))
                     {
                         guild.disbandGuild();
 
@@ -456,21 +483,18 @@ namespace Application.Core.Channel.ServerData
             if (remoteAlliance.Model == null)
                 return null;
 
-            var localData = new Alliance(remoteAlliance.Model.AllianceId);
-            var alliance = _mapper.Map(remoteAlliance, localData);
-            if (alliance != null)
+            var alliance = new Alliance(remoteAlliance.Model.AllianceId)
             {
-                var guildObjs = alliance.Guilds;
-                alliance.setCapacity(guilds.Length);
-                foreach (var guild in guildObjs.Values)
-                {
-                    CachedData[guild.GuildId] = guild;
-                }
-                _allianceData[alliance.AllianceId] = alliance;
+                Capacity = guilds.Length,
+                Name = remoteAlliance.Model.Name,
+                RankTitles = remoteAlliance.Model.RankTitles.ToArray(),
+                Notice = remoteAlliance.Model.Notice,
+                Guilds = new ConcurrentDictionary<int, Guild>(remoteAlliance.Model.Guilds.ToDictionary(x => x, x => GetGuildById(x)!))
+            };
+            _localAlliance[alliance.AllianceId] = alliance;
 
-                alliance.BroadcastAllianceInfo();
-                alliance.BroadcastGuildAlliance();
-            }
+            alliance.BroadcastAllianceInfo();
+            alliance.BroadcastGuildAlliance();
 
             return alliance;
         }
@@ -484,7 +508,7 @@ namespace Application.Core.Channel.ServerData
             {
                 c.OnlinedCharacter.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
             }
-            var mg = CachedData.Values.FirstOrDefault(x => x.Name == targetGuildName);
+            var mg = _localGuilds.Values.FirstOrDefault(x => x.Name == targetGuildName);
             if (mg == null)
             {
                 c.OnlinedCharacter.dropMessage(5, "The entered guild does not exist.");
@@ -513,16 +537,22 @@ namespace Application.Core.Channel.ServerData
         }
         public Alliance? GetAllianceById(int id)
         {
-            if (_allianceData.TryGetValue(id, out var d) && d != null)
+            if (_localAlliance.TryGetValue(id, out var d) && d != null)
                 return d;
 
             var remoteData = _transport.GetAlliance(id).Model;
             if (remoteData == null)
                 return null;
 
-            var localData = new Alliance(id);
-            _mapper.Map(remoteData, localData);
-            _allianceData[id] = localData;
+            var localData = new Alliance(id)
+            {
+                Guilds = new ConcurrentDictionary<int, Guild>(remoteData.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
+                Notice = remoteData.Notice,
+                RankTitles = remoteData.RankTitles.ToArray(),
+                Name = remoteData.Name,
+                Capacity = remoteData.Capacity,
+            };
+            _localAlliance[id] = localData;
             return localData;
         }
 
@@ -749,7 +779,7 @@ namespace Application.Core.Channel.ServerData
                 alliance =>
                 {
                     alliance.Disband();
-                    return _allianceData.TryRemove(alliance.AllianceId, out _);
+                    return _localAlliance.TryRemove(alliance.AllianceId, out _);
                 });
         }
 

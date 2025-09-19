@@ -36,10 +36,7 @@ namespace Application.Core.Mappers
             CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
 
-            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>()
-                .ForMember(dest => dest.Rank, src => src.MapFrom(x => x.Rank))
-                .ForMember(dest => dest.CharacterName, src => src.MapFrom(x => x.Name))
-                .ForMember(dest => dest.CharacterLevel, src => src.MapFrom(x => x.Level));
+            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>().ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
 
             CreateMap<Dto.CharacterDto, Player>()
                             .ForMember(x => x.MesoValue, opt => opt.MapFrom(x => new AtomicInteger(x.Meso)))
@@ -249,26 +246,8 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
 
             CreateMap<TeamProto.TeamMemberDto, TeamMember>();
-            CreateMap<TeamProto.TeamDto, Team>()
-                .AfterMap((src, dest, ctx) =>
-                {
-                    foreach (var member in src.Members)
-                    {
-                        dest.addMember(ctx.Mapper.Map<TeamMember>(member));
-                    }
-                });
 
             CreateMap<GuildProto.GuildMemberDto, GuildMember>();
-            CreateMap<GuildProto.GuildDto, Guild>()
-                .ForMember(dest => dest.RankTitles, src => src.MapFrom(x => new string[5]
-                {
-                    x.Rank1Title,
-                    x.Rank2Title,
-                    x.Rank3Title,
-                    x.Rank4Title,
-                    x.Rank5Title
-                }));
-            CreateMap<AllianceProto.AllianceDto, AllianceDto>();
 
             CreateMap<Dto.NewYearCardDto, NewYearCardObject>();
 

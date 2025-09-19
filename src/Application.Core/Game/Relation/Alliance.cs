@@ -33,7 +33,7 @@ namespace Application.Core.Game.Relation;
 public class Alliance
 {
     ILogger log;
-    public ConcurrentDictionary<int, Guild> Guilds { get; }
+    public ConcurrentDictionary<int, Guild> Guilds { get; init; }
 
 
     public int AllianceId { get; set; }
