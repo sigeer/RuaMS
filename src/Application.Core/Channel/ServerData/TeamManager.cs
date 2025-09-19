@@ -49,7 +49,10 @@ namespace Application.Core.Channel.ServerData
                     return false;
                 }
                 party = new Team(_server, remoteData.Id, remoteData.LeaderId);
-                _mapper.Map(remoteData, party);
+                foreach (var member in remoteData.Members)
+                {
+                    party.addMember(_mapper.Map<TeamMember>(member));
+                }
                 TeamChannelStorage[party.getId()] = party;
                 player.setParty(party);
                 // player.setMPC(partyplayer);

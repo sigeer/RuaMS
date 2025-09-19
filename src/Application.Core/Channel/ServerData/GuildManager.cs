@@ -160,7 +160,8 @@ namespace Application.Core.Channel.ServerData
                 Name = remoteData.Name,
                 Notice = remoteData.Notice,
                 Signature = remoteData.Signature,
-                AllianceId = remoteData.AllianceId
+                AllianceId = remoteData.AllianceId,
+                Members = new ConcurrentDictionary<int, GuildMember>(remoteData.Members.ToDictionary(x => x.Id, x => _mapper.Map<GuildMember>(x)))
             };
             _localGuilds[guild.GuildId] = guild;
 
@@ -271,7 +272,8 @@ namespace Application.Core.Channel.ServerData
                 Name = remoteData.Model.Name,
                 Notice = remoteData.Model.Notice,
                 Signature = remoteData.Model.Signature,
-                AllianceId = remoteData.Model.AllianceId
+                AllianceId = remoteData.Model.AllianceId,
+                Members = new ConcurrentDictionary<int, GuildMember>(remoteData.Model.Members.ToDictionary(x => x.Id, x => _mapper.Map<GuildMember>(x)))
             };
             _localGuilds[localData.GuildId] = localData;
             return localData;
