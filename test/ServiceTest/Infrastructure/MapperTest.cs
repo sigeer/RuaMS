@@ -72,5 +72,38 @@ namespace ServiceTest.Infrastructure
             //可以考虑用Mapster替换AutoMapper
             Assert.Pass();
         }
+
+        [Test]
+        public void AutoMapperRecordTest()
+        {
+            var model = new Test() { IntA = 1 };
+
+            var config = new AutoMapper.MapperConfiguration(o =>
+            {
+                o.CreateMap<Test, DiffPropNameRecord>()
+                .ForMember(dest => dest.IntB, src => src.MapFrom(x => x.IntA));
+
+                o.CreateMap<Test, SamePropNameRecord>();
+            });
+            var localMapper = config.CreateMapper();
+
+            Assert.Throws<AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
+            Assert.Throws<ArgumentException>(() => localMapper.Map<DiffPropNameRecord>(model));
+
+            var applyModel = new DiffPropNameRecord(2);
+            Assert.That(localMapper.Map(model, applyModel).IntB, Is.EqualTo(model.IntA));
+
+            Assert.Throws<AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
+            Assert.That(localMapper.Map<SamePropNameRecord>(model).IntA, Is.EqualTo(model.IntA));
+        }
+
     }
+
+    public class Test
+    {
+        public int IntA { get; set; }
+    }
+
+    public record DiffPropNameRecord(int IntB);
+    public record SamePropNameRecord(int IntA);
 }

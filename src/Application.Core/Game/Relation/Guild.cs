@@ -36,7 +36,7 @@ public class Guild
     private static ILogger log = LogFactory.GetLogger(LogType.Guild);
 
 
-    private ConcurrentDictionary<int, GuildMember> members;
+    public ConcurrentDictionary<int, GuildMember> Members { get; init; }
     private object membersLock = new object();
 
     // 1 = master, 2 = jr, 5 = lowest member
@@ -51,7 +51,7 @@ public class Guild
         _serverContainer = serverContainer;
         channelDirty = new();
         GuildId = guildId;
-        this.members = [];
+        this.Members = [];
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public class Guild
 
         // 人员发生变动、或者上下线时重算
         channelDirty[server.getId()] = true;
-        return channelMembersCache = members.Keys.Select(x => server.Players.getCharacterById(x)).ToList();
+        return channelMembersCache = Members.Keys.Select(x => server.Players.getCharacterById(x)).ToList();
     }
 
     private void SendChannelMember(Action<IPlayer> action)
@@ -86,14 +86,14 @@ public class Guild
 
     public void SetMemberChannel(int cid, int channel)
     {
-        if (members.TryGetValue(cid, out var member))
+        if (Members.TryGetValue(cid, out var member))
         {
             member.Channel = channel;
         }
     }
     public void SetMemberLevel(int cid, int level)
     {
-        if (members.TryGetValue(cid, out var member))
+        if (Members.TryGetValue(cid, out var member))
         {
             member.Level = level;
         }
@@ -101,7 +101,7 @@ public class Guild
 
     public void SetMemberJob(int cid, int jobId)
     {
-        if (members.TryGetValue(cid, out var member))
+        if (Members.TryGetValue(cid, out var member))
         {
             member.JobId = jobId;
         }
@@ -113,7 +113,7 @@ public class Guild
         {
             return;
         }
-        members[member.Id] = member;
+        Members[member.Id] = member;
         var chr = _serverContainer.Servers[member.Channel].Players.getCharacterById(member.Id);
         if (chr != null)
         {
@@ -199,7 +199,7 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            return new(members.Values);
+            return new(Members.Values);
         }
         finally
         {
@@ -335,12 +335,12 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            if (members.Count >= Capacity)
+            if (Members.Count >= Capacity)
             {
                 return false;
             }
 
-            if (members.TryAdd(member.Id, member))
+            if (Members.TryAdd(member.Id, member))
             {
                 SendChannelMember(m =>
                 {
@@ -367,7 +367,7 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            if (members.TryRemove(cid, out var member))
+            if (Members.TryRemove(cid, out var member))
             {
                 SendChannelMember(m =>
                 {
@@ -393,7 +393,7 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            if (members.TryRemove(cid, out var member))
+            if (Members.TryRemove(cid, out var member))
             {
                 SendChannelMember(m =>
                 {
@@ -419,7 +419,7 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            if (members.TryGetValue(cid, out var member))
+            if (Members.TryGetValue(cid, out var member))
             {
                 member.GuildRank = newRank;
 
@@ -493,7 +493,7 @@ public class Guild
         Monitor.Enter(membersLock);
         try
         {
-            members.Clear();
+            Members.Clear();
             this.broadcast(null, -1, BCOp.DISBAND);
         }
         finally
@@ -564,7 +564,7 @@ public class Guild
 
     public void JoinAlliance()
     {
-        foreach (var mgc in members)
+        foreach (var mgc in Members)
         {
             var chr = _serverContainer.FindPlayerById(mgc.Key);
             if (chr != null)
