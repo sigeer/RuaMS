@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Xml.Linq;
 
@@ -7,22 +8,22 @@ namespace Application.Templates.XmlWzReader
     {
         public static string? GetName(this XElement element)
         {
-            return element.Attribute("name")?.Value;
+            return element.GetStringValue("name");
         }
 
         public static int GetIntName(this XElement element)
         {
-            return Convert.ToInt32(element.GetName());
+            return element.GetIntValue("name");
         }
 
-        public static string? GetStringValue(this XElement element)
+        public static string? GetStringValue(this XElement element, string name = "value")
         {
-            return element.Attribute("value")?.Value;
+            return element.Attribute(name)?.Value;
         }
 
-        public static int GetIntValue(this XElement element)
+        public static int GetIntValue(this XElement element, string name = "value")
         {
-            var v = element.GetStringValue();
+            var v = element.GetStringValue(name) ?? "";
             if (int.TryParse(v, out int result))
                 return result;
 
@@ -48,7 +49,7 @@ namespace Application.Templates.XmlWzReader
 
         public static Point GetVectorValue(this XElement element)
         {
-            return new Point(Convert.ToInt32(element.Attribute("x")?.Value), Convert.ToInt32(element.Attribute("y")?.Value));
+            return new Point(element.GetIntValue("x"), element.GetIntValue("y"));
         }
     }
 }

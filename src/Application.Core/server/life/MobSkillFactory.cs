@@ -20,6 +20,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
+
 namespace server.life;
 
 /**
@@ -28,9 +31,8 @@ namespace server.life;
 public class MobSkillFactory
 {
     private static Dictionary<string, MobSkill> mobSkills = new();
-    private static DataProvider dataSource = DataProviderFactory.getDataProvider(WZFiles.SKILL);
-    private static Data skillRoot = dataSource.getData("MobSkill.img");
     private static ReaderWriterLockSlim mainLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+    static MobSkillProvider _provider = ProviderFactory.GetProvider<MobSkillProvider>();
 
     public static MobSkill? GetMobSkill(int type, int level)
     {
@@ -46,18 +48,6 @@ public class MobSkillFactory
 
     public static MobSkill? getMobSkill(MobSkillType type, int level)
     {
-        mainLock.EnterReadLock();
-        try
-        {
-            var m = mobSkills.GetValueOrDefault(createKey(type, level));
-            if (m != null)
-                return m;
-        }
-        finally
-        {
-            mainLock.ExitReadLock();
-        }
-
         return loadMobSkill(type, level);
     }
 
@@ -72,61 +62,31 @@ public class MobSkillFactory
                 return existingMs;
             }
 
-            var skillData = skillRoot.getChildByPath($"{type.getId()}/level/{level}");
-            if (skillData == null)
-            {
+            var template = _provider.GetItem((int)type);
+            if (template == null)
                 return null;
-            }
 
-            int mpCon = DataTool.getInt("mpCon", skillData, 0);
-            List<int> toSummon = new();
-            for (int i = 0; i > -1; i++)
-            {
-                if (skillData.getChildByPath(i.ToString()) == null)
-                {
-                    break;
-                }
-                toSummon.Add(DataTool.getInt(skillData.getChildByPath(i.ToString()), 0));
-            }
-            int effect = DataTool.getInt("summonEffect", skillData, 0);
-            int hp = DataTool.getInt("hp", skillData, 100);
-            int x = DataTool.getInt("x", skillData, 1);
-            int y = DataTool.getInt("y", skillData, 1);
-            int count = DataTool.getInt("count", skillData, 1);
-            long duration = DataTool.getInt("time", skillData, 0) * 1000;
-            long cooltime = DataTool.getInt("interval", skillData, 0) * 1000;
-            int iprop = DataTool.getInt("prop", skillData, 100);
-            float prop = iprop / 100.0f;
-            int limit = DataTool.getInt("limit", skillData, 0);
-
-            var ltData = skillData.getChildByPath("lt");
-            var rbData = skillData.getChildByPath("rb");
-            Point? lt = null;
-            Point? rb = null;
-            if (ltData != null && rbData != null)
-            {
-                lt = (Point?)ltData.getData();
-                rb = (Point?)rbData.getData();
-            }
+            var levelData = template.GetLevelData(level);
+            if (levelData == null)
+                return null;
 
             MobSkill loadedMobSkill = new MobSkill.Builder(type, level)
-                    .mpCon(mpCon)
-                    .toSummon(toSummon)
-                    .cooltime(cooltime)
-                    .duration(duration)
-                    .spawnEffect(effect)
-                    .hp(hp)
-                    .x(x)
-                    .y(y)
-                    .count(count)
-                    .prop(prop)
-                    .limit(limit)
-                    .lt(lt)
-                    .rb(rb)
+                    .mpCon(levelData.MpCon)
+                    .toSummon(levelData.SummonIDs.ToList())
+                    .cooltime(levelData.Interval)
+                    .duration(levelData.Time)
+                    .spawnEffect(levelData.SummonEffect)
+                    .hp(levelData.HP)
+                    .x(levelData.X)
+                    .y(levelData.Y)
+                    .count(levelData.Count)
+                    .prop(levelData.Prop / 100.0f)
+                    .limit(levelData.Limit)
+                    .lt(levelData.Lt)
+                    .rb(levelData.Rb)
                     .build();
 
-            mobSkills.AddOrUpdate(createKey(type, level), loadedMobSkill);
-            return loadedMobSkill;
+            return mobSkills[createKey(type, level)] = loadedMobSkill;
         }
         finally
         {

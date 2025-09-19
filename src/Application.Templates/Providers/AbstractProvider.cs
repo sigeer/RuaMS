@@ -2,12 +2,15 @@ using System.Linq;
 
 namespace Application.Templates.Providers
 {
-    public abstract class AbstractProvider<TTemplate> : IProvider where TTemplate : AbstractTemplate
+    public abstract class AbstractProvider<TTemplate> : IProvider, IDisposable where TTemplate : AbstractTemplate
     {
         protected readonly Dictionary<int, TTemplate> _templates;
         public abstract ProviderType ProviderName { get; }
-        
+
         protected readonly TemplateOptions _options;
+
+        private int _refCount = 0;
+        private bool _disposed = false;
 
         protected AbstractProvider(TemplateOptions options)
         {
@@ -79,6 +82,29 @@ namespace Application.Templates.Providers
             {
                 if (key < 0) throw new ArgumentOutOfRangeException(nameof(key));
                 return GetItem(key);
+            }
+        }
+        public void AddRef()
+        {
+            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+            Interlocked.Increment(ref _refCount);
+        }
+
+        public void Release()
+        {
+            if (Interlocked.Decrement(ref _refCount) == 0)
+            {
+                Dispose();
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                _templates.Clear();
             }
         }
     }

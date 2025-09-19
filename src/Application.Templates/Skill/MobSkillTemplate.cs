@@ -1,19 +1,34 @@
 namespace Application.Templates.Skill
 {
+    [GenerateTag]
     public sealed class MobSkillTemplate : AbstractTemplate
     {
         /// <summary>
         /// Level - Data
         /// </summary>
-        private readonly Dictionary<int, MobSkillLevelData> _levelData;
-        public MobSkillLevelData? GetLevelData(int nLevel) => _levelData.GetValueOrDefault(nLevel);
+        private Dictionary<int, MobSkillLevelData>? _levelData;
+        public Dictionary<int, MobSkillLevelData> DicLevelData
+        {
+            get
+            {
+                if (_levelData == null)
+                {
+                    _levelData = LevelData.ToDictionary(x => x.nSLV);
+                }
+                return _levelData;
+            }
+        }
+        public MobSkillLevelData? GetLevelData(int nLevel) => DicLevelData.GetValueOrDefault(nLevel);
 
         public void InsertLevelData(MobSkillLevelData pData)
-            => _levelData.Add(pData.nSLV, pData);
+            => DicLevelData.Add(pData.nSLV, pData);
 
         public MobSkillTemplate(int templateId) : base(templateId)
         {
-            _levelData = new Dictionary<int, MobSkillLevelData>();
+            LevelData = Array.Empty<MobSkillLevelData>();
         }
+
+        [WZPath("level/-")]
+        public MobSkillLevelData[] LevelData { get; set; }
     }
 }
