@@ -263,29 +263,29 @@ namespace Application.Templates.XmlWzReader.Provider
                         var act = new QuestAct();
                         foreach (var stepPropNode in stepNode.Elements())
                         {
-                            var propName = stepNode.Attribute("name")?.Value;
+                            var propName = stepPropNode.Attribute("name")?.Value;
                             if (propName == "nextQuest")
-                                act.NextQuest = stepNode.GetIntValue();
+                                act.NextQuest = stepPropNode.GetIntValue();
                             else if (propName == "npc")
-                                act.Npc = stepNode.GetIntValue();
+                                act.Npc = stepPropNode.GetIntValue();
                             else if (propName == "money")
-                                act.Money = stepNode.GetIntValue();
+                                act.Money = stepPropNode.GetIntValue();
                             else if (propName == "exp")
-                                act.Exp = stepNode.GetIntValue();
+                                act.Exp = stepPropNode.GetIntValue();
                             else if (propName == "fame")
-                                act.Fame = stepNode.GetIntValue();
+                                act.Fame = stepPropNode.GetIntValue();
                             else if (propName == "lvmin")
-                                act.LevelMin = stepNode.GetIntValue();
+                                act.LevelMin = stepPropNode.GetIntValue();
                             else if (propName == "lvmax")
-                                act.LevelMax = stepNode.GetIntValue();
+                                act.LevelMax = stepPropNode.GetIntValue();
                             else if (propName == "info")
-                                act.Info = stepNode.GetStringValue();
+                                act.Info = stepPropNode.GetStringValue();
                             else if (propName == "pettameness")
-                                act.PetTameness = stepNode.GetIntValue();
+                                act.PetTameness = stepPropNode.GetIntValue();
                             else if (propName == "petskill")
-                                act.PetSkill = stepNode.GetIntValue();
+                                act.PetSkill = stepPropNode.GetIntValue();
                             else if (propName == "petspeed")
-                                act.PetSpeed = stepNode.GetIntValue();
+                                act.PetSpeed = stepPropNode.GetIntValue();
                             else if (propName == "buffItemID")
                                 act.BuffItemID = stepPropNode.GetIntValue();
                             else if (propName == "interval")
