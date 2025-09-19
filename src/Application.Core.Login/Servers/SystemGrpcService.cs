@@ -9,6 +9,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MessageProto;
 using Microsoft.EntityFrameworkCore;
+using ServerProto;
 using SystemProto;
 
 namespace Application.Core.Login.Servers
@@ -171,7 +172,17 @@ namespace Application.Core.Login.Servers
 
         public override Task<WrapPlayerByNameResponse> WrapPlayer(WrapPlayerByNameRequest request, ServerCallContext context)
         {
-            return base.WrapPlayer(request, context);
+            return Task.FromResult(_server.CrossServerService.WarpPlayerByName(request));
+        }
+
+        public override Task<Empty> HealthCheck(MonitorData request, ServerCallContext context)
+        {
+            var serverName = context.RequestHeaders.Get("x-server-name")?.Value;
+            if (serverName != null && _server.ChannelServerList.TryGetValue(serverName, out var node))
+            {
+                node.HealthCheck(request);
+            }
+            return Task.FromResult(new Empty());
         }
     }
 }

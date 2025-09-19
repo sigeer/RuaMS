@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
+
 	<ItemGroup>
 		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
 	</ItemGroup>
@@ -83,6 +84,7 @@
 		<Protobuf Include="Events\PlayerOnlineChange.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Server\MonitorData.proto" GrpcServices="None" />
 		<Protobuf Include="Services\Buddy.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\Master2Channel.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\PlayerShop.proto" GrpcServices="Both" />

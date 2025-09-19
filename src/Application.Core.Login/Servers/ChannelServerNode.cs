@@ -1,17 +1,14 @@
 using Application.Shared.Servers;
-using Config;
 using CreatorProto;
 using ExpeditionProto;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
-using SystemProto;
 
 namespace Application.Core.Login.Servers
 {
-    public abstract class ChannelServerWrapper
+    public abstract class ChannelServerNode
     {
-        protected ChannelServerWrapper(string serverName, string serverHost, List<ChannelConfig> serverConfigs)
+        protected ChannelServerNode(string serverName, string serverHost, List<ChannelConfig> serverConfigs)
         {
             ServerName = serverName;
             ServerHost = serverHost;
@@ -21,13 +18,22 @@ namespace Application.Core.Login.Servers
         public string ServerName { get; protected set; }
         public List<ChannelConfig> ServerConfigs { get; }
 
+        public ServerProto.MonitorData? MonitorData { get; protected set; }
+        public DateTimeOffset LastPingTime { get; set; }
+
+        public void HealthCheck(ServerProto.MonitorData data)
+        {
+            LastPingTime = DateTimeOffset.Now;
+            MonitorData = data;
+        }
+
         public abstract void BroadcastMessage<TMessage>(string type, TMessage message) where TMessage : IMessage;
         public abstract CreatorProto.CreateCharResponseDto CreateCharacterFromChannel(CreatorProto.CreateCharRequestDto request);
         public abstract ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
     }
 
 
-    public class RemoteWorldChannel : ChannelServerWrapper
+    public class RemoteWorldChannel : ChannelServerNode
     {
         readonly ServiceProto.Master2ChannelService.Master2ChannelServiceClient _client;
         public RemoteWorldChannel(string serverName, string serverHost, string grpcHost, int grpcPort, List<ChannelConfig> channelConfigs) : base(serverName, serverHost, channelConfigs)
