@@ -283,6 +283,9 @@ namespace Application.Core.Channel.ServerData
                 return d;
 
             var dataRemote = _transport.GetTeam(party).Model;
+            if (dataRemote == null)
+                return null;
+
             d = new Team(_server, party, dataRemote.LeaderId);
             foreach (var member in dataRemote.Members)
             {
