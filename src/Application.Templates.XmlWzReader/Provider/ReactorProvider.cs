@@ -53,7 +53,7 @@ namespace Application.Templates.XmlWzReader.Provider
                             foreach (var eventNode in item.Elements())
                             {
                                 var evtNodeName = eventNode.GetName();
-                                if (evtNodeName == "timeOut")
+                                if (evtNodeName != null && evtNodeName.Equals("timeOut", StringComparison.OrdinalIgnoreCase))
                                     stateInfo.TimeOut = eventNode.GetIntValue();
                                 else if (int.TryParse(evtNodeName, out var evtIdx))
                                 {
@@ -94,7 +94,7 @@ namespace Application.Templates.XmlWzReader.Provider
                     list.Add(stateInfo);
                 }
             }
-            pEntry.StateInfoList = list.ToArray();
+            pEntry.StateInfoList = list.OrderBy(x => x.State).ToArray();
             if (linkedId > 0)
                 GetItem(linkedId)?.CloneLink(pEntry);
 

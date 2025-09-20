@@ -92,6 +92,10 @@ public class ReactorFactory
 
             bool areaSet = false;
             bool loadArea = reactorData.ActivateByTouch;
+            if (reactorData.StateInfoList.Length == 0)
+            {
+                stats.addState(0, [new StateData(999, null, null, 0)], -1);
+            }
             foreach (var item in reactorData.StateInfoList.Where(x => x.EventInfos.Length > 0))
             {
                 List<StateData> statedatas = new();

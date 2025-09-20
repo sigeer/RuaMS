@@ -58,39 +58,34 @@ namespace ServiceTest.Infrastructure.WZ
                 ContractResolver = new PrivateContractResolver(),
                 Formatting = Formatting.Indented
             };
-            var reactorId = 1008003;
-            var newRactor = ReactorFactory.getReactor(reactorId);
-            var newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
-            var oldReactor = OldReactorFactory.getReactor(reactorId);
-            var oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
+            var specialId = 2618000;
+            var specialNew = ReactorFactory.getReactor(specialId);
+            var specialNewStr = JsonConvert.SerializeObject(specialNew, options);
 
-            // link
-            reactorId = 1020005;
-            newRactor = ReactorFactory.getReactor(reactorId);
-            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
+            var specialOld = OldReactorFactory.getReactor(specialId);
+            var specialOldStr = JsonConvert.SerializeObject(specialOld, options);
+            Assert.That(specialNewStr, Is.EqualTo(specialOldStr));
 
-            oldReactor = OldReactorFactory.getReactor(reactorId);
-            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
+            var randomList = ProviderFactory.GetProvider<ReactorProvider>().LoadAll()
+                .Select(x => x.TemplateId).OrderBy(x => Guid.NewGuid()).Take(100).ToArray();
 
-            // mc
-            reactorId = 9980000;
-            newRactor = ReactorFactory.getReactorS(reactorId);
-            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
+            foreach (var reactorId in randomList)
+            {
+                var newRactor = ReactorFactory.getReactor(reactorId);
+                var newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
-            oldReactor = OldReactorFactory.getReactorS(reactorId);
-            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
+                var oldReactor = OldReactorFactory.getReactor(reactorId);
+                var oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
+                Assert.That(newRactorStr, Is.EqualTo(oldactorStr), $"ReactorId:{reactorId}");
 
-            reactorId = 2001;
-            newRactor = ReactorFactory.getReactor(reactorId);
-            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
+                var newRactorS = ReactorFactory.getReactor(reactorId);
+                var newRactorSStr = JsonConvert.SerializeObject(newRactorS, options);
 
-            oldReactor = OldReactorFactory.getReactor(reactorId);
-            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
+                var oldReactorS = OldReactorFactory.getReactor(reactorId);
+                var oldactorSStr = JsonConvert.SerializeObject(oldReactorS, options);
+                Assert.That(newRactorStr, Is.EqualTo(oldactorStr), $"ReactorId:{reactorId}");
+            }
         }
 
         [Test]
