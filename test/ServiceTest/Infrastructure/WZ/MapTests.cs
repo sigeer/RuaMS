@@ -12,7 +12,7 @@ namespace ServiceTest.Infrastructure.WZ
 {
     internal class MapTests
     {
-        int mapId = 100000000;
+        int mapId = 001000000;
         private static string GetMapImg(int mapid)
         {
             string mapName = mapid.ToString().PadLeft(9, '0');
@@ -58,28 +58,39 @@ namespace ServiceTest.Infrastructure.WZ
                 ContractResolver = new PrivateContractResolver(),
                 Formatting = Formatting.Indented
             };
-            var newRactor = ReactorFactory.getReactor(1008003);
+            var reactorId = 1008003;
+            var newRactor = ReactorFactory.getReactor(reactorId);
             var newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
-            var oldReactor = OldReactorFactory.getReactor(1008003);
-            var oldactorStr = JsonConvert.SerializeObject(newRactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
+            var oldReactor = OldReactorFactory.getReactor(reactorId);
+            var oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
+            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
 
             // link
-            newRactor = ReactorFactory.getReactor(1020005);
+            reactorId = 1020005;
+            newRactor = ReactorFactory.getReactor(reactorId);
             newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
-            oldReactor = OldReactorFactory.getReactor(1020005);
-            oldactorStr = JsonConvert.SerializeObject(newRactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
+            oldReactor = OldReactorFactory.getReactor(reactorId);
+            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
+            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
 
             // mc
-            newRactor = ReactorFactory.getReactorS(9980000);
+            reactorId = 9980000;
+            newRactor = ReactorFactory.getReactorS(reactorId);
             newRactorStr = JsonConvert.SerializeObject(newRactor, options);
 
-            oldReactor = OldReactorFactory.getReactorS(9980000);
-            oldactorStr = JsonConvert.SerializeObject(newRactor, options);
-            Assert.That(newRactorStr, Is.EqualTo(newRactorStr));
+            oldReactor = OldReactorFactory.getReactorS(reactorId);
+            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
+            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
+
+            reactorId = 2001;
+            newRactor = ReactorFactory.getReactor(reactorId);
+            newRactorStr = JsonConvert.SerializeObject(newRactor, options);
+
+            oldReactor = OldReactorFactory.getReactor(reactorId);
+            oldactorStr = JsonConvert.SerializeObject(oldReactor, options);
+            Assert.That(newRactorStr, Is.EqualTo(oldactorStr));
         }
 
         [Test]
@@ -102,6 +113,7 @@ namespace ServiceTest.Infrastructure.WZ
             Assert.That(newData.TimeLimit, Is.EqualTo(DataTool.getIntConvert("timeLimit", infoData, -1)));
             Assert.That(newData.FieldType, Is.EqualTo(DataTool.getIntConvert("fieldType", infoData, 0)));
             Assert.That(newData.FixedMobCapacity, Is.EqualTo(DataTool.getIntConvert("fixedMobCapacity", infoData, 500)));
+            Assert.That(newData.Reactors, Has.Some.Matches<MapReactorTemplate>(x => x.Id == 2001));
         }
     }
 }

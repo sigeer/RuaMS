@@ -27,6 +27,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
             var pEntry = new ReactorTemplate(reactorId);
             List<ReactorTemplate.StateInfo> list = [];
+            int linkedId = -1;
             foreach (var rootPropNode in xDoc.Elements())
             {
                 var rootPropName = rootPropNode.Attribute("name")?.Value;
@@ -36,7 +37,9 @@ namespace Application.Templates.XmlWzReader.Provider
                     {
                         var infoPropName = infoPropNode.GetName();
                         if (infoPropName == "link" && int.TryParse(infoPropNode.Attribute("value")?.Value, out var linkedReactorId))
-                            GetItem(linkedReactorId)?.CloneLink(pEntry);
+                        {
+                            linkedId = linkedReactorId;
+                        }
                     }
                 }
                 else if (int.TryParse(rootPropName, out var idx))
@@ -92,6 +95,9 @@ namespace Application.Templates.XmlWzReader.Provider
                 }
             }
             pEntry.StateInfoList = list.ToArray();
+            if (linkedId > 0)
+                GetItem(linkedId)?.CloneLink(pEntry);
+
             InsertItem(pEntry);
             return [pEntry];
         }

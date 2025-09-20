@@ -107,14 +107,14 @@ public class ReactorStats
     {
         private int type;
         private ItemQuantity? reactItem;
-        private List<int>? activeSkills;
+        private List<int> activeSkills;
         private sbyte nextState;
 
         public StateData(int type, ItemQuantity? reactItem, List<int>? activeSkills, sbyte nextState)
         {
             this.type = type;
             this.reactItem = reactItem;
-            this.activeSkills = activeSkills;
+            this.activeSkills = activeSkills ?? [];
             this.nextState = nextState;
         }
 
@@ -133,7 +133,7 @@ public class ReactorStats
             return reactItem;
         }
 
-        public List<int>? getActiveSkills()
+        public List<int> getActiveSkills()
         {
             return activeSkills;
         }
