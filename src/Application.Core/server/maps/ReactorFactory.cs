@@ -114,7 +114,7 @@ public class ReactorFactory
                             areaSet = true;
                         }
                     }
-                    statedatas.Add(new StateData(evt.EventType, reactItem, evt.ActiveSkillId.ToList(), (sbyte)evt.NextState));
+                    statedatas.Add(new StateData(evt.EventType, reactItem, evt.ActiveSkillId?.ToList(), (sbyte)evt.NextState));
                 }
                 stats.addState((sbyte)item.State, statedatas, item.TimeOut);
             }

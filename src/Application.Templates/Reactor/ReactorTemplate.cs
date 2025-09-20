@@ -40,7 +40,7 @@ namespace Application.Templates.Reactor
                 [WZPath("x/event/x/state")]
                 public int NextState { get; set; }
                 [WZPath("x/event/x/activeSkillID")]
-                public int[] ActiveSkillId { get; set; } = [];
+                public int[]? ActiveSkillId { get; set; }
 
                 public int Int0Value { get; set; }
                 public int Int1Value { get; set; } = 1;

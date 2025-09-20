@@ -59,7 +59,7 @@ namespace ServiceTest.Infrastructure.WZ
                 Formatting = Formatting.Indented
             };
 
-            var specialId = 2618000;
+            var specialId = 2001;
             var specialNew = ReactorFactory.getReactor(specialId);
             var specialNewStr = JsonConvert.SerializeObject(specialNew, options);
 
