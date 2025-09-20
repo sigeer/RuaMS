@@ -5,6 +5,7 @@ using Application.Templates.Quest;
 using Application.Templates.XmlWzReader.Provider;
 using client.inventory;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -17,10 +18,21 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.RegisterProvider(new QuestProvider(new Application.Templates.TemplateOptions()));
             });
+            var dataProvider = new SkillbookInformationProvider(null, null);
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
             var oldData = SkillbookInformationProvider.fetchSkillbooksFromQuests();
+            sw.Stop();
+
+            Console.WriteLine("old " + sw.Elapsed.TotalSeconds);
             var oldStr = JsonConvert.SerializeObject(oldData);
 
-            var newData = SkillbookInformationProvider.FetchSkillbooksFromQuest();
+            sw.Restart();
+            var newData = dataProvider.FetchSkillbooksFromQuest();
+            sw.Stop();
+            Console.WriteLine("new " + sw.Elapsed.TotalSeconds);
+
             var provider = ProviderFactory.GetProvider<QuestProvider>();
             var newStr = JsonConvert.SerializeObject(newData);
 

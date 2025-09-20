@@ -45,7 +45,7 @@ public class SkillbookInformationProvider : DataBootstrap
     private Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
-    static QuestProvider questProvider = ProviderFactory.GetProvider<QuestProvider>();
+    QuestProvider questProvider = ProviderFactory.GetProvider<QuestProvider>();
 
     public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<DataBootstrap> logger) : base(logger)
     {
@@ -131,19 +131,19 @@ public class SkillbookInformationProvider : DataBootstrap
         return -1;
     }
 
-    public static Dictionary<int, SkillBookEntry> FetchSkillbooksFromQuest()
+    public Dictionary<int, SkillBookEntry> FetchSkillbooksFromQuest()
     {
         Dictionary<int, SkillBookEntry> dataSource = new();
         foreach (QuestTemplate item in questProvider.LoadAll())
         {
-            FetchSkillbooksFromQuest(item.Act?.StartAct, item, questProvider, dataSource);
-            FetchSkillbooksFromQuest(item.Act?.EndAct, item, questProvider, dataSource);
+            FetchSkillbooksFromQuest(item.Act?.StartAct, item, dataSource);
+            FetchSkillbooksFromQuest(item.Act?.EndAct, item, dataSource);
         }
         questProvider.Release();
         return dataSource;
     }
 
-    static void FetchSkillbooksFromQuest(QuestAct? act, QuestTemplate template, QuestProvider provider, Dictionary<int, SkillBookEntry> dataSource)
+    void FetchSkillbooksFromQuest(QuestAct? act, QuestTemplate template, Dictionary<int, SkillBookEntry> dataSource)
     {
         if (act == null)
             return;
@@ -152,7 +152,7 @@ public class SkillbookInformationProvider : DataBootstrap
         {
             if (ItemConstants.isSkillBook(item.ItemID) && item.Count > 0)
             {
-                int questbook = FetchQuestbook(template, provider);
+                int questbook = FetchQuestbook(template);
                 if (questbook < 0)
                 {
                     dataSource.TryAdd(item.ItemID, SkillBookEntry.QUEST);
@@ -168,7 +168,7 @@ public class SkillbookInformationProvider : DataBootstrap
         {
             if (ItemConstants.is4thJobSkill(item.SkillID))
             {
-                int questbook = FetchQuestbook(template, provider);
+                int questbook = FetchQuestbook(template);
                 if (questbook < 0)
                 {
                     dataSource.TryAdd(-item.SkillID, SkillBookEntry.QUEST_REWARD);
@@ -181,7 +181,7 @@ public class SkillbookInformationProvider : DataBootstrap
         }
     }
 
-    static int FetchQuestbook(QuestTemplate? questData, QuestProvider provider)
+    int FetchQuestbook(QuestTemplate? questData)
     {
         if (questData == null || questData.Check == null)
             return -1;
@@ -189,18 +189,15 @@ public class SkillbookInformationProvider : DataBootstrap
         var checkData = questData.Check!;
         if (checkData.StartDemand != null)
         {
-            if (checkData.StartDemand.DemandItem.Length > 0)
+            foreach (var item in checkData.StartDemand.DemandItem)
             {
-                foreach (var item in checkData.StartDemand.DemandItem)
-                {
-                    if (ItemConstants.isQuestBook(item.ItemID))
-                        return item.ItemID;
-                }
+                if (ItemConstants.isQuestBook(item.ItemID))
+                    return item.ItemID;
             }
 
             foreach (var item in checkData.StartDemand.DemandQuest.Select(x => x.QuestID).ToHashSet())
             {
-                int book = FetchQuestbook(provider.GetItem(item), provider);
+                int book = FetchQuestbook(questProvider.GetItem(item));
                 if (book > -1)
                 {
                     return book;
