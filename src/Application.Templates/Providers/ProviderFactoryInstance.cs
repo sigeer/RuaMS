@@ -25,7 +25,7 @@ namespace Application.Templates.Providers
             if (_cached.TryGetValue(type, out var data) && data is TProvider p)
                 return p;
 
-            throw new ProviderNotFoundException(type.ToString());
+            throw new ProviderNotFoundException(type.Name.ToString());
         }
     }
 }

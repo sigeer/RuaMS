@@ -3,6 +3,7 @@ using Application.Templates.Quest;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz.Impl.AdoJobStore.Common;
 using server.quest;
 using static client.QuestStatus;
 
@@ -13,9 +14,11 @@ namespace Application.Core.Channel.DataProviders
         private static QuestFactory? _instance;
 
         public static QuestFactory Instance => _instance ?? throw new BusinessFatalException("QuestFactory 未注册");
+        QuestProvider provider = ProviderFactory.GetProvider<QuestProvider>();
         public QuestFactory(ILogger<DataBootstrap> logger) : base(logger)
         {
             Name = "任务";
+            provider.AddRef();
         }
 
         public void Register(IServiceProvider sp)
@@ -25,9 +28,9 @@ namespace Application.Core.Channel.DataProviders
 
 
         private volatile Dictionary<int, int> infoNumberQuests = new();
+
         protected override void LoadDataInternal()
         {
-            var provider = ProviderFactory.GetProvider<QuestProvider>();
             foreach (QuestTemplate item in provider.LoadAll())
             {
                 var q = new Quest(item);
@@ -47,6 +50,7 @@ namespace Application.Core.Channel.DataProviders
                     infoNumberQuests[infoNumber] = q.getId();
                 }
             }
+            provider.Release();
         }
 
         private Dictionary<short, int> medals = new();

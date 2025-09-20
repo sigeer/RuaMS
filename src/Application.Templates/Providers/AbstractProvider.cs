@@ -1,17 +1,23 @@
+using System.Collections.Concurrent;
 using System.Linq;
 
 namespace Application.Templates.Providers
 {
-    public abstract class AbstractProvider<TTemplate> : IProvider where TTemplate : AbstractTemplate
+    public abstract class AbstractProvider<TTemplate> : IProvider, IDisposable where TTemplate : AbstractTemplate
     {
-        protected readonly Dictionary<int, TTemplate> _templates;
+        protected readonly ConcurrentDictionary<int, TTemplate> _templates;
         public abstract ProviderType ProviderName { get; }
-        
+
         protected readonly TemplateOptions _options;
+
+        private int _refCount = 0;
+        private bool _disposed = false;
+        bool _hasAllLoaded = false;
+        Lock _loadAllLock = new Lock();
 
         protected AbstractProvider(TemplateOptions options)
         {
-            _templates = new Dictionary<int, TTemplate>();
+            _templates = new();
 
             _options = options;
         }
@@ -19,7 +25,22 @@ namespace Application.Templates.Providers
 
         public virtual IEnumerable<AbstractTemplate> LoadAll()
         {
-            return LoadAllInternal();
+            if (_hasAllLoaded)
+                return Values;
+
+            _loadAllLock.Enter();
+            try
+            {
+                if (_hasAllLoaded)
+                    return Values;
+
+                return LoadAllInternal();
+            }
+            finally
+            {
+                _hasAllLoaded = true;
+                _loadAllLock.Exit();
+            }
         }
         /// <summary>
         /// 一次性加载所有资源
@@ -68,17 +89,39 @@ namespace Application.Templates.Providers
                 _templates[GetKeyForItem(item)] = item;
         }
 
+        public IEnumerable<AbstractTemplate> Values => _templates.Values;
+
         protected virtual int GetKeyForItem(TTemplate item) => item.TemplateId;
 
-        public Dictionary<int, TTemplate>.Enumerator GetEnumerator() => _templates.GetEnumerator();
-        public Dictionary<int, TTemplate>.ValueCollection Values => _templates.Values;
-        public Dictionary<int, TTemplate>.KeyCollection Keys => _templates.Keys;
-        public virtual TTemplate this[int key]
+        public virtual TTemplate? this[int key]
         {
             get
             {
                 if (key < 0) throw new ArgumentOutOfRangeException(nameof(key));
                 return GetItem(key);
+            }
+        }
+        public void AddRef()
+        {
+            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+            Interlocked.Increment(ref _refCount);
+        }
+
+        public void Release()
+        {
+            if (Interlocked.Decrement(ref _refCount) == 0)
+            {
+                Dispose();
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _hasAllLoaded = false;
+                _templates.Clear();
             }
         }
     }

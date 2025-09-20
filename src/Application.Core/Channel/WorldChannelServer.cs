@@ -41,7 +41,8 @@ namespace Application.Core.Channel
 
         public ChannelServerConfig ServerConfig { get; set; }
         public string ServerName => ServerConfig.ServerName;
-        public SkillbookInformationProvider SkillbookInformationProvider { get; }
+        Lazy<SkillbookInformationProvider> _skillbookInformationProvider;
+        public SkillbookInformationProvider SkillbookInformationProvider => _skillbookInformationProvider.Value;
         public CashItemProvider CashItemProvider { get; }
         readonly ILogger<WorldChannelServer> _logger;
 
@@ -134,8 +135,7 @@ namespace Application.Core.Channel
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
             ILogger<WorldChannelServer> logger,
-            CashItemProvider cashItemProvider,
-            SkillbookInformationProvider skillbookInformationProvider
+            CashItemProvider cashItemProvider
             )
         {
             ServiceProvider = sp;
@@ -147,7 +147,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfigOptions.Value;
             PlayerStorage = new();
 
-            SkillbookInformationProvider = skillbookInformationProvider;
+            _skillbookInformationProvider = new(() => ServiceProvider.GetRequiredService<SkillbookInformationProvider>());
             CashItemProvider = cashItemProvider;
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);

@@ -22,9 +22,10 @@ namespace Application.Core.Channel.Modules
             {
                 option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new EquipProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions()));
             });
 
             var staticServices = app.Services.GetServices<IStaticService>();

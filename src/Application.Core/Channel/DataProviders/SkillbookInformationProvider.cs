@@ -21,7 +21,12 @@
 
 using Application.Core.ServerTransports;
 using Application.Core.Tools;
+using Application.Templates.Providers;
+using Application.Templates.Quest;
+using Application.Templates.XmlWzReader.Provider;
+using client.inventory;
 using Microsoft.Extensions.Logging;
+using Quartz.Impl.AdoJobStore.Common;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,14 +42,17 @@ namespace Application.Core.Channel.DataProviders;
  */
 public class SkillbookInformationProvider : DataBootstrap
 {
-    private volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
+    private Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
+    QuestProvider questProvider = ProviderFactory.GetProvider<QuestProvider>();
 
     public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<DataBootstrap> logger) : base(logger)
     {
         Name = "能手册";
         _transport = transport;
+
+        questProvider.AddRef();
     }
 
     protected override void LoadDataInternal()
@@ -52,7 +60,7 @@ public class SkillbookInformationProvider : DataBootstrap
         Stopwatch sw = new Stopwatch();
         Dictionary<int, SkillBookEntry> loadedSkillbooks = new();
         sw.Start();
-        loadedSkillbooks.putAll(fetchSkillbooksFromQuests());
+        loadedSkillbooks.putAll(FetchSkillbooksFromQuest());
         _logger.LogDebug("fetchSkillbooksFromQuests 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         sw.Restart();
         loadedSkillbooks.putAll(fetchSkillbooksFromReactors());
@@ -62,6 +70,7 @@ public class SkillbookInformationProvider : DataBootstrap
         _logger.LogDebug("fetchSkillbooksFromScripts 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         foundSkillbooks = loadedSkillbooks;
     }
+
 
     private static bool is4thJobSkill(int itemid)
     {
@@ -122,7 +131,85 @@ public class SkillbookInformationProvider : DataBootstrap
         return -1;
     }
 
-    private static Dictionary<int, SkillBookEntry> fetchSkillbooksFromQuests()
+    public Dictionary<int, SkillBookEntry> FetchSkillbooksFromQuest()
+    {
+        Dictionary<int, SkillBookEntry> dataSource = new();
+        foreach (QuestTemplate item in questProvider.LoadAll())
+        {
+            FetchSkillbooksFromQuest(item.Act?.StartAct, item, dataSource);
+            FetchSkillbooksFromQuest(item.Act?.EndAct, item, dataSource);
+        }
+        questProvider.Release();
+        return dataSource;
+    }
+
+    void FetchSkillbooksFromQuest(QuestAct? act, QuestTemplate template, Dictionary<int, SkillBookEntry> dataSource)
+    {
+        if (act == null)
+            return;
+
+        foreach (var item in act.Items)
+        {
+            if (ItemConstants.isSkillBook(item.ItemID) && item.Count > 0)
+            {
+                int questbook = FetchQuestbook(template);
+                if (questbook < 0)
+                {
+                    dataSource.TryAdd(item.ItemID, SkillBookEntry.QUEST);
+                }
+                else
+                {
+                    dataSource.TryAdd(item.ItemID, SkillBookEntry.QUEST_BOOK);
+                }
+            }
+        }
+
+        foreach (var item in act.Skills)
+        {
+            if (ItemConstants.is4thJobSkill(item.SkillID))
+            {
+                int questbook = FetchQuestbook(template);
+                if (questbook < 0)
+                {
+                    dataSource.TryAdd(-item.SkillID, SkillBookEntry.QUEST_REWARD);
+                }
+                else
+                {
+                    dataSource.TryAdd(-item.SkillID, SkillBookEntry.QUEST_BOOK);
+                }
+            }
+        }
+    }
+
+    int FetchQuestbook(QuestTemplate? questData)
+    {
+        if (questData == null || questData.Check == null)
+            return -1;
+
+        var checkData = questData.Check!;
+        if (checkData.StartDemand != null)
+        {
+            foreach (var item in checkData.StartDemand.DemandItem)
+            {
+                if (ItemConstants.isQuestBook(item.ItemID))
+                    return item.ItemID;
+            }
+
+            foreach (var item in checkData.StartDemand.DemandQuest.Select(x => x.QuestID).ToHashSet())
+            {
+                int book = FetchQuestbook(questProvider.GetItem(item));
+                if (book > -1)
+                {
+                    return book;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    [Obsolete("旧代码用于对比")]
+    public static Dictionary<int, SkillBookEntry> fetchSkillbooksFromQuests()
     {
         DataProvider questDataProvider = DataProviderFactory.getDataProvider(WZFiles.QUEST);
         Data actData = questDataProvider.getData("Act.img");

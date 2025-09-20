@@ -1,0 +1,42 @@
+using Application.Core.Channel.DataProviders;
+using Application.Shared.Items;
+using Application.Templates.Providers;
+using Application.Templates.Quest;
+using Application.Templates.XmlWzReader.Provider;
+using client.inventory;
+using Newtonsoft.Json;
+using System.Diagnostics;
+
+namespace ServiceTest.Infrastructure.WZ
+{
+    public class SkillBookTests
+    {
+        [Test]
+        public void LoadFromQuestTest()
+        {
+            ProviderFactory.Initilaize(o =>
+            {
+                o.RegisterProvider(new QuestProvider(new Application.Templates.TemplateOptions()));
+            });
+            var dataProvider = new SkillbookInformationProvider(null, null);
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
+            var oldData = SkillbookInformationProvider.fetchSkillbooksFromQuests();
+            sw.Stop();
+
+            Console.WriteLine("old " + sw.Elapsed.TotalSeconds);
+            var oldStr = JsonConvert.SerializeObject(oldData);
+
+            sw.Restart();
+            var newData = dataProvider.FetchSkillbooksFromQuest();
+            sw.Stop();
+            Console.WriteLine("new " + sw.Elapsed.TotalSeconds);
+
+            var provider = ProviderFactory.GetProvider<QuestProvider>();
+            var newStr = JsonConvert.SerializeObject(newData);
+
+            Assert.That(newStr, Is.EqualTo(oldStr));
+        }
+    }
+}

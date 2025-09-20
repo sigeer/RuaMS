@@ -1,19 +1,19 @@
+using System.Drawing;
+
 namespace Application.Templates.Skill
 {
     public sealed class MobSkillLevelData
     {
-        public MobSkillLevelData(int skillId, int level)
+        public MobSkillLevelData()
         {
-            nSkillID = skillId;
-            nSLV = level;
             SummonIDs = Array.Empty<int>();
         }
-
-        public int nSkillID { get; set; }
+        [WZPath("level/-/$name")]
         public int nSLV { get; set; }
         /// <summary>
         /// Skill cooldown (interval between casts) in seconds.
         /// </summary>
+        [WZPath("level/-/interval")]
         public int Interval { get; set; }
         public int MpCon { get; set; }
         /// <summary>
@@ -22,16 +22,15 @@ namespace Application.Templates.Skill
         public int Time { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        /// <summary>
-        /// Minimum mob HP for this skill to be cast.
-        /// </summary>
+        [WZPath("level/-/hp")]
         public int HP { get; set; }
         public int Prop { get; set; }
-
+        [WZPath("level/-/-")]
         public int[] SummonIDs { get; set; }
         public int SummonEffect { get; set; }
         public int Limit { get; set; }
         public int Count { get; set; }
-        public bool RandomTarget { get; set; }
+        public Point Lt { get; set; }
+        public Point Rb { get; set; }
     }
 }

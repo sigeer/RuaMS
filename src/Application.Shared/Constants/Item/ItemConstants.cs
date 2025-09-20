@@ -297,4 +297,20 @@ public class ItemConstants
     {
         return itemId >= 30000 && itemId < 35000;
     }
+
+    public static bool is4thJobSkill(int itemid)
+    {
+        return itemid / 10000 % 10 == 2;
+    }
+
+    public static bool isSkillBook(int itemid)
+    {
+        return itemid >= ItemId.SKILLBOOK_MIN_ITEMID && itemid < ItemId.SKILLBOOK_MAX_ITEMID;
+    }
+
+    public static bool isQuestBook(int itemid)
+    {
+        return itemid >= 4001107 && itemid <= 4001114 || itemid >= 4161015 && itemid <= 4161023;
+    }
+
 }
