@@ -57,7 +57,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error during onHit script for reactor: {ReactorId}", reactor.getId());
+            _logger.LogWarning(e, "Error during onHit script for reactor: {ReactorId}", reactor.getId());
         }
     }
 
@@ -75,7 +75,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error during act script for reactor: {ReactorId}", reactor.getId());
+            _logger.LogWarning(e, "Error during act script for reactor: {ReactorId}", reactor.getId());
         }
     }
 
@@ -119,7 +119,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error during {ScriptFunction} script for reactor: {ReactorId}", functionName, reactor.getId());
+            _logger.LogWarning(e, "Error during {ScriptFunction} script for reactor: {ReactorId}", functionName, reactor.getId());
         }
     }
 

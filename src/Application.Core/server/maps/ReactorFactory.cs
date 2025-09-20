@@ -92,7 +92,11 @@ public class ReactorFactory
 
             bool areaSet = false;
             bool loadArea = reactorData.ActivateByTouch;
-            foreach (var item in reactorData.StateInfoList)
+            if (reactorData.StateInfoList.Length == 0)
+            {
+                stats.addState(0, [new StateData(999, null, null, 0)], -1);
+            }
+            foreach (var item in reactorData.StateInfoList.Where(x => x.EventInfos.Length > 0))
             {
                 List<StateData> statedatas = new();
                 foreach (var evt in item.EventInfos)
@@ -110,7 +114,7 @@ public class ReactorFactory
                             areaSet = true;
                         }
                     }
-                    statedatas.Add(new StateData(evt.EventType, reactItem, evt.ActiveSkillId.ToList(), (sbyte)evt.NextState));
+                    statedatas.Add(new StateData(evt.EventType, reactItem, evt.ActiveSkillId?.ToList(), (sbyte)evt.NextState));
                 }
                 stats.addState((sbyte)item.State, statedatas, item.TimeOut);
             }
