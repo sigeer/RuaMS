@@ -90,7 +90,6 @@ namespace Application.Core.Channel
             services.AddSingleton<LifeFactory>();
             services.AddSingleton<IStaticService, LifeFactory>(sp => sp.GetRequiredService<LifeFactory>());
 
-            services.AddSingleton<WzStringProvider>();
             services.AddSingleton<WzStringQueryService>();
 
             services.AddSingleton<ShopManager>();

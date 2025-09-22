@@ -32,6 +32,7 @@ using Application.Shared.Objects;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Templates.Providers;
+using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using scripting.Event;
@@ -60,11 +61,11 @@ public class MapFactory : IStaticService
 
     private MapProvider mapSource;
 
-    readonly WzStringProvider _wzStringProvider;
-    public MapFactory(WzStringProvider wzStringProvider)
+    readonly StringProvider _stringProvider;
+    public MapFactory()
     {
-        _wzStringProvider = wzStringProvider;
         mapSource = ProviderFactory.GetProvider<MapProvider>();
+        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     private void loadLifeFromWz(IMap map, MapTemplate mapData)
@@ -385,8 +386,8 @@ public class MapFactory : IStaticService
         return mapName;
     }
 
-    public string loadPlaceName(int mapid) => _wzStringProvider.GetMapNameById(mapid).PlaceName;
+    public string loadPlaceName(int mapid) => _stringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapid)?.MapName ?? StringConstants.WZ_NoName;
 
-    public string loadStreetName(int mapid) => _wzStringProvider.GetMapNameById(mapid).StreetName;
+    public string loadStreetName(int mapid) => _stringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapid)?.StreetName ?? StringConstants.WZ_NoName;
 
 }

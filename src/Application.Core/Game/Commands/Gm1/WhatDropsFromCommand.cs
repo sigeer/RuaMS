@@ -1,4 +1,7 @@
 using Application.Core.Channel.DataProviders;
+using Application.Templates.Providers;
+using Application.Templates.String;
+using Application.Templates.XmlWzReader.Provider;
 
 namespace Application.Core.Game.Commands.Gm1;
 public class WhatDropsFromCommand : CommandBase
@@ -19,10 +22,10 @@ public class WhatDropsFromCommand : CommandBase
         string monsterName = player.getLastCommandMessage();
         string output = "";
         int limit = 3;
-        var dataList = MonsterInformationProvider.getInstance().getMobsIDsFromName(monsterName).Take(limit);
+        var dataList = ProviderFactory.GetProvider<StringProvider>().Search(StringCategory.Mob, monsterName, limit).OfType<StringTemplate>();
         foreach (var data in dataList)
         {
-            int mobId = data.Id;
+            int mobId = data.TemplateId;
             string mobName = data.Name;
             output += mobName + " drops the following items:\r\n\r\n";
             foreach (var drop in MonsterInformationProvider.getInstance().retrieveDrop(mobId))

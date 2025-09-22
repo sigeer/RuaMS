@@ -1,42 +1,31 @@
-using Application.Resources;
-using AutoMapper;
+using Application.Templates.Providers;
+using Application.Templates.String;
+using Application.Templates.XmlWzReader.Provider;
 using ZLinq;
 
 namespace Application.Core.Channel.ServerData
 {
     public class WzStringQueryService
     {
-        readonly IMapper _mapper;
-        readonly WzStringProvider _wzStringProvider;
-        public WzStringQueryService(IMapper mapper, WzStringProvider wzStringProvider)
-        {
-            _mapper = mapper;
-            _wzStringProvider = wzStringProvider;
-        }
-
+        readonly StringProvider _stringProvider = ProviderFactory.GetProvider<StringProvider>();
         public WzFindResult<WzFindMapResultItem> FindMapIdByName(string name)
         {
-            var filtered = _wzStringProvider.GetAllMap().AsValueEnumerable()
-                .Where(x => x.PlaceName.Contains(name, StringComparison.OrdinalIgnoreCase) || x.StreetName.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new WzFindMapResultItem(x.Id, x.PlaceName, x.StreetName)).Take(50).ToList();
+            var filtered = _stringProvider.Search(StringCategory.Map, name).OfType<StringMapTemplate>()
+                .Select(x => new WzFindMapResultItem(x.TemplateId, x.MapName!, x.StreetName!)).ToList();
             return new WzFindResult<WzFindMapResultItem>(filtered, name);
         }
 
         public WzFindResult<WzFindResultItem> FindItemIdByName(string name)
         {
-            var list = _wzStringProvider.GetAllItem().AsValueEnumerable()
-                .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new WzFindResultItem(x.Id, x.Name)).Take(50).ToList();
+            var list = _stringProvider.Search(StringCategory.Item, name).OfType<StringTemplate>()
+                .Select(x => new WzFindResultItem(x.TemplateId, x.Name)).ToList();
             return new WzFindResult<WzFindResultItem>(list, name);
         }
 
-        Dictionary<int, ObjectName>? _mobNameCache;
-
         public WzFindResult<WzFindResultItem> FindMobIdByName(string name)
         {
-            var list = _wzStringProvider.GetAllMonster().AsValueEnumerable()
-                .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new WzFindResultItem(x.Id, x.Name)).Take(50).ToList();
+            var list = _stringProvider.Search(StringCategory.Mob, name).OfType<StringTemplate>()
+                .Select(x => new WzFindResultItem(x.TemplateId, x.Name)).ToList();
             return new WzFindResult<WzFindResultItem>(list, name);
         }
     }

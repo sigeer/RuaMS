@@ -31,6 +31,7 @@ using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
 using Application.Templates.Providers;
+using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
@@ -57,21 +58,18 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
 
     readonly AutoBanDataManager _autoBanDataManager;
-    readonly WzStringProvider _wzStringProvider;
 
     readonly EquipProvider _equipProvider = ProviderFactory.GetProvider<EquipProvider>();
     readonly ItemProvider _itemProvider = ProviderFactory.GetProvider<ItemProvider>();
+    readonly StringProvider _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     public ItemInformationProvider(
         ILogger<DataBootstrap> logger,
-        AutoBanDataManager autoBanDataManager,
-        WzStringProvider wzStringProvider) : base(logger)
+        AutoBanDataManager autoBanDataManager) : base(logger)
     {
         Name = "物品数据";
 
 
         _autoBanDataManager = autoBanDataManager;
-
-        _wzStringProvider = wzStringProvider;
     }
 
     public void Register(IServiceProvider sp)
@@ -959,12 +957,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public string? getName(int itemId)
     {
-        return _wzStringProvider.GetItemNameById(itemId);
+        return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Name;
     }
 
     public string? getMsg(int itemId)
     {
-        return _wzStringProvider.GetItemMsgById(itemId);
+        return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Message;
     }
 
     /// <summary>

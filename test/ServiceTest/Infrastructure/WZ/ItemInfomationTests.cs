@@ -4,6 +4,7 @@ using Application.Templates.Item.Consume;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
+using client.inventory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -23,12 +24,12 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
                 o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions()));
             });
             oldProvider = new OldItemInformationProvider();
             newProvider = new ItemInformationProvider(
                 new Mock<ILogger<DataBootstrap>>().Object,
-                null,
-                new Application.Resources.WzStringProvider()
+                null
                 );
             newProvider.Register(newProvider);
 
@@ -37,12 +38,17 @@ namespace ServiceTest.Infrastructure.WZ
                 ContractResolver = new PrivateContractResolver(),
                 Formatting = Formatting.Indented
             };
-            _stringProvider.LoadAll();
+        }
+
+        [OneTimeTearDown]
+        public void Finally()
+        {
+            _stringProvider.Dispose();
         }
 
         int[] TakeRandom(int count = 10)
         {
-            return _stringProvider[StringCategory.Item].Values.Select(x => x.TemplateId)
+            return _stringProvider.GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Values.SelectMany(x => x).ToArray();
@@ -56,7 +62,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         int[] TakeByTypeRandom(Func<int, bool> func, int count = 10)
         {
-            return _stringProvider[StringCategory.Item].Values.Select(x => x.TemplateId)
+            return _stringProvider.GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Where(x => func(x.Key)).SelectMany(x => x.Value).ToArray();
@@ -418,6 +424,12 @@ namespace ServiceTest.Infrastructure.WZ
         {
             // 罗赛伦药水, 新旧代码对specEx/spec处理方式不同
             int[] special = [2022224, 2022225, 2022226, 2022227, 2022228];
+
+            var specialId = 2022186;
+            var newSpecialData = newProvider.getItemEffect(specialId);
+            var oldSpecialData = oldProvider.getItemEffect(specialId);
+            Assert.That(ToJson(newSpecialData), Is.EqualTo(ToJson(oldSpecialData)), $"Id = {specialId}");
+
             foreach (var item in TakeByTypeRandom(x => x >= 200 && x < 300).Except(special))
             {
                 var newData = newProvider.getItemEffect(item);

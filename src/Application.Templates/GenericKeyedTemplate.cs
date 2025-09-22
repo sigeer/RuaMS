@@ -7,9 +7,11 @@ namespace Application.Templates
     /// </summary>
     /// <typeparam name="TKey">Collection key</typeparam>
     /// <typeparam name="TValue">Collection value of type AbstractTemplate</typeparam>
-    public class GenericKeyedTemplate<TValue> : AbstractTemplate where TValue : AbstractTemplate
+    public abstract class GenericKeyedTemplate<TValue> : AbstractTemplate where TValue : AbstractTemplate
     {
         protected Dictionary<int, TValue> _categoryData;
+        bool _hasLoadedAll = false;
+
 
         public GenericKeyedTemplate(int templateId) : base(templateId)
         {
@@ -18,26 +20,35 @@ namespace Application.Templates
 
         public int Count => _categoryData.Count;
 
-        public TValue this[int key] =>
-            _categoryData.ContainsKey(key)
-                ? _categoryData[key]
-                : default;
+        public TValue? this[int key] => _categoryData.GetValueOrDefault(key);
 
         public void Add(TValue value)
         {
-            if (value is null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
+            _categoryData.TryAdd(value.TemplateId, value);
+        }
 
-            var existing = this[value.TemplateId];
+        public Dictionary<int, TValue>.KeyCollection Keys => _categoryData.Keys;
+        public Dictionary<int, TValue>.ValueCollection Values => _categoryData.Values;
 
-            if (existing == null) // trying to insert VIP shields twice for some reason??
+
+
+        public IEnumerable<TValue> LoadAll()
+        {
+            if (_hasLoadedAll)
+                return Values;
+
+            try
             {
-                _categoryData.Add(value.TemplateId, value);
+                LoadAllInternal();
+                return Values;
+            }
+            finally
+            {
+                _hasLoadedAll = true;
             }
         }
 
-        public Dictionary<int, TValue>.Enumerator GetEnumerator() => _categoryData.GetEnumerator();
-        public Dictionary<int, TValue>.ValueCollection Values => _categoryData.Values;
-
-        protected virtual int GetKeyForItem(TValue value) => value.TemplateId;
+        protected abstract void LoadAllInternal();
     }
 }

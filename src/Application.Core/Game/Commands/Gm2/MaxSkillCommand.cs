@@ -1,21 +1,23 @@
 using Application.Core.Game.Skills;
 using Application.Resources;
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
 
 namespace Application.Core.Game.Commands.Gm2;
 
 public class MaxSkillCommand : CommandBase
 {
-    readonly WzStringProvider _wzStringProvider;
-    public MaxSkillCommand(WzStringProvider wzStringReader) : base(2, "maxskill")
+    readonly StringProvider _stringProvider;
+    public MaxSkillCommand() : base(2, "maxskill")
     {
-        _wzStringProvider = wzStringReader;
+        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
         Description = "Max out all job skills.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var skillId in _wzStringProvider.GetAllSkillIdList())
+        foreach (var skillId in _stringProvider.GetSubProvider(Templates.String.StringCategory.Skill).LoadAll().Select(x => x.TemplateId))
         {
             try
             {

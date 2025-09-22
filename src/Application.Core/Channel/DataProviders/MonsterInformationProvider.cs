@@ -23,6 +23,9 @@
 using Application.Core.Game.Life;
 using Application.Core.ServerTransports;
 using Application.Resources;
+using Application.Templates.Providers;
+using Application.Templates.String;
+using Application.Templates.XmlWzReader.Provider;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,13 +39,13 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 {
     readonly IChannelServerTransport _transport;
     readonly IMapper _mapper;
-    readonly WzStringProvider _wzStringProvider;
-    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger, WzStringProvider wzStringProvider) : base(logger)
+    readonly StringProvider _stringProvider;
+    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger) : base(logger)
     {
         Name = "怪物数据";
         _transport = transport;
         _mapper = mapper;
-        _wzStringProvider = wzStringProvider;
+        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     /// <summary>
@@ -260,14 +263,6 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         return mobAttackInfo.GetValueOrDefault((monsterId << 3) + attackPos);
     }
 
-    Dictionary<int, string> allMobNameCache = [];
-
-
-    public List<ObjectName> getMobsIDsFromName(string search)
-    {
-        return _wzStringProvider.GetAllMonster().Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
-    }
-
     public bool isBoss(int id)
     {
         if (!mobBossCache.TryGetValue(id, out var boss))
@@ -292,7 +287,7 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 
     public string getMobNameFromId(int id)
     {
-        return _wzStringProvider.GetMonsterName(id);
+        return _stringProvider.GetSubProvider(StringCategory.Mob).GetRequiredItem<StringTemplate>(id)?.Name ?? StringConstants.WZ_MissingNo;
     }
 
     public void clearDrops()

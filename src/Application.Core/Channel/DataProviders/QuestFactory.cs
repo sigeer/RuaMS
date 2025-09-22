@@ -94,7 +94,7 @@ namespace Application.Core.Channel.DataProviders
 
             foreach (Quest mq in quests.Values)
             {
-                if (mq.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || mq.Parent.Contains(search, StringComparison.OrdinalIgnoreCase))
+                if (mq.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || (mq.Parent != null && mq.Parent.Contains(search, StringComparison.OrdinalIgnoreCase)))
                 {
                     ret.Add(mq);
                 }

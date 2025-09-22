@@ -25,7 +25,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Resources;
+using Application.Shared.Constants.Npc;
 using Application.Shared.WzEntity;
+using Application.Templates.Providers;
+using Application.Templates.String;
+using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using tools;
@@ -56,11 +60,11 @@ public class LifeFactory : IStaticService
 
     private HashSet<int> hpbarBosses;
 
-    readonly WzStringProvider _wzStringProvider;
-    public LifeFactory(WzStringProvider wzStringProvider)
+    readonly StringProvider _stringProvider;
+    public LifeFactory()
     {
-        _wzStringProvider = wzStringProvider;
         hpbarBosses = getHpBarBosses();
+        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     private HashSet<int> getHpBarBosses()
@@ -146,7 +150,7 @@ public class LifeFactory : IStaticService
         stats.setExplosiveReward(DataTool.getIntConvert("explosiveReward", monsterInfoData, stats.isExplosiveReward() ? 1 : 0) > 0);
         stats.setFfaLoot(DataTool.getIntConvert("publicReward", monsterInfoData, stats.isFfaLoot() ? 1 : 0) > 0);
         stats.setUndead(DataTool.getIntConvert("undead", monsterInfoData, stats.isUndead() ? 1 : 0) > 0);
-        stats.setName(_wzStringProvider.GetMonsterName(mid));
+        stats.setName(_stringProvider.GetSubProvider(StringCategory.Mob).GetRequiredItem<StringTemplate>(mid)?.Name ?? StringConstants.WZ_MissingNo);
         stats.setBuffToGive(DataTool.getIntConvert("buff", monsterInfoData, stats.getBuffToGive()));
         stats.setCP(DataTool.getIntConvert("getCP", monsterInfoData, stats.getCP()));
         stats.setRemoveOnMiss(DataTool.getIntConvert("removeOnMiss", monsterInfoData, stats.removeOnMiss() ? 1 : 0) > 0);
@@ -359,11 +363,11 @@ public class LifeFactory : IStaticService
 
     public string getNPCDefaultTalk(int nid)
     {
-        return _wzStringProvider.GetNpcString(nid).DefaultTalk;
+        return _stringProvider.GetSubProvider(StringCategory.Npc).GetRequiredItem<StringNpcTemplate>(nid)?.DefaultTalk ?? "(...)";
     }
 
     public NPCStats GetNPCStats(int npcId)
     {
-        return new NPCStats(_wzStringProvider.GetNpcString(npcId).Name);
+        return new NPCStats(_stringProvider.GetSubProvider(StringCategory.Npc).GetRequiredItem<StringNpcTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo);
     }
 }
