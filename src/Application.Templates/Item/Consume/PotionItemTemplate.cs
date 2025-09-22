@@ -4,7 +4,7 @@ namespace Application.Templates.Item.Consume
     /// 治疗、解除debuff、附加增益buff
     /// </summary>
     [GenerateTag]
-    public class PotionItemTemplate : ConsumeItemTemplate, IPackagedItem, IMesoUpEffect, IItemUpEffect
+    public class PotionItemTemplate : ConsumeItemTemplate, IPackagedItem, IMesoUpEffect, IItemUpEffect, IMapProtectEffect
     {
         public PotionItemTemplate(int templateId) : base(templateId)
         {
