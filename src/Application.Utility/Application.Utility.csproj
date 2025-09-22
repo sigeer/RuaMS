@@ -9,10 +9,11 @@
 	<ItemGroup>
 		<PackageReference Include="Polly" Version="8.6.1" />
 		<PackageReference Include="Quartz" Version="3.15.0" />
+		<PackageReference Include="System.Management" Version="9.0.9" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
 		<PackageReference Include="AutoMapper" Version="14.0.0" />
 		<PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="8.0.0" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.8" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>

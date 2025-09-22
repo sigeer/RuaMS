@@ -18,6 +18,7 @@ using ItemProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
+using ServerProto;
 using SyncProto;
 using System.Net;
 using SystemProto;
@@ -743,6 +744,11 @@ namespace Application.Core.Channel.InProgress
         public ServerStateDto GetServerState()
         {
             return _server.GetServerStats();
+        }
+
+        public void HealthCheck(MonitorData data)
+        {
+             _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().ServerName].HealthCheck(data);
         }
     }
 }

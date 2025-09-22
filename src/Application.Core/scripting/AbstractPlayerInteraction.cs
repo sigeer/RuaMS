@@ -91,7 +91,7 @@ public class AbstractPlayerInteraction
 
     public int getHourOfDay()
     {
-        return c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().Hour;
+        return c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().ToLocalTime().Hour;
     }
 
     public int getMarketPortalId(int mapId)

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package ServerProto;
+
+message MonitorData {
+  int64 processMemoryUsed = 1;
+
+  google.protobuf.DoubleValue systemCPUUsage = 2;
+  google.protobuf.DoubleValue systemMemoryUsage = 3;
+
+  int64 heapSize = 4;
+  int32 gen0Count = 5;
+  int32 gen1Count = 6;
+  int32 gen2Count = 7;
+
+  int64 internalSent = 8;
+  int64 internalRecv = 9;
+  int64 externalSent = 10;
+  int64 externalRecv = 11;
+}

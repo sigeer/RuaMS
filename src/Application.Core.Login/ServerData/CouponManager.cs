@@ -78,7 +78,7 @@ namespace Application.Core.Login.Datas
             lock (activeCoupons)
             {
                 activeCoupons.Clear();
-                var d = _server.GetCurrentTimeDateTimeOffset();
+                var d = _server.GetCurrentTimeDateTimeOffset().ToLocalTime();
 
                 int weekDay = (int)d.DayOfWeek;
                 weekDay = weekDay == 0 ? 7 : weekDay;

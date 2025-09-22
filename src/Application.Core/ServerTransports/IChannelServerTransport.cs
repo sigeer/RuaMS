@@ -25,7 +25,7 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
 
         Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels);
-
+        void HealthCheck(ServerProto.MonitorData data);
         void DropWorldMessage(MessageProto.DropMessageRequest request);
         /// <summary>
         /// 向全服发送数据包

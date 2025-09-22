@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
+
 #if IsStandalone
 using Application.Core.Channel.InProgress;
 #endif
@@ -168,7 +169,10 @@ try
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            app.MapScalarApiReference();
+            app.MapScalarApiReference(options =>
+            {
+                options.AddServer($"http://localhost:{builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort)}");
+            });
             app.MapOpenApi();
         }
 

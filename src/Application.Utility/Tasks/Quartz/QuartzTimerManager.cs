@@ -68,6 +68,33 @@ public class QuartzTimerManager : ITimerManager
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
     public ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
 
+    public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, long repeatTime, long? delay = null) =>
+        await RegisterAsync(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
+    public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
+    {
+        var job = JobBuilder.Create<QuartzJob>()
+            .WithIdentity(r.Name)
+            .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, true } })
+            .Build();
+
+        var builder = TriggerBuilder.Create()
+                        .WithIdentity("T_" + r.Name);
+        if (delay == null)
+            builder.StartNow();
+        else
+            builder.StartAt(DateTimeOffset.UtcNow.Add(delay.Value));
+
+        var trigger = builder
+                        .WithSimpleSchedule(x => x
+                            .WithInterval(repeatTime) // 设置间隔为1秒
+                            .RepeatForever()) // 一直重复执行
+                        .Build();
+
+        await Scheduler.ScheduleJob(job, trigger);
+        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
+    }
+
+
     public ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay)
     {
         var job = JobBuilder.Create<QuartzJob>()
