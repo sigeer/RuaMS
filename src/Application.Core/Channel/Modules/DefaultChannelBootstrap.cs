@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Modules
                 option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new EquipProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
                 option.RegisterProvider(new StringProvider(new Templates.TemplateOptions()));
             });
 

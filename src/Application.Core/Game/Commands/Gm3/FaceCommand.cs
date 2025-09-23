@@ -23,7 +23,7 @@ public class FaceCommand : CommandBase
             if (paramsValue.Length == 1)
             {
                 int itemId = int.Parse(paramsValue[0]);
-                if (!ItemConstants.isFace(itemId) || ItemInformationProvider.getInstance().getName(itemId) == null)
+                if (!ItemConstants.isFace(itemId) || !ItemInformationProvider.getInstance().HasTemplate(itemId))
                 {
                     player.yellowMessage("Face id '" + paramsValue[0] + "' does not exist.");
                     return;
@@ -36,7 +36,7 @@ public class FaceCommand : CommandBase
             else
             {
                 int itemId = int.Parse(paramsValue[1]);
-                if (!ItemConstants.isFace(itemId) || ItemInformationProvider.getInstance().getName(itemId) == null)
+                if (!ItemConstants.isFace(itemId) || !ItemInformationProvider.getInstance().HasTemplate(itemId))
                 {
                     player.yellowMessage("Face id '" + paramsValue[1] + "' does not exist.");
                 }

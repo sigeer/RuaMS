@@ -527,8 +527,7 @@ namespace Application.Core.Managers
             foreach (Item item in player.getInventory(InventoryType.EQUIPPED).list())
             {
                 Equip nEquip = (Equip)item;
-                var itemName = ii.getName(nEquip.getItemId());
-                if (itemName == null)
+                if (!ii.HasTemplate(nEquip.getItemId()))
                 {
                     continue;
                 }

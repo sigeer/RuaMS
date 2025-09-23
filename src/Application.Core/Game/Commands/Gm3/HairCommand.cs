@@ -18,46 +18,38 @@ public class HairCommand : CommandBase
             return;
         }
 
-        try
+        IPlayer? targetPlayer = c.OnlinedCharacter;
+        string? hairStr;
+        if (paramsValue.Length == 1)
         {
-            if (paramsValue.Length == 1)
-            {
-                int itemId = int.Parse(paramsValue[0]);
-                if (!ItemConstants.isHair(itemId) || ItemInformationProvider.getInstance().getName(itemId) == null)
-                {
-                    player.yellowMessage("Hair id '" + paramsValue[0] + "' does not exist.");
-                    return;
-                }
-
-                player.setHair(itemId);
-                player.updateSingleStat(Stat.HAIR, itemId);
-                player.equipChanged();
-            }
-            else
-            {
-                int itemId = int.Parse(paramsValue[1]);
-                if (!ItemConstants.isHair(itemId) || ItemInformationProvider.getInstance().getName(itemId) == null)
-                {
-                    player.yellowMessage("Hair id '" + paramsValue[1] + "' does not exist.");
-                    return;
-                }
-
-                var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-                if (victim != null)
-                {
-                    victim.setHair(itemId);
-                    victim.updateSingleStat(Stat.HAIR, itemId);
-                    victim.equipChanged();
-                }
-                else
-                {
-                    player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
-                }
-            }
+            hairStr = paramsValue[0];
         }
-        catch (Exception e)
+        else
         {
-            log.Error(e.ToString());
+            hairStr = paramsValue[1];
+            targetPlayer = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         }
+
+        if (!int.TryParse(hairStr, out var hairId))
+        {
+            player.yellowMessage("Syntax: !hair [<playername>] <hairid>");
+            return;
+        }
+
+        if (!ItemConstants.isHair(hairId) || !ItemInformationProvider.getInstance().HasTemplate(hairId))
+        {
+            player.yellowMessage("Hair id '" + hairId + "' does not exist.");
+            return;
+        }
+
+        if (targetPlayer == null)
+        {
+            player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
+            return;
+        }
+
+        targetPlayer.setHair(hairId);
+        targetPlayer.updateSingleStat(Stat.HAIR, hairId);
+        targetPlayer.equipChanged();
     }
 }

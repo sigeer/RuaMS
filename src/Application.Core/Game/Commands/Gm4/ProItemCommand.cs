@@ -29,7 +29,7 @@ public class ProItemCommand : CommandBase
         }
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (ii.getName(itemId) == null)
+        if (!ii.HasTemplate(itemId))
         {
             player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
             return;
