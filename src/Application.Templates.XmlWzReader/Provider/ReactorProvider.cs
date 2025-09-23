@@ -22,7 +22,7 @@ namespace Application.Templates.XmlWzReader.Provider
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
-            if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 7), out var reactorId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var reactorId))
                 return [];
 
             var pEntry = new ReactorTemplate(reactorId);

@@ -26,7 +26,7 @@ namespace Application.Templates.XmlWzReader.Provider
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
-            if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 8), out var equipItemId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 8), out var equipItemId))
                 return [];
 
             var pEntry = new EquipTemplate(equipItemId);

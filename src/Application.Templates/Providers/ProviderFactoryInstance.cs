@@ -1,4 +1,5 @@
 using Application.Templates.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Templates.Providers
 {
@@ -17,6 +18,11 @@ namespace Application.Templates.Providers
         {
             if (!_cached.TryAdd(provider.GetType(), provider))
                 throw new ProviderDuplicateException(provider.ProviderName.ToString());
+        }
+
+        public void UseLogger(ILogger logger)
+        {
+            LibLog.Logger = logger;
         }
 
         internal TProvider GetProvider<TProvider>() where TProvider : IProvider
