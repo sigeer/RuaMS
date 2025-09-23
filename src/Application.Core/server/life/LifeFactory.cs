@@ -82,11 +82,11 @@ public class LifeFactory : IStaticService
 
     public AbstractLifeObject? getLife(int id, string type)
     {
-        if (type.Equals(LifeType.NPC, StringComparison.CurrentCultureIgnoreCase))
+        if (type.Equals(LifeType.NPC, StringComparison.OrdinalIgnoreCase))
         {
             return getNPC(id);
         }
-        else if (type.Equals(LifeType.Monster, StringComparison.CurrentCultureIgnoreCase))
+        else if (type.Equals(LifeType.Monster, StringComparison.OrdinalIgnoreCase))
         {
             return getMonster(id);
         }

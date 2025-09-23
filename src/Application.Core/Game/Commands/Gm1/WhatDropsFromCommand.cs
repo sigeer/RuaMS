@@ -32,13 +32,12 @@ public class WhatDropsFromCommand : CommandBase
             {
                 try
                 {
-                    var name = ItemInformationProvider.getInstance().getName(drop.ItemId);
-                    if (name == null || name.Equals("null") || drop.Chance == 0)
+                    if (drop.Chance == 0 || !ItemInformationProvider.getInstance().HasTemplate(drop.ItemId))
                     {
                         continue;
                     }
                     float chance = Math.Max(1000000 / drop.Chance / (!MonsterInformationProvider.getInstance().isBoss(mobId) ? player.getDropRate() : player.getBossDropRate()), 1);
-                    output += "- " + name + " (1/" + (int)chance + ")\r\n";
+                    output += "- " + ItemInformationProvider.getInstance().getName(drop.ItemId) + " (1/" + (int)chance + ")\r\n";
                 }
                 catch (Exception ex)
                 {

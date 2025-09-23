@@ -594,7 +594,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public bool itemExists(int itemid)
     {
-        return ItemInformationProvider.getInstance().getName(itemid) != null;
+        return ItemInformationProvider.getInstance().HasTemplate(itemid);
     }
 
     public int getCosmeticItem(int itemid)

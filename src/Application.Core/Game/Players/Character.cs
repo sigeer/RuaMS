@@ -509,7 +509,14 @@ public partial class Player
     public string getMedalText()
     {
         var medalItem = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
-        return medalItem == null ? "" : "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
+        if (medalItem == null)
+            return string.Empty;
+
+        var medalItemName = ItemInformationProvider.getInstance().getName(medalItem.getItemId());
+        if (string.IsNullOrEmpty(medalItemName))
+            return string.Empty;
+
+        return "<" + medalItemName + "> ";
     }
 
     public void Hide(bool hide, bool login = false)
@@ -4765,8 +4772,7 @@ public partial class Player
             foreach (Item item in getUpgradeableEquipList())
             {
                 Equip nEquip = (Equip)item;
-                var itemName = ii.getName(nEquip.getItemId());
-                if (itemName == null)
+                if (!ii.HasTemplate(nEquip.getItemId()))
                 {
                     continue;
                 }

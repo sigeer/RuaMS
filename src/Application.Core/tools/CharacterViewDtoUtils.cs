@@ -17,7 +17,7 @@ namespace Application.Core.tools
             {
                 var medalName = ItemInformationProvider.getInstance().getName(medalItemId);
                 if (!string.IsNullOrWhiteSpace(medalName))
-                    displayName = $"<{medalName}>{displayName}";
+                    displayName = $"<{medalName}> {displayName}";
             }
             return displayName;
         }
