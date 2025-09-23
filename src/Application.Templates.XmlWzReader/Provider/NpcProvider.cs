@@ -17,7 +17,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
-            if (int.TryParse(Path.GetFileName(path).Substring(0, 7), out var npcId))
+            if (int.TryParse(Path.GetFileName(path).AsSpan(0, 7), out var npcId))
             {
                 var model = new NpcTemplate(npcId);
                 InsertItem(model);

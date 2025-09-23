@@ -35,7 +35,7 @@ namespace Application.Templates.XmlWzReader.Provider
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
-            if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 9), out var mapId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 9), out var mapId))
                 return [];
 
             var mapTemplate = new MapTemplate(mapId);

@@ -14,8 +14,10 @@ public interface OutPacket : Packet
     void writeLong(long value);
     void writeBool(bool value);
     void writeString(string value);
+    void WriteString(ReadOnlySpan<char> chars);
     void writeFixedString(string value, int fix = 13);
     void writePos(Point value);
+    void WriteFixedString(ReadOnlySpan<char> chars, int fix = 13);
     void skip(int numberOfBytes);
 
     static OutPacket create(SendOpcode opcode)

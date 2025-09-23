@@ -2,7 +2,6 @@ using Application.Utility;
 using DotNetty.Buffers;
 using System.Buffers;
 using System.Drawing;
-using System.Text;
 
 namespace Application.Shared.Net;
 
@@ -16,7 +15,7 @@ public class ByteBufOutPacket : OutPacket
         this.byteBuf = Unpooled.Buffer();
     }
 
-    public ByteBufOutPacket(byte[] bytes): this()
+    public ByteBufOutPacket(byte[] bytes) : this()
     {
         this.byteBuf.WriteBytes(bytes);
     }
@@ -91,18 +90,65 @@ public class ByteBufOutPacket : OutPacket
 
     public void writeString(string value)
     {
+        WriteString(value);
+    }
+
+    [Obsolete]
+    public void writeStringOld(string value)
+    {
         byte[] bytes = GlobalVariable.Encoding.GetBytes(value);
         writeShort(bytes.Length);
         writeBytes(bytes);
     }
 
+    public void WriteString(ReadOnlySpan<char> chars)
+    {
+        int virtualByteCount = GlobalVariable.Encoding.GetMaxByteCount(chars.Length);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(virtualByteCount);
+        try
+        {
+            int written = GlobalVariable.Encoding.GetBytes(chars, buffer);
+            byteBuf.WriteShortLE(written);
+            byteBuf.WriteBytes(buffer, 0, written);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
     public void writeFixedString(string value, int fix = 13)
+    {
+        WriteFixedString(value, fix);
+    }
+
+    [Obsolete]
+    public void writeFixedStringOld(string value, int fix = 13)
     {
         var bytes = GlobalVariable.Encoding.GetBytes(value ?? string.Empty);
         var fixedBytes = new byte[fix];
         var actualLength = fix > bytes.Length ? bytes.Length : fix;
         Buffer.BlockCopy(bytes, 0, fixedBytes, 0, actualLength);
         writeBytes(fixedBytes);
+    }
+
+    public void WriteFixedString(ReadOnlySpan<char> chars, int fix = 13)
+    {
+        int virtualByteCount = GlobalVariable.Encoding.GetMaxByteCount(chars.Length);
+
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(virtualByteCount);
+        try
+        {
+            int written = GlobalVariable.Encoding.GetBytes(chars, buffer);
+            byteBuf.WriteBytes(buffer, 0, Math.Min(written, fix));
+
+            if (fix > written)
+                byteBuf.WriteZero(fix - written);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     public void writePos(Point value)
@@ -113,7 +159,7 @@ public class ByteBufOutPacket : OutPacket
 
     public void skip(int numberOfBytes)
     {
-        writeBytes(new byte[numberOfBytes]);
+        byteBuf.WriteZero(numberOfBytes);
     }
 
     public override bool Equals(object? o)

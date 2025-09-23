@@ -74,7 +74,7 @@ namespace Application.Templates.XmlWzReader.Provider
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var xDoc = XDocument.Load(fis).Root!;
 
-            if (!int.TryParse(xDoc.Attribute("name")?.Value?.Substring(0, 7), out var petItemId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var petItemId))
                 return [];
 
             var pEntry = new PetItemTemplate(petItemId);
@@ -109,7 +109,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractItemTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName()?.Substring(0, 4), out var groupId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
                 return all;
 
             foreach (var itemNode in xDoc.Elements())
@@ -142,7 +142,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName()?.Substring(0, 4), out var groupId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
                 return all;
 
             foreach (var rootNode in xDoc.Elements())
@@ -367,7 +367,7 @@ namespace Application.Templates.XmlWzReader.Provider
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName()?.Substring(0, 4), out var groupId))
+            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
                 return all;
 
             foreach (var rootNode in xDoc.Elements())
