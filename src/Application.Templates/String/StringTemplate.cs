@@ -6,21 +6,15 @@ namespace Application.Templates.String
         public string Name { get; set; }
 
         [WZPath("desc")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        [WZPath("streetName")]
-        public string StreetName { get; set; }
-
-        [WZPath("mapName")]
-        public string MapName { get; set; }
+        [WZPath("msg")]
+        public string? Message { get; set; }
 
         public StringTemplate(int templateId)
             : base(templateId)
         {
-            Name = "";
-            Description = "";
-            StreetName = "";
-            MapName = "";
+            Name = Defaults.WZ_NoName;
         }
     }
 }

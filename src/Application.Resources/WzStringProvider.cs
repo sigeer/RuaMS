@@ -252,9 +252,13 @@ namespace Application.Resources
             {
                 foreach (var skillData in skillStringData.getChildren())
                 {
-                    var skillId = int.Parse(skillData.getName());
-                    var skillName = DataTool.getString("name", skillData) ?? StringConstants.WZ_NoName;
-                    _skillNameCache[skillId] = new(skillId, skillName);
+                    var skillIdStr = skillData.getName();
+                    if (skillIdStr!.Length >= 7)
+                    {
+                        var skillId = int.Parse(skillIdStr);
+                        var skillName = DataTool.getString("name", skillData) ?? StringConstants.WZ_NoName;
+                        _skillNameCache[skillId] = new(skillId, skillName);
+                    }
                 }
                 _isSkillLoadAll = true;
             }

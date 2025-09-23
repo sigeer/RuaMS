@@ -30,6 +30,8 @@ using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Resources;
 using Application.Shared.Events;
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
 using constants.game;
 using constants.String;
 using Microsoft.Extensions.DependencyInjection;
@@ -429,12 +431,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void maxMastery()
     {
-        var provider = c.CurrentServerContainer.ServiceProvider.GetRequiredService<WzStringProvider>();
-        foreach (var skillId in provider.GetAllSkillIdList())
+        var provider = ProviderFactory.GetProvider<StringProvider>();
+        foreach (var skillData in provider.GetSubProvider(Application.Templates.String.StringCategory.Skill).LoadAll())
         {
             try
             {
-                Skill skill = SkillFactory.GetSkillTrust(skillId);
+                Skill skill = SkillFactory.GetSkillTrust(skillData.TemplateId);
                 getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)

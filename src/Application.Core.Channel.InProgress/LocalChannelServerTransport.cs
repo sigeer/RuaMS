@@ -40,7 +40,6 @@ namespace Application.Core.Channel.InProgress
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
         readonly ResourceDataManager _resourceService;
-        readonly WzStringProvider _wzStringReader;
         readonly IMapper _mapper;
 
         public LocalChannelServerTransport(
@@ -54,7 +53,6 @@ namespace Application.Core.Channel.InProgress
             InvitationService invitationService,
             IExpeditionService expeditionService,
             ResourceDataManager resourceDataService,
-            WzStringProvider wzStringReader,
             IMapper mapper)
         {
             _server = server;
@@ -68,7 +66,6 @@ namespace Application.Core.Channel.InProgress
             _invitationService = invitationService;
             _expeditionService = expeditionService;
             _resourceService = resourceDataService;
-            _wzStringReader = wzStringReader;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels)

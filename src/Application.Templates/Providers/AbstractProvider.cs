@@ -49,11 +49,20 @@ namespace Application.Templates.Providers
 
         public virtual TTemplate? GetItem(int templateId)
         {
-            if (_options.UseCache && _templates.TryGetValue(templateId, out var data))
-                return data;
+            if (_options.UseCache)
+            {
+                if (_templates.TryGetValue(templateId, out var data))
+                    return data;
 
+                if (_hasAllLoaded)
+                    return null;
+            }
+            return GetItemInternal(templateId);
+        }
+
+        protected virtual TTemplate? GetItemInternal(int templateId)
+        {
             return GetDataFromImg(GetImgPathByTemplateId(templateId)).FirstOrDefault(x => x.TemplateId == templateId) as TTemplate;
-
         }
 
         public virtual TCTemplate? GetRequiredItem<TCTemplate>(int templateId) where TCTemplate : TTemplate => GetItem(templateId) as TCTemplate;
@@ -89,7 +98,7 @@ namespace Application.Templates.Providers
                 _templates[GetKeyForItem(item)] = item;
         }
 
-        public IEnumerable<AbstractTemplate> Values => _templates.Values;
+        protected IEnumerable<AbstractTemplate> Values => _templates.Values;
 
         protected virtual int GetKeyForItem(TTemplate item) => item.TemplateId;
 

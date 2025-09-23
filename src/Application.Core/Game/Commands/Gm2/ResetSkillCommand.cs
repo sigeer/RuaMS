@@ -1,20 +1,22 @@
 using Application.Core.Game.Skills;
 using Application.Resources;
+using Application.Templates.Providers;
+using Application.Templates.XmlWzReader.Provider;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class ResetSkillCommand : CommandBase
 {
-    readonly WzStringProvider _wzStringProvider;
-    public ResetSkillCommand(WzStringProvider wzStringProvider) : base(2, "resetskill")
+    readonly StringProvider _stringProvider;
+    public ResetSkillCommand() : base(2, "resetskill")
     {
-        _wzStringProvider = wzStringProvider;
+        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
         Description = "Set all skill levels to 0.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var skillId in _wzStringProvider.GetAllSkillIdList())
+        foreach (var skillId in _stringProvider.GetSubProvider(Templates.String.StringCategory.Skill).LoadAll().Select(x => x.TemplateId))
         {
             try
             {
