@@ -110,7 +110,6 @@ public class SpecialMoveHandler : ChannelHandlerBase
             byte direction = p.readByte();   // thanks MedicOP for pointing some 3rd-party related issues with Magnet
             chr.getMap().broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), false);
             c.sendPacket(PacketCreator.enableActions());
-            return;
         }
         else if (skillid == Brawler.MP_RECOVERY)
         {// MP Recovery
