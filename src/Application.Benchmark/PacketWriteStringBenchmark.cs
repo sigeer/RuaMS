@@ -64,6 +64,12 @@ namespace Application.Benchmark
         }
     }
 
+    /// <summary>
+    /// | Method        | Mean     | Error     | StdDev    | Median   | Ratio | RatioSD | Allocated | Alloc Ratio |
+    /// |-------------- |---------:|----------:|----------:|---------:|------:|--------:|----------:|------------:|
+    /// | ReadStringOld | 6.339 us | 1.1577 us | 3.1693 us | 5.100 us |  1.19 |    0.74 |     648 B |        1.00 |
+    /// | ReadStringNew | 3.540 us | 0.2180 us | 0.6005 us | 3.300 us |  0.66 |    0.26 |     312 B |        0.48 |
+    /// </summary>
     [MemoryDiagnoser]
     public class PacketReadStringBenchmark
     {
