@@ -2,45 +2,28 @@ using Application.Utility;
 using DotNetty.Buffers;
 using System.Buffers;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace Application.Shared.Net;
 
-public class ByteBufOutPacket : OutPacket
+public class ByteBufOutPacket : PacketBase, OutPacket
 {
-
-    private IByteBuffer byteBuf;
-
-    public ByteBufOutPacket()
+    public ByteBufOutPacket(): base(Unpooled.Buffer())
     {
-        this.byteBuf = Unpooled.Buffer();
     }
 
-    public ByteBufOutPacket(byte[] bytes) : this()
+    public ByteBufOutPacket(byte[] bytes) : base(Unpooled.WrappedBuffer(bytes))
     {
-        this.byteBuf.WriteBytes(bytes);
     }
 
-    public ByteBufOutPacket(SendOpcode op)
+    public ByteBufOutPacket(SendOpcode op) : this()
     {
-        IByteBuffer byteBuf = Unpooled.Buffer();
         byteBuf.WriteShortLE((short)op.getValue());
-        this.byteBuf = byteBuf;
     }
 
-    public ByteBufOutPacket(SendOpcode op, int initialCapacity)
+    public ByteBufOutPacket(SendOpcode op, int initialCapacity) : base(Unpooled.Buffer(initialCapacity))
     {
-        IByteBuffer byteBuf = Unpooled.Buffer(initialCapacity);
         byteBuf.WriteShortLE((short)op.getValue());
-        this.byteBuf = byteBuf;
-    }
-
-    public byte[] getBytes()
-    {
-        byteBuf.MarkReaderIndex();
-        var bytes = new byte[byteBuf.ReadableBytes];
-        byteBuf.ReadBytes(bytes);
-        byteBuf.ResetReaderIndex();
-        return bytes;
     }
 
     public void writeByte(byte value)
@@ -65,7 +48,7 @@ public class ByteBufOutPacket : OutPacket
 
     public void writeSBytes(sbyte[] value)
     {
-        byteBuf.WriteBytes(value.Cast<byte>().ToArray());
+        byteBuf.WriteBytes(MemoryMarshal.Cast<sbyte, byte>(value).ToArray());
     }
 
     public void writeShort(int value)

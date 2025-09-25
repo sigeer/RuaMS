@@ -1787,7 +1787,7 @@ public class PacketCreator
         if (chr.getGuildId() < 1)
         {
             p.writeString("");
-            p.writeBytes(new byte[6]);
+            p.skip(6);
         }
         else
         {
@@ -1803,7 +1803,7 @@ public class PacketCreator
             else
             {
                 p.writeString("");
-                p.writeBytes(new byte[6]);
+                p.skip(6);
             }
         }
 
@@ -2185,6 +2185,15 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet MovePlayerIdle(int chrId, byte[] idleMovmentBytes)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
+        p.writeInt(chrId);
+        p.writeInt(0);
+        p.writeBytes(idleMovmentBytes);
+        return p;
+    }
+
     public static Packet moveSummon(int cid, int oid, Point startPos, InPacket movementPacket, long movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_SUMMON);
@@ -2192,6 +2201,22 @@ public class PacketCreator
         p.writeInt(oid);
         p.writePos(startPos);
         rebroadcastMovementList(p, movementPacket, movementDataLength);
+        return p;
+    }
+
+    public static Packet MoveMonsterIdle(int oid, bool skillPossible, int skill, int skillId, int skillLevel, int pOption,
+                                 Point startPos, byte[] idleMovmentBytes)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_MONSTER);
+        p.writeInt(oid);
+        p.writeByte(0);
+        p.writeBool(skillPossible);
+        p.writeByte(skill);
+        p.writeByte(skillId);
+        p.writeByte(skillLevel);
+        p.writeShort(pOption);
+        p.writePos(startPos);
+        p.writeBytes(idleMovmentBytes);
         return p;
     }
 

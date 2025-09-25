@@ -6,22 +6,10 @@ using System.Text;
 
 namespace Application.Shared.Net;
 
-public class ByteBufInPacket : InPacket
+public class ByteBufInPacket : PacketBase, InPacket
 {
-    private IByteBuffer byteBuf;
-
-    public ByteBufInPacket(IByteBuffer byteBuf)
+    public ByteBufInPacket(IByteBuffer byteBuf) : base(byteBuf)
     {
-        this.byteBuf = byteBuf;
-    }
-
-    public byte[] getBytes()
-    {
-        byteBuf.MarkReaderIndex();
-        var bytes = new byte[byteBuf.ReadableBytes];
-        byteBuf.ReadBytes(bytes);
-        byteBuf.ResetReaderIndex();
-        return bytes;
     }
 
     public byte readByte()

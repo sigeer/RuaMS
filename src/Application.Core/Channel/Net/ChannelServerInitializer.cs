@@ -17,7 +17,7 @@ public class ChannelServerInitializer : ServerChannelInitializer
     {
         if (!worldChannel.IsRunning)
         {
-            socketChannel.CloseAsync().Wait();
+            socketChannel.CloseAsync();
             return;
         }
 

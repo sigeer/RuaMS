@@ -61,7 +61,7 @@ public class QuartzTimerManager : ITimerManager
                             .RepeatForever()) // 一直重复执行
                         .Build();
 
-        Scheduler.ScheduleJob(job, trigger).Wait();
+        Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
         return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
     }
 
@@ -107,7 +107,7 @@ public class QuartzTimerManager : ITimerManager
             .StartAt(DateTimeOffset.UtcNow.Add(delay))
             .Build();
 
-        Scheduler.ScheduleJob(job, trigger).Wait();
+        Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
         return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
     }
 
