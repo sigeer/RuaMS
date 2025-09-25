@@ -8,7 +8,7 @@ namespace Application.Shared.Net;
 
 public class ByteBufOutPacket : PacketBase, OutPacket
 {
-    public ByteBufOutPacket(): base(Unpooled.Buffer())
+    public ByteBufOutPacket() : base(Unpooled.Buffer())
     {
     }
 

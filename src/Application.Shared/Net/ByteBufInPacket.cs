@@ -44,7 +44,8 @@ public class ByteBufInPacket : PacketBase, InPacket
         return new Point(x, y);
     }
 
-    public string readString()
+    [Obsolete]
+    public string readStringOld()
     {
         short length = readShort();
         var stringBytes = ArrayPool<byte>.Shared.Rent(length);
@@ -57,6 +58,13 @@ public class ByteBufInPacket : PacketBase, InPacket
         {
             ArrayPool<byte>.Shared.Return(stringBytes);
         }
+    }
+
+    public string readString()
+    {
+        // 相对readStringOld，少了一次byte[]分配（会直接使用byteBuf.Array）
+        short length = readShort();
+        return byteBuf.ReadString(length, GlobalVariable.Encoding);
     }
 
     public byte[] readBytes(int numberOfBytes)

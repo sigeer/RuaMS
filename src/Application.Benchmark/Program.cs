@@ -3,7 +3,7 @@ using Application.Benchmark;
 using BenchmarkDotNet.Running;
 
 
-BenchmarkRunner.Run<PacketWriteFixStringBenchmark>();
+BenchmarkRunner.Run<PacketReadStringBenchmark>();
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)

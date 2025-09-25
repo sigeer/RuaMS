@@ -1,5 +1,8 @@
 using Application.Shared.Net;
+using Application.Utility;
 using BenchmarkDotNet.Attributes;
+using DotNetty.Buffers;
+using System;
 using System.Text;
 
 namespace Application.Benchmark
@@ -58,6 +61,43 @@ namespace Application.Benchmark
         {
             var outPacket = new ByteBufOutPacket();
             outPacket.WriteFixedString(TestString);
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class PacketReadStringBenchmark
+    {
+        public const string TestString = "It&apos;s a bowman town on a wide prairie, and you can choose to become a bowman here.";
+        byte[] bytes;
+        ByteBufInPacket reader;
+        public PacketReadStringBenchmark()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            bytes = GlobalVariable.Encoding.GetBytes(TestString);
+        }
+
+
+        [IterationSetup]
+        public void IterationSetup()
+        {
+            var _dataNew = Unpooled.Buffer();
+            _dataNew.WriteShortLE(bytes.Length);
+            _dataNew.WriteBytes(bytes);
+
+            reader = new ByteBufInPacket(_dataNew);
+        }
+
+        [Benchmark(Baseline = true)]
+        public void ReadStringOld()
+        {
+            reader.readStringOld();
+        }
+
+
+        [Benchmark]
+        public void ReadStringNew()
+        {
+            reader.readString();
         }
     }
 }
