@@ -23,7 +23,7 @@ public class LoginServerInitializer : ServerChannelInitializer
     {
         if (!masterServer.IsRunning || masterServer.IsShuttingdown)
         {
-            socketChannel.CloseAsync().Wait();
+            socketChannel.CloseAsync();
             return;
         }
 

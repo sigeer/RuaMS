@@ -6,22 +6,10 @@ using System.Text;
 
 namespace Application.Shared.Net;
 
-public class ByteBufInPacket : InPacket
+public class ByteBufInPacket : PacketBase, InPacket
 {
-    private IByteBuffer byteBuf;
-
-    public ByteBufInPacket(IByteBuffer byteBuf)
+    public ByteBufInPacket(IByteBuffer byteBuf) : base(byteBuf)
     {
-        this.byteBuf = byteBuf;
-    }
-
-    public byte[] getBytes()
-    {
-        byteBuf.MarkReaderIndex();
-        var bytes = new byte[byteBuf.ReadableBytes];
-        byteBuf.ReadBytes(bytes);
-        byteBuf.ResetReaderIndex();
-        return bytes;
     }
 
     public byte readByte()
@@ -56,7 +44,8 @@ public class ByteBufInPacket : InPacket
         return new Point(x, y);
     }
 
-    public string readString()
+    [Obsolete]
+    public string readStringOld()
     {
         short length = readShort();
         var stringBytes = ArrayPool<byte>.Shared.Rent(length);
@@ -69,6 +58,13 @@ public class ByteBufInPacket : InPacket
         {
             ArrayPool<byte>.Shared.Return(stringBytes);
         }
+    }
+
+    public string readString()
+    {
+        // 相对readStringOld，少了一次byte[]分配（会直接使用byteBuf.Array）
+        short length = readShort();
+        return byteBuf.ReadString(length, GlobalVariable.Encoding);
     }
 
     public byte[] readBytes(int numberOfBytes)

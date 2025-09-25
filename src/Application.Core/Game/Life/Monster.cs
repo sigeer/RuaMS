@@ -1627,7 +1627,7 @@ public class Monster : AbstractLifeObject
 
         setPosition(newPoint);
         MapModel.broadcastMessage(
-            PacketCreator.moveMonster(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.getIdleMovement(), AbstractAnimatedMapObject.IDLE_MOVEMENT_PACKET_LENGTH));
+            PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
         MapModel.moveMonster(this, this.getPosition());
 
         aggroUpdateController();

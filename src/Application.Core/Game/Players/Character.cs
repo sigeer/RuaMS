@@ -1009,10 +1009,8 @@ public partial class Player
 
     public void broadcastStance()
     {
-        MapModel.broadcastMessage(this, PacketCreator.movePlayer(Id, this.getIdleMovement(), AbstractAnimatedMapObject.IDLE_MOVEMENT_PACKET_LENGTH), false);
+        MapModel.broadcastMessage(this, PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), false);
     }
-
-
 
     private bool buffMapProtection()
     {

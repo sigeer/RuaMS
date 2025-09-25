@@ -1,6 +1,8 @@
 
 using Application.Shared.Net;
+using Application.Utility;
 using DotNetty.Buffers;
+using Microsoft.AspNetCore.Http;
 using System.Text;
 
 namespace ServiceTest.Packets
@@ -73,6 +75,35 @@ namespace ServiceTest.Packets
             var newBytes = oldWriter.getBytes();
 
             Assert.That(oldBytes.SequenceEqual(newBytes));
+        }
+
+        [TestCase("长文本测试长文本测试长文本测试长文本测试")]
+        [TestCase("中文测试")]
+        [TestCase("abc")]
+        [TestCase("abcdef  ")]
+        [TestCase("  abcdef")]
+        [Test]
+        public void ReadStringTest(string str)
+        {
+            var bytes = GlobalVariable.Encoding.GetBytes(str);
+
+            var _data = Unpooled.Buffer();
+            _data.WriteShortLE(bytes.Length);
+            _data.WriteBytes(bytes);
+
+            var outPacket = new ByteBufInPacket(_data);
+            var oldStr = outPacket.readStringOld();
+
+            Assert.That(oldStr, Is.EqualTo(str));
+
+            var _data1 = Unpooled.Buffer();
+            _data1.WriteShortLE(bytes.Length);
+            _data1.WriteBytes(bytes);
+
+            var readerNew = new ByteBufInPacket(_data1);
+            var newStr = readerNew.readString();
+            Assert.That(newStr, Is.EqualTo(str));
+
         }
     }
 }

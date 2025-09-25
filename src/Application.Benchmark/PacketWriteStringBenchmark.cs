@@ -1,5 +1,8 @@
 using Application.Shared.Net;
+using Application.Utility;
 using BenchmarkDotNet.Attributes;
+using DotNetty.Buffers;
+using System;
 using System.Text;
 
 namespace Application.Benchmark
@@ -58,6 +61,49 @@ namespace Application.Benchmark
         {
             var outPacket = new ByteBufOutPacket();
             outPacket.WriteFixedString(TestString);
+        }
+    }
+
+    /// <summary>
+    /// | Method        | Mean     | Error     | StdDev    | Median   | Ratio | RatioSD | Allocated | Alloc Ratio |
+    /// |-------------- |---------:|----------:|----------:|---------:|------:|--------:|----------:|------------:|
+    /// | ReadStringOld | 6.339 us | 1.1577 us | 3.1693 us | 5.100 us |  1.19 |    0.74 |     648 B |        1.00 |
+    /// | ReadStringNew | 3.540 us | 0.2180 us | 0.6005 us | 3.300 us |  0.66 |    0.26 |     312 B |        0.48 |
+    /// </summary>
+    [MemoryDiagnoser]
+    public class PacketReadStringBenchmark
+    {
+        public const string TestString = "It&apos;s a bowman town on a wide prairie, and you can choose to become a bowman here.";
+        byte[] bytes;
+        ByteBufInPacket reader;
+        public PacketReadStringBenchmark()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            bytes = GlobalVariable.Encoding.GetBytes(TestString);
+        }
+
+
+        [IterationSetup]
+        public void IterationSetup()
+        {
+            var _dataNew = Unpooled.Buffer();
+            _dataNew.WriteShortLE(bytes.Length);
+            _dataNew.WriteBytes(bytes);
+
+            reader = new ByteBufInPacket(_dataNew);
+        }
+
+        [Benchmark(Baseline = true)]
+        public void ReadStringOld()
+        {
+            reader.readStringOld();
+        }
+
+
+        [Benchmark]
+        public void ReadStringNew()
+        {
+            reader.readString();
         }
     }
 }

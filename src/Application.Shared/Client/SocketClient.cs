@@ -206,7 +206,7 @@ namespace Application.Shared.Client
 
         public void CloseSocket()
         {
-            NettyChannel.CloseAsync().Wait();
+            NettyChannel.CloseAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public abstract void Dispose();
