@@ -48,7 +48,7 @@ public class FaceCommand : CommandBase
             return;
         }
 
-        targetPlayer.setHair(faceId);
+        targetPlayer.setFace(faceId);
         targetPlayer.updateSingleStat(Stat.FACE, faceId);
         targetPlayer.equipChanged();
     }
