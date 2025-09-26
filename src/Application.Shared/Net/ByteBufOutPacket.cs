@@ -8,13 +8,12 @@ namespace Application.Shared.Net;
 
 public class ByteBufOutPacket : PacketBase, OutPacket
 {
-    public ByteBufOutPacket() : base(PooledByteBufferAllocator.Default.Buffer())
+    public ByteBufOutPacket() : base(Unpooled.Buffer())
     {
     }
 
-    public ByteBufOutPacket(byte[] bytes) : this()
+    public ByteBufOutPacket(byte[] bytes) : base(Unpooled.WrappedBuffer(bytes))
     {
-        byteBuf.WriteBytes(bytes);
     }
 
     public ByteBufOutPacket(SendOpcode op) : this()
