@@ -5,6 +5,8 @@ namespace Application.Shared.Net;
 public interface Packet: IDisposable
 {
     byte[] getBytes();
+
+    IByteBuffer GetByteBuffer();
 }
 
 public class PacketBase : Packet
@@ -36,5 +38,10 @@ public class PacketBase : Packet
     public void Dispose()
     {
         byteBuf.Release();
+    }
+
+    public IByteBuffer GetByteBuffer()
+    {
+        return byteBuf;
     }
 }

@@ -109,7 +109,7 @@ namespace ServiceTest.Infrastructure
             var p1 = new byte[4];
             var sender = InitializationVector.generateSend();
             var recv = InitializationVector.generateReceive();
-            var packet = PacketCommon.getHello(ServerConstants.VERSION, sender, recv);
+            var packet = PacketCommon.getHello(sender, recv);
             var helloBytes = packet.ToString();
             Console.WriteLine(helloBytes);
             Assert.Pass();

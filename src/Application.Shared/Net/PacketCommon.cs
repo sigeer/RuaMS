@@ -52,29 +52,16 @@ namespace Application.Shared.Net
             return OutPacket.create(SendOpcode.PING);
         }
 
-        public static Packet getHello(short mapleVersion, InitializationVector sendIv, InitializationVector recvIv)
+        public static Packet getHello(InitializationVector sendIv, InitializationVector recvIv)
         {
             OutPacket p = new ByteBufOutPacket();
             p.writeShort(0x0E);
-            p.writeShort(mapleVersion);
+            p.writeShort(ServerConstants.VERSION);
             p.writeShort(1);
             p.writeByte(49);
             p.writeBytes(recvIv.getBytes());
             p.writeBytes(sendIv.getBytes());
             p.writeByte(8);
-            return p;
-        }
-
-        public static IByteBuffer GetHello(InitializationVector sendIv, InitializationVector recvIv)
-        {
-            var p = PooledByteBufferAllocator.Default.DirectBuffer(16);
-            p.WriteShortLE(0x0E);
-            p.WriteShortLE(ServerConstants.VERSION);
-            p.WriteShortLE(1);
-            p.WriteByte(49);
-            p.WriteBytes(recvIv.getBytes());
-            p.WriteBytes(sendIv.getBytes());
-            p.WriteByte(8);
             return p;
         }
 
