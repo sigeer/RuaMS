@@ -23,7 +23,6 @@
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
-using System.Collections.Concurrent;
 
 namespace client.inventory;
 
@@ -33,22 +32,11 @@ namespace client.inventory;
  */
 public class PetDataFactory
 {
-    static ConcurrentDictionary<string, PetCommand> petCommands = new();
     static ItemProvider _itemProvider = ProviderFactory.GetProvider<ItemProvider>();
 
-    public static PetCommand? getPetCommand(int petId, int skillId)
+    public static PetInterActData? getPetCommand(int petId, int skillId)
     {
-        var commandKey = $"{petId}{skillId}";
-        if (petCommands.TryGetValue(commandKey, out var ret))
-            return ret;
-
-        var skillData = _itemProvider.GetRequiredItem<PetItemTemplate>(petId)?.InterActs.FirstOrDefault(x => x.Id == skillId);
-        if (skillData != null)
-        {
-            ret = new PetCommand(petId, skillId, skillData.Prob, skillData.Inc);
-            petCommands[commandKey] = ret;
-        }
-        return ret;
+        return _itemProvider.GetRequiredItem<PetItemTemplate>(petId)?.InterActsDict?.GetValueOrDefault(skillId);
     }
 
     public static int getHunger(int petId)

@@ -53,9 +53,9 @@ public class PetCommandHandler : ChannelHandlerBase
             return;
         }
 
-        if (Randomizer.nextInt(100) < petCommand.getProbability())
+        if (Randomizer.nextInt(100) < petCommand.Prob)
         {
-            pet.gainTamenessFullness(chr, petCommand.getIncrease(), 0, command);
+            pet.gainTamenessFullness(chr, petCommand.Inc, 0, command);
             chr.getMap().broadcastMessage(PacketCreator.commandResponse(chr.getId(), petIndex, false, command, false));
         }
         else

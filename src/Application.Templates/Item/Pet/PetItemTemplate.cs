@@ -11,12 +11,21 @@ namespace Application.Templates.Item.Pet
         public int Hungry { get; set; } = 1;
 
         [WZPath("interact/-")]
-        public PetInterActData[] InterActs { get; set; }
+        internal PetInterActData[] InterActs
+        {
+            set
+            {
+                InterActsDict = value.ToDictionary(x => x.Id);
+            }
+        }
+
+        public Dictionary<int, PetInterActData> InterActsDict { get; private set; }
 
         public PetItemTemplate(int templateId)
             : base(templateId)
         {
             InterActs = Array.Empty<PetInterActData>();
+            InterActsDict = new Dictionary<int, PetInterActData>();
         }
     }
 }
