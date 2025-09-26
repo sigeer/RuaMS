@@ -32,7 +32,7 @@ public class FaceCommand : CommandBase
 
         if (!int.TryParse(faceStr, out var faceId))
         {
-            player.yellowMessage("Syntax: !hair [<playername>] <hairid>");
+            player.yellowMessage("Syntax: !face [<playername>] <faceid>");
             return;
         }
 
