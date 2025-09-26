@@ -16,7 +16,7 @@ public class PacketBase : Packet
         this.byteBuf = byteBuf;
     }
 
-        [Obsolete]
+    [Obsolete]
     public byte[] getBytesOld()
     {
         byteBuf.MarkReaderIndex();
@@ -29,7 +29,7 @@ public class PacketBase : Packet
     public byte[] getBytes()
     {
         var bytes = new byte[byteBuf.ReadableBytes];
-        byteBuf.GetBytes(0, bytes, 0, bytes.Length);
+        byteBuf.GetBytes(byteBuf.ReaderIndex, bytes);
         return bytes;
     }
 }
