@@ -18,7 +18,7 @@ namespace Application.Templates.Item.Pet
                 InterActsDict = value.ToDictionary(x => x.Id);
             }
         }
-
+        [GenerateIgnoreProperty]
         public Dictionary<int, PetInterActData> InterActsDict { get; private set; }
 
         public PetItemTemplate(int templateId)
