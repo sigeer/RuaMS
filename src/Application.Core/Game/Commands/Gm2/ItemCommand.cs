@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.Templates.Item.Pet;
 using client.inventory.manipulator;
 using System.Text;
 
@@ -66,7 +67,8 @@ public class ItemCommand : CommandBase
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        if (!ii.HasTemplate(itemId))
+        var abTemplate = ii.GetTemplate(itemId);
+        if (abTemplate == null)
         {
             player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
             return;
@@ -85,7 +87,7 @@ public class ItemCommand : CommandBase
             return;
         }
 
-        if (ItemConstants.isPet(itemId))
+        if (abTemplate is PetItemTemplate petTemplate)
         {
             if (paramsValue.Length >= 2)
             {

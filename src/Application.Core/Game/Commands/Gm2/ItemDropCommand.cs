@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Templates.Item.Pet;
 using client.inventory;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -24,7 +25,8 @@ public class ItemDropCommand : CommandBase
         int itemId = int.Parse(paramsValue[0]);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        if (!ii.HasTemplate(itemId))
+        var abTemplate = ii.GetTemplate(itemId);
+        if (abTemplate == null)
         {
             player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
             return;
@@ -42,7 +44,7 @@ public class ItemDropCommand : CommandBase
             return;
         }
 
-        if (ItemConstants.isPet(itemId))
+        if (abTemplate is PetItemTemplate petTemplate)
         {
             if (paramsValue.Length >= 2)
             {

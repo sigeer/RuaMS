@@ -30,6 +30,7 @@ using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
+using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
@@ -113,6 +114,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     {
         return itemId < 2000000 ? _equipProvider : _itemProvider;
     }
+
+    public AbstractItemTemplate? GetTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
 
     public bool noCancelMouse(int itemId)
     {
@@ -1140,6 +1143,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             WeaponType.KNUCKLE};
         return arr.Contains(getWeaponType(itemId));
     }
+
+    public PetItemTemplate? GetPetTemplate(int itemId) => _itemProvider.GetRequiredItem<PetItemTemplate>(itemId);
 
     public bool isCash(int itemId)
     {
