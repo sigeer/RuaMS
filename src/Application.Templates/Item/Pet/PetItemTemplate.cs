@@ -11,7 +11,7 @@ namespace Application.Templates.Item.Pet
         public int Hungry { get; set; } = 1;
 
         [WZPath("interact/-")]
-        internal PetInterActData[] InterActs
+        public PetInterActData[] InterActs
         {
             set
             {
