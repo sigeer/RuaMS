@@ -2,7 +2,7 @@ using DotNetty.Buffers;
 
 namespace Application.Shared.Net;
 
-public interface Packet
+public interface Packet: IDisposable
 {
     byte[] getBytes();
 }
@@ -31,5 +31,10 @@ public class PacketBase : Packet
         var bytes = new byte[byteBuf.ReadableBytes];
         byteBuf.GetBytes(byteBuf.ReaderIndex, bytes);
         return bytes;
+    }
+
+    public void Dispose()
+    {
+        byteBuf.Release();
     }
 }

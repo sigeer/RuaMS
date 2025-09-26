@@ -8,7 +8,7 @@ namespace Application.Shared.Net;
 
 public class ByteBufOutPacket : PacketBase, OutPacket
 {
-    public ByteBufOutPacket() : base(Unpooled.Buffer())
+    public ByteBufOutPacket() : base(PooledByteBufferAllocator.Default.Buffer())
     {
     }
 
@@ -21,7 +21,7 @@ public class ByteBufOutPacket : PacketBase, OutPacket
         byteBuf.WriteShortLE((short)op.getValue());
     }
 
-    public ByteBufOutPacket(SendOpcode op, int initialCapacity) : base(Unpooled.Buffer(initialCapacity))
+    public ByteBufOutPacket(SendOpcode op, int initialCapacity) : base(PooledByteBufferAllocator.Default.Buffer(initialCapacity))
     {
         byteBuf.WriteShortLE((short)op.getValue());
     }

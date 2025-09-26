@@ -1,3 +1,4 @@
+using KeraLua;
 using System.Text;
 
 namespace Application.Scripting.Lua
@@ -38,7 +39,15 @@ namespace Application.Scripting.Lua
             var function = _engine.GetFunction(functionName);
             if (function == null)
                 throw new Exception($"方法{functionName}不存在");
-            return new NLuaResultWrapper(function.Call(paramsValue));
+
+            try
+            {
+                return new NLuaResultWrapper(function.Call(paramsValue));
+            }
+            finally
+            {
+                _engine.State.GarbageCollector(LuaGC.Step, 20);
+            }
         }
 
         public void Dispose()

@@ -45,7 +45,8 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
 
     private void writeInitialUnencryptedHelloPacket(ISocketChannel socketChannel, InitializationVector sendIv, InitializationVector recvIv)
     {
-        socketChannel.WriteAndFlushAsync(PacketCommon.GetHello(sendIv, recvIv)).ConfigureAwait(false).GetAwaiter().GetResult();
+        var p = PacketCommon.GetHello(sendIv, recvIv);
+        socketChannel.WriteAndFlushAsync(p).ContinueWith(_ => p.Release()).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private void setUpHandlers(IChannelPipeline pipeline, InitializationVector sendIv, InitializationVector recvIv,

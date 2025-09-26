@@ -1,4 +1,5 @@
 using DotNetty.Buffers;
+using System.Buffers.Binary;
 
 namespace Application.Shared.Net.Logging;
 
@@ -18,7 +19,10 @@ public class LoggingUtil
 
     public static short readFirstShort(byte[] bytes)
     {
-        return Unpooled.WrappedBuffer(bytes).ReadShortLE();
+        if (bytes == null || bytes.Length < 2)
+            throw new ArgumentException("Array too small");
+
+        return BinaryPrimitives.ReadInt16LittleEndian(bytes);
     }
 
     public static bool isIgnoredRecvPacket(short opcode)

@@ -67,7 +67,7 @@ namespace Application.Shared.Net
 
         public static IByteBuffer GetHello(InitializationVector sendIv, InitializationVector recvIv)
         {
-            var p = Unpooled.Buffer(16);
+            var p = PooledByteBufferAllocator.Default.Buffer(16);
             p.WriteShortLE(0x0E);
             p.WriteShortLE(ServerConstants.VERSION);
             p.WriteShortLE(1);
