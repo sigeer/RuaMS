@@ -969,6 +969,18 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Message;
     }
 
+    public bool IsValidEquip(int itemId, EquipSlot equipType)
+    {
+        var template = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        if (template == null)
+            return false;
+
+        return template.Islot == equipType.getName();
+    }
+    public bool IsHair(int itemId) => IsValidEquip(itemId, EquipSlot.Hair);
+
+    public bool IsFace(int itemId) => IsValidEquip(itemId, EquipSlot.Face);
+
     /// <summary>
     /// 交易限制
     /// </summary>

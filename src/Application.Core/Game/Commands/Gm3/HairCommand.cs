@@ -36,7 +36,7 @@ public class HairCommand : CommandBase
             return;
         }
 
-        if (!ItemConstants.isHair(hairId) || !ItemInformationProvider.getInstance().HasTemplate(hairId))
+        if (!ItemInformationProvider.getInstance().IsHair(hairId))
         {
             player.yellowMessage("Hair id '" + hairId + "' does not exist.");
             return;

@@ -61,7 +61,7 @@ public class ItemRequirement : AbstractQuestRequirement
                 count += item.getQuantity();
             }
             //Weird stuff, nexon made some quests only available when wearing gm clothes. This enables us to accept it ><
-            if (iType.Equals(InventoryType.EQUIP) && !ItemConstants.isMedal(itemId))
+            if (iType.Equals(InventoryType.EQUIP) && !ii.IsValidEquip(itemId, EquipSlot.MEDAL))
             {
                 if (chr.isGM())
                 {
