@@ -1,4 +1,6 @@
+using Application.Shared.Constants;
 using Application.Shared.Net.Encryption;
+using DotNetty.Buffers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +62,19 @@ namespace Application.Shared.Net
             p.writeBytes(recvIv.getBytes());
             p.writeBytes(sendIv.getBytes());
             p.writeByte(8);
+            return p;
+        }
+
+        public static IByteBuffer GetHello(InitializationVector sendIv, InitializationVector recvIv)
+        {
+            var p = Unpooled.Buffer(16);
+            p.WriteShortLE(0x0E);
+            p.WriteShortLE(ServerConstants.VERSION);
+            p.WriteShortLE(1);
+            p.WriteByte(49);
+            p.WriteBytes(recvIv.getBytes());
+            p.WriteBytes(sendIv.getBytes());
+            p.WriteByte(8);
             return p;
         }
 
