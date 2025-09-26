@@ -74,23 +74,20 @@ namespace Application.Benchmark
     public class PacketReadStringBenchmark
     {
         public const string TestString = "It&apos;s a bowman town on a wide prairie, and you can choose to become a bowman here.";
-        byte[] bytes;
         ByteBufInPacket reader;
         public PacketReadStringBenchmark()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            bytes = GlobalVariable.Encoding.GetBytes(TestString);
         }
 
 
         [IterationSetup]
         public void IterationSetup()
         {
-            var _dataNew = Unpooled.Buffer();
-            _dataNew.WriteShortLE(bytes.Length);
-            _dataNew.WriteBytes(bytes);
+            var writer = new ByteBufOutPacket();
+            writer.writeString(TestString);
 
-            reader = new ByteBufInPacket(_dataNew);
+            reader = new ByteBufInPacket(writer.getBytes());
         }
 
         [Benchmark(Baseline = true)]

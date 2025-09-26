@@ -8,8 +8,14 @@ namespace Application.Shared.Net;
 
 public class ByteBufInPacket : PacketBase, InPacket
 {
-    public ByteBufInPacket(IByteBuffer byteBuf) : base(byteBuf)
+    public ByteBufInPacket() : base(PooledByteBufferAllocator.Default.Buffer())
     {
+    }
+
+
+    public ByteBufInPacket(byte[] bytes) : this()
+    {
+        byteBuf.WriteBytes(bytes);
     }
 
     public byte readByte()

@@ -8,20 +8,16 @@ namespace Application.Shared.Net;
 
 public class ByteBufOutPacket : PacketBase, OutPacket
 {
-    public ByteBufOutPacket() : base(PooledByteBufferAllocator.Default.Buffer())
+    public ByteBufOutPacket() : base(PooledByteBufferAllocator.Default.DirectBuffer())
     {
     }
 
-    public ByteBufOutPacket(byte[] bytes) : base(Unpooled.WrappedBuffer(bytes))
+    public ByteBufOutPacket(byte[] bytes) : this()
     {
+        byteBuf.WriteBytes(bytes);
     }
 
     public ByteBufOutPacket(SendOpcode op) : this()
-    {
-        byteBuf.WriteShortLE((short)op.getValue());
-    }
-
-    public ByteBufOutPacket(SendOpcode op, int initialCapacity) : base(PooledByteBufferAllocator.Default.Buffer(initialCapacity))
     {
         byteBuf.WriteShortLE((short)op.getValue());
     }

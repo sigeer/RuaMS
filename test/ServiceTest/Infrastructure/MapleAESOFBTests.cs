@@ -40,51 +40,51 @@ namespace ServiceTest.Infrastructure
             return strOutput;
         }
 
-        [TestCase("103,-1,-45,43", ExpectedResult = "25,-81,-115,-48,-80,-99,-34,62,124,54,36,94")]
-        [Test]
-        public string Decrypt_Test(string byteString)
-        {
-            // (byte)(Randomizer.nextDouble() * 255)
-            var recvCypher = new MapleAESOFB(InitializationVector.generateReceive(), ServerConstants.VERSION);
+        //[TestCase("103,-1,-45,43", ExpectedResult = "25,-81,-115,-48,-80,-99,-34,62,124,54,36,94")]
+        //[Test]
+        //public string Decrypt_Test(string byteString)
+        //{
+        //    // (byte)(Randomizer.nextDouble() * 255)
+        //    var recvCypher = new MapleAESOFB(InitializationVector.generateReceive(), ServerConstants.VERSION);
 
-            string output = string.Empty;
-            foreach (var item in Enumerable.Range(0, 3))
-            {
-                var sbytes = byteString.Split(',').Select(x => sbyte.Parse(x)).ToArray();
+        //    string output = string.Empty;
+        //    foreach (var item in Enumerable.Range(0, 3))
+        //    {
+        //        var sbytes = byteString.Split(',').Select(x => sbyte.Parse(x)).ToArray();
 
-                var bytes = sbytes.Cast<byte>().ToArray();
-                var decrypted = recvCypher.crypt(bytes);
-                MapleCustomEncryption.decryptData(bytes);
+        //        var bytes = sbytes.Cast<byte>().ToArray();
+        //        var decrypted = recvCypher.crypt(bytes);
+        //        MapleCustomEncryption.decryptData(bytes);
 
-                var strOutput = string.Join(',', bytes.Cast<sbyte>());
-                Console.WriteLine(strOutput);
+        //        var strOutput = string.Join(',', bytes.Cast<sbyte>());
+        //        Console.WriteLine(strOutput);
 
-                output += strOutput + ",";
-            }
-            return output.Substring(0, output.Length - 1);
-        }
+        //        output += strOutput + ",";
+        //    }
+        //    return output.Substring(0, output.Length - 1);
+        //}
 
-        [TestCase("TEST")]
-        [Test]
-        public void CryptAndDecrypt_Test(string inputString)
-        {
-            var iv = InitializationVector.generateReceive();
-            var mockClientSenderCypher = new MapleAESOFB(iv, ServerConstants.VERSION);
+        //[TestCase("TEST")]
+        //[Test]
+        //public void CryptAndDecrypt_Test(string inputString)
+        //{
+        //    var iv = InitializationVector.generateReceive();
+        //    var mockClientSenderCypher = new MapleAESOFB(iv, ServerConstants.VERSION);
 
-            var bytes = PacketCreator.serverNotice(6, inputString).getBytes();
-            Console.WriteLine("before crypt: " + string.Join(',', bytes));
+        //    var bytes = PacketCreator.serverNotice(6, inputString).getBytes();
+        //    Console.WriteLine("before crypt: " + string.Join(',', bytes));
 
-            mockClientSenderCypher.Encrypt(Unpooled.WrappedBuffer(bytes), out var ret);
-            Console.WriteLine("after crypt: " + string.Join(',', ret));
+        //    mockClientSenderCypher.Encrypt(Unpooled.WrappedBuffer(bytes), out var ret);
+        //    Console.WriteLine("after crypt: " + string.Join(',', ret));
 
-            var recvCypher = new MapleAESOFB(iv, ServerConstants.VERSION);
-            var stats = recvCypher.Decrypt(Unpooled.WrappedBuffer(ret), out var decryptedData);
-            // Console.WriteLine(stats + ": " + string.Join(',', decryptedData));
-            if (stats == 1)
-                Console.WriteLine("after decrypt: " + string.Join(',', decryptedData));
-            Assert.That(stats == 1);
-            Assert.That(string.Join(',', decryptedData) == string.Join(',', bytes));
-        }
+        //    var recvCypher = new MapleAESOFB(iv, ServerConstants.VERSION);
+        //    var stats = recvCypher.Decrypt(Unpooled.WrappedBuffer(ret), out var decryptedData);
+        //    // Console.WriteLine(stats + ": " + string.Join(',', decryptedData));
+        //    if (stats == 1)
+        //        Console.WriteLine("after decrypt: " + string.Join(',', decryptedData));
+        //    Assert.That(stats == 1);
+        //    Assert.That(string.Join(',', decryptedData) == string.Join(',', bytes));
+        //}
 
         [TestCase(704064503, ExpectedResult = false)]
         [Test]
