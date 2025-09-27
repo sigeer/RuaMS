@@ -21,11 +21,6 @@ public class ByteBufOutPacket : PacketBase, OutPacket
         byteBuf.WriteShortLE((short)op.getValue());
     }
 
-    public ByteBufOutPacket(SendOpcode op, int initialCapacity) : base(Unpooled.Buffer(initialCapacity))
-    {
-        byteBuf.WriteShortLE((short)op.getValue());
-    }
-
     public void writeByte(byte value)
     {
         byteBuf.WriteByte(value);

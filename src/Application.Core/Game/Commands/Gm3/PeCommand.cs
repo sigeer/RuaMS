@@ -31,7 +31,7 @@ public class PeCommand : CommandBase
 
         }
         byte[] packetContent = HexTool.toBytes(packet);
-        InPacket inPacket = new ByteBufInPacket(Unpooled.WrappedBuffer(packetContent));
+        InPacket inPacket = new ByteBufInPacket(packetContent);
         short packetId = inPacket.readShort();
         var packetHandler = _processor.GetPacketHandler(packetId);
         if (packetHandler != null && packetHandler.ValidateState(c))

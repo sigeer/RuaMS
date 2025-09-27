@@ -135,7 +135,7 @@ public class GenericPortal : Portal
     public void enterPortal(IChannelClient c)
     {
         bool changed = false;
-        if (getScriptName() != null)
+        if (!string.IsNullOrEmpty(getScriptName()))
         {
             try
             {

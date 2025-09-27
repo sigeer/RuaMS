@@ -42,6 +42,7 @@ namespace Application.Shared.Client
                 await foreach (var p in packetChannel.Reader.ReadAllAsync())
                 {
                     await NettyChannel.WriteAndFlushAsync(p);
+                    p.Dispose();
                 }
             });
             this.log = log;
@@ -110,8 +111,15 @@ namespace Application.Shared.Client
         protected abstract void ProcessPacket(InPacket packet);
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
-            ProcessPacket(msg);
-            LastPacket = DateTimeOffset.UtcNow;
+            try
+            {
+                ProcessPacket(msg);
+                LastPacket = DateTimeOffset.UtcNow;
+            }
+            finally
+            {
+                msg.Dispose();
+            }
         }
 
         public override void UserEventTriggered(IChannelHandlerContext ctx, object evt)

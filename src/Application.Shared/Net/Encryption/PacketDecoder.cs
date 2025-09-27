@@ -39,7 +39,7 @@ public class PacketDecoder : ReplayingDecoder<DecodingState>
         inValue.ReadBytes(packet);
         receiveCypher.crypt(packet);
         MapleCustomEncryption.decryptData(packet);
-        outs.Add(new ByteBufInPacket(Unpooled.WrappedBuffer(packet)));
+        outs.Add(new ByteBufInPacket(packet));
     }
 }
 

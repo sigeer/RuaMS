@@ -38,7 +38,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 str = shortCode.ToString().PadLeft(4, '0');
 
             str += ".img.xml";
-            return _itemFiles.Where(x => x.EndsWith(str)).FirstOrDefault();
+            return _itemFiles.Where(x => x.EndsWith(str)).FirstOrDefault() ?? string.Empty;
         }
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
