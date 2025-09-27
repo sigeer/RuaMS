@@ -11,6 +11,7 @@ using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Serilog;
+using System.Threading.Tasks;
 
 namespace net.netty;
 
@@ -46,7 +47,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
     private void writeInitialUnencryptedHelloPacket(ISocketChannel socketChannel, InitializationVector sendIv, InitializationVector recvIv)
     {
         var p = PacketCommon.getHello(sendIv, recvIv);
-        socketChannel.WriteAndFlushAsync(p.GetByteBuffer()).ContinueWith(_ => p.Dispose()).ConfigureAwait(false).GetAwaiter().GetResult();
+        socketChannel.WriteAndFlushAsync(p.GetByteBuffer()).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private void setUpHandlers(IChannelPipeline pipeline, InitializationVector sendIv, InitializationVector recvIv,
