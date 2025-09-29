@@ -4,7 +4,6 @@ public class ChatCommand : CommandBase
 {
     public ChatCommand() : base(3, "togglewhitechat")
     {
-        Description = "Toggle white GM chat.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

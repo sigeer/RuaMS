@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
@@ -1588,7 +1589,7 @@ public partial class Player
 
     public void dropMessage(int type, string message)
     {
-        sendPacket(PacketCreator.serverNotice(type, message));
+        sendPacket(PacketCommon.serverNotice(type, message));
     }
 
     public void equipChanged()
@@ -3396,10 +3397,23 @@ public partial class Player
         updateRemainingSp(remainingSp, GameConstants.getSkillBook(JobId));
     }
 
+    public string GetMessageByKey(string key, params string[] paramsValue)
+    {
+        return Client.GetMessageByKey(key, paramsValue);
+    }
 
     public void message(string m)
     {
         dropMessage(5, m);
+    }
+
+    public void MessageI18N(string key, params string[] paramsValue)
+    {
+        var message = GetMessageByKey(key, paramsValue);
+        if (!string.IsNullOrEmpty(message))
+        {
+            this.message(message);
+        }
     }
 
     public void yellowMessage(string m)
@@ -3407,7 +3421,14 @@ public partial class Player
         sendPacket(PacketCreator.sendYellowTip(m));
     }
 
-
+    public void YellowMessageI18N(string key, params string[] paramsValue)
+    {
+        var message = GetMessageByKey(key, paramsValue);
+        if (!string.IsNullOrEmpty(message))
+        {
+            yellowMessage(message);
+        }
+    }
     private void playerDead()
     {
         if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)

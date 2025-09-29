@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -6,7 +7,6 @@ public class TimerMapCommand : CommandBase
 {
     public TimerMapCommand() : base(3, "timermap")
     {
-        Description = "Set timer on all players in current map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class TimerMapCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !timermap <seconds>|remove");
+            player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
             return;
         }
 
@@ -38,7 +38,7 @@ public class TimerMapCommand : CommandBase
             catch (FormatException e)
             {
                 log.Warning(e.ToString());
-                player.yellowMessage("Syntax: !timermap <seconds>|remove");
+                player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
             }
         }
     }

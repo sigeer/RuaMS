@@ -1,6 +1,7 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using server.life;
 using System.Text;
 
@@ -12,7 +13,6 @@ public class SpawnCommand : CommandBase
     public SpawnCommand(WzStringQueryService wzManager) : base(3, "spawn")
     {
         _wzManager = wzManager;
-        Description = "Spawn mob(s) on your location.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -20,7 +20,7 @@ public class SpawnCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1 || paramsValue.Length > 2)
         {
-            player.yellowMessage("Syntax: !spawn <mobid> [<mobqty>]");
+            player.YellowMessageI18N(nameof(ClientMessage.SpawnCommand_Syntax));
             return;
         }
 
@@ -33,7 +33,8 @@ public class SpawnCommand : CommandBase
             }
             else if (list.MatchedItems.Count > 0)
             {
-                var messages = new StringBuilder("找到了这些相似项：\r\n");
+                var messages = new StringBuilder();
+                messages.Append(player.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
                 for (int i = 0; i < list.MatchedItems.Count; i++)
                 {
                     var item = list.MatchedItems[i];
@@ -54,7 +55,7 @@ public class SpawnCommand : CommandBase
             }
             else
             {
-                player.yellowMessage("Syntax: <mobid> invalid");
+                player.YellowMessageI18N(nameof(ClientMessage.MobNotFound), paramsValue[0]);
                 return;
             }
 

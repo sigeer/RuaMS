@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class SpCommand : CommandBase
 {
     public SpCommand() : base(2, "sp")
     {
-        Description = "Set available SP.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class SpCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !sp [<playername>] <newsp>");
+            player.YellowMessageI18N(nameof(ClientMessage.SpCommand_Syntax));
             return;
         }
 
@@ -47,11 +48,11 @@ public class SpCommand : CommandBase
 
                 victim.updateRemainingSp(newSp);
 
-                player.dropMessage(5, "SP given.");
+                player.MessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
             }
             else
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
     }

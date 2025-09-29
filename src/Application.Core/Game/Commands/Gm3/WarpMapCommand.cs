@@ -1,6 +1,6 @@
 using Application.Core.Channel.ServerData;
-using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -11,7 +11,6 @@ public class WarpMapCommand : CommandBase
     public WarpMapCommand(WzStringQueryService wzManager) : base(3, "warpmap")
     {
         _wzManager = wzManager;
-        Description = "Warp all characters on current map to a new map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -19,7 +18,7 @@ public class WarpMapCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !warpmap <mapid>");
+            player.YellowMessageI18N(nameof(ClientMessage.WarpMapCommand_Syntax));
             return;
         }
 
@@ -34,7 +33,7 @@ public class WarpMapCommand : CommandBase
                 }
                 else if (findResult.MatchedItems.Count > 0)
                 {
-                    var messages = new StringBuilder("找到了这些相似项：");
+                    var messages = new StringBuilder(c.GetMessageByKey(nameof(ClientMessage.FindSimilarItem)));
                     for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
                         var item = findResult.MatchedItems[i];
@@ -55,7 +54,7 @@ public class WarpMapCommand : CommandBase
                 }
                 else
                 {
-                    player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+                    player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
                     return;
                 }
             }
@@ -65,7 +64,7 @@ public class WarpMapCommand : CommandBase
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
-            player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
         }
     }
 
@@ -75,7 +74,7 @@ public class WarpMapCommand : CommandBase
         var target = c.getChannelServer().getMapFactory().getMap(mapId);
         if (target == null)
         {
-            player.yellowMessage("Map ID " + mapId + " is invalid.");
+            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), mapId.ToString());
             return;
         }
         var characters = player.getMap().getAllPlayers();

@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ItemCommand_Description" xml:space="preserve">
+    <value>Spawn an item into your inventory.</value>
+  </data>
+  <data name="ItemCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !item &lt;itemid&gt; &lt;quantity&gt;</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Item id '{0}' does not exist.</value>
+  </data>
+  <data name="ItemCommand_CannotCreateCashItem" xml:space="preserve">
+    <value>You cannot create a cash item with this command.</value>
+  </data>
+  <data name="ItemCommand_PetSyntax" xml:space="preserve">
+    <value>Pet Syntax: !item &lt;itemid&gt; &lt;expiration&gt;</value>
+  </data>
+  <data name="WarpCommand_Description" xml:space="preserve">
+    <value>Warp to a map.</value>
+  </data>
+  <data name="WarpCommand_Syntax" xml:space="preserve">
+    <value>syntax: !warp &lt;mapid/mapname&gt;</value>
+  </data>
+  <data name="MapNotFound" xml:space="preserve">
+    <value>Map {0} is invalid.</value>
+  </data>
+  <data name="ClearSlotCommand_Description" xml:space="preserve">
+    <value>Clear all items in an inventory tab.</value>
+  </data>
+  <data name="ClearSlotCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !clearslot &lt;all, equip, use, setup, etc or cash.&gt;</value>
+  </data>
+  <data name="ClearSlotCommand_EquipCleared" xml:space="preserve">
+    <value>Equipment Slot Cleared.</value>
+  </data>
+  <data name="ClearSlotCommand_ConsumeCleared" xml:space="preserve">
+    <value>Use Slot Cleared.</value>
+  </data>
+  <data name="ClearSlotCommand_InstallCleared" xml:space="preserve">
+    <value>Set-Up Slot Cleared.</value>
+  </data>
+  <data name="ClearSlotCommand_CashCleared" xml:space="preserve">
+    <value>Cash Slot Cleared.</value>
+  </data>
+  <data name="ClearSlotCommand_EtcCleared" xml:space="preserve">
+    <value>ETC Slot Cleared.</value>
+  </data>
+  <data name="ClearSlotCommand_AllCleared" xml:space="preserve">
+    <value>All Slots Cleared.</value>
+  </data>
+  <data name="ItemDropCommand_Description" xml:space="preserve">
+    <value>Spawn an item onto the ground.</value>
+  </data>
+  <data name="ItemDropCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !drop &lt;itemid&gt; &lt;quantity&gt;</value>
+  </data>
+  <data name="ItemDropCommand_PetSyntax" xml:space="preserve">
+    <value>Pet Syntax: !drop &lt;itemid&gt; &lt;expiration&gt;</value>
+  </data>
+  <data name="ItemDropCommand_CannotCreateCashItem" xml:space="preserve">
+    <value>You cannot create a cash item with this command.</value>
+  </data>
+  <data name="LevelCommand_Description" xml:space="preserve">
+    <value>Set your level.</value>
+  </data>
+  <data name="LevelCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !level &lt;newlevel&gt;</value>
+  </data>
+  <data name="SearchCommand_Description" xml:space="preserve">
+    <value>Search string.wz.</value>
+  </data>
+  <data name="SearchCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !search &lt;type&gt; &lt;name&gt;</value>
+  </data>
+  <data name="SearchCommand_Wrong" xml:space="preserve">
+    <value>Invalid search.\r\nSyntax: '!search [type] [name]', where [type] is MAP, QUEST, NPC, ITEM, MOB, or SKILL.</value>
+  </data>
+  <data name="SummonCommand_Description" xml:space="preserve">
+    <value>Move a player to your location.</value>
+  </data>
+  <data name="SummonCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !{0} &lt;playername&gt;</value>
+  </data>
+  <data name="BanCommand_Description" xml:space="preserve">
+    <value>Ban a player.</value>
+  </data>
+  <data name="BanCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !ban &lt;IGN&gt; &lt;reason&gt;</value>
+  </data>
+  <data name="BanReason" xml:space="preserve">
+    <value>Reason:</value>
+  </data>
+  <data name="FaceCommand_Description" xml:space="preserve">
+    <value>Change face of a player.</value>
+  </data>
+  <data name="FaceCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !face [&lt;playername&gt;] &lt;faceid&gt;</value>
+  </data>
+  <data name="PlayerNotFoundInChannel" xml:space="preserve">
+    <value>Player '{0}' has not been found on this channel.</value>
+  </data>
+  <data name="FaceNotFound" xml:space="preserve">
+    <value>Face id '{0}' does not exist.</value>
+  </data>
+  <data name="HairNotFound" xml:space="preserve">
+    <value>Hair id '{0}' does not exist.</value>
+  </data>
+  <data name="HairCommand_Description" xml:space="preserve">
+    <value>Change hair of a player.</value>
+  </data>
+  <data name="HairCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !hair [&lt;playername&gt;] &lt;hairid&gt;</value>
+  </data>
+  <data name="DebuffCommand_Description" xml:space="preserve">
+    <value>Put a debuff on all nearby players.</value>
+  </data>
+  <data name="DebuffCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE</value>
+  </data>
+  <data name="FameCommand_Description" xml:space="preserve">
+    <value>Set new fame value of a player.</value>
+  </data>
+  <data name="FameCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !fame [&lt;playername&gt;] &lt;newfame&gt;</value>
+  </data>
+  <data name="FameCommand_FameGiven" xml:space="preserve">
+    <value>FAME given.</value>
+  </data>
+  <data name="GiveMesosCommand_Description" xml:space="preserve">
+    <value>Give mesos to a player.</value>
+  </data>
+  <data name="GiveMesosCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !givems [&lt;playername&gt;] &lt;gainmeso&gt;</value>
+  </data>
+  <data name="GiveMesosCommand_MesoGiven" xml:space="preserve">
+    <value>MESO given.</value>
+  </data>
+  <data name="GiveNxCommand_Description" xml:space="preserve">
+    <value>Give NX to a player.</value>
+  </data>
+  <data name="GiveNxCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !givenx [nx, mp, np] [&lt;playername&gt;] &lt;gainnx&gt;</value>
+  </data>
+  <data name="DcCommand_Description" xml:space="preserve">
+    <value>Disconnect a player.</value>
+  </data>
+  <data name="SpawnCommand_Description" xml:space="preserve">
+    <value>Spawn mob(s) on your location.</value>
+  </data>
+  <data name="SpawnCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !spawn &lt;mobid&gt; [&lt;mobqty&gt;]</value>
+  </data>
+  <data name="FindSimilarItem" xml:space="preserve">
+    <value>Find similar items:</value>
+  </data>
+  <data name="MobNotFound" xml:space="preserve">
+    <value>Mob Id {0} is invalid.</value>
+  </data>
+  <data name="TimeCommand_Description" xml:space="preserve">
+    <value>Show current server time.</value>
+  </data>
+  <data name="ServerTime" xml:space="preserve">
+    <value>Server Time: </value>
+  </data>
+  <data name="ApCommand_Description" xml:space="preserve">
+    <value>Set available AP.</value>
+  </data>
+  <data name="ApCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !ap [&lt;playername&gt;] &lt;newap&gt;</value>
+  </data>
+  <data name="BuffCommand_Description" xml:space="preserve">
+    <value>Activate a buff.</value>
+  </data>
+  <data name="BuffCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !buff &lt;buffid&gt;</value>
+  </data>
+  <data name="JailCommand_Description" xml:space="preserve">
+    <value>Move a player to the jail.</value>
+  </data>
+  <data name="JailCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !jail &lt;playername&gt; [&lt;minutes&gt;]</value>
+  </data>
+  <data name="Jail_Result" xml:space="preserve">
+    <value>{0} was jailed for {1} minutes.</value>
+  </data>
+  <data name="Jail_ExtendResult" xml:space="preserve">
+    <value>{0}'s time in jail has been extended for {1} minutes.</value>
+  </data>
+  <data name="MaxSkillCommand_Description" xml:space="preserve">
+    <value>Max out all job skills.</value>
+  </data>
+  <data name="MaxSkillCommand_Result" xml:space="preserve">
+    <value>Skills maxed out.</value>
+  </data>
+  <data name="MaxStatCommand_Description" xml:space="preserve">
+    <value>Max out all character stats.</value>
+  </data>
+  <data name="MaxStatCommand_Result" xml:space="preserve">
+    <value>Stats maxed out.</value>
+  </data>
+  <data name="MobSkillCommand_Description" xml:space="preserve">
+    <value>Apply a mob skill to all mobs on the map. Args: &lt;mob skill id&gt; &lt;skill level&gt;</value>
+  </data>
+  <data name="MobSkillCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !mobskill &lt;skillId&gt; &lt;skillLevel&gt;</value>
+  </data>
+  <data name="MobSkillNotFound" xml:space="preserve">
+    <value>MobSkill Id {0} is invalid.</value>
+  </data>
+  <data name="SetSlotCommand_Description" xml:space="preserve">
+    <value>Set amount of inventory slots in all tabs.</value>
+  </data>
+  <data name="SetSlotCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !setslot &lt;newlevel&gt;</value>
+  </data>
+  <data name="Command_Done" xml:space="preserve">
+    <value>{0} done.</value>
+  </data>
+  <data name="SpCommand_Description" xml:space="preserve">
+    <value>Set available SP.</value>
+  </data>
+  <data name="SpCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !sp [&lt;playername&gt;] &lt;newsp&gt;</value>
+  </data>
+  <data name="UnJailCommand_Description" xml:space="preserve">
+    <value>Free a player from jail.</value>
+  </data>
+  <data name="UnJailCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !unjail &lt;playername&gt;</value>
+  </data>
+  <data name="UnjailCommand_AlreadyFree" xml:space="preserve">
+    <value>This player is already free.</value>
+  </data>
+  <data name="Unjail_Notify" xml:space="preserve">
+    <value>By lack of concrete proof you are now unjailed. Enjoy freedom!</value>
+  </data>
+  <data name="KillCommand_Description" xml:space="preserve">
+    <value>Kill a player.</value>
+  </data>
+  <data name="KillCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !kill &lt;playername&gt;</value>
+  </data>
+  <data name="TimerCommand_Description" xml:space="preserve">
+    <value>Set timer on a player in current map..</value>
+  </data>
+  <data name="TimerCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !timer &lt;playername&gt; &lt;seconds&gt;|remove</value>
+  </data>
+  <data name="TimerAllCommand_Description" xml:space="preserve">
+    <value>Set a server wide timer.</value>
+  </data>
+  <data name="TimerAllCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !timerall &lt;seconds&gt;|remove</value>
+  </data>
+  <data name="TimerMapCommand_Description" xml:space="preserve">
+    <value>Set timer on all players in current map.</value>
+  </data>
+  <data name="TimerMapCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !timermap &lt;seconds&gt;|remove</value>
+  </data>
+  <data name="PlayerNotFoundInMap" xml:space="preserve">
+    <value>Player '{0}' has not been found on this map.</value>
+  </data>
+  <data name="WarpAreaCommand_Description" xml:space="preserve">
+    <value>Warp all nearby players to a new map.</value>
+  </data>
+  <data name="WarpAreaCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !warparea &lt;mapid&gt;</value>
+  </data>
+  <data name="WarpMapCommand_Description" xml:space="preserve">
+    <value>Warp all characters on current map to a new map.</value>
+  </data>
+  <data name="WarpMapCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !warpmap &lt;mapid&gt;</value>
+  </data>
+  <data name="BossDropRateCommand_Description" xml:space="preserve">
+    <value>Set world boss drop rate.</value>
+  </data>
+  <data name="DropRateCommand_Description" xml:space="preserve">
+    <value>Set world drop rate.</value>
+  </data>
+  <data name="ExpRateCommand_Description" xml:space="preserve">
+    <value>Set world exp rate.</value>
+  </data>
+  <data name="FishingRateCommand_Description" xml:space="preserve">
+    <value>Set fishing rate.</value>
+  </data>
+  <data name="MesoRateCommand_Description" xml:space="preserve">
+    <value>Set world meso rate.</value>
+  </data>
+  <data name="ProItemCommand_Description" xml:space="preserve">
+    <value>Spawn an item with custom stats.</value>
+  </data>
+  <data name="ProItemCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !proitem &lt;itemid&gt; &lt;stat value&gt; [&lt;spdjmp value&gt;]</value>
+  </data>
+  <data name="DataTypeIncorrect" xml:space="preserve">
+    <value>The data type is incorrect. expected type: {0}.</value>
+  </data>
+  <data name="EquipNotFound" xml:space="preserve">
+    <value>Make sure {0} is an equippable item.</value>
+  </data>
+  <data name="QuestRateCommand_Description" xml:space="preserve">
+    <value>Set world quest rate.</value>
+  </data>
+  <data name="TravelRateCommand_Description" xml:space="preserve">
+    <value>Set world travel rate.</value>
+  </data>
+  <data name="SetGmLevelCommand_Description" xml:space="preserve">
+    <value>Set GM level of a player.</value>
+  </data>
+  <data name="SetGmLevelCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !setgmlevel &lt;playername&gt; &lt;newlevel&gt;</value>
+  </data>
+  <data name="ShutdownCommand_Description" xml:space="preserve">
+    <value>Shut down the server.</value>
+  </data>
+  <data name="ShutdownCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !shutdown [&lt;seconds&gt;| -1]</value>
+  </data>
+  <data name="PnpcCommand_Description" xml:space="preserve">
+    <value>Spawn a permanent NPC on your location.</value>
+  </data>
+  <data name="PnpcCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !pnpc &lt;npcid&gt;</value>
+  </data>
+  <data name="DataType_Number" xml:space="preserve">
+    <value>number</value>
+  </data>
+  <data name="SeedCommand_Description" xml:space="preserve">
+    <value>Drop all seeds inside Henesys PQ.</value>
+  </data>
+  <data name="SeedCommand_LimitMessage" xml:space="preserve">
+    <value>This command can only be used in HPQ.</value>
+  </data>
+  <data name="QuestCompleteCommand_Description" xml:space="preserve">
+    <value>Complete an active quest.</value>
+  </data>
+  <data name="SetStatCommand_Description" xml:space="preserve">
+    <value>Set all primary stats to new value.</value>
+  </data>
+  <data name="KillAllCommand_Description" xml:space="preserve">
+    <value>Kill all mobs in the map.</value>
+  </data>
+  <data name="KillAllCommand_MonsterKilled" xml:space="preserve">
+    <value>Killed {0} monsters.</value>
+  </data>
+  <data name="KillMapCommand_Description" xml:space="preserve">
+    <value>Kill all players in the map.</value>
+  </data>
+  <data name="MobRateCommand_Description" xml:space="preserve">
+    <value>Set world mob rate.</value>
+  </data>
+  <data name="MapPlayersCommand_Description" xml:space="preserve">
+    <value>Show all players on the map.</value>
+  </data>
+  <data name="CurrentMap" xml:space="preserve">
+    <value>Current Map: {0}</value>
+  </data>
+  <data name="DCAllCommand_Description" xml:space="preserve">
+    <value>Disconnect all players (online or logged in).</value>
+  </data>
+  <data name="ClearCacheCommand_Description" xml:space="preserve">
+    <value>Clear all cache.</value>
+  </data>
+  <data name="JobCommand_Description" xml:space="preserve">
+    <value>Change job of a player.</value>
+  </data>
+  <data name="JobCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !job &lt;job id&gt; [&lt;playername&gt;]</value>
+  </data>
+  <data name="JobNotFound" xml:space="preserve">
+    <value>Jobid {0} is not available.</value>
+  </data>
+  <data name="DropMeso_NotAccess" xml:space="preserve">
+    <value>You cannot drop mesos at your GM level.</value>
+  </data>
+  <data name="ChangeFame_OutOfRange" xml:space="preserve">
+    <value>Could not process the request, since this character currently has the minimum/maximum level of fame.</value>
+  </data>
+  <data name="DropItem_NoAccess" xml:space="preserve">
+    <value>You cannot drop items at your GM level.</value>
+  </data>
+  <data name="ChatCommand_Description" xml:space="preserve">
+    <value>Toggle white GM chat.</value>
+  </data>
+  <data name="Trade_GMCheck" xml:space="preserve">
+    <value>You cannot trade with non-GM characters.</value>
+  </data>
+  <data name="Trade_GMCheck2" xml:space="preserve">
+    <value>You cannot trade with this GM character.</value>
+  </data>
+  <data name="Trade_Ing" xml:space="preserve">
+    <value>You are already in a trade.</value>
+  </data>
+  <data name="Trade_AlreadyManaged" xml:space="preserve">
+    <value>You are already managing this player's trade invitation.</value>
+  </data>
+  <data name="Trade_AlreadyManaged2" xml:space="preserve">
+    <value>You are already managing someone's trade invitation.</value>
+  </data>
+  <data name="Trade_TargetInTrading" xml:space="preserve">
+    <value>The other player is already trading with someone else.</value>
+  </data>
+  <data name="Trade_TargetInTradeManaging" xml:space="preserve">
+    <value>The other player is already managing someone else's trade invitation.</value>
+  </data>
+  <data name="Trade_AlreadyClosed" xml:space="preserve">
+    <value>The other player has already closed the trade.</value>
+  </data>
+  <data name="Trade_InviteCanceld" xml:space="preserve">
+    <value>This trade invitation already rescinded.</value>
+  </data>
+  <data name="Trade_MesoExceedLimit" xml:space="preserve">
+    <value>There is not enough meso inventory space to complete the trade.</value>
+  </data>
+  <data name="Trade_MesoExceedLimit2" xml:space="preserve">
+    <value>Partner does not have enough meso inventory space to complete the trade.</value>
+  </data>
+  <data name="Trade_InventoryExceedLimit" xml:space="preserve">
+    <value>There is not enough inventory space to complete the trade.</value>
+  </data>
+  <data name="Trade_InventoryExceedLimit2" xml:space="preserve">
+    <value>Partner does not have enough inventory space to complete the trade.</value>
+  </data>
+  <data name="Trade_UniqueLimit" xml:space="preserve">
+    <value>Partner cannot hold more than one one-of-a-kind item at a time.</value>
+  </data>
+</root>

@@ -1,6 +1,6 @@
 using Application.Core.Channel.DataProviders;
+using Application.Resources.Messages;
 using scripting;
-using server.quest;
 
 namespace Application.Core.Game.Commands.Gm6;
 
@@ -8,7 +8,6 @@ public class ClearCacheCommand : ParamsCommandBase
 {
     public ClearCacheCommand() : base(["[quest|script]"], 6, "clearcache")
     {
-        Description = "Clear all cache.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -20,13 +19,13 @@ public class ClearCacheCommand : ParamsCommandBase
         if (p.Equals("quest", StringComparison.OrdinalIgnoreCase))
         {
             QuestFactory.Instance.clearCache();
-            c.OnlinedCharacter.dropMessage(5, "Quest Cache Cleared.");
+            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
 
         if (p.Equals("script", StringComparison.OrdinalIgnoreCase))
         {
             AbstractScriptManager.ClearCache();
-            c.OnlinedCharacter.dropMessage(5, "Script Cache Cleared.");
+            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
 
     }

@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm4;
 
 public class TravelRateCommand : CommandBase
 {
     public TravelRateCommand() : base(4, "travelrate")
     {
-        Description = "Set world travel rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -18,7 +19,7 @@ public class TravelRateCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out int d))
         {
-            player.yellowMessage("Syntax: newrate invalid");
+            player.YellowMessageI18N(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
             return;
         }
 

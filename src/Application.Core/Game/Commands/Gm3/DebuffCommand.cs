@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -5,7 +6,6 @@ public class DebuffCommand : CommandBase
 {
     public DebuffCommand() : base(3, "debuff")
     {
-        Description = "Put a debuff on all nearby players.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -13,7 +13,7 @@ public class DebuffCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE");
+            player.YellowMessageI18N(nameof(ClientMessage.DebuffCommand_Syntax));
             return;
         }
 
@@ -78,7 +78,7 @@ public class DebuffCommand : CommandBase
 
         if (disease == null || skill == null)
         {
-            player.yellowMessage("Syntax: !debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE");
+            player.YellowMessageI18N(nameof(ClientMessage.DebuffCommand_Syntax));
             return;
         }
 

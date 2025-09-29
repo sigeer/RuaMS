@@ -1,14 +1,17 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm0;
 
 public class TimeCommand : CommandBase
 {
     public TimeCommand() : base(0, "time")
     {
-        Description = "Show current server time.";
     }
 
     public override void Execute(IChannelClient client, string[] paramsValue)
     {
-        client.OnlinedCharacter.yellowMessage("Server Time: " + DateTimeOffset.FromUnixTimeMilliseconds(client.CurrentServerContainer.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+        client.OnlinedCharacter.yellowMessage(
+            client.GetMessageByKey(nameof(ClientMessage.ServerTime)) 
+            + client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 }

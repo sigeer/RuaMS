@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using client.inventory;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -6,7 +7,6 @@ public class SeedCommand : CommandBase
 {
     public SeedCommand() : base(3, "seed")
     {
-        Description = "Drop all seeds inside Henesys PQ.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class SeedCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (player.getMapId() != MapId.HENESYS_PQ)
         {
-            player.yellowMessage("This command can only be used in HPQ.");
+            player.YellowMessageI18N(nameof(ClientMessage.SeedCommand_LimitMessage));
             return;
         }
         Point[] pos = {

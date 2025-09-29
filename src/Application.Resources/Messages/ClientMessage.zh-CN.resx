@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ItemCommand_Description" xml:space="preserve">
+    <value>生成物品到背包</value>
+  </data>
+  <data name="ItemCommand_Syntax" xml:space="preserve">
+    <value>格式：!item &lt;物品Id&gt; &lt;数量&gt;</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>物品Id={0} 不存在。</value>
+  </data>
+  <data name="ItemCommand_CannotCreateCashItem" xml:space="preserve">
+    <value>不支持通过命令创建现金道具</value>
+  </data>
+  <data name="ItemCommand_PetSyntax" xml:space="preserve">
+    <value>格式：!item &lt;宠物Id&gt; &lt;有效期&gt;</value>
+  </data>
+  <data name="WarpCommand_Description" xml:space="preserve">
+    <value>传送到地图</value>
+  </data>
+  <data name="WarpCommand_Syntax" xml:space="preserve">
+    <value>语法错误：!warp &lt;地图Id/地图名&gt;</value>
+  </data>
+  <data name="MapNotFound" xml:space="preserve">
+    <value>地图 {0} 不存在</value>
+  </data>
+  <data name="ClearSlotCommand_Description" xml:space="preserve">
+    <value>清理背包</value>
+  </data>
+  <data name="ClearSlotCommand_Syntax" xml:space="preserve">
+    <value>格式：!clearslot &lt;all, equip, use, setup, etc or cash.&gt;</value>
+  </data>
+  <data name="ClearSlotCommand_EquipCleared" xml:space="preserve">
+    <value>装备栏已清理</value>
+  </data>
+  <data name="ClearSlotCommand_ConsumeCleared" xml:space="preserve">
+    <value>消耗栏已清理</value>
+  </data>
+  <data name="ClearSlotCommand_InstallCleared" xml:space="preserve">
+    <value>设置栏已清理</value>
+  </data>
+  <data name="ClearSlotCommand_CashCleared" xml:space="preserve">
+    <value>现金栏已清理</value>
+  </data>
+  <data name="ClearSlotCommand_EtcCleared" xml:space="preserve">
+    <value>其他栏已清理</value>
+  </data>
+  <data name="ClearSlotCommand_AllCleared" xml:space="preserve">
+    <value>所有窗口都已清理</value>
+  </data>
+  <data name="ItemDropCommand_Description" xml:space="preserve">
+    <value>生成掉落物</value>
+  </data>
+  <data name="ItemDropCommand_Syntax" xml:space="preserve">
+    <value>格式：!drop &lt;物品id/物品名称&gt; &lt;数量&gt;</value>
+  </data>
+  <data name="ItemDropCommand_PetSyntax" xml:space="preserve">
+    <value>格式：!drop &lt;宠物Id&gt; &lt;有效期&gt;</value>
+  </data>
+  <data name="ItemDropCommand_CannotCreateCashItem" xml:space="preserve">
+    <value>不支持通过命令创建现金道具</value>
+  </data>
+  <data name="LevelCommand_Description" xml:space="preserve">
+    <value>设置等级</value>
+  </data>
+  <data name="LevelCommand_Syntax" xml:space="preserve">
+    <value>语法：!level &lt;newlevel&gt;</value>
+  </data>
+  <data name="SearchCommand_Description" xml:space="preserve">
+    <value>通过名称查找id</value>
+  </data>
+  <data name="SearchCommand_Syntax" xml:space="preserve">
+    <value>格式：!search &lt;类型&gt; &lt;名称&gt;</value>
+  </data>
+  <data name="SearchCommand_Wrong" xml:space="preserve">
+    <value>查找失败。Type只能是MAP, QUEST, NPC, ITEM, MOB, or SKILL</value>
+  </data>
+  <data name="SummonCommand_Description" xml:space="preserve">
+    <value>把玩家传送到这里。</value>
+  </data>
+  <data name="SummonCommand_Syntax" xml:space="preserve">
+    <value>格式：!{0} &lt;玩家名&gt;</value>
+  </data>
+  <data name="BanCommand_Description" xml:space="preserve">
+    <value>封禁玩家。</value>
+  </data>
+  <data name="BanCommand_Syntax" xml:space="preserve">
+    <value>格式: !ban &lt;玩家昵称&gt; &lt;天&gt;</value>
+  </data>
+  <data name="BanReason" xml:space="preserve">
+    <value>封禁原因：</value>
+  </data>
+  <data name="FaceCommand_Description" xml:space="preserve">
+    <value>改变玩家的脸型</value>
+  </data>
+  <data name="FaceCommand_Syntax" xml:space="preserve">
+    <value>格式：!face [&lt;玩家名&gt;] &lt;脸型id&gt;</value>
+  </data>
+  <data name="PlayerNotFoundInChannel" xml:space="preserve">
+    <value>没有在当前频道找到玩家“{0}”</value>
+  </data>
+  <data name="FaceNotFound" xml:space="preserve">
+    <value>没有找到Id=“{0}”的脸型</value>
+  </data>
+  <data name="HairNotFound" xml:space="preserve">
+    <value>没有找到Id=“{0}”的发型</value>
+  </data>
+  <data name="HairCommand_Description" xml:space="preserve">
+    <value>改变玩家的发型</value>
+  </data>
+  <data name="HairCommand_Syntax" xml:space="preserve">
+    <value>格式：!hair [&lt;玩家名&gt;] &lt;发型id&gt;</value>
+  </data>
+  <data name="DebuffCommand_Description" xml:space="preserve">
+    <value>给附近玩家上debuff</value>
+  </data>
+  <data name="DebuffCommand_Syntax" xml:space="preserve">
+    <value>格式：!debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE</value>
+  </data>
+  <data name="FameCommand_Description" xml:space="preserve">
+    <value>修改玩家人气值</value>
+  </data>
+  <data name="FameCommand_Syntax" xml:space="preserve">
+    <value>格式：!fame [&lt;玩家名&gt;] &lt;设置值&gt;</value>
+  </data>
+  <data name="FameCommand_FameGiven" xml:space="preserve">
+    <value>人气 已发放。</value>
+  </data>
+  <data name="GiveMesosCommand_Description" xml:space="preserve">
+    <value>给玩家金币。</value>
+  </data>
+  <data name="GiveMesosCommand_Syntax" xml:space="preserve">
+    <value>格式：!givems &lt;玩家名&gt; &lt;金币&gt;</value>
+  </data>
+  <data name="GiveMesosCommand_MesoGiven" xml:space="preserve">
+    <value>金币 已发放。</value>
+  </data>
+  <data name="GiveNxCommand_Description" xml:space="preserve">
+    <value>给玩家点券。</value>
+  </data>
+  <data name="GiveNxCommand_Syntax" xml:space="preserve">
+    <value>格式：!givenx [nx, mp, np] [&lt;玩家名&gt;] &lt;点券&gt;</value>
+  </data>
+  <data name="DcCommand_Description" xml:space="preserve">
+    <value>使玩家下线。</value>
+  </data>
+  <data name="SpawnCommand_Description" xml:space="preserve">
+    <value>在当前位置生成怪物。</value>
+  </data>
+  <data name="SpawnCommand_Syntax" xml:space="preserve">
+    <value>格式：!spawn &lt;怪物id/怪物名&gt; [&lt;数量&gt;]</value>
+  </data>
+  <data name="FindSimilarItem" xml:space="preserve">
+    <value>找到相似项：</value>
+  </data>
+  <data name="MobNotFound" xml:space="preserve">
+    <value>怪物Id={0} 不存在</value>
+  </data>
+  <data name="TimeCommand_Description" xml:space="preserve">
+    <value>显示服务器时间。</value>
+  </data>
+  <data name="ServerTime" xml:space="preserve">
+    <value>服务器时间：</value>
+  </data>
+  <data name="ApCommand_Description" xml:space="preserve">
+    <value>设置属性点</value>
+  </data>
+  <data name="ApCommand_Syntax" xml:space="preserve">
+    <value>格式：!ap [&lt;玩家名&gt;] &lt;属性点&gt;</value>
+  </data>
+  <data name="BuffCommand_Description" xml:space="preserve">
+    <value>给玩家附加buff。</value>
+  </data>
+  <data name="BuffCommand_Syntax" xml:space="preserve">
+    <value>格式：!buff &lt;buffid&gt;</value>
+  </data>
+  <data name="JailCommand_Description" xml:space="preserve">
+    <value>小黑屋。</value>
+  </data>
+  <data name="JailCommand_Syntax" xml:space="preserve">
+    <value>格式：!jail &lt;玩家名&gt; [&lt;分钟，默认5&gt;]</value>
+  </data>
+  <data name="Jail_Result" xml:space="preserve">
+    <value>玩家 {0} 已被拉进小黑屋（{1}分钟）。</value>
+  </data>
+  <data name="Jail_ExtendResult" xml:space="preserve">
+    <value>玩家 {0} 在小黑屋的时间延长{1}分钟。</value>
+  </data>
+  <data name="MaxSkillCommand_Description" xml:space="preserve">
+    <value>技能全满。</value>
+  </data>
+  <data name="MaxSkillCommand_Result" xml:space="preserve">
+    <value>技能已全满。</value>
+  </data>
+  <data name="MaxStatCommand_Description" xml:space="preserve">
+    <value>属性全满。</value>
+  </data>
+  <data name="MaxStatCommand_Result" xml:space="preserve">
+    <value>属性已全满。</value>
+  </data>
+  <data name="MobSkillCommand_Description" xml:space="preserve">
+    <value>对地图上所有怪物施加怪物技能。</value>
+  </data>
+  <data name="MobSkillCommand_Syntax" xml:space="preserve">
+    <value>格式：!mobskill &lt;技能id&gt; &lt;技能等级&gt;</value>
+  </data>
+  <data name="MobSkillNotFound" xml:space="preserve">
+    <value>怪物技能Id={0}不存在。</value>
+  </data>
+  <data name="SetSlotCommand_Description" xml:space="preserve">
+    <value>设置所有背包格子数</value>
+  </data>
+  <data name="SetSlotCommand_Syntax" xml:space="preserve">
+    <value>格式：!setslot &lt;数量&gt;</value>
+  </data>
+  <data name="Command_Done" xml:space="preserve">
+    <value>命令 {0} 已完成。</value>
+  </data>
+  <data name="SpCommand_Description" xml:space="preserve">
+    <value>设置技能点</value>
+  </data>
+  <data name="SpCommand_Syntax" xml:space="preserve">
+    <value>格式：!sp [&lt;玩家名&gt;] &lt;技能点&gt;</value>
+  </data>
+  <data name="UnJailCommand_Description" xml:space="preserve">
+    <value>放出小黑屋的玩家。</value>
+  </data>
+  <data name="UnJailCommand_Syntax" xml:space="preserve">
+    <value>格式：!unjail &lt;玩家名&gt;</value>
+  </data>
+  <data name="UnjailCommand_AlreadyFree" xml:space="preserve">
+    <value>这个玩家不在小黑屋。</value>
+  </data>
+  <data name="Unjail_Notify" xml:space="preserve">
+    <value>由于缺乏具体的证据，您已被释放，享受自由吧！</value>
+  </data>
+  <data name="KillCommand_Description" xml:space="preserve">
+    <value>击杀玩家。</value>
+  </data>
+  <data name="KillCommand_Syntax" xml:space="preserve">
+    <value>格式：!kill &lt;玩家名&gt;</value>
+  </data>
+  <data name="TimerCommand_Description" xml:space="preserve">
+    <value>对当前地图的某个玩家显示计时器。</value>
+  </data>
+  <data name="TimerCommand_Syntax" xml:space="preserve">
+    <value>格式：!timer &lt;玩家名&gt; &lt;秒&gt;|remove</value>
+  </data>
+  <data name="TimerAllCommand_Description" xml:space="preserve">
+    <value>对所有玩家显示计时器。</value>
+  </data>
+  <data name="TimerAllCommand_Syntax" xml:space="preserve">
+    <value>格式：!timerall &lt;秒&gt;|remove</value>
+  </data>
+  <data name="TimerMapCommand_Description" xml:space="preserve">
+    <value>对地图内所有玩家显示计时器。</value>
+  </data>
+  <data name="TimerMapCommand_Syntax" xml:space="preserve">
+    <value>格式：!timermap &lt;秒&gt;|remove</value>
+  </data>
+  <data name="PlayerNotFoundInMap" xml:space="preserve">
+    <value>没有在当前地图找到玩家“{0}”</value>
+  </data>
+  <data name="WarpAreaCommand_Description" xml:space="preserve">
+    <value>带着周围的玩家一起传送。</value>
+  </data>
+  <data name="WarpAreaCommand_Syntax" xml:space="preserve">
+    <value>格式：!warparea &lt;地图id&gt;</value>
+  </data>
+  <data name="WarpMapCommand_Description" xml:space="preserve">
+    <value>把当前地图的所有玩家传送到新的地图。</value>
+  </data>
+  <data name="WarpMapCommand_Syntax" xml:space="preserve">
+    <value>格式：!warpmap &lt;地图Id/地图名&gt;</value>
+  </data>
+  <data name="BossDropRateCommand_Description" xml:space="preserve">
+    <value>设置boss掉率。</value>
+  </data>
+  <data name="DropRateCommand_Description" xml:space="preserve">
+    <value>设置掉落倍率。</value>
+  </data>
+  <data name="ExpRateCommand_Description" xml:space="preserve">
+    <value>设置经验倍率。</value>
+  </data>
+  <data name="FishingRateCommand_Description" xml:space="preserve">
+    <value>设置钓鱼倍率。</value>
+  </data>
+  <data name="MesoRateCommand_Description" xml:space="preserve">
+    <value>设置金币倍率。</value>
+  </data>
+  <data name="ProItemCommand_Description" xml:space="preserve">
+    <value>生成装备</value>
+  </data>
+  <data name="ProItemCommand_Syntax" xml:space="preserve">
+    <value>格式：!proitem &lt;装备id&gt; &lt;stat value&gt; [&lt;spdjmp value&gt;]</value>
+  </data>
+  <data name="DataTypeIncorrect" xml:space="preserve">
+    <value>数据类型不正确，期望类型：{0}</value>
+  </data>
+  <data name="EquipNotFound" xml:space="preserve">
+    <value>{0} 不存在 或者并不是一件装备。</value>
+  </data>
+  <data name="QuestRateCommand_Description" xml:space="preserve">
+    <value>设置任务奖励倍率</value>
+  </data>
+  <data name="TravelRateCommand_Description" xml:space="preserve">
+    <value>设置各类传送时间速率。</value>
+  </data>
+  <data name="SetGmLevelCommand_Description" xml:space="preserve">
+    <value>给玩家设置GM等级。</value>
+  </data>
+  <data name="SetGmLevelCommand_Syntax" xml:space="preserve">
+    <value>格式：!setgmlevel &lt;玩家名&gt; &lt;等级&gt;</value>
+  </data>
+  <data name="ShutdownCommand_Description" xml:space="preserve">
+    <value>停止服务器。</value>
+  </data>
+  <data name="ShutdownCommand_Syntax" xml:space="preserve">
+    <value>格式：!shutdown [&lt;秒&gt;| -1]</value>
+  </data>
+  <data name="PnpcCommand_Description" xml:space="preserve">
+    <value>在当前位置生成一个NPC</value>
+  </data>
+  <data name="PnpcCommand_Syntax" xml:space="preserve">
+    <value>格式：!pnpc &lt;npcid&gt;</value>
+  </data>
+  <data name="DataType_Number" xml:space="preserve">
+    <value>数字</value>
+  </data>
+  <data name="SeedCommand_Description" xml:space="preserve">
+    <value>在月妙副本中快速放种子。</value>
+  </data>
+  <data name="SeedCommand_LimitMessage" xml:space="preserve">
+    <value>这个命令只能在月妙副本中执行。</value>
+  </data>
+  <data name="QuestCompleteCommand_Description" xml:space="preserve">
+    <value>完成任务。</value>
+  </data>
+  <data name="SetStatCommand_Description" xml:space="preserve">
+    <value>设置所有属性</value>
+  </data>
+  <data name="KillAllCommand_Description" xml:space="preserve">
+    <value>击杀地图上的所有怪物。</value>
+  </data>
+  <data name="KillAllCommand_MonsterKilled" xml:space="preserve">
+    <value>击杀了{0}个怪物。</value>
+  </data>
+  <data name="KillMapCommand_Description" xml:space="preserve">
+    <value>击杀地图上的所有玩家。</value>
+  </data>
+  <data name="MobRateCommand_Description" xml:space="preserve">
+    <value>设置全局怪物倍率，范围：(0, 5]</value>
+  </data>
+  <data name="MapPlayersCommand_Description" xml:space="preserve">
+    <value>显示当前地图上的所有玩家。</value>
+  </data>
+  <data name="CurrentMap" xml:space="preserve">
+    <value>当前地图：{0}</value>
+  </data>
+  <data name="DCAllCommand_Description" xml:space="preserve">
+    <value>断开所有在线玩家连接</value>
+  </data>
+  <data name="ClearCacheCommand_Description" xml:space="preserve">
+    <value>清理一些缓存。</value>
+  </data>
+  <data name="JobCommand_Description" xml:space="preserve">
+    <value>修改职业。</value>
+  </data>
+  <data name="JobCommand_Syntax" xml:space="preserve">
+    <value>格式：!job &lt;job id&gt; [&lt;playername&gt;]</value>
+  </data>
+  <data name="JobNotFound" xml:space="preserve">
+    <value>没有找到 {0} 的职业</value>
+  </data>
+  <data name="DropMeso_NotAccess" xml:space="preserve">
+    <value>当前GM等级不能丢出金币</value>
+  </data>
+  <data name="ChangeFame_OutOfRange" xml:space="preserve">
+    <value>无法执行该操作，玩家人气值已经达到了上限/下限。</value>
+  </data>
+  <data name="DropItem_NoAccess" xml:space="preserve">
+    <value>当前GM等级不能丢出物品</value>
+  </data>
+  <data name="ChatCommand_Description" xml:space="preserve">
+    <value>切换GM的聊天类型</value>
+  </data>
+  <data name="Trade_GMCheck" xml:space="preserve">
+    <value>GM不能与非GM玩家交易</value>
+  </data>
+  <data name="Trade_GMCheck2" xml:space="preserve">
+    <value>你不能与GM玩家交易</value>
+  </data>
+  <data name="Trade_Ing" xml:space="preserve">
+    <value>交易中</value>
+  </data>
+  <data name="Trade_AlreadyManaged" xml:space="preserve">
+    <value>你已经处理了该玩家的交易邀请。</value>
+  </data>
+  <data name="Trade_AlreadyManaged2" xml:space="preserve">
+    <value>你已经处理了其他玩家的交易邀请。</value>
+  </data>
+  <data name="Trade_TargetInTrading" xml:space="preserve">
+    <value>另一名玩家正在交易</value>
+  </data>
+  <data name="Trade_TargetInTradeManaging" xml:space="preserve">
+    <value>另一名玩家正在处理交易邀请。</value>
+  </data>
+  <data name="Trade_AlreadyClosed" xml:space="preserve">
+    <value>另一名玩家已经完成了交易。</value>
+  </data>
+  <data name="Trade_InviteCanceld" xml:space="preserve">
+    <value>交易邀请已取消</value>
+  </data>
+  <data name="Trade_MesoExceedLimit" xml:space="preserve">
+    <value>已超过携带金币上限，交易失败。</value>
+  </data>
+  <data name="Trade_MesoExceedLimit2" xml:space="preserve">
+    <value>对方携带金币已超过上限，交易失败。</value>
+  </data>
+  <data name="Trade_InventoryExceedLimit" xml:space="preserve">
+    <value>您的背包空间不足，交易失败。</value>
+  </data>
+  <data name="Trade_InventoryExceedLimit2" xml:space="preserve">
+    <value>对方背包空间不足，交易失败。</value>
+  </data>
+  <data name="Trade_UniqueLimit" xml:space="preserve">
+    <value>对方无法同时持有多个唯一物品，交易失败。</value>
+  </data>
+</root>

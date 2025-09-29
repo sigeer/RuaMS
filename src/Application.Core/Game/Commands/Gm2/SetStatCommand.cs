@@ -3,7 +3,6 @@ public class SetStatCommand : CommandBase
 {
     public SetStatCommand() : base(2, "setstat")
     {
-        Description = "Set all primary stats to new value.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

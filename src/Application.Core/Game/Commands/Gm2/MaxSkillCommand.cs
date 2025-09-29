@@ -1,5 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Resources;
+using Application.Resources.Messages;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 
@@ -11,7 +12,6 @@ public class MaxSkillCommand : CommandBase
     public MaxSkillCommand() : base(2, "maxskill")
     {
         _stringProvider = ProviderFactory.GetProvider<StringProvider>();
-        Description = "Max out all job skills.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -42,6 +42,6 @@ public class MaxSkillCommand : CommandBase
             player.changeSkillLevel(skill, -1, -1, -1);
         }
 
-        player.yellowMessage("Skills maxed out.");
+        player.YellowMessageI18N(nameof(ClientMessage.MaxSkillCommand_Result));
     }
 }

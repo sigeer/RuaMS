@@ -4,7 +4,6 @@ public class KillMapCommand : CommandBase
 {
     public KillMapCommand() : base(3, "killmap")
     {
-        Description = "Kill all players in the map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

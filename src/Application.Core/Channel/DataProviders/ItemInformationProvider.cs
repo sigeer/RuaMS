@@ -826,6 +826,49 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
+    public Item? GetEquipByTemplate(EquipTemplate? equipTemplate)
+    {
+        if (equipTemplate == null)
+            return null;
+
+        var nEquip = new Equip(equipTemplate.TemplateId, 0);
+        nEquip.setQuantity(1);
+
+        nEquip.setStr(equipTemplate.IncSTR);
+        nEquip.setDex(equipTemplate.IncDEX);
+        nEquip.setInt(equipTemplate.IncINT);
+        nEquip.setLuk(equipTemplate.IncLUK);
+
+        nEquip.setWatk(equipTemplate.IncPAD);
+        nEquip.setWdef(equipTemplate.IncPDD);
+        nEquip.setMatk(equipTemplate.IncMAD);
+        nEquip.setMdef(equipTemplate.IncMDD);
+
+        nEquip.setAcc(equipTemplate.IncACC);
+        nEquip.setAvoid(equipTemplate.IncEVA);
+
+        nEquip.setSpeed(equipTemplate.IncSpeed);
+        nEquip.setJump(equipTemplate.IncJump);
+        nEquip.setHp(equipTemplate.IncMHP);
+        nEquip.setMp(equipTemplate.IncMMP);
+        nEquip.setUpgradeSlots(equipTemplate.TUC);
+
+        if (equipTemplate.TradeBlock)
+        {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
+            short flag = nEquip.getFlag();
+            flag |= ItemConstants.UNTRADEABLE;
+            nEquip.setFlag(flag);
+        }
+        if (equipTemplate.Fs > 0)
+        {
+            short flag = nEquip.getFlag();
+            flag |= ItemConstants.SPIKES;
+            nEquip.setFlag(flag);
+        }
+        return nEquip;
+        //return nEquip.copy(); // Q.为什么要用copy？
+    }
+
     public Item getEquipById(int equipId, int ringId = -1)
     {
         var nEquip = new Equip(equipId, 0, ringId);

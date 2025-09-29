@@ -1,6 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
-using Application.Resources;
+using Application.Resources.Messages;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
@@ -15,7 +15,6 @@ public class SearchCommand : CommandBase
     readonly StringProvider _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     public SearchCommand() : base(2, "search")
     {
-        Description = "Search string.wz.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -23,7 +22,7 @@ public class SearchCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.yellowMessage("Syntax: !search <type> <name>");
+            player.YellowMessageI18N(nameof(ClientMessage.SearchCommand_Syntax));
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -71,8 +70,8 @@ public class SearchCommand : CommandBase
         }
         else
         {
-            sb.Append("#bInvalid search.\r\nSyntax: '!search [type] [name]', where [type] is MAP, QUEST, NPC, ITEM, MOB, or SKILL.");
-
+            sb.Append("#b");
+            sb.Append(c.OnlinedCharacter.GetMessageByKey(nameof(ClientMessage.SearchCommand_Wrong)));
         }
 
         if (sb.Length == 0)
