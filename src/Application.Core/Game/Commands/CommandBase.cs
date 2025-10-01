@@ -14,7 +14,6 @@ namespace Application.Core.Game.Commands
             Rank = level;
             AllSupportedCommand = syntax;
             _commandName = GetType().Name!;
-            Description = ClientMessage.ResourceManager.GetString(GetDescriptionKey());
         }
 
         public virtual string ValidSytax => $"!{CurrentCommand}";
@@ -30,7 +29,10 @@ namespace Application.Core.Game.Commands
         {
             return $"{_commandName}_Syntax";
         }
-        public virtual string? GetDescription(IChannelClient client) => client.OnlinedCharacter.GetMessageByKey(GetDescriptionKey());
+        public virtual string? GetDescription(IChannelClient client)
+        {
+            return ClientMessage.ResourceManager.GetString(GetDescriptionKey(), client.GetCulture()) ?? Description;
+        }
 
         private string? _currentCommand;
         public string CurrentCommand

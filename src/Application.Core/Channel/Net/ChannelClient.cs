@@ -473,7 +473,7 @@ namespace Application.Core.Channel.Net
             var message = ClientMessage.ResourceManager.GetString(key, this.GetCulture());
             if (string.IsNullOrEmpty(message))
             {
-                Log.Error("i18n未找到{Key}", key);
+                log.LogWarning("i18n未找到{Key}", key);
                 return key;
             }
             return string.Format(message, paramsValue);
