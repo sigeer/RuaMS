@@ -5,11 +5,12 @@ namespace Application.Templates.Quest
         public QuestInfoTemplate(int questId)
         {
             QuestId = questId;
+            Name = string.Empty;
         }
 
         public int QuestId { get; set; }
 
-        public string Name { get; set; } = null!;
+        public string Name { get; set; }
         public string? Parent { get; set; }
         public int TimeLimit { get; set; }
         public int TimeLimit2 { get; set; }
