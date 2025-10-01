@@ -1,5 +1,6 @@
 using Application.Templates.Providers;
 using Application.Templates.Quest;
+using System.Xml;
 using System.Xml.Linq;
 using static Application.Templates.Quest.QuestAct;
 using static Application.Templates.Quest.QuestDemand;
@@ -26,7 +27,8 @@ namespace Application.Templates.XmlWzReader.Provider
             foreach (var file in _files)
             {
                 using var fis = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var xDoc = XDocument.Load(fis).Root!;
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
 
                 var fileType = xDoc.Attribute("name")?.Value;
                 if (fileType == "QuestInfo.img")

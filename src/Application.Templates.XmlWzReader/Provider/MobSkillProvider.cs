@@ -1,5 +1,6 @@
 using Application.Templates.Providers;
 using Application.Templates.Skill;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -23,10 +24,11 @@ namespace Application.Templates.XmlWzReader.Provider
         {
             List<AbstractTemplate> all = [];
             using var fis = new FileStream(_imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
 
-            var reader = XDocument.Load(fis)!.Root!;
+            var xDoc = XDocument.Load(reader)!.Root!;
 
-            foreach (var node in reader.Elements())
+            foreach (var node in xDoc.Elements())
             {
                 if (int.TryParse(node.GetName(), out var skillId))
                 {

@@ -6,6 +6,7 @@ using Application.Templates.Item.Install;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -72,7 +73,8 @@ namespace Application.Templates.XmlWzReader.Provider
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var xDoc = XDocument.Load(fis).Root!;
+            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+            var xDoc = XDocument.Load(reader).Root!;
 
             if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var petItemId))
                 return [];
