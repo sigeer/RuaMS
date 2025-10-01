@@ -40,7 +40,7 @@ namespace Application.Core.Channel.Net
 
         public override int AccountId => AccountEntity?.Id ?? -2;
 
-        public override string AccountName => AccountName;
+        public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
 
         public override void SetCharacterOnSessionTransitionState(int cid)

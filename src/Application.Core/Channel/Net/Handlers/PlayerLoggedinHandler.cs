@@ -84,7 +84,8 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 c.Disconnect(true, false);
                 return;
             }
-            bool newcomer = playerObject.LoginInfo!.IsNewCommer;
+            c.Language = playerObject.LoginInfo.Language;
+            bool newcomer = playerObject.LoginInfo.IsNewCommer;
 
             /*  is this check really necessary?
             if (state == IChannelClient.LOGIN_SERVER_TRANSITION || state == IChannelClient.LOGIN_NOTLOGGEDIN) {

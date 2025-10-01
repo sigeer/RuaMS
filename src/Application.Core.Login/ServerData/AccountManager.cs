@@ -82,6 +82,12 @@ namespace Application.Core.Login.Datas
             return d;
         }
 
+        public void SetClientLanguage(int accId, int language)
+        {
+            var d = GetAccountLoginStatus(accId);
+            d.Language = language;
+        }
+
         public void CreateAccount(string loginAccount, string pwd)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();

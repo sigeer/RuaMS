@@ -203,7 +203,9 @@ public enum RecvOpcode
     USE_ITEMUI = 0xEE,
     MTS_OPERATION = 0xFD,
     USE_MAPLELIFE = 0x100,
-    USE_HAMMER = 0x104
+    USE_HAMMER = 0x104,
+
+    SetLanguage = 0x1000
 }
 public static class RecvOpcodeExtensions
 {

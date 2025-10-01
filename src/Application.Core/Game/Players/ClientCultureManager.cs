@@ -4,14 +4,14 @@ namespace Application.Core.Game.Players
 {
     public static class ClientCultureManager
     {
-        private static readonly Dictionary<int, CultureInfo> _cultureMap = new()
+        private static readonly Dictionary<LanguageEnmu, CultureInfo> _cultureMap = new()
         {
-            {1, new CultureInfo("zh-CN") },
-            {2, new CultureInfo("en-US") }
+            {LanguageEnmu.zhCN, new CultureInfo("zh-CN") },
+            {LanguageEnmu.enUS, new CultureInfo("en-US") }
         };
         public static CultureInfo GetCulture(this IChannelClient client)
         {
-            return _cultureMap.GetValueOrDefault(client.Language) ?? _cultureMap[1];
+            return _cultureMap.GetValueOrDefault((LanguageEnmu)client.Language) ?? _cultureMap[LanguageEnmu.zhCN];
         }
     }
 }

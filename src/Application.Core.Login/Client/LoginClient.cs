@@ -170,7 +170,7 @@ namespace Application.Core.Login.Client
             if (AccountEntity == null)
                 return 0;
 
-            var localState = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
+            var localState = CurrentServer.AccountManager.GetAccountLoginStatus(AccountEntity.Id);
             if (localState.State == LoginStage.LOGIN_SERVER_TRANSITION || localState.State == LoginStage.PlayerServerTransition)
             {
                 if (localState.DateTime.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
