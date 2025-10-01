@@ -1,5 +1,6 @@
 using Application.Templates.Providers;
 using Application.Templates.Reactor;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -20,7 +21,8 @@ namespace Application.Templates.XmlWzReader.Provider
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
         {
             using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var xDoc = XDocument.Load(fis).Root!;
+            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+            var xDoc = XDocument.Load(reader).Root!;
 
             if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var reactorId))
                 return [];

@@ -6,6 +6,13 @@ namespace Application.Templates.XmlWzReader
 {
     public static class XmlReaderUtils
     {
+        public static XmlReaderSettings ReaderSettings = new XmlReaderSettings
+        {
+            IgnoreWhitespace = true,
+            IgnoreComments = true,
+            IgnoreProcessingInstructions = true,
+            DtdProcessing = DtdProcessing.Ignore,
+        };
 
         public static void ReadChildNode(XmlReader reader, Action<XmlReader> action)
         {
