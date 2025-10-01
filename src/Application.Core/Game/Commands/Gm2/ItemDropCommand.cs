@@ -24,7 +24,7 @@ public class ItemDropCommand : CommandBase
         int itemId = int.Parse(paramsValue[0]);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        if (ii.getName(itemId) == null)
+        if (!ii.HasTemplate(itemId))
         {
             player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
             return;

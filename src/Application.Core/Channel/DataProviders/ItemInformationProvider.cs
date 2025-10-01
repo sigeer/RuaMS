@@ -955,6 +955,10 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.IncPAD ?? 0;
     }
 
+    public bool HasTemplate(int itemId)
+    {
+        return GetProvider(itemId).GetItem(itemId) != null;
+    }
     public string? getName(int itemId)
     {
         return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Name;
