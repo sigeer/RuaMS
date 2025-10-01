@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+	  <Compile Include="..\Application.Templates\**\*.cs" Exclude="..\Application.Templates\bin\**;..\Application.Templates\obj\**" />
   </ItemGroup>
 
   <ItemGroup>
-	  <Compile Include="..\Application.Templates\**\*.cs" Exclude="..\Application.Templates\bin\**;..\Application.Templates\obj\**" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
   </ItemGroup>
 
 	<ItemGroup>

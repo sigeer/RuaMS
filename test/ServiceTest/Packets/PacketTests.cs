@@ -1,34 +1,53 @@
 
 using Application.Shared.Net;
-using DotNetty.Buffers;
+using System.Text;
 
 namespace ServiceTest.Packets
 {
-    public class PacketTests : TestBase
+    public class PacketTests
     {
-        [TestCase("中文测试", ExpectedResult = 13)]
-        [TestCase("abc", ExpectedResult = 13)]
+        public PacketTests()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
+
+        [TestCase("长文本测试长文本测试长文本测试长文本测试")]
+        [TestCase("中文测试")]
+        [TestCase("abc")]
+        [TestCase("abcdef  ")]
+        [TestCase("  abcdef")]
         [Test]
-        public int WriteFixedString_Test(string str)
+        public void WriteFixStringTest(string str)
         {
             var writer = new ByteBufOutPacket();
             writer.writeFixedString(str);
-            var packet = writer.getBytes();
-            return packet.Length;
+            var writeBytes = writer.getBytes();
+
+            Assert.That(writeBytes.Length, Is.EqualTo(13));
         }
 
+        [TestCase("长文本测试长文本测试长文本测试长文本测试")]
         [TestCase("中文测试")]
         [TestCase("abc")]
+        [TestCase("abcdef  ")]
+        [TestCase("  abcdef")]
         [Test]
-        public void Read_WriteString_Test(string str)
+        public void ReadStringTest(string str)
         {
             var writer = new ByteBufOutPacket();
             writer.writeString(str);
             var writeBytes = writer.getBytes();
 
-            var reader = new ByteBufInPacket(Unpooled.WrappedBuffer(writeBytes));
-            var readStr = reader.readString();
-            Assert.That(readStr, Is.EqualTo(str));
+            var outPacket = new ByteBufInPacket(writeBytes);
+            var oldStr = outPacket.readStringOld();
+
+            Assert.That(oldStr, Is.EqualTo(str));
+
+            var readerNew = new ByteBufInPacket(writeBytes);
+            var newStr = readerNew.readString();
+            Assert.That(newStr, Is.EqualTo(str));
+
         }
     }
 }

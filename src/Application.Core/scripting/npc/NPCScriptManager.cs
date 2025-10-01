@@ -223,7 +223,6 @@ public class NPCScriptManager : AbstractScriptManager
 
         if (cm.ScriptMeta != null)
             resetContext(cm.ScriptMeta.ScriptFile, c);
-
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 }

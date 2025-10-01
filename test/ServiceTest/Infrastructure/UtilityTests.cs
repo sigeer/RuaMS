@@ -1,5 +1,6 @@
 using Application.Utility;
 using Application.Utility.Compatible;
+using Application.Utility.Extensions;
 
 namespace ServiceTest.Infrastructure
 {
@@ -28,6 +29,15 @@ namespace ServiceTest.Infrastructure
         {
             var comparedList = new int[] { -1, 0, 1 };
             list.Sort((o1, o2) => comparedList[Randomizer.rand(0, 2)]);
+        }
+
+        [Test]
+        public void ReplaceFirstTest()
+        {
+            var testStr = "%s&apos;s Meetballs: %s";
+
+            var final = testStr.replaceFirst("%s", "qq").replaceFirst("%s", "ww");
+            Assert.That(final, Is.EqualTo("qq&apos;s Meetballs: ww"));
         }
     }
 }

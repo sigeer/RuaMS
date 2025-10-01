@@ -18,46 +18,38 @@ public class FaceCommand : CommandBase
             return;
         }
 
-        try
+        IPlayer? targetPlayer = c.OnlinedCharacter;
+        string? faceStr;
+        if (paramsValue.Length == 1)
         {
-            if (paramsValue.Length == 1)
-            {
-                int itemId = int.Parse(paramsValue[0]);
-                if (!ItemConstants.isFace(itemId) || !ItemInformationProvider.getInstance().HasTemplate(itemId))
-                {
-                    player.yellowMessage("Face id '" + paramsValue[0] + "' does not exist.");
-                    return;
-                }
-
-                player.setFace(itemId);
-                player.updateSingleStat(Stat.FACE, itemId);
-                player.equipChanged();
-            }
-            else
-            {
-                int itemId = int.Parse(paramsValue[1]);
-                if (!ItemConstants.isFace(itemId) || !ItemInformationProvider.getInstance().HasTemplate(itemId))
-                {
-                    player.yellowMessage("Face id '" + paramsValue[1] + "' does not exist.");
-                }
-
-                var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-                if (victim != null)
-                {
-                    victim.setFace(itemId);
-                    victim.updateSingleStat(Stat.FACE, itemId);
-                    victim.equipChanged();
-                }
-                else
-                {
-                    player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
-                }
-            }
+            faceStr = paramsValue[0];
         }
-        catch (Exception e)
+        else
         {
-            log.Error(e.ToString());
+            faceStr = paramsValue[1];
+            targetPlayer = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         }
 
+        if (!int.TryParse(faceStr, out var faceId))
+        {
+            player.yellowMessage("Syntax: !face [<playername>] <faceid>");
+            return;
+        }
+
+        if (!ItemInformationProvider.getInstance().IsFace(faceId))
+        {
+            player.yellowMessage("Face id '" + faceStr + "' does not exist.");
+            return;
+        }
+
+        if (targetPlayer == null)
+        {
+            player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
+            return;
+        }
+
+        targetPlayer.setFace(faceId);
+        targetPlayer.updateSingleStat(Stat.FACE, faceId);
+        targetPlayer.equipChanged();
     }
 }

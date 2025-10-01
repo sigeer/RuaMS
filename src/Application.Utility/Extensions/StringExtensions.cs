@@ -11,7 +11,11 @@ namespace Application.Utility.Extensions
             if (start == -1)
                 return str;
 
-            return str.Substring(0, start) + newStr + str.Substring(start + oldStr.Length, str.Length - start - oldStr.Length);
+            return string.Concat(
+                str.AsSpan(0, start),
+                newStr,
+                str.AsSpan(start + oldStr.Length)
+            );
         }
     }
 }

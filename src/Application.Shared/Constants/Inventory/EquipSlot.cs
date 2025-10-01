@@ -14,6 +14,9 @@ public class EquipSlot : EnumClass
     public const int Weapon = -11;
     public const int Mount = -18;
 
+    public static readonly EquipSlot Hair = new EquipSlot("Hr", 0);
+    public static readonly EquipSlot Face = new EquipSlot("Fc", 0);
+
     public static readonly EquipSlot HAT = new EquipSlot("Cp", -1);
     public static readonly EquipSlot SPECIAL_HAT = new EquipSlot("HrCp", -1);
     public static readonly EquipSlot FACE_ACCESSORY = new EquipSlot("Af", -2);

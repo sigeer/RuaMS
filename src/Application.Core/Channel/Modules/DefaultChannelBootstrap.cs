@@ -27,6 +27,7 @@ namespace Application.Core.Channel.Modules
                 option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
                 option.RegisterProvider(new StringProvider(new Templates.TemplateOptions()));
+                option.UseLogger(app.Logger);
             });
 
             var staticServices = app.Services.GetServices<IStaticService>();
