@@ -99,7 +99,7 @@ namespace Application.Templates.Character
         /// 等级数据（LevelData）中有增加属性（有不止Exp的其他项存在）
         /// </summary>
         [GenerateIgnoreProperty]
-        public bool IsElemental => LevelData.Length > 1 && LevelData[1].FieldCount > 1;
+        public bool IsElemental => LevelData.Length > 0 && LevelData[0].FieldCount > 1;
         public EquipTemplate(int templateId)
             : base(templateId)
         {
