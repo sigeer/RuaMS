@@ -237,9 +237,9 @@ public partial class WorldChannel : ISocketServer
                 return;
             }
 
-            eventSM.cancel();
             eventSM.dispose();
             eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
+            eventSM.ReloadEventScript();
         }
     }
     public void Register(int channel)

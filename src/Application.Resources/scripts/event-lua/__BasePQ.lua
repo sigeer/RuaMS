@@ -121,8 +121,8 @@ function BasePQ:getEligibleParty(party)
     local eligible = {}
     local hasLeader = false
 
-    if party.Length > 0 then
-        for i = 0, party.Length - 1 do
+    if party.Count > 0 then
+        for i = 0, party.Count - 1 do
             local player = party[i]
             if self:FilterTeam(player) then
                 if player:isLeader() then

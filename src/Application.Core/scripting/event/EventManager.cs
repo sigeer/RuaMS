@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
@@ -47,11 +48,16 @@ public class EventManager
     private IEngine iv;
     private WorldChannel cserv;
     private EventScriptScheduler ess;
+
     private ConcurrentDictionary<string, EventInstanceManager> instances = new();
-    private Dictionary<string, int> instanceLocks = new();
+    private Dictionary<int, bool> openedLobbys = new();
+
     private Queue<int> queuedGuilds = new();
     private Dictionary<int, int> queuedGuildLeaders = new();
 
+    /// <summary>
+    /// 预生成的 EventInstanceManager
+    /// </summary>
     private Queue<EventInstanceManager> readyInstances = new();
     private int readyId = 0, onLoadInstances = 0;
     private Dictionary<string, string> props = new Dictionary<string, string>();
@@ -67,7 +73,7 @@ public class EventManager
     private HashSet<int> playerPermit = new();
     private SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
 
-    private Dictionary<int, bool> openedLobbys = new();
+
     public int MaxLobbys { get; set; }
     public const int DefaultMaxLobbys = 1;
 
@@ -249,9 +255,6 @@ public class EventManager
         var ret = getReadyInstance() ?? new EventInstanceManager(this, instanceName);
 
         ret.setName(instanceName);
-
-        if (!RegisterInstance(instanceName, ret))
-            throw new EventInstanceInProgressException(instanceName, this.getName());
         return ret;
     }
 
@@ -261,14 +264,17 @@ public class EventManager
         return instances.TryAdd(instanceName, eim);
     }
 
+    void DisposeInstanceInternal(string name)
+    {
+        if (instances.TryRemove(name, out var eim) && eim != null && eim.LobbyId > -1)
+            DisposeLobby(eim.LobbyId);
+    }
 
     public void disposeInstance(string name)
     {
         ess.registerEntry(() =>
         {
-            freeLobbyInstance(name);
-
-            instances.Remove(name);
+            DisposeInstanceInternal(name);
         }, YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
     }
 
@@ -335,13 +341,6 @@ public class EventManager
         }
     }
 
-    private void freeLobbyInstance(string instanceName)
-    {
-        if (instanceLocks.Remove(instanceName, out var i) && i > -1)
-        {
-            DisposeLobby(i);
-        }
-    }
 
     public string getName()
     {
@@ -376,9 +375,11 @@ public class EventManager
         return iv.CallFunction(name, args).ToObject<EventInstanceManager>();
     }
 
-    private void registerEventInstance(string eventName, int lobbyId)
+    private void registerEventInstance(EventInstanceManager eim, int lobbyId)
     {
-        instanceLocks[eventName] = lobbyId;
+        if (!RegisterInstance(eim.getName(), eim))
+            throw new EventInstanceInProgressException(eim.getName(), this.getName());
+        eim.LobbyId = lobbyId;
     }
 
     public bool startInstance(Expedition exped)
@@ -430,7 +431,7 @@ public class EventManager
                         try
                         {
                             eim = createInstance("setup", leader.getClient().getChannel());
-                            registerEventInstance(eim.getName(), lobbyId);
+                            registerEventInstance(eim, lobbyId);
                         }
                         catch (Exception e)
                         {
@@ -524,7 +525,7 @@ public class EventManager
                         try
                         {
                             eim = createInstance("setup", difficulty, (lobbyId > -1) ? lobbyId : leader.getId());
-                            registerEventInstance(eim.getName(), lobbyId);
+                            registerEventInstance(eim, lobbyId);
                         }
                         catch (Exception e)
                         {
@@ -636,11 +637,11 @@ public class EventManager
                             }
                         }
 
-                        EventInstanceManager eim;
+                        EventInstanceManager? eim = null;
                         try
                         {
                             eim = createInstance("setup", difficulty, (lobbyId > -1) ? lobbyId : party.getLeaderId());
-                            registerEventInstance(eim.getName(), lobbyId);
+                            registerEventInstance(eim, lobbyId);
                         }
                         catch (Exception e)
                         {
@@ -653,6 +654,7 @@ public class EventManager
                             DisposeLobby(lobbyId);
                             return false;
                         }
+
 
                         eim.setLeader(leader);
 
