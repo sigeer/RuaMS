@@ -136,7 +136,7 @@ end
 function PiratePQ:respawnStages(eim)
     local stg = eim:getIntProperty("stage2")
     if (stg < 3) then
-        eim:getMapInstance(925100100):spawnAllMonsterIdFromMapSpawnList("9300114" .. stg, eim:getIntProperty("level"),
+        eim:getMapInstance(925100100):spawnAllMonsterIdFromMapSpawnList(tonumber("9300114" .. stg), eim:getIntProperty("level"),
             true)
     end
 

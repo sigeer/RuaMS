@@ -124,6 +124,7 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
         engine.AddHostedType("Point", typeof(Point));
         engine.AddHostedObject("Server", _channelServer.Container);
+        engine.AddHostedType("Console", typeof(Console));
 
         foreach (var item in _addtionalRegistries)
         {

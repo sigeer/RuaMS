@@ -55,7 +55,7 @@ function GuildQuest:getEligibleParty(party)
     local hasLeader = false
     local guildId = 0
     
-    if party.Length > 0 then
+    if party.Count > 0 then
         -- 获取队长的公会ID
         for _, player in ipairs(party) do
             if player:isLeader() then

@@ -26,7 +26,7 @@ namespace Application.Module.Marriage.Channel
         {
             MarriageInstance ret = new MarriageInstance(em, name, _transport);
 
-            if (em.RegisterInstance(name, ret))
+            if (!em.RegisterInstance(name, ret))
                 throw new EventInstanceInProgressException(name, em.getName());
             return ret;
         }
