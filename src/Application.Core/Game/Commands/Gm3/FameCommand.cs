@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class FameCommand : CommandBase
 {
     public FameCommand() : base(3, "fame")
     {
-        Description = "Set new fame value of a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,13 +13,13 @@ public class FameCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.yellowMessage("Syntax: !fame <playername> <newfame>");
+            player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[1], out var fame))
         {
-            player.yellowMessage("Syntax: <newfame> invalid");
+            player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
             return;
         }
 
@@ -27,11 +28,11 @@ public class FameCommand : CommandBase
         {
             victim.setFame(fame);
             victim.updateSingleStat(Stat.FAME, victim.getFame());
-            player.message("FAME given.");
+            player.MessageI18N(nameof(ClientMessage.FameCommand_FameGiven));
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
     }
 }

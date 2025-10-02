@@ -8,6 +8,7 @@ using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
+using Application.Resources.Messages;
 using Application.Shared.Constants;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server;
 using System.Net;
+using System.Resources;
 using System.Threading.Tasks;
 using SystemProto;
 
@@ -262,21 +264,21 @@ namespace Application.Core.Login
         {
             if (!IsRunning)
             {
-                _logger.LogInformation("[{ServerName}]未启动", ServerName);
+                _logger.LogInformation(SystemMessage.Server_InActive, ServerName);
                 return;
             }
 
             if (isShuttingdown)
             {
-                _logger.LogInformation("正在停止[{ServerName}]", ServerName);
+                _logger.LogInformation(SystemMessage.Server_Shutingdown, ServerName);
                 return;
             }
 
             isShuttingdown.Set(true);
-            _logger.LogInformation("[{ServerName}] 停止中...", ServerName);
+            _logger.LogInformation(SystemMessage.Server_StopListenStart, ServerName);
 
             await NettyServer.Stop();
-            _logger.LogInformation("[{ServerName}] 停止监听", ServerName);
+            _logger.LogInformation(SystemMessage.Server_StopListenComplete, ServerName);
 
             _shutdownTcs = new TaskCompletionSource();
             Transport.BroadcastShutdown();
@@ -298,7 +300,7 @@ namespace Application.Core.Login
         {
             await _shutdownTcs.Task;
 
-            _logger.LogInformation("[{ServerName}] 所有频道已停止", ServerName);
+            _logger.LogInformation(SystemMessage.Server_AllChannelShutdown, ServerName);
             foreach (var module in Modules)
             {
                 await module.UninstallAsync();
@@ -308,14 +310,14 @@ namespace Application.Core.Login
 
             await TimerManager.Stop();
 
-            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", ServerName);
+            _logger.LogInformation(SystemMessage.Server_SaveUserDataStart, ServerName);
             await ServerManager.CommitAllImmediately();
-            _logger.LogInformation("[{ServerName}] 玩家数据已保存", ServerName);
+            _logger.LogInformation(SystemMessage.Server_SaveUserDataComplete, ServerName);
 
             IsRunning = false;
             isShuttingdown.Set(false);
             _shutdownDelayCtrl?.Dispose();
-            _logger.LogInformation("[{ServerName}] 已停止", ServerName);
+            _logger.LogInformation(SystemMessage.Server_ShutdownComplete, ServerName);
         }
 
         public async Task StartServer()
@@ -340,9 +342,9 @@ namespace Application.Core.Login
                 return;
             }
 
-            _logger.LogInformation("[{ServerName}] 启动中...", ServerName);
+            _logger.LogInformation(SystemMessage.Server_Start, ServerName);
             await NettyServer.Start();
-            _logger.LogInformation("[{ServerName}] 启动{Status}, 监听端口{Port}", ServerName, "成功", Port);
+            _logger.LogInformation(SystemMessage.Server_StartSuccess, ServerName, "成功", Port);
 
             StartupTime = DateTimeOffset.UtcNow;
             ForceUpdateServerTime();

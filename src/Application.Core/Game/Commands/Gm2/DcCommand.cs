@@ -8,7 +8,6 @@ public class DcCommand : CommandBase
     public DcCommand(AdminService adminService) : base(2, "dc")
     {
         _adminService = adminService;
-        Description = "Disconnect a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

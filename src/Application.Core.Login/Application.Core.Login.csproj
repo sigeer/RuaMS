@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Folder Include="CharacterCreator\" />
+    <Folder Include="Properties\" />
     <Folder Include="ServerData\Items\" />
 
 	  <!--<Content Include="..\Application.Resources\wz\String.wz\**">

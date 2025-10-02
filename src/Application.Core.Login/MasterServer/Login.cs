@@ -42,10 +42,6 @@ namespace Application.Core.Login
             AccountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
         }
 
-        public AccountLoginStatus GetAccountLoginStatus(int accId)
-        {
-            return AccountManager.GetAccountLoginStatus(accId);
-        }
 
         public void CommitAccountEntity(AccountCtrl accountEntity)
         {

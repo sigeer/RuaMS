@@ -4,7 +4,6 @@ public class FishingRateCommand : CommandBase
 {
     public FishingRateCommand() : base(4, "fishrate")
     {
-        Description = "Set fishing rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

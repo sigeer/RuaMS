@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class ApCommand : CommandBase
 {
     public ApCommand() : base(2, "ap")
     {
-        Description = "Set available AP.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class ApCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !ap [<playername>] <newap>");
+            player.YellowMessageI18N(nameof(ClientMessage.ApCommand_Syntax));
             return;
         }
 
@@ -49,7 +50,7 @@ public class ApCommand : CommandBase
             }
             else
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
     }

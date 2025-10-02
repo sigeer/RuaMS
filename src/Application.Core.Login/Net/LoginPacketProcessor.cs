@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Handlers;
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Handlers;
 using Application.Core.Net.Handlers;
@@ -41,6 +42,8 @@ namespace Application.Core.Login.Net
 
                 { (short)RecvOpcode.VIEW_ALL_CHAR, sp.GetRequiredService<ViewAllCharHandler>() },
                 { (short)RecvOpcode.VIEW_ALL_PIC_REGISTER, sp.GetRequiredService<ViewAllCharRegisterPicHandler>() },
+
+                {(short)RecvOpcode.SetLanguage, sp.GetRequiredService<SetLanguageHandler>()},
             };
         }
 

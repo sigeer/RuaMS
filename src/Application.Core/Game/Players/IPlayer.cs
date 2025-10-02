@@ -514,6 +514,10 @@ namespace Application.Core.Game.Players
         void loseExp(int loss, bool show, bool inChat, bool white);
         bool mergeAllItemsFromName(string name);
         void mergeAllItemsFromPosition(Dictionary<Equip.StatUpgrade, float> statups, short pos);
+        /// <summary>
+        /// dropMessage(5, m);
+        /// </summary>
+        /// <param name="m"></param>
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
@@ -677,6 +681,9 @@ namespace Application.Core.Game.Players
         void updateSingleStat(Stat stat, int newval);
         void useCP(int ammount);
 
+        string GetMessageByKey(string key, params string[] paramsValue);
+        void MessageI18N(string key, params string[] paramsValue);
+        void YellowMessageI18N(string key, params string[] paramsValue);
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();

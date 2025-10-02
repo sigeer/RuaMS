@@ -77,6 +77,7 @@ namespace Application.Core.Login.Net.Handlers
             c.AccountEntity!.CurrentMac = macs;
             c.AccountEntity!.CurrentHwid = hwid.hwid;
             _server.AccountHistoryManager.InsertLoginHistory(c.AccountId, c.RemoteAddress, macs, hwid.hwid);
+            _server.AccountManager.SetClientLanguage(c.AccountId, c.Language);
 
             try
             {

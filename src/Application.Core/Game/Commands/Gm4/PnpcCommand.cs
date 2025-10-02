@@ -1,4 +1,5 @@
 using Application.Core.Channel.Services;
+using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -7,7 +8,6 @@ public class PnpcCommand : CommandBase
     readonly DataService _dataService;
     public PnpcCommand(DataService dataService) : base(4, "pnpc")
     {
-        Description = "Spawn a permanent NPC on your location.";
         _dataService = dataService;
     }
 
@@ -16,13 +16,13 @@ public class PnpcCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !pnpc <npcid>");
+            player.YellowMessageI18N(nameof(ClientMessage.PnpcCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var npcId))
         {
-            player.yellowMessage("Syntax: npcid invalid");
+            player.YellowMessageI18N(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
             return;
         }
 

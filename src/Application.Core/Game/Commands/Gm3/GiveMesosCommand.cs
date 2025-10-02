@@ -1,3 +1,5 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class GiveMesosCommand : CommandBase
@@ -12,7 +14,7 @@ public class GiveMesosCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !givems [<playername>] <gainmeso>");
+            player.YellowMessageI18N(nameof(ClientMessage.GiveMesosCommand_Syntax));
             return;
         }
 
@@ -58,11 +60,11 @@ public class GiveMesosCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.gainMeso((int)mesos_, true);
-            player.message("MESO given.");
+            player.MessageI18N(nameof(ClientMessage.GiveMesosCommand_MesoGiven));
         }
         else
         {
-            player.message("Player '" + recv_ + "' could not be found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
     }
 }

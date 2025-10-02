@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -6,7 +7,6 @@ public class FaceCommand : CommandBase
 {
     public FaceCommand() : base(3, "face")
     {
-        Description = "Change face of a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class FaceCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !face [<playername>] <faceid>");
+            player.YellowMessageI18N(nameof(ClientMessage.FaceCommand_Syntax));
             return;
         }
 
@@ -32,19 +32,19 @@ public class FaceCommand : CommandBase
 
         if (!int.TryParse(faceStr, out var faceId))
         {
-            player.yellowMessage("Syntax: !face [<playername>] <faceid>");
+            player.YellowMessageI18N(nameof(ClientMessage.FaceCommand_Syntax));
             return;
         }
 
         if (!ItemInformationProvider.getInstance().IsFace(faceId))
         {
-            player.yellowMessage("Face id '" + faceStr + "' does not exist.");
+            player.YellowMessageI18N(nameof(ClientMessage.FaceNotFound));
             return;
         }
 
         if (targetPlayer == null)
         {
-            player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             return;
         }
 

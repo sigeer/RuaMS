@@ -1,5 +1,6 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using server.maps;
 using System.Text;
 
@@ -11,7 +12,6 @@ public class WarpCommand : ParamsCommandBase
     public WarpCommand(WzStringQueryService wzManager) : base(["<mapid>"], 2, "warp")
     {
         _wzManager = wzManager;
-        Description = "Warp to a map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -50,7 +50,7 @@ public class WarpCommand : ParamsCommandBase
                 }
                 else
                 {
-                    player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+                    player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
                     return;
                 }
             }
@@ -60,7 +60,7 @@ public class WarpCommand : ParamsCommandBase
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
-            player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
         }
     }
 
@@ -69,7 +69,7 @@ public class WarpCommand : ParamsCommandBase
         var target = mapManager.getMap(mapId);
         if (target == null)
         {
-            admin.yellowMessage("Map ID " + mapId + " is invalid.");
+            admin.YellowMessageI18N(nameof(ClientMessage.MapNotFound), mapId.ToString());
             return;
         }
 

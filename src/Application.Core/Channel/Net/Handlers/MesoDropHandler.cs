@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.Services;
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -52,7 +53,7 @@ public class MesoDropHandler : ChannelHandlerBase
 
         if (player.isGM() && player.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            player.message("You cannot drop mesos at your GM level.");
+            player.MessageI18N(nameof(ClientMessage.DropMeso_NotAccess));
             return;
         }
 

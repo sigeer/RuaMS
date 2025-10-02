@@ -1,25 +1,29 @@
+using Application.Core.scripting.npc;
+using Application.Resources.Messages;
+using System.Text;
+
 namespace Application.Core.Game.Commands.Gm6;
 
 public class MapPlayersCommand : CommandBase
 {
     public MapPlayersCommand() : base(6, "mapplayers")
     {
-        Description = "Show all players on the map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        string names = "";
         int map = player.getMapId();
 
+        var sb = new StringBuilder();
+        sb.Append(c.GetMessageByKey(nameof(ClientMessage.CurrentMap), player.MapModel.getMapName())).Append(":\r\n");
         foreach (var chr in player.getMap().getPlayers().OfType<IPlayer>())
         {
-            int curMap = chr.getMapId();
             string hp = chr.HP.ToString();
             string maxhp = chr.ActualMaxHP.ToString();
             string name = chr.getName() + ": " + hp + "/" + maxhp;
+            sb.Append(name).Append("\r\n");
         }
-        player.message("Players on mapid " + map + ": " + names);
+        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

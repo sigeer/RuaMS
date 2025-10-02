@@ -1,9 +1,10 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 public class SetSlotCommand : CommandBase
 {
     public SetSlotCommand() : base(2, "setslot")
     {
-        Description = "Set amount of inventory slots in all tabs.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -11,7 +12,7 @@ public class SetSlotCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !setslot <newlevel>");
+            player.YellowMessageI18N(nameof(ClientMessage.SetSlotCommand_Syntax));
             return;
         }
 
@@ -27,6 +28,6 @@ public class SetSlotCommand : CommandBase
             player.gainSlots(i, slots - curSlots, true);
         }
 
-        player.yellowMessage("Slots updated.");
+        player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
     }
 }

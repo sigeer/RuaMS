@@ -1,9 +1,10 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 public class WarpAreaCommand : CommandBase
 {
     public WarpAreaCommand() : base(3, "warparea")
     {
-        Description = "Warp all nearby players to a new map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -11,7 +12,7 @@ public class WarpAreaCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !warparea <mapid>");
+            player.YellowMessageI18N(nameof(ClientMessage.WarpAreaCommand_Syntax));
             return;
         }
 
@@ -20,7 +21,7 @@ public class WarpAreaCommand : CommandBase
             var target = c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
             if (target == null)
             {
-                player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+                player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
                 return;
             }
 
@@ -40,7 +41,7 @@ public class WarpAreaCommand : CommandBase
         catch (Exception e)
         {
             log.Error(e.ToString());
-            player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
         }
     }
 }

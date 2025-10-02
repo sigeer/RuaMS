@@ -17,6 +17,7 @@ namespace Application.Shared.Client
         public abstract int AccountGMLevel { get; }
 
         public abstract string AccountName { get; }
+        public int Language { get; set; }
 
         /// <summary>
         /// q

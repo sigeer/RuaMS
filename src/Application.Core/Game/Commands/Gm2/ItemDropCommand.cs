@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Resources.Messages;
 using Application.Templates.Item.Pet;
 using client.inventory;
 
@@ -9,7 +10,6 @@ public class ItemDropCommand : CommandBase
 {
     public ItemDropCommand() : base(2, "drop")
     {
-        Description = "Spawn an item onto the ground.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -18,7 +18,7 @@ public class ItemDropCommand : CommandBase
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !drop <itemid> <quantity>");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_Syntax));
             return;
         }
 
@@ -28,7 +28,7 @@ public class ItemDropCommand : CommandBase
         var abTemplate = ii.GetTemplate(itemId);
         if (abTemplate == null)
         {
-            player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
             return;
         }
 
@@ -40,7 +40,7 @@ public class ItemDropCommand : CommandBase
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            player.yellowMessage("You cannot create a cash item with this command.");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_CannotCreateCashItem));
             return;
         }
 
@@ -74,7 +74,7 @@ public class ItemDropCommand : CommandBase
             }
             else
             {
-                player.yellowMessage("Pet Syntax: !drop <itemid> <expiration>");
+                player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_PetSyntax));
                 return;
             }
         }

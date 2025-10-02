@@ -8,9 +8,9 @@ public class CommandExecutor
     bool loaded = false;
     private Dictionary<string, CommandBase> registeredCommands = new();
     readonly IServiceProvider _sp;
-    public List<List<CommandInfo>> getGmCommands()
+    public List<List<CommandInfo>> getGmCommands(IChannelClient c)
     {
-        return registeredCommands.OrderBy(x => x.Value.Rank).GroupBy(x => x.Value.Rank).Select(x => x.Select(y => new CommandInfo(y.Key, y.Value.Description)).ToList()).ToList();
+        return registeredCommands.OrderBy(x => x.Value.Rank).GroupBy(x => x.Value.Rank).Select(x => x.Select(y => new CommandInfo(y.Key, y.Value.GetDescription(c))).ToList()).ToList();
     }
     private ILogger<CommandExecutor> log;
 

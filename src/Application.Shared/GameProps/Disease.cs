@@ -12,10 +12,19 @@ namespace Application.Shared.GameProps
         /// 减速
         /// </summary>
         public static readonly Disease SLOW = new(0x1, MobSkillType.SLOW);
+        /// <summary>
+        /// 迷惑
+        /// </summary>
         public static readonly Disease SEDUCE = new(0x80, MobSkillType.SEDUCE);
         public static readonly Disease FISHABLE = new(0x100);
         public static readonly Disease ZOMBIFY = new(0x4000);
+        /// <summary>
+        /// 混乱
+        /// </summary>
         public static readonly Disease CONFUSE = new(0x80000, MobSkillType.REVERSE_INPUT);
+        /// <summary>
+        /// 眩晕
+        /// </summary>
         public static readonly Disease STUN = new(0x2000000000000L, MobSkillType.STUN);
         /// <summary>
         /// 中毒

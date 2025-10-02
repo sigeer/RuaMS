@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class LevelCommand : CommandBase
 {
     public LevelCommand() : base(2, "level")
     {
-        Description = "Set your level.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,13 +13,13 @@ public class LevelCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !level <newlevel>");
+            player.YellowMessageI18N(nameof(ClientMessage.LevelCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var newlevel))
         {
-            player.yellowMessage("Syntax: <newlevel> invalid");
+            player.YellowMessageI18N(nameof(ClientMessage.LevelCommand_Syntax));
             return;
         }
 

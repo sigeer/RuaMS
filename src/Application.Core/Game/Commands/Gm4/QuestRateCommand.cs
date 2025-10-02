@@ -1,9 +1,10 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm4;
 public class QuestRateCommand : CommandBase
 {
     public QuestRateCommand() : base(4, "questrate")
     {
-        Description = "Set world quest rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -16,7 +17,10 @@ public class QuestRateCommand : CommandBase
         }
 
         if (!int.TryParse(paramsValue[0], out var d))
+        {
+            player.YellowMessageI18N(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
             return;
+        }
 
         int questrate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { QuestRate = questrate });

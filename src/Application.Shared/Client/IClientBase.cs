@@ -22,6 +22,7 @@ namespace Application.Shared.Client
         int AccountId { get; }
         string AccountName { get; }
         int AccountGMLevel { get; }
+        int Language { get; set; }
         void SetCharacterOnSessionTransitionState(int cid);
     }
 }

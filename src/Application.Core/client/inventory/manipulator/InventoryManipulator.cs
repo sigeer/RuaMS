@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Resources.Messages;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -865,7 +866,7 @@ public class InventoryManipulator
 
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            chr.message("You cannot drop items at your GM level.");
+            chr.MessageI18N(nameof(ClientMessage.DropItem_NoAccess));
             LogFactory.GM.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
             return;
         }

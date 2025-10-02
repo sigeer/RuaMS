@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using client.inventory.manipulator;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -6,7 +7,6 @@ public class ClearSlotCommand : CommandBase
 {
     public ClearSlotCommand() : base(2, "clearslot")
     {
-        Description = "Clear all items in an inventory tab.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class ClearSlotCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !clearslot <all, equip, use, setup, etc or cash.>");
+            player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
             return;
         }
 
@@ -27,30 +27,30 @@ public class ClearSlotCommand : CommandBase
                 RemovePlayerSlot(c, InventoryType.ETC);
                 RemovePlayerSlot(c, InventoryType.SETUP);
                 RemovePlayerSlot(c, InventoryType.CASH);
-                player.yellowMessage("All Slots Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_AllCleared));
                 break;
             case "equip":
                 RemovePlayerSlot(c, InventoryType.EQUIP);
-                player.yellowMessage("Equipment Slot Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_EquipCleared));
                 break;
             case "use":
                 RemovePlayerSlot(c, InventoryType.USE);
-                player.yellowMessage("Use Slot Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_ConsumeCleared));
                 break;
             case "setup":
                 RemovePlayerSlot(c, InventoryType.SETUP);
-                player.yellowMessage("Set-Up Slot Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_InstallCleared));
                 break;
             case "etc":
                 RemovePlayerSlot(c, InventoryType.ETC);
-                player.yellowMessage("ETC Slot Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_EtcCleared));
                 break;
             case "cash":
                 RemovePlayerSlot(c, InventoryType.CASH);
-                player.yellowMessage("Cash Slot Cleared.");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_CashCleared));
                 break;
             default:
-                player.yellowMessage("Slot" + type + " does not exist!");
+                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
                 break;
         }
     }
