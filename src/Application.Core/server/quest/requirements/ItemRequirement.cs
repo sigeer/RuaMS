@@ -35,19 +35,19 @@ namespace server.quest.requirements;
  */
 public class ItemRequirement : AbstractQuestRequirement
 {
-    Dictionary<int, int> items;
+    public Dictionary<int, int> RequiredItems { get; }
 
 
     public ItemRequirement(Quest quest, ItemInfo[] data) : base(QuestRequirementType.ITEM)
     {
-        items = data.ToDictionary(x => x.ItemID, x => x.Count);
+        RequiredItems = data.ToDictionary(x => x.ItemID, x => x.Count);
     }
     public override bool check(IPlayer chr, int? npcid)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        foreach (int itemId in items.Keys)
+        foreach (int itemId in RequiredItems.Keys)
         {
-            int countNeeded = items.GetValueOrDefault(itemId);
+            int countNeeded = RequiredItems.GetValueOrDefault(itemId);
             int count = 0;
 
             InventoryType iType = ItemConstants.getInventoryType(itemId);
@@ -93,7 +93,7 @@ public class ItemRequirement : AbstractQuestRequirement
 
     public int getItemAmountNeeded(int itemid, bool complete)
     {
-        if (items.TryGetValue(itemid, out var amount))
+        if (RequiredItems.TryGetValue(itemid, out var amount))
         {
             return amount;
         }
