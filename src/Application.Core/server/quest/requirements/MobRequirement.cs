@@ -35,20 +35,20 @@ namespace server.quest.requirements;
 public class MobRequirement : AbstractQuestRequirement
 {
     private ILogger log;
-    Dictionary<int, int> mobs = new();
+    public Dictionary<int, int> RequiredMobs { get; }
     private int questID;
 
     public MobRequirement(Quest quest, MobInfo[] data) : base(QuestRequirementType.MOB)
     {
         questID = quest.getId();
         log = LogFactory.GetLogger($"Quest/{quest.getId()}");
-        mobs = data.ToDictionary(x => x.MobID, x => x.Count);
+        RequiredMobs = data.ToDictionary(x => x.MobID, x => x.Count);
     }
 
     public override bool check(IPlayer chr, int? npcid)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
-        foreach (int mobID in mobs.Keys)
+        foreach (int mobID in RequiredMobs.Keys)
         {
             int progress;
 
@@ -62,7 +62,7 @@ public class MobRequirement : AbstractQuestRequirement
                 return false;
             }
 
-            if (progress < mobs[mobID])
+            if (progress < RequiredMobs[mobID])
             {
                 return false;
             }
@@ -72,6 +72,6 @@ public class MobRequirement : AbstractQuestRequirement
 
     public int getRequiredMobCount(int mobid)
     {
-        return mobs.GetValueOrDefault(mobid);
+        return RequiredMobs.GetValueOrDefault(mobid);
     }
 }

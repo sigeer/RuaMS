@@ -23,7 +23,7 @@ function start()
                 cm:sendOk("另外一个世界已经有其他人在尝试击败小巴尔洛格了。");
             else
                 local eli = em:getEligibleParty(cm:getParty())
-                if (eli.Length > 0) then
+                if (eli.Count > 0) then
                     if (not em:startInstance(cm:getParty(), cm:getPlayer():getMap(), 1)) then
                         cm:sendOk("“以你的名义注册的派对已经在此实例中注册。”");
                     end
@@ -49,7 +49,7 @@ function checkJob()
         return -1;
     end
 
-    for i = 0, party.Length - 1 do
+    for i = 0, party.Count - 1 do
         local cPlayer = party[i]
         if (cPlayer:getJobId() == 312 or cPlayer:getJobId() == 322 or cPlayer:getJobId() == 900) then
             if cPlayer.Level < 120 then

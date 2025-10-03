@@ -12,7 +12,7 @@ namespace Application.Core.Game.Items
 
             var inventoryType = inventoryItems[0].getInventoryType();
 
-            var p = inventoryItems.OrderBy(x => x.getItemId());
+            var p = inventoryItems.OrderBy(x => x.GetSortKey());
             var ii = ItemInformationProvider.getInstance();
             if (sort == 1)
                 p = inventoryItems.OrderBy(x => x.getQuantity());
@@ -20,9 +20,6 @@ namespace Application.Core.Game.Items
                 p = inventoryItems.OrderBy(x => ii.getName(x.getItemId()));
             if (sort == 3)
                 p = inventoryItems.OrderBy(x => ((Equip)x).getLevel());
-
-            if (inventoryType == InventoryType.USE)
-                p = p.ThenByDescending(x => ii.getWatkForProjectile(x.getItemId()));
 
             if (thenSort == 1)
                 p = p.ThenBy(x => x.getQuantity());

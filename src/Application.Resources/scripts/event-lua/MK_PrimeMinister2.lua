@@ -36,7 +36,7 @@ end
 function Sample:primeMinisterCheck(eim)
     local map = eim:getMapInstance(self.entryMap);
 
-    return map:getAllPlayers().Length > 0;
+    return map:getAllPlayers().Count > 0;
 end
 
 function Sample:respawn(eim)

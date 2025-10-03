@@ -56,6 +56,7 @@ public class EventInstanceManager
     private long timeStarted = 0;
     private long eventTime = 0;
     private Expedition? expedition = null;
+    public int LobbyId { get; set; } = -1;
 
     private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
