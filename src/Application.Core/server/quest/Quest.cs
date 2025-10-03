@@ -397,8 +397,15 @@ public class Quest
     }
 
 
+    public ItemRequirement? GetItemRequirement()
+    {
+        return completeReqs.GetValueOrDefault(QuestRequirementType.ITEM) as ItemRequirement;
+    }
 
-
+    public MobRequirement? GetMobRequirement()
+    {
+        return completeReqs.GetValueOrDefault(QuestRequirementType.MOB) as MobRequirement;
+    }
 
 
     private static Dictionary<QuestRequirementType, AbstractQuestRequirement> GetRequirement(Quest q, QuestDemand data)

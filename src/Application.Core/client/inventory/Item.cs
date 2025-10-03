@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 
 namespace client.inventory;
@@ -220,5 +221,15 @@ public class Item : IComparable<Item>, IItemProp
     {
         return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
+    }
+
+    public int GetSortKey()
+    {
+        var template = ItemInformationProvider.getInstance().GetItemTemplate(id);
+        if (template == null || template is not BulletItemTemplate bulletItemTemplate)
+            return id;
+
+        var typeTag = id / 10000;
+        return typeTag * 10000 + 1000 - bulletItemTemplate.IncPAD;
     }
 }

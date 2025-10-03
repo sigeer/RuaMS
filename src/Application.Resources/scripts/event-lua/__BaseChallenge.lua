@@ -34,9 +34,21 @@ function BaseChallenge:playerEntry(eim, player)
     em:setProperty("noEntry", "true");
 end
 
+function BaseChallenge:playerExit(eim, player)
+    eim:unregisterPlayer(player)
+    eim:dispose();
+    em:setProperty("noEntry", "false");
+end
+
 function BaseChallenge:endEvent(eim)
     BasePQ.endEvent(self, eim)
     em:setProperty("noEntry", "false")
+end
+
+function BaseChallenge:changedMap(eim, player, mapId)
+    if mapId < self.minMapId or mapId > self.maxMapId then
+        self:playerExit(eim, player)
+    end
 end
 
 return BaseChallenge

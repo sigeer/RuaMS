@@ -33,7 +33,7 @@ public class InventorySortHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
-        p.readInt();
+        var unknown = p.readInt();
         chr.getAutobanManager().setTimestamp(3, c.CurrentServerContainer.getCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
