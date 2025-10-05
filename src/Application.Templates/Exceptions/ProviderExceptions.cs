@@ -7,6 +7,11 @@ namespace Application.Templates.Exceptions
         {
             ProviderName = type;
         }
+
+        public ProviderNotFoundException(string type, string message) : base(message)
+        {
+            ProviderName = type;
+        }
     }
 
     public class ProviderDuplicateException : Exception

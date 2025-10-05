@@ -69,8 +69,8 @@ public class MobDamageMobHandler : ChannelHandlerBase
             if (dmg > maxDmg)
             {
                 _autoBanManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
-                string attackerName = MonsterInformationProvider.getInstance().getMobNameFromId(attacker.getId());
-                string damagedName = MonsterInformationProvider.getInstance().getMobNameFromId(damaged.getId());
+                string attackerName = ClientCulture.SystemCulture.GetMobName(attacker.getId());
+                string damagedName = ClientCulture.SystemCulture.GetMobName(damaged.getId());
                 _logger.LogWarning("Chr {CharacterName} had hypnotized {Attacker} to attack {Damaged} with damage {Damage} (max: {MaxDamage})", c.OnlinedCharacter.getName(),
                         attackerName, damagedName, dmg, maxDmg);
                 dmg = maxDmg;

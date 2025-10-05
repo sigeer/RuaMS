@@ -1,19 +1,23 @@
 using Application.Templates.Providers;
 using Application.Templates.String;
+using System.Globalization;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class StringProvider : GenericKeyedProvider<StringBaseProvider>
     {
+        CultureInfo _culture;
         public override ProviderType ProviderName => ProviderType.String;
-        public StringProvider(TemplateOptions options)
+        public StringProvider(TemplateOptions options, CultureInfo cultureInfo)
             : base(options)
         {
-            _categoryData[(int)StringCategory.Item] = new StringItemProvider(options);
-            _categoryData[(int)StringCategory.Map] = new StringMapProvider(options);
-            _categoryData[(int)StringCategory.Mob] = new StringMobProvider(options);
-            _categoryData[(int)StringCategory.Npc] = new StringNpcProvider(options);
-            _categoryData[(int)StringCategory.Skill] = new StringSkillProvider(options);
+            _culture = cultureInfo;
+
+            _categoryData[(int)StringCategory.Item] = new StringItemProvider(options, cultureInfo);
+            _categoryData[(int)StringCategory.Map] = new StringMapProvider(options, cultureInfo);
+            _categoryData[(int)StringCategory.Mob] = new StringMobProvider(options, cultureInfo);
+            _categoryData[(int)StringCategory.Npc] = new StringNpcProvider(options, cultureInfo);
+            _categoryData[(int)StringCategory.Skill] = new StringSkillProvider(options, cultureInfo);
         }
 
 

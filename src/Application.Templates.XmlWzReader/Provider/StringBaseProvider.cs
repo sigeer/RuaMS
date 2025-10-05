@@ -1,6 +1,7 @@
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
+using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -10,9 +11,14 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         protected StringTemplateType[] _types;
         protected string[] _files;
-        protected StringBaseProvider(TemplateOptions options, StringTemplateType[] types) : base(options)
+        protected CultureInfo _culture;
+        protected StringBaseProvider(TemplateOptions options, CultureInfo cultureInfo, StringTemplateType[] types) : base(options)
         {
             _types = types;
+            _culture = cultureInfo;
+
+            if (cultureInfo.Name != "en-US")
+                _dataBaseDir = _dataBaseDir + "-" + cultureInfo.Name;
 
             _files = Directory.GetFiles(GetPath())
                     .Where(x => _types
@@ -31,9 +37,9 @@ namespace Application.Templates.XmlWzReader.Provider
             return all;
         }
 
-        protected override StringTemplate? GetItemInternal(int templateId)
+        protected override AbstractTemplate? GetItemInternal(int templateId)
         {
-            return LoadAll().FirstOrDefault(x => x.TemplateId == templateId) as StringTemplate;
+            return LoadAll().FirstOrDefault(x => x.TemplateId == templateId);
         }
 
 

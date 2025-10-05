@@ -483,7 +483,7 @@ public class CashOperationHandler : ChannelHandlerBase
         {
             _logger.LogDebug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
                 chr,
-                ItemInformationProvider.getInstance().getName(item.getItemId()),
+                ClientCulture.SystemCulture.GetItemName(item.getItemId()),
                 item.getSN(),
                 item.getPrice());
             return true;

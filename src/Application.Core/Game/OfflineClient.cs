@@ -6,6 +6,7 @@ using DotNetty.Transport.Channels;
 using scripting;
 using scripting.Event;
 using scripting.npc;
+using System.Globalization;
 
 namespace Application.Core.Game
 {
@@ -80,6 +81,8 @@ namespace Application.Core.Game
         int IClientBase.AccountGMLevel => throw new NotImplementedException();
 
         int IClientBase.Language { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        CultureInfo CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        ClientCulture IChannelClient.CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         long ISocketClient.SessionId => throw new NotImplementedException();
 
@@ -392,11 +395,6 @@ namespace Application.Core.Game
         }
 
         EventManager? IChannelClient.getEventManager(string @event)
-        {
-            throw new NotImplementedException();
-        }
-
-        string IChannelClient.GetMessageByKey(string key, params string[] paramsValue)
         {
             throw new NotImplementedException();
         }

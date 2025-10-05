@@ -390,7 +390,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     ii.getItemEffect(ii.getStateChangeItem(itemId))?.applyTo(mChar);
                 }
             }
-            player.getMap().startMapEffect(ii.getMsg(itemId).replaceFirst("%s", player.getName()).replaceFirst("%s", p.readString()), itemId);
+            player.getMap().startMapEffect(c.CurrentCulture.GetItemMessage(itemId).replaceFirst("%s", player.getName()).replaceFirst("%s", p.readString()), itemId);
             remove(c, position, itemId);
         }
         else if (itemType == 517)

@@ -22,7 +22,7 @@ public class WarpCommand : ParamsCommandBase
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = _wzManager.FindMapIdByName(paramsValue[0]);
+                var findResult = _wzManager.FindMapIdByName(c, paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;

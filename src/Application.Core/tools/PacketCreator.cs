@@ -5343,7 +5343,7 @@ public class PacketCreator
         p.writeByte(0x04);
         p.writeShort(hm.getVisitorSlotThreadsafe(chr) + 1);
         p.writeInt(hm.SourceItemId);
-        p.writeString(ItemInformationProvider.getInstance().getName(hm.SourceItemId) ?? StringConstants.ItemUnknown);
+        p.writeString(chr.Client.CurrentCulture.GetItemName(hm.SourceItemId) ?? StringConstants.ItemUnknown);
 
         var visitors = hm.getVisitorCharacters();
         for (int i = 0; i < 3; i++)

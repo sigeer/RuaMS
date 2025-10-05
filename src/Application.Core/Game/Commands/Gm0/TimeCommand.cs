@@ -11,7 +11,7 @@ public class TimeCommand : CommandBase
     public override void Execute(IChannelClient client, string[] paramsValue)
     {
         client.OnlinedCharacter.yellowMessage(
-            client.GetMessageByKey(nameof(ClientMessage.ServerTime)) 
+            client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ServerTime)) 
             + client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 }

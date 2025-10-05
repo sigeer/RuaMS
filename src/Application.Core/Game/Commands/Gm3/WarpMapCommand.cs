@@ -26,14 +26,14 @@ public class WarpMapCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = _wzManager.FindMapIdByName(paramsValue[0]);
+                var findResult = _wzManager.FindMapIdByName(c, paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;
                 }
                 else if (findResult.MatchedItems.Count > 0)
                 {
-                    var messages = new StringBuilder(c.GetMessageByKey(nameof(ClientMessage.FindSimilarItem)));
+                    var messages = new StringBuilder(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem)));
                     for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
                         var item = findResult.MatchedItems[i];

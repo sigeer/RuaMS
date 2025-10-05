@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 
 namespace Application.Core.tools
@@ -15,7 +16,7 @@ namespace Application.Core.tools
             var displayName = name;
             if (medalItemId > 0)
             {
-                var medalName = ItemInformationProvider.getInstance().getName(medalItemId);
+                var medalName = ClientCulture.SystemCulture.GetItemName(medalItemId);
                 if (!string.IsNullOrWhiteSpace(medalName))
                     displayName = $"<{medalName}> {displayName}";
             }

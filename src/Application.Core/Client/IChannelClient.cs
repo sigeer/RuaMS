@@ -14,6 +14,7 @@ namespace Application.Core.Client
         int Channel { get; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
+        ClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
         EngineStorage ScriptEngines { get; set; }
@@ -47,6 +48,5 @@ namespace Application.Core.Client
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
         void LeaveCashShop();
-        string GetMessageByKey(string key, params string[] paramsValue);
     }
 }

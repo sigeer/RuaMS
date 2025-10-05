@@ -180,7 +180,7 @@ namespace Application.Core.Game.Players
 
                 Log.Debug("-------------------");
                 Log.Debug("IN ACTION: {InAction}", string.Join(", ", effects
-                        .Select(entry => entry.Key.name() + " -> " + ItemInformationProvider.getInstance().getName(entry.Value.effect.getSourceId())))
+                        .Select(entry => entry.Key.name() + " -> " + Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId())))
                 );
             }
             finally

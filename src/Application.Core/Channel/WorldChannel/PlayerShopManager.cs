@@ -332,7 +332,7 @@ namespace Application.Core.Channel
             {
                 string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
                 owner.dropMessage(6,
-                    $"[Hired Merchant] Item '{ItemInformationProvider.getInstance().getName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
+                    $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
             }
 
         }

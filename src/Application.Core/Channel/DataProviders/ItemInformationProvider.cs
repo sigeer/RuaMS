@@ -62,7 +62,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     readonly EquipProvider _equipProvider = ProviderFactory.GetProvider<EquipProvider>();
     readonly ItemProvider _itemProvider = ProviderFactory.GetProvider<ItemProvider>();
-    readonly StringProvider _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     public ItemInformationProvider(
         ILogger<DataBootstrap> logger,
         AutoBanDataManager autoBanDataManager) : base(logger)
@@ -1007,12 +1006,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
     public string? getName(int itemId)
     {
-        return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Name;
-    }
-
-    public string? getMsg(int itemId)
-    {
-        return _stringProvider.GetSubProvider(StringCategory.Item).GetRequiredItem<StringTemplate>(itemId)?.Message;
+        return ClientCulture.SystemCulture.GetItemName(itemId);
     }
 
     public bool IsValidEquip(int itemId, EquipSlot equipType)
@@ -1341,7 +1335,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (!EquipSlot.getFromTextSlot(equipTemplate.Islot).isAllowed(dst, isCash(id)))
         {
             equip.wear(false);
-            var itemName = getInstance().getName(equip.getItemId());
+            var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
             chr.Client.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
             _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
             _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);

@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -60,11 +61,9 @@ public class LifeFactory : IStaticService
 
     private HashSet<int> hpbarBosses;
 
-    readonly StringProvider _stringProvider;
     public LifeFactory()
     {
         hpbarBosses = getHpBarBosses();
-        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     private HashSet<int> getHpBarBosses()
@@ -150,7 +149,7 @@ public class LifeFactory : IStaticService
         stats.setExplosiveReward(DataTool.getIntConvert("explosiveReward", monsterInfoData, stats.isExplosiveReward() ? 1 : 0) > 0);
         stats.setFfaLoot(DataTool.getIntConvert("publicReward", monsterInfoData, stats.isFfaLoot() ? 1 : 0) > 0);
         stats.setUndead(DataTool.getIntConvert("undead", monsterInfoData, stats.isUndead() ? 1 : 0) > 0);
-        stats.setName(_stringProvider.GetSubProvider(StringCategory.Mob).GetRequiredItem<StringTemplate>(mid)?.Name ?? StringConstants.WZ_MissingNo);
+        stats.setName(ClientCulture.SystemCulture.GetMobName(mid));
         stats.setBuffToGive(DataTool.getIntConvert("buff", monsterInfoData, stats.getBuffToGive()));
         stats.setCP(DataTool.getIntConvert("getCP", monsterInfoData, stats.getCP()));
         stats.setRemoveOnMiss(DataTool.getIntConvert("removeOnMiss", monsterInfoData, stats.removeOnMiss() ? 1 : 0) > 0);
@@ -363,11 +362,11 @@ public class LifeFactory : IStaticService
 
     public string getNPCDefaultTalk(int nid)
     {
-        return _stringProvider.GetSubProvider(StringCategory.Npc).GetRequiredItem<StringNpcTemplate>(nid)?.DefaultTalk ?? "(...)";
+        return ClientCulture.SystemCulture.GetNpcDefaultTalk(nid);
     }
 
     public NPCStats GetNPCStats(int npcId)
     {
-        return new NPCStats(_stringProvider.GetSubProvider(StringCategory.Npc).GetRequiredItem<StringNpcTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo);
+        return new NPCStats(ClientCulture.SystemCulture.GetNpcName(npcId));
     }
 }

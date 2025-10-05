@@ -61,11 +61,9 @@ public class MapFactory : IStaticService
 
     private MapProvider mapSource;
 
-    readonly StringProvider _stringProvider;
     public MapFactory()
     {
         mapSource = ProviderFactory.GetProvider<MapProvider>();
-        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     private void loadLifeFromWz(IMap map, MapTemplate mapData)
@@ -386,8 +384,8 @@ public class MapFactory : IStaticService
         return mapName;
     }
 
-    public string loadPlaceName(int mapid) => _stringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapid)?.MapName ?? StringConstants.WZ_NoName;
+    public string loadPlaceName(int mapid) => ClientCulture.SystemCulture.GetMapName(mapid);
 
-    public string loadStreetName(int mapid) => _stringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapid)?.StreetName ?? StringConstants.WZ_NoName;
+    public string loadStreetName(int mapid) => ClientCulture.SystemCulture.GetMapStreetName(mapid);
 
 }

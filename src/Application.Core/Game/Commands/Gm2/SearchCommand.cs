@@ -12,7 +12,6 @@ namespace Application.Core.Game.Commands.Gm2;
 
 public class SearchCommand : CommandBase
 {
-    readonly StringProvider _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     public SearchCommand() : base(2, "search")
     {
     }
@@ -48,7 +47,7 @@ public class SearchCommand : CommandBase
             }
             else
             {
-                foreach (var item in _stringProvider.Search(type, search))
+                foreach (var item in c.CurrentCulture.StringProvider.Search(type, search))
                 {
                     if (item is StringMapTemplate mapData)
                     {

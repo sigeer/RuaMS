@@ -26,7 +26,7 @@ public class SpawnCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var mobId))
         {
-            var list = _wzManager.FindMobIdByName(paramsValue[0]);
+            var list = _wzManager.FindMobIdByName(c, paramsValue[0]);
             if (list.BestMatch != null)
             {
                 mobId = list.BestMatch.Id;

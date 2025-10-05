@@ -431,7 +431,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void maxMastery()
     {
-        var provider = ProviderFactory.GetProvider<StringProvider>();
+        var provider = ClientCulture.SystemCulture.StringProvider;
         foreach (var skillData in provider.GetSubProvider(Application.Templates.String.StringCategory.Skill).LoadAll())
         {
             try
@@ -474,7 +474,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         LogFactory.GetLogger(LogType.Gachapon).Information(
             "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
-            getPlayer().getName(), ItemInformationProvider.getInstance().getName(item.ItemId), item.ItemId, map);
+            getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(item.ItemId), item.ItemId, map);
 
         if (item.Level > 0)
         {
@@ -654,7 +654,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public object[] getNamesWhoDropsItem(int itemId)
     {
-        return MonsterInformationProvider.getInstance().FindDropperNames(itemId).ToArray();
+        return MonsterInformationProvider.getInstance().FindDropperNames(c, itemId).ToArray();
     }
 
     public string getSkillBookInfo(int itemid)

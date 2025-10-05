@@ -88,7 +88,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                 if (damage > maxDmg)
                 {
                     autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
-                    string mobName = MonsterInformationProvider.getInstance().getMobNameFromId(target.getId());
+                    string mobName = c.CurrentCulture.GetMobName(target.getId());
                     _logger.LogInformation("Possible exploit - chr {CharacterName} used a summon of skillId {SkillId} to attack {MobName} with damage {Damage} (max: {MaxDamage})",
                             c.OnlinedCharacter.getName(), summon.getSkill(), mobName, damage, maxDmg);
                     damage = maxDmg;

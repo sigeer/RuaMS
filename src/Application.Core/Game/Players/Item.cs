@@ -568,7 +568,7 @@ namespace Application.Core.Game.Players
                         evolved.setStance(0);
                         evolved.Summoned = true;
 
-                        var fromDefaultName = ItemInformationProvider.getInstance().getName(from.getItemId());
+                        var fromDefaultName = Client.CurrentCulture.GetItemName(from.getItemId());
                         evolved.Name = from.Name != fromDefaultName ? from.Name : fromDefaultName;
                         evolved.Tameness = from.Tameness;
                         evolved.Fullness = from.Fullness;

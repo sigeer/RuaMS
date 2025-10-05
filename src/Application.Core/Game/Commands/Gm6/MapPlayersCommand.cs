@@ -16,7 +16,7 @@ public class MapPlayersCommand : CommandBase
         int map = player.getMapId();
 
         var sb = new StringBuilder();
-        sb.Append(c.GetMessageByKey(nameof(ClientMessage.CurrentMap), player.MapModel.getMapName())).Append(":\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CurrentMap), player.MapModel.getMapName())).Append(":\r\n");
         foreach (var chr in player.getMap().getPlayers().OfType<IPlayer>())
         {
             string hp = chr.HP.ToString();

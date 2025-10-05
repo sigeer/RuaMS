@@ -28,7 +28,7 @@ public class ItemCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            var findResult = _wzManager.FindItemIdByName(paramsValue[0]);
+            var findResult = _wzManager.FindItemIdByName(c, paramsValue[0]);
             if (findResult.BestMatch != null)
                 itemId = findResult.BestMatch.Id;
             else if (findResult.MatchedItems.Count > 0)

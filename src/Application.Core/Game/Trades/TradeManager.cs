@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Invites;
 using Application.Resources.Messages;
@@ -212,7 +213,7 @@ namespace Application.Core.Game.Trades
         private static string getFormattedItemLogMessage(List<Item> items)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            return string.Join(", ", items.Select(x => $"[{x.getQuantity()} {ii.getName(x.getItemId())} ({x.getItemId()})]"));
+            return string.Join(", ", items.Select(x => $"[{x.getQuantity()} {ClientCulture.SystemCulture.GetItemName(x.getItemId())} ({x.getItemId()})]"));
         }
 
         public static void CompleteTrade(IPlayer chr)

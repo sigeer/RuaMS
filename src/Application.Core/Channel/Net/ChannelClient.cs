@@ -3,6 +3,7 @@ using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;
+using Application.Shared.Languages;
 using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using DotNetty.Transport.Channels;
@@ -42,7 +43,7 @@ namespace Application.Core.Channel.Net
 
         public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
-
+        public ClientCulture CurrentCulture { get; set; } = new ClientCulture();
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;
@@ -466,17 +467,6 @@ namespace Application.Core.Channel.Net
             if (DateTime.TryParseExact(dateInt.ToString(), "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d))
                 return CheckBirthday(d);
             return false;
-        }
-
-        public string GetMessageByKey(string key, params string[] paramsValue)
-        {
-            var message = ClientMessage.ResourceManager.GetString(key, this.GetCulture());
-            if (string.IsNullOrEmpty(message))
-            {
-                log.LogWarning("i18n未找到{Key}", key);
-                return key;
-            }
-            return string.Format(message, paramsValue);
         }
     }
 }

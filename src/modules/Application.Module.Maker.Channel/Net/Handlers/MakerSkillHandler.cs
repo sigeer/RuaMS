@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net;
 using Application.Core.Client;
@@ -45,7 +46,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                         toCreate = _service.getMakerCrystalFromLeftover(toCreate);
                         if (toCreate == -1)
                         {
-                            c.sendPacket(PacketCreator.serverNotice(1, ii.getName(fromLeftover) + " is unavailable for Monster Crystal conversion."));
+                            c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(fromLeftover) + " is unavailable for Monster Crystal conversion."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
                             return;
                         }
@@ -69,7 +70,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             }
                             else
                             {
-                                c.sendPacket(PacketCreator.serverNotice(1, ii.getName(toCreate) + " is unavailable for Monster Crystal disassembly."));
+                                c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(toCreate) + " is unavailable for Monster Crystal disassembly."));
                                 c.sendPacket(MakerPacketCreator.makerEnableActions());
                                 return;
                             }
@@ -159,7 +160,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             break;
 
                         case 1: // no items
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have all required items in your inventory to make " + ii.getName(toCreate) + "."));
+                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have all required items in your inventory to make " + c.CurrentCulture.GetItemName(toCreate) + "."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
