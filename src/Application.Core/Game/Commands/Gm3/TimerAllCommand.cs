@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class TimerAllCommand : CommandBase
 {
     public TimerAllCommand() : base(3, "timerall")
     {
-        Description = "Set a server wide timer.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class TimerAllCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !timerall <seconds>|remove");
+            player.YellowMessageI18N(nameof(ClientMessage.TimerAllCommand_Syntax));
             return;
         }
 
@@ -30,7 +31,7 @@ public class TimerAllCommand : CommandBase
             catch (FormatException e)
             {
                 log.Error(e.ToString());
-                player.yellowMessage("Syntax: !timerall <seconds>|remove");
+                player.YellowMessageI18N(nameof(ClientMessage.TimerAllCommand_Syntax));
             }
         }
     }

@@ -1,5 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Managers;
+using Application.Resources.Messages;
+using Application.Templates.Character;
 using client.inventory;
 using client.inventory.manipulator;
 
@@ -9,7 +11,6 @@ public class ProItemCommand : CommandBase
 {
     public ProItemCommand() : base(4, "proitem")
     {
-        Description = "Spawn an item with custom stats.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -17,27 +18,28 @@ public class ProItemCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.yellowMessage("Syntax: !proitem <itemid> <stat value> [<spdjmp value>]");
+            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            player.yellowMessage("Syntax: itemId invalid");
+            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (!ii.HasTemplate(itemId))
+        var abTemplate = ii.GetTemplate(itemId);
+        if (abTemplate is not EquipTemplate equipTemplate)
         {
-            player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
             return;
         }
 
         if (!short.TryParse(paramsValue[1], out short stat))
         {
-            player.yellowMessage("Invalid stat value.");
+            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
@@ -47,18 +49,15 @@ public class ProItemCommand : CommandBase
         if (paramsValue.Length >= 3 && short.TryParse(paramsValue[2], out spdjmp))
             spdjmp = Math.Max((short)0, spdjmp);
 
-        InventoryType type = ItemConstants.getInventoryType(itemId);
-        if (type.Equals(InventoryType.EQUIP))
+        var it = ii.GetEquipByTemplate(equipTemplate);
+        if (it == null)
         {
-            Item it = ii.getEquipById(itemId);
-            it.setOwner(player.getName());
+            player.YellowMessageI18N(nameof(ClientMessage.EquipNotFound));
+            return;
+        }
+        it.setOwner(player.getName());
 
-            ItemManager.SetEquipStat((Equip)it, stat, spdjmp);
-            InventoryManipulator.addFromDrop(c, it);
-        }
-        else
-        {
-            player.dropMessage(6, "Make sure it's an equippable item.");
-        }
+        ItemManager.SetEquipStat((Equip)it, stat, spdjmp);
+        InventoryManipulator.addFromDrop(c, it);
     }
 }

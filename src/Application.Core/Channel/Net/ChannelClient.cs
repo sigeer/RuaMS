@@ -1,7 +1,9 @@
 using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
+using Application.Resources.Messages;
 using Application.Shared.Events;
+using Application.Shared.Languages;
 using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using DotNetty.Transport.Channels;
@@ -39,9 +41,9 @@ namespace Application.Core.Channel.Net
 
         public override int AccountId => AccountEntity?.Id ?? -2;
 
-        public override string AccountName => AccountName;
+        public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
-
+        public ClientCulture CurrentCulture { get; set; } = new ClientCulture();
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;

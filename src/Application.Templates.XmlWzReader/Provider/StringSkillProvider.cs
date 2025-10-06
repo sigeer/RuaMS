@@ -1,11 +1,12 @@
 using Application.Templates.String;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class StringSkillProvider : StringBaseProvider
     {
-        public StringSkillProvider(TemplateOptions options) : base(options, [StringTemplateType.Skill])
+        public StringSkillProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Skill])
         {
         }
 

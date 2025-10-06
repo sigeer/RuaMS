@@ -76,7 +76,7 @@ public class ItemRequirement : AbstractQuestRequirement
                     {
                         if (chr.getInventory(InventoryType.EQUIPPED).countById(itemId) + count >= countNeeded)
                         {
-                            chr.dropMessage(5, "Unequip the required " + ii.getName(itemId) + " before trying this quest operation.");
+                            chr.dropMessage(5, "Unequip the required " + chr.Client.CurrentCulture.GetItemName(itemId) + " before trying this quest operation.");
                             return false;
                         }
                     }

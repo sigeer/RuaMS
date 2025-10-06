@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -6,7 +7,6 @@ public class HairCommand : CommandBase
 {
     public HairCommand() : base(3, "hair")
     {
-        Description = "Change hair of a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class HairCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !hair [<playername>] <hairid>");
+            player.YellowMessageI18N(nameof(ClientMessage.HairCommand_Syntax));
             return;
         }
 
@@ -32,19 +32,19 @@ public class HairCommand : CommandBase
 
         if (!int.TryParse(hairStr, out var hairId))
         {
-            player.yellowMessage("Syntax: !hair [<playername>] <hairid>");
+            player.YellowMessageI18N(nameof(ClientMessage.HairCommand_Syntax));
             return;
         }
 
         if (!ItemInformationProvider.getInstance().IsHair(hairId))
         {
-            player.yellowMessage("Hair id '" + hairId + "' does not exist.");
+            player.YellowMessageI18N(nameof(ClientMessage.HairNotFound));
             return;
         }
 
         if (targetPlayer == null)
         {
-            player.yellowMessage("Player '" + paramsValue[0] + "' has not been found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             return;
         }
 

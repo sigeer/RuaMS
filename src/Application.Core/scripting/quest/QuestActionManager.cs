@@ -92,6 +92,6 @@ public class QuestActionManager : NPCConversationManager
     public string? getMedalName()
     {
         // usable only for medal quests (id 299XX)
-        return ItemInformationProvider.getInstance().getName(QuestFactory.Instance.GetMedalRequirement((short)quest));
+        return c.CurrentCulture.GetItemName(QuestFactory.Instance.GetMedalRequirement((short)quest));
     }
 }

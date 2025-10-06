@@ -56,7 +56,7 @@ public class GachaCommand : CommandBase
         {
             foreach (var item in _gachaponManager.GetItems(gacha.Id, chance.Level))
             {
-                talkStr += "-" + ItemInformationProvider.getInstance().getName(item.ItemId) + "\r\n";
+                talkStr += "-" + c.CurrentCulture.GetItemName(item.ItemId) + "\r\n";
             }
         }
         talkStr += "\r\nPlease keep in mind that there are items that are in all gachapons and are not listed here.";

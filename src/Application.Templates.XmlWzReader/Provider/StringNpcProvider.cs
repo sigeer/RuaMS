@@ -1,11 +1,12 @@
 using Application.Templates.String;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
     internal class StringNpcProvider : StringBaseProvider
     {
-        public StringNpcProvider(TemplateOptions options) : base(options, [StringTemplateType.Npc])
+        public StringNpcProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Npc])
         {
         }
 

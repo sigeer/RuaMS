@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class GiveNxCommand : CommandBase
 {
     public GiveNxCommand() : base(3, "givenx")
     {
-        Description = "Give NX to a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class GiveNxCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !givenx [nx, mp, np] [<playername>] <gainnx>");
+            player.YellowMessageI18N(nameof(ClientMessage.GiveNxCommand_Syntax));
             return;
         }
 
@@ -63,11 +64,11 @@ public class GiveNxCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.getCashShop().gainCash(type, value);
-            player.message(typeStr.ToUpper() + " given.");
+            player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
         }
         else
         {
-            player.message("Player '" + recv + "' could not be found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
     }
 }

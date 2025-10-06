@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using constants.game;
@@ -662,8 +663,8 @@ public class Equip : Item
 
         itemLevel++;
 
-        string lvupStr = "'" + ItemInformationProvider.getInstance().getName(this.getItemId()) + "' is now level " + itemLevel + "! ";
-        string showStr = "#e'" + ItemInformationProvider.getInstance().getName(this.getItemId()) + "'#b is now #elevel #r" + itemLevel + "#k#b!";
+        string lvupStr = "'" + c.CurrentCulture.GetItemName(this.getItemId()) + "' is now level " + itemLevel + "! ";
+        string showStr = "#e'" + c.CurrentCulture.GetItemName(this.getItemId()) + "'#b is now #elevel #r" + itemLevel + "#k#b!";
 
         var res = this.gainStats(stats);
         lvupStr += res.Key;
@@ -753,7 +754,8 @@ public class Equip : Item
 
             if (YamlConfig.config.server.USE_DEBUG_SHOW_INFO_EQPEXP)
             {
-                log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {Mastery}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {0}", ii.getName(getItemId()),
+                log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {Mastery}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {0}",
+                    ClientCulture.SystemCulture.GetItemName(getItemId()),
                         gain, masteryModifier, baseExpGain, itemExp, expNeeded, expNeeded / (baseExpGain / c.OnlinedCharacter.getExpRate()));
             }
 

@@ -5,6 +5,7 @@ using Application.Templates.XmlWzReader.Provider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
+using System.Globalization;
 
 namespace Application.Core.Channel.Modules
 {
@@ -26,7 +27,9 @@ namespace Application.Core.Channel.Modules
                 option.RegisterProvider(new EquipProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new StringProvider(new Templates.TemplateOptions()));
+
+                option.RegisterKeydProvider("zh-CN", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
+                option.RegisterKeydProvider("en-US", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
                 option.UseLogger(app.Logger);
             });
 

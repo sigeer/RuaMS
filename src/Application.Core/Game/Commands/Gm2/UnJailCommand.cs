@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class UnJailCommand : CommandBase
 {
     public UnJailCommand() : base(2, "unjail")
     {
-        Description = "Free a player from jail.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class UnJailCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !unjail <playername>");
+            player.YellowMessageI18N(nameof(ClientMessage.UnJailCommand_Syntax));
             return;
         }
 
@@ -21,16 +22,16 @@ public class UnJailCommand : CommandBase
         {
             if (victim.getJailExpirationTimeLeft() <= 0)
             {
-                player.message("This player is already free.");
+                player.YellowMessageI18N(nameof(ClientMessage.UnjailCommand_AlreadyFree));
                 return;
             }
             victim.removeJailExpirationTime();
-            victim.message("By lack of concrete proof you are now unjailed. Enjoy freedom!");
-            player.message(victim.getName() + " was unjailed.");
+            victim.MessageI18N(nameof(ClientMessage.Unjail_Notify));
+            player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
     }
 }

@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Resources;
 using Application.Shared.Constants.Job;
 using Application.Templates.Item.Consume;
 using Application.Templates.Providers;
@@ -8,6 +9,7 @@ using client.inventory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -15,7 +17,7 @@ namespace ServiceTest.Infrastructure.WZ
     {
         OldItemInformationProvider oldProvider;
         ItemInformationProvider newProvider;
-        StringProvider _stringProvider = new StringProvider(new Application.Templates.TemplateOptions());
+        StringProvider _stringProvider ;
         JsonSerializerSettings options;
 
         public ItemInfomationTests()
@@ -24,7 +26,8 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
                 o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions()));
+
+                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
             });
             oldProvider = new OldItemInformationProvider();
             newProvider = new ItemInformationProvider(
@@ -32,6 +35,7 @@ namespace ServiceTest.Infrastructure.WZ
                 null
                 );
             newProvider.Register(newProvider);
+            _stringProvider = ProviderFactory.GetProvider<StringProvider>();
 
             options = new JsonSerializerSettings
             {

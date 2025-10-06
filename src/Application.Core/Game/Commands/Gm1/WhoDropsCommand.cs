@@ -27,12 +27,12 @@ public class WhoDropsCommand : CommandBase
             {
                 string searchString = player.getLastCommandMessage();
                 string output = "";
-                var items = _wzManager.FindItemIdByName(searchString).MatchedItems.Take(3);
+                var items = _wzManager.FindItemIdByName(c, searchString).MatchedItems.Take(3);
                 foreach (var data in items)
                 {
                     output += "#b" + data.Name + "#k is dropped by:\r\n";
 
-                    output += string.Join(", ", MonsterInformationProvider.getInstance().FindDropperNames(data.Id).Take(50));
+                    output += string.Join(", ", MonsterInformationProvider.getInstance().FindDropperNames(c, data.Id).Take(50));
                     output += "\r\n\r\n";
                 }
                 c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);

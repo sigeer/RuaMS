@@ -4,7 +4,6 @@ public class DropRateCommand : CommandBase
 {
     public DropRateCommand() : base(4, "droprate")
     {
-        Description = "Set world drop rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

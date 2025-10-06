@@ -1,4 +1,5 @@
 using Application.Shared.Models;
+using System.Globalization;
 
 namespace Application.Shared.Client
 {
@@ -22,6 +23,7 @@ namespace Application.Shared.Client
         int AccountId { get; }
         string AccountName { get; }
         int AccountGMLevel { get; }
+        int Language { get; set; }
         void SetCharacterOnSessionTransitionState(int cid);
     }
 }

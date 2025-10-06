@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using client.inventory.manipulator;
@@ -130,7 +131,7 @@ public class Inventory : IEnumerable<Item>
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         foreach (Item item in list())
         {
-            var itemName = ii.getName(item.getItemId());
+            var itemName = ClientCulture.SystemCulture.GetItemName(item.getItemId());
             if (itemName == null)
             {
                 owner.Log.Error("[CRITICAL] Item {ItemId} has no name", item.getItemId());

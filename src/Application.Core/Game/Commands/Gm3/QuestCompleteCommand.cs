@@ -6,7 +6,6 @@ public class QuestCompleteCommand : CommandBase
 {
     public QuestCompleteCommand() : base(3, "completequest")
     {
-        Description = "Complete an active quest.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

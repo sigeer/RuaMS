@@ -25,6 +25,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
+using Application.Shared.Languages;
 using Application.Shared.Team;
 using client.inventory;
 using Microsoft.Extensions.Logging;
@@ -84,7 +85,9 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 c.Disconnect(true, false);
                 return;
             }
-            bool newcomer = playerObject.LoginInfo!.IsNewCommer;
+            c.Language = playerObject.LoginInfo.Language;
+            c.CurrentCulture = new ClientCulture(c.Language);
+            bool newcomer = playerObject.LoginInfo.IsNewCommer;
 
             /*  is this check really necessary?
             if (state == IChannelClient.LOGIN_SERVER_TRANSITION || state == IChannelClient.LOGIN_NOTLOGGEDIN) {

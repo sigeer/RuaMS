@@ -4,7 +4,6 @@ public class ExpRateCommand : CommandBase
 {
     public ExpRateCommand() : base(4, "exprate")
     {
-        Description = "Set world exp rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

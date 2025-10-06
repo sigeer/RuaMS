@@ -1,3 +1,5 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class CheckDmgCommand : CommandBase
@@ -25,7 +27,7 @@ public class CheckDmgCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
     }
 }

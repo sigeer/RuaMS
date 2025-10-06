@@ -77,7 +77,7 @@ public class ItemRewardHandler : ChannelHandlerBase
                 {
                     string msg = reward.worldmsg;
                     msg = msg.Replace("/name", c.OnlinedCharacter.getName());
-                    msg = msg.Replace("/item", ii.getName(reward.itemid));
+                    msg = msg.Replace("/item", c.CurrentCulture.GetItemName(reward.itemid));
                     c.CurrentServerContainer.SendDropMessage(6, msg);
                 }
                 break;

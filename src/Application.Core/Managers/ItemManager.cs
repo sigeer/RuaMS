@@ -83,7 +83,7 @@ namespace Application.Core.Managers
             return equippedWithStat;
         }
 
-        public static string ShowEquipFeatures(Equip equip)
+        public static string ShowEquipFeatures(IPlayer chr, Equip equip)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             if (!ii.isUpgradeable(equip.getItemId()))
@@ -91,7 +91,7 @@ namespace Application.Core.Managers
                 return "";
             }
 
-            var eqpName = ii.getName(equip.getItemId());
+            var eqpName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
             var eqpInfo = equip.ReachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)equip.getItemExp() + "#k#n / " + ExpTable.getEquipExpNeededForLevel(equip.getItemLevel()));
 
             return "'" + eqpName + "' -> LV: #e#b" + equip.getItemLevel() + "#k#n    " + eqpInfo + "\r\n";

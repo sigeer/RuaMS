@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Resources.Messages;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -75,7 +76,7 @@ public class GiveFameHandler : ChannelHandlerBase
             }
             else
             {
-                player.message("Could not process the request, since this character currently has the minimum/maximum level of fame.");
+                player.MessageI18N(nameof(ClientMessage.ChangeFame_OutOfRange));
             }
         }
         else

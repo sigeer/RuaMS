@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class JobCommand : CommandBase
 {
     public JobCommand() : base(2, "job")
     {
-        Description = "Change job of a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -15,7 +16,7 @@ public class JobCommand : CommandBase
             int jobid = int.Parse(paramsValue[0]);
             if (jobid < 0 || jobid >= 2200)
             {
-                player.message("Jobid " + jobid + " is not available.");
+                player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
                 return;
             }
 
@@ -31,7 +32,7 @@ public class JobCommand : CommandBase
                 int jobid = int.Parse(paramsValue[1]);
                 if (jobid < 0 || jobid >= 2200)
                 {
-                    player.message("Jobid " + jobid + " is not available.");
+                    player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
                     return;
                 }
 
@@ -40,12 +41,12 @@ public class JobCommand : CommandBase
             }
             else
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
         else
         {
-            player.message("Syntax: !job <job id> <opt: IGN of another person>");
+            player.YellowMessageI18N(nameof(ClientMessage.JobCommand_Syntax));
         }
     }
 }

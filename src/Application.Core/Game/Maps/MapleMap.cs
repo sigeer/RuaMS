@@ -2504,7 +2504,7 @@ public class MapleMap : IMap
         {
             if (unclaimOwnership() != null)
             {
-                string mobName = MonsterInformationProvider.getInstance().getMobNameFromId(monster.getId());
+                string mobName = ClientCulture.SystemCulture.GetMobName(monster.getId());
                 if (mobName != null)
                 {
                     mobName = mobName.Trim();

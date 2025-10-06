@@ -12,13 +12,15 @@ namespace Application.Templates.Providers
         /// <summary>
         /// wz所在目录
         /// </summary>
-        public string? BaseDir { get; set; }
+        public string? DataDir { get; set; }
         Dictionary<Type, IProvider> _cached = new();
+
         public void RegisterProvider(IProvider provider)
         {
             if (!_cached.TryAdd(provider.GetType(), provider))
                 throw new ProviderDuplicateException(provider.ProviderName.ToString());
         }
+
 
         public void UseLogger(ILogger logger)
         {
@@ -32,6 +34,19 @@ namespace Application.Templates.Providers
                 return p;
 
             throw new ProviderNotFoundException(type.Name.ToString());
+        }
+        Dictionary<string, IProvider> _providers = new();
+        public void RegisterKeydProvider(string key, IProvider provider)
+        {
+            if (!_providers.TryAdd(key, provider))
+                throw new ProviderDuplicateException(key);
+        }
+        internal IProvider GetProviderByKey(string key) 
+        {
+            if (_providers.TryGetValue(key, out var data) && data is not null)
+                return data;
+
+            throw new ProviderNotFoundException(key);
         }
     }
 }

@@ -31,6 +31,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server.life;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Application.Core.Channel.DataProviders;
 
@@ -39,13 +40,11 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 {
     readonly IChannelServerTransport _transport;
     readonly IMapper _mapper;
-    readonly StringProvider _stringProvider;
     public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger) : base(logger)
     {
         Name = "怪物数据";
         _transport = transport;
         _mapper = mapper;
-        _stringProvider = ProviderFactory.GetProvider<StringProvider>();
     }
 
     /// <summary>
@@ -224,9 +223,9 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => x.Key).ToHashSet();
     }
 
-    public HashSet<string> FindDropperNames(int itemId)
+    public HashSet<string> FindDropperNames(IChannelClient client, int itemId)
     {
-        return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => getMobNameFromId(x.Key)).Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
+        return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => client.CurrentCulture.GetMobName(x.Key)).Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
     }
 
     public void setMobAttackAnimationTime(int monsterId, int attackPos, int animationTime)
@@ -287,7 +286,7 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
 
     public string getMobNameFromId(int id)
     {
-        return _stringProvider.GetSubProvider(StringCategory.Mob).GetRequiredItem<StringTemplate>(id)?.Name ?? StringConstants.WZ_MissingNo;
+        return ClientCulture.SystemCulture.GetMobName(id);
     }
 
     public void clearDrops()

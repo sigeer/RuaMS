@@ -1,5 +1,7 @@
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Invites;
+using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using client.inventory;
 using System.Text;
@@ -76,7 +78,7 @@ namespace Application.Core.Game.Trades
 
             if (c1.isGM() && !c2.isGM() && c1.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
             {
-                c1.message("You cannot trade with non-GM characters.");
+                c1.MessageI18N(nameof(ClientMessage.Trade_GMCheck));
                 log.Information("GM {GMName} blocked from trading with {CharacterName} due to GM level.", c1.getName(), c2.getName());
                 CancelTrade(c1, TradeResult.NO_RESPONSE);
                 return;
@@ -84,7 +86,7 @@ namespace Application.Core.Game.Trades
 
             if (!c1.isGM() && c2.isGM() && c2.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
             {
-                c1.message("You cannot trade with this GM character.");
+                c1.MessageI18N(nameof(ClientMessage.Trade_GMCheck2));
                 CancelTrade(c1, TradeResult.NO_RESPONSE);
                 return;
             }
@@ -93,18 +95,18 @@ namespace Application.Core.Game.Trades
             {
                 if (hasTradeInviteBack(c1, c2))
                 {
-                    c1.message("You are already managing this player's trade invitation.");
+                    c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyManaged));
                 }
                 else
                 {
-                    c1.message("You are already managing someone's trade invitation.");
+                    c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyManaged2));
                 }
 
                 return;
             }
             else if (c1.getTrade()!.isFullTrade())
             {
-                c1.message("You are already in a trade.");
+                c1.MessageI18N(nameof(ClientMessage.Trade_Ing));
                 return;
             }
 
@@ -117,14 +119,14 @@ namespace Application.Core.Game.Trades
                 }
                 else
                 {
-                    c1.message("The other player is already trading with someone else.");
+                    c1.MessageI18N(nameof(ClientMessage.Trade_TargetInTrading));
                     CancelTrade(c1, TradeResult.NO_RESPONSE);
                     InviteType.TRADE.AnswerInvite(c2.getId(), c1.getId(), false);
                 }
             }
             else
             {
-                c1.message("The other player is already managing someone else's trade invitation.");
+                c1.MessageI18N(nameof(ClientMessage.Trade_TargetInTradeManaging));
                 CancelTrade(c1, TradeResult.NO_RESPONSE);
             }
         }
@@ -160,12 +162,12 @@ namespace Application.Core.Game.Trades
                 }
                 else
                 {
-                    c1.message("The other player has already closed the trade.");
+                    c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyClosed));
                 }
             }
             else
             {
-                c1.message("This trade invitation already rescinded.");
+                c1.MessageI18N(nameof(ClientMessage.Trade_InviteCanceld));
                 CancelTrade(c1, TradeResult.NO_RESPONSE);
             }
         }
@@ -211,7 +213,7 @@ namespace Application.Core.Game.Trades
         private static string getFormattedItemLogMessage(List<Item> items)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            return string.Join(", ", items.Select(x => $"[{x.getQuantity()} {ii.getName(x.getItemId())} ({x.getItemId()})]"));
+            return string.Join(", ", items.Select(x => $"[{x.getQuantity()} {ClientCulture.SystemCulture.GetItemName(x.getItemId())} ({x.getItemId()})]"));
         }
 
         public static void CompleteTrade(IPlayer chr)
@@ -226,15 +228,15 @@ namespace Application.Core.Game.Trades
                 if (!local.fitsMeso())
                 {
                     local.CancelTrade(TradeResult.UNSUCCESSFUL);
-                    chr.message("There is not enough meso inventory space to complete the trade.");
-                    partner.getChr().message("Partner does not have enough meso inventory space to complete the trade.");
+                    chr.MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit));
+                    partner.getChr().MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit2));
                     return;
                 }
                 else if (!partner.fitsMeso())
                 {
                     partner.CancelTrade(TradeResult.UNSUCCESSFUL);
-                    chr.message("Partner does not have enough meso inventory space to complete the trade.");
-                    partner.getChr().message("There is not enough meso inventory space to complete the trade.");
+                    chr.MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit2));
+                    partner.getChr().MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit));
                     return;
                 }
 
@@ -243,13 +245,13 @@ namespace Application.Core.Game.Trades
                     if (local.fitsUniquesInInventory())
                     {
                         local.CancelTrade(TradeResult.UNSUCCESSFUL);
-                        chr.message("There is not enough inventory space to complete the trade.");
-                        partner.getChr().message("Partner does not have enough inventory space to complete the trade.");
+                        chr.MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit));
+                        partner.getChr().MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit2));
                     }
                     else
                     {
                         local.CancelTrade(TradeResult.UNSUCCESSFUL_UNIQUE_ITEM_LIMIT);
-                        partner.getChr().message("Partner cannot hold more than one one-of-a-kind item at a time.");
+                        partner.getChr().MessageI18N(nameof(ClientMessage.Trade_UniqueLimit));
                     }
                     return;
                 }
@@ -258,13 +260,13 @@ namespace Application.Core.Game.Trades
                     if (partner.fitsUniquesInInventory())
                     {
                         partner.CancelTrade(TradeResult.UNSUCCESSFUL);
-                        chr.message("Partner does not have enough inventory space to complete the trade.");
-                        partner.getChr().message("There is not enough inventory space to complete the trade.");
+                        chr.MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit2));
+                        partner.getChr().MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit));
                     }
                     else
                     {
                         partner.CancelTrade(TradeResult.UNSUCCESSFUL_UNIQUE_ITEM_LIMIT);
-                        chr.message("Partner cannot hold more than one one-of-a-kind item at a time.");
+                        chr.MessageI18N(nameof(ClientMessage.Trade_UniqueLimit));
                     }
                     return;
                 }

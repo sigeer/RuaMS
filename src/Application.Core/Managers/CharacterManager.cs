@@ -532,7 +532,7 @@ namespace Application.Core.Managers
                     continue;
                 }
 
-                showMsg += ItemManager.ShowEquipFeatures(nEquip);
+                showMsg += ItemManager.ShowEquipFeatures(player, nEquip);
             }
 
             if (showMsg.Count() > 0)

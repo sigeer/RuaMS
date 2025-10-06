@@ -28,6 +28,7 @@ package SyncProto;
 
 message LoginInfo {
 	bool isNewCommer = 1;
+	int32 language = 2;
 }
 
 message CharacterLinkDto {

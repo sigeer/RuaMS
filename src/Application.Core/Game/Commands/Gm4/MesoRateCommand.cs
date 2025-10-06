@@ -4,7 +4,6 @@ public class MesoRateCommand : CommandBase
 {
     public MesoRateCommand() : base(4, "mesorate")
     {
-        Description = "Set world meso rate.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

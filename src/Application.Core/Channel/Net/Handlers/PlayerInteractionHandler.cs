@@ -621,7 +621,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                         }
                         catch (Exception e)
                         {
-                            _logger.LogWarning(e, "Chr {CharacterName} tried to add {ItemName}x {ItemQuantity} in trade (slot {ItemSlot}), then exception occurred", chr, ii.getName(item.getItemId()), item.getQuantity(), targetSlot);
+                            _logger.LogWarning(e, "Chr {CharacterName} tried to add {ItemName}x {ItemQuantity} in trade (slot {ItemSlot}), then exception occurred", 
+                                chr,
+                                ClientCulture.SystemCulture.GetItemName(item.getItemId()), 
+                                item.getQuantity(), 
+                                targetSlot);
                         }
                         finally
                         {

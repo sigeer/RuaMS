@@ -1,4 +1,5 @@
 using Application.Core.Channel.Services;
+using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -8,7 +9,6 @@ public class SummonCommand : CommandBase
     public SummonCommand(AdminService adminService) : base(2, "warphere", "summon")
     {
         _adminService = adminService;
-        Description = "Move a player to your location.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -16,7 +16,7 @@ public class SummonCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage($"Syntax: !{CurrentCommand} <playername>");
+            player.YellowMessageI18N(nameof(ClientMessage.SummonCommand_Syntax), CurrentCommand);
             return;
         }
 

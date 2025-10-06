@@ -141,7 +141,7 @@ namespace Application.Module.Fishing.Channel
                         break;
                     case 2:
                         int itemid = getRandomItem();
-                        rewardStr = "a(n) " + ItemInformationProvider.getInstance().getName(itemid) + ".";
+                        rewardStr = "a(n) " + chr.Client.CurrentCulture.GetItemName(itemid) + ".";
 
                         if (chr.canHold(itemid))
                         {
@@ -149,7 +149,7 @@ namespace Application.Module.Fishing.Channel
                         }
                         else
                         {
-                            chr.showHint("Couldn't catch a(n) #r" + ItemInformationProvider.getInstance().getName(itemid) + "#k due to #e#b" + ItemConstants.getInventoryType(itemid) + "#k#n inventory limit.");
+                            chr.showHint("Couldn't catch a(n) #r" + chr.Client.CurrentCulture.GetItemName(itemid) + "#k due to #e#b" + ItemConstants.getInventoryType(itemid) + "#k#n inventory limit.");
                             rewardStr += ".. but has goofed up due to full inventory.";
                         }
                         break;

@@ -1,7 +1,5 @@
 using Application.Core.Channel.DataProviders;
-using Application.Templates.Providers;
 using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
 
 namespace Application.Core.Game.Commands.Gm1;
 public class WhatDropsFromCommand : CommandBase
@@ -22,7 +20,7 @@ public class WhatDropsFromCommand : CommandBase
         string monsterName = player.getLastCommandMessage();
         string output = "";
         int limit = 3;
-        var dataList = ProviderFactory.GetProvider<StringProvider>().Search(StringCategory.Mob, monsterName, limit).OfType<StringTemplate>();
+        var dataList = c.CurrentCulture.StringProvider.Search(StringCategory.Mob, monsterName, limit).OfType<StringTemplate>();
         foreach (var data in dataList)
         {
             int mobId = data.TemplateId;
@@ -37,7 +35,7 @@ public class WhatDropsFromCommand : CommandBase
                         continue;
                     }
                     float chance = Math.Max(1000000 / drop.Chance / (!MonsterInformationProvider.getInstance().isBoss(mobId) ? player.getDropRate() : player.getBossDropRate()), 1);
-                    output += "- " + ItemInformationProvider.getInstance().getName(drop.ItemId) + " (1/" + (int)chance + ")\r\n";
+                    output += "- " + c.CurrentCulture.GetItemName(drop.ItemId) + " (1/" + (int)chance + ")\r\n";
                 }
                 catch (Exception ex)
                 {

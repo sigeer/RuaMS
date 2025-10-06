@@ -9,6 +9,7 @@ namespace Application.Templates.Providers
         public abstract ProviderType ProviderName { get; }
 
         protected readonly TemplateOptions _options;
+        protected string _dataBaseDir;
 
         private int _refCount = 0;
         private bool _disposed = false;
@@ -20,6 +21,7 @@ namespace Application.Templates.Providers
             _templates = new();
 
             _options = options;
+            _dataBaseDir = options.DataDir ?? ProviderFactory.GetDataDir();
         }
 
 
@@ -84,9 +86,9 @@ namespace Application.Templates.Providers
         /// <returns></returns>
         protected abstract IEnumerable<AbstractTemplate> GetDataFromImg(string path);
 
-        protected virtual string GetPath()
+        protected string GetPath()
         {
-            return _options.GetRootDir(ProviderName);
+            return Path.Combine(_dataBaseDir, TemplateOptions.GetDefaultPath(ProviderName));
         }
 
 

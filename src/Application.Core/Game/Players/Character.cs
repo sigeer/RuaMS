@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
@@ -512,7 +513,7 @@ public partial class Player
         if (medalItem == null)
             return string.Empty;
 
-        var medalItemName = ItemInformationProvider.getInstance().getName(medalItem.getItemId());
+        var medalItemName = Client.CurrentCulture.GetItemName(medalItem.getItemId());
         if (string.IsNullOrEmpty(medalItemName))
             return string.Empty;
 
@@ -619,7 +620,7 @@ public partial class Player
                     if (InventoryManipulator.isSandboxItem(item))
                     {
                         InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                        dropMessage(5, "[" + ii.getName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
+                        dropMessage(5, "[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                     }
                 }
             }
@@ -1588,7 +1589,7 @@ public partial class Player
 
     public void dropMessage(int type, string message)
     {
-        sendPacket(PacketCreator.serverNotice(type, message));
+        sendPacket(PacketCommon.serverNotice(type, message));
     }
 
     public void equipChanged()
@@ -3396,10 +3397,23 @@ public partial class Player
         updateRemainingSp(remainingSp, GameConstants.getSkillBook(JobId));
     }
 
+    public string GetMessageByKey(string key, params string[] paramsValue)
+    {
+        return Client.CurrentCulture.GetMessageByKey(key, paramsValue);
+    }
 
     public void message(string m)
     {
         dropMessage(5, m);
+    }
+
+    public void MessageI18N(string key, params string[] paramsValue)
+    {
+        var message = GetMessageByKey(key, paramsValue);
+        if (!string.IsNullOrEmpty(message))
+        {
+            this.message(message);
+        }
     }
 
     public void yellowMessage(string m)
@@ -3407,7 +3421,14 @@ public partial class Player
         sendPacket(PacketCreator.sendYellowTip(m));
     }
 
-
+    public void YellowMessageI18N(string key, params string[] paramsValue)
+    {
+        var message = GetMessageByKey(key, paramsValue);
+        if (!string.IsNullOrEmpty(message))
+        {
+            yellowMessage(message);
+        }
+    }
     private void playerDead()
     {
         if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
@@ -4334,7 +4355,7 @@ public partial class Player
                     Equip eqp = eqpUpg.Key;
                     ItemManager.SetMergeFlag(eqp);
 
-                    string showStr = " '" + ItemInformationProvider.getInstance().getName(eqp.getItemId()) + "': ";
+                    string showStr = " '" + Client.CurrentCulture.GetItemName(eqp.getItemId()) + "': ";
                     string upgdStr = eqp.gainStats(eqpStatups).Key;
 
                     this.forceUpdateItem(eqp);

@@ -1,11 +1,12 @@
 using Application.Templates.String;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class StringMapProvider : StringBaseProvider
     {
-        public StringMapProvider(TemplateOptions options) : base(options, [StringTemplateType.Map])
+        public StringMapProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Map])
         {
         }
 

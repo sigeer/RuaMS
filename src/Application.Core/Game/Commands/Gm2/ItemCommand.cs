@@ -1,7 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
-using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using Application.Templates.Item.Pet;
 using client.inventory.manipulator;
 using System.Text;
@@ -14,7 +14,6 @@ public class ItemCommand : CommandBase
     public ItemCommand(WzStringQueryService wzManager) : base(2, "item")
     {
         _wzManager = wzManager;
-        Description = "Spawn an item into your inventory.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -23,13 +22,13 @@ public class ItemCommand : CommandBase
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !item <itemid> <quantity>");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            var findResult = _wzManager.FindItemIdByName(paramsValue[0]);
+            var findResult = _wzManager.FindItemIdByName(c, paramsValue[0]);
             if (findResult.BestMatch != null)
                 itemId = findResult.BestMatch.Id;
             else if (findResult.MatchedItems.Count > 0)
@@ -55,7 +54,7 @@ public class ItemCommand : CommandBase
             }
             else
             {
-                player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+                player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
                 return;
             }
         }
@@ -70,7 +69,7 @@ public class ItemCommand : CommandBase
         var abTemplate = ii.GetTemplate(itemId);
         if (abTemplate == null)
         {
-            player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
             return;
         }
 
@@ -83,7 +82,7 @@ public class ItemCommand : CommandBase
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            player.yellowMessage("You cannot create a cash item with this command.");
+            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
             return;
         }
 
@@ -101,7 +100,7 @@ public class ItemCommand : CommandBase
             }
             else
             {
-                player.yellowMessage("Pet Syntax: !item <itemid> <expiration>");
+                player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_PetSyntax));
                 return;
             }
         }

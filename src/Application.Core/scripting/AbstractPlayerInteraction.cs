@@ -1286,4 +1286,9 @@ public class AbstractPlayerInteraction
         getPlayer().changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
         getPlayer().sendKeymap();
     }
+
+    public string GetMessage(string key, params string[] param)
+    {
+        return getClient().CurrentCulture.GetMessageByKey(key, param);
+    }
 }

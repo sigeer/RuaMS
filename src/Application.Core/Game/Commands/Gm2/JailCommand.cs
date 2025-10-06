@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class JailCommand : CommandBase
 {
     public JailCommand() : base(2, "jail")
     {
-        Description = "Move a player to the jail.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -12,7 +13,7 @@ public class JailCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !jail <playername> [<minutes>]");
+            player.YellowMessageI18N(nameof(ClientMessage.JailCommand_Syntax));
             return;
         }
 
@@ -21,7 +22,7 @@ public class JailCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[1], out minutesJailed))
             {
-                player.yellowMessage("Syntax: !jail <playername> [<minutes>]");
+                player.YellowMessageI18N(nameof(ClientMessage.JailCommand_Syntax));
                 return;
             }
         }
@@ -38,17 +39,17 @@ public class JailCommand : CommandBase
                 var targetPortal = target.getPortal(0);
                 victim.saveLocationOnWarp();
                 victim.changeMap(target, targetPortal);
-                player.message(victim.getName() + " was jailed for " + minutesJailed + " minutes.");
+                player.MessageI18N(nameof(ClientMessage.Jail_Result), victim.getName(), minutesJailed.ToString());
             }
             else
             {
-                player.message(victim.getName() + "'s time in jail has been extended for " + minutesJailed + " minutes.");
+                player.MessageI18N(nameof(ClientMessage.Jail_ExtendResult), victim.getName(), minutesJailed.ToString());
             }
 
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+            player.MessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
     }
 }

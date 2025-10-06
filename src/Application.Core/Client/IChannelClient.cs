@@ -14,6 +14,7 @@ namespace Application.Core.Client
         int Channel { get; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
+        ClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
         EngineStorage ScriptEngines { get; set; }

@@ -112,8 +112,11 @@ namespace Application.Core.Channel.Services
                         foreach (var it in items)
                         {
                             InventoryManipulator.addFromDrop(chr.Client, it, false);
-                            var itemName = ItemInformationProvider.getInstance().getName(it.getItemId());
-                            _logger.LogDebug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({CharacterId})", chr.getName(), it.getQuantity(), itemName, it.getItemId());
+                            _logger.LogDebug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({ItemId})",
+                                chr.getName(), 
+                                it.getQuantity(), 
+                                ClientCulture.SystemCulture.GetItemName(it.getItemId()), 
+                                it.getItemId());
                         }
 
                         chr.sendPacket(PacketCreator.fredrickMessage(0x1E));
@@ -155,7 +158,7 @@ namespace Application.Core.Channel.Services
             {
                 string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
                 owner.dropMessage(6,
-                    $"[Hired Merchant] Item '{ItemInformationProvider.getInstance().getName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
+                    $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
             }
 
         }

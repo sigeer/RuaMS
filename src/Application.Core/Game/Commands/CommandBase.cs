@@ -1,8 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands
 {
     public abstract class CommandBase
     {
         protected ILogger log;
+        protected string _commandName;
         public CommandBase(int level, params string[] syntax)
         {
             var commandType = GetType();
@@ -10,20 +13,34 @@ namespace Application.Core.Game.Commands
 
             Rank = level;
             AllSupportedCommand = syntax;
+            _commandName = GetType().Name!;
         }
 
         public virtual string ValidSytax => $"!{CurrentCommand}";
         public string[] AllSupportedCommand { get; set; }
         public int Rank { get; set; }
         public string? Description { get; set; }
+        protected virtual string GetDescriptionKey()
+        {
+            return $"{_commandName}_Description";
+        }
+
+        protected virtual string GetSyntaxKey()
+        {
+            return $"{_commandName}_Syntax";
+        }
+        public virtual string? GetDescription(IChannelClient client)
+        {
+            return client.CurrentCulture.GetMessageByKey(GetDescriptionKey()) ?? Description;
+        }
 
         private string? _currentCommand;
-        public string? CurrentCommand
+        public string CurrentCommand
         {
             get
             {
                 if (_currentCommand == null)
-                    return AllSupportedCommand.ElementAtOrDefault(0);
+                    return AllSupportedCommand.ElementAtOrDefault(0)!;
                 return _currentCommand;
             }
             set => _currentCommand = value;

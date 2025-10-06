@@ -123,8 +123,11 @@ public class StorageHandler : ChannelHandlerBase
                                         KarmaManipulator.toggleKarmaFlagToUntradeable(item);
                                         InventoryManipulator.addFromDrop(c, item, false);
 
-                                        var itemName = ii.getName(item.getItemId());
-                                        _logger.LogDebug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})", chr.getName(), item.getQuantity(), itemName, item.getItemId());
+                                        _logger.LogDebug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})", 
+                                            chr.getName(), 
+                                            item.getQuantity(),
+                                            ClientCulture.SystemCulture.GetItemName(item.getItemId()), 
+                                            item.getItemId());
 
                                         storage.sendTakenOut(c, item.getInventoryType());
                                     }
@@ -224,8 +227,11 @@ public class StorageHandler : ChannelHandlerBase
 
                                 storage.store(item); // inside a critical section, "!(storage.isFull())" is still in effect...
 
-                                var itemName = ii.getName(item.getItemId());
-                                _logger.LogDebug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})", c.OnlinedCharacter.getName(), item.getQuantity(), itemName, item.getItemId());
+                                _logger.LogDebug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})", 
+                                    c.OnlinedCharacter.getName(), 
+                                    item.getQuantity(),
+                                    ClientCulture.SystemCulture.GetItemName(item.getItemId()), 
+                                    item.getItemId());
                                 storage.sendStored(c, ItemConstants.getInventoryType(itemId));
                             }
                             break;
