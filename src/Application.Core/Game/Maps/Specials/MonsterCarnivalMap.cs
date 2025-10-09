@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Shared.Events;
+using Application.Templates.Map;
 using scripting.Event;
 using server.maps;
 using server.partyquest;
@@ -55,8 +56,43 @@ namespace Application.Core.Game.Maps.Specials
         private List<Point> takenSpawns = new();
         private List<KeyValuePair<int, int>> mobsToSpawn = new();
 
-        public MonsterCarnivalMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
+        public MonsterCarnivalMap(MapTemplate template, WorldChannel worldChannel, EventInstanceManager? eim) : base(template, worldChannel, eim)
         {
+            var mcData = template.MonsterCarnival!;
+            DeathCP = mcData.DeathCP;
+            MaxMobs = mcData.MaxMobs;    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
+
+            MaxReactors = mcData.MaxReactors;
+
+            RewardMapWin = mcData.RewardMapWin;
+            RewardMapLose = mcData.RewardMapLose;
+            ReactorRed = mcData.ReactorRed;
+            ReactorBlue = mcData.ReactorBlue;
+
+            TimeDefault = mcData.TimeDefault;
+            TimeExpand = mcData.TimeExpand;
+            TimeFinish = mcData.TimeFinish;
+
+            SoundWin = mcData.SoundWin ?? GetDefaultSoundWin();
+            SoundLose = mcData.SoundLose ?? GetDefaultSoundLose();
+            EffectWin = mcData.EffectWin ?? GetDefaultEffectWin();
+            EffectLose = mcData.EffectLose ?? GetDefaultEffectLose();
+
+            foreach (var item in mcData.Guardians)
+            {
+                GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(item.X, item.Y));
+                pt.setTeam(item.Team);
+                pt.setTaken(false);
+                guardianSpawns.Add(pt);
+            }
+
+            skillIds.AddRange(mcData.Skills);
+
+            
+            foreach (var item in mcData.Mobs)
+            {
+                mobsToSpawn.Add(new KeyValuePair<int, int>(item.Id, item.SpendCP));
+            }
         }
 
         public int MaxMobs { get; set; }

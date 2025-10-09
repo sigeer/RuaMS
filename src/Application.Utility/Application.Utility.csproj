@@ -22,7 +22,7 @@
 		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-		<PackageReference Include="ZLinq" Version="1.5.2" />
+		<PackageReference Include="ZLinq" Version="1.5.3" />
 		<PackageReference Include="Yitter.IdGenerator" Version="1.0.14" />
 
 		<PackageReference Include="Humanizer.Core" Version="2.14.1" />

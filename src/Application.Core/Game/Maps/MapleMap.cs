@@ -32,6 +32,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
+using Application.Templates.Map;
 using client.autoban;
 using client.inventory;
 using client.status;
@@ -74,14 +75,14 @@ public class MapleMap : IMap
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
-    private Dictionary<int, Portal> portals = new();
-    private Dictionary<int, int> backgroundTypes = new();
+    private Dictionary<int, Portal> portals;
+    private Dictionary<int, int> backgroundTypes;
     private Dictionary<string, int> environment = new();
 
     private List<WeakReference<IMapObject>> registeredDrops = new();
     private ConcurrentQueue<Action> statUpdateRunnables = new();
     private List<Rectangle> areas = new();
-    private FootholdTree? footholds = null;
+    private FootholdTree footholds;
     private KeyValuePair<int, int> xLimits;  // caches the min and max x's with available footholds
     private Rectangle mapArea = new Rectangle();
     private int mapid;
@@ -153,18 +154,33 @@ public class MapleMap : IMap
 
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
-    public MapleMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim)
+    public MapleMap(MapTemplate template , WorldChannel worldChannel, EventInstanceManager? eim)
     {
-        Id = mapid;
-        this.mapid = mapid;
+        Id = template.TemplateId;
+        mapid = template.TemplateId;
         ChannelServer = worldChannel;
-        this.returnMapId = returnMapId;
-        this.MonsterRate = 1;
+        returnMapId = template.ReturnMap;
+        forcedReturnMap = template.ForcedReturn;
+        MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator(this);
-        onFirstUserEnter = mapid.ToString();
-        onUserEnter = mapid.ToString();
-        mapName = "";
-        streetName = "";
+        onFirstUserEnter = string.IsNullOrEmpty(template.OnFirstUserEnter) ? Id.ToString() : template.OnFirstUserEnter;
+        onUserEnter = string.IsNullOrEmpty(template.OnUserEnter) ? Id.ToString() : template.OnUserEnter;
+
+        fieldLimit = template.FieldLimit;
+        fieldType = template.FieldType;
+
+        mapName = ClientCulture.SystemCulture.GetMapName(Id);
+        streetName = ClientCulture.SystemCulture.GetMapStreetName(Id);
+        clock = template.HasClock;
+        everlast = template.Everlast;
+        IsTown = template.Town;
+        decHP = template.DecHP;
+        protectItem = template.ProtectItem;
+        boat = template.HasShip;
+        timeLimit = template.TimeLimit;
+        mobCapacity = template.FixedMobCapacity;
+        recovery = template.RecoveryRate;
+
         EventInstanceManager = eim;
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
@@ -174,7 +190,111 @@ public class MapleMap : IMap
         else
             InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}_{GetHashCode()}";
 
+        mobInterval = (short)template.CreateMobInterval;
+        if (template.TimeMob != null)
+        {
+            TimeMob = new TimeMob(template.TimeMob.Id,
+                template.TimeMob.Message ?? "",
+                template.TimeMob.StartHour,
+                template.TimeMob.EndHour);
+        }
+
+        if (template.VRTop == template.VRBottom)
+        {    // old-style baked map
+
+            if (template.MiniMap != null)
+            {
+                setMapPointBoundings(-template.MiniMap.CenterX, -template.MiniMap.CenterY, template.MiniMap.Height, template.MiniMap.Width);
+            }
+            else
+            {
+                int dist = (1 << 18);
+                setMapPointBoundings(-dist / 2, -dist / 2, dist, dist);
+            }
+        }
+        else
+        {
+            setMapLineBoundings(template.VRTop, template.VRBottom, template.VRLeft, template.VRRight);
+        }
+
+        #region portal
+        portals = new Dictionary<int, Portal>();
+        PortalFactory portalFactory = new PortalFactory();
+        foreach (var item in template.Portals)
+        {
+            var portal = portalFactory.makePortal(item.nPortalType, item);
+            portals[portal.getId()] = portal;
+        }
+        #endregion
+
+        #region foothold
+        List<Foothold> allFootholds = new();
+        Point lBound = new Point();
+        Point uBound = new Point();
+
+        foreach (var item in template.Footholds)
+        {
+            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.Index);
+            fh.setPrev(item.Prev);
+            fh.setNext(item.Next);
+            if (fh.getX1() < lBound.X)
+            {
+                lBound.X = fh.getX1();
+            }
+            if (fh.getX2() > uBound.X)
+            {
+                uBound.X = fh.getX2();
+            }
+            if (fh.getY1() < lBound.Y)
+            {
+                lBound.Y = fh.getY1();
+            }
+            if (fh.getY2() > uBound.Y)
+            {
+                uBound.Y = fh.getY2();
+            }
+            allFootholds.Add(fh);
+        }
+
+        footholds = new FootholdTree(lBound, uBound);
+        foreach (Foothold fh in allFootholds)
+        {
+            footholds.insert(fh);
+        }
+        #endregion
+
+        #region area
+        foreach (var area in template.Areas)
+        {
+            areas.Add(new Rectangle(area.X1, area.Y1, (area.X2 - area.X1), (area.Y2 - area.Y1)));
+        }
+        #endregion
+
+        #region back
+        backgroundTypes = template.Backs.ToDictionary(x => x.Index, x => x.Type);
+        #endregion
+
+        #region reactor
+        foreach (var item in template.Reactors)
+        {
+            Reactor myReactor = new Reactor(ReactorFactory.getReactor(item.Id), item.Id);
+            myReactor.setFacingDirection((sbyte)item.F);
+            myReactor.setPosition(new Point(item.X, item.Y));
+            myReactor.setDelay(item.ReactorTime * 1000);
+            myReactor.setName(item.Name ?? "");
+            myReactor.resetReactorActions(0);
+            spawnReactor(myReactor);
+        }
+        #endregion
+
+        seats = template.SeatCount;
+        if (EventInstanceManager == null)
+        {
+            ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(this);
+        }
         ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
+
+        generateMapDropRangeCache();
     }
 
     void UpdateMapActualMobRate()
@@ -470,7 +590,7 @@ public class MapleMap : IMap
 
     private Point? calcPointBelow(Point initial)
     {
-        Foothold? fh = footholds?.findBelow(initial);
+        var fh = footholds.findBelow(initial);
         if (fh == null)
         {
             return null;
@@ -4180,7 +4300,6 @@ public class MapleMap : IMap
 
 
         EventInstanceManager = null;
-        footholds = null;
         portals.Clear();
         mapEffect = null;
 
