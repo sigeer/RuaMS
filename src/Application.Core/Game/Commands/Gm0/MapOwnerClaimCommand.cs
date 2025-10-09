@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm0;
 
 public class MapOwnerClaimCommand : CommandBase
 {
     public MapOwnerClaimCommand() : base(0, "mylawn")
     {
-        Description = "Claim ownership of the current map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -30,33 +31,33 @@ public class MapOwnerClaimCommand : CommandBase
 
                                 if (map == ownedMap)
                                 {
-                                    chr.dropMessage(5, "This lawn is now free real estate.");
+                                    chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message1)));
                                     return;
                                 }
                             }
 
                             if (map.claimOwnership(chr))
                             {
-                                chr.dropMessage(5, "You have leased this lawn for a while, until you leave here or after 1 minute of inactivity.");
+                                chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message2)));
                             }
                             else
                             {
-                                chr.dropMessage(5, "This lawn has already been leased by a player.");
+                                chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message3)));
                             }
                         }
                         else
                         {
-                            chr.dropMessage(5, "This lawn is currently under a boss siege.");
+                            chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message4)));
                         }
                     }
                     else
                     {
-                        chr.dropMessage(5, "This lawn cannot be leased.");
+                        chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message5)));
                     }
                 }
                 else
                 {
-                    chr.dropMessage(5, "Feature unavailable.");
+                    chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FeatureUnavailable)));
                 }
             }
             finally

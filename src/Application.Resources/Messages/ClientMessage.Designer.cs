@@ -115,6 +115,33 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 显示当前地图的boss血量。 的本地化字符串。
+        /// </summary>
+        public static string BossHpCommand_Description {
+            get {
+                return ResourceManager.GetString("BossHpCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} ({1}) 剩余 {2}% 血量 的本地化字符串。
+        /// </summary>
+        public static string BossHpCommand_Message1 {
+            get {
+                return ResourceManager.GetString("BossHpCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 血量：{0} 的本地化字符串。
+        /// </summary>
+        public static string BossHpCommand_Message2 {
+            get {
+                return ResourceManager.GetString("BossHpCommand_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 给玩家附加buff。 的本地化字符串。
         /// </summary>
         public static string BuffCommand_Description {
@@ -133,6 +160,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 附加一些增益buff 的本地化字符串。
+        /// </summary>
+        public static string BuffMeCommand_Description {
+            get {
+                return ResourceManager.GetString("BuffMeCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不能传送到自己。 的本地化字符串。
+        /// </summary>
+        public static string CannotWarpMySelf {
+            get {
+                return ResourceManager.GetString("CannotWarpMySelf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 无法执行该操作，玩家人气值已经达到了上限/下限。 的本地化字符串。
         /// </summary>
         public static string ChangeFame_OutOfRange {
@@ -142,11 +187,65 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 频道 的本地化字符串。
+        /// </summary>
+        public static string Channel {
+            get {
+                return ResourceManager.GetString("Channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 切换GM的聊天类型 的本地化字符串。
         /// </summary>
         public static string ChatCommand_Description {
             get {
                 return ResourceManager.GetString("ChatCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示玩家状态和伤害。 的本地化字符串。
+        /// </summary>
+        public static string CheckDmgCommand_Description {
+            get {
+                return ResourceManager.GetString("CheckDmgCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 力量：{0}，敏捷：{1}，智力：{2}，运气：{3} 的本地化字符串。
+        /// </summary>
+        public static string CheckDmgCommand_Message1 {
+            get {
+                return ResourceManager.GetString("CheckDmgCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 物理攻击：{0}，魔法攻击：{1} 的本地化字符串。
+        /// </summary>
+        public static string CheckDmgCommand_Message2 {
+            get {
+                return ResourceManager.GetString("CheckDmgCommand_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 物理攻击buff：{0}，魔法攻击buff：{1}，祝福等级：{2} 的本地化字符串。
+        /// </summary>
+        public static string CheckDmgCommand_Message3 {
+            get {
+                return ResourceManager.GetString("CheckDmgCommand_Message3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 的最大基础伤害：{1} 的本地化字符串。
+        /// </summary>
+        public static string CheckDmgCommand_Message4 {
+            get {
+                return ResourceManager.GetString("CheckDmgCommand_Message4", resourceCulture);
             }
         }
         
@@ -241,6 +340,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 传送到 {0} 身边？ 的本地化字符串。
+        /// </summary>
+        public static string ConfirmWarpTo {
+            get {
+                return ResourceManager.GetString("ConfirmWarpTo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 当前地图：{0} 的本地化字符串。
         /// </summary>
         public static string CurrentMap {
@@ -304,11 +412,47 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 解卡 的本地化字符串。
+        /// </summary>
+        public static string DisposeCommand_Description {
+            get {
+                return ResourceManager.GetString("DisposeCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 解卡成功。 的本地化字符串。
+        /// </summary>
+        public static string DisposeCommand_Message1 {
+            get {
+                return ResourceManager.GetString("DisposeCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 当前GM等级不能丢出物品 的本地化字符串。
         /// </summary>
         public static string DropItem_NoAccess {
             get {
                 return ResourceManager.GetString("DropItem_NoAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示当前地图最大掉落数 的本地化字符串。
+        /// </summary>
+        public static string DropLimitCommand_Description {
+            get {
+                return ResourceManager.GetString("DropLimitCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已掉落数量： 的本地化字符串。
+        /// </summary>
+        public static string DropLimitCommand_Message1 {
+            get {
+                return ResourceManager.GetString("DropLimitCommand_Message1", resourceCulture);
             }
         }
         
@@ -327,6 +471,15 @@ namespace Application.Resources.Messages {
         public static string DropRateCommand_Description {
             get {
                 return ResourceManager.GetString("DropRateCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示已穿戴装备等级信息。 的本地化字符串。
+        /// </summary>
+        public static string EquipLvCommand_Description {
+            get {
+                return ResourceManager.GetString("EquipLvCommand_Description", resourceCulture);
             }
         }
         
@@ -403,6 +556,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 功能未启用。 的本地化字符串。
+        /// </summary>
+        public static string FeatureUnavailable {
+            get {
+                return ResourceManager.GetString("FeatureUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 找到相似项： 的本地化字符串。
         /// </summary>
         public static string FindSimilarItem {
@@ -417,6 +579,42 @@ namespace Application.Resources.Messages {
         public static string FishingRateCommand_Description {
             get {
                 return ResourceManager.GetString("FishingRateCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示扭蛋奖励。 的本地化字符串。
+        /// </summary>
+        public static string GachaCommand_Description {
+            get {
+                return ResourceManager.GetString("GachaCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #b{0}#k拥有以下奖励。\r\n\r\n 的本地化字符串。
+        /// </summary>
+        public static string GachaCommand_Message1 {
+            get {
+                return ResourceManager.GetString("GachaCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请注意，所有扭蛋机都有的奖励不会在这里显示。 的本地化字符串。
+        /// </summary>
+        public static string GachaCommand_Message2 {
+            get {
+                return ResourceManager.GetString("GachaCommand_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 用 !gacha &lt;城镇名&gt; 查询奖励列表： 的本地化字符串。
+        /// </summary>
+        public static string GachaCommand_Syntax {
+            get {
+                return ResourceManager.GetString("GachaCommand_Syntax", resourceCulture);
             }
         }
         
@@ -489,6 +687,15 @@ namespace Application.Resources.Messages {
         public static string HairNotFound {
             get {
                 return ResourceManager.GetString("HairNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示当前等级可用命令。 的本地化字符串。
+        /// </summary>
+        public static string HelpCommand_Description {
+            get {
+                return ResourceManager.GetString("HelpCommand_Description", resourceCulture);
             }
         }
         
@@ -570,6 +777,15 @@ namespace Application.Resources.Messages {
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 直接发放任务所需的道具，生成任务需要击杀的怪物。 的本地化字符串。
+        /// </summary>
+        public static string ItemQuestCommand_Description {
+            get {
+                return ResourceManager.GetString("ItemQuestCommand_Description", resourceCulture);
             }
         }
         
@@ -700,11 +916,155 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 魔法森林 的本地化字符串。
+        /// </summary>
+        public static string Map_Ellinia {
+            get {
+                return ResourceManager.GetString("Map_Ellinia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 射手村 的本地化字符串。
+        /// </summary>
+        public static string Map_Henesys {
+            get {
+                return ResourceManager.GetString("Map_Henesys", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 废弃都市 的本地化字符串。
+        /// </summary>
+        public static string Map_KerningCity {
+            get {
+                return ResourceManager.GetString("Map_KerningCity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 古代神社 的本地化字符串。
+        /// </summary>
+        public static string Map_MushroomShrine {
+            get {
+                return ResourceManager.GetString("Map_MushroomShrine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 诺特勒斯 的本地化字符串。
+        /// </summary>
+        public static string Map_NautilusHarbor {
+            get {
+                return ResourceManager.GetString("Map_NautilusHarbor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 新叶城 的本地化字符串。
+        /// </summary>
+        public static string Map_NewLeafCity {
+            get {
+                return ResourceManager.GetString("Map_NewLeafCity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 勇士部落 的本地化字符串。
+        /// </summary>
+        public static string Map_Perion {
+            get {
+                return ResourceManager.GetString("Map_Perion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 昭和村更衣室(女) 的本地化字符串。
+        /// </summary>
+        public static string Map_ShowaSpaFemale {
+            get {
+                return ResourceManager.GetString("Map_ShowaSpaFemale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 昭和村更衣室(男) 的本地化字符串。
+        /// </summary>
+        public static string Map_ShowaSpaMale {
+            get {
+                return ResourceManager.GetString("Map_ShowaSpaMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 林中之城 的本地化字符串。
+        /// </summary>
+        public static string Map_Sleepywood {
+            get {
+                return ResourceManager.GetString("Map_Sleepywood", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 地图 {0} 不存在 的本地化字符串。
         /// </summary>
         public static string MapNotFound {
             get {
                 return ResourceManager.GetString("MapNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 声明地图归属。 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Description {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 地图归属已释放。 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Message1 {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 您已获得地图归属权，直到离开地图或挂机超过1分钟。 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Message2 {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 该地图已存在归属。 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Message3 {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Message3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 BOSS地图无法归属玩家 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Message4 {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Message4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 无法获取该地图归属 的本地化字符串。
+        /// </summary>
+        public static string MapOwnerClaimCommand_Message5 {
+            get {
+                return ResourceManager.GetString("MapOwnerClaimCommand_Message5", resourceCulture);
             }
         }
         
@@ -763,6 +1123,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 显示地图上所有怪物HP。 的本地化字符串。
+        /// </summary>
+        public static string MobHpCommand_Description {
+            get {
+                return ResourceManager.GetString("MobHpCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 怪物Id={0} 不存在 的本地化字符串。
         /// </summary>
         public static string MobNotFound {
@@ -804,6 +1173,15 @@ namespace Application.Resources.Messages {
         public static string MobSkillNotFound {
             get {
                 return ResourceManager.GetString("MobSkillNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示所有在线玩家。 的本地化字符串。
+        /// </summary>
+        public static string OnlineCommand_Description {
+            get {
+                return ResourceManager.GetString("OnlineCommand_Description", resourceCulture);
             }
         }
         
@@ -871,11 +1249,218 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 任务 {0} 未找到。 的本地化字符串。
+        /// </summary>
+        public static string QuestNotFound {
+            get {
+                return ResourceManager.GetString("QuestNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置任务奖励倍率 的本地化字符串。
         /// </summary>
         public static string QuestRateCommand_Description {
             get {
                 return ResourceManager.GetString("QuestRateCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示玩家排名。 的本地化字符串。
+        /// </summary>
+        public static string RanksCommand_Description {
+            get {
+                return ResourceManager.GetString("RanksCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 BOSS掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_BossDrop {
+            get {
+                return ResourceManager.GetString("Rate_BossDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 爆率卡倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_CouponDrop {
+            get {
+                return ResourceManager.GetString("Rate_CouponDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 经验卡倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_CouponExp {
+            get {
+                return ResourceManager.GetString("Rate_CouponExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 金币卡倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_CouponMeso {
+            get {
+                return ResourceManager.GetString("Rate_CouponMeso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_Drop {
+            get {
+                return ResourceManager.GetString("Rate_Drop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 经验倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_Exp {
+            get {
+                return ResourceManager.GetString("Rate_Exp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 金币倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_Meso {
+            get {
+                return ResourceManager.GetString("Rate_Meso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家BOSS掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerBossDrop {
+            get {
+                return ResourceManager.GetString("Rate_PlayerBossDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerDrop {
+            get {
+                return ResourceManager.GetString("Rate_PlayerDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家经验倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerExp {
+            get {
+                return ResourceManager.GetString("Rate_PlayerExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家金币倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerMeso {
+            get {
+                return ResourceManager.GetString("Rate_PlayerMeso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家基础掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerRawDrop {
+            get {
+                return ResourceManager.GetString("Rate_PlayerRawDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家基础经验倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerRawExp {
+            get {
+                return ResourceManager.GetString("Rate_PlayerRawExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家基础金币倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_PlayerRawMeso {
+            get {
+                return ResourceManager.GetString("Rate_PlayerRawMeso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 任务奖励倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_Quest {
+            get {
+                return ResourceManager.GetString("Rate_Quest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器BOSS掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldBossDrop {
+            get {
+                return ResourceManager.GetString("Rate_WorldBossDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器掉落倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldDrop {
+            get {
+                return ResourceManager.GetString("Rate_WorldDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器经验倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldExp {
+            get {
+                return ResourceManager.GetString("Rate_WorldExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器金币倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldMeso {
+            get {
+                return ResourceManager.GetString("Rate_WorldMeso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器任务奖励倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldQuest {
+            get {
+                return ResourceManager.GetString("Rate_WorldQuest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器传送时间倍率 的本地化字符串。
+        /// </summary>
+        public static string Rate_WorldTravel {
+            get {
+                return ResourceManager.GetString("Rate_WorldTravel", resourceCulture);
             }
         }
         
@@ -975,6 +1560,15 @@ namespace Application.Resources.Messages {
         public static string SetStatCommand_Description {
             get {
                 return ResourceManager.GetString("SetStatCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示各种倍率设置。 的本地化字符串。
+        /// </summary>
+        public static string ShowRatesCommand_Description {
+            get {
+                return ResourceManager.GetString("ShowRatesCommand_Description", resourceCulture);
             }
         }
         
@@ -1110,6 +1704,15 @@ namespace Application.Resources.Messages {
         public static string TimerMapCommand_Syntax {
             get {
                 return ResourceManager.GetString("TimerMapCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 开启/关闭经验获取 的本地化字符串。
+        /// </summary>
+        public static string ToggleExpCommand_Description {
+            get {
+                return ResourceManager.GetString("ToggleExpCommand_Description", resourceCulture);
             }
         }
         
@@ -1285,6 +1888,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 获取当前服务器已运行时长。 的本地化字符串。
+        /// </summary>
+        public static string UptimeCommand_Description {
+            get {
+                return ResourceManager.GetString("UptimeCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 服务器已运行{0}。 的本地化字符串。
+        /// </summary>
+        public static string UptimeCommand_Message1 {
+            get {
+                return ResourceManager.GetString("UptimeCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 带着周围的玩家一起传送。 的本地化字符串。
         /// </summary>
         public static string WarpAreaCommand_Description {
@@ -1335,6 +1956,51 @@ namespace Application.Resources.Messages {
         public static string WarpMapCommand_Syntax {
             get {
                 return ResourceManager.GetString("WarpMapCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示怪物的掉落物。 的本地化字符串。
+        /// </summary>
+        public static string WhatDropsFromCommand_Description {
+            get {
+                return ResourceManager.GetString("WhatDropsFromCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 格式：!whatdropsfrom &lt;怪物名&gt; 的本地化字符串。
+        /// </summary>
+        public static string WhatDropsFromCommand_Syntax {
+            get {
+                return ResourceManager.GetString("WhatDropsFromCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 获取当前所在地图信息。 的本地化字符串。
+        /// </summary>
+        public static string WhereaMiCommand_Description {
+            get {
+                return ResourceManager.GetString("WhereaMiCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 显示哪些怪物掉落指定物品。 的本地化字符串。
+        /// </summary>
+        public static string WhoDropsCommand_Description {
+            get {
+                return ResourceManager.GetString("WhoDropsCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 格式：!whodrops &lt;物品名&gt; 的本地化字符串。
+        /// </summary>
+        public static string WhoDropsCommand_Syntax {
+            get {
+                return ResourceManager.GetString("WhoDropsCommand_Syntax", resourceCulture);
             }
         }
     }

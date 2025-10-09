@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm0;
 
 public class BossHpCommand : CommandBase
 {
     public BossHpCommand() : base(0, "bosshp")
     {
-        Description = "Show HP of bosses on current map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -21,8 +22,8 @@ public class BossHpCommand : CommandBase
                     bar += i < percent ? "|" : ".";
                 }
                 bar += "]";
-                player.yellowMessage(monster.getName() + " (" + monster.getId() + ") has " + percent + "% HP left.");
-                player.yellowMessage("HP: " + bar);
+                player.YellowMessageI18N(nameof(ClientMessage.BossHpCommand_Message1), c.CurrentCulture.GetMobName(monster.getId()), monster.getId().ToString(), percent.ToString());
+                player.YellowMessageI18N(nameof(ClientMessage.BossHpCommand_Message2), bar);
             }
         }
     }

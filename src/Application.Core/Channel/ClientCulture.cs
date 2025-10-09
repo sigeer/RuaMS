@@ -1,12 +1,9 @@
-using Application.Resources;
 using Application.Resources.Messages;
-using Application.Shared.Constants.Map;
 using Application.Shared.Languages;
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
-using Serilog;
 using System.Globalization;
 
 namespace Application.Core.Channel
@@ -14,7 +11,7 @@ namespace Application.Core.Channel
     public class ClientCulture
     {
         public CultureInfo CultureInfo { get; }
-        public ClientCulture(int language): this(SupportedCultureManager.GetCulture(language))
+        public ClientCulture(int language) : this(SupportedCultureManager.GetCulture(language))
         {
         }
 
@@ -27,7 +24,7 @@ namespace Application.Core.Channel
                 ?? throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到{CultureInfo.Name}相应的wz资源");
         }
 
-        public ClientCulture(): this(Thread.CurrentThread.CurrentCulture)
+        public ClientCulture() : this(Thread.CurrentThread.CurrentCulture)
         {
         }
 

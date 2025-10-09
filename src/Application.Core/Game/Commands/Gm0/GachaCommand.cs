@@ -1,7 +1,8 @@
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
+using System.Text;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -10,7 +11,6 @@ public class GachaCommand : CommandBase
     readonly GachaponManager _gachaponManager;
     public GachaCommand(GachaponManager gachaponManager) : base(0, "gacha")
     {
-        Description = "Show gachapon rewards.";
         _gachaponManager = gachaponManager;
     }
 
@@ -19,7 +19,18 @@ public class GachaCommand : CommandBase
         GachaponDataObject? gacha = null;
         string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
-        string[] names = { "Henesys", "Ellinia", "Perion", "Kerning City", "Sleepywood", "Mushroom Shrine", "Showa Spa Male", "Showa Spa Female", "New Leaf City", "Nautilus Harbor" };
+        string[] names = { 
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Henesys)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Ellinia)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Perion)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_KerningCity)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Sleepywood)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_MushroomShrine)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaMale)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaFemale)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NewLeafCity)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NautilusHarbor))
+        };
         int[] ids = [
             NpcId.GACHAPON_HENESYS,
             NpcId.GACHAPON_ELLINIA,
@@ -44,23 +55,24 @@ public class GachaCommand : CommandBase
 
         if (gacha == null)
         {
-            c.OnlinedCharacter.yellowMessage("Please use @gacha <name> where name corresponds to one of the below:");
+            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.GachaCommand_Syntax));
             foreach (string name in names)
             {
                 c.OnlinedCharacter.yellowMessage(name);
             }
             return;
         }
-        string talkStr = "The #b" + gachaName + "#k Gachapon contains the following items.\r\n\r\n";
+        StringBuilder sb = new StringBuilder();
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message1), gachaName));
         foreach (var chance in _gachaponManager.GetPoolLevelList(gacha.Id))
         {
             foreach (var item in _gachaponManager.GetItems(gacha.Id, chance.Level))
             {
-                talkStr += "-" + c.CurrentCulture.GetItemName(item.ItemId) + "\r\n";
+                sb.Append("-").Append(c.CurrentCulture.GetItemName(item.ItemId)).Append("\r\n");
             }
         }
-        talkStr += "\r\nPlease keep in mind that there are items that are in all gachapons and are not listed here.";
+        sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message2)));
 
-        TempConversation.Create(c)?.RegisterTalk(talkStr);
+        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

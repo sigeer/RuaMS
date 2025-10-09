@@ -13,7 +13,7 @@ public class EnableAuthCommand : CommandBase
             try
             {
                 //
-                // LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.Hwid, c.AccountEntity.Id);
+                //LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.Hwid, c.AccountEntity.Id);
             }
             finally
             {

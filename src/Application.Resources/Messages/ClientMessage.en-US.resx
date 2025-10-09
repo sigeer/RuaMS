@@ -543,4 +543,226 @@
   <data name="Trade_UniqueLimit" xml:space="preserve">
     <value>Partner cannot hold more than one one-of-a-kind item at a time.</value>
   </data>
+  <data name="CheckDmgCommand_Description" xml:space="preserve">
+    <value>Show stats and damage of a player.</value>
+  </data>
+  <data name="CheckDmgCommand_Message1" xml:space="preserve">
+    <value>Cur Str: {0} Cur Dex: {1} Cur Int: {2} Cur Luk: {3}</value>
+  </data>
+  <data name="CheckDmgCommand_Message2" xml:space="preserve">
+    <value>Cur WATK: {0} Cur MATK: {1}</value>
+  </data>
+  <data name="CheckDmgCommand_Message3" xml:space="preserve">
+    <value>Cur WATK Buff: {0} Cur MATK Buff: {1} Cur Blessing Level: {2}</value>
+  </data>
+  <data name="CheckDmgCommand_Message4" xml:space="preserve">
+    <value>{0}'s maximum base damage (before skills) is {1}</value>
+  </data>
+  <data name="BossHpCommand_Description" xml:space="preserve">
+    <value>Show HP of bosses on current map.</value>
+  </data>
+  <data name="BossHpCommand_Message1" xml:space="preserve">
+    <value>{0} ({1}) has {2}% left.</value>
+  </data>
+  <data name="BossHpCommand_Message2" xml:space="preserve">
+    <value>HP: {0}</value>
+  </data>
+  <data name="DisposeCommand_Description" xml:space="preserve">
+    <value>Dispose to fix NPC chat.</value>
+  </data>
+  <data name="DisposeCommand_Message1" xml:space="preserve">
+    <value>You've been disposed.</value>
+  </data>
+  <data name="DropLimitCommand_Description" xml:space="preserve">
+    <value>Check drop limit of current map.</value>
+  </data>
+  <data name="DropLimitCommand_Message1" xml:space="preserve">
+    <value>Current drop count:</value>
+  </data>
+  <data name="EquipLvCommand_Description" xml:space="preserve">
+    <value>Show levels of all equipped items.</value>
+  </data>
+  <data name="Map_Henesys" xml:space="preserve">
+    <value>Henesys</value>
+  </data>
+  <data name="Map_Ellinia" xml:space="preserve">
+    <value>Ellinia</value>
+  </data>
+  <data name="GachaCommand_Description" xml:space="preserve">
+    <value>Show gachapon rewards.</value>
+  </data>
+  <data name="Map_Perion" xml:space="preserve">
+    <value>Perion</value>
+  </data>
+  <data name="Map_KerningCity" xml:space="preserve">
+    <value>Kerning City</value>
+  </data>
+  <data name="Map_Sleepywood" xml:space="preserve">
+    <value>Sleepywood</value>
+  </data>
+  <data name="Map_MushroomShrine" xml:space="preserve">
+    <value>Mushroom Shrine</value>
+  </data>
+  <data name="GachaCommand_Syntax" xml:space="preserve">
+    <value>Please use !gacha &lt;name&gt; where name corresponds to one of the below:</value>
+  </data>
+  <data name="Map_ShowaSpaMale" xml:space="preserve">
+    <value>Showa Spa Male</value>
+  </data>
+  <data name="Map_ShowaSpaFemale" xml:space="preserve">
+    <value>Showa Spa Female</value>
+  </data>
+  <data name="Map_NewLeafCity" xml:space="preserve">
+    <value>New Leaf City</value>
+  </data>
+  <data name="Map_NautilusHarbor" xml:space="preserve">
+    <value>Nautilus Harbor</value>
+  </data>
+  <data name="GachaCommand_Message1" xml:space="preserve">
+    <value>The #b{0}#k Gachapon contains the following items.\r\n\r\n</value>
+  </data>
+  <data name="HelpCommand_Description" xml:space="preserve">
+    <value>Show available commands.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Description" xml:space="preserve">
+    <value>Claim ownership of the current map.</value>
+  </data>
+  <data name="FeatureUnavailable" xml:space="preserve">
+    <value>Feature unavailable.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message1" xml:space="preserve">
+    <value>This lawn is now free real estate.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message2" xml:space="preserve">
+    <value>You have leased this lawn for a while, until you leave here or after 1 minute of inactivity.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message3" xml:space="preserve">
+    <value>This lawn has already been leased by a player.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message4" xml:space="preserve">
+    <value>This lawn is currently under a boss siege.</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message5" xml:space="preserve">
+    <value>his lawn cannot be leased.</value>
+  </data>
+  <data name="MobHpCommand_Description" xml:space="preserve">
+    <value>Show HP of mobs on current map.</value>
+  </data>
+  <data name="OnlineCommand_Description" xml:space="preserve">
+    <value>Show all online players.</value>
+  </data>
+  <data name="Channel" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="CannotWarpMySelf" xml:space="preserve">
+    <value>Cannot warp to yourself</value>
+  </data>
+  <data name="ConfirmWarpTo" xml:space="preserve">
+    <value>Warp to {0}?</value>
+  </data>
+  <data name="RanksCommand_Description" xml:space="preserve">
+    <value>Show player rankings.</value>
+  </data>
+  <data name="Rate_Exp" xml:space="preserve">
+    <value>EXP RATE</value>
+  </data>
+  <data name="Rate_Meso" xml:space="preserve">
+    <value>MESO RATE</value>
+  </data>
+  <data name="Rate_Quest" xml:space="preserve">
+    <value>QUEST RATE</value>
+  </data>
+  <data name="Rate_WorldExp" xml:space="preserve">
+    <value>World EXP Rate</value>
+  </data>
+  <data name="Rate_Drop" xml:space="preserve">
+    <value>DROP RATE</value>
+  </data>
+  <data name="Rate_BossDrop" xml:space="preserve">
+    <value>BOSS DROP RATE</value>
+  </data>
+  <data name="ShowRatesCommand_Description" xml:space="preserve">
+    <value>Show all world/character rates.</value>
+  </data>
+  <data name="Rate_PlayerRawExp" xml:space="preserve">
+    <value>Player EXP Rate</value>
+  </data>
+  <data name="Rate_CouponExp" xml:space="preserve">
+    <value>Coupon EXP Rate</value>
+  </data>
+  <data name="Rate_WorldMeso" xml:space="preserve">
+    <value>World MESO Rate</value>
+  </data>
+  <data name="Rate_PlayerRawMeso" xml:space="preserve">
+    <value>Player MESO Rate</value>
+  </data>
+  <data name="Rate_CouponMeso" xml:space="preserve">
+    <value>Coupon MESO Rate</value>
+  </data>
+  <data name="Rate_PlayerExp" xml:space="preserve">
+    <value>Exp Rate</value>
+  </data>
+  <data name="Rate_PlayerMeso" xml:space="preserve">
+    <value>Meso Rate</value>
+  </data>
+  <data name="Rate_WorldDrop" xml:space="preserve">
+    <value>World DROP Rate</value>
+  </data>
+  <data name="Rate_CouponDrop" xml:space="preserve">
+    <value>Coupon DROP Rate</value>
+  </data>
+  <data name="Rate_PlayerRawDrop" xml:space="preserve">
+    <value>Player DROP Rate</value>
+  </data>
+  <data name="Rate_PlayerDrop" xml:space="preserve">
+    <value>Drop Rate</value>
+  </data>
+  <data name="Rate_WorldBossDrop" xml:space="preserve">
+    <value>World BOSS DROP Rate</value>
+  </data>
+  <data name="Rate_PlayerBossDrop" xml:space="preserve">
+    <value>Boss Drop Rate</value>
+  </data>
+  <data name="Rate_WorldQuest" xml:space="preserve">
+    <value>World QUEST Rate</value>
+  </data>
+  <data name="Rate_WorldTravel" xml:space="preserve">
+    <value>World TRAVEL Rate</value>
+  </data>
+  <data name="ToggleExpCommand_Description" xml:space="preserve">
+    <value>Toggle enable/disable all exp gain.</value>
+  </data>
+  <data name="UptimeCommand_Description" xml:space="preserve">
+    <value>Show server online time.</value>
+  </data>
+  <data name="UptimeCommand_Message1" xml:space="preserve">
+    <value>Server has been online for {0}.</value>
+  </data>
+  <data name="BuffMeCommand_Description" xml:space="preserve">
+    <value>Activate GM buffs on self.</value>
+  </data>
+  <data name="WhatDropsFromCommand_Description" xml:space="preserve">
+    <value>Show what items drop from a mob.</value>
+  </data>
+  <data name="WhatDropsFromCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !whatdropsfrom &lt;mobname&gt;</value>
+  </data>
+  <data name="WhoDropsCommand_Description" xml:space="preserve">
+    <value>Show what drops an item.</value>
+  </data>
+  <data name="WhoDropsCommand_Syntax" xml:space="preserve">
+    <value>Syntax: !whodrops &lt;itemname&gt;</value>
+  </data>
+  <data name="WhereaMiCommand_Description" xml:space="preserve">
+    <value>Show info about objects on current map.</value>
+  </data>
+  <data name="GachaCommand_Message2" xml:space="preserve">
+    <value>Please keep in mind that there are items that are in all gachapons and are not listed here.</value>
+  </data>
+  <data name="ItemQuestCommand_Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="QuestNotFound" xml:space="preserve">
+    <value>Quest {0} not found.</value>
+  </data>
 </root>

@@ -6,7 +6,6 @@ public class EquipLvCommand : CommandBase
 {
     public EquipLvCommand() : base(0, "equiplv")
     {
-        Description = "Show levels of all equipped items.";
     }
 
     public override void Execute(IChannelClient c, string[] paramValues)

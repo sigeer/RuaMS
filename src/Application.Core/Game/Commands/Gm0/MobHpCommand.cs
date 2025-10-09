@@ -3,7 +3,6 @@ public class MobHpCommand : CommandBase
 {
     public MobHpCommand() : base(0, "mobhp")
     {
-        Description = "Show HP of mobs on current map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -13,8 +12,7 @@ public class MobHpCommand : CommandBase
         {
             if (monster != null && monster.getHp() > 0)
             {
-                player.yellowMessage(monster.getName() + " (" + monster.getId() + ") has " + monster.getHp() + " / " + monster.getMaxHp() + " HP.");
-
+                player.yellowMessage(c.CurrentCulture.GetMobName(monster.getId()) + " (" + monster.getId() + ") has " + monster.getHp() + " / " + monster.getMaxHp() + " HP.");
             }
         }
     }

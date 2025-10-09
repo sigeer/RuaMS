@@ -74,6 +74,11 @@ public abstract class AbstractMapObject : IMapObject
     {
         return getType().ToString();
     }
+
+    public virtual string GetReadableName(IChannelClient c)
+    {
+        return GetName();
+    }
     public virtual int GetSourceId()
     {
         return getObjectId();
