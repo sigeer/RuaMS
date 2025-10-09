@@ -2719,6 +2719,11 @@ public class Monster : AbstractLifeObject
         return getName();
     }
 
+    public override string GetReadableName(IChannelClient c)
+    {
+        return c.CurrentCulture.GetMobName(getId());
+    }
+
     public override int GetSourceId()
     {
         return getId();

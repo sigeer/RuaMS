@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
+using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm1;
 
@@ -9,7 +10,6 @@ public class WhoDropsCommand : CommandBase
     public WhoDropsCommand(WzStringQueryService wzManager) : base(1, "whodrops")
     {
         _wzManager = wzManager;
-        Description = "Show what drops an item.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -17,7 +17,7 @@ public class WhoDropsCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, "Please do !whodrops <item name>");
+            player.YellowMessageI18N(nameof(ClientMessage.WhoDropsCommand_Syntax));
             return;
         }
 
@@ -44,7 +44,7 @@ public class WhoDropsCommand : CommandBase
         }
         else
         {
-            player.dropMessage(5, "Please wait a while for your request to be processed.");
+            player.yellowMessage("Please wait a while for your request to be processed.");
         }
     }
 }

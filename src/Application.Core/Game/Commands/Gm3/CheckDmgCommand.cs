@@ -6,7 +6,6 @@ public class CheckDmgCommand : CommandBase
 {
     public CheckDmgCommand() : base(3, "checkdmg")
     {
-        Description = "Show stats and damage of a player.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -20,10 +19,14 @@ public class CheckDmgCommand : CommandBase
             var matkBuff = victim.getBuffedValue(BuffStat.MATK) ?? 0;
             int blessing = victim.getSkillLevel(10000000 * player.getJobType() + 12);
 
-            player.dropMessage(5, "Cur Str: " + victim.getTotalStr() + " Cur Dex: " + victim.getTotalDex() + " Cur Int: " + victim.getTotalInt() + " Cur Luk: " + victim.getTotalLuk());
-            player.dropMessage(5, "Cur WATK: " + victim.getTotalWatk() + " Cur MATK: " + victim.getTotalMagic());
-            player.dropMessage(5, "Cur WATK Buff: " + watkBuff + " Cur MATK Buff: " + matkBuff + " Cur Blessing Level: " + blessing);
-            player.dropMessage(5, victim.getName() + "'s maximum base damage (before skills) is " + maxBase);
+            player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message1),
+                 victim.getTotalStr().ToString(),
+                 victim.getTotalDex().ToString(),
+                 victim.getTotalInt().ToString(),
+                 victim.getTotalLuk().ToString()));
+            player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message2), victim.getTotalWatk().ToString(), victim.getTotalMagic().ToString()));
+            player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message3), watkBuff.ToString(), matkBuff.ToString(), blessing.ToString()));
+            player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message4), victim.Name, maxBase.ToString()));
         }
         else
         {

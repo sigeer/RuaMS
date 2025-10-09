@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0;
@@ -13,6 +14,6 @@ public class DisposeCommand : CommandBase
         c.NPCConversationManager?.dispose();
         c.sendPacket(PacketCreator.enableActions());
         c.removeClickedNPC();
-        c.OnlinedCharacter.message("You've been disposed.");
+        c.OnlinedCharacter.MessageI18N(nameof(ClientMessage.DisposeCommand_Message1));
     }
 }

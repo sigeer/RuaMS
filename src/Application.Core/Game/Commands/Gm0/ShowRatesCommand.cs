@@ -1,55 +1,64 @@
+using Application.Resources.Messages;
+using System.Text;
+
 namespace Application.Core.Game.Commands.Gm0;
 
 public class ShowRatesCommand : CommandBase
 {
     public ShowRatesCommand() : base(0, "showrates")
     {
-        Description = "Show all world/character rates.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        string showMsg = "#eEXP RATE#n" + "\r\n";
-        showMsg += "World EXP Rate: #k" + c.getChannelServer().WorldExpRate + "x#k" + "\r\n";
-        showMsg += "Player EXP Rate: #k" + player.getRawExpRate() + "x#k" + "\r\n";
+        StringBuilder sb = new StringBuilder();
+        sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Exp))).Append("#n").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldExp))).Append(": #k").Append(c.CurrentServer.WorldExpRate).Append("x#k").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerRawExp))).Append(": #k").Append(player.getRawExpRate()).Append("x#k").Append("\r\n");
         if (player.getCouponExpRate() != 1)
         {
-            showMsg += "Coupon EXP Rate: #k" + player.getCouponExpRate() + "x#k" + "\r\n";
+            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_CouponExp))).Append(": #k").Append(player.getCouponExpRate()).Append("x#k").Append("\r\n");
         }
-        showMsg += "EXP Rate: #e#b" + player.getExpRate() + "x#k#n" + (player.hasNoviceExpRate() ? " - novice rate" : "") + "\r\n";
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerExp))).Append(": #e#b").Append(player.getExpRate()).Append("x#k#n");
+        if (player.hasNoviceExpRate())
+            sb.Append(" - novice rate");
+        sb.Append("\r\n\r\n");
 
-        showMsg += "\r\n" + "#eMESO RATE#n" + "\r\n";
-        showMsg += "World MESO Rate: #k" + c.getChannelServer().WorldMesoRate + "x#k" + "\r\n";
-        showMsg += "Player MESO Rate: #k" + player.getRawMesoRate() + "x#k" + "\r\n";
+        sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Meso))).Append("#n").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldMeso))).Append(": #k").Append(c.CurrentServer.WorldMesoRate).Append("x#k").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerRawMeso))).Append(": #k").Append(player.getRawMesoRate()).Append("x#k").Append("\r\n");
         if (player.getCouponMesoRate() != 1)
         {
-            showMsg += "Coupon MESO Rate: #k" + player.getCouponMesoRate() + "x#k" + "\r\n";
+            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_CouponMeso))).Append(": #k").Append(player.getCouponMesoRate()).Append("x#k").Append("\r\n");
         }
-        showMsg += "MESO Rate: #e#b" + player.getMesoRate() + "x#k#n" + "\r\n";
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerMeso))).Append(": #e#b").Append(player.getMesoRate()).Append("x#k#n");
+        sb.Append("\r\n\r\n");
 
-        showMsg += "\r\n" + "#eDROP RATE#n" + "\r\n";
-        showMsg += "World DROP Rate: #k" + c.getChannelServer().WorldDropRate + "x#k" + "\r\n";
-        showMsg += "Player DROP Rate: #k" + player.getRawDropRate() + "x#k" + "\r\n";
+        sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Drop))).Append("#n").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldDrop))).Append(": #k").Append(c.CurrentServer.WorldDropRate).Append("x#k").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerRawDrop))).Append(": #k").Append(player.getRawDropRate()).Append("x#k").Append("\r\n");
         if (player.getCouponDropRate() != 1)
         {
-            showMsg += "Coupon DROP Rate: #k" + player.getCouponDropRate() + "x#k" + "\r\n";
+            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_CouponDrop))).Append(": #k").Append(player.getCouponDropRate()).Append("x#k").Append("\r\n");
         }
-        showMsg += "DROP Rate: #e#b" + player.getDropRate() + "x#k#n" + "\r\n";
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerDrop))).Append(": #e#b").Append(player.getDropRate()).Append("x#k#n");
+        sb.Append("\r\n\r\n");
 
-        showMsg += "\r\n" + "#eBOSS DROP RATE#n" + "\r\n";
-        showMsg += "World BOSS DROP Rate: #k" + c.getChannelServer().WorldBossDropRate + "x#k" + "\r\n";
-        showMsg += "BOSS DROP Rate: #e#b" + player.getBossDropRate() + "x#k#n" + "\r\n";
+        sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_BossDrop))).Append("#n").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldBossDrop))).Append(": #k").Append(c.CurrentServer.WorldBossDropRate).Append("x#k").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerBossDrop))).Append(": #e#b").Append(player.getBossDropRate()).Append("x#k#n");
+        sb.Append("\r\n\r\n");
 
         if (YamlConfig.config.server.USE_QUEST_RATE)
         {
-            showMsg += "\r\n" + "#eQUEST RATE#n" + "\r\n";
-            showMsg += "World QUEST Rate: #e#b" + c.getChannelServer().WorldQuestRate + "x#k#n" + "\r\n";
+            sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Quest))).Append("#n").Append("\r\n");
+            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldQuest))).Append(": #k").Append(c.CurrentServer.WorldQuestRate).Append("x#k").Append("\r\n");
         }
 
-        showMsg += "\r\n";
-        showMsg += "World TRAVEL Rate: #e#b" + c.getChannelServer().WorldTravelRate + "x#k#n" + "\r\n";
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldTravel))).Append(": #e#b").Append(c.CurrentServer.WorldTravelRate).Append("x#k#n");
+        sb.Append("\r\n");
 
-        player.showHint(showMsg, 300);
+        player.showHint(sb.ToString(), 300);
     }
 }

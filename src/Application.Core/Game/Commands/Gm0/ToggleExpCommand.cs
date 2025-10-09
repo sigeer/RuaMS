@@ -4,7 +4,6 @@ public class ToggleExpCommand : CommandBase
 {
     public ToggleExpCommand() : base(0, "toggleexp")
     {
-        Description = "Toggle enable/disable all exp gain.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)

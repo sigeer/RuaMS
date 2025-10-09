@@ -2800,7 +2800,7 @@ public class MapleMap : IMap
         this.footholds = footholds;
     }
 
-    public FootholdTree? getFootholds()
+    public FootholdTree getFootholds()
     {
         return footholds;
     }

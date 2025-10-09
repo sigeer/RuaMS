@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Resources.Messages;
 using Application.Templates.String;
 
 namespace Application.Core.Game.Commands.Gm1;
@@ -6,7 +7,6 @@ public class WhatDropsFromCommand : CommandBase
 {
     public WhatDropsFromCommand() : base(1, "whatdropsfrom")
     {
-        Description = "Show what items drop from a mob.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -14,7 +14,7 @@ public class WhatDropsFromCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, "Please do @whatdropsfrom <monster name>");
+            player.YellowMessageI18N(nameof(ClientMessage.WhatDropsFromCommand_Syntax));
             return;
         }
         string monsterName = player.getLastCommandMessage();

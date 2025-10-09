@@ -543,4 +543,226 @@
   <data name="Trade_UniqueLimit" xml:space="preserve">
     <value>对方无法同时持有多个唯一物品，交易失败。</value>
   </data>
+  <data name="CheckDmgCommand_Description" xml:space="preserve">
+    <value>显示玩家状态和伤害。</value>
+  </data>
+  <data name="CheckDmgCommand_Message1" xml:space="preserve">
+    <value>力量：{0}，敏捷：{1}，智力：{2}，运气：{3}</value>
+  </data>
+  <data name="CheckDmgCommand_Message2" xml:space="preserve">
+    <value>物理攻击：{0}，魔法攻击：{1}</value>
+  </data>
+  <data name="CheckDmgCommand_Message3" xml:space="preserve">
+    <value>物理攻击buff：{0}，魔法攻击buff：{1}，祝福等级：{2}</value>
+  </data>
+  <data name="CheckDmgCommand_Message4" xml:space="preserve">
+    <value>{0} 的最大基础伤害：{1}</value>
+  </data>
+  <data name="BossHpCommand_Description" xml:space="preserve">
+    <value>显示当前地图的boss血量。</value>
+  </data>
+  <data name="BossHpCommand_Message1" xml:space="preserve">
+    <value>{0} ({1}) 剩余 {2}% 血量</value>
+  </data>
+  <data name="BossHpCommand_Message2" xml:space="preserve">
+    <value>血量：{0}</value>
+  </data>
+  <data name="DisposeCommand_Description" xml:space="preserve">
+    <value>解卡</value>
+  </data>
+  <data name="DisposeCommand_Message1" xml:space="preserve">
+    <value>解卡成功。</value>
+  </data>
+  <data name="DropLimitCommand_Description" xml:space="preserve">
+    <value>显示当前地图最大掉落数</value>
+  </data>
+  <data name="DropLimitCommand_Message1" xml:space="preserve">
+    <value>已掉落数量：</value>
+  </data>
+  <data name="EquipLvCommand_Description" xml:space="preserve">
+    <value>显示已穿戴装备等级信息。</value>
+  </data>
+  <data name="Map_Henesys" xml:space="preserve">
+    <value>射手村</value>
+  </data>
+  <data name="Map_Ellinia" xml:space="preserve">
+    <value>魔法森林</value>
+  </data>
+  <data name="GachaCommand_Description" xml:space="preserve">
+    <value>显示扭蛋奖励。</value>
+  </data>
+  <data name="Map_Perion" xml:space="preserve">
+    <value>勇士部落</value>
+  </data>
+  <data name="Map_KerningCity" xml:space="preserve">
+    <value>废弃都市</value>
+  </data>
+  <data name="Map_Sleepywood" xml:space="preserve">
+    <value>林中之城</value>
+  </data>
+  <data name="Map_MushroomShrine" xml:space="preserve">
+    <value>古代神社</value>
+  </data>
+  <data name="GachaCommand_Syntax" xml:space="preserve">
+    <value>用 !gacha &lt;城镇名&gt; 查询奖励列表：</value>
+  </data>
+  <data name="Map_ShowaSpaMale" xml:space="preserve">
+    <value>昭和村更衣室(男)</value>
+  </data>
+  <data name="Map_ShowaSpaFemale" xml:space="preserve">
+    <value>昭和村更衣室(女)</value>
+  </data>
+  <data name="Map_NewLeafCity" xml:space="preserve">
+    <value>新叶城</value>
+  </data>
+  <data name="Map_NautilusHarbor" xml:space="preserve">
+    <value>诺特勒斯</value>
+  </data>
+  <data name="GachaCommand_Message1" xml:space="preserve">
+    <value>#b{0}#k拥有以下奖励。\r\n\r\n</value>
+  </data>
+  <data name="HelpCommand_Description" xml:space="preserve">
+    <value>显示当前等级可用命令。</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Description" xml:space="preserve">
+    <value>声明地图归属。</value>
+  </data>
+  <data name="FeatureUnavailable" xml:space="preserve">
+    <value>功能未启用。</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message1" xml:space="preserve">
+    <value>地图归属已释放。</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message2" xml:space="preserve">
+    <value>您已获得地图归属权，直到离开地图或挂机超过1分钟。</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message3" xml:space="preserve">
+    <value>该地图已存在归属。</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message4" xml:space="preserve">
+    <value>BOSS地图无法归属玩家</value>
+  </data>
+  <data name="MapOwnerClaimCommand_Message5" xml:space="preserve">
+    <value>无法获取该地图归属</value>
+  </data>
+  <data name="MobHpCommand_Description" xml:space="preserve">
+    <value>显示地图上所有怪物HP。</value>
+  </data>
+  <data name="OnlineCommand_Description" xml:space="preserve">
+    <value>显示所有在线玩家。</value>
+  </data>
+  <data name="Channel" xml:space="preserve">
+    <value>频道</value>
+  </data>
+  <data name="CannotWarpMySelf" xml:space="preserve">
+    <value>不能传送到自己。</value>
+  </data>
+  <data name="ConfirmWarpTo" xml:space="preserve">
+    <value>传送到 {0} 身边？</value>
+  </data>
+  <data name="RanksCommand_Description" xml:space="preserve">
+    <value>显示玩家排名。</value>
+  </data>
+  <data name="Rate_Exp" xml:space="preserve">
+    <value>经验倍率</value>
+  </data>
+  <data name="Rate_Meso" xml:space="preserve">
+    <value>金币倍率</value>
+  </data>
+  <data name="Rate_Quest" xml:space="preserve">
+    <value>任务奖励倍率</value>
+  </data>
+  <data name="Rate_WorldExp" xml:space="preserve">
+    <value>服务器经验倍率</value>
+  </data>
+  <data name="Rate_Drop" xml:space="preserve">
+    <value>掉落倍率</value>
+  </data>
+  <data name="Rate_BossDrop" xml:space="preserve">
+    <value>BOSS掉落倍率</value>
+  </data>
+  <data name="ShowRatesCommand_Description" xml:space="preserve">
+    <value>显示各种倍率设置。</value>
+  </data>
+  <data name="Rate_PlayerRawExp" xml:space="preserve">
+    <value>玩家基础经验倍率</value>
+  </data>
+  <data name="Rate_CouponExp" xml:space="preserve">
+    <value>经验卡倍率</value>
+  </data>
+  <data name="Rate_WorldMeso" xml:space="preserve">
+    <value>服务器金币倍率</value>
+  </data>
+  <data name="Rate_PlayerRawMeso" xml:space="preserve">
+    <value>玩家基础金币倍率</value>
+  </data>
+  <data name="Rate_CouponMeso" xml:space="preserve">
+    <value>金币卡倍率</value>
+  </data>
+  <data name="Rate_PlayerExp" xml:space="preserve">
+    <value>玩家经验倍率</value>
+  </data>
+  <data name="Rate_PlayerMeso" xml:space="preserve">
+    <value>玩家金币倍率</value>
+  </data>
+  <data name="Rate_WorldDrop" xml:space="preserve">
+    <value>服务器掉落倍率</value>
+  </data>
+  <data name="Rate_CouponDrop" xml:space="preserve">
+    <value>爆率卡倍率</value>
+  </data>
+  <data name="Rate_PlayerRawDrop" xml:space="preserve">
+    <value>玩家基础掉落倍率</value>
+  </data>
+  <data name="Rate_PlayerDrop" xml:space="preserve">
+    <value>玩家掉落倍率</value>
+  </data>
+  <data name="Rate_WorldBossDrop" xml:space="preserve">
+    <value>服务器BOSS掉落倍率</value>
+  </data>
+  <data name="Rate_PlayerBossDrop" xml:space="preserve">
+    <value>玩家BOSS掉落倍率</value>
+  </data>
+  <data name="Rate_WorldQuest" xml:space="preserve">
+    <value>服务器任务奖励倍率</value>
+  </data>
+  <data name="Rate_WorldTravel" xml:space="preserve">
+    <value>服务器传送时间倍率</value>
+  </data>
+  <data name="ToggleExpCommand_Description" xml:space="preserve">
+    <value>开启/关闭经验获取</value>
+  </data>
+  <data name="UptimeCommand_Description" xml:space="preserve">
+    <value>获取当前服务器已运行时长。</value>
+  </data>
+  <data name="UptimeCommand_Message1" xml:space="preserve">
+    <value>服务器已运行{0}。</value>
+  </data>
+  <data name="BuffMeCommand_Description" xml:space="preserve">
+    <value>附加一些增益buff</value>
+  </data>
+  <data name="WhatDropsFromCommand_Description" xml:space="preserve">
+    <value>显示怪物的掉落物。</value>
+  </data>
+  <data name="WhatDropsFromCommand_Syntax" xml:space="preserve">
+    <value>格式：!whatdropsfrom &lt;怪物名&gt;</value>
+  </data>
+  <data name="WhoDropsCommand_Description" xml:space="preserve">
+    <value>显示哪些怪物掉落指定物品。</value>
+  </data>
+  <data name="WhoDropsCommand_Syntax" xml:space="preserve">
+    <value>格式：!whodrops &lt;物品名&gt;</value>
+  </data>
+  <data name="WhereaMiCommand_Description" xml:space="preserve">
+    <value>获取当前所在地图信息。</value>
+  </data>
+  <data name="GachaCommand_Message2" xml:space="preserve">
+    <value>请注意，所有扭蛋机都有的奖励不会在这里显示。</value>
+  </data>
+  <data name="ItemQuestCommand_Description" xml:space="preserve">
+    <value>直接发放任务所需的道具，生成任务需要击杀的怪物。</value>
+  </data>
+  <data name="QuestNotFound" xml:space="preserve">
+    <value>任务 {0} 未找到。</value>
+  </data>
 </root>

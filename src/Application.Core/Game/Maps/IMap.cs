@@ -123,7 +123,7 @@ namespace Application.Core.Game.Maps
         EventInstanceManager? getEventInstance();
         bool getEverlast();
         int getFieldLimit();
-        FootholdTree? getFootholds();
+        FootholdTree getFootholds();
         int getForcedReturnId();
         IMap getForcedReturnMap();
         Point getGroundBelow(Point pos);

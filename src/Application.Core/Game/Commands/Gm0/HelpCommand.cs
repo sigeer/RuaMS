@@ -4,7 +4,6 @@ public class HelpCommand : CommandBase
 {
     public HelpCommand() : base(0, "help", "commands")
     {
-        Description = "Show available commands.";
     }
 
     public override void Execute(IChannelClient client, string[] paramsValue)

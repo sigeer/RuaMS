@@ -1,6 +1,4 @@
-using Application.Templates.Providers;
 using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
 using ZLinq;
 
 namespace Application.Core.Channel.ServerData

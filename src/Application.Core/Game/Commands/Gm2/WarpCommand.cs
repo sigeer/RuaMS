@@ -29,7 +29,9 @@ public class WarpCommand : ParamsCommandBase
                 }
                 else if (findResult.MatchedItems.Count > 0)
                 {
-                    var messages = new StringBuilder("找到了这些相似项：\r\n");
+                    
+                    var messages = new StringBuilder();
+                    messages.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
                     for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
                         var item = findResult.MatchedItems[i];

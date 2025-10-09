@@ -4,6 +4,7 @@ namespace Application.Core.Game.Maps
     {
         public IMap MapModel { get; }
         string GetName();
+        string GetReadableName(IChannelClient c);
         int GetSourceId();
         void setMap(IMap map);
         IMap getMap();

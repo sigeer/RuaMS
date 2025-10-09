@@ -205,11 +205,9 @@ public class MapFactory : IStaticService
         }
 
         else
-            map = new MapleMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            map = new MapleMap(mapData, worldChannel, evt);
 
         var mapStr = mapid.ToString();
-        map.setOnFirstUserEnter(mapData.OnFirstUserEnter ?? mapStr);
-        map.setOnUserEnter(mapData.OnUserEnter ?? mapStr);
 
         map.setFieldLimit(mapData.FieldLimit);
         map.setMobInterval((short)mapData.CreateMobInterval);

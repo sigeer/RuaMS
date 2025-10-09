@@ -1,5 +1,4 @@
 using Application.Core.Channel.ServerData;
-using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using server.life;

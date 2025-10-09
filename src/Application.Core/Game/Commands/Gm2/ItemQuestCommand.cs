@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using client.inventory.manipulator;
 using server.life;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Application.Core.Game.Commands.Gm2
                 var matchedQuestList = QuestFactory.Instance.getMatchedQuests(questInput);
                 if (matchedQuestList.Count == 0)
                 {
-                    client.OnlinedCharacter.yellowMessage($"没找到任务 {questInput}");
+                    client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.QuestNotFound), questInput);
                 }
                 else if (matchedQuestList.Count == 1)
                 {

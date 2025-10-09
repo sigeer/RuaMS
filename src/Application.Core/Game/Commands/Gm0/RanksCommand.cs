@@ -9,7 +9,6 @@ public class RanksCommand : CommandBase
     public RanksCommand(RankService rankService) : base(0, "ranks")
     {
         _rankService = rankService;
-        Description = "Show player rankings.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
