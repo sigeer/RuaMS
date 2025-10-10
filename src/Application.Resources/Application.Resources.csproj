@@ -18,6 +18,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ClientMessage.resx</DependentUpon>
     </Compile>
+    <Compile Update="Messages\ScriptTalk.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ScriptTalk.resx</DependentUpon>
+    </Compile>
     <Compile Update="Messages\SystemMessage.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -29,6 +34,10 @@
     <EmbeddedResource Update="Messages\ClientMessage.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ClientMessage.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Messages\ScriptTalk.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScriptTalk.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Messages\SystemMessage.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

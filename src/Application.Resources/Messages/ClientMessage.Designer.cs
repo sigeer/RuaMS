@@ -106,6 +106,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 生日不正确。 的本地化字符串。
+        /// </summary>
+        public static string BirthDay_Invalid {
+            get {
+                return ResourceManager.GetString("BirthDay_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置boss掉率。 的本地化字符串。
         /// </summary>
         public static string BossDropRateCommand_Description {
@@ -142,6 +151,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 &quot;{0}&quot;已经是你的好友了 的本地化字符串。
+        /// </summary>
+        public static string Buddy_Exsited {
+            get {
+                return ResourceManager.GetString("Buddy_Exsited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 好友位已满。 的本地化字符串。
+        /// </summary>
+        public static string Buddy_Full {
+            get {
+                return ResourceManager.GetString("Buddy_Full", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 给玩家附加buff。 的本地化字符串。
         /// </summary>
         public static string BuffCommand_Description {
@@ -174,6 +201,51 @@ namespace Application.Resources.Messages {
         public static string CannotWarpMySelf {
             get {
                 return ResourceManager.GetString("CannotWarpMySelf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 无法把装备中的宠物放入现金商城的仓库。 的本地化字符串。
+        /// </summary>
+        public static string Cash_PutPetIntoCashInventory {
+            get {
+                return ResourceManager.GetString("Cash_PutPetIntoCashInventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 无法把关系物品放入现金商城仓库中。 的本地化字符串。
+        /// </summary>
+        public static string Cash_PutRelationshipItemIntoCashInventory {
+            get {
+                return ResourceManager.GetString("Cash_PutRelationshipItemIntoCashInventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 处于事件中，无法进入现金商城或者拍卖行。 的本地化字符串。
+        /// </summary>
+        public static string CashShop_CannotEnter_WithEventInstance {
+            get {
+                return ResourceManager.GetString("CashShop_CannotEnter_WithEventInstance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 频道 {0} 未启用，请尝试其他频道。 的本地化字符串。
+        /// </summary>
+        public static string ChangeChannel_ChannelDisabled {
+            get {
+                return ResourceManager.GetString("ChangeChannel_ChannelDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在迷你地牢内时，无法切换频道、进入现金商店、拍卖行。 的本地化字符串。
+        /// </summary>
+        public static string ChangeChannel_MiniDungeon {
+            get {
+                return ResourceManager.GetString("ChangeChannel_MiniDungeon", resourceCulture);
             }
         }
         
@@ -493,6 +565,177 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 小心！外星人想抓走猪猪去烤乳猪！快挡住它们！ 的本地化字符串。
+        /// </summary>
+        public static string Event_3rdJobMount_CheckHP {
+            get {
+                return ResourceManager.GetString("Event_3rdJobMount_CheckHP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 凯琳：考验失败啦~别哭丧着脸嘛，休息会儿再试试？ 的本地化字符串。
+        /// </summary>
+        public static string Event_4jship_Fail {
+            get {
+                return ResourceManager.GetString("Event_4jship_Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 凯琳：试炼通过。最终考验——你能抵达那边的出口吗？ 的本地化字符串。
+        /// </summary>
+        public static string Event_4jship_Pass {
+            get {
+                return ResourceManager.GetString("Event_4jship_Pass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 守护者发现了你。 的本地化字符串。
+        /// </summary>
+        public static string Event_CWKPQ_DetectedByGuardian {
+            get {
+                return ResourceManager.GetString("Event_CWKPQ_DetectedByGuardian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 因未能保护好月妙，你被传送到出口！ 的本地化字符串。
+        /// </summary>
+        public static string Event_HenesysPQ_Fail {
+            get {
+                return ResourceManager.GetString("Event_HenesysPQ_Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 犹泰：呃...你们真让我作呕。我想要的不过是让这个国家成为全世界最伟大的炼金术强国。如果他们不接受，我不惜一切代价也要独自实现这个目标！！！ 的本地化字符串。
+        /// </summary>
+        public static string Event_MagatiaPQ_Message1 {
+            get {
+                return ResourceManager.GetString("Event_MagatiaPQ_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 犹泰：哈哈哈...你们真以为我会毫无准备，不知道玛加提亚协会的走狗们会来追捕我吗？愚蠢！ 的本地化字符串。
+        /// </summary>
+        public static string Event_MagatiaPQ_Message2 {
+            get {
+                return ResourceManager.GetString("Event_MagatiaPQ_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 伤亡人数开始失控，请小心战斗。 的本地化字符串。
+        /// </summary>
+        public static string Event_PinkBean_PlayerDead3 {
+            get {
+                return ResourceManager.GetString("Event_PinkBean_PlayerDead3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 品克缤变得比以往更强大，大家进入背水一战模式！ 的本地化字符串。
+        /// </summary>
+        public static string Event_PinkBean_PlayerDead4 {
+            get {
+                return ResourceManager.GetString("Event_PinkBean_PlayerDead4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 太多队员阵亡，品克缤现在被视为不可战胜，远征结束。 的本地化字符串。
+        /// </summary>
+        public static string Event_PinkBean_PlayerDead5 {
+            get {
+                return ResourceManager.GetString("Event_PinkBean_PlayerDead5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 第一波攻击将在15秒后开始，请做好准备。 的本地化字符串。
+        /// </summary>
+        public static string Event_PinkBean_Preparation {
+            get {
+                return ResourceManager.GetString("Event_PinkBean_Preparation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 你离开了这个远征队。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_ChrLeft {
+            get {
+                return ResourceManager.GetString("Expedition_ChrLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] {0} 进入了地图。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_EnterMap {
+            get {
+                return ResourceManager.GetString("Expedition_EnterMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] {0} 加入了远征队。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Join {
+            get {
+                return ResourceManager.GetString("Expedition_Join", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] {0} 离开了远征队。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Left {
+            get {
+                return ResourceManager.GetString("Expedition_Left", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 队长已退出远征或者队伍人数不足最低要求，无法继续。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_MemberCountChanged_Abort {
+            get {
+                return ResourceManager.GetString("Expedition_MemberCountChanged_Abort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] {0} 已退出。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_MemberCountChanged_Notice {
+            get {
+                return ResourceManager.GetString("Expedition_MemberCountChanged_Notice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 抱歉, 远征队人数已满! 的本地化字符串。
+        /// </summary>
+        public static string Expedition_MemberFull {
+            get {
+                return ResourceManager.GetString("Expedition_MemberFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] 远征队已经开始! 勇敢的英雄们，祝你们好运！ 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Start {
+            get {
+                return ResourceManager.GetString("Expedition_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置经验倍率。 的本地化字符串。
         /// </summary>
         public static string ExpRateCommand_Description {
@@ -664,6 +907,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 金币不足！需要{0}金币修改家族徽章。 的本地化字符串。
+        /// </summary>
+        public static string Guild_ChangeEmblemFail_Meso {
+            get {
+                return ResourceManager.GetString("Guild_ChangeEmblemFail_Meso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 改变玩家的发型 的本地化字符串。
         /// </summary>
         public static string HairCommand_Description {
@@ -772,11 +1024,29 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 这个位置没有找到物品。 的本地化字符串。
+        /// </summary>
+        public static string ItemInvalid {
+            get {
+                return ResourceManager.GetString("ItemInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 物品Id={0} 不存在。 的本地化字符串。
         /// </summary>
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你没有足够数量的道具。 的本地化字符串。
+        /// </summary>
+        public static string ItemQuantityNotEnough {
+            get {
+                return ResourceManager.GetString("ItemQuantityNotEnough", resourceCulture);
             }
         }
         
@@ -916,6 +1186,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 [祝贺] {0}到达了{1}级！祝贺 {2} 取得如此惊人的成就！ 的本地化字符串。
+        /// </summary>
+        public static string Levelup_Congratulation {
+            get {
+                return ResourceManager.GetString("Levelup_Congratulation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 魔法森林 的本地化字符串。
         /// </summary>
         public static string Map_Ellinia {
@@ -966,6 +1245,24 @@ namespace Application.Resources.Messages {
         public static string Map_NewLeafCity {
             get {
                 return ResourceManager.GetString("Map_NewLeafCity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 地图归属暂时失效，直至{0}被打败。 的本地化字符串。
+        /// </summary>
+        public static string Map_Ownership_Boss {
+            get {
+                return ResourceManager.GetString("Map_Ownership_Boss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 地图归属已释放。 的本地化字符串。
+        /// </summary>
+        public static string Map_Ownership_Free {
+            get {
+                return ResourceManager.GetString("Map_Ownership_Free", resourceCulture);
             }
         }
         
@@ -1186,6 +1483,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 随着老海盗被击败，你救出了无恙！ 的本地化字符串。
+        /// </summary>
+        public static string PiratePQ_Completed {
+            get {
+                return ResourceManager.GetString("PiratePQ_Completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩家&quot;{0}&quot;不存在。 的本地化字符串。
+        /// </summary>
+        public static string PlayerNotFound {
+            get {
+                return ResourceManager.GetString("PlayerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 没有在当前频道找到玩家“{0}” 的本地化字符串。
         /// </summary>
         public static string PlayerNotFoundInChannel {
@@ -1200,6 +1515,60 @@ namespace Application.Resources.Messages {
         public static string PlayerNotFoundInMap {
             get {
                 return ResourceManager.GetString("PlayerNotFoundInMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不能在商店正常运营时操作商品。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_CannotManage {
+            get {
+                return ResourceManager.GetString("PlayerShop_CannotManage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你不能再卖它了。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_CannotSold {
+            get {
+                return ResourceManager.GetString("PlayerShop_CannotSold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不能再玩家商店中售卖现金道具。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_CashItemCheck {
+            get {
+                return ResourceManager.GetString("PlayerShop_CashItemCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不能在玩家商店中售卖宠物。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_PetCheck {
+            get {
+                return ResourceManager.GetString("PlayerShop_PetCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 没有足够的空间取回物品。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_TakeItemBackFail_InventoryFull {
+            get {
+                return ResourceManager.GetString("PlayerShop_TakeItemBackFail_InventoryFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不能访问你自己的商店。 的本地化字符串。
+        /// </summary>
+        public static string PlayerShopt_OwlWarp_CannotVisitYourself {
+            get {
+                return ResourceManager.GetString("PlayerShopt_OwlWarp_CannotVisitYourself", resourceCulture);
             }
         }
         
@@ -1465,6 +1834,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 重载地图。 的本地化字符串。
+        /// </summary>
+        public static string ReloadMapCommand_Description {
+            get {
+                return ResourceManager.GetString("ReloadMapCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 由于地图被重载，你被重新定位。 的本地化字符串。
+        /// </summary>
+        public static string ReloadMapCommand_Message1 {
+            get {
+                return ResourceManager.GetString("ReloadMapCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 通过名称查找id 的本地化字符串。
         /// </summary>
         public static string SearchCommand_Description {
@@ -1645,6 +2032,42 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 无法和新手组队。 的本地化字符串。
+        /// </summary>
+        public static string Team_Invitation_NoviceLimit {
+            get {
+                return ResourceManager.GetString("Team_Invitation_NoviceLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 组队邀请已过期。 的本地化字符串。
+        /// </summary>
+        public static string Team_InvitationExpired {
+            get {
+                return ResourceManager.GetString("Team_InvitationExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你已经在队伍里了。 的本地化字符串。
+        /// </summary>
+        public static string Team_JoinFail_AlreadInTeam {
+            get {
+                return ResourceManager.GetString("Team_JoinFail_AlreadInTeam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 队伍已解散。 的本地化字符串。
+        /// </summary>
+        public static string Team_TeamNotFound {
+            get {
+                return ResourceManager.GetString("Team_TeamNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示服务器时间。 的本地化字符串。
         /// </summary>
         public static string TimeCommand_Description {
@@ -1744,6 +2167,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 不允许交易现金道具。 的本地化字符串。
+        /// </summary>
+        public static string Trade_CashItemCheck {
+            get {
+                return ResourceManager.GetString("Trade_CashItemCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 GM不能与非GM玩家交易 的本地化字符串。
         /// </summary>
         public static string Trade_GMCheck {
@@ -1798,6 +2230,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 不允许交易这个物品。 的本地化字符串。
+        /// </summary>
+        public static string Trade_ItemUntradeable {
+            get {
+                return ResourceManager.GetString("Trade_ItemUntradeable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 已超过携带金币上限，交易失败。 的本地化字符串。
         /// </summary>
         public static string Trade_MesoExceedLimit {
@@ -1812,6 +2253,15 @@ namespace Application.Resources.Messages {
         public static string Trade_MesoExceedLimit2 {
             get {
                 return ResourceManager.GetString("Trade_MesoExceedLimit2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不允许交易宠物。 的本地化字符串。
+        /// </summary>
+        public static string Trade_PetCheck {
+            get {
+                return ResourceManager.GetString("Trade_PetCheck", resourceCulture);
             }
         }
         
@@ -1902,6 +2352,15 @@ namespace Application.Resources.Messages {
         public static string UptimeCommand_Message1 {
             get {
                 return ResourceManager.GetString("UptimeCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 10级以前无法使用。 的本地化字符串。
+        /// </summary>
+        public static string UseItem_LevelCheck_10 {
+            get {
+                return ResourceManager.GetString("UseItem_LevelCheck_10", resourceCulture);
             }
         }
         

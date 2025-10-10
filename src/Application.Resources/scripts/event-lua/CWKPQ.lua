@@ -36,15 +36,15 @@ local config = {
 }
 
 -- 创建自定义事件
-local EllinPQ = BaseEvent:extend()
+local CWKPQ = BaseEvent:extend()
 
-function EllinPQ:setup(level, lobbyid)
+function CWKPQ:setup(level, lobbyid)
     local eim = BaseEvent.setup(self, level, lobbyid)
     eim:setProperty("statusStg4", 0)
     return eim
 end
 
-function EllinPQ:respawnStages(eim)
+function CWKPQ:respawnStages(eim)
     local stg2Map = eim:getMapInstance(930000200)
     if stg2Map:getPlayers().Count > 0 then
         stg2Map:instanceMapRespawn()
@@ -52,4 +52,4 @@ function EllinPQ:respawnStages(eim)
     eim:schedule("respawnStages", 4 * 1000)
 end
 
-EllinPQ:new(config)
+CWKPQ:new(config)

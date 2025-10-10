@@ -1,5 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
+using Application.Resources.Messages;
 using Application.Shared.Constants.Buddy;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -91,7 +92,7 @@ namespace Application.Core.Channel.ServerData
         {
             if (player.BuddyList.isFull())
             {
-                player.sendPacket(PacketCreator.serverNotice(1, "你的好友位已满"));
+                player.Popup(nameof(ClientMessage.Buddy_Full));
                 return;
             }
 
@@ -105,14 +106,14 @@ namespace Application.Core.Channel.ServerData
                     return;
                 }
 
-                player.sendPacket(PacketCreator.serverNotice(1, $"{ble.Name} 已经是你的好友了"));
+                player.Popup(nameof(ClientMessage.Buddy_Exsited), ble.Name);
                 return;
             }
 
             var res = _transport.SendAddBuddyRequest(new Dto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
             if (res.Code == 1)
             {
-                player.sendPacket(PacketCreator.serverNotice(1, $"玩家 {addName} 未找到"));
+                player.Popup(nameof(ClientMessage.PlayerNotFound), addName);
                 return;
             }
 

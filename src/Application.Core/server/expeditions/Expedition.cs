@@ -25,7 +25,10 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Resources.Messages;
 using Application.Shared.Events;
+using Application.Shared.Languages;
+using Application.Shared.Net;
 using System.Collections.Concurrent;
 using tools;
 
@@ -34,7 +37,7 @@ namespace server.expeditions;
 /**
  * @author Alan (SharpAceX)
  */
-public class Expedition
+public class Expedition: ITextMessenger
 {
     private ILogger _log = LogFactory.GetLogger(LogType.Expedition);
 
@@ -187,7 +190,7 @@ public class Expedition
         broadcastExped(PacketCreator.removeClock());
         if (!silent)
         {
-            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
+            LightBlue(nameof(ClientMessage.Expedition_Start));
         }
         startTime = leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
         startMap.ChannelServer.Container.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
@@ -204,8 +207,9 @@ public class Expedition
             return "Sorry, you've been banned from this expedition by #b" + leader.getName() + "#k.";
         }
         if (members.Count >= this.getMaxSize())
-        { //Would be a miracle if anybody ever saw this
-            return "Sorry, this expedition is full!";
+        { 
+            //Would be a miracle if anybody ever saw this
+            return player.GetMessageByKey(nameof(ClientMessage.Expedition_MemberFull));
         }
 
         var currentServer = this.getRecruitingMap().getChannelServer();
@@ -220,7 +224,7 @@ public class Expedition
         player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet()).Seconds));
         if (!silent)
         {
-            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
+            LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
         }
         return "You have registered for the expedition successfully!";
     }
@@ -244,7 +248,7 @@ public class Expedition
         player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet()).Seconds));
         if (!silent)
         {
-            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
+            LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
         }
         return 0; //"You have registered for the expedition successfully!";
     }
@@ -272,8 +276,8 @@ public class Expedition
             chr.sendPacket(PacketCreator.removeClock());
             if (!silent)
             {
-                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.getName() + " has left the expedition."));
-                chr.dropMessage(6, "[Expedition] You have left this expedition.");
+                LightBlue(nameof(ClientMessage.Expedition_Left), chr.Name);
+                chr.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
             }
             return true;
         }
@@ -340,6 +344,7 @@ public class Expedition
     public List<IPlayer> getActiveMembers()
     {
         // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
+        // 没看到对频道的限制。 也没有看到切换频道后离开远征队的代码
         var ps = startMap.ChannelServer.getPlayerStorage();
 
         List<IPlayer> activeMembers = new();
@@ -470,5 +475,54 @@ public class Expedition
     public List<string> getBossLogs()
     {
         return bossLogs;
+    }
+
+    public void TypedMessage(int type, string messageKey, params string[] param)
+    {
+        foreach (IPlayer chr in getActiveMembers())
+        {
+            chr.TypedMessage(type, messageKey, param);
+        }
+    }
+
+    public void Notice(string key, params string[] param)
+    {
+        TypedMessage(0, key, param);
+    }
+
+    public void Popup(string key, params string[] param)
+    {
+        TypedMessage(1, key, param);
+    }
+
+    public void Dialog(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getActiveMembers())
+        {
+            chr.Dialog(key, param);
+        }
+    }
+
+    public void Pink(string key, params string[] param)
+    {
+        TypedMessage(5, key, param);
+    }
+
+    public void LightBlue(string key, params string[] param)
+    {
+        TypedMessage(6, key, param);
+    }
+
+    public void TopScrolling(string key, params string[] param)
+    {
+        TypedMessage(4, key, param);
+    }
+
+    public void Yellow(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getActiveMembers())
+        {
+            chr.Yellow(key, param);
+        }
     }
 }

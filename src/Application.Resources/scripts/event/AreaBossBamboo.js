@@ -49,7 +49,7 @@ function start() {
         return;
     }
     mapObj.spawnMonsterOnGroundBelow(mobObj, new Point(560, 50));
-    mapObj.broadcastMessage(PacketCreator.serverNotice(6, "From amongst the ruins shrouded by the mists, Bamboo Warrior appears."));
+    mapObj.LightBlue("From amongst the ruins shrouded by the mists, Bamboo Warrior appears.");
     em.schedule("start", 3 * 60 * 60 * 1000);
 }
 

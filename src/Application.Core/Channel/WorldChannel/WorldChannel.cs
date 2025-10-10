@@ -4,6 +4,8 @@ using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Shared.Events;
+using Application.Shared.Languages;
+using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
@@ -22,7 +24,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer
+public partial class WorldChannel : ISocketServer, ITextMessenger
 {
     public int Id => channel;
     public string ServerName { get; }
@@ -262,8 +264,8 @@ public partial class WorldChannel : ISocketServer
             _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         log.Information("[{ServerName}] 初始化事件...", _serverLogName);
-        eventSM.ReloadEventScript();
-        log.Information("[{ServerName}] 初始化事件...完成", _serverLogName);
+        var loadedEventsCount = eventSM.ReloadEventScript();
+        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", _serverLogName, loadedEventsCount);
 
         _respawnTask = new RespawnTask(this);
         _respawnTask.Register(Container.TimerManager);
@@ -705,5 +707,54 @@ public partial class WorldChannel : ISocketServer
             return getIP();
 
         return Container.GetChannelEndPoint(channel);
+    }
+
+    public void TypedMessage(int type, string messageKey, params string[] param)
+    {
+        foreach (var chr in Players.getAllCharacters())
+        {
+            chr.TypedMessage(type, messageKey, param);
+        }
+    }
+
+    public void Notice(string key, params string[] param)
+    {
+        TypedMessage(0, key, param);
+    }
+
+    public void Popup(string key, params string[] param)
+    {
+        TypedMessage(1, key, param);
+    }
+
+    public void Dialog(string key, params string[] param)
+    {
+        foreach (var chr in Players.getAllCharacters())
+        {
+            chr.Dialog(key, param);
+        }
+    }
+
+    public void Pink(string key, params string[] param)
+    {
+        TypedMessage(5, key, param);
+    }
+
+    public void LightBlue(string key, params string[] param)
+    {
+        TypedMessage(6, key, param);
+    }
+
+    public void TopScrolling(string key, params string[] param)
+    {
+        TypedMessage(4, key, param);
+    }
+
+    public void Yellow(string key, params string[] param)
+    {
+        foreach (var chr in Players.getAllCharacters())
+        {
+            chr.Yellow(key, param);
+        }
     }
 }

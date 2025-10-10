@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -362,7 +362,7 @@ function monsterKilled(mob, eim) {
     var map = mob.getMap();
 
     if (isLordPirate(mob)) {  // lord pirate defeated, spawn the little fella!
-        map.broadcastStringMessage(5, "As Lord Pirate dies, Wu Yang is released!");
+        map.Pink("PiratePQ_Completed");
         eim.spawnNpc(2094001, new Point(777, 140), mob.getMap());
     }
 

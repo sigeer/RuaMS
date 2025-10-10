@@ -3,6 +3,7 @@ using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Shared.Languages;
 using Application.Shared.WzEntity;
 using client.inventory;
 using net.server.coordinator.world;
@@ -13,7 +14,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable
+    public interface IMap : IDisposable, ITextMessenger
     {
         int Id { get; }
         /// <summary>
@@ -65,7 +66,6 @@ namespace Application.Core.Game.Maps
         void broadcastPinkBeanVictory(int channel);
         void broadcastShip(bool state);
         void broadcastSpawnPlayerMapObjectMessage(IPlayer source, IPlayer player, bool enteringField);
-        void broadcastStringMessage(int type, string message);
         void broadcastUpdateCharLookMessage(IPlayer source, IPlayer player);
         void broadcastZakumVictory();
         Point calcDropPos(Point initial, Point fallback);

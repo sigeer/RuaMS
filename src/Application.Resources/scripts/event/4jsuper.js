@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -66,9 +66,9 @@ function playerCanLeave(eim) {
 function playerSurvived(eim) {
     if (eim.getLeader().isAlive()) {
         eim.setIntProperty("canLeave", 2);
-        eim.dropMessage(5, "Kyrin: You have passed the test. Now for the closing part... Are you able reach the exit over there?");
+        eim.Pink("Event_4jship_Pass");
     } else {
-        eim.dropMessage(5, "Kyrin: You have failed the test. Aww, don't have such a sad face, just try it again later, ok?");
+        eim.Pink("Event_4jship_Fail");
     }
 }
 

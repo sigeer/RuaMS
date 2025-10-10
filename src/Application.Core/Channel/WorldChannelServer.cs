@@ -7,6 +7,7 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
+using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
@@ -702,8 +703,7 @@ namespace Application.Core.Channel
             {
                 foreach (var ch in Servers.Values)
                 {
-                    ch.broadcastPacket(PacketCreator.serverNotice(6,
-                        string.Format(GameConstants.LevelCongratulations, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level, data.Name)));
+                    ch.LightBlue(nameof(ClientMessage.Levelup_Congratulation), CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level.ToString(), data.Name);
                 }
             }
 

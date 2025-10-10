@@ -31,6 +31,9 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
+using Application.Resources.Messages;
+using Application.Shared.Languages;
+using Application.Shared.Net;
 using Application.Shared.WzEntity;
 using client.autoban;
 using client.inventory;
@@ -49,6 +52,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using tools;
 using ZLinq;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace Application.Core.Game.Maps;
@@ -2420,14 +2424,13 @@ public class MapleMap : IMap
 
     public void broadcastMessage(Packet packet)
     {
-        broadcastMessage(null, packet, double.PositiveInfinity, null);
+        Broadcast(null, double.PositiveInfinity, null, e => e.sendPacket(packet));
     }
 
     public void broadcastGMMessage(Packet packet)
     {
         broadcastGMMessage(null, packet, double.PositiveInfinity, null);
     }
-
 
     /**
      * Ranged and repeat according to parameters.
@@ -2504,12 +2507,7 @@ public class MapleMap : IMap
         {
             if (unclaimOwnership() != null)
             {
-                string mobName = ClientCulture.SystemCulture.GetMobName(monster.getId());
-                if (mobName != null)
-                {
-                    mobName = mobName.Trim();
-                    this.dropMessage(5, "This lawn has been taken siege by " + mobName + "'s forces and will be kept hold until their defeat.");
-                }
+                BroadcastAll(e => e.Pink(nameof(ClientMessage.Map_Ownership_Boss), e.Client.CurrentCulture.GetMobName(monster.getId())));
             }
         }
     }
@@ -2641,11 +2639,6 @@ public class MapleMap : IMap
     }
 
     public void dropMessage(int type, string message)
-    {
-        broadcastStringMessage(type, message);
-    }
-
-    public void broadcastStringMessage(int type, string message)
     {
         broadcastMessage(PacketCreator.serverNotice(type, message));
     }
@@ -4013,7 +4006,7 @@ public class MapleMap : IMap
         {
             if (unclaimOwnership() != null)
             {
-                this.dropMessage(5, "This lawn is now free real estate.");
+                Pink(nameof(ClientMessage.Map_Ownership_Free));
             }
         }
     }
@@ -4773,4 +4766,75 @@ public class MapleMap : IMap
         return droppedItems.Keys.ToList();
     }
     #endregion
+
+    private void Broadcast(IPlayer? source, double rangeSq, Point? rangedFrom, Action<IPlayer> effectPlayer)
+    {
+        chrLock.EnterReadLock();
+        try
+        {
+            foreach (IPlayer chr in getAllPlayers())
+            {
+                if (chr != source)
+                {
+                    if (rangeSq < double.PositiveInfinity)
+                    {
+                        if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
+                        {
+                            effectPlayer(chr);
+                        }
+                    }
+                    else
+                    {
+                        effectPlayer(chr);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            chrLock.ExitReadLock();
+        }
+    }
+    private void BroadcastAll(Action<IPlayer> effectPlayer)
+    {
+        Broadcast(null, double.PositiveInfinity, null, effectPlayer);
+    }
+    public void TypedMessage(int type, string messageKey, params string[] param)
+    {
+        BroadcastAll(e => e.TypedMessage(type, messageKey, param));
+    }
+    public void Notice(string text, params string[] param)
+    {
+        TypedMessage(0, text, param);
+    }
+
+    public void Popup(string text, params string[] param)
+    {
+        TypedMessage(1, text, param);
+    }
+
+    public void Dialog(string text, params string[] param)
+    {
+        BroadcastAll(e => e.Dialog(text, param));
+    }
+
+    public void Pink(string text, params string[] param)
+    {
+        TypedMessage(5, text, param);
+    }
+
+    public void LightBlue(string text, params string[] param)
+    {
+        TypedMessage(6, text, param);
+    }
+
+    public void TopScrolling(string text, params string[] param)
+    {
+        TypedMessage(14, text, param);
+    }
+
+    public void Yellow(string text, params string[] param)
+    {
+        BroadcastAll(e => e.Yellow(text, param));
+    }
 }

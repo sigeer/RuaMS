@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -132,7 +132,7 @@ function action(mode, type, selection) {
                     return;
                 }
                 expedMembers = expedition.getMemberList();
-                var size = expedMembers.size();
+                var size = expedMembers.Count;
                 if (size == 1) {
                     cm.sendOk("你是探险队中唯一的成员。");
                     cm.dispose();
@@ -141,13 +141,13 @@ function action(mode, type, selection) {
                 var text = "当前与您参与远程的队员(点击名字可驱逐出队伍):\r\n";
                 text += "\r\n\t\t1." + expedition.getLeader().getName();
                 for (var i = 1; i < size; i++) {
-                    text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers.get(i).getValue() + "#l\n";
+                    text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
                 }
                 cm.sendSimple(text);
                 status = 6;
             } else if (selection == 2) {
                 var min = exped.getMinSize();
-                var size = expedition.getMemberList().size();
+                var size = expedition.getMemberList().Count;
                 if (size < min) {
                     cm.sendOk("你的远征队至少需要有" + min + "名玩家注册。");
                     cm.dispose();

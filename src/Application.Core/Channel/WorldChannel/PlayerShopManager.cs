@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Trades;
+using Application.Resources.Messages;
 using AutoMapper;
 using client.autoban;
 using client.inventory;
@@ -118,7 +119,7 @@ namespace Application.Core.Channel
 
             if (!shop.Status.Is(PlayerShopStatus.Maintenance))
             {
-                chr.sendPacket(PacketCreator.serverNotice(1, "You can't take it with the store open."));
+                chr.Popup(nameof(ClientMessage.PlayerShop_CannotManage));
                 return false;
             }
 
@@ -152,7 +153,7 @@ namespace Application.Core.Channel
             if (!shop.Status.Is(PlayerShopStatus.Maintenance) || !shop.AddCommodity(shopItem))
             {
                 // thanks Vcoc for pointing an exploit with unlimited shop slots
-                chr.sendPacket(PacketCreator.serverNotice(1, "You can't sell it anymore."));
+                chr.Popup(nameof(ClientMessage.PlayerShop_CannotSold));
                 return false;
             }
 

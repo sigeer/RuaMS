@@ -215,7 +215,7 @@ function PiratePQ:monsterKilled(mob, eim)
     local map = mob:getMap()
 
     if (self:isLordPirate(mob)) then
-        map:broadcastStringMessage(5, "As Lord Pirate dies, Wu Yang is released!")
+        map:Pink("PiratePQ_Completed")
         eim:spawnNpc(2094001, Point(777, 140), mob:getMap())
     end
 

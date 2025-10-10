@@ -47,7 +47,7 @@ public class EventScriptManager : AbstractScriptManager
         eventScripts = ScriptResFactory.GetEvents();
     }
 
-    public void ReloadEventScript()
+    public int ReloadEventScript()
     {
         DisposeEvents();
 
@@ -78,6 +78,7 @@ public class EventScriptManager : AbstractScriptManager
             }
         }
         active = events.Count > 0;
+        return events.Count;
     }
 
     private string GetEventName(string eventScript)
