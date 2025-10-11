@@ -41,7 +41,7 @@ namespace scripting.Event;
  * @author Matze
  * @author Ronan
  */
-public class EventInstanceManager : ITextMessenger
+public class EventInstanceManager : IClientMessenger
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();

@@ -33,7 +33,7 @@ using static Application.Core.Game.Players.Player;
 
 namespace Application.Core.Game.Players
 {
-    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, ITextMessenger
+    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
     {
         public IChannelClient Client { get; }
         /// <summary>

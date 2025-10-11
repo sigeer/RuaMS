@@ -24,7 +24,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, ITextMessenger
+public partial class WorldChannel : ISocketServer, IClientMessenger
 {
     public int Id => channel;
     public string ServerName { get; }

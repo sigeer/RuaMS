@@ -1,10 +1,14 @@
 namespace Application.Shared.Languages
 {
-    public interface ITextMessenger
+    /// <summary>
+    /// 使用ClientMessage.resx的内容
+    /// </summary>
+    public interface IClientMessenger
     {
         void TypedMessage(int type, string messageKey, params string[] param);
         /// <summary>
         /// type = 0
+        /// <para>蓝色：[Notice] xxxx</para>
         /// </summary>
         /// <param name="key"></param>
         void Notice(string key, params string[] param);

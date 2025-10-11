@@ -14,7 +14,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable, ITextMessenger
+    public interface IMap : IDisposable, IClientMessenger
     {
         int Id { get; }
         /// <summary>

@@ -37,7 +37,7 @@ namespace server.expeditions;
 /**
  * @author Alan (SharpAceX)
  */
-public class Expedition: ITextMessenger
+public class Expedition: IClientMessenger
 {
     private ILogger _log = LogFactory.GetLogger(LogType.Expedition);
 
