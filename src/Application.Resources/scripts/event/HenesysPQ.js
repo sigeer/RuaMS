@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -154,7 +154,7 @@ function scheduledTimeout(eim) {
 }
 
 function bunnyDefeated(eim) {
-    eim.dropMessage(5, "Due to your failure to protect the Moon Bunny, you have been transported to the Exile Map.");
+    eim.Pink("Event_HenesysPQ_Fail");
     end(eim);
 }
 

@@ -1,6 +1,7 @@
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
@@ -17,8 +18,15 @@ namespace Application.Templates.XmlWzReader.Provider
             _types = types;
             _culture = cultureInfo;
 
+            // 系统默认zh-CN，但是wz（无后缀）默认en
             if (cultureInfo.Name != "en-US")
-                _dataBaseDir = _dataBaseDir + "-" + cultureInfo.Name;
+            {
+                var culturePath = _dataBaseDir + "-" + cultureInfo.Name;
+                if (Directory.Exists(culturePath))
+                    _dataBaseDir = culturePath;
+                else
+                    LibLog.Logger.LogWarning("没有找到与{Culture}匹配的wz目录", cultureInfo.Name);
+            }
 
             _files = Directory.GetFiles(GetPath())
                     .Where(x => _types

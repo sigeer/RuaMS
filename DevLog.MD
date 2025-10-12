@@ -115,3 +115,14 @@ BuffStatValueHolder：玩家身上的状态
 | `closeOwnerMerchant`  | 调用`closeShop` |
 | `closeShop`  |  |
 | `chr.closeHiredMerchant`  | 调用`forceClose` |
+
+## 多语言
+
+`ClientMessage`: 通过`serverNotice`,`yellowTip`,`TempConversation`方式传给客户端显示  
+`SystemMessage`: 主要用于系统日志  
+`ScriptTalk`: 主要用于脚本中的对话显示  
+
+### 客户端需要
+
+- [x] 请求`SetLanguageHandler`  
+- [ ] 使用`UTF-8`编码

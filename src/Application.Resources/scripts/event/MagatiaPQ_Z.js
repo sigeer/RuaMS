@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -308,9 +308,9 @@ function yuleteAction(eim) {
     if (eim.getIntProperty("yuleteTalked") == 1) {
         eim.setIntProperty("yuletePassed", 1);
 
-        eim.dropMessage(5, "Yulete: Ugh, you guys disgust me. All I desired was to make this nation the greatest alchemy powerhouse of the entire world. If they won't accept this, I will make it true by myself, at any costs!!!");
+        eim.Pink("Event_MagatiaPQ_Message1");
     } else {
-        eim.dropMessage(5, "Yulete: Hahaha... Did you really think I was going to be so disprepared knowing that the Magatia societies' dogs would be coming in my pursuit after my actions? Fools!");
+        eim.Pink("Event_MagatiaPQ_Message2");
     }
     eim.setIntProperty("yuleteTalked", -1);
 

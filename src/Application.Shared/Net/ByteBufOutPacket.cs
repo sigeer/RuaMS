@@ -78,7 +78,10 @@ public class ByteBufOutPacket : PacketBase, OutPacket
         writeShort(bytes.Length);
         writeBytes(bytes);
     }
-
+    /// <summary>
+    /// GlobalVariable.Encoding需要更换成能够支持多语言的编码
+    /// </summary>
+    /// <param name="chars"></param>
     public void WriteString(ReadOnlySpan<char> chars)
     {
         int virtualByteCount = GlobalVariable.Encoding.GetMaxByteCount(chars.Length);

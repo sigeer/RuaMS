@@ -27,6 +27,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Shared.Languages;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
@@ -40,7 +41,7 @@ namespace scripting.Event;
  * @author Matze
  * @author Ronan
  */
-public class EventInstanceManager
+public class EventInstanceManager : IClientMessenger
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
@@ -1728,6 +1729,55 @@ public class EventInstanceManager
         }
 
         return true;
+    }
+
+    public void TypedMessage(int type, string messageKey, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.TypedMessage(type, messageKey, param);
+        }
+    }
+
+    public void Dialog(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.Dialog(key, param);
+        }
+    }
+
+    public void Yellow(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.Yellow(key, param);
+        }
+    }
+
+    public void Notice(string key, params string[] param)
+    {
+        TypedMessage(0, key, param);
+    }
+
+    public void Popup(string key, params string[] param)
+    {
+        TypedMessage(1, key, param);
+    }
+
+    public void Pink(string key, params string[] param)
+    {
+        TypedMessage(5, key, param);
+    }
+
+    public void LightBlue(string key, params string[] param)
+    {
+        TypedMessage(6, key, param);
+    }
+
+    public void TopScrolling(string key, params string[] param)
+    {
+        TypedMessage(4, key, param);
     }
 }
 

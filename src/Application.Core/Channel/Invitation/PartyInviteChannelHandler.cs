@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Dto;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace Application.Core.Channel.Invitation
                 var receiver = _server.FindPlayerById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
-                    receiver.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party due to an expired invitation request."));
+                    receiver.Pink(nameof(ClientMessage.Team_InvitationExpired));
                 }
             }
         }
@@ -65,7 +66,7 @@ namespace Application.Core.Channel.Invitation
                             sender.sendPacket(PacketCreator.partyStatusMessage(17));
                             break;
                         case InviteResponseCode.Team_BeginnerLimit:
-                            sender.sendPacket(PacketCreator.serverNotice(5, "The player you have invited does not meet the requirements."));
+                            sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
                             break;
                         default:
                             _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);

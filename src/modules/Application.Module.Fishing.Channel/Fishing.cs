@@ -19,9 +19,16 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Players;
+using Application.Shared.Constants.Item;
+using Application.Shared.Constants.Map;
+using Application.Utility;
+using Application.Utility.Configs;
+using Application.Utility.Loggers;
+using Serilog;
+using tools;
 
-namespace tools.packets;
+namespace Application.Module.Fishing.Channel;
 
 
 

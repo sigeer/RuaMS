@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.Services;
+using Application.Resources.Messages;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -57,14 +58,14 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             if (mc.getEventInstance() != null)
             {
-                c.sendPacket(PacketCreator.serverNotice(5, "Entering Cash Shop or MTS are disabled when registered on an event."));
+                mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
                 c.sendPacket(PacketCreator.enableActions());
                 return;
             }
 
             if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
             {
-                c.sendPacket(PacketCreator.serverNotice(5, "Changing channels or entering Cash Shop or MTS are disabled when inside a Mini-Dungeon."));
+                mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
                 c.sendPacket(PacketCreator.enableActions());
                 return;
             }

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -49,7 +49,7 @@ function checkHogHealth(eim) {
         var oldHp = eim.getIntProperty("whog_hp");
 
         if (oldHp - hp > 1000) {    // or 800, if using mobHP / eventTime
-            eim.dropMessage(6, "Please protect the pig from the aliens!");  // thanks Vcoc
+            eim.LightBlue("Event_3rdJobMount_CheckHP");  // thanks Vcoc
         }
         eim.setIntProperty("whog_hp", hp);
     }

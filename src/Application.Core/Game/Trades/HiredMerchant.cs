@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using Application.Resources.Messages;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -273,7 +274,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
                     if (!Inventory.checkSpot(chr, iitem))
                     {
-                        chr.sendPacket(PacketCreator.serverNotice(1, "Have a slot available on your inventory to claim back the item."));
+                        chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
                         chr.sendPacket(PacketCreator.enableActions());
                         return;
                     }

@@ -12,6 +12,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
 using Application.Shared.Events;
+using Application.Shared.Languages;
 using Application.Shared.Objects;
 using client;
 using client.autoban;
@@ -32,7 +33,7 @@ using static Application.Core.Game.Players.Player;
 
 namespace Application.Core.Game.Players
 {
-    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
+    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
     {
         public IChannelClient Client { get; }
         /// <summary>

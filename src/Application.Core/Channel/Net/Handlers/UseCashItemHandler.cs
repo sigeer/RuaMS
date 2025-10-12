@@ -25,6 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
+using Application.Resources.Messages;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.stat;
@@ -279,7 +280,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        player.dropMessage(1, "You may not use this until you're level 10.");
+                        player.Popup(nameof(ClientMessage.UseItem_LevelCheck_10));
                         return;
                     }
                     break;

@@ -360,7 +360,7 @@ namespace Application.Core.Channel.Net
             }
             else if (MiniDungeonInfo.isDungeonMap(Character.getMapId()))
             {
-                sendPacket(PacketCreator.serverNotice(5, "Changing channels or entering Cash Shop or MTS are disabled when inside a Mini-Dungeon."));
+                Character.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
                 sendPacket(PacketCreator.enableActions());
                 return;
             }
@@ -368,7 +368,7 @@ namespace Application.Core.Channel.Net
             var socket = CurrentServer.GetChannelEndPoint(channel);
             if (socket == null)
             {
-                sendPacket(PacketCreator.serverNotice(1, "Channel " + channel + " is currently disabled. Try another channel."));
+                Character.Popup(nameof(ClientMessage.ChangeChannel_ChannelDisabled), channel.ToString());
                 sendPacket(PacketCreator.enableActions());
                 return;
             }

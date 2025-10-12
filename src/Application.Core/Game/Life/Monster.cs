@@ -914,7 +914,7 @@ public class Monster : AbstractLifeObject
             {
                 if (toSpawn.Contains(timeMob.MobId))
                 {
-                    reviveMap.broadcastMessage(PacketCreator.serverNotice(6, timeMob.Message));
+                    reviveMap.dropMessage(6, timeMob.Message);
                 }
             }
 

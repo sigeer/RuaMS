@@ -2,7 +2,7 @@ namespace Application.Core.Game
 {
     public class ScriptDir
     {
-        public static string Event = "event-lua";
+        public static string Event = "event";
     }
     public class ScriptResFactory
     {

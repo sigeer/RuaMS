@@ -21,6 +21,7 @@
 
 using Application.Core.Channel.Services;
 using Application.Core.Game.Trades;
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -55,7 +56,7 @@ public class OwlWarpHandler : ChannelHandlerBase
 
         if (c.OnlinedCharacter.Id == shop.OwnerId)
         {
-            c.sendPacket(PacketCreator.serverNotice(1, "You cannot visit your own shop."));
+            c.OnlinedCharacter.Popup(nameof(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself));
             return;
         }
 

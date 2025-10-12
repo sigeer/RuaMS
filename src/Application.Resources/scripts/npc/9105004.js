@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -153,7 +153,7 @@ function insidePqAction(mode, type, selection) {
                 return;
             }
 
-            mapobj.broadcastStringMessage(5, "As the snowman grows to it's prime, the Scrooge appears!");
+            mapobj.dropMessage(5, "As the snowman grows to it's prime, the Scrooge appears!");
             eim.getEm().getIv().invokeFunction("snowmanHeal", eim);
 
             var boss = LifeFactory.getMonster(9400318 + difficulty);
