@@ -79,7 +79,7 @@ public class ByteBufOutPacket : PacketBase, OutPacket
         writeBytes(bytes);
     }
     /// <summary>
-    /// 也许还需要大改？当客户端编码似乎并不是固定的，服务端编码很可能需要关联Client而不是使用GlobalVariable.Encoding
+    /// GlobalVariable.Encoding需要更换成能够支持多语言的编码
     /// </summary>
     /// <param name="chars"></param>
     public void WriteString(ReadOnlySpan<char> chars)
