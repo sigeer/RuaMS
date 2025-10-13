@@ -125,4 +125,4 @@ BuffStatValueHolder：玩家身上的状态
 ### 客户端需要
 
 - [x] 请求`SetLanguageHandler`  
-- [ ] 使用`UTF-8`编码
+~~- [ ] 使用`UTF-8`编码~~ 做不到
