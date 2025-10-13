@@ -2,6 +2,7 @@ using Application.Core.Models;
 using Application.Core.scripting.npc;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
+using Application.Shared.Languages;
 using Application.Shared.Login;
 using AutoMapper;
 using Dto;

@@ -74,6 +74,7 @@
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
 		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
+		<Protobuf Include="Message\EarnTitleMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
 		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Events\ReloadEvents.proto" GrpcServices="None" />

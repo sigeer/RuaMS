@@ -167,5 +167,14 @@ namespace Application.Resources.Messages {
                 return ResourceManager.GetString("Server_StopListenStart", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   查找类似 {0} {1} 登录了游戏。 的本地化字符串。
+        /// </summary>
+        public static string System_GmLoggedin {
+            get {
+                return ResourceManager.GetString("System_GmLoggedin", resourceCulture);
+            }
+        }
     }
 }

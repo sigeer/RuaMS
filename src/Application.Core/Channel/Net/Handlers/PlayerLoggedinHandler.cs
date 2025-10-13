@@ -24,6 +24,7 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
+using Application.Resources.Messages;
 using Application.Shared.KeyMaps;
 using Application.Shared.Languages;
 using Application.Shared.Team;
@@ -192,7 +193,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
+                    c.CurrentServerContainer.EarnTitleMessage(string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
                 }
             }
             else

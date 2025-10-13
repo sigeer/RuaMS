@@ -24,6 +24,7 @@ import "Item/SkillBook.proto";
 
 import "Dto/NameChange.proto";
 import "Message/YellowTip.proto";
+import "Message/EarnTitleMessage.proto";
 import "Item/CDK.proto";
 import "Events/ReloadEvents.proto";
 import "Rank/RankCharacter.proto";
@@ -68,6 +69,7 @@ service GameService {
 	rpc DiscardNewyearCard(Dto.DiscardNewYearCardRequest) returns (google.protobuf.Empty);
 
 	rpc SendYellowTip(MessageProto.YellowTipRequest) returns (google.protobuf.Empty);
+	rpc SendEarnTitleMessage(MessageProto.EarnTitleMessageRequest) returns (google.protobuf.Empty);
 	rpc UseCDK(ItemProto.UseCdkRequest) returns(ItemProto.UseCdkResponse);
 
 	rpc ReloadEvents(Dto.ReloadEventsRequest) returns(google.protobuf.Empty);

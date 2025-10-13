@@ -506,10 +506,6 @@ namespace Application.Core.Channel
         {
             Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
         }
-        public void SendBroadcastWorldGMPacket(Packet p)
-        {
-            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = true });
-        }
 
         void OnReceivedPacket(MessageProto.PacketBroadcast data)
         {
@@ -548,6 +544,11 @@ namespace Application.Core.Channel
         public void SendYellowTip(string message, bool onlyGM)
         {
             Transport.SendYellowTip(new MessageProto.YellowTipRequest { Message = message, OnlyGM = onlyGM });
+        }
+
+        public void EarnTitleMessage(string message, bool onlyGM)
+        {
+            Transport.SendEarnTitleMessage(new MessageProto.EarnTitleMessageRequest { Message = message, OnlyGM = onlyGM });
         }
 
         private void UpdateWorldConfig(Config.WorldConfig updatePatch)
@@ -643,6 +644,28 @@ namespace Application.Core.Channel
                     foreach (var id in msg.Receivers)
                     {
                         ch.Players.getCharacterById(id)?.yellowMessage(msg.Message);
+                    }
+
+                }
+            }
+        }
+
+        void OnEarnTitleMessage(EarnTitleMessageBroadcast msg)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                if (msg.Receivers.Contains(-1))
+                {
+                    foreach (var player in ch.Players.getAllCharacters())
+                    {
+                        player.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
+                    }
+                }
+                else
+                {
+                    foreach (var id in msg.Receivers)
+                    {
+                        ch.Players.getCharacterById(id)?.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
                     }
 
                 }
@@ -787,6 +810,7 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<MessageProto.DropMessageBroadcast>(BroadcastType.Broadcast_DropMessage, OnDropMessage);
             MessageDispatcher.Register<MessageProto.PacketBroadcast>(BroadcastType.Broadcast_Packet, OnReceivedPacket);
             MessageDispatcher.Register<MessageProto.YellowTipBroadcast>(BroadcastType.Broadcast_YellowTip, OnYellowTip);
+            MessageDispatcher.Register<MessageProto.EarnTitleMessageBroadcast>(BroadcastType.Broadcast_EarnTitleMessage, OnEarnTitleMessage);
 
             MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
 

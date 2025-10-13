@@ -748,5 +748,10 @@ namespace Application.Core.ServerTransports
         {
             _systemClient.HealthCheck(data);
         }
+
+        public void SendEarnTitleMessage(EarnTitleMessageRequest data)
+        {
+            _gameClient.SendEarnTitleMessage(data);
+        }
     }
 }

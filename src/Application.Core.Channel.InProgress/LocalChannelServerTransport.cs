@@ -750,5 +750,10 @@ namespace Application.Core.Channel.InProgress
         {
              _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().ServerName].HealthCheck(data);
         }
+
+        public void SendEarnTitleMessage(EarnTitleMessageRequest data)
+        {
+            _server.DropEarnTitleMessage(data.Message, data.OnlyGM);
+        }
     }
 }

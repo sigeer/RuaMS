@@ -754,7 +754,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 格式：!face &lt;玩家名&gt; &lt;脸型id&gt; 的本地化字符串。
+        ///   查找类似 格式：!face [&lt;玩家名&gt;] &lt;脸型id&gt; 的本地化字符串。
         /// </summary>
         public static string FaceCommand_Syntax {
             get {
