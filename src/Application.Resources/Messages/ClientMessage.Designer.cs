@@ -2122,7 +2122,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 格式： !timermap &lt;seconds&gt;|remove 的本地化字符串。
+        ///   查找类似 格式：!timermap &lt;秒&gt;|remove 的本地化字符串。
         /// </summary>
         public static string TimerMapCommand_Syntax {
             get {

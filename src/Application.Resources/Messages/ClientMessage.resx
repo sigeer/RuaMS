@@ -211,7 +211,7 @@
     <value>改变玩家的脸型</value>
   </data>
   <data name="FaceCommand_Syntax" xml:space="preserve">
-    <value>格式：!face &lt;玩家名&gt; &lt;脸型id&gt;</value>
+    <value>格式：!face [&lt;玩家名&gt;] &lt;脸型id&gt;</value>
   </data>
   <data name="PlayerNotFoundInChannel" xml:space="preserve">
     <value>没有在当前频道找到玩家“{0}”</value>
@@ -373,7 +373,7 @@
     <value>对地图内所有玩家显示计时器。</value>
   </data>
   <data name="TimerMapCommand_Syntax" xml:space="preserve">
-    <value>格式： !timermap &lt;seconds&gt;|remove</value>
+    <value>格式：!timermap &lt;秒&gt;|remove</value>
   </data>
   <data name="PlayerNotFoundInMap" xml:space="preserve">
     <value>没有在当前地图找到玩家“{0}”</value>
