@@ -101,8 +101,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     return;
                 }
-                chr.Client.CurrentServerContainer.SendBroadcastWorldGMPacket(
-                    PacketCreator.sendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason));
+                chr.Client.CurrentServerContainer.SendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason, true);
             }
             if (YamlConfig.config.server.USE_AUTOBAN_LOG)
             {

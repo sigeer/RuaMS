@@ -6,22 +6,22 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class SkillProvider : AbstractProvider<SkillTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Skill;
+        public override string ProviderName => ProviderNames.Skill;
         public SkillProvider(TemplateOptions options): base(options)
         {
         }
 
-        protected override string GetImgPathByTemplateId(int key)
+        protected override string? GetImgPathByTemplateId(int key)
         {
             var jobId = key / 10000;
-            var jobStr = jobId == 0 ? "000" : jobId.ToString();
-            return Path.Combine(GetPath(), jobStr + ".img.xml");
+            var imgName = (jobId == 0 ? "000" : jobId.ToString()) + ".img.xml";
+            return Path.Combine(ProviderName, imgName);
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string filePath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? filePath)
         {
             List<AbstractTemplate> imgData = [];
-            using var fis = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(filePath);
             var xDoc = XDocument.Load(fis).Root!;
 
             var skillElement = xDoc.Elements().FirstOrDefault(x => x.Attribute("name")?.Value == "skill");
@@ -84,18 +84,6 @@ namespace Application.Templates.XmlWzReader.Provider
             return imgData;
         }
 
-
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
-            foreach (var item in files)
-            {
-                all.AddRange(GetDataFromImg(item.FullName));
-            }
-            return all;
-        }
 
         private SkillEffectData[] ProcessEffectData(XElement skillProp)
         {

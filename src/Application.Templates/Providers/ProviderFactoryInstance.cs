@@ -1,5 +1,6 @@
 using Application.Templates.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace Application.Templates.Providers
 {

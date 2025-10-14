@@ -1,7 +1,6 @@
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
@@ -11,55 +10,33 @@ namespace Application.Templates.XmlWzReader.Provider
     public abstract class StringBaseProvider : AbstractProvider<AbstractTemplate>
     {
         protected StringTemplateType[] _types;
-        protected string[] _files;
         protected CultureInfo _culture;
-        protected StringBaseProvider(TemplateOptions options, CultureInfo cultureInfo, StringTemplateType[] types) : base(options)
+
+        protected StringBaseProvider(TemplateOptions options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
         {
             _types = types;
-            _culture = cultureInfo;
 
-            // 系统默认zh-CN，但是wz（无后缀）默认en
-            if (cultureInfo.Name != "en-US")
-            {
-                var culturePath = _dataBaseDir + "-" + cultureInfo.Name;
-                if (Directory.Exists(culturePath))
-                    _dataBaseDir = culturePath;
-                else
-                    LibLog.Logger.LogWarning("没有找到与{Culture}匹配的wz目录", cultureInfo.Name);
-            }
+            _culture = currentCulture;
 
-            _files = Directory.GetFiles(GetPath())
-                    .Where(x => _types
-                    .Any(y => x.EndsWith(y.ToString() + ".img.xml", StringComparison.OrdinalIgnoreCase))).ToArray();
+            _files = types.Select(x => Path.Combine(ProviderName, x.ToString() + ".img.xml")).ToArray();
         }
 
-        public override ProviderType ProviderName => ProviderType.String;
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            foreach (var file in _files)
-            {
-                all.AddRange(GetDataFromImg(file));
-            }
-            return all;
-        }
+        public override string ProviderName => ProviderNames.String;
 
         protected override AbstractTemplate? GetItemInternal(int templateId)
         {
             return LoadAll().FirstOrDefault(x => x.TemplateId == templateId);
         }
 
-
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
-            using var fis = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(path, _culture);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
             var typeAttr = xDoc.Attribute("name")?.Value;
             if (string.IsNullOrEmpty(typeAttr))
-                throw new TemplateFormatException(ProviderType.String.ToString(), path);
+                throw new TemplateFormatException(ProviderName, path!);
 
             StringTemplateType fileType;
             try
@@ -68,7 +45,7 @@ namespace Application.Templates.XmlWzReader.Provider
             }
             catch (Exception)
             {
-                throw new TemplateFormatException(ProviderType.String.ToString(), path);
+                throw new TemplateFormatException(ProviderName, path!);
             }
 
             if (!_types.Contains(fileType))

@@ -4,8 +4,6 @@ using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Shared.Events;
-using Application.Shared.Languages;
-using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
@@ -19,6 +17,7 @@ using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System;
 using System.Net;
 using tools;
 
@@ -745,9 +744,20 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         TypedMessage(6, key, param);
     }
 
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        foreach (var chr in Players.getAllCharacters())
+        {
+            chr.LightBlue(action);
+        }
+    }
+
     public void TopScrolling(string key, params string[] param)
     {
-        TypedMessage(4, key, param);
+        foreach (var chr in Players.getAllCharacters())
+        {
+            chr.TopScrolling(key, param);
+        }
     }
 
     public void Yellow(string key, params string[] param)

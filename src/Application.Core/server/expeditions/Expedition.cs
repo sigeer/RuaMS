@@ -27,8 +27,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using Application.Shared.Events;
-using Application.Shared.Languages;
-using Application.Shared.Net;
+using System;
 using System.Collections.Concurrent;
 using tools;
 
@@ -37,7 +36,7 @@ namespace server.expeditions;
 /**
  * @author Alan (SharpAceX)
  */
-public class Expedition: IClientMessenger
+public class Expedition : IClientMessenger
 {
     private ILogger _log = LogFactory.GetLogger(LogType.Expedition);
 
@@ -115,8 +114,12 @@ public class Expedition: IClientMessenger
         leader.sendPacket(PacketCreator.getClock(60 * (type.getRegistrationMinutes())));
         if (!silent)
         {
-            startMap.broadcastMessage(leader, PacketCreator.serverNotice(6, "[Expedition] " + leader.getName() + " has been declared the expedition captain. Please register for the expedition."), false);
-            leader.sendPacket(PacketCreator.serverNotice(6, "[Expedition] You have become the expedition captain. Gather enough people for your team then talk to the NPC to start."));
+            startMap.BroadcastAll(e =>
+            {
+                if (e != leader)
+                    e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
+            });
+            leader.LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
         }
         scheduleRegistrationEnd();
     }
@@ -133,7 +136,7 @@ public class Expedition: IClientMessenger
                 exped.removeChannelExpedition(startMap.getChannelServer());
                 if (!silent)
                 {
-                    startMap.broadcastMessage(PacketCreator.serverNotice(6, "[Expedition] The time limit has been reached. Expedition has been disbanded."));
+                    startMap.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
                 }
 
                 dispose(false);
@@ -158,7 +161,7 @@ public class Expedition: IClientMessenger
     private void log()
     {
         string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
-        getLeader().Client.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(6, gmMessage));
+        getLeader().Client.CurrentServerContainer.SendDropGMMessage(6, gmMessage);
 
         string log = type + " EXPEDITION\r\n";
         log += TimeUtils.GetTimeString(startTime) + "\r\n";
@@ -193,7 +196,7 @@ public class Expedition: IClientMessenger
             LightBlue(nameof(ClientMessage.Expedition_Start));
         }
         startTime = leader.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
-        startMap.ChannelServer.Container.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
+        startMap.ChannelServer.Container.SendDropGMMessage(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName());
     }
 
     public string addMember(IPlayer player)
@@ -207,7 +210,7 @@ public class Expedition: IClientMessenger
             return "Sorry, you've been banned from this expedition by #b" + leader.getName() + "#k.";
         }
         if (members.Count >= this.getMaxSize())
-        { 
+        {
             //Would be a miracle if anybody ever saw this
             return player.GetMessageByKey(nameof(ClientMessage.Expedition_MemberFull));
         }
@@ -477,6 +480,7 @@ public class Expedition: IClientMessenger
         return bossLogs;
     }
 
+
     public void TypedMessage(int type, string messageKey, params string[] param)
     {
         foreach (IPlayer chr in getActiveMembers())
@@ -513,9 +517,20 @@ public class Expedition: IClientMessenger
         TypedMessage(6, key, param);
     }
 
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        foreach (var chr in getActiveMembers())
+        {
+            chr.LightBlue(action);
+        }
+    }
+
     public void TopScrolling(string key, params string[] param)
     {
-        TypedMessage(4, key, param);
+        foreach (var chr in getActiveMembers())
+        {
+            chr.TopScrolling(key, param);
+        }
     }
 
     public void Yellow(string key, params string[] param)

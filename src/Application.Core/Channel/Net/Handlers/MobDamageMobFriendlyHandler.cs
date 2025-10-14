@@ -21,6 +21,7 @@
  */
 
 
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -52,27 +53,27 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
             switch (monster.getId())
             {
                 case MobId.WATCH_HOG:
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "The Watch Hog has been injured by the aliens. Better luck next time..."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(monster.getId())));
                     break;
                 case MobId.MOON_BUNNY: //moon bunny
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny went home because he was sick."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(monster.getId())));
                     break;
                 case MobId.TYLUS: //tylus
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "Tylus has fallen by the overwhelming forces of the ambush."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(monster.getId())));
                     break;
                 case MobId.JULIET: //juliet
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "Juliet has fainted in the middle of the combat."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(monster.getId())));
                     break;
                 case MobId.ROMEO: //romeo
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "Romeo has fainted in the middle of the combat."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(monster.getId())));
                     break;
                 case MobId.GIANT_SNOWMAN_LV1_EASY:
                 case MobId.GIANT_SNOWMAN_LV1_MEDIUM:
                 case MobId.GIANT_SNOWMAN_LV1_HARD:
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "The Snowman has melted on the heat of the battle."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
                     break;
                 case MobId.DELLI: //delli
-                    map.broadcastMessage(PacketCreator.serverNotice(6, "Delli vanished after the ambush, sheets still laying on the ground..."));
+                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(monster.getId())));
                     break;
             }
 

@@ -646,7 +646,7 @@ public class AbstractPlayerInteraction
 
     public void playerMessage(int type, string message)
     {
-        c.sendPacket(PacketCreator.serverNotice(type, message));
+        getPlayer().dropMessage(type, message);
     }
 
     public void message(string message)
@@ -661,7 +661,7 @@ public class AbstractPlayerInteraction
 
     public void mapMessage(int type, string message)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.serverNotice(type, message));
+        getPlayer().getMap().dropMessage(type, message);
     }
 
     public void mapEffect(string path)

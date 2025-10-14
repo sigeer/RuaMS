@@ -1,5 +1,6 @@
+using Application.Core.Channel;
+using Application.Resources.Messages;
 using server.events.gm;
-using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -7,7 +8,6 @@ public class StartEventCommand : CommandBase
 {
     public StartEventCommand() : base(3, "startevent")
     {
-        Description = "Start an event on current map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -19,18 +19,9 @@ public class StartEventCommand : CommandBase
             players = int.Parse(paramsValue[0]);
         }
         c.getChannelServer().setEvent(new Event(player.getMapId(), players));
-        c.CurrentServerContainer.SendBroadcastWorldPacket(
-            PacketCreator.earnTitleMessage(
-                "[Event] An event has started on "
-                        + player.getMap().getMapName()
-                        + " and will allow "
-                        + players
-                        + " players to join. Type @joinevent to participate."));
-        c.CurrentServerContainer.SendBroadcastWorldPacket(
-                PacketCreator.serverNotice(6, "[Event] An event has started on "
-                        + player.getMap().getMapName()
-                        + " and will allow "
-                        + players
-                        + " players to join. Type @joinevent to participate."));
+
+        var noticeMsg = string.Format(nameof(ClientMessage.StartEventCommand_Notice), ClientCulture.SystemCulture.GetMapName(player.getMap().Id), players.ToString());
+        c.CurrentServerContainer.EarnTitleMessage(noticeMsg, false);
+        c.CurrentServerContainer.SendDropMessage(6, noticeMsg);
     }
 }

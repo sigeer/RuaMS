@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message EarnTitleMessageRequest {
+	string message = 2;
+	bool onlyGM = 3;
+}
+
+message EarnTitleMessageBroadcast {
+	string message = 2;
+	repeated int32 receivers = 3;
+}

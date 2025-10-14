@@ -655,7 +655,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (ivItem == null || ivItem.isUntradeable())
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
+                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -685,7 +685,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 else if (ivItem.getQuantity() < (bundles * perBundle))
                 {
                     // thanks GabrielSin for finding a dupe here
-                    c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
+                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }

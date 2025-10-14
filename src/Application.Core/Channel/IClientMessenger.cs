@@ -1,4 +1,4 @@
-namespace Application.Shared.Languages
+namespace Application.Core.Channel
 {
     /// <summary>
     /// 使用ClientMessage.resx的内容
@@ -32,6 +32,11 @@ namespace Application.Shared.Languages
         /// </summary>
         /// <param name="key"></param>
         void LightBlue(string key, params string[] param);
+        /// <summary>
+        /// type = 6 聊天框蓝色
+        /// </summary>
+        /// <param name="action"></param>
+        void LightBlue(Func<ClientCulture, string> action);
         /// <summary>
         /// type = 4 顶部滚动
         /// </summary>

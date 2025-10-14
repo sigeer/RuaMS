@@ -918,4 +918,121 @@
   <data name="Levelup_Congratulation" xml:space="preserve">
     <value>[祝贺] {0}到达了{1}级！祝贺 {2} 取得如此惊人的成就！</value>
   </data>
+  <data name="FriendMob_Damaged_MoonBunny" xml:space="preserve">
+    <value>{0} 因为重伤被抬回去休养了。</value>
+  </data>
+  <data name="FriendMob_Damaged_WatchHog" xml:space="preserve">
+    <value>{0} 被外星人殴打致重伤，已被兽医紧急拉走抢救。</value>
+  </data>
+  <data name="FriendMob_Damaged_Juliet" xml:space="preserve">
+    <value>{0} 在战斗中晕倒了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Romeo" xml:space="preserve">
+    <value>{0} 在战斗中晕倒了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Tylus" xml:space="preserve">
+    <value>{0} 在伏击部队的强大攻势下倒下了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Snownman" xml:space="preserve">
+    <value>雪人在战斗的热浪中融化了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Delli" xml:space="preserve">
+    <value>{0} 在伏击后消失了，只留下地上的被单...</value>
+  </data>
+  <data name="Coconut_Effect_Maple" xml:space="preserve">
+    <value>红队的 {0} 打下了椰子。</value>
+  </data>
+  <data name="Coconut_Effect_Story" xml:space="preserve">
+    <value>蓝队的 {0} 打下了椰子。</value>
+  </data>
+  <data name="PlayerShop_ItemInvalid" xml:space="preserve">
+    <value>无法对店铺的该商品执行操作</value>
+  </data>
+  <data name="Ban_NoticePlayer" xml:space="preserve">
+    <value>你被 #b{0}#k 封禁了。</value>
+  </data>
+  <data name="SetGmLevelCommand_Result" xml:space="preserve">
+    <value>{0} 现在是 {1} 级管理。</value>
+  </data>
+  <data name="Notice_GmLevelChanged" xml:space="preserve">
+    <value>你现在是 {0} 级管理员。通过 !commands 查看可用命令。</value>
+  </data>
+  <data name="PlayerNotOnlined" xml:space="preserve">
+    <value>玩家"{0}"不存在或者不在线。</value>
+  </data>
+  <data name="StartEventCommand_Notice" xml:space="preserve">
+    <value>[事件] 地图 {0} 事件开启！仅允许 {1} 名玩家参与。输入 !joinevent 参加活动。</value>
+  </data>
+  <data name="StartEventCommand_Description" xml:space="preserve">
+    <value>在当前地图开启事件。</value>
+  </data>
+  <data name="Fitness_Left_10sec" xml:space="preserve">
+    <value>你还有10秒。还没通关的小伙伴们，希望下次你们能通关！大家辛苦了！回头见~</value>
+  </data>
+  <data name="Fitness_Left_100sec" xml:space="preserve">
+    <value>好了，你剩下的时间不多了。请快点！</value>
+  </data>
+  <data name="Fitness_Left_4min" xml:space="preserve">
+    <value>第四阶段是【冒险岛体能测试】的最后一个阶段。请不要在最后一刻放弃，全力以赴。奖励就在最顶端等着你！</value>
+  </data>
+  <data name="Fitness_Left_5min" xml:space="preserve">
+    <value>第三层设有陷阱，虽然你能看到，但无法踩到。攀登时请务必小心。</value>
+  </data>
+  <data name="Fitness_Left_6min" xml:space="preserve">
+    <value>对于延迟较重的人，请务必缓慢移动，以免因延迟而完全摔倒。</value>
+  </data>
+  <data name="Fitness_Left_500sec" xml:space="preserve">
+    <value>请记住，如果您在活动期间死亡，您将被淘汰出局。如果您的生命值不足，请先服用药水或恢复生命值后再继续游戏。</value>
+  </data>
+  <data name="Fitness_Left_600sec" xml:space="preserve">
+    <value>为了避免被猴子扔香蕉，你需要知道的最重要的事情是*时机*，时机就是一切！</value>
+  </data>
+  <data name="Fitness_Left_660sec" xml:space="preserve">
+    <value>第二阶段有猴子会扔香蕉。请务必在正确的时间移动以避开它们。</value>
+  </data>
+  <data name="Fitness_Left_700sec" xml:space="preserve">
+    <value>请记住，如果您在活动期间死亡，您将被淘汰出局。您还有充足的时间，所以请先服用药水或恢复生命值再继续前进。</value>
+  </data>
+  <data name="Fitness_Left_780sec" xml:space="preserve">
+    <value>只要按时完成【冒险岛体能测试】，无论完成顺序如何，都会获得一件道具，所以只要放松心情，慢慢完成4个阶段就好。</value>
+  </data>
+  <data name="Fitness_Left_840sec" xml:space="preserve">
+    <value>由于第一阶段用户数量较多，可能会出现严重卡顿。难度不大，所以请确保不要因为卡顿而掉线。</value>
+  </data>
+  <data name="Fitness_Left_870sec" xml:space="preserve">
+    <value>【冒险岛体能测试】共分为4个阶段，如果在游戏中死亡就会被淘汰，请多加注意。</value>
+  </data>
+  <data name="Notice_EventStart" xml:space="preserve">
+    <value>传送门现已打开。在传送门处的按上箭头键即可进入。</value>
+  </data>
+  <data name="Notice_EventEnd" xml:space="preserve">
+    <value>活动已结束。</value>
+  </data>
+  <data name="Expedition_Captain_NoticeMap" xml:space="preserve">
+    <value>[远征队] {0} 开启了远征队挑战. 请抓紧时间加入远征队！</value>
+  </data>
+  <data name="Expedition_Captain_Notice" xml:space="preserve">
+    <value>[远征队] 你已经成为远征队的队长. 请召集足够的玩家，然后点击远征队npc开始挑战。</value>
+  </data>
+  <data name="Expedition_Timeout_Disband" xml:space="preserve">
+    <value>[远征队] 远征队组建倒计时已结束. 远征队已经被解散。</value>
+  </data>
+  <data name="NpcNotFound" xml:space="preserve">
+    <value>没有找到Npc {0}。</value>
+  </data>
+  <data name="NpcNotFoundInMap" xml:space="preserve">
+    <value>没有在地图 {1} 找到Npc {0}。</value>
+  </data>
+  <data name="NpcOutOfMap" xml:space="preserve">
+    <value>Npc {0} 不在地图上。</value>
+  </data>
+  <data name="WarpNpcCommand_Description" xml:space="preserve">
+    <value>传送到Npc身边。</value>
+  </data>
+  <data name="WarpNpcCommand_NpcResult" xml:space="preserve">
+    <value>Npc {0} 出现在以下地图</value>
+  </data>
+  <data name="AlreadyInMap" xml:space="preserve">
+    <value />
+  </data>
 </root>

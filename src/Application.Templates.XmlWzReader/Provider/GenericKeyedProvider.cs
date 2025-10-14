@@ -5,7 +5,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public abstract class GenericKeyedProvider<TSubProvider> : IProvider 
         where TSubProvider : AbstractProvider<AbstractTemplate> 
     {
-        public abstract ProviderType ProviderName { get; }
+        public abstract string ProviderName { get; }
         protected GenericKeyedProvider(TemplateOptions options)
         {
             _categoryData = new();

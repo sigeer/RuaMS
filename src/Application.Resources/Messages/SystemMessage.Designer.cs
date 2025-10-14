@@ -61,6 +61,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 [RIP]: {0} 已被封禁. 的本地化字符串。
+        /// </summary>
+        public static string Ban_NoticeGM {
+            get {
+                return ResourceManager.GetString("Ban_NoticeGM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 [{ServerName}]已启动 的本地化字符串。
         /// </summary>
         public static string Server_Active {
@@ -165,6 +174,15 @@ namespace Application.Resources.Messages {
         public static string Server_StopListenStart {
             get {
                 return ResourceManager.GetString("Server_StopListenStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} {1} 登录了游戏。 的本地化字符串。
+        /// </summary>
+        public static string System_GmLoggedin {
+            get {
+                return ResourceManager.GetString("System_GmLoggedin", resourceCulture);
             }
         }
     }

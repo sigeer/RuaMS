@@ -21,18 +21,19 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using Application.Shared.Languages;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
 using server.life;
 using server.maps;
+using System;
 using tools;
 
 namespace scripting.Event;
@@ -1775,9 +1776,20 @@ public class EventInstanceManager : IClientMessenger
         TypedMessage(6, key, param);
     }
 
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.LightBlue(action);
+        }
+    }
+
     public void TopScrolling(string key, params string[] param)
     {
-        TypedMessage(4, key, param);
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.TopScrolling(key, param);
+        }
     }
 }
 

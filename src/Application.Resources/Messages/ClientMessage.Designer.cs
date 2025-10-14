@@ -61,6 +61,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 你已经在这个地图里了。 的本地化字符串。
+        /// </summary>
+        public static string AlreadyInMap {
+            get {
+                return ResourceManager.GetString("AlreadyInMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置属性点 的本地化字符串。
         /// </summary>
         public static string ApCommand_Description {
@@ -75,6 +84,15 @@ namespace Application.Resources.Messages {
         public static string ApCommand_Syntax {
             get {
                 return ResourceManager.GetString("ApCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你被 #b{0}#k 封禁了。 的本地化字符串。
+        /// </summary>
+        public static string Ban_NoticePlayer {
+            get {
+                return ResourceManager.GetString("Ban_NoticePlayer", resourceCulture);
             }
         }
         
@@ -403,6 +421,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 红队的 {0} 打下了椰子。 的本地化字符串。
+        /// </summary>
+        public static string Coconut_Effect_Maple {
+            get {
+                return ResourceManager.GetString("Coconut_Effect_Maple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 蓝队的 {0} 打下了椰子。 的本地化字符串。
+        /// </summary>
+        public static string Coconut_Effect_Story {
+            get {
+                return ResourceManager.GetString("Coconut_Effect_Story", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 命令 {0} 已完成。 的本地化字符串。
         /// </summary>
         public static string Command_Done {
@@ -664,6 +700,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 [远征队] 你已经成为远征队的队长. 请召集足够的玩家，然后点击远征队npc开始挑战。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Captain_Notice {
+            get {
+                return ResourceManager.GetString("Expedition_Captain_Notice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [远征队] {0} 开启了远征队挑战. 请抓紧时间加入远征队！ 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Captain_NoticeMap {
+            get {
+                return ResourceManager.GetString("Expedition_Captain_NoticeMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 [远征队] 你离开了这个远征队。 的本地化字符串。
         /// </summary>
         public static string Expedition_ChrLeft {
@@ -736,6 +790,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 [远征队] 远征队组建倒计时已结束. 远征队已经被解散。 的本地化字符串。
+        /// </summary>
+        public static string Expedition_Timeout_Disband {
+            get {
+                return ResourceManager.GetString("Expedition_Timeout_Disband", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置经验倍率。 的本地化字符串。
         /// </summary>
         public static string ExpRateCommand_Description {
@@ -754,7 +817,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 格式：!face &lt;玩家名&gt; &lt;脸型id&gt; 的本地化字符串。
+        ///   查找类似 格式：!face [&lt;玩家名&gt;] &lt;脸型id&gt; 的本地化字符串。
         /// </summary>
         public static string FaceCommand_Syntax {
             get {
@@ -822,6 +885,177 @@ namespace Application.Resources.Messages {
         public static string FishingRateCommand_Description {
             get {
                 return ResourceManager.GetString("FishingRateCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 好了，你剩下的时间不多了。请快点！ 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_100sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_100sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你还有10秒。还没通关的小伙伴们，希望下次你们能通关！大家辛苦了！回头见~ 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_10sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_10sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 第四阶段是【冒险岛体能测试】的最后一个阶段。请不要在最后一刻放弃，全力以赴。奖励就在最顶端等着你！ 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_4min {
+            get {
+                return ResourceManager.GetString("Fitness_Left_4min", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请记住，如果您在活动期间死亡，您将被淘汰出局。如果您的生命值不足，请先服用药水或恢复生命值后再继续游戏。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_500sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_500sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 第三层设有陷阱，虽然你能看到，但无法踩到。攀登时请务必小心。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_5min {
+            get {
+                return ResourceManager.GetString("Fitness_Left_5min", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 为了避免被猴子扔香蕉，你需要知道的最重要的事情是*时机*，时机就是一切！ 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_600sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_600sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 第二阶段有猴子会扔香蕉。请务必在正确的时间移动以避开它们。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_660sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_660sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 对于延迟较重的人，请务必缓慢移动，以免因延迟而完全摔倒。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_6min {
+            get {
+                return ResourceManager.GetString("Fitness_Left_6min", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请记住，如果您在活动期间死亡，您将被淘汰出局。您还有充足的时间，所以请先服用药水或恢复生命值再继续前进。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_700sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_700sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 只要按时完成【冒险岛体能测试】，无论完成顺序如何，都会获得一件道具，所以只要放松心情，慢慢完成4个阶段就好。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_780sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_780sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 由于第一阶段用户数量较多，可能会出现严重卡顿。难度不大，所以请确保不要因为卡顿而掉线。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_840sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_840sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 【冒险岛体能测试】共分为4个阶段，如果在游戏中死亡就会被淘汰，请多加注意。 的本地化字符串。
+        /// </summary>
+        public static string Fitness_Left_870sec {
+            get {
+                return ResourceManager.GetString("Fitness_Left_870sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 在伏击后消失了，只留下地上的被单... 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_Delli {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_Delli", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 在战斗中晕倒了。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_Juliet {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_Juliet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 因为重伤被抬回去休养了。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_MoonBunny {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_MoonBunny", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 在战斗中晕倒了。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_Romeo {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_Romeo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 雪人在战斗的热浪中融化了。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_Snownman {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_Snownman", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 在伏击部队的强大攻势下倒下了。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_Tylus {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_Tylus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 被外星人殴打致重伤，已被兽医紧急拉走抢救。 的本地化字符串。
+        /// </summary>
+        public static string FriendMob_Damaged_WatchHog {
+            get {
+                return ResourceManager.GetString("FriendMob_Damaged_WatchHog", resourceCulture);
             }
         }
         
@@ -1474,6 +1708,60 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 活动已结束。 的本地化字符串。
+        /// </summary>
+        public static string Notice_EventEnd {
+            get {
+                return ResourceManager.GetString("Notice_EventEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 传送门现已打开。在传送门处的按上箭头键即可进入。 的本地化字符串。
+        /// </summary>
+        public static string Notice_EventStart {
+            get {
+                return ResourceManager.GetString("Notice_EventStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你现在是 {0} 级管理员。通过 !commands 查看可用命令。 的本地化字符串。
+        /// </summary>
+        public static string Notice_GmLevelChanged {
+            get {
+                return ResourceManager.GetString("Notice_GmLevelChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 没有找到Npc {0}。 的本地化字符串。
+        /// </summary>
+        public static string NpcNotFound {
+            get {
+                return ResourceManager.GetString("NpcNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 没有在地图 {1} 找到Npc {0}。 的本地化字符串。
+        /// </summary>
+        public static string NpcNotFoundInMap {
+            get {
+                return ResourceManager.GetString("NpcNotFoundInMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Npc {0} 不在地图上。 的本地化字符串。
+        /// </summary>
+        public static string NpcOutOfMap {
+            get {
+                return ResourceManager.GetString("NpcOutOfMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示所有在线玩家。 的本地化字符串。
         /// </summary>
         public static string OnlineCommand_Description {
@@ -1519,6 +1807,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 玩家&quot;{0}&quot;不存在或者不在线。 的本地化字符串。
+        /// </summary>
+        public static string PlayerNotOnlined {
+            get {
+                return ResourceManager.GetString("PlayerNotOnlined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 不能在商店正常运营时操作商品。 的本地化字符串。
         /// </summary>
         public static string PlayerShop_CannotManage {
@@ -1542,6 +1839,15 @@ namespace Application.Resources.Messages {
         public static string PlayerShop_CashItemCheck {
             get {
                 return ResourceManager.GetString("PlayerShop_CashItemCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 无法对店铺的该商品执行操作 的本地化字符串。
+        /// </summary>
+        public static string PlayerShop_ItemInvalid {
+            get {
+                return ResourceManager.GetString("PlayerShop_ItemInvalid", resourceCulture);
             }
         }
         
@@ -1915,6 +2221,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 {0} 现在是 {1} 级管理。 的本地化字符串。
+        /// </summary>
+        public static string SetGmLevelCommand_Result {
+            get {
+                return ResourceManager.GetString("SetGmLevelCommand_Result", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 格式：!setgmlevel &lt;玩家名&gt; &lt;等级&gt; 的本地化字符串。
         /// </summary>
         public static string SetGmLevelCommand_Syntax {
@@ -2010,6 +2325,24 @@ namespace Application.Resources.Messages {
         public static string SpCommand_Syntax {
             get {
                 return ResourceManager.GetString("SpCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在当前地图开启事件。 的本地化字符串。
+        /// </summary>
+        public static string StartEventCommand_Description {
+            get {
+                return ResourceManager.GetString("StartEventCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [事件] 地图 {0} 事件开启！仅允许 {1} 名玩家参与。输入 !joinevent 参加活动。 的本地化字符串。
+        /// </summary>
+        public static string StartEventCommand_Notice {
+            get {
+                return ResourceManager.GetString("StartEventCommand_Notice", resourceCulture);
             }
         }
         
@@ -2415,6 +2748,24 @@ namespace Application.Resources.Messages {
         public static string WarpMapCommand_Syntax {
             get {
                 return ResourceManager.GetString("WarpMapCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 传送到Npc身边。 的本地化字符串。
+        /// </summary>
+        public static string WarpNpcCommand_Description {
+            get {
+                return ResourceManager.GetString("WarpNpcCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Npc {0} 出现在以下地图 的本地化字符串。
+        /// </summary>
+        public static string WarpNpcCommand_NpcResult {
+            get {
+                return ResourceManager.GetString("WarpNpcCommand_NpcResult", resourceCulture);
             }
         }
         

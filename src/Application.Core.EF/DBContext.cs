@@ -2102,10 +2102,6 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'10'")
                 .HasColumnType("tinyint")
                 .HasColumnName("gender");
-            entity.Property(e => e.Language)
-                .HasDefaultValueSql("'2'")
-                .HasColumnType("int")
-                .HasColumnName("language");
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
                 .HasConversion(
