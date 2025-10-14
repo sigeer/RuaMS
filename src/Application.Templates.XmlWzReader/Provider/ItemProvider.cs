@@ -13,25 +13,13 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class ItemProvider : ItemProviderBase
     {
-        public override ProviderType ProviderName => ProviderType.Item;
-        string[] _itemFiles;
+        public override string ProviderName => ProviderNames.Item;
 
         public ItemProvider(TemplateOptions options) : base(options)
         {
-            _itemFiles = Directory.GetFiles(GetPath(), "*", SearchOption.AllDirectories);
         }
 
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = new List<AbstractTemplate>(_itemFiles.Length);
-            foreach (var item in _itemFiles)
-            {
-                all.AddRange(GetDataFromImg(item));
-            }
-            return all;
-        }
-
-        protected override string GetImgPathByTemplateId(int key)
+        protected override string? GetImgPathByTemplateId(int key)
         {
             var str = key.ToString();
             var shortCode = key / 10000;
@@ -39,11 +27,14 @@ namespace Application.Templates.XmlWzReader.Provider
                 str = shortCode.ToString().PadLeft(4, '0');
 
             str += ".img.xml";
-            return _itemFiles.Where(x => x.EndsWith(str)).FirstOrDefault() ?? string.Empty;
+            return _files.Where(x => x.EndsWith(str)).FirstOrDefault();
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
+            if (path == null)
+                return [];
+
             if (path.Contains("Cash"))
                 return IterateCashBundleItem(path);
             else if (path.Contains("Consume"))
@@ -61,18 +52,18 @@ namespace Application.Templates.XmlWzReader.Provider
 
         public List<MonsterCardItemTemplate> GetAllMonsterCard()
         {
-            return LoadConsume(_itemFiles.FirstOrDefault(x => x.EndsWith("0238.img.xml"))!).OfType<MonsterCardItemTemplate>().ToList();
+            return LoadConsume(_files.FirstOrDefault(x => x.EndsWith("0238.img.xml"))!).OfType<MonsterCardItemTemplate>().ToList();
         }
 
         public List<MasteryItemTemplate> GetAllSkillBook()
         {
-            return LoadConsume(_itemFiles.FirstOrDefault(x => x.EndsWith("0228.img.xml") || x.EndsWith("0229.img.xml"))!).OfType<MasteryItemTemplate>().ToList();
+            return LoadConsume(_files.FirstOrDefault(x => x.EndsWith("0228.img.xml") || x.EndsWith("0229.img.xml"))!).OfType<MasteryItemTemplate>().ToList();
         }
 
 
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
@@ -87,7 +78,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> LoadInstall(string imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
@@ -107,7 +98,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> LoadEtc(string imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractItemTemplate> all = [];
@@ -140,7 +131,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> LoadConsume(string imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];
@@ -365,7 +356,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> IterateCashBundleItem(string imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             var xDoc = XDocument.Load(fis).Root!;
 
             List<AbstractTemplate> all = [];

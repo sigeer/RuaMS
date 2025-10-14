@@ -1017,4 +1017,22 @@
   <data name="Expedition_Timeout_Disband" xml:space="preserve">
     <value>[Expedition] The time limit has been reached. Expedition has been disbanded.</value>
   </data>
+  <data name="NpcNotFound" xml:space="preserve">
+    <value>Npc {0} not found.</value>
+  </data>
+  <data name="NpcNotFoundInMap" xml:space="preserve">
+    <value>Npc {0} not found in Map {1}.</value>
+  </data>
+  <data name="NpcOutOfMap" xml:space="preserve">
+    <value>Npc {0} not found.</value>
+  </data>
+  <data name="WarpNpcCommand_Description" xml:space="preserve">
+    <value>Warp to Npc.</value>
+  </data>
+  <data name="WarpNpcCommand_NpcResult" xml:space="preserve">
+    <value>Npc {0} appears on the following maps</value>
+  </data>
+  <data name="AlreadyInMap" xml:space="preserve">
+    <value>You are already on this map.</value>
+  </data>
 </root>

@@ -61,6 +61,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 你已经在这个地图里了。 的本地化字符串。
+        /// </summary>
+        public static string AlreadyInMap {
+            get {
+                return ResourceManager.GetString("AlreadyInMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置属性点 的本地化字符串。
         /// </summary>
         public static string ApCommand_Description {
@@ -1726,6 +1735,33 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 没有找到Npc {0}。 的本地化字符串。
+        /// </summary>
+        public static string NpcNotFound {
+            get {
+                return ResourceManager.GetString("NpcNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 没有在地图 {1} 找到Npc {0}。 的本地化字符串。
+        /// </summary>
+        public static string NpcNotFoundInMap {
+            get {
+                return ResourceManager.GetString("NpcNotFoundInMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Npc {0} 不在地图上。 的本地化字符串。
+        /// </summary>
+        public static string NpcOutOfMap {
+            get {
+                return ResourceManager.GetString("NpcOutOfMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示所有在线玩家。 的本地化字符串。
         /// </summary>
         public static string OnlineCommand_Description {
@@ -2712,6 +2748,24 @@ namespace Application.Resources.Messages {
         public static string WarpMapCommand_Syntax {
             get {
                 return ResourceManager.GetString("WarpMapCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 传送到Npc身边。 的本地化字符串。
+        /// </summary>
+        public static string WarpNpcCommand_Description {
+            get {
+                return ResourceManager.GetString("WarpNpcCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Npc {0} 出现在以下地图 的本地化字符串。
+        /// </summary>
+        public static string WarpNpcCommand_NpcResult {
+            get {
+                return ResourceManager.GetString("WarpNpcCommand_NpcResult", resourceCulture);
             }
         }
         

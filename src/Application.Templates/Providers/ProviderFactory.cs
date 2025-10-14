@@ -26,7 +26,7 @@ namespace Application.Templates.Providers
             }
 
             if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
-                throw new ProviderNotFoundException("wz", "没有设置wz的目录，默认路径也没有找到wz。");
+                throw new DataDirNotFoundException("没有设置wz的目录，默认路径也没有找到wz。");
 
             return _globalDataDir;
         }

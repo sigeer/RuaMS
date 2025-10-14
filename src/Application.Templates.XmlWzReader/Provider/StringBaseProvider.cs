@@ -10,48 +10,33 @@ namespace Application.Templates.XmlWzReader.Provider
     public abstract class StringBaseProvider : AbstractProvider<AbstractTemplate>
     {
         protected StringTemplateType[] _types;
-        protected string[] _files;
         protected CultureInfo _culture;
-        MultiCultureFileProvider _fileProvider;
+
         protected StringBaseProvider(TemplateOptions options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
         {
             _types = types;
 
             _culture = currentCulture;
-            _fileProvider = new MultiCultureFileProvider(_dataBaseDir);
-            _files = _fileProvider.ListAllFiles(x => _types.Any(y => x.EndsWith(y.ToString(), StringComparison.OrdinalIgnoreCase)));
+
+            _files = types.Select(x => Path.Combine(_dataBaseDir, ProviderName, x.ToString() + ".img.xml")).ToArray();
         }
 
-        public override ProviderType ProviderName => ProviderType.String;
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            foreach (var file in _files)
-            {
-                all.AddRange(GetDataFromImg(file));
-            }
-            return all;
-        }
+        public override string ProviderName => ProviderNames.String;
 
         protected override AbstractTemplate? GetItemInternal(int templateId)
         {
             return LoadAll().FirstOrDefault(x => x.TemplateId == templateId);
         }
 
-
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
             using var fis = _fileProvider.ReadFile(path, _culture);
-            if (fis == null)
-                throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到，路径：{path}。");
-
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
             var typeAttr = xDoc.Attribute("name")?.Value;
             if (string.IsNullOrEmpty(typeAttr))
-                throw new TemplateFormatException(ProviderType.String.ToString(), path);
+                throw new TemplateFormatException(ProviderName, path!);
 
             StringTemplateType fileType;
             try
@@ -60,7 +45,7 @@ namespace Application.Templates.XmlWzReader.Provider
             }
             catch (Exception)
             {
-                throw new TemplateFormatException(ProviderType.String.ToString(), path);
+                throw new TemplateFormatException(ProviderName, path!);
             }
 
             if (!_types.Contains(fileType))

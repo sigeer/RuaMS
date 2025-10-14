@@ -7,23 +7,18 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class MobSkillProvider : AbstractProvider<MobSkillTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Skill;
+        public override string ProviderName => ProviderNames.Skill;
 
-        string _imgPath;
+        public override string[]? SingleImgFile => ["MobSkill.img.xml"];
         public MobSkillProvider(TemplateOptions options) : base(options)
         {
-            _imgPath = Path.Combine(GetPath(), "MobSkill.img.xml");
         }
 
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            return GetDataFromImg(string.Empty);
-        }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
             List<AbstractTemplate> all = [];
-            using var fis = new FileStream(_imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(path);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
 
             var xDoc = XDocument.Load(reader)!.Root!;

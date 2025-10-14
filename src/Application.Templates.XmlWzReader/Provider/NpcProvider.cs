@@ -5,17 +5,17 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class NpcProvider : AbstractProvider<NpcTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Npc;
+        public override string ProviderName => ProviderNames.Npc;
 
         public NpcProvider(TemplateOptions options)
             : base(options) { }
 
-        protected override string GetImgPathByTemplateId(int key)
+        protected override string? GetImgPathByTemplateId(int key)
         {
-            return Path.Combine(GetPath(), key.ToString().PadLeft(7, '0') + ".img.xml");
+            return Path.Combine(ProviderName, key.ToString().PadLeft(7, '0') + ".img.xml");
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
             if (int.TryParse(Path.GetFileName(path).AsSpan(0, 7), out var npcId))
             {
@@ -25,16 +25,5 @@ namespace Application.Templates.XmlWzReader.Provider
             }
             return [];
         }
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
-            foreach (var item in files)
-            {
-                all.AddRange(GetDataFromImg(item.FullName));
-            }
-            return all;
-        }
-
     }
 }

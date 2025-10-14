@@ -1017,4 +1017,22 @@
   <data name="Expedition_Timeout_Disband" xml:space="preserve">
     <value>[远征队] 远征队组建倒计时已结束. 远征队已经被解散。</value>
   </data>
+  <data name="NpcNotFound" xml:space="preserve">
+    <value>没有找到Npc {0}。</value>
+  </data>
+  <data name="NpcNotFoundInMap" xml:space="preserve">
+    <value>没有在地图 {1} 找到Npc {0}。</value>
+  </data>
+  <data name="NpcOutOfMap" xml:space="preserve">
+    <value>Npc {0} 不在地图上。</value>
+  </data>
+  <data name="WarpNpcCommand_Description" xml:space="preserve">
+    <value>传送到Npc身边。</value>
+  </data>
+  <data name="WarpNpcCommand_NpcResult" xml:space="preserve">
+    <value>Npc {0} 出现在以下地图</value>
+  </data>
+  <data name="AlreadyInMap" xml:space="preserve">
+    <value />
+  </data>
 </root>

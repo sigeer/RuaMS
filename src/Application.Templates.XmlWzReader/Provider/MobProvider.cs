@@ -8,20 +8,20 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class MobProvider : AbstractProvider<MobTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Mob;
+        public override string ProviderName => ProviderNames.Mob;
 
         public MobProvider(TemplateOptions options)
             : base(options) { }
 
-        protected override string GetImgPathByTemplateId(int mobId)
+        protected override string? GetImgPathByTemplateId(int mobId)
         {
             string fileName = mobId.ToString().PadLeft(7, '0') + ".img.xml";
-            return Path.Combine(GetPath(), fileName);
+            return Path.Combine(_dataBaseDir, ProviderName, fileName);
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
@@ -255,18 +255,6 @@ namespace Application.Templates.XmlWzReader.Provider
                 }
                 model.Animations = mobAniList.ToArray();
             }
-        }
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            var files = new DirectoryInfo(GetPath()).GetFiles("*.xml", SearchOption.AllDirectories);
-
-            foreach (var item in files)
-            {
-                all.AddRange(GetDataFromImg(item.FullName));
-            }
-            return all;
         }
     }
 }
