@@ -48,7 +48,7 @@ namespace Application.Templates.Providers
             }
             else
             {
-                _files = SingleImgFile.Select(x => Path.Combine(_dataBaseDir, ProviderName, x)).ToArray();
+                _files = SingleImgFile.Select(x => Path.Combine(ProviderName, x)).ToArray();
             }
         }
 

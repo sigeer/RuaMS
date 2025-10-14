@@ -18,7 +18,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
             _culture = currentCulture;
 
-            _files = types.Select(x => Path.Combine(_dataBaseDir, ProviderName, x.ToString() + ".img.xml")).ToArray();
+            _files = types.Select(x => Path.Combine(ProviderName, x.ToString() + ".img.xml")).ToArray();
         }
 
         public override string ProviderName => ProviderNames.String;

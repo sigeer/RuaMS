@@ -27,6 +27,7 @@ namespace Application.Core.Game.Commands.Gm2
                 else if (searched.Length > 1)
                 {
                     var sb = new StringBuilder();
+                    sb.Append(client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
                     for (int i = 0; i < searched.Length; i++)
                     {
                         var npcItem = searched[i];
@@ -72,7 +73,7 @@ namespace Application.Core.Game.Commands.Gm2
                     var mapId = template.Maps[i];
                     sb.Append($"\r\n#L{i}# {mapId} - {client.CurrentCulture.GetMapStreetName(mapId)} - {client.CurrentCulture.GetMapName(mapId)} #l");
                 }
-                (conversation ?? TempConversation.Create(client))?.RegisterSelect(sb.ToString(), (i, ctx) =>
+                TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                 {
                     HandleMapNpc(client, template.Maps[i], npcId);
                 });
