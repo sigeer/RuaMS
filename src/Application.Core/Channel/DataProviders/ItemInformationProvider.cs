@@ -1079,6 +1079,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isQuestItem(int itemId)
     {
+        if (itemId <= 0) 
+            return false;
         return GetProvider(itemId).GetItem(itemId)?.Quest ?? false;
     }
 
