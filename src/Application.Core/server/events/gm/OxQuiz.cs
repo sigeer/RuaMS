@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Resources.Messages;
 using tools;
 
 namespace server.events.gm;
@@ -99,7 +100,7 @@ public class OxQuiz
             //send question
             if (map.getCharacters().Count - number <= 2)
             {
-                map.broadcastMessage(PacketCreator.serverNotice(6, "The event has ended"));
+                map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
                 map.getPortal("join00")!.setPortalStatus(true);
                 map.Ox = null;
                 map.setOxQuiz(false);

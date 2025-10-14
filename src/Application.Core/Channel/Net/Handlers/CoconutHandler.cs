@@ -23,6 +23,7 @@
 
 
 using Application.Core.Game.Maps.Specials;
+using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -77,12 +78,12 @@ public class CoconutHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getTeam() == 0)
                 {
                     coconutMap.Coconut.addMapleScore();
-                    map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Maple knocks down a coconut."));
+                    map.Pink(nameof(ClientMessage.Coconut_Effect_Maple), c.OnlinedCharacter.Name);
                 }
                 else
                 {
                     coconutMap.Coconut.addStoryScore();
-                    map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Story knocks down a coconut."));
+                    map.Pink(nameof(ClientMessage.Coconut_Effect_Story), c.OnlinedCharacter.Name);
                 }
                 map.broadcastMessage(PacketCreator.coconutScore(coconutMap.Coconut.getMapleScore(), coconutMap.Coconut.getStoryScore()));
             }

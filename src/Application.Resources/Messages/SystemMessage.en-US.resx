@@ -156,4 +156,7 @@
   <data name="System_GmLoggedin" xml:space="preserve">
     <value>{0} {1} has logged in</value>
   </data>
+  <data name="Ban_NoticeGM" xml:space="preserve">
+    <value>[RIP]: {0} has been banned.</value>
+  </data>
 </root>

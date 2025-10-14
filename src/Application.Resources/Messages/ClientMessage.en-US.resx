@@ -918,4 +918,103 @@
   <data name="Levelup_Congratulation" xml:space="preserve">
     <value>[Congrats] {0} has reached Level {1}! Congratulate {2} on such an amazing achievement!</value>
   </data>
+  <data name="FriendMob_Damaged_MoonBunny" xml:space="preserve">
+    <value>The {0} went home because he was sick.</value>
+  </data>
+  <data name="FriendMob_Damaged_WatchHog" xml:space="preserve">
+    <value>The {0} has been injured by the aliens. Better luck next time...</value>
+  </data>
+  <data name="FriendMob_Damaged_Juliet" xml:space="preserve">
+    <value>{0} has fainted in the middle of the combat.</value>
+  </data>
+  <data name="FriendMob_Damaged_Romeo" xml:space="preserve">
+    <value>{0} has fainted in the middle of the combat.</value>
+  </data>
+  <data name="FriendMob_Damaged_Tylus" xml:space="preserve">
+    <value>{0} has fallen by the overwhelming forces of the ambush.</value>
+  </data>
+  <data name="FriendMob_Damaged_Snownman" xml:space="preserve">
+    <value>The Snowman has melted on the heat of the battle.</value>
+  </data>
+  <data name="FriendMob_Damaged_Delli" xml:space="preserve">
+    <value>{0} vanished after the ambush, sheets still laying on the ground...</value>
+  </data>
+  <data name="Coconut_Effect_Maple" xml:space="preserve">
+    <value>{0} of Team Maple knocks down a coconut.</value>
+  </data>
+  <data name="Coconut_Effect_Story" xml:space="preserve">
+    <value>{0} of Team Story knocks down a coconut.</value>
+  </data>
+  <data name="PlayerShop_ItemInvalid" xml:space="preserve">
+    <value>Could not perform shop operation with that item.</value>
+  </data>
+  <data name="Ban_NoticePlayer" xml:space="preserve">
+    <value>You have been banned by #b{0} #k.</value>
+  </data>
+  <data name="SetGmLevelCommand_Result" xml:space="preserve">
+    <value>{0} is now a level {1} GM."</value>
+  </data>
+  <data name="Notice_GmLevelChanged" xml:space="preserve">
+    <value>You are now a level {0} GM. See !commands for a list of available commands.</value>
+  </data>
+  <data name="PlayerNotOnlined" xml:space="preserve">
+    <value>A character called "{0}" does not exist</value>
+  </data>
+  <data name="StartEventCommand_Notice" xml:space="preserve">
+    <value>[Event] An event has started on {0} and will allow {1} players to join. Type !joinevent to participate.</value>
+  </data>
+  <data name="StartEventCommand_Description" xml:space="preserve">
+    <value>Start an event on current map.</value>
+  </data>
+  <data name="Fitness_Left_10sec" xml:space="preserve">
+    <value>You have 10 sec left. Those of you unable to beat the game, we hope you beat it next time! Great job everyone!! See you later~</value>
+  </data>
+  <data name="Fitness_Left_100sec" xml:space="preserve">
+    <value>Alright, you don't have much time remaining. Please hurry up a little!</value>
+  </data>
+  <data name="Fitness_Left_4min" xml:space="preserve">
+    <value>The 4th stage is the last one for [The Maple Physical Fitness Test]. Please don't give up at the last minute and try your best. The reward is waiting for you at the very top!</value>
+  </data>
+  <data name="Fitness_Left_5min" xml:space="preserve">
+    <value>The 3rd stage offers traps where you may see them, but you won't be able to step on them. Please be careful of them as you make your way up.</value>
+  </data>
+  <data name="Fitness_Left_6min" xml:space="preserve">
+    <value>For those who have heavy lags, please make sure to move slowly to avoid falling all the way down because of lags.</value>
+  </data>
+  <data name="Fitness_Left_500sec" xml:space="preserve">
+    <value>Please remember that if you die during the event, you'll be eliminated from the game. If you're running out of HP, either take a potion or recover HP first before moving on.</value>
+  </data>
+  <data name="Fitness_Left_600sec" xml:space="preserve">
+    <value>The most important thing you'll need to know to avoid the bananas thrown by the monkeys is *Timing* Timing is everything in this!</value>
+  </data>
+  <data name="Fitness_Left_660sec" xml:space="preserve">
+    <value>The 2nd stage offers monkeys throwing bananas. Please make sure to avoid them by moving along at just the right timing.</value>
+  </data>
+  <data name="Fitness_Left_700sec" xml:space="preserve">
+    <value>Please remember that if you die during the event, you'll be eliminated from the game. You still have plenty of time left, so either take a potion or recover HP first before moving on.</value>
+  </data>
+  <data name="Fitness_Left_780sec" xml:space="preserve">
+    <value>Everyone that clears [The Maple Physical Fitness Test] on time will be given an item, regardless of the order of finish, so just relax, take your time, and clear the 4 stages.</value>
+  </data>
+  <data name="Fitness_Left_840sec" xml:space="preserve">
+    <value>There may be a heavy lag due to many users at stage 1 all at once. It won't be difficult, so please make sure not to fall down because of heavy lag.</value>
+  </data>
+  <data name="Fitness_Left_870sec" xml:space="preserve">
+    <value>[MapleStory Physical Fitness Test] consists of 4 stages, and if you happen to die during the game, you'll be eliminated from the game, so please be careful of that.</value>
+  </data>
+  <data name="Notice_EventStart" xml:space="preserve">
+    <value>The portal has now opened. Press the up arrow key at the portal to enter.</value>
+  </data>
+  <data name="Notice_EventEnd" xml:space="preserve">
+    <value>The event has ended</value>
+  </data>
+  <data name="Expedition_Captain_NoticeMap" xml:space="preserve">
+    <value>[Expedition] {0} has been declared the expedition captain. Please register for the expedition.</value>
+  </data>
+  <data name="Expedition_Captain_Notice" xml:space="preserve">
+    <value>[Expedition] You have become the expedition captain. Gather enough people for your team then talk to the NPC to start.</value>
+  </data>
+  <data name="Expedition_Timeout_Disband" xml:space="preserve">
+    <value>[Expedition] The time limit has been reached. Expedition has been disbanded.</value>
+  </data>
 </root>

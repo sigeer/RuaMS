@@ -61,6 +61,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 [RIP]: {0} 已被封禁. 的本地化字符串。
+        /// </summary>
+        public static string Ban_NoticeGM {
+            get {
+                return ResourceManager.GetString("Ban_NoticeGM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 [{ServerName}]已启动 的本地化字符串。
         /// </summary>
         public static string Server_Active {

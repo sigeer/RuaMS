@@ -476,7 +476,7 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        public void BroadcastPacket(Packet p)
+        void BroadcastPacket(Packet p)
         {
             foreach (var ch in Servers.Values)
             {
@@ -484,13 +484,6 @@ namespace Application.Core.Channel
             }
         }
 
-        public void BroadcastGMPacket(Packet p)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                ch.broadcastGMPacket(p);
-            }
-        }
 
         void BroadcastSetTimer(MessageProto.SetTimer data)
         {

@@ -32,13 +32,10 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Resources.Messages;
-using Application.Shared.Languages;
-using Application.Shared.Net;
 using Application.Shared.WzEntity;
 using client.autoban;
 using client.inventory;
 using client.status;
-using constants.game;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -47,12 +44,10 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using SyncProto;
+using System;
 using System.Collections.Concurrent;
-using System.Text;
 using tools;
 using ZLinq;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace Application.Core.Game.Maps;
@@ -966,7 +961,7 @@ public class MapleMap : IMap
             objectLock.ExitWriteLock();
         }
     }
-   
+
     public List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<IPlayer> partyMembers, IPlayer? partyLeaver)
     {
         List<MapItem> partyDrops = new();
@@ -3256,7 +3251,7 @@ public class MapleMap : IMap
                             _map.unregisterItemDrop(mapitem);
 
                             reactor.setShouldCollect(false);
-                            _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(),  MapItemRemoveAnimation.Expired, 0), mapitem.getPosition());
+                            _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem.getPosition());
 
                             _map.removeMapObject(mapitem);
 
@@ -4795,10 +4790,11 @@ public class MapleMap : IMap
             chrLock.ExitReadLock();
         }
     }
-    private void BroadcastAll(Action<IPlayer> effectPlayer)
+    public void BroadcastAll(Action<IPlayer> effectPlayer)
     {
         Broadcast(null, double.PositiveInfinity, null, effectPlayer);
     }
+
     public void TypedMessage(int type, string messageKey, params string[] param)
     {
         BroadcastAll(e => e.TypedMessage(type, messageKey, param));
@@ -4828,9 +4824,14 @@ public class MapleMap : IMap
         TypedMessage(6, text, param);
     }
 
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        BroadcastAll(e => e.LightBlue(action));
+    }
+
     public void TopScrolling(string text, params string[] param)
     {
-        TypedMessage(14, text, param);
+        BroadcastAll(e => e.TopScrolling(text, param));
     }
 
     public void Yellow(string text, params string[] param)

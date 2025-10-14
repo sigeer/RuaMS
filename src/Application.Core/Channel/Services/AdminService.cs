@@ -1,6 +1,7 @@
 using Application.Core.Models;
 using Application.Core.scripting.npc;
 using Application.Core.ServerTransports;
+using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.Languages;
 using Application.Shared.Login;
@@ -64,8 +65,8 @@ namespace Application.Core.Channel.Services
             var chr = _server.FindPlayerById(data.TargetId);
             if (chr != null)
             {
-                chr.yellowMessage("You have been banned by #b" + data.OperatorName + " #k.");
-                chr.yellowMessage("Reason: " + data.ReasonDesc);
+                chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
+                chr.yellowMessage(chr.GetMessageByKey(ClientMessage.BanReason) + data.ReasonDesc);
 
                 Timer? timer = null;
                 timer = new System.Threading.Timer(_ =>
@@ -76,7 +77,7 @@ namespace Application.Core.Channel.Services
                 }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
             }
 
-            _server.BroadcastGMPacket(PacketCreator.serverNotice(6, "[RIP]: " + data.TargetName + " has been banned."));
+            _server.SendDropGMMessage(6, string.Format(SystemMessage.Ban_NoticeGM, data.TargetName));
         }
 
         public void Unban(IPlayer chr, string victim)
@@ -97,11 +98,11 @@ namespace Application.Core.Channel.Services
             var res = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
             if (res.Code == 0)
             {
-                chr.dropMessage(victim + " is now a level " + newLevel + " GM.");
+                chr.Yellow(nameof(ClientMessage.SetGmLevelCommand_Result), victim, newLevel.ToString());
             }
             else
             {
-                chr.dropMessage("Player '" + victim + "' was not found on this channel.");
+                chr.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), victim);
             }
         }
 
@@ -111,7 +112,7 @@ namespace Application.Core.Channel.Services
             if (chr != null)
             {
                 chr.Client.AccountEntity!.GMLevel = (sbyte)data.Level;
-                chr.dropMessage("You are now a level " + data.Level + " GM. See @commands for a list of available commands.");
+                chr.Notice(nameof(ClientMessage.Notice_GmLevelChanged), data.Level.ToString());
             }
         }
 
@@ -169,7 +170,7 @@ namespace Application.Core.Channel.Services
                 }
                 else
                 {
-                    chr.dropMessage($"玩家 {victim} 不存在或者不在线");
+                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
                 }
             }
         }
@@ -194,7 +195,7 @@ namespace Application.Core.Channel.Services
                 var res = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
                 if (res.Code != 0)
                 {
-                    chr.dropMessage($"玩家 {victim} 不存在或者不在线");
+                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
                 }
             }
         }
@@ -223,7 +224,7 @@ namespace Application.Core.Channel.Services
                 var res = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
                 if (res.Code != 0)
                 {
-                    chr.dropMessage($"玩家 {victim} 不存在或者不在线");
+                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
                 }
             }
         }
@@ -284,7 +285,7 @@ namespace Application.Core.Channel.Services
             {
                 chr.saveCharToDB(trigger: SyncCharacterTrigger.System);
             }
-            _server.BroadcastGMPacket(PacketCreator.serverNotice(5, "玩家数据已同步"));
+            _server.SendDropGMMessage(5, "玩家数据已同步");
         }
 
         internal string QueryExpeditionInfo(IPlayer onlinedCharacter)

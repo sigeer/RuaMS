@@ -1,10 +1,10 @@
+using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
-using Application.Shared.Languages;
 using client;
 using client.autoban;
 using server;
@@ -134,6 +134,7 @@ namespace Application.Core.Game.Players
         {
             return Name;
         }
+
         public void TypedMessage(int type, string messageKey, params string[] param)
         {
             sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
@@ -145,7 +146,7 @@ namespace Application.Core.Game.Players
 
         public void Popup(string key, params string[] param)
         {
-            sendPacket(PacketCommon.serverNotice(1, GetMessageByKey(key, param)));
+            TypedMessage(1, key, param);
         }
 
         public void Dialog(string key, params string[] param)
@@ -155,17 +156,22 @@ namespace Application.Core.Game.Players
 
         public void Pink(string key, params string[] param)
         {
-            sendPacket(PacketCommon.serverNotice(5, GetMessageByKey(key, param)));
+            TypedMessage(5, key, param);
         }
 
         public void LightBlue(string key, params string[] param)
         {
-            sendPacket(PacketCommon.serverNotice(6, GetMessageByKey(key, param)));
+            TypedMessage(6, key, param);
+        }
+
+        public void LightBlue(Func<ClientCulture, string> action)
+        {
+            sendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
         }
 
         public void TopScrolling(string key, params string[] param)
         {
-            sendPacket(PacketCommon.serverNotice(4, GetMessageByKey(key, param)));
+            sendPacket(PacketCommon.serverMessage(GetMessageByKey(key, param)));
         }
 
         public void Yellow(string key, params string[] param)

@@ -293,5 +293,6 @@ namespace Application.Core.Game.Maps
         void warpOutByTeam(int team, int mapid);
 
         bool IsActive();
+        void BroadcastAll(Action<IPlayer> effectPlayer);
     }
 }
