@@ -1,3 +1,5 @@
+using Application.Shared.Languages;
+
 namespace constants.String;
 
 /**
@@ -5,8 +7,6 @@ namespace constants.String;
  */
 public class LanguageConstants
 {
-
-
     public static string[] CPQBlue = new string[3];
     public static string[] CPQError = new string[3];
     public static string[] CPQEntry = new string[3];
@@ -24,38 +24,7 @@ public class LanguageConstants
     static LanguageConstants()
     {
         int lang;
-
-        lang = Language.LANG_PRT.getValue();
-        LanguageConstants.CPQBlue[lang] = "Maple Azul";
-        LanguageConstants.CPQRed[lang] = "Maple Vermelho";
-        LanguageConstants.CPQExtendTime[lang] = "O tempo foi estendido.";
-        LanguageConstants.CPQPlayerExit[lang] = " deixou o Carnaval de Monstros.";
-        LanguageConstants.CPQError[lang] = "Ocorreu um problema. Favor recriar a sala.";
-        LanguageConstants.CPQLeaderNotFound[lang] = "Nao foi possivel encontrar o Lider.";
-        LanguageConstants.CPQPickRoom[lang] = "Inscreva-se no Festival de Monstros!\r\n";
-        LanguageConstants.CPQChallengeRoomAnswer[lang] = "O grupo esta respondendo um desafio no momento.";
-        LanguageConstants.CPQChallengeRoomSent[lang] = "Um desafio foi enviado para o grupo na sala. Aguarde um momento.";
-        LanguageConstants.CPQChallengeRoomDenied[lang] = "O grupo na sala cancelou seu desafio.";
-        LanguageConstants.CPQFindError[lang] = "Nao foi possivel encontrar um grupo nesta sala.\r\nProvavelmente o grupo foi desfeito dentro da sala!";
-        LanguageConstants.CPQEntryLobby[lang] = "Agora voce ira receber desafios de outros grupos. Se voce nao aceitar um desafio em 3 minutos, voce sera levado para fora.";
-        LanguageConstants.CPQEntry[lang] = "Voce pode selecionar \"Invocar Monstros\", \"Habilidade\", ou \"Protetor\" como sua tatica durante o Carnaval dos Monstros. Use Tab a F1~F12 para acesso rapido!";
-
-        lang = Language.LANG_ESP.getValue();
-        LanguageConstants.CPQBlue[lang] = "Maple Azul";
-        LanguageConstants.CPQRed[lang] = "Maple Rojo";
-        LanguageConstants.CPQExtendTime[lang] = "El tiempo se ha ampliado.";
-        LanguageConstants.CPQPlayerExit[lang] = " ha dejado el Carnaval de Monstruos.";
-        LanguageConstants.CPQLeaderNotFound[lang] = "No se pudo encontrar el Lider.";
-        LanguageConstants.CPQPickRoom[lang] = "!Inscribete en el Festival de Monstruos!\r\n";
-        LanguageConstants.CPQError[lang] = "Se ha producido un problema. Por favor, volver a crear una sala.";
-        LanguageConstants.CPQChallengeRoomAnswer[lang] = "El grupo esta respondiendo un desafio en el momento.";
-        LanguageConstants.CPQChallengeRoomSent[lang] = "Un desafio fue enviado al grupo en la sala. Espera un momento.";
-        LanguageConstants.CPQChallengeRoomDenied[lang] = "El grupo en la sala cancelo su desafio.";
-        LanguageConstants.CPQFindError[lang] = "No se pudo encontrar un grupo en esta sala.\r\nProbablemente el grupo fue deshecho dentro de la sala!";
-        LanguageConstants.CPQEntryLobby[lang] = "Ahora usted recibira los retos de otros grupos. Si usted no acepta un desafio en 3 minutos, usted sera llevado hacia fuera.";
-        LanguageConstants.CPQEntry[lang] = "Usted puede seleccionar \"Invocar Monstruos\", \"Habilidad\", o \"Protector\" como su tactica durante el Carnaval de los Monstruos. Utilice Tab y F1 ~ F12 para acceso rapido!";
-
-        lang = Language.LANG_ENG.getValue();
+        lang = (int)LanguageEnum.enUS;
         LanguageConstants.CPQBlue[lang] = "Maple Blue";
         LanguageConstants.CPQRed[lang] = "Maple Red";
         LanguageConstants.CPQPlayerExit[lang] = " left the Carnival of Monsters.";
@@ -75,20 +44,7 @@ public class LanguageConstants
 
     public static string getMessage(IPlayer chr, string[] message)
     {
-        return message[chr.getLanguage()];
+        return message[chr.Client.Language];
     }
 }
 
-public enum Language
-{
-    LANG_PRT = 0,
-    LANG_ESP = 1,
-    LANG_ENG = 2
-}
-public static class LanguageExntensions
-{
-    public static int getValue(this Language e)
-    {
-        return (int)e;
-    }
-}

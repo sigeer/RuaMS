@@ -49,7 +49,5 @@ public partial class AccountEntity
     public string? Nick { get; set; }
     public string? Email { get; set; }
 
-    public int Language { get; set; } = 2;
-
     public virtual Quickslotkeymapped? Quickslotkeymapped { get; set; }
 }

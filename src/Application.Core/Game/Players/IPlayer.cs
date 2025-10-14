@@ -335,7 +335,6 @@ namespace Application.Core.Game.Players
         Job getJobStyle(byte opt);
         int getJobType();
         Dictionary<int, KeyBinding> getKeymap();
-        int getLanguage();
         long getLastCombo();
         string getLastCommandMessage();
         long getLastHealed();

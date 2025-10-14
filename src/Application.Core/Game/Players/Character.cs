@@ -5033,11 +5033,6 @@ public partial class Player
         this.challenged = challenged;
     }
 
-    public int getLanguage()
-    {
-        return Client.AccountEntity!.Language;
-    }
-
     public bool isChasing()
     {
         return chasing;
