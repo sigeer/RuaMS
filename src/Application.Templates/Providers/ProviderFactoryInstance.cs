@@ -1,5 +1,6 @@
 using Application.Templates.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace Application.Templates.Providers
 {
@@ -48,5 +49,7 @@ namespace Application.Templates.Providers
 
             throw new ProviderNotFoundException(key);
         }
+
+       internal MultiCultureFileProvider FileProvider = new MultiCultureFileProvider(CultureInfo.GetCultureInfo("zh-CN"));
     }
 }

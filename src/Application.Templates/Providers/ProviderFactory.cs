@@ -5,8 +5,11 @@ namespace Application.Templates.Providers
     public class ProviderFactory
     {
         private static string? _globalDataDir;
-        public static string GetDataDir()
+        public static string GetEffectDir(string? inputDir)
         {
+            if (!string.IsNullOrEmpty(inputDir) && Directory.Exists(inputDir))
+                return inputDir;
+
             if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
             {
                 var pathFromEnv = Environment.GetEnvironmentVariable("ms-wz") ?? Environment.GetEnvironmentVariable("RUA_MS_ms-wz");
@@ -23,7 +26,7 @@ namespace Application.Templates.Providers
             }
 
             if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
-                throw new ProviderNotFoundException("没有设置wz的目录");
+                throw new ProviderNotFoundException("wz", "没有设置wz的目录，默认路径也没有找到wz。");
 
             return _globalDataDir;
         }
@@ -31,17 +34,7 @@ namespace Application.Templates.Providers
         {
             action(Instance);
 
-            if (string.IsNullOrEmpty(Instance.DataDir) || !Directory.Exists(Instance.DataDir))
-            {
-                if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
-                {
-                    GetDataDir();
-                }
-            }
-            else
-            {
-                _globalDataDir = Instance.DataDir;
-            }
+            _globalDataDir = GetEffectDir(_globalDataDir);
         }
 
         public static TProvider GetProvider<TProvider>() where TProvider : IProvider => Instance.GetProvider<TProvider>();

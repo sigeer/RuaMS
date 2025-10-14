@@ -21,7 +21,7 @@ namespace Application.Templates.Providers
             _templates = new();
 
             _options = options;
-            _dataBaseDir = options.DataDir ?? ProviderFactory.GetDataDir();
+            _dataBaseDir = ProviderFactory.GetEffectDir(options.DataDir);
         }
 
 

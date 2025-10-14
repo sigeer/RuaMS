@@ -1,7 +1,6 @@
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
@@ -13,24 +12,14 @@ namespace Application.Templates.XmlWzReader.Provider
         protected StringTemplateType[] _types;
         protected string[] _files;
         protected CultureInfo _culture;
-        protected StringBaseProvider(TemplateOptions options, CultureInfo cultureInfo, StringTemplateType[] types) : base(options)
+        MultiCultureFileProvider _fileProvider;
+        protected StringBaseProvider(TemplateOptions options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
         {
             _types = types;
-            _culture = cultureInfo;
 
-            // 系统默认zh-CN，但是wz（无后缀）默认en
-            if (cultureInfo.Name != "en-US")
-            {
-                var culturePath = _dataBaseDir + "-" + cultureInfo.Name;
-                if (Directory.Exists(culturePath))
-                    _dataBaseDir = culturePath;
-                else
-                    LibLog.Logger.LogWarning("没有找到与{Culture}匹配的wz目录", cultureInfo.Name);
-            }
-
-            _files = Directory.GetFiles(GetPath())
-                    .Where(x => _types
-                    .Any(y => x.EndsWith(y.ToString() + ".img.xml", StringComparison.OrdinalIgnoreCase))).ToArray();
+            _culture = currentCulture;
+            _fileProvider = new MultiCultureFileProvider(_dataBaseDir);
+            _files = _fileProvider.ListAllFiles(x => _types.Any(y => x.EndsWith(y.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         public override ProviderType ProviderName => ProviderType.String;
@@ -53,7 +42,10 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
-            using var fis = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(path, _culture);
+            if (fis == null)
+                throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到，路径：{path}。");
+
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
