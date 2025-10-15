@@ -2,12 +2,12 @@ namespace client.creator;
 
 public class MakeCharInfoValidator
 {
-    private static MakeCharInfo charFemale;
-    private static MakeCharInfo charMale;
-    private static MakeCharInfo orientCharFemale;
-    private static MakeCharInfo orientCharMale;
-    private static MakeCharInfo premiumCharFemale;
-    private static MakeCharInfo premiumCharMale;
+    public static MakeCharInfo charFemale;
+    public static MakeCharInfo charMale;
+    public static MakeCharInfo orientCharFemale;
+    public static MakeCharInfo orientCharMale;
+    public static MakeCharInfo premiumCharFemale;
+    public static MakeCharInfo premiumCharMale;
 
     static MakeCharInfoValidator()
     {
