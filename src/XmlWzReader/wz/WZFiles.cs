@@ -19,7 +19,7 @@ public class WZFiles
     public static readonly WZFiles SOUND = new("Sound");
     public static readonly WZFiles UI = new("UI");
 
-    public readonly static string DIRECTORY = getWzDirectory();
+    public static string DIRECTORY = getWzDirectory();
 
     private string fileName;
     public bool UseCache { get; init; }

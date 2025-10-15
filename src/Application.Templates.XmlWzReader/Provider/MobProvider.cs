@@ -6,7 +6,7 @@ using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public class MobProvider : AbstractProvider<MobTemplate>
+    public class MobProvider : AbstractGroupProvider<MobTemplate>
     {
         public override string ProviderName => ProviderNames.Mob;
 

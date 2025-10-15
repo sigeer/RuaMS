@@ -40,6 +40,16 @@ namespace Application.Core.Channel
             return string.Format(message, paramsValue);
         }
 
+        public string? GetNullableMessageByKey(string key, params string[] paramsValue)
+        {
+            var message = ClientMessage.ResourceManager.GetString(key, CultureInfo);
+            if (string.IsNullOrEmpty(message))
+            {
+                return null;
+            }
+            return string.Format(message, paramsValue);
+        }
+
         public string GetScriptTalkByKey(string key, params string[] paramsValue)
         {
             var message = ScriptTalk.ResourceManager.GetString(key, CultureInfo);

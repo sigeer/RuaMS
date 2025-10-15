@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class MapProvider : AbstractProvider<MapTemplate>
+    public sealed class MapProvider : AbstractGroupProvider<MapTemplate>
     {
         public override string ProviderName => ProviderNames.Map;
 

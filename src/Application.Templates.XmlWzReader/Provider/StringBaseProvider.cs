@@ -1,6 +1,7 @@
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
@@ -11,7 +12,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         protected StringTemplateType[] _types;
         protected CultureInfo _culture;
-
+        protected string[] _files;
         protected StringBaseProvider(TemplateOptions options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
         {
             _types = types;
@@ -28,7 +29,24 @@ namespace Application.Templates.XmlWzReader.Provider
             return LoadAll().FirstOrDefault(x => x.TemplateId == templateId);
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
+        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
+        {
+            List<AbstractTemplate> all = new List<AbstractTemplate>();
+            try
+            {
+                foreach (var file in _files)
+                {
+                    all.AddRange(GetDataFromImg(file));
+                }
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+            }
+            return all;
+        }
+
+        protected IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
             using var fis = _fileProvider.ReadFile(path, _culture);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
@@ -36,7 +54,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
             var typeAttr = xDoc.Attribute("name")?.Value;
             if (string.IsNullOrEmpty(typeAttr))
-                throw new TemplateFormatException(ProviderName, path!);
+                throw new TemplateFormatException(ProviderName, path);
 
             StringTemplateType fileType;
             try
@@ -45,7 +63,7 @@ namespace Application.Templates.XmlWzReader.Provider
             }
             catch (Exception)
             {
-                throw new TemplateFormatException(ProviderName, path!);
+                throw new TemplateFormatException(ProviderName, path);
             }
 
             if (!_types.Contains(fileType))

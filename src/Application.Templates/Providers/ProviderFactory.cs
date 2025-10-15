@@ -39,6 +39,7 @@ namespace Application.Templates.Providers
 
         public static TProvider GetProvider<TProvider>() where TProvider : IProvider => Instance.GetProvider<TProvider>();
         public static IProvider GetProviderByKey(string key) => Instance.GetProviderByKey(key);
+        public static void Clear() => Instance.Clear();
 
         static ProviderFactoryInstance Instance = new ProviderFactoryInstance();
     }

@@ -24,8 +24,10 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Resources;
+using Application.Shared.Items;
 using Application.Templates;
 using Application.Templates.Character;
+using Application.Templates.Exceptions;
 using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
@@ -109,13 +111,17 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     //    etcItemCache = itemPairs;
     //    return itemPairs;
     //}
-    ItemProviderBase GetProvider(int itemId)
+    AbstractGroupProvider<AbstractItemTemplate> GetProvider(int itemId)
     {
         return itemId < 2000000 ? _equipProvider : _itemProvider;
     }
 
     public AbstractItemTemplate? GetTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
-
+    public AbstractItemTemplate GetTrusetTemplate(int itemId)
+    {
+        var provider = GetProvider(itemId);
+        return provider.GetItem(itemId) ?? throw new TemplateNotFoundException(provider.GetType().Name, itemId);
+    }
     public bool noCancelMouse(int itemId)
     {
         return GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;

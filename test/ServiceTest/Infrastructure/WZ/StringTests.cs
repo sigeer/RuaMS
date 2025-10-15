@@ -1,35 +1,34 @@
 using Application.Resources;
-using Application.Shared.Models;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
 using System.Globalization;
+using XmlWzReader.wz;
 
 namespace ServiceTest.Infrastructure.WZ
 {
+    [TestFixture("en-US")]
+    [TestFixture("zh-CN")]
     internal class StringTests
     {
-        JsonSerializerSettings options;
-        CultureInfo testCulture = CultureInfo.GetCultureInfo("en-US");
-        public StringTests()
+        CultureInfo testCulture;
+        public StringTests(string currentCulture)
         {
-            options = new JsonSerializerSettings
-            {
-                ContractResolver = new PrivateContractResolver(),
-                Formatting = Formatting.Indented
-            };
+            testCulture = CultureInfo.GetCultureInfo(currentCulture);
 
+            ProviderFactory.Clear();
             ProviderFactory.Initilaize(o =>
             {
                 o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
             });
+
+            if (testCulture.Name == "zh-CN")
+            {
+                WZFiles.DIRECTORY += "-zh-CN";
+            }
         }
 
-        string ToJson(object? obj)
-        {
-            return JsonConvert.SerializeObject(obj, options);
-        }
         [Test]
         public void ItemTests()
         {
@@ -63,7 +62,10 @@ namespace ServiceTest.Infrastructure.WZ
                 if (newData == null)
                     Assert.Fail("newData == null, mapid " + item.Id);
                 else
+                {
                     Assert.That(newData.MapName, Is.EqualTo(item.PlaceName), "mapid " + item.Id);
+                    Assert.That(newData.StreetName, Is.EqualTo(item.StreetName), "mapid " + item.Id);
+                }
             }
         }
 
@@ -72,12 +74,22 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture);
+            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Npc);
 
             var oldList = oldProvider.GetAllNpcList().OrderBy(x => x.Id).ToList();
-            var newList = newProvider.GetSubProvider(Application.Templates.String.StringCategory.Npc).LoadAll().OrderBy(x => x.TemplateId).OfType<StringNpcTemplate>().ToList();
 
-            Assert.That(ToJson(newList.Select(x => new NpcObjectName(x.TemplateId, x.Name, x.DefaultTalk))), Is.EqualTo(ToJson(oldList)));
+            foreach (var item in oldList)
+            {
+                var newData = newProvider.GetRequiredItem<StringNpcTemplate>(item.Id);
+                if (newData == null)
+                    Assert.Fail("newData == null, npcId " + item.Id);
+                else
+                {
+                    Assert.That(newData.Name, Is.EqualTo(item.Name), "npcId " + item.Id);
+                    Assert.That(newData.DefaultTalk, Is.EqualTo(item.DefaultTalk), "npcId " + item.Id);
+                }
+            }
+
         }
 
         [Test]
@@ -85,24 +97,41 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture);
+            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Mob);
 
             var oldList = oldProvider.GetAllMonster().OrderBy(x => x.Id).ToList();
-            var newList = newProvider.GetSubProvider(Application.Templates.String.StringCategory.Mob).LoadAll().OrderBy(x => x.TemplateId).OfType<StringTemplate>().ToList();
 
-            Assert.That(ToJson(newList.Select(x => new ObjectName(x.TemplateId, x.Name))), Is.EqualTo(ToJson(oldList)));
+            foreach (var item in oldList)
+            {
+                var newData = newProvider.GetRequiredItem<StringTemplate>(item.Id);
+                if (newData == null)
+                    Assert.Fail("newData == null, mobId " + item.Id);
+                else
+                {
+                    Assert.That(newData.Name, Is.EqualTo(item.Name), "mobId " + item.Id);
+                }
+            }
+
         }
         [Test]
         public void SkillTest()
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture);
+            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Skill);
 
             var oldList = oldProvider.GetAllSkillList().OrderBy(x => x.Id).ToList();
-            var newList = newProvider.GetSubProvider(Application.Templates.String.StringCategory.Skill).LoadAll().OrderBy(x => x.TemplateId).OfType<StringTemplate>().ToList();
 
-            Assert.That(ToJson(newList.Select(x => new ObjectName(x.TemplateId, x.Name)).ToList()), Is.EqualTo(ToJson(oldList)));
+            foreach (var item in oldList)
+            {
+                var newData = newProvider.GetRequiredItem<StringTemplate>(item.Id);
+                if (newData == null)
+                    Assert.Fail("newData == null, skillId " + item.Id);
+                else
+                {
+                    Assert.That(newData.Name, Is.EqualTo(item.Name), "skillId " + item.Id);
+                }
+            }
         }
     }
 }

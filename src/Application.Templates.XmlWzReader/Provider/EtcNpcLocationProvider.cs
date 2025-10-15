@@ -5,19 +5,18 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public class EtcNpcLocationProvider : AbstractProvider<NpcLocationTemplate>
+    public class EtcNpcLocationProvider : AbstractAllProvider<NpcLocationTemplate>
     {
-        public EtcNpcLocationProvider(TemplateOptions options) : base(options)
+        public EtcNpcLocationProvider(TemplateOptions options) : base(options, "NpcLocation.img.xml")
         {
 
         }
 
         public override string ProviderName => ProviderNames.Etc;
-        public override string[]? SingleImgFile => ["NpcLocation.img.xml"];
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            using var fis = _fileProvider.ReadFile(path);
+            using var fis = _fileProvider.ReadFile(_file);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 

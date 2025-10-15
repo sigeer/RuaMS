@@ -53,7 +53,7 @@ public class ItemDropCommand : CommandBase
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddDays(days).ToUnixTimeMilliseconds();
 
-                var toDropTemp = new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+                var toDropTemp = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
                 toDropTemp.setExpiration(expiration);
 
                 toDropTemp.setOwner("");

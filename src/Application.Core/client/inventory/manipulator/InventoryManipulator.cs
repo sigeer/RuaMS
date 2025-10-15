@@ -24,6 +24,8 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Resources.Messages;
+using Application.Shared.Items;
+using Application.Templates.Item.Pet;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -68,10 +70,10 @@ public class InventoryManipulator
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
         {
-            var isPet = ItemConstants.isPet(itemId);
+            var abTemplate = ItemInformationProvider.getInstance().GetTrusetTemplate(itemId);
             short slotMax = ii.getSlotMax(c, itemId);
             List<Item> existing = inv.listById(itemId);
-            if (!ItemConstants.isRechargeable(itemId) && !isPet)
+            if (!ItemConstants.isRechargeable(itemId) && abTemplate is not PetItemTemplate)
             {
                 if (existing.Count > 0)
                 { // first update all existing slots to slotMax
@@ -126,7 +128,7 @@ public class InventoryManipulator
             }
             else
             {
-                Item nItem = isPet ? new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemId, quantity);
+                Item nItem = abTemplate is PetItemTemplate petTemplate ? new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemId, quantity);
                 nItem.setFlag(flag);
                 nItem.setExpiration(expiration);
                 short newSlot = inv.addItem(nItem);

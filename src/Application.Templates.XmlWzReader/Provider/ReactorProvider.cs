@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class ReactorProvider : AbstractProvider<ReactorTemplate>
+    public sealed class ReactorProvider : AbstractGroupProvider<ReactorTemplate>
     {
         public override string ProviderName => ProviderNames.Reactor;
 

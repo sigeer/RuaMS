@@ -1033,6 +1033,6 @@
     <value>Npc {0} 出现在以下地图</value>
   </data>
   <data name="AlreadyInMap" xml:space="preserve">
-    <value />
+    <value>你已经在这个地图里了。</value>
   </data>
 </root>

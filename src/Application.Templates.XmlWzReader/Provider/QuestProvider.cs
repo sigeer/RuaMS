@@ -7,16 +7,15 @@ using static Application.Templates.Quest.QuestDemand;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class QuestProvider : AbstractProvider<QuestTemplate>
+    public sealed class QuestProvider : AbstractCompositeProvider<QuestTemplate>
     {
         public override string ProviderName => ProviderNames.Quest;
-        public override string[]? SingleImgFile => ["QuestInfo.img.xml", "Act.img.xml", "Check.img.xml"];
         public QuestProvider(TemplateOptions options)
-            : base(options)
+            : base(options, ["QuestInfo.img.xml", "Act.img.xml", "Check.img.xml"])
         {
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
             List<QuestInfoTemplate> infoList = [];
             List<QuestActTemplate> actList = [];
@@ -83,11 +82,6 @@ namespace Application.Templates.XmlWzReader.Provider
                 InsertItem(item);
             }
             return allData;
-        }
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            return GetDataFromImg(null);
         }
 
         private static void ProcessCheck(List<QuestCheckTemplate> checkList, XElement xDoc)

@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 
@@ -47,7 +48,6 @@ public class Item : IComparable<Item>, IItemProp
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
     public Item(int id, short position, short quantity)
     {
-
         log = LogFactory.GetLogger(LogType.Item);
         this.id = id;
         this.position = position;
@@ -188,14 +188,9 @@ public class Item : IComparable<Item>, IItemProp
         return expiration;
     }
 
-    public void setExpiration(long expire)
+    public virtual void setExpiration(long expire)
     {
-        this.expiration = !ItemConstants.isPermanentItem(id) ? expire : ItemConstants.isPet(id) ? long.MaxValue : -1;
-    }
-
-    public void setExpiration(DateTimeOffset expire)
-    {
-        this.expiration = !ItemConstants.isPermanentItem(id) ? expire.ToUnixTimeMilliseconds() : ItemConstants.isPet(id) ? long.MaxValue : -1;
+        this.expiration = expire;
     }
 
     public int getSN()

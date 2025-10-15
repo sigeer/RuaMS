@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public class SkillProvider : AbstractProvider<SkillTemplate>
+    public class SkillProvider : AbstractGroupProvider<SkillTemplate>
     {
         public override string ProviderName => ProviderNames.Skill;
         public SkillProvider(TemplateOptions options): base(options)

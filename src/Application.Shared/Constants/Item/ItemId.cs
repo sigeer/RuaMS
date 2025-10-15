@@ -224,13 +224,13 @@ public class ItemId
     }
 
     // Expirable pet
-    public static int PET_SNAIL = 5000054;
+    public const int PET_SNAIL = 5000054;
 
-    // Permanent pet
-    private static int PERMA_PINK_BEAN = 5000060;
-    private static int PERMA_KINO = 5000100;
-    private static int PERMA_WHITE_TIGER = 5000101;
-    private static int PERMA_MINI_YETI = 5000102;
+    // 永久宠物
+    private const int PERMA_PINK_BEAN = 5000060;
+    private const int PERMA_KINO = 5000100;
+    private const int PERMA_WHITE_TIGER = 5000101;
+    private const int PERMA_MINI_YETI = 5000102;
 
     public static int[] getPermaPets()
     {

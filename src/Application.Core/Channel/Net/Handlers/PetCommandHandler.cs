@@ -44,10 +44,13 @@ public class PetCommandHandler : ChannelHandlerBase
         {
             pet = chr.getPet(petIndex);
         }
+        if (pet == null)
+            return;
+
         p.readInt();
         p.readByte();
         byte command = p.readByte();
-        var petCommand = PetDataFactory.getPetCommand(pet!.getItemId(), command);
+        var petCommand = pet.SourceTemplate.InterActsDict.GetValueOrDefault(command);
         if (petCommand == null)
         {
             return;
