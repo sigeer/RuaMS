@@ -22,7 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
-using Application.Core.model;
+using Application.Templates.Item.Pet;
 using client.inventory;
 using constants.game;
 using server.movement;
@@ -49,8 +49,10 @@ public class Pet : Item
     public const int MaxTameness = 30000;
     public const int MaxLevel = 30;
 
-    public Pet(int id, short position, long uniqueid) : base(id, position, 1)
+    public PetItemTemplate SourceTemplate { get; }
+    public Pet(PetItemTemplate template, short position, long uniqueid) : base(template.TemplateId, position, 1)
     {
+        SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Pet);
         this.PetId = uniqueid;
         pos = new Point(0, 0);
@@ -59,7 +61,7 @@ public class Pet : Item
 
     public override Item copy()
     {
-        var copyPet = new Pet(getItemId(), getPosition(), PetId);
+        var copyPet = new Pet(SourceTemplate, getPosition(), PetId);
         copyPet.Name = Name;
         copyPet.PetAttribute = PetAttribute;
         copyPet.Fullness = Fullness;
@@ -279,6 +281,11 @@ public class Pet : Item
                 setStance(lifeMovement.getNewstate());
             }
         }
+    }
+
+    public override void setExpiration(long expire)
+    {
+        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expiration;
     }
 }
 

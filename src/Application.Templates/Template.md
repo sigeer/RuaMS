@@ -19,7 +19,7 @@
 516：表情（装饰）  
 517：宠物改名（特殊消耗道具）  
 518：生命水（特殊消耗道具）  
-519：宠物技能（特殊消耗道具）  
+519：宠物技能（特殊消耗道具）`WaterOfLifeItemTemplate`  
 520：金币袋`MesoBagItemTemplate`  
 521：经验倍率`CouponItemTemplate`  
 522：各种门票（特殊消耗道具）  
@@ -29,6 +29,7 @@
 528：范围特效`AreaEffectItemTemplate`  
 530：变身`MorphItemTemplate`  
 536：爆率倍率`CouponItemTemplate`  
+538：进化之石  
 550：魔法沙漏`ExtendItemTimeItemTemplate`  
 553：`CashPackagedItemTemplate`  
 557：金锤子

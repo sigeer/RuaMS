@@ -2,6 +2,8 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Shared.Items;
+using Application.Templates.Item.Pet;
 using client.inventory;
 using client.inventory.manipulator;
 using System.Runtime.CompilerServices;
@@ -555,11 +557,12 @@ namespace Application.Core.Game.Players
                     return null;
                 }
 
-                if (ItemConstants.isPet(itemId))
+                var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(itemId);
+                if (abTemplate is PetItemTemplate petTemplate)
                 {
                     if (from != null)
                     {
-                        var evolved = new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+                        var evolved = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
 
                         Point pos = getPosition();
                         pos.Y -= 12;

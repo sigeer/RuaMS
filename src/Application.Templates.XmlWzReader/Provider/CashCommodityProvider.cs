@@ -4,19 +4,18 @@ using System.Xml;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public class CashCommodityProvider : AbstractProvider<CashCommodityTemplate>
+    public sealed class CashCommodityProvider : AbstractAllProvider<CashCommodityTemplate>
     {
         public override string ProviderName => ProviderNames.Etc;
-        public override string[]? SingleImgFile => ["Commodity.img.xml"];
 
         public CashCommodityProvider(TemplateOptions options)
-            : base(options)
+            : base(options, "Commodity.img.xml")
         {
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            using var fis = _fileProvider.ReadFile(path);
+            using var fis = _fileProvider.ReadFile(_file);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             if (reader.IsEmptyElement)
                 return [];

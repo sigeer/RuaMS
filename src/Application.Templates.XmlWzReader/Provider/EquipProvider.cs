@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class EquipProvider : ItemProviderBase
+    public sealed class EquipProvider : AbstractGroupProvider<AbstractItemTemplate>
     {
         public override string ProviderName => ProviderNames.Character;
         public EquipProvider(TemplateOptions options) : base(options)

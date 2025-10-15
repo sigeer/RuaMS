@@ -760,7 +760,7 @@
     <value>Please keep in mind that there are items that are in all gachapons and are not listed here.</value>
   </data>
   <data name="ItemQuestCommand_Description" xml:space="preserve">
-    <value />
+    <value>Spawn quest items into your inventory, spawn quest mobs on your location.</value>
   </data>
   <data name="QuestNotFound" xml:space="preserve">
     <value>Quest {0} not found.</value>

@@ -4,6 +4,9 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
+using Application.Templates.Character;
+using Application.Templates.Exceptions;
+using Application.Templates.Item.Pet;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
@@ -44,13 +47,14 @@ namespace Application.Core.Channel.Services
         }
         public Item CashItem2Item(CashItem cashItem)
         {
+            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId()) ;
             Item item;
 
-            if (ItemConstants.isPet(cashItem.getItemId()))
+            if (abTemplate is PetItemTemplate petTemplate)
             {
-                item = new Pet(cashItem.getItemId(), 0, Yitter.IdGenerator.YitIdHelper.NextId());
+                item = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
             }
-            else if (ItemConstants.getInventoryType(cashItem.getItemId()).Equals(InventoryType.EQUIP))
+            else if (abTemplate is EquipTemplate equipTemplate)
             {
                 item = ItemInformationProvider.getInstance().getEquipById(cashItem.getItemId());
             }
@@ -83,7 +87,10 @@ namespace Application.Core.Channel.Services
                 }
                 else
                 {
-                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
+                    if (abTemplate is PetItemTemplate subPet)
+                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.Life).TotalMilliseconds);
+                    else
+                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
                 }
             }
 

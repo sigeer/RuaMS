@@ -9,6 +9,10 @@ namespace Application.Templates.Item.Pet
 
         [WZPath("info/hungry")]
         public int Hungry { get; set; } = 1;
+        [WZPath("info/permanent")]
+        public bool Permanent { get; set; }
+        [WZPath("info/life")]
+        public int Life { get; set; }
 
         [WZPath("interact/-")]
         public PetInterActData[] InterActs

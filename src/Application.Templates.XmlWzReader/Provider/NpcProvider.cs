@@ -3,7 +3,7 @@ using Application.Templates.Providers;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class NpcProvider : AbstractProvider<NpcTemplate>
+    public sealed class NpcProvider : AbstractGroupProvider<NpcTemplate>
     {
         public override string ProviderName => ProviderNames.Npc;
 

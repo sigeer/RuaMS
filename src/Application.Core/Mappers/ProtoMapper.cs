@@ -1,4 +1,5 @@
 using AllianceProto;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
@@ -69,7 +70,7 @@ namespace Application.Core.Mappers
 
             #region Item
             CreateMap<Dto.ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.PetInfo!.Petid
+                 .ConstructUsing(source => new Pet(ItemInformationProvider.getInstance().GetPetTemplate(source.Itemid)!, (short)source.Position, source.PetInfo!.Petid
                  ))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level)))

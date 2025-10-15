@@ -1,9 +1,6 @@
 using Application.Core.Channel.DataProviders;
-using Application.Shared.Items;
 using Application.Templates.Providers;
-using Application.Templates.Quest;
 using Application.Templates.XmlWzReader.Provider;
-using client.inventory;
 using Newtonsoft.Json;
 using System.Diagnostics;
 

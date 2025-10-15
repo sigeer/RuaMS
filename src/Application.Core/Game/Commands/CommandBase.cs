@@ -31,7 +31,7 @@ namespace Application.Core.Game.Commands
         }
         public virtual string? GetDescription(IChannelClient client)
         {
-            return client.CurrentCulture.GetMessageByKey(GetDescriptionKey()) ?? Description;
+            return client.CurrentCulture.GetNullableMessageByKey(GetDescriptionKey()) ?? Description;
         }
 
         private string? _currentCommand;

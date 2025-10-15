@@ -168,7 +168,7 @@ namespace Application.Core.Game.Players
                 return;
             }
 
-            int newFullness = pet.Fullness - PetDataFactory.getHunger(pet.getItemId());
+            int newFullness = pet.Fullness - pet.SourceTemplate.Hungry;
             if (newFullness <= 5)
             {
                 pet.Fullness = 15;

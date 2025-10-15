@@ -5,20 +5,19 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public class MobSkillProvider : AbstractProvider<MobSkillTemplate>
+    public class MobSkillProvider : AbstractAllProvider<MobSkillTemplate>
     {
         public override string ProviderName => ProviderNames.Skill;
 
-        public override string[]? SingleImgFile => ["MobSkill.img.xml"];
-        public MobSkillProvider(TemplateOptions options) : base(options)
+        public MobSkillProvider(TemplateOptions options) : base(options, "MobSkill.img.xml")
         {
         }
 
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
             List<AbstractTemplate> all = [];
-            using var fis = _fileProvider.ReadFile(path);
+            using var fis = _fileProvider.ReadFile(_file);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
 
             var xDoc = XDocument.Load(reader)!.Root!;

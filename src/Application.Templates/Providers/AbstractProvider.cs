@@ -1,4 +1,3 @@
-using Application.Templates.Exceptions;
 using System.Collections.Concurrent;
 
 namespace Application.Templates.Providers
@@ -10,20 +9,14 @@ namespace Application.Templates.Providers
         /// 隶属wz
         /// </summary>
         public abstract string ProviderName { get; }
-        /// <summary>
-        /// 单文件img时有效
-        /// </summary>
-        public virtual string[]? SingleImgFile { get; }
+
 
         protected readonly TemplateOptions _options;
         /// <summary>
         /// wz根目录
         /// </summary>
         protected string _dataBaseDir;
-        /// <summary>
-        /// .img.xml文件对wz根目录的相对路径
-        /// </summary>
-        protected string[] _files;
+
         protected WzFileProvider _fileProvider;
 
         private int _refCount = 0;
@@ -31,7 +24,7 @@ namespace Application.Templates.Providers
         bool _hasAllLoaded = false;
         Lock _loadAllLock = new Lock();
 
-        protected AbstractProvider(TemplateOptions options)
+        internal protected AbstractProvider(TemplateOptions options)
         {
             _templates = new();
 
@@ -40,16 +33,7 @@ namespace Application.Templates.Providers
 
             _fileProvider = new WzFileProvider(_dataBaseDir);
 
-            if (SingleImgFile == null)
-            {
-                _files = Directory.GetFiles(Path.Combine(_dataBaseDir, ProviderName), "*.xml", SearchOption.AllDirectories)
-                    .Select(x => Path.GetRelativePath(_dataBaseDir, x))
-                    .ToArray();
-            }
-            else
-            {
-                _files = SingleImgFile.Select(x => Path.Combine(ProviderName, x)).ToArray();
-            }
+
         }
 
         /// <summary>
@@ -78,15 +62,9 @@ namespace Application.Templates.Providers
         /// <summary>
         /// 读取所有img
         /// </summary>
-        protected virtual IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = new List<AbstractTemplate>();
-            foreach (var file in _files)
-            {
-                all.AddRange(GetDataFromImg(file));
-            }
-            return all;
-        }
+        protected abstract IEnumerable<AbstractTemplate> LoadAllInternal();
+
+        public virtual TCTemplate? GetRequiredItem<TCTemplate>(int templateId) where TCTemplate : TTemplate => GetItem(templateId) as TCTemplate;
 
         public virtual TTemplate? GetItem(int templateId)
         {
@@ -101,34 +79,12 @@ namespace Application.Templates.Providers
             return GetItemInternal(templateId);
         }
 
-        protected virtual TTemplate? GetItemInternal(int templateId)
-        {
-            return GetDataFromImg(GetImgPathByTemplateId(templateId)).FirstOrDefault(x => x.TemplateId == templateId) as TTemplate;
-        }
-
-        public virtual TCTemplate? GetRequiredItem<TCTemplate>(int templateId) where TCTemplate : TTemplate => GetItem(templateId) as TCTemplate;
         /// <summary>
-        /// 通过templateId获取相应img文件路径（相对路径）
+        /// 获取一条数据
         /// </summary>
         /// <param name="templateId"></param>
-        /// <returns>img文件路径（相对路径）</returns>
-        protected virtual string? GetImgPathByTemplateId(int templateId)
-        {
-            if (SingleImgFile == null || SingleImgFile.Length == 0)
-            {
-                return null;
-            }
-            return _files[0];
-
-        }
-
-        /// <summary>
-        /// 通过img获取template，并直接写入缓存
-        /// <para>可能存在一个img解析出多个template</para>
-        /// </summary>
-        /// <param name="path">img路径（对wz的相对路径）</param>
         /// <returns></returns>
-        protected abstract IEnumerable<AbstractTemplate> GetDataFromImg(string? path);
+        protected abstract TTemplate? GetItemInternal(int templateId);
 
         public bool Contains(int key) => _templates.ContainsKey(key);
         public bool Contains(TTemplate item) => _templates.ContainsKey(GetKeyForItem(item));

@@ -137,6 +137,8 @@ namespace XmlWzReader.SouceGenerator
                         var path = propAttrValue;
                         if (string.IsNullOrEmpty(path))
                             path = GenratePath(lastPath, propSymbol.Name.FirstCharToLower()) + "/-";
+                        else if (path.StartsWith("~"))
+                            path = path.Replace("~", lastPath);
 
                         var pathArr = path.Split('/');
                         var matchName = pathArr[pathArr.Length - 2];
@@ -149,6 +151,8 @@ namespace XmlWzReader.SouceGenerator
                         var path = propAttrValue;
                         if (string.IsNullOrEmpty(path))
                             path = GenratePath(lastPath, propSymbol.Name.FirstCharToLower()) + "/-";
+                        else if (path.StartsWith("~"))
+                            path = path.Replace("~", lastPath);
 
                         var pathArr = path.Split('/');
                         var matchName = pathArr[pathArr.Length - 2];
@@ -160,6 +164,9 @@ namespace XmlWzReader.SouceGenerator
                     var path = propAttrValue;
                     if (string.IsNullOrEmpty(path))
                         path = GenratePath(lastPath, propSymbol.Name.FirstCharToLower());
+                    else if (path.StartsWith("~"))
+                        path = path.Replace("~", lastPath) ;
+
                     var matchName = path.Split('/').Last();
 
                     if (namedType.TypeKind == TypeKind.Class &&

@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
-    public sealed class ItemProvider : ItemProviderBase
+    public sealed class ItemProvider : AbstractGroupProvider<AbstractItemTemplate>
     {
         public override string ProviderName => ProviderNames.Item;
 
@@ -300,6 +300,12 @@ namespace Application.Templates.XmlWzReader.Provider
                     {
                         var template = new SafetyCharmItemTemplate(itemId);
                         SafetyCharmItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 518:
+                    {
+                        var template = new WaterOfLifeItemTemplate(itemId);
+                        WaterOfLifeItemTemplateGenerated.ApplyProperties(template, itemNode);
                         return template;
                     }
                 case 520:
