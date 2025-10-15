@@ -557,7 +557,7 @@ namespace Application.Core.Game.Players
                     return null;
                 }
 
-                var abTemplate = ItemInformationProvider.getInstance().GetTrusetTemplate(itemId);
+                var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(itemId);
                 if (abTemplate is PetItemTemplate petTemplate)
                 {
                     if (from != null)

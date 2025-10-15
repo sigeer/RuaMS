@@ -47,7 +47,7 @@ namespace Application.Core.Channel.Services
         }
         public Item CashItem2Item(CashItem cashItem)
         {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrusetTemplate(cashItem.getItemId()) ;
+            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId()) ;
             Item item;
 
             if (abTemplate is PetItemTemplate petTemplate)

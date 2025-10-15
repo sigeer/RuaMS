@@ -117,7 +117,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
 
     public AbstractItemTemplate? GetTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
-    public AbstractItemTemplate GetTrusetTemplate(int itemId)
+    public AbstractItemTemplate GetTrustTemplate(int itemId)
     {
         var provider = GetProvider(itemId);
         return provider.GetItem(itemId) ?? throw new TemplateNotFoundException(provider.GetType().Name, itemId);

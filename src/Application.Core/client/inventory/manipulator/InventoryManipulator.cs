@@ -70,7 +70,7 @@ public class InventoryManipulator
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
         {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrusetTemplate(itemId);
+            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(itemId);
             short slotMax = ii.getSlotMax(c, itemId);
             List<Item> existing = inv.listById(itemId);
             if (!ItemConstants.isRechargeable(itemId) && abTemplate is not PetItemTemplate)
