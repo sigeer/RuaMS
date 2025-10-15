@@ -1,8 +1,10 @@
+using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
+using Application.Core.scripting.npc;
 using client;
 using client.autoban;
 using server;
@@ -131,6 +133,50 @@ namespace Application.Core.Game.Players
         public override string GetName()
         {
             return Name;
+        }
+
+        public void TypedMessage(int type, string messageKey, params string[] param)
+        {
+            sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
+        }
+        public void Notice(string key, params string[] param)
+        {
+            TypedMessage(0, key, param);
+        }
+
+        public void Popup(string key, params string[] param)
+        {
+            TypedMessage(1, key, param);
+        }
+
+        public void Dialog(string key, params string[] param)
+        {
+            TempConversation.Create(Client)?.RegisterTalk(GetMessageByKey(key, param));
+        }
+
+        public void Pink(string key, params string[] param)
+        {
+            TypedMessage(5, key, param);
+        }
+
+        public void LightBlue(string key, params string[] param)
+        {
+            TypedMessage(6, key, param);
+        }
+
+        public void LightBlue(Func<ClientCulture, string> action)
+        {
+            sendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
+        }
+
+        public void TopScrolling(string key, params string[] param)
+        {
+            sendPacket(PacketCommon.serverMessage(GetMessageByKey(key, param)));
+        }
+
+        public void Yellow(string key, params string[] param)
+        {
+            sendPacket(PacketCommon.SendYellowTip(GetMessageByKey(key, param)));
         }
     }
 }

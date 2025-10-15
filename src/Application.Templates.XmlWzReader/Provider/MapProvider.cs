@@ -7,33 +7,26 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class MapProvider : AbstractProvider<MapTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Map;
+        public override string ProviderName => ProviderNames.Map;
 
         public MapProvider(TemplateOptions options)
             : base(options)
-        { }
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
-            List<AbstractTemplate> all = [];
-            var files = new DirectoryInfo(Path.Combine(GetPath(), "Map")).GetFiles("*.xml", SearchOption.AllDirectories);
-            foreach (var item in files)
-            {
-                all.AddRange(GetDataFromImg(item.FullName));
-            }
-            return all;
+            _files = Directory.GetFiles(Path.Combine(_dataBaseDir, ProviderName, "Map"), "*.xml", SearchOption.AllDirectories)
+                    .Select(x => Path.GetRelativePath(_dataBaseDir, x))
+                    .ToArray();
         }
 
-        protected override string GetImgPathByTemplateId(int mapId)
+        protected override string? GetImgPathByTemplateId(int mapId)
         {
             var mapArea = $"Map{mapId / 100000000}";
             string fileName = mapId.ToString().PadLeft(9, '0') + ".img.xml";
-            return Path.Combine(GetPath(), "Map", mapArea, fileName);
+            return Path.Combine(ProviderName, "Map", mapArea, fileName);
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 

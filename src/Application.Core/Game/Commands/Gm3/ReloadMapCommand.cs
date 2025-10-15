@@ -1,10 +1,11 @@
+using Application.Resources.Messages;
+
 namespace Application.Core.Game.Commands.Gm3;
 
 public class ReloadMapCommand : CommandBase
 {
     public ReloadMapCommand() : base(3, "reloadmap")
     {
-        Description = "Reload the map.";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -21,7 +22,7 @@ public class ReloadMapCommand : CommandBase
             chr.changeMap(newMap);
             if (chr.getId() != callerid)
             {
-                chr.dropMessage("You have been relocated due to map reloading. Sorry for the inconvenience.");
+                chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
             }
         }
         newMap.respawn();

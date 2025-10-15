@@ -153,4 +153,10 @@
   <data name="Server_StartSuccess" xml:space="preserve">
     <value>[{ServerName}] 启动{Status}, 监听端口{Port}</value>
   </data>
+  <data name="System_GmLoggedin" xml:space="preserve">
+    <value>{0} {1} 登录了游戏。</value>
+  </data>
+  <data name="Ban_NoticeGM" xml:space="preserve">
+    <value>[RIP]: {0} 已被封禁.</value>
+  </data>
 </root>

@@ -144,5 +144,14 @@ namespace Application.Shared.Net
             }
             return p;
         }
+
+        public static Packet SendYellowTip(string tip)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SET_WEEK_EVENT_MESSAGE);
+            p.writeByte(0xFF);
+            p.writeString(tip);
+            p.writeShort(0);
+            return p;
+        }
     }
 }

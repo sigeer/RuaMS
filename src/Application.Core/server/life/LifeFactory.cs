@@ -360,11 +360,6 @@ public class LifeFactory : IStaticService
         return new NPC(nid, GetNPCStats(nid));
     }
 
-    public string getNPCDefaultTalk(int nid)
-    {
-        return ClientCulture.SystemCulture.GetNpcDefaultTalk(nid);
-    }
-
     public NPCStats GetNPCStats(int npcId)
     {
         return new NPCStats(ClientCulture.SystemCulture.GetNpcName(npcId));

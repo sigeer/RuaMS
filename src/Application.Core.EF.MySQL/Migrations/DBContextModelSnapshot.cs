@@ -329,12 +329,6 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
-                    b.Property<int>("Language")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("language")
-                        .HasDefaultValueSql("'2'");
-
                     b.Property<DateTime?>("Lastlogin")
                         .HasColumnType("timestamp")
                         .HasColumnName("lastlogin");

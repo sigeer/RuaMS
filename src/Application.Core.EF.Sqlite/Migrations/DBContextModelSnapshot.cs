@@ -15,7 +15,7 @@ namespace Application.Core.EF.Sqlite.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.19");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
 
             modelBuilder.Entity("Application.Core.EF.Entities.AccountBanEntity", b =>
                 {
@@ -31,7 +31,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("BanLevel")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("EndTime")
+                    b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("EndTime")
@@ -46,7 +46,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("text")
                         .HasColumnName("ReasonDescription");
 
-                    b.Property<DateTimeOffset>("StartTime")
+                    b.Property<DateTime>("StartTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("StartTime")
@@ -79,7 +79,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("exp_coupon");
 
-                    b.Property<DateTimeOffset>("ExpGainTime")
+                    b.Property<DateTime>("ExpGainTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("exp_gain_time")
@@ -200,8 +200,8 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("RecipientId")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("RecipientTime")
-                        .ValueGeneratedOnAddOrUpdate()
+                    b.Property<DateTime>("RecipientTime")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -241,7 +241,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("IP")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTimeOffset>("LastActiveTime")
+                    b.Property<DateTime>("LastActiveTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("LastActiveTime")
@@ -283,7 +283,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("characterslots")
                         .HasDefaultValueSql("'3'");
 
-                    b.Property<DateTimeOffset>("Createdat")
+                    b.Property<DateTime>("Createdat")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("createdat")
@@ -306,13 +306,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
-                    b.Property<int>("Language")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("language")
-                        .HasDefaultValueSql("'2'");
-
-                    b.Property<DateTimeOffset?>("Lastlogin")
+                    b.Property<DateTime?>("Lastlogin")
                         .HasColumnType("timestamp")
                         .HasColumnName("lastlogin");
 
@@ -575,7 +569,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("Attempttime")
+                    b.Property<DateTime>("Attempttime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("attempttime")
@@ -603,7 +597,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("Attempttime")
+                    b.Property<DateTime>("Attempttime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("attempttime")
@@ -720,7 +714,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("buddyCapacity")
                         .HasDefaultValueSql("'25'");
 
-                    b.Property<DateTimeOffset>("CreateDate")
+                    b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("createdate")
@@ -842,13 +836,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("lastDojoStage");
 
-                    b.Property<DateTimeOffset>("LastExpGainTime")
+                    b.Property<DateTime>("LastExpGainTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("lastExpGainTime")
                         .HasDefaultValueSql("'2015-01-01 05:00:00'");
 
-                    b.Property<DateTimeOffset>("LastLogoutTime")
+                    b.Property<DateTime>("LastLogoutTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("lastLogoutTime")
@@ -1186,7 +1180,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("TimeStamp")
+                    b.Property<DateTime>("TimeStamp")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasDefaultValueSql("'2015-01-01 05:00:00'");
@@ -1267,7 +1261,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("characterid_to");
 
-                    b.Property<DateTimeOffset>("When")
+                    b.Property<DateTime>("When")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("when")
@@ -1378,7 +1372,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("meso");
 
-                    b.Property<DateTimeOffset>("Timestamp")
+                    b.Property<DateTime>("Timestamp")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("timestamp")
@@ -1544,7 +1538,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("hwid")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTimeOffset>("ExpiresAt")
+                    b.Property<DateTime>("ExpiresAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("expiresat")
@@ -2228,7 +2222,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("characterid");
 
-                    b.Property<DateTimeOffset?>("CompletionTime")
+                    b.Property<DateTime?>("CompletionTime")
                         .HasColumnType("timestamp")
                         .HasColumnName("completionTime");
 
@@ -2244,7 +2238,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("old");
 
-                    b.Property<DateTimeOffset>("RequestTime")
+                    b.Property<DateTime>("RequestTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("requestTime")
@@ -2814,7 +2808,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("reporterid");
 
-                    b.Property<DateTimeOffset>("Reporttime")
+                    b.Property<DateTime>("Reporttime")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp")
                         .HasColumnName("reporttime")
@@ -2929,7 +2923,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("characterid");
 
-                    b.Property<DateTimeOffset>("CreateTime")
+                    b.Property<DateTime>("CreateTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasColumnName("createTime")

@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -32,6 +33,7 @@ using server;
 using server.expeditions;
 using server.life;
 using server.maps;
+using System;
 using tools;
 
 namespace scripting.Event;
@@ -40,7 +42,7 @@ namespace scripting.Event;
  * @author Matze
  * @author Ronan
  */
-public class EventInstanceManager
+public class EventInstanceManager : IClientMessenger
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
@@ -1728,6 +1730,66 @@ public class EventInstanceManager
         }
 
         return true;
+    }
+
+    public void TypedMessage(int type, string messageKey, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.TypedMessage(type, messageKey, param);
+        }
+    }
+
+    public void Dialog(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.Dialog(key, param);
+        }
+    }
+
+    public void Yellow(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.Yellow(key, param);
+        }
+    }
+
+    public void Notice(string key, params string[] param)
+    {
+        TypedMessage(0, key, param);
+    }
+
+    public void Popup(string key, params string[] param)
+    {
+        TypedMessage(1, key, param);
+    }
+
+    public void Pink(string key, params string[] param)
+    {
+        TypedMessage(5, key, param);
+    }
+
+    public void LightBlue(string key, params string[] param)
+    {
+        TypedMessage(6, key, param);
+    }
+
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.LightBlue(action);
+        }
+    }
+
+    public void TopScrolling(string key, params string[] param)
+    {
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.TopScrolling(key, param);
+        }
     }
 }
 

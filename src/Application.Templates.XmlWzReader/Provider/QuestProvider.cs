@@ -9,16 +9,14 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class QuestProvider : AbstractProvider<QuestTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Quest;
-        string[] _files;
-
+        public override string ProviderName => ProviderNames.Quest;
+        public override string[]? SingleImgFile => ["QuestInfo.img.xml", "Act.img.xml", "Check.img.xml"];
         public QuestProvider(TemplateOptions options)
             : base(options)
         {
-            _files = Directory.GetFiles(GetPath());
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
             List<QuestInfoTemplate> infoList = [];
             List<QuestActTemplate> actList = [];
@@ -26,7 +24,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
             foreach (var file in _files)
             {
-                using var fis = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var fis = _fileProvider.ReadFile(file);
                 using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
                 var xDoc = XDocument.Load(reader).Root!;
 
@@ -89,7 +87,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> LoadAllInternal()
         {
-            return GetDataFromImg(string.Empty);
+            return GetDataFromImg(null);
         }
 
         private static void ProcessCheck(List<QuestCheckTemplate> checkList, XElement xDoc)

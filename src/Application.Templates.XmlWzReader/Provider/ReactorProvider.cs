@@ -7,20 +7,20 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class ReactorProvider : AbstractProvider<ReactorTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.Reactor;
+        public override string ProviderName => ProviderNames.Reactor;
 
         public ReactorProvider(TemplateOptions options)
             : base(options) { }
 
-        protected override string GetImgPathByTemplateId(int reactorId)
+        protected override string? GetImgPathByTemplateId(int reactorId)
         {
             string fileName = reactorId.ToString().PadLeft(7, '0') + ".img.xml";
-            return Path.Combine(GetPath(), fileName);
+            return Path.Combine(ProviderName, fileName);
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)
         {
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
@@ -103,18 +103,5 @@ namespace Application.Templates.XmlWzReader.Provider
             InsertItem(pEntry);
             return [pEntry];
         }
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = [];
-            var files = new DirectoryInfo(Path.Combine(GetPath())).GetFiles("*.xml", SearchOption.AllDirectories);
-
-            foreach (var item in files)
-            {
-                all.AddRange(GetDataFromImg(item.FullName));
-            }
-            return all;
-        }
-
     }
 }

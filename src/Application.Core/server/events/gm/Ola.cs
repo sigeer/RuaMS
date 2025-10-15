@@ -21,6 +21,7 @@
 */
 
 
+using Application.Resources.Messages;
 using tools;
 
 namespace server.events.gm;
@@ -58,7 +59,7 @@ public class Ola
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
-        chr.sendPacket(PacketCreator.serverNotice(0, "The portal has now opened. Press the up arrow key at the portal to enter."));
+        chr.Notice(nameof(ClientMessage.Notice_EventStart));
     }
 
     public bool isTimerStarted()

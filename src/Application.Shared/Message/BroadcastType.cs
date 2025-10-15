@@ -7,6 +7,7 @@ namespace Application.Shared.Message
         public const string Broadcast_SetTimer = "Broadcast_SetTimer";
         public const string Broadcast_RemoveTimer = "Broadcast_RemoveTimer";
         public const string Broadcast_YellowTip = "Broadcast_YellowTip";
+        public const string Broadcast_EarnTitleMessage = "Broadcast_EarnTitleMessage";
         public const string Broadcast_Packet = "Broadcast_Packet";
         public const string Broadcast_DropMessage = "Broadcast_DropMessage";
 

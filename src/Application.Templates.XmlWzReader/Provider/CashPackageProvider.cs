@@ -6,20 +6,19 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class CashPackageProvider : AbstractProvider<CashPackageTemplate>
     {
-        public override ProviderType ProviderName => ProviderType.CashPackage;
-        string _imgPath;
+        public override string ProviderName => ProviderNames.Etc;
+        public override string[]? SingleImgFile => ["CashPackage.img.xml"];
 
         public CashPackageProvider(TemplateOptions options)
             : base(options)
         {
-            _imgPath = Path.Combine(GetPath(), "CashPackage.img.xml");
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
             List<CashPackageTemplate> all = [];
-            using var fis = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = XmlReader.Create(fis, new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true });
+            using var fis = _fileProvider.ReadFile(path);
+            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             if (reader.IsEmptyElement)
                 return all;
 
@@ -48,12 +47,6 @@ namespace Application.Templates.XmlWzReader.Provider
                 }
             });
             return all;
-        }
-
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            return GetDataFromImg(_imgPath);
         }
     }
 }

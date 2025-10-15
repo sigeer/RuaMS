@@ -7,6 +7,7 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
+using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
@@ -475,7 +476,7 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        public void BroadcastPacket(Packet p)
+        void BroadcastPacket(Packet p)
         {
             foreach (var ch in Servers.Values)
             {
@@ -483,13 +484,6 @@ namespace Application.Core.Channel
             }
         }
 
-        public void BroadcastGMPacket(Packet p)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                ch.broadcastGMPacket(p);
-            }
-        }
 
         void BroadcastSetTimer(MessageProto.SetTimer data)
         {
@@ -504,10 +498,6 @@ namespace Application.Core.Channel
         public void SendBroadcastWorldPacket(Packet p)
         {
             Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
-        }
-        public void SendBroadcastWorldGMPacket(Packet p)
-        {
-            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = true });
         }
 
         void OnReceivedPacket(MessageProto.PacketBroadcast data)
@@ -547,6 +537,11 @@ namespace Application.Core.Channel
         public void SendYellowTip(string message, bool onlyGM)
         {
             Transport.SendYellowTip(new MessageProto.YellowTipRequest { Message = message, OnlyGM = onlyGM });
+        }
+
+        public void EarnTitleMessage(string message, bool onlyGM)
+        {
+            Transport.SendEarnTitleMessage(new MessageProto.EarnTitleMessageRequest { Message = message, OnlyGM = onlyGM });
         }
 
         private void UpdateWorldConfig(Config.WorldConfig updatePatch)
@@ -648,6 +643,28 @@ namespace Application.Core.Channel
             }
         }
 
+        void OnEarnTitleMessage(EarnTitleMessageBroadcast msg)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                if (msg.Receivers.Contains(-1))
+                {
+                    foreach (var player in ch.Players.getAllCharacters())
+                    {
+                        player.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
+                    }
+                }
+                else
+                {
+                    foreach (var id in msg.Receivers)
+                    {
+                        ch.Players.getCharacterById(id)?.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
+                    }
+
+                }
+            }
+        }
+
         private void OnPlayerJobChanged(Dto.PlayerLevelJobChange data)
         {
             if (data.GuildId > 0)
@@ -702,8 +719,7 @@ namespace Application.Core.Channel
             {
                 foreach (var ch in Servers.Values)
                 {
-                    ch.broadcastPacket(PacketCreator.serverNotice(6,
-                        string.Format(GameConstants.LevelCongratulations, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level, data.Name)));
+                    ch.LightBlue(nameof(ClientMessage.Levelup_Congratulation), CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level.ToString(), data.Name);
                 }
             }
 
@@ -787,6 +803,7 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<MessageProto.DropMessageBroadcast>(BroadcastType.Broadcast_DropMessage, OnDropMessage);
             MessageDispatcher.Register<MessageProto.PacketBroadcast>(BroadcastType.Broadcast_Packet, OnReceivedPacket);
             MessageDispatcher.Register<MessageProto.YellowTipBroadcast>(BroadcastType.Broadcast_YellowTip, OnYellowTip);
+            MessageDispatcher.Register<MessageProto.EarnTitleMessageBroadcast>(BroadcastType.Broadcast_EarnTitleMessage, OnEarnTitleMessage);
 
             MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
 

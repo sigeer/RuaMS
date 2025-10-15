@@ -214,6 +214,12 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
+        public override Task<Empty> SendEarnTitleMessage(EarnTitleMessageRequest request, ServerCallContext context)
+        {
+            _server.DropEarnTitleMessage(request.Message, request.OnlyGM);
+            return Task.FromResult(new Empty());
+        }
+
         public override Task<ToggleMonitorPlayerResponse> SetMonitor(ToggleMonitorPlayerRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.SystemManager.ToggleMonitor(request));

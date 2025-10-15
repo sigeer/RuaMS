@@ -7,7 +7,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public sealed class StringProvider : GenericKeyedProvider<StringBaseProvider>
     {
         CultureInfo _culture;
-        public override ProviderType ProviderName => ProviderType.String;
+        public override string ProviderName => ProviderNames.String;
         public StringProvider(TemplateOptions options, CultureInfo cultureInfo)
             : base(options)
         {

@@ -19,7 +19,7 @@ public class BombCommand : CommandBase
             if (victim != null && victim.IsOnlined)
             {
                 victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
-                c.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.serverNotice(5, player.getName() + " used !bomb on " + victim.getName()));
+                c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !bomb on " + victim.getName());
             }
             else
             {

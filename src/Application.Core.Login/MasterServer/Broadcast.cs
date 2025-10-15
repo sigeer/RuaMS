@@ -80,6 +80,22 @@ namespace Application.Core.Login
             }
         }
 
+        public void DropEarnTitleMessage(string message, bool onlyGM = false)
+        {
+            var msg = new MessageProto.EarnTitleMessageBroadcast { Message = message };
+            if (onlyGM)
+            {
+                var gmids = CharacterManager.GetOnlinedGMs();
+                msg.Receivers.AddRange(gmids);
+                Transport.SendMessage(BroadcastType.Broadcast_EarnTitleMessage, msg, gmids);
+            }
+            else
+            {
+                msg.Receivers.Add(-1);
+                Transport.BroadcastMessage(BroadcastType.Broadcast_EarnTitleMessage, msg);
+            }
+        }
+
         public void DisconnectChr(int chrId)
         {
             var data = new SystemProto.DisconnectPlayerByNameBroadcast() { MasterId = chrId };

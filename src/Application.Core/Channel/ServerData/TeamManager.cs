@@ -1,5 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
+using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
@@ -117,10 +118,10 @@ namespace Application.Core.Channel.ServerData
                         operatorPlayer.sendPacket(PacketCreator.partyStatusMessage(17));
                     // 队伍已解散
                     if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
-                        operatorPlayer.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party since it had already been disbanded."));
+                        operatorPlayer.Pink(nameof(ClientMessage.Team_TeamNotFound));
                     // 已有队伍
                     if (errorCode == UpdateTeamCheckResult.Join_HasTeam)
-                        operatorPlayer.sendPacket(PacketCreator.serverNotice(5, "You can't join the party as you are already in one."));
+                        operatorPlayer.Pink(nameof(ClientMessage.Team_JoinFail_AlreadInTeam));
 
                     _logger.LogDebug("队伍操作失败 {ErrorCode}", errorCode);
                 }

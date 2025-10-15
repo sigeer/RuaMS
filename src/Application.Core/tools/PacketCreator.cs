@@ -1090,11 +1090,6 @@ public class PacketCreator
         return PacketCommon.serverNotice(type, message, npc);
     }
 
-    public static Packet Popup(string message, int npc = 0)
-    {
-        return PacketCommon.serverNotice(1, message, npc);
-    }
-
     public static Packet serverNotice(int type, int channel, string message, bool smegaEar = false)
     {
         return PacketCommon.serverNotice(type, channel, message, smegaEar);
@@ -4068,8 +4063,14 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="time">单位：秒</param>
+    /// <returns></returns>
     public static Packet getClock(int time)
-    { // time in seconds
+    { 
+        // time in seconds
         OutPacket p = OutPacket.create(SendOpcode.CLOCK);
         p.writeByte(2); // clock type. if you send 3 here you have to send another byte (which does not matter at all) before the timestamp
         p.writeInt(time);
@@ -4077,7 +4078,8 @@ public class PacketCreator
     }
 
     public static Packet getClockTime(int hour, int min, int sec)
-    { // Current Time
+    { 
+        // Current Time
         OutPacket p = OutPacket.create(SendOpcode.CLOCK);
         p.writeByte(1); //Clock-Type
         p.writeByte(hour);

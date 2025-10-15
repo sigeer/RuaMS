@@ -7,24 +7,19 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class EquipProvider : ItemProviderBase
     {
-        public override ProviderType ProviderName => ProviderType.Equip;
-        string[] _itemFiles;
+        public override string ProviderName => ProviderNames.Character;
         public EquipProvider(TemplateOptions options) : base(options)
         {
-            _itemFiles = Directory.GetFiles(GetPath(), "*", SearchOption.AllDirectories);
         }
 
-        protected override string GetImgPathByTemplateId(int itemId)
+        protected override string? GetImgPathByTemplateId(int itemId)
         {
             string fileName = itemId.ToString().PadLeft(8, '0') + ".img.xml";
-            return _itemFiles.FirstOrDefault(x => x.EndsWith(fileName)) ?? string.Empty;
+            return _files.FirstOrDefault(x => x.EndsWith(fileName));
         }
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string imgPath)
+        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)
         {
-            if (!File.Exists(imgPath))
-                return [];
-
-            using var fis = new FileStream(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fis = _fileProvider.ReadFile(imgPath);
             using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
             var xDoc = XDocument.Load(reader).Root!;
 
@@ -35,17 +30,6 @@ namespace Application.Templates.XmlWzReader.Provider
             EquipTemplateGenerated.ApplyProperties(pEntry, xDoc);
             InsertItem(pEntry);
             return [pEntry];
-        }
-
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = new List<AbstractTemplate>(_itemFiles.Length);
-            foreach (var item in _itemFiles)
-            {
-                all.AddRange(GetDataFromImg(item));
-            }
-            return all;
         }
     }
 }

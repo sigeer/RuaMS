@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -115,7 +115,7 @@ function respawnStages(eim) {
 }
 
 function playerEntry(eim, player) {
-    eim.dropMessage(5, "[Expedition] " + player.getName() + " has entered the map.");
+    eim.Pink("Expedition_EnterMap", player.Name);
     var map = eim.getMapInstance(entryMap);
     player.changeMap(map, map.getPortal(0));
 }
@@ -128,10 +128,10 @@ function changedMap(eim, player, mapid) {
     if (mapid < minMapId || mapid > maxMapId) {
         if (eim.isExpeditionTeamLackingNow(true, minPlayers, player)) {
             eim.unregisterPlayer(player);
-            eim.dropMessage(5, "[Expedition] Either the leader has quit the expedition or there is no longer the minimum number of members required to continue it.");
+            eim.Pink("Expedition_MemberCountChanged_Abort");
             end(eim);
         } else {
-            eim.dropMessage(5, "[Expedition] " + player.getName() + " has left the instance.");
+            eim.Pink("Expedition_MemberCountChanged_Notice", player.Name);
             eim.unregisterPlayer(player);
         }
     }
@@ -146,10 +146,10 @@ function playerDead(eim, player) {
 function playerRevive(eim, player) {
     if (eim.isExpeditionTeamLackingNow(true, minPlayers, player)) {
         eim.unregisterPlayer(player);
-        eim.dropMessage(5, "[Expedition] Either the leader has quit the expedition or there is no longer the minimum number of members required to continue it.");
+        eim.Pink("Expedition_MemberCountChanged_Abort");
         end(eim);
     } else {
-        eim.dropMessage(5, "[Expedition] " + player.getName() + " has left the instance.");
+        eim.Pink("Expedition_MemberCountChanged_Notice", player.Name);
         eim.unregisterPlayer(player);
     }
 }
@@ -157,10 +157,10 @@ function playerRevive(eim, player) {
 function playerDisconnected(eim, player) {
     if (eim.isExpeditionTeamLackingNow(true, minPlayers, player)) {
         eim.unregisterPlayer(player);
-        eim.dropMessage(5, "[Expedition] Either the leader has quit the expedition or there is no longer the minimum number of members required to continue it.");
+        eim.Pink("Expedition_MemberCountChanged_Abort");
         end(eim);
     } else {
-        eim.dropMessage(5, "[Expedition] " + player.getName() + " has left the instance.");
+        eim.Pink("Expedition_MemberCountChanged_Notice", player.Name);
         eim.unregisterPlayer(player);
     }
 }

@@ -765,4 +765,274 @@
   <data name="QuestNotFound" xml:space="preserve">
     <value>任务 {0} 未找到。</value>
   </data>
+  <data name="Map_Ownership_Boss" xml:space="preserve">
+    <value>地图归属暂时失效，直至{0}被打败。</value>
+  </data>
+  <data name="Map_Ownership_Free" xml:space="preserve">
+    <value>地图归属已释放。</value>
+  </data>
+  <data name="Event_CWKPQ_DetectedByGuardian" xml:space="preserve">
+    <value>守护者发现了你。</value>
+  </data>
+  <data name="Expedition_EnterMap" xml:space="preserve">
+    <value>[远征队] {0} 进入了地图。</value>
+  </data>
+  <data name="PiratePQ_Completed" xml:space="preserve">
+    <value>随着老海盗被击败，你救出了无恙！</value>
+  </data>
+  <data name="Event_3rdJobMount_CheckHP" xml:space="preserve">
+    <value>小心！外星人想抓走猪猪去烤乳猪！快挡住它们！</value>
+  </data>
+  <data name="Event_4jship_Pass" xml:space="preserve">
+    <value>凯琳：试炼通过。最终考验——你能抵达那边的出口吗？</value>
+  </data>
+  <data name="Event_4jship_Fail" xml:space="preserve">
+    <value>凯琳：考验失败啦~别哭丧着脸嘛，休息会儿再试试？</value>
+  </data>
+  <data name="Expedition_MemberCountChanged_Abort" xml:space="preserve">
+    <value>[远征队] 队长已退出远征或者队伍人数不足最低要求，无法继续。</value>
+  </data>
+  <data name="Expedition_MemberCountChanged_Notice" xml:space="preserve">
+    <value>[远征队] {0} 已退出。</value>
+  </data>
+  <data name="Event_HenesysPQ_Fail" xml:space="preserve">
+    <value>因未能保护好月妙，你被传送到出口！</value>
+  </data>
+  <data name="Event_MagatiaPQ_Message1" xml:space="preserve">
+    <value>犹泰：呃...你们真让我作呕。我想要的不过是让这个国家成为全世界最伟大的炼金术强国。如果他们不接受，我不惜一切代价也要独自实现这个目标！！！</value>
+  </data>
+  <data name="Event_MagatiaPQ_Message2" xml:space="preserve">
+    <value>犹泰：哈哈哈...你们真以为我会毫无准备，不知道玛加提亚协会的走狗们会来追捕我吗？愚蠢！</value>
+  </data>
+  <data name="Event_PinkBean_Preparation" xml:space="preserve">
+    <value>第一波攻击将在15秒后开始，请做好准备。</value>
+  </data>
+  <data name="Event_PinkBean_PlayerDead5" xml:space="preserve">
+    <value>[远征队] 太多队员阵亡，品克缤现在被视为不可战胜，远征结束。</value>
+  </data>
+  <data name="Event_PinkBean_PlayerDead4" xml:space="preserve">
+    <value>[远征队] 品克缤变得比以往更强大，大家进入背水一战模式！</value>
+  </data>
+  <data name="Event_PinkBean_PlayerDead3" xml:space="preserve">
+    <value>[远征队] 伤亡人数开始失控，请小心战斗。</value>
+  </data>
+  <data name="ReloadMapCommand_Description" xml:space="preserve">
+    <value>重载地图。</value>
+  </data>
+  <data name="ReloadMapCommand_Message1" xml:space="preserve">
+    <value>由于地图被重载，你被重新定位。</value>
+  </data>
+  <data name="ChangeChannel_MiniDungeon" xml:space="preserve">
+    <value>在迷你地牢内时，无法切换频道、进入现金商店、拍卖行。</value>
+  </data>
+  <data name="ChangeChannel_ChannelDisabled" xml:space="preserve">
+    <value>频道 {0} 未启用，请尝试其他频道。</value>
+  </data>
+  <data name="Cash_PutPetIntoCashInventory" xml:space="preserve">
+    <value>无法把装备中的宠物放入现金商城的仓库。</value>
+  </data>
+  <data name="Cash_PutRelationshipItemIntoCashInventory" xml:space="preserve">
+    <value>无法把关系物品放入现金商城仓库中。</value>
+  </data>
+  <data name="CashShop_CannotEnter_WithEventInstance" xml:space="preserve">
+    <value>处于事件中，无法进入现金商城或者拍卖行。</value>
+  </data>
+  <data name="BirthDay_Invalid" xml:space="preserve">
+    <value>生日不正确。</value>
+  </data>
+  <data name="Trade_PetCheck" xml:space="preserve">
+    <value>不允许交易宠物。</value>
+  </data>
+  <data name="Trade_CashItemCheck" xml:space="preserve">
+    <value>不允许交易现金道具。</value>
+  </data>
+  <data name="ItemQuantityNotEnough" xml:space="preserve">
+    <value>你没有足够数量的道具。</value>
+  </data>
+  <data name="Trade_ItemUntradeable" xml:space="preserve">
+    <value>不允许交易这个物品。</value>
+  </data>
+  <data name="ItemInvalid" xml:space="preserve">
+    <value>这个位置没有找到物品。</value>
+  </data>
+  <data name="PlayerShop_PetCheck" xml:space="preserve">
+    <value>不能在玩家商店中售卖宠物。</value>
+  </data>
+  <data name="PlayerShop_CashItemCheck" xml:space="preserve">
+    <value>不能再玩家商店中售卖现金道具。</value>
+  </data>
+  <data name="Buddy_Full" xml:space="preserve">
+    <value>好友位已满。</value>
+  </data>
+  <data name="Buddy_Exsited" xml:space="preserve">
+    <value>"{0}"已经是你的好友了</value>
+  </data>
+  <data name="PlayerNotFound" xml:space="preserve">
+    <value>玩家"{0}"不存在。</value>
+  </data>
+  <data name="Team_TeamNotFound" xml:space="preserve">
+    <value>队伍已解散。</value>
+  </data>
+  <data name="Team_JoinFail_AlreadInTeam" xml:space="preserve">
+    <value>你已经在队伍里了。</value>
+  </data>
+  <data name="PlayerShop_CannotSold" xml:space="preserve">
+    <value>你不能再卖它了。</value>
+  </data>
+  <data name="PlayerShop_TakeItemBackFail_InventoryFull" xml:space="preserve">
+    <value>没有足够的空间取回物品。</value>
+  </data>
+  <data name="Expedition_Join" xml:space="preserve">
+    <value>[远征队] {0} 加入了远征队。</value>
+  </data>
+  <data name="Expedition_Start" xml:space="preserve">
+    <value>[远征队] 远征队已经开始! 勇敢的英雄们，祝你们好运！</value>
+  </data>
+  <data name="Expedition_MemberFull" xml:space="preserve">
+    <value>抱歉, 远征队人数已满!</value>
+  </data>
+  <data name="Expedition_Left" xml:space="preserve">
+    <value>[远征队] {0} 离开了远征队。</value>
+  </data>
+  <data name="Expedition_ChrLeft" xml:space="preserve">
+    <value>[远征队] 你离开了这个远征队。</value>
+  </data>
+  <data name="Team_InvitationExpired" xml:space="preserve">
+    <value>组队邀请已过期。</value>
+  </data>
+  <data name="Team_Invitation_NoviceLimit" xml:space="preserve">
+    <value>无法和新手组队。</value>
+  </data>
+  <data name="Guild_ChangeEmblemFail_Meso" xml:space="preserve">
+    <value>金币不足！需要{0}金币修改家族徽章。</value>
+  </data>
+  <data name="PlayerShopt_OwlWarp_CannotVisitYourself" xml:space="preserve">
+    <value>不能访问你自己的商店。</value>
+  </data>
+  <data name="UseItem_LevelCheck_10" xml:space="preserve">
+    <value>10级以前无法使用。</value>
+  </data>
+  <data name="PlayerShop_CannotManage" xml:space="preserve">
+    <value>不能在商店正常运营时操作商品。</value>
+  </data>
+  <data name="Levelup_Congratulation" xml:space="preserve">
+    <value>[祝贺] {0}到达了{1}级！祝贺 {2} 取得如此惊人的成就！</value>
+  </data>
+  <data name="FriendMob_Damaged_MoonBunny" xml:space="preserve">
+    <value>{0} 因为重伤被抬回去休养了。</value>
+  </data>
+  <data name="FriendMob_Damaged_WatchHog" xml:space="preserve">
+    <value>{0} 被外星人殴打致重伤，已被兽医紧急拉走抢救。</value>
+  </data>
+  <data name="FriendMob_Damaged_Juliet" xml:space="preserve">
+    <value>{0} 在战斗中晕倒了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Romeo" xml:space="preserve">
+    <value>{0} 在战斗中晕倒了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Tylus" xml:space="preserve">
+    <value>{0} 在伏击部队的强大攻势下倒下了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Snownman" xml:space="preserve">
+    <value>雪人在战斗的热浪中融化了。</value>
+  </data>
+  <data name="FriendMob_Damaged_Delli" xml:space="preserve">
+    <value>{0} 在伏击后消失了，只留下地上的被单...</value>
+  </data>
+  <data name="Coconut_Effect_Maple" xml:space="preserve">
+    <value>红队的 {0} 打下了椰子。</value>
+  </data>
+  <data name="Coconut_Effect_Story" xml:space="preserve">
+    <value>蓝队的 {0} 打下了椰子。</value>
+  </data>
+  <data name="PlayerShop_ItemInvalid" xml:space="preserve">
+    <value>无法对店铺的该商品执行操作</value>
+  </data>
+  <data name="Ban_NoticePlayer" xml:space="preserve">
+    <value>你被 #b{0}#k 封禁了。</value>
+  </data>
+  <data name="SetGmLevelCommand_Result" xml:space="preserve">
+    <value>{0} 现在是 {1} 级管理。</value>
+  </data>
+  <data name="Notice_GmLevelChanged" xml:space="preserve">
+    <value>你现在是 {0} 级管理员。通过 !commands 查看可用命令。</value>
+  </data>
+  <data name="PlayerNotOnlined" xml:space="preserve">
+    <value>玩家"{0}"不存在或者不在线。</value>
+  </data>
+  <data name="StartEventCommand_Notice" xml:space="preserve">
+    <value>[事件] 地图 {0} 事件开启！仅允许 {1} 名玩家参与。输入 !joinevent 参加活动。</value>
+  </data>
+  <data name="StartEventCommand_Description" xml:space="preserve">
+    <value>在当前地图开启事件。</value>
+  </data>
+  <data name="Fitness_Left_10sec" xml:space="preserve">
+    <value>你还有10秒。还没通关的小伙伴们，希望下次你们能通关！大家辛苦了！回头见~</value>
+  </data>
+  <data name="Fitness_Left_100sec" xml:space="preserve">
+    <value>好了，你剩下的时间不多了。请快点！</value>
+  </data>
+  <data name="Fitness_Left_4min" xml:space="preserve">
+    <value>第四阶段是【冒险岛体能测试】的最后一个阶段。请不要在最后一刻放弃，全力以赴。奖励就在最顶端等着你！</value>
+  </data>
+  <data name="Fitness_Left_5min" xml:space="preserve">
+    <value>第三层设有陷阱，虽然你能看到，但无法踩到。攀登时请务必小心。</value>
+  </data>
+  <data name="Fitness_Left_6min" xml:space="preserve">
+    <value>对于延迟较重的人，请务必缓慢移动，以免因延迟而完全摔倒。</value>
+  </data>
+  <data name="Fitness_Left_500sec" xml:space="preserve">
+    <value>请记住，如果您在活动期间死亡，您将被淘汰出局。如果您的生命值不足，请先服用药水或恢复生命值后再继续游戏。</value>
+  </data>
+  <data name="Fitness_Left_600sec" xml:space="preserve">
+    <value>为了避免被猴子扔香蕉，你需要知道的最重要的事情是*时机*，时机就是一切！</value>
+  </data>
+  <data name="Fitness_Left_660sec" xml:space="preserve">
+    <value>第二阶段有猴子会扔香蕉。请务必在正确的时间移动以避开它们。</value>
+  </data>
+  <data name="Fitness_Left_700sec" xml:space="preserve">
+    <value>请记住，如果您在活动期间死亡，您将被淘汰出局。您还有充足的时间，所以请先服用药水或恢复生命值再继续前进。</value>
+  </data>
+  <data name="Fitness_Left_780sec" xml:space="preserve">
+    <value>只要按时完成【冒险岛体能测试】，无论完成顺序如何，都会获得一件道具，所以只要放松心情，慢慢完成4个阶段就好。</value>
+  </data>
+  <data name="Fitness_Left_840sec" xml:space="preserve">
+    <value>由于第一阶段用户数量较多，可能会出现严重卡顿。难度不大，所以请确保不要因为卡顿而掉线。</value>
+  </data>
+  <data name="Fitness_Left_870sec" xml:space="preserve">
+    <value>【冒险岛体能测试】共分为4个阶段，如果在游戏中死亡就会被淘汰，请多加注意。</value>
+  </data>
+  <data name="Notice_EventStart" xml:space="preserve">
+    <value>传送门现已打开。在传送门处的按上箭头键即可进入。</value>
+  </data>
+  <data name="Notice_EventEnd" xml:space="preserve">
+    <value>活动已结束。</value>
+  </data>
+  <data name="Expedition_Captain_NoticeMap" xml:space="preserve">
+    <value>[远征队] {0} 开启了远征队挑战. 请抓紧时间加入远征队！</value>
+  </data>
+  <data name="Expedition_Captain_Notice" xml:space="preserve">
+    <value>[远征队] 你已经成为远征队的队长. 请召集足够的玩家，然后点击远征队npc开始挑战。</value>
+  </data>
+  <data name="Expedition_Timeout_Disband" xml:space="preserve">
+    <value>[远征队] 远征队组建倒计时已结束. 远征队已经被解散。</value>
+  </data>
+  <data name="NpcNotFound" xml:space="preserve">
+    <value>没有找到Npc {0}。</value>
+  </data>
+  <data name="NpcNotFoundInMap" xml:space="preserve">
+    <value>没有在地图 {1} 找到Npc {0}。</value>
+  </data>
+  <data name="NpcOutOfMap" xml:space="preserve">
+    <value>Npc {0} 不在地图上。</value>
+  </data>
+  <data name="WarpNpcCommand_Description" xml:space="preserve">
+    <value>传送到Npc身边。</value>
+  </data>
+  <data name="WarpNpcCommand_NpcResult" xml:space="preserve">
+    <value>Npc {0} 出现在以下地图</value>
+  </data>
+  <data name="AlreadyInMap" xml:space="preserve">
+    <value />
+  </data>
 </root>

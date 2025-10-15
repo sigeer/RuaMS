@@ -25,6 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Items;
 using Application.Core.Managers;
+using Application.Resources.Messages;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
@@ -328,13 +329,13 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
                     else if (item is Pet pet && c.OnlinedCharacter.getPetIndex(pet.PetId) > -1)
                     {
-                        chr.getClient().sendPacket(PacketCreator.serverNotice(1, "You cannot put the pet you currently equip into the Cash Shop inventory."));
+                        chr.Popup(nameof(ClientMessage.Cash_PutPetIntoCashInventory));
                         c.enableCSActions();
                         return;
                     }
                     else if (ItemId.isWeddingRing(item.getItemId()) || ItemId.isWeddingToken(item.getItemId()))
                     {
-                        chr.getClient().sendPacket(PacketCreator.serverNotice(1, "You cannot put relationship items into the Cash Shop inventory."));
+                        chr.Popup(nameof(ClientMessage.Cash_PutRelationshipItemIntoCashInventory));
                         c.enableCSActions();
                         return;
                     }

@@ -60,19 +60,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
     private bool itemScript;
     private List<IPlayer> otherParty;
 
-    private Dictionary<int, string> npcDefaultTalks = new();
     public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
 
     private string getDefaultTalk(int npcid)
     {
-        var talk = npcDefaultTalks.GetValueOrDefault(npcid);
-        if (talk == null)
-        {
-            talk = LifeFactory.Instance.getNPCDefaultTalk(npcid);
-            npcDefaultTalks.AddOrUpdate(npcid, talk);
-        }
-
-        return talk;
+        return c.CurrentCulture.GetNpcDefaultTalk(npcid);
     }
 
     public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<IPlayer> otherParty, bool test) : base(c)
@@ -119,6 +111,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         sendOk(getDefaultTalk(npc));
     }
+
+    public string GetTalkMessage(string text, params string[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
 
     public void sendNext(string text, byte speaker = 0)
     {

@@ -4,6 +4,7 @@ using Application.Core.Channel.Modules;
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using constants.game;
 using Microsoft.Extensions.Logging;

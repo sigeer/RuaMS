@@ -204,5 +204,6 @@ namespace Application.Core.ServerTransports
         void SendYellowTip(YellowTipRequest yellowTipRequest);
 
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
+        void SendEarnTitleMessage(EarnTitleMessageRequest earnTitleMessageRequest);
     }
 }

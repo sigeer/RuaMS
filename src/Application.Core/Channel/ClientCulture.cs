@@ -5,6 +5,7 @@ using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using System.Globalization;
+using System.Resources;
 
 namespace Application.Core.Channel
 {
@@ -34,6 +35,16 @@ namespace Application.Core.Channel
             if (string.IsNullOrEmpty(message))
             {
                 Log.Logger.Warning("i18n未找到{Key}", key);
+                return key;
+            }
+            return string.Format(message, paramsValue);
+        }
+
+        public string GetScriptTalkByKey(string key, params string[] paramsValue)
+        {
+            var message = ScriptTalk.ResourceManager.GetString(key, CultureInfo);
+            if (string.IsNullOrEmpty(message))
+            {
                 return key;
             }
             return string.Format(message, paramsValue);

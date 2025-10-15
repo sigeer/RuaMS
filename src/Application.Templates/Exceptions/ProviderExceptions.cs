@@ -22,4 +22,19 @@ namespace Application.Templates.Exceptions
             ProviderName = type;
         }
     }
+
+    public class ImgNotFound : FileNotFoundException
+    {
+        public ImgNotFound()
+        {
+        }
+
+        public ImgNotFound(string? message) : base(message)
+        {
+        }
+
+        public ImgNotFound(string? message, string? fileName) : base(message, fileName)
+        {
+        }
+    }
 }

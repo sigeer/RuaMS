@@ -26,6 +26,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Resources.Messages;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -332,8 +333,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     p.readShort();
                     int birthday = p.readInt();
                     if (!c.CheckBirthday(birthday))
-                    { // birthday check here found thanks to lucasziron
-                        c.sendPacket(PacketCreator.serverNotice(1, "Please check again the birthday date."));
+                    { 
+                        // birthday check here found thanks to lucasziron
+                        chr.Popup(nameof(ClientMessage.BirthDay_Invalid));
                         return;
                     }
 
@@ -544,7 +546,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (item == null)
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "Invalid item description."));
+                    chr.Popup(nameof(ClientMessage.ItemInvalid));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -553,11 +555,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (ItemConstants.isPet(item.getItemId()))
                     {
-                        c.sendPacket(PacketCreator.serverNotice(1, "Pets are not allowed to be traded."));
+                        chr.Popup(nameof(ClientMessage.Trade_PetCheck));
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.serverNotice(1, "Cash items are not allowed to be traded."));
+                        chr.Popup(nameof(ClientMessage.Trade_CashItemCheck));
                     }
 
                     c.sendPacket(PacketCreator.enableActions());
@@ -566,7 +568,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (quantity < 1 || quantity > item.getQuantity())
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough quantity of the item."));
+                    chr.Popup(nameof(ClientMessage.ItemQuantityNotEnough));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -581,7 +583,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             // ensure that undroppable items do not make it to the trade window
                             if (!KarmaManipulator.hasKarmaFlag(item))
                             {
-                                c.sendPacket(PacketCreator.serverNotice(1, "That item is untradeable."));
+                                chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
                                 c.sendPacket(PacketCreator.enableActions());
                                 return;
                             }
@@ -594,7 +596,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             var checkItem = chr.getInventory(ivType).getItem(pos);
                             if (checkItem != item || checkItem.getPosition() != item.getPosition())
                             {
-                                c.sendPacket(PacketCreator.serverNotice(1, "Invalid item description."));
+                                chr.Popup(nameof(ClientMessage.ItemInvalid));
                                 c.sendPacket(PacketCreator.enableActions());
                                 return;
                             }
@@ -653,7 +655,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (ivItem == null || ivItem.isUntradeable())
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
+                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -661,11 +663,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (ItemConstants.isPet(ivItem.getItemId()))
                     {
-                        c.sendPacket(PacketCreator.serverNotice(1, "Pets are not allowed to be sold on the Player Store."));
+                        chr.Popup(nameof(ClientMessage.PlayerShop_PetCheck));
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.serverNotice(1, "Cash items are not allowed to be sold on the Player Store."));
+                        chr.Popup(nameof(ClientMessage.PlayerShop_CashItemCheck));
                     }
 
                     c.sendPacket(PacketCreator.enableActions());
@@ -683,7 +685,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 else if (ivItem.getQuantity() < (bundles * perBundle))
                 {
                     // thanks GabrielSin for finding a dupe here
-                    c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
+                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }

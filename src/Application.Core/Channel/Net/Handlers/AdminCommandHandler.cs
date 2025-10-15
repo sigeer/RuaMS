@@ -164,7 +164,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 target = c.getChannelServer().getPlayerStorage().getCharacterByName(victim);
                 if (target != null)
                 {
-                    target.getClient().sendPacket(PacketCreator.serverNotice(1, message));
+                    target.dropMessage(1, message);
                     c.sendPacket(PacketCreator.getGMEffect(0x1E, 1));
                 }
                 else

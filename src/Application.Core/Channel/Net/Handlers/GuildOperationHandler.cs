@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Resources.Messages;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
@@ -172,7 +173,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
                 if (mc.getMeso() < YamlConfig.config.server.CHANGE_EMBLEM_COST)
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "You do not have " + GameConstants.numberWithCommas(YamlConfig.config.server.CHANGE_EMBLEM_COST) + " mesos to change the Guild emblem."));
+                    mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), GameConstants.numberWithCommas(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
                     return;
                 }
                 short bg = p.readShort();

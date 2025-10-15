@@ -646,7 +646,7 @@ public class AbstractPlayerInteraction
 
     public void playerMessage(int type, string message)
     {
-        c.sendPacket(PacketCreator.serverNotice(type, message));
+        getPlayer().dropMessage(type, message);
     }
 
     public void message(string message)
@@ -661,7 +661,7 @@ public class AbstractPlayerInteraction
 
     public void mapMessage(int type, string message)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.serverNotice(type, message));
+        getPlayer().getMap().dropMessage(type, message);
     }
 
     public void mapEffect(string path)
@@ -1259,7 +1259,7 @@ public class AbstractPlayerInteraction
 
         applySealSkill(monster);
         applyReduceAvoid(monster);
-        sendBlueNotice(map, message);
+        map.dropMessage(6, message);
     }
 
     private void applySealSkill(Monster monster)
@@ -1274,11 +1274,6 @@ public class AbstractPlayerInteraction
         reduceAvoidSkill.applyEffect(monster);
     }
 
-    private void sendBlueNotice(IMap map, string message)
-    {
-        map.dropMessage(6, message);
-    }
-
     public void LearnExtraSkill(int skillId)
     {
         var skill = SkillFactory.GetSkillTrust(skillId);
@@ -1289,6 +1284,6 @@ public class AbstractPlayerInteraction
 
     public string GetMessage(string key, params string[] param)
     {
-        return getClient().CurrentCulture.GetMessageByKey(key, param);
+        return c.CurrentCulture.GetMessageByKey(key, param);
     }
 }
