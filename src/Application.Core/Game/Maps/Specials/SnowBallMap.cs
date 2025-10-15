@@ -1,5 +1,4 @@
 using Application.Core.Channel;
-using Application.Templates.Map;
 using scripting.Event;
 using server.events.gm;
 
@@ -29,16 +28,8 @@ namespace Application.Core.Game.Maps.Specials
         private Snowball? snowball0 = null;
         private Snowball? snowball1 = null;
 
-        public SnowBallMap(MapTemplate template, WorldChannel worldChannel, EventInstanceManager? eim) : base(template, worldChannel, eim)
+        public SnowBallMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
         {
-            var data = template.Snowball!;
-
-            DamageSnowBall = data.DamageSnowBall;
-            DamageSnowMan0 = data.DamageSnowMan0;
-            DamageSnowMan1 = data.DamageSnowMan1;
-            RecoveryAmount = data.RecoveryAmount;
-            SnowManHP = data.SnowManHP;
-            SnowManWait = data.SnowManWait;
         }
 
         public Snowball? getSnowball(int team)
