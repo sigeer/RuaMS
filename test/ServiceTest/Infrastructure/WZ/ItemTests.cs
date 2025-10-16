@@ -17,7 +17,7 @@ namespace ServiceTest.Infrastructure.WZ
     {
         public ItemTests()
         {
-            TestContext.Out.WriteLine($"TestVariable.WzPath: {TestVariable.WzPath}");
+            Console.WriteLine($"TestVariable.WzPath: {TestVariable.WzPath}");
             ProviderFactory.Clear();
             ProviderFactory.Configure(o =>
             {
