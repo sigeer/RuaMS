@@ -20,7 +20,7 @@ namespace Application.Templates.Providers
                 if (Directory.Exists(pathFromDefault))
                     return pathFromDefault;
 
-                throw new DataDirNotFoundException($"没有设置wz的目录，默认路径也没有找到wz。inputDir={inputDir}");
+                throw new DataDirNotFoundException("没有设置wz的目录，默认路径也没有找到wz。");
             }
 
             return _globalDataDir;

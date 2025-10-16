@@ -21,7 +21,7 @@ namespace Application.Core.Channel.Modules
             {
 #if DEBUG
                 // debug 时默认使用自带wz
-                option.DataDir = Path.GetFullPath(Path.Combine("..", "..", "..", "..", "Application.Resources", "wz"));
+                option.DataDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Application.Resources", "wz"));
 #endif
 
                 option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
