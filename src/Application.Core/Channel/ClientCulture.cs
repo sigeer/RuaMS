@@ -25,7 +25,7 @@ namespace Application.Core.Channel
                 ?? throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到{CultureInfo.Name}相应的wz资源");
         }
 
-        public ClientCulture() : this(Thread.CurrentThread.CurrentCulture)
+        public ClientCulture() : this(SupportedCultureManager.GetDefaultSupportedCulture())
         {
         }
 

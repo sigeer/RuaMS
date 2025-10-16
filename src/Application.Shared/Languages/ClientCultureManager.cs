@@ -16,6 +16,14 @@ namespace Application.Shared.Languages
             return _cultureMap.GetValueOrDefault((LanguageEnum)language) ?? CultureInfo.GetCultureInfo("zh-CN");
         }
 
+        public static CultureInfo GetDefaultSupportedCulture()
+        {
+            var defaultCulture = Thread.CurrentThread.CurrentCulture;
+            if (SupportedCultures().Any(x => x.Name == defaultCulture.Name))
+                return defaultCulture;
+            return CultureInfo.GetCultureInfo("zh-CN");
+        }
+
         public static List<CultureInfo> SupportedCultures()
         {
             return _cultureMap.Values.ToList();
