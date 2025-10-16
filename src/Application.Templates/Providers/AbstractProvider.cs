@@ -94,6 +94,12 @@ namespace Application.Templates.Providers
                 _templates[GetKeyForItem(item)] = item;
         }
 
+        protected void InsertItem(int key, TTemplate item)
+        {
+            if (_options.UseCache)
+                _templates[key] = item;
+        }
+
         protected IEnumerable<AbstractTemplate> Values => _templates.Values;
 
         protected virtual int GetKeyForItem(TTemplate item) => item.TemplateId;

@@ -1,5 +1,6 @@
 using Application.Templates.Providers;
 using Application.Templates.Quest;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
 using static Application.Templates.Quest.QuestAct;
@@ -17,71 +18,79 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            List<QuestInfoTemplate> infoList = [];
-            List<QuestActTemplate> actList = [];
-            List<QuestCheckTemplate> checkList = [];
-
-            foreach (var file in _files)
+            try
             {
-                using var fis = _fileProvider.ReadFile(file);
-                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-                var xDoc = XDocument.Load(reader).Root!;
+                List<QuestInfoTemplate> infoList = [];
+                List<QuestActTemplate> actList = [];
+                List<QuestCheckTemplate> checkList = [];
 
-                var fileType = xDoc.Attribute("name")?.Value;
-                if (fileType == "QuestInfo.img")
+                foreach (var file in _files)
                 {
-                    foreach (var questInfoNode in xDoc.Elements())
+                    using var fis = _fileProvider.ReadFile(file);
+                    using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                    var xDoc = XDocument.Load(reader).Root!;
+
+                    var fileType = xDoc.Attribute("name")?.Value;
+                    if (fileType == "QuestInfo.img")
                     {
-                        if (int.TryParse(questInfoNode.Attribute("name")?.Value, out var questId))
+                        foreach (var questInfoNode in xDoc.Elements())
                         {
-                            var quest = new QuestInfoTemplate(questId);
-                            foreach (var questProp in questInfoNode.Elements())
+                            if (int.TryParse(questInfoNode.Attribute("name")?.Value, out var questId))
                             {
-                                var propName = questProp.GetName();
-                                if (propName == "name")
-                                    quest.Name = questProp.GetStringValue() ?? "";
-                                else if (propName == "parent")
-                                    quest.Parent = questProp.GetStringValue();
-                                else if (propName == "autoStart")
-                                    quest.AutoStart = questProp.GetBoolValue();
-                                else if (propName == "autoPreComplete")
-                                    quest.AutoPreComplete = questProp.GetBoolValue();
-                                else if (propName == "autoComplete")
-                                    quest.AutoComplete = questProp.GetBoolValue();
-                                else if (propName == "viewMedalItem")
-                                    quest.ViewMedalItem = questProp.GetIntValue();
-                                else if (propName == "timeLimit")
-                                    quest.TimeLimit = questProp.GetIntValue();
-                                else if (propName == "timeLimit2")
-                                    quest.TimeLimit2 = questProp.GetIntValue();
+                                var quest = new QuestInfoTemplate(questId);
+                                foreach (var questProp in questInfoNode.Elements())
+                                {
+                                    var propName = questProp.GetName();
+                                    if (propName == "name")
+                                        quest.Name = questProp.GetStringValue() ?? "";
+                                    else if (propName == "parent")
+                                        quest.Parent = questProp.GetStringValue();
+                                    else if (propName == "autoStart")
+                                        quest.AutoStart = questProp.GetBoolValue();
+                                    else if (propName == "autoPreComplete")
+                                        quest.AutoPreComplete = questProp.GetBoolValue();
+                                    else if (propName == "autoComplete")
+                                        quest.AutoComplete = questProp.GetBoolValue();
+                                    else if (propName == "viewMedalItem")
+                                        quest.ViewMedalItem = questProp.GetIntValue();
+                                    else if (propName == "timeLimit")
+                                        quest.TimeLimit = questProp.GetIntValue();
+                                    else if (propName == "timeLimit2")
+                                        quest.TimeLimit2 = questProp.GetIntValue();
+                                }
+                                infoList.Add(quest);
                             }
-                            infoList.Add(quest);
                         }
+                    }
+
+                    else if (fileType == "Act.img")
+                    {
+                        ProcessAct(actList, xDoc);
+                    }
+
+                    else if (fileType == "Check.img")
+                    {
+                        ProcessCheck(checkList, xDoc);
                     }
                 }
 
-                else if (fileType == "Act.img")
+                var allData = (from info in infoList
+                               join act in actList on info.QuestId equals act.QuestId into acts
+                               from a in acts.DefaultIfEmpty()
+                               join chck in checkList on info.QuestId equals chck.QuestId into chcks
+                               from b in chcks.DefaultIfEmpty()
+                               select new QuestTemplate(info) { Act = a, Check = b });
+                foreach (var item in allData)
                 {
-                    ProcessAct(actList, xDoc);
+                    InsertItem(item);
                 }
-
-                else if (fileType == "Check.img")
-                {
-                    ProcessCheck(checkList, xDoc);
-                }
+                return allData;
             }
-
-            var allData = (from info in infoList
-                           join act in actList on info.QuestId equals act.QuestId into acts
-                           from a in acts.DefaultIfEmpty()
-                           join chck in checkList on info.QuestId equals chck.QuestId into chcks
-                           from b in chcks.DefaultIfEmpty()
-                           select new QuestTemplate(info) { Act = a, Check = b });
-            foreach (var item in allData)
+            catch (Exception ex)
             {
-                InsertItem(item);
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
             }
-            return allData;
         }
 
         private static void ProcessCheck(List<QuestCheckTemplate> checkList, XElement xDoc)

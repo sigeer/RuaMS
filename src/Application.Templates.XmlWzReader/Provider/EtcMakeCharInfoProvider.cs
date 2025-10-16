@@ -2,6 +2,7 @@ using Application.Templates.Etc;
 using Application.Templates.Providers;
 using System.Xml.Linq;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
@@ -15,16 +16,24 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            using var fis = _fileProvider.ReadFile(_file);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            var xDoc = XDocument.Load(reader).Root!;
+            try
+            {
+                using var fis = _fileProvider.ReadFile(_file);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
 
-            List<AbstractTemplate> list = new();
-            MakerCharInfoTemplate template = new MakerCharInfoTemplate();
-            MakerCharInfoTemplateGenerated.ApplyProperties(template, xDoc);
-            InsertItem(template);
-            list.Add(template);
-            return list;
+                List<AbstractTemplate> list = new();
+                MakerCharInfoTemplate template = new MakerCharInfoTemplate();
+                MakerCharInfoTemplateGenerated.ApplyProperties(template, xDoc);
+                InsertItem(template);
+                list.Add(template);
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
     }
 }

@@ -2,15 +2,20 @@ using Application.Utility;
 
 namespace Application.Shared.Constants.Inventory;
 
-/**
- * @author The Spookster (The Real Spookster)
- */
+
+/// <summary>
+/// 已穿戴装备栏为位置 和 装备类型
+/// </summary>
 public class EquipSlot : EnumClass
 {
     public const int Medal = -49;
+    /// <summary>
+    /// 上衣和套装共用同一个槽（上衣槽）
+    /// </summary>
     public const int OverAll = -5;
     public const int Pants = -6;
     public const int Shoes = -7;
+    public const int Shield = -10;
     public const int Weapon = -11;
     public const int Mount = -18;
 

@@ -607,7 +607,6 @@ public partial class Player
             return;
         }
 
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
         foreach (InventoryType invType in Enum.GetValues<InventoryType>())
         {
             Inventory inv = this.getInventory(invType);
@@ -4279,7 +4278,7 @@ public partial class Player
         List<Equip> list = new();
 
         var ii = ItemInformationProvider.getInstance();
-        return Bag[InventoryType.EQUIPPED].OfType<Equip>().Where(x => ii.isUpgradeable(x.getItemId())).ToList();
+        return Bag[InventoryType.EQUIPPED].OfType<Equip>().Where(x => x.SourceTemplate.IsUpgradeable()).ToList();
     }
 
     public bool mergeAllItemsFromName(string name)
@@ -4381,7 +4380,7 @@ public partial class Player
         {
             for (short i = pos; i <= inv.getSlotLimit(); i++)
             {
-                standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i));
+                standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
             }
         }
         finally
@@ -4390,16 +4389,15 @@ public partial class Player
         }
     }
 
-    private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Item? item)
+    private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
     {
         short quantity;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (item == null || (quantity = item.getQuantity()) < 1 || ii.isCash(item.getItemId()) || !ii.isUpgradeable(item.getItemId()) || ItemManager.HasMergeFlag(item))
+        if (e == null || (quantity = e.getQuantity()) < 1 || ii.isCash(e.getItemId()) || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
         {
             return;
         }
 
-        Equip e = (Equip)item;
         foreach (var s in e.getStats())
         {
             float incVal = s.Value;

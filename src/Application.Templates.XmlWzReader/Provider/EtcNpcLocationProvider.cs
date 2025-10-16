@@ -1,5 +1,6 @@
 using Application.Templates.Etc;
 using Application.Templates.Providers;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -16,30 +17,38 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            using var fis = _fileProvider.ReadFile(_file);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            var xDoc = XDocument.Load(reader).Root!;
-
-            List<NpcLocationTemplate> list = new();
-            foreach (var item in xDoc.Elements())
+            try
             {
-                if (int.TryParse(item.GetName(), out var npcId))
+                using var fis = _fileProvider.ReadFile(_file);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                List<NpcLocationTemplate> list = new();
+                foreach (var item in xDoc.Elements())
                 {
-                    var template = new NpcLocationTemplate(npcId);
-                    var mapList = new List<int>();
-                    foreach (var npcData in item.Elements())
+                    if (int.TryParse(item.GetName(), out var npcId))
                     {
-                        if (int.TryParse(npcData.GetName(), out var idx) && int.TryParse(npcData.GetStringValue(), out var mapId))
-                            mapList.Add(mapId);
+                        var template = new NpcLocationTemplate(npcId);
+                        var mapList = new List<int>();
+                        foreach (var npcData in item.Elements())
+                        {
+                            if (int.TryParse(npcData.GetName(), out var idx) && int.TryParse(npcData.GetStringValue(), out var mapId))
+                                mapList.Add(mapId);
+                        }
+                        template.Maps = mapList.ToArray();
+
+                        InsertItem(template);
+                        list.Add(template);
                     }
-                    template.Maps = mapList.ToArray();
-
-                    InsertItem(template);
-                    list.Add(template);
                 }
-            }
 
-            return list;
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
     }
 }

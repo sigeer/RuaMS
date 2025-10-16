@@ -1037,10 +1037,10 @@ public class OldItemInformationProvider
         }
     }
 
-    public Item getEquipById(int equipId, int ringId = -1)
+    public Item getEquipById(int equipId)
     {
         Equip nEquip;
-        nEquip = new Equip(equipId, 0, ringId);
+        nEquip = new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(equipId)!, 0, -1);
         nEquip.setQuantity(1);
         var stats = getEquipStats(equipId);
         if (stats != null)

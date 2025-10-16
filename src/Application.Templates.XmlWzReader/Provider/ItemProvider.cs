@@ -1,3 +1,4 @@
+using Application.Templates.Exceptions;
 using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
@@ -5,7 +6,7 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Install;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -63,91 +64,126 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            var xDoc = XDocument.Load(reader).Root!;
+            try
+            {
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
 
-            if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var petItemId))
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var petItemId))
+                    throw new TemplateFormatException(ProviderName, imgPath);
+
+                var pEntry = new PetItemTemplate(petItemId);
+                PetItemTemplateGenerated.ApplyProperties(pEntry, xDoc);
+                InsertItem(pEntry);
+                return [pEntry];
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
                 return [];
-
-            var pEntry = new PetItemTemplate(petItemId);
-            PetItemTemplateGenerated.ApplyProperties(pEntry, xDoc);
-            InsertItem(pEntry);
-            return [pEntry];
+            }
         }
 
         private IEnumerable<AbstractTemplate> LoadInstall(string imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            var xDoc = XDocument.Load(fis).Root!;
-
-            List<AbstractTemplate> all = [];
-
-            foreach (var itemNode in xDoc.Elements())
+            try
             {
-                if (int.TryParse(itemNode.GetName(), out var installId))
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                List<AbstractTemplate> all = [];
+
+                foreach (var itemNode in xDoc.Elements())
                 {
-                    var template = new InstallItemTemplate(installId);
-                    InstallItemTemplateGenerated.ApplyProperties(template, itemNode);
-                    InsertItem(template);
-                    all.Add(template);
+                    if (int.TryParse(itemNode.GetName(), out var installId))
+                    {
+                        var template = new InstallItemTemplate(installId);
+                        InstallItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        InsertItem(template);
+                        all.Add(template);
+                    }
                 }
+                return all;
             }
-            return all;
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
 
         private IEnumerable<AbstractTemplate> LoadEtc(string imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            var xDoc = XDocument.Load(fis).Root!;
-
-            List<AbstractItemTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
-                return all;
-
-            foreach (var itemNode in xDoc.Elements())
+            try
             {
-                if (int.TryParse(itemNode.GetName(), out var itemId))
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                List<AbstractItemTemplate> all = [];
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
+                    throw new TemplateFormatException(ProviderName, imgPath);
+
+                foreach (var itemNode in xDoc.Elements())
                 {
-                    AbstractItemTemplate template;
-                    if (groupId == 422)
+                    if (int.TryParse(itemNode.GetName(), out var itemId))
                     {
-                        var m = new IncubatorItemTemplate(itemId);
-                        IncubatorItemTemplateGenerated.ApplyProperties(m, itemNode);
-                        template = m;
+                        AbstractItemTemplate template;
+                        if (groupId == 422)
+                        {
+                            var m = new IncubatorItemTemplate(itemId);
+                            IncubatorItemTemplateGenerated.ApplyProperties(m, itemNode);
+                            template = m;
+                        }
+                        else
+                        {
+                            var m = new EtcItemTemplate(itemId);
+                            EtcItemTemplateGenerated.ApplyProperties(m, itemNode);
+                            template = m;
+                        }
+                        InsertItem(template);
+                        all.Add(template);
                     }
-                    else
-                    {
-                        var m = new EtcItemTemplate(itemId);
-                        EtcItemTemplateGenerated.ApplyProperties(m, itemNode);
-                        template = m;
-                    }
-                    InsertItem(template);
-                    all.Add(template);
                 }
+                return all;
             }
-            return all;
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
 
         private IEnumerable<AbstractTemplate> LoadConsume(string imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            var xDoc = XDocument.Load(fis).Root!;
-
-            List<AbstractTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
-                return all;
-
-            foreach (var rootNode in xDoc.Elements())
+            try
             {
-                if (int.TryParse(rootNode.GetName(), out var itemId))
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                List<AbstractTemplate> all = [];
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
+                    throw new TemplateFormatException(ProviderName, imgPath);
+
+                foreach (var rootNode in xDoc.Elements())
                 {
-                    var template = ProcessConsumeItem(groupId, itemId, rootNode);
-                    InsertItem(template);
-                    all.Add(template);
+                    if (int.TryParse(rootNode.GetName(), out var itemId))
+                    {
+                        var template = ProcessConsumeItem(groupId, itemId, rootNode);
+                        InsertItem(template);
+                        all.Add(template);
+                    }
                 }
+                return all;
             }
-            return all;
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
 
         #region Consume
@@ -362,23 +398,32 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private IEnumerable<AbstractTemplate> IterateCashBundleItem(string imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            var xDoc = XDocument.Load(fis).Root!;
-
-            List<AbstractTemplate> all = [];
-            if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
-                return all;
-
-            foreach (var rootNode in xDoc.Elements())
+            try
             {
-                if (int.TryParse(rootNode.GetName(), out var itemId))
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 4), out var groupId))
+                    throw new TemplateFormatException(ProviderName, imgPath);
+
+                List<AbstractTemplate> all = [];
+                foreach (var rootNode in xDoc.Elements())
                 {
-                    var template = ProcessCashItemByGroup(groupId, itemId, rootNode);
-                    InsertItem(template);
-                    all.Add(template);
+                    if (int.TryParse(rootNode.GetName(), out var itemId))
+                    {
+                        var template = ProcessCashItemByGroup(groupId, itemId, rootNode);
+                        InsertItem(template);
+                        all.Add(template);
+                    }
                 }
+                return all;
             }
-            return all;
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
     }
 }

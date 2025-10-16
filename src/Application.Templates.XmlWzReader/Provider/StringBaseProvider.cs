@@ -48,28 +48,36 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected IEnumerable<AbstractTemplate> GetDataFromImg(string path)
         {
-            using var fis = _fileProvider.ReadFile(path, _culture);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            var xDoc = XDocument.Load(reader).Root!;
-
-            var typeAttr = xDoc.Attribute("name")?.Value;
-            if (string.IsNullOrEmpty(typeAttr))
-                throw new TemplateFormatException(ProviderName, path);
-
-            StringTemplateType fileType;
             try
             {
-                fileType = Enum.Parse<StringTemplateType>(typeAttr.Split('.')[0], true);
+                using var fis = _fileProvider.ReadFile(path, _culture);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                var typeAttr = xDoc.Attribute("name")?.Value;
+                if (string.IsNullOrEmpty(typeAttr))
+                    throw new TemplateFormatException(ProviderName, path);
+
+                StringTemplateType fileType;
+                try
+                {
+                    fileType = Enum.Parse<StringTemplateType>(typeAttr.Split('.')[0], true);
+                }
+                catch (Exception)
+                {
+                    throw new TemplateFormatException(ProviderName, path);
+                }
+
+                if (!_types.Contains(fileType))
+                    return [];
+
+                return ProcessStringXml(fileType, xDoc);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new TemplateFormatException(ProviderName, path);
-            }
-
-            if (!_types.Contains(fileType))
+                LibLog.Logger.LogError(ex.ToString());
                 return [];
-
-            return ProcessStringXml(fileType, xDoc);
+            }
         }
 
 

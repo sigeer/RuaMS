@@ -11,27 +11,27 @@ namespace Application.Templates
             _defaultDir = baseDir;
         }
 
-        public string? FindFile(string? relativePath, CultureInfo? culture = null)
+        /// <summary>
+        /// 相对路径读取文件
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        /// <exception cref="ImgNotFound"></exception>
+        public Stream ReadFile(string? relativePath, CultureInfo? culture = null)
         {
             if (string.IsNullOrEmpty(relativePath))
-                return null;
+                throw new ImgNotFound($"WzFileProvider没有找到文件", relativePath);
 
+            string filePath = Path.Combine(_defaultDir, relativePath);
             if (culture != null && culture.Name != "en-US")
             {
                 var cultureDir = $"{_defaultDir}-{culture.Name}";
                 var cultureFile = Path.Combine(cultureDir, relativePath);
 
                 if (File.Exists(cultureFile))
-                    return cultureFile;
+                    filePath = cultureFile;
             }
-
-            // 回退到默认目录
-            return Path.Combine(_defaultDir, relativePath);
-        }
-
-        public Stream ReadFile(string? relativePath, CultureInfo? culture = null)
-        {
-            var filePath = FindFile(relativePath, culture) ?? throw new ImgNotFound($"WzFileProvider没有找到文件", relativePath);
             return File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
     }

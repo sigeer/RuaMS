@@ -1,5 +1,6 @@
 using Application.Templates.Etc;
 using Application.Templates.Providers;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -15,46 +16,54 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg()
         {
-            using var fis = _fileProvider.ReadFile(_file);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            if (reader.IsEmptyElement)
-                return [];
-
-            List<CashCommodityTemplate> all = [];
-            XmlReaderUtils.ReadChildNode(reader, itemNode =>
+            try
             {
-                if (int.TryParse(itemNode.GetAttribute("name"), out var index))
+                using var fis = _fileProvider.ReadFile(_file);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                if (reader.IsEmptyElement)
+                    return [];
+
+                List<CashCommodityTemplate> all = [];
+                XmlReaderUtils.ReadChildNode(reader, itemNode =>
                 {
-                    var pEntry = new CashCommodityTemplate(index);
-                    XmlReaderUtils.ReadChildNodeValue(itemNode, (name, value) =>
+                    if (int.TryParse(itemNode.GetAttribute("name"), out var index))
                     {
-                        if (name == "SN")
+                        var pEntry = new CashCommodityTemplate(index);
+                        XmlReaderUtils.ReadChildNodeValue(itemNode, (name, value) =>
                         {
-                            pEntry.CashItemSN = Convert.ToInt32(value);
-                            pEntry.TemplateId = Convert.ToInt32(value);
-                        }
-                        else if (name == "ItemId")
-                            pEntry.ItemID = Convert.ToInt32(value);
-                        else if (name == "Count")
-                            pEntry.Count = Convert.ToInt32(value);
-                        else if (name == "Price")
-                            pEntry.Price = Convert.ToInt32(value);
-                        else if (name == "Period")
-                            pEntry.Period = Convert.ToInt32(value);
-                        else if (name == "Priority")
-                            pEntry.Priority = Convert.ToInt32(value);
-                        else if (name == "Gender")
-                            pEntry.Gender = Convert.ToInt32(value);
-                        else if (name == "OnSale")
-                            pEntry.OnSale = Convert.ToInt32(value) > 0;
-                        else if (name == "Class")
-                            pEntry.Classification = Convert.ToInt32(value);
-                    });
-                    all.Add(pEntry);
-                    InsertItem(pEntry);
-                }
-            });
-            return all;
+                            if (name == "SN")
+                            {
+                                pEntry.CashItemSN = Convert.ToInt32(value);
+                                pEntry.TemplateId = Convert.ToInt32(value);
+                            }
+                            else if (name == "ItemId")
+                                pEntry.ItemID = Convert.ToInt32(value);
+                            else if (name == "Count")
+                                pEntry.Count = Convert.ToInt32(value);
+                            else if (name == "Price")
+                                pEntry.Price = Convert.ToInt32(value);
+                            else if (name == "Period")
+                                pEntry.Period = Convert.ToInt32(value);
+                            else if (name == "Priority")
+                                pEntry.Priority = Convert.ToInt32(value);
+                            else if (name == "Gender")
+                                pEntry.Gender = Convert.ToInt32(value);
+                            else if (name == "OnSale")
+                                pEntry.OnSale = Convert.ToInt32(value) > 0;
+                            else if (name == "Class")
+                                pEntry.Classification = Convert.ToInt32(value);
+                        });
+                        all.Add(pEntry);
+                        InsertItem(pEntry);
+                    }
+                });
+                return all;
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
     }
 }

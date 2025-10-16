@@ -86,7 +86,7 @@ namespace Application.Core.Managers
         public static string ShowEquipFeatures(IPlayer chr, Equip equip)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            if (!ii.isUpgradeable(equip.getItemId()))
+            if (!equip.SourceTemplate.IsUpgradeable())
             {
                 return "";
             }
