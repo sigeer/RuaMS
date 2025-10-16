@@ -15,7 +15,7 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new EtcMakeCharInfoProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<EtcMakeCharInfoProvider>(() => new EtcMakeCharInfoProvider(new Application.Templates.TemplateOptions()));
             });
         }
 
