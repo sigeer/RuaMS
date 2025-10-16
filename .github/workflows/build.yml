@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ms-wz: ${{ github.workspace }}/src/Application.Resources/wz
-      ms-script: ${{ github.workspace }}/src/Application.Resources/script
+      ms-script: ${{ github.workspace }}/src/Application.Resources/scripts
 
     steps:
       - name: Checkout repository

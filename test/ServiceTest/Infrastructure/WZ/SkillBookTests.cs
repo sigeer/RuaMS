@@ -12,6 +12,8 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void LoadFromQuestTest()
         {
+            Console.WriteLine($"TestVariable.WzPath: {TestVariable.WzPath}");
+
             ProviderFactory.Clear();
             ProviderFactory.Configure(o =>
             {
