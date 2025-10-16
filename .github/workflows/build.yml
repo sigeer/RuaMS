@@ -28,10 +28,13 @@ on:
       - 'src/Application.Templates.XmlWzReader/**'
       - 'test/ServiceTest/**'
 
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      ms-wz: ${{ github.workspace }}/src/Application.Resources/wz
 
     steps:
       - name: Checkout repository
@@ -49,7 +52,7 @@ jobs:
         run: dotnet build "./src/Application.Host/Application.Host.csproj" --no-restore -c Release
 
       - name: Test Infrastructure
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure"  --logger "console;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
 
       - name: Test Server
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games"  --logger "console;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
