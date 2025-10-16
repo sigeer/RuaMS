@@ -24,16 +24,16 @@ namespace Application.Core.Channel.Modules
                 option.DataDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Application.Resources", "wz"));
 #endif
 
-                option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new EquipProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new EtcNpcLocationProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<MapProvider>(() => new MapProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<ReactorProvider>(() => new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider<QuestProvider>(() => new QuestProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<EquipProvider>(() => new EquipProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<ItemProvider>(() => new ItemProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<MobSkillProvider>(() => new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider<EtcNpcLocationProvider>(() => new EtcNpcLocationProvider(new Templates.TemplateOptions()));
 
-                option.RegisterKeydProvider("zh-CN", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
-                option.RegisterKeydProvider("en-US", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
+                option.RegisterKeydProvider("zh-CN", () => new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
+                option.RegisterKeydProvider("en-US", () => new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
                 option.UseLogger(app.Logger);
             });
 

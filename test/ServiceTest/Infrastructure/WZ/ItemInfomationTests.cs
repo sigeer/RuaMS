@@ -28,10 +28,10 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
 
-                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
+                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
             });
             oldProvider = new OldItemInformationProvider();
             newProvider = new ItemInformationProvider(

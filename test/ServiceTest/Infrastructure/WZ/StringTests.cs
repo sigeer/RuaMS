@@ -23,7 +23,7 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
+                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
             });
 
             if (testCulture.Name == "zh-CN")

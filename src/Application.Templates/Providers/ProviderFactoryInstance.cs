@@ -1,5 +1,6 @@
 using Application.Templates.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Application.Templates.Providers
@@ -14,12 +15,12 @@ namespace Application.Templates.Providers
         /// wz所在目录
         /// </summary>
         public string? DataDir { get; set; }
-        Dictionary<Type, IProvider> _providers = new();
+        Dictionary<Type, Lazy<IProvider>> _providers = new();
 
-        public void RegisterProvider(IProvider provider)
+        public void RegisterProvider<TProvider>(Func<IProvider> func) where TProvider : IProvider
         {
-            if (!_providers.TryAdd(provider.GetType(), provider))
-                throw new ProviderDuplicateException(provider.ProviderName.ToString());
+            if (!_providers.TryAdd(typeof(TProvider), new Lazy<IProvider>(func)))
+                throw new ProviderDuplicateException(typeof(TProvider).Name);
         }
 
 
@@ -31,20 +32,20 @@ namespace Application.Templates.Providers
         internal TProvider GetProvider<TProvider>() where TProvider : IProvider
         {
             var type = typeof(TProvider);
-            if (_providers.TryGetValue(type, out var data) && data is TProvider p)
+            if (_providers.TryGetValue(type, out var data) && data.Value is TProvider p)
                 return p;
 
             throw new ProviderNotFoundException(type.Name.ToString());
         }
-        Dictionary<string, IProvider> _kedProviders = new();
-        public void RegisterKeydProvider(string key, IProvider provider)
+        Dictionary<string, Lazy<IProvider>> _kedProviders = new();
+        public void RegisterKeydProvider(string key, Func<IProvider> func)
         {
-            if (!_kedProviders.TryAdd(key, provider))
+            if (!_kedProviders.TryAdd(key, new Lazy<IProvider>(func)))
                 throw new ProviderDuplicateException(key);
         }
         internal TProvider GetProviderByKey<TProvider>(string key) where TProvider : IProvider
         {
-            if (_kedProviders.TryGetValue(key, out var data) && data is TProvider p)
+            if (_kedProviders.TryGetValue(key, out var data) && data.Value is TProvider p)
                 return p;
 
             throw new ProviderNotFoundException(key);

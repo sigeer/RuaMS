@@ -19,7 +19,7 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new QuestProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<QuestProvider>(() => new QuestProvider(new Application.Templates.TemplateOptions()));
             });
             var dataProvider = new SkillbookInformationProvider(null, null);
             Stopwatch sw = new Stopwatch();

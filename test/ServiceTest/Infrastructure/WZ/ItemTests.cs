@@ -1,4 +1,3 @@
-using Application.EF;
 using Application.Templates.Character;
 using Application.Templates.Item;
 using Application.Templates.Item.Cash;
@@ -6,7 +5,6 @@ using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using ServiceTest.TestUtilities;
 using System.Drawing;
@@ -22,8 +20,8 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
             });
         }
 

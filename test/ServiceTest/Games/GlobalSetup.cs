@@ -18,16 +18,16 @@ namespace ServiceTest.Games
             {
                 option.DataDir = TestVariable.WzPath;
 
-                option.RegisterProvider(new MapProvider(new Application.Templates.TemplateOptions()));
-                option.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new QuestProvider(new Application.Templates.TemplateOptions()));
-                option.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
-                option.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
-                option.RegisterProvider(new MobSkillProvider(new Application.Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new EtcNpcLocationProvider(new Application.Templates.TemplateOptions()));
+                option.RegisterProvider<MapProvider>(() => new MapProvider(new Application.Templates.TemplateOptions()));
+                option.RegisterProvider<ReactorProvider>(() => new ReactorProvider(new Application.Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider<QuestProvider>(() => new QuestProvider(new Application.Templates.TemplateOptions()));
+                option.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
+                option.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
+                option.RegisterProvider<MobSkillProvider>(() => new MobSkillProvider(new Application.Templates.TemplateOptions() { UseCache = false }));
+                option.RegisterProvider<EtcNpcLocationProvider>(() => new EtcNpcLocationProvider(new Application.Templates.TemplateOptions()));
 
-                option.RegisterKeydProvider("zh-CN", new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
-                option.RegisterKeydProvider("en-US", new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
+                option.RegisterKeydProvider("zh-CN", () => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
+                option.RegisterKeydProvider("en-US", () => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
             });
             await TestServer.StartServer();
         }

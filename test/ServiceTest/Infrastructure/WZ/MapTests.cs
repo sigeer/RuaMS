@@ -20,8 +20,8 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 o.DataDir = TestVariable.WzPath;
 
-                o.RegisterProvider(new MapProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<MapProvider>(() => new MapProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<ReactorProvider>(() => new ReactorProvider(new Application.Templates.TemplateOptions()));
             });
         }
 
