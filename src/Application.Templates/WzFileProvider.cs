@@ -29,7 +29,7 @@ namespace Application.Templates
                 var cultureDir = $"{_defaultDir}-{culture.Name}";
                 var cultureFile = Path.Combine(cultureDir, relativePath);
 
-                if (!File.Exists(cultureFile))
+                if (File.Exists(cultureFile))
                     filePath = cultureFile;
             }
             return File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
