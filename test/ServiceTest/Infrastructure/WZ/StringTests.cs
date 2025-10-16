@@ -3,6 +3,7 @@ using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
+using ServiceTest.TestUtilities;
 using System.Globalization;
 using XmlWzReader.wz;
 
@@ -18,8 +19,10 @@ namespace ServiceTest.Infrastructure.WZ
             testCulture = CultureInfo.GetCultureInfo(currentCulture);
 
             ProviderFactory.Clear();
-            ProviderFactory.Initilaize(o =>
+            ProviderFactory.Configure(o =>
             {
+                o.DataDir = TestVariable.WzPath;
+
                 o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
             });
 
@@ -29,12 +32,18 @@ namespace ServiceTest.Infrastructure.WZ
             }
         }
 
+        [OneTimeTearDown]
+        public void Back()
+        {
+            WZFiles.DIRECTORY = WZFiles.getWzDirectory();
+        }
+
         [Test]
         public void ItemTests()
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(StringCategory.Item);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item);
 
             var oldList = oldProvider.GetAllItem().OrderBy(x => x.Id).ToList();
             foreach (var item in oldList)
@@ -55,7 +64,7 @@ namespace ServiceTest.Infrastructure.WZ
 
             var oldList = oldProvider.GetAllMap().OrderBy(x => x.Id).ToList();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(StringCategory.Map);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Map);
             foreach (var item in oldList)
             {
                 var newData = newProvider.GetRequiredItem<StringMapTemplate>(item.Id);
@@ -74,7 +83,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Npc);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Npc);
 
             var oldList = oldProvider.GetAllNpcList().OrderBy(x => x.Id).ToList();
 
@@ -97,7 +106,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Mob);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Mob);
 
             var oldList = oldProvider.GetAllMonster().OrderBy(x => x.Id).ToList();
 
@@ -118,7 +127,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Skill);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Skill);
 
             var oldList = oldProvider.GetAllSkillList().OrderBy(x => x.Id).ToList();
 

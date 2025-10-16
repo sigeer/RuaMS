@@ -42,10 +42,10 @@ namespace Application.Templates.Providers
             if (!_kedProviders.TryAdd(key, provider))
                 throw new ProviderDuplicateException(key);
         }
-        internal IProvider GetProviderByKey(string key)
+        internal TProvider GetProviderByKey<TProvider>(string key) where TProvider : IProvider
         {
-            if (_kedProviders.TryGetValue(key, out var data) && data is not null)
-                return data;
+            if (_kedProviders.TryGetValue(key, out var data) && data is TProvider p)
+                return p;
 
             throw new ProviderNotFoundException(key);
         }

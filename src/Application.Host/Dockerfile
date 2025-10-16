@@ -17,9 +17,6 @@ WORKDIR /src
 COPY . .
 RUN dotnet restore "./src/Application.Host/Application.Host.csproj"
 
-WORKDIR "/src/src/Application.Host"
-RUN dotnet build "./Application.Host.csproj" -c $BUILD_CONFIGURATION  -p:IsStandalone=false -o /app/build
-
 # 此阶段用于发布要复制到最终阶段的服务项目
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release

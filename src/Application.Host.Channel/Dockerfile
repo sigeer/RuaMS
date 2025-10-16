@@ -27,8 +27,8 @@ RUN dotnet publish "./Application.Host.Channel.csproj" -c $BUILD_CONFIGURATION -
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=sleepnap/beidou-server:nightly /opt/server_backup/wz ./wz
-COPY --from=sleepnap/beidou-server:nightly /opt/server_backup/wz-zh-CN ./wz-zh-CN
+COPY --from=/src/src/Application.Resources/wz /app/publish/wz .
+COPY --from=/src/src/Application.Resources/wz-zh-CN /app/publish/wz-zh-CN .
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

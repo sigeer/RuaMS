@@ -13,14 +13,17 @@ namespace Application.Core.Channel.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
-            // Environment.SetEnvironmentVariable("ms-wz", "C:\\Demo\\MS\\wz");
-
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
                     app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
                     app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
 
-            ProviderFactory.Initilaize(option =>
+            ProviderFactory.Configure(option =>
             {
+#if DEBUG
+                // debug 时默认使用自带wz
+                option.DataDir = Path.GetFullPath(Path.Combine("..", "..", "..", "..", "Application.Resources", "wz"));
+#endif
+
                 option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider(new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
                 option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions()));

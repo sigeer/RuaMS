@@ -1,4 +1,3 @@
-using Application.Core.Channel.DataProviders;
 using Application.EF;
 using Application.Templates.Character;
 using Application.Templates.Item;
@@ -8,22 +7,30 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Newtonsoft.Json;
-using server;
+using ServiceTest.TestUtilities;
 using System.Drawing;
-using XmlWzReader;
-using XmlWzReader.wz;
 
 namespace ServiceTest.Infrastructure.WZ
 {
     internal class ItemTests
     {
+        public ItemTests()
+        {
+            ProviderFactory.Clear();
+            ProviderFactory.Configure(o =>
+            {
+                o.DataDir = TestVariable.WzPath;
+
+                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
+            });
+        }
+
         [Test]
         public void CashItemTemplateDataCheck()
         {
-            var provider = new ItemProvider(new Application.Templates.TemplateOptions());
+            var provider = ProviderFactory.GetProvider<ItemProvider>();
 
             var areaEffectItem = provider.GetRequiredItem<AreaEffectItemTemplate>(5281000)!;
             Assert.That(areaEffectItem.Time, Is.EqualTo(60));
@@ -65,7 +72,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void ConsumeItemTemplateDataCheck()
         {
-            var provider = new ItemProvider(new Application.Templates.TemplateOptions());
+            var provider = ProviderFactory.GetProvider<ItemProvider>();
             var townScrollItem = provider.GetRequiredItem<TownScrollItemTemplate>(2031000);
             Assert.That(townScrollItem!.MoveTo, Is.EqualTo(229010000));
             Assert.That(townScrollItem!.IgnoreContinent, Is.EqualTo(true));
@@ -123,7 +130,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void EtcItemTemplateDataCheck()
         {
-            var provider = new ItemProvider(new Application.Templates.TemplateOptions());
+            var provider = ProviderFactory.GetProvider<ItemProvider>();
 
             var item = provider.GetRequiredItem<EtcItemTemplate>(4000113)!;
             Assert.That(item.lv, Is.EqualTo(34));
@@ -138,7 +145,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void EquipItemTemplateDataCheck()
         {
-            var provider = new EquipProvider(new Application.Templates.TemplateOptions());
+            var provider = ProviderFactory.GetProvider<EquipProvider>();
             var item = provider.GetRequiredItem<EquipTemplate>(01002430)!;
 
             Console.WriteLine(JsonConvert.SerializeObject(item));
@@ -149,11 +156,6 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void MonsterCardTest()
         {
-            ProviderFactory.Initilaize(o =>
-            {
-                o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
-            });
-
             var newProvider = ProviderFactory.GetProvider<ItemProvider>();
 
             var dict = newProvider.GetAllMonsterCard().OrderBy(x => x.TemplateId).ToDictionary(x => x.TemplateId, x => x.MobId);

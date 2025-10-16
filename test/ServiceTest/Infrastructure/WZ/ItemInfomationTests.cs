@@ -9,6 +9,7 @@ using client.inventory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using ServiceTest.TestUtilities;
 using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
@@ -22,8 +23,11 @@ namespace ServiceTest.Infrastructure.WZ
 
         public ItemInfomationTests()
         {
-            ProviderFactory.Initilaize(o =>
+            ProviderFactory.Clear();
+            ProviderFactory.Configure(o =>
             {
+                o.DataDir = TestVariable.WzPath;
+
                 o.RegisterProvider(new ItemProvider(new Application.Templates.TemplateOptions()));
                 o.RegisterProvider(new EquipProvider(new Application.Templates.TemplateOptions()));
 

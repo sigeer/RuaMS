@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
+using ServiceTest.TestUtilities;
 using System.Diagnostics;
 
 namespace ServiceTest.Infrastructure.WZ
@@ -11,8 +12,11 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void LoadFromQuestTest()
         {
-            ProviderFactory.Initilaize(o =>
+            ProviderFactory.Clear();
+            ProviderFactory.Configure(o =>
             {
+                o.DataDir = TestVariable.WzPath;
+
                 o.RegisterProvider(new QuestProvider(new Application.Templates.TemplateOptions()));
             });
             var dataProvider = new SkillbookInformationProvider(null, null);

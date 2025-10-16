@@ -14,31 +14,30 @@ namespace Application.Templates.Providers
             {
                 var pathFromEnv = Environment.GetEnvironmentVariable("ms-wz") ?? Environment.GetEnvironmentVariable("RUA_MS_ms-wz");
                 if (Directory.Exists(pathFromEnv))
-                {
-                    _globalDataDir = pathFromEnv;
-                }
-                else
-                {
-                    var pathFromDefault = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz");
-                    if (Directory.Exists(_globalDataDir))
-                        _globalDataDir = pathFromDefault;
-                }
-            }
+                    return pathFromEnv;
 
-            if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
+                var pathFromDefault = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz");
+                if (Directory.Exists(pathFromDefault))
+                    return pathFromDefault;
+
                 throw new DataDirNotFoundException("没有设置wz的目录，默认路径也没有找到wz。");
+            }
 
             return _globalDataDir;
         }
-        public static void Initilaize(Action<ProviderFactoryInstance> action)
+
+        /// <summary>
+        /// 在 Server.Start 之前调用都有效。
+        /// </summary>
+        /// <param name="action"></param>
+        public static void Configure(Action<ProviderFactoryInstance> action)
         {
             action(Instance);
-
-            _globalDataDir = GetEffectDir(_globalDataDir);
+            _globalDataDir = GetEffectDir(Instance.DataDir);
         }
 
         public static TProvider GetProvider<TProvider>() where TProvider : IProvider => Instance.GetProvider<TProvider>();
-        public static IProvider GetProviderByKey(string key) => Instance.GetProviderByKey(key);
+        public static TProvider GetProviderByKey<TProvider>(string key) where TProvider : IProvider => Instance.GetProviderByKey<TProvider>(key);
         public static void Clear() => Instance.Clear();
 
         static ProviderFactoryInstance Instance = new ProviderFactoryInstance();

@@ -313,8 +313,8 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
-                throw new DirectoryNotFoundException("没有找到Script/WZ");
+            if (!Directory.Exists(ScriptResFactory.ScriptDirName))
+                throw new DirectoryNotFoundException("没有找到Script目录");
 
             if (ServerConfig.ChannelConfig.Count == 0)
                 throw new BusinessFatalException("必须包含频道");

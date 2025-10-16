@@ -4,6 +4,7 @@ using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
 using server.maps;
+using ServiceTest.TestUtilities;
 using System.Text;
 using XmlWzReader;
 using XmlWzReader.wz;
@@ -12,6 +13,18 @@ namespace ServiceTest.Infrastructure.WZ
 {
     internal class MapTests
     {
+        public MapTests()
+        {
+            ProviderFactory.Clear();
+            ProviderFactory.Configure(o =>
+            {
+                o.DataDir = TestVariable.WzPath;
+
+                o.RegisterProvider(new MapProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions()));
+            });
+        }
+
         int mapId = 001000000;
         private static string GetMapImg(int mapid)
         {
@@ -30,7 +43,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void MapTemplateDataCheck()
         {
-            var provider = new MapProvider(new Application.Templates.TemplateOptions());
+            var provider = ProviderFactory.GetProvider<MapProvider>();
             var cpqMap = provider.GetItem(980000101)!;
 
             Assert.That(cpqMap.MonsterCarnival.Skills, Does.Contain(1));
@@ -49,10 +62,6 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void ReactorEqualCheck()
         {
-            ProviderFactory.Initilaize(o =>
-            {
-                o.RegisterProvider(new ReactorProvider(new Application.Templates.TemplateOptions()));
-            });
             var options = new JsonSerializerSettings
             {
                 ContractResolver = new PrivateContractResolver(),
@@ -95,7 +104,7 @@ namespace ServiceTest.Infrastructure.WZ
 
             var oldData = oldProvider.getData(GetMapImg(mapId));
             var infoData = oldData.getChildByPath("info")!;
-            var newProvider = new MapProvider(new Application.Templates.TemplateOptions());
+            var newProvider = ProviderFactory.GetProvider<MapProvider>();
             var newData = newProvider.GetItem(mapId)!;
 
             Assert.That(newData.HasClock, Is.EqualTo(oldData.getChildByPath("clock") != null));
