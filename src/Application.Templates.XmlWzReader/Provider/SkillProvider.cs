@@ -1,5 +1,7 @@
 using Application.Templates.Providers;
 using Application.Templates.Skill;
+using Microsoft.Extensions.Logging;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
@@ -7,7 +9,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public class SkillProvider : AbstractGroupProvider<SkillTemplate>
     {
         public override string ProviderName => ProviderNames.Skill;
-        public SkillProvider(TemplateOptions options): base(options)
+        public SkillProvider(TemplateOptions options) : base(options)
         {
         }
 
@@ -20,68 +22,77 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? filePath)
         {
-            List<AbstractTemplate> imgData = [];
-            using var fis = _fileProvider.ReadFile(filePath);
-            var xDoc = XDocument.Load(fis).Root!;
-
-            var skillElement = xDoc.Elements().FirstOrDefault(x => x.Attribute("name")?.Value == "skill");
-            if (skillElement != null)
+            try
             {
-                foreach (var skillEle in skillElement.Elements())
+                List<AbstractTemplate> imgData = [];
+                using var fis = _fileProvider.ReadFile(filePath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                var skillElement = xDoc.Elements().FirstOrDefault(x => x.Attribute("name")?.Value == "skill");
+                if (skillElement != null)
                 {
-                    if (int.TryParse(skillEle.Attribute("name")?.Value, out var skillId))
+                    foreach (var skillEle in skillElement.Elements())
                     {
-                        var pEntry = new SkillTemplate(skillId);
-                        foreach (var skillProp in skillEle.Elements())
+                        if (int.TryParse(skillEle.Attribute("name")?.Value, out var skillId))
                         {
-                            var propName = skillProp.Attribute("name")?.Value;
-                            if (propName == "skillType")
-                                pEntry.SkillType = Convert.ToInt32(skillProp.Attribute("value")?.Value);
-                            else if (propName == "elemAttr")
-                                pEntry.ElemAttr = skillProp.Attribute("value")?.Value;
-                            else if (propName == "hit")
-                                pEntry.HasHitNode = true;
-                            else if (propName == "ball")
-                                pEntry.HasBallNode = true;
-                            else if (propName == "effect")
-                                pEntry.EffectData = ProcessEffectData(skillProp);
-                            else if (propName == "level")
-                                pEntry.LevelData = ProcessSkillData(skillProp);
-                            else if (propName == "action")
+                            var pEntry = new SkillTemplate(skillId);
+                            foreach (var skillProp in skillEle.Elements())
                             {
-                                foreach (var actionItem in skillProp.Elements())
+                                var propName = skillProp.Attribute("name")?.Value;
+                                if (propName == "skillType")
+                                    pEntry.SkillType = Convert.ToInt32(skillProp.Attribute("value")?.Value);
+                                else if (propName == "elemAttr")
+                                    pEntry.ElemAttr = skillProp.Attribute("value")?.Value;
+                                else if (propName == "hit")
+                                    pEntry.HasHitNode = true;
+                                else if (propName == "ball")
+                                    pEntry.HasBallNode = true;
+                                else if (propName == "effect")
+                                    pEntry.EffectData = ProcessEffectData(skillProp);
+                                else if (propName == "level")
+                                    pEntry.LevelData = ProcessSkillData(skillProp);
+                                else if (propName == "action")
                                 {
-                                    var index = actionItem.GetName();
-                                    if (index == "0")
+                                    foreach (var actionItem in skillProp.Elements())
                                     {
-                                        pEntry.Action0 = actionItem.GetStringValue();
-                                        break;
+                                        var index = actionItem.GetName();
+                                        if (index == "0")
+                                        {
+                                            pEntry.Action0 = actionItem.GetStringValue();
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            else if (propName == "prepare")
-                            {
-                                foreach (var prepareProp in skillProp.Elements())
+                                else if (propName == "prepare")
                                 {
-                                    var preparePropName = prepareProp.GetName();
-                                    if (preparePropName == "action")
+                                    foreach (var prepareProp in skillProp.Elements())
                                     {
-                                        pEntry.PrepareAction = prepareProp.GetStringValue();
-                                        break;
+                                        var preparePropName = prepareProp.GetName();
+                                        if (preparePropName == "action")
+                                        {
+                                            pEntry.PrepareAction = prepareProp.GetStringValue();
+                                            break;
+                                        }
                                     }
                                 }
+
+
                             }
-
-
+                            InsertItem(pEntry);
+                            imgData.Add(pEntry);
                         }
-                        InsertItem(pEntry);
-                        imgData.Add(pEntry);
+
                     }
-
                 }
-            }
 
-            return imgData;
+                return imgData;
+            }
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
 
 

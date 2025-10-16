@@ -417,7 +417,7 @@ public class PacketCreator
         {
             int itemLevel = equip.getItemLevel();
 
-            long expNibble = (ExpTable.getExpNeededForLevel(ii.getEquipLevelReq(item.getItemId())) * equip.getItemExp());
+            long expNibble = (ExpTable.getExpNeededForLevel(equip.SourceTemplate.ReqLevel) * equip.getItemExp());
             expNibble /= ExpTable.getEquipExpNeededForLevel(itemLevel);
 
             p.writeByte(0);
@@ -2705,10 +2705,10 @@ public class PacketCreator
         p.writeByte(0); //end of pets
 
 
-        Item? mount;     //mounts can potentially crash the client if the player's level is not properly checked
+        Equip? mount;     //mounts can potentially crash the client if the player's level is not properly checked
         if (chr.MountModel != null
-            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Mount)) != null
-            && ItemInformationProvider.getInstance().getEquipLevelReq(mount.getItemId()) <= chr.getLevel())
+            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Mount) as Equip) != null
+            && mount.SourceTemplate.ReqLevel <= chr.getLevel())
         {
             p.writeByte(chr.MountModel.getId()); //mount
             p.writeInt(chr.MountModel.getLevel()); //level

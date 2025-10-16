@@ -31,7 +31,6 @@ namespace Application.Utility
     {
         // 缓存所有枚举值
         public static readonly T[] Values;
-
         static EnumClassCache()
         {
             Values = EnumClassUtils.GetValues<T>().ToArray();

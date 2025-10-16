@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
+using Application.Templates.Character;
 using constants.game;
 using tools;
 
@@ -57,27 +58,36 @@ public class Equip : Item
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
+    public int MaxLevel { get; }
     public Ring? Ring { get; private set; }
     public long RingId { get; private set; } = -1;
     public RingSourceModel? RingSource { get; private set; }
+    public EquipTemplate SourceTemplate { get; }
 
-    public Equip(int id, short position) : this(id, position, 0)
+    public Equip(EquipTemplate template, short position) : this(template, position, 0)
     {
     }
 
-    public Equip(int id, short position, int slots) : base(id, position, 1)
+    public Equip(EquipTemplate template, short position, int upgradeSlots) : base(template.TemplateId, position, 1)
     {
+        SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Equip);
-        this.upgradeSlots = (sbyte)slots;
+        this.upgradeSlots = (sbyte)upgradeSlots;
         this.itemExp = 0;
         this.itemLevel = 1;
 
-        IsElemental = ItemInformationProvider.getInstance().IsEquipElemental(id);
+        IsElemental = SourceTemplate.IsElemental;
+        MaxLevel = Math.Min(30,
+            Math.Max(
+                (SourceTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1, 
+                YamlConfig.config.server.USE_EQUIPMNT_LVLUP
+                )
+            );
     }
 
     public override Item copy()
     {
-        Equip ret = new Equip(getItemId(), getPosition(), getUpgradeSlots());
+        Equip ret = new Equip(SourceTemplate, getPosition(), getUpgradeSlots());
         ret.str = str;
         ret.dex = dex;
         ret._int = _int;
@@ -338,10 +348,9 @@ public class Equip : Item
         return stat;
     }
 
-    private static bool isPhysicalWeapon(int itemid)
+    private bool isPhysicalWeapon()
     {
-        Equip eqp = (Equip)ItemInformationProvider.getInstance().getEquipById(itemid);
-        return eqp.getWatk() >= eqp.getMatk();
+        return SourceTemplate.IncPAD >= SourceTemplate.IncMAD;
     }
 
     private bool isNotWeaponAffinity(StatUpgrade name)
@@ -352,11 +361,11 @@ public class Equip : Item
         {
             if (name.Equals(StatUpgrade.incPAD))
             {
-                return !isPhysicalWeapon(this.getItemId());
+                return !isPhysicalWeapon();
             }
             else if (name.Equals(StatUpgrade.incMAD))
             {
-                return isPhysicalWeapon(this.getItemId());
+                return isPhysicalWeapon();
             }
         }
 
@@ -608,7 +617,7 @@ public class Equip : Item
 
         if (IsElemental)
         {
-            var elementalStats = ItemInformationProvider.getInstance().getItemLevelupStats(getItemId(), itemLevel);
+            var elementalStats = ItemInformationProvider.getInstance().getItemLevelupStats(SourceTemplate, itemLevel);
 
             foreach (KeyValuePair<string, int> p in elementalStats)
             {
@@ -684,7 +693,7 @@ public class Equip : Item
 
         c.OnlinedCharacter.equipChanged();
 
-        showLevelupMessage(showStr, c); // thanks to Polaris dev team !
+        c.OnlinedCharacter.showHint(showStr, 300);
         c.OnlinedCharacter.dropMessage(6, lvupStr);
 
         c.sendPacket(PacketCreator.showEquipmentLevelUp());
@@ -730,19 +739,17 @@ public class Equip : Item
         lock (gainExpLock)
         {
             // Ronan's Equip Exp gain method
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            if (!ii.isUpgradeable(this.getItemId()))
+            if (!SourceTemplate.IsUpgradeable())
             {
                 return;
             }
 
-            int equipMaxLevel = Math.Min(30, Math.Max(ii.getEquipLevel(this.getItemId(), true), YamlConfig.config.server.USE_EQUIPMNT_LVLUP));
-            if (itemLevel >= equipMaxLevel)
+            if (itemLevel >= MaxLevel)
             {
                 return;
             }
 
-            int reqLevel = ii.getEquipLevelReq(this.getItemId());
+            int reqLevel = SourceTemplate.ReqLevel;
 
             float masteryModifier = (float)(YamlConfig.config.server.EQUIP_EXP_RATE * ExpTable.getExpNeededForLevel(1)) / (float)normalizedMasteryExp(reqLevel);
             float elementModifier = (IsElemental) ? 0.85f : 0.6f;
@@ -766,7 +773,7 @@ public class Equip : Item
                     itemExp -= expNeeded;
                     gainLevel(c);
 
-                    if (itemLevel >= equipMaxLevel)
+                    if (itemLevel >= MaxLevel)
                     {
                         itemExp = 0.0f;
                         break;
@@ -783,21 +790,9 @@ public class Equip : Item
 
     public bool ReachedMaxLevel()
     {
-        if (IsElemental)
-        {
-            if (itemLevel < ItemInformationProvider.getInstance().getEquipLevel(getItemId(), true))
-            {
-                return false;
-            }
-        }
-
-        return itemLevel >= YamlConfig.config.server.USE_EQUIPMNT_LVLUP;
+        return itemLevel >= MaxLevel;
     }
 
-    private static void showLevelupMessage(string msg, IChannelClient c)
-    {
-        c.OnlinedCharacter.showHint(msg, 300);
-    }
 
     public void setItemExp(int exp)
     {
@@ -858,4 +853,5 @@ public class Equip : Item
     {
         return itemLevel;
     }
+
 }

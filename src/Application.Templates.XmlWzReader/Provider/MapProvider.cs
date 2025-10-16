@@ -1,5 +1,7 @@
+using Application.Templates.Exceptions;
 using Application.Templates.Map;
 using Application.Templates.Providers;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -26,173 +28,181 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)
         {
-            using var fis = _fileProvider.ReadFile(imgPath);
-            using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
-            var xDoc = XDocument.Load(reader).Root!;
-
-            if (!int.TryParse(xDoc.GetName().AsSpan(0, 9), out var mapId))
-                return [];
-
-            var mapTemplate = new MapTemplate(mapId);
-            foreach (var item in xDoc.Elements())
+            try
             {
-                var nodeType = item.GetName();
-                if (nodeType == "info")
+                using var fis = _fileProvider.ReadFile(imgPath);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 9), out var mapId))
+                    throw new TemplateFormatException(ProviderName, imgPath);
+
+                var mapTemplate = new MapTemplate(mapId);
+                foreach (var item in xDoc.Elements())
                 {
-                    foreach (var infoPropNode in item.Elements())
+                    var nodeType = item.GetName();
+                    if (nodeType == "info")
                     {
-                        var name = infoPropNode.GetName();
-                        if (name == "link")
-                            GetItem(infoPropNode.GetIntValue())?.CloneLink(mapTemplate);
-                        else if (name == "forcedReturn")
-                            mapTemplate.ForcedReturn = infoPropNode.GetIntValue();
-                        else if (name == "returnMap")
-                            mapTemplate.ReturnMap = infoPropNode.GetIntValue();
-                        else if (name == "fly")
-                            mapTemplate.FlyMap = infoPropNode.GetBoolValue();
-                        else if (name == "town")
-                            mapTemplate.Town = infoPropNode.GetBoolValue();
-                        else if (name == "everlast")
-                            mapTemplate.Everlast = infoPropNode.GetBoolValue();
-                        else if (name == "createMobInterval")
-                            mapTemplate.CreateMobInterval = infoPropNode.GetIntValue();
-
-                        else if (name == "onFirstUserEnter")
-                            mapTemplate.OnFirstUserEnter = infoPropNode.GetStringValue();
-                        else if (name == "onUserEnter")
-                            mapTemplate.OnUserEnter = infoPropNode.GetStringValue();
-
-                        else if (name == "VRRight")
-                            mapTemplate.VRRight = infoPropNode.GetIntValue();
-                        else if (name == "VRBottom")
-                            mapTemplate.VRBottom = infoPropNode.GetIntValue();
-                        else if (name == "VRLeft")
-                            mapTemplate.VRLeft = infoPropNode.GetIntValue();
-                        else if (name == "VRTop")
-                            mapTemplate.VRTop = infoPropNode.GetIntValue();
-
-                        else if (name == "decHP")
-                            mapTemplate.DecHP = infoPropNode.GetIntValue();
-                        else if (name == "decInterval")
-                            mapTemplate.DecInterval = infoPropNode.GetIntValue();
-                        else if (name == "protectItem")
-                            mapTemplate.ProtectItem = infoPropNode.GetIntValue();
-                        else if (name == "timeLimit")
-                            mapTemplate.TimeLimit = infoPropNode.GetIntValue();
-                        else if (name == "fieldLimit")
-                            mapTemplate.FieldLimit = infoPropNode.GetIntValue();
-                        else if (name == "fieldType")
-                            mapTemplate.FieldType = infoPropNode.GetIntValue();
-
-                        else if (name == "recovery")
-                            mapTemplate.RecoveryRate = infoPropNode.GetFloatValue();
-                        else if (name == "fixedMobCapacity")
-                            mapTemplate.FixedMobCapacity = infoPropNode.GetIntValue();
-
-                        else if (nodeType == "timeMob")
+                        foreach (var infoPropNode in item.Elements())
                         {
-                            var timeMob = new MapTimeMobTemplate();
-                            foreach (var timeMobProp in infoPropNode.Elements())
+                            var name = infoPropNode.GetName();
+                            if (name == "link")
+                                GetItem(infoPropNode.GetIntValue())?.CloneLink(mapTemplate);
+                            else if (name == "forcedReturn")
+                                mapTemplate.ForcedReturn = infoPropNode.GetIntValue();
+                            else if (name == "returnMap")
+                                mapTemplate.ReturnMap = infoPropNode.GetIntValue();
+                            else if (name == "fly")
+                                mapTemplate.FlyMap = infoPropNode.GetBoolValue();
+                            else if (name == "town")
+                                mapTemplate.Town = infoPropNode.GetBoolValue();
+                            else if (name == "everlast")
+                                mapTemplate.Everlast = infoPropNode.GetBoolValue();
+                            else if (name == "createMobInterval")
+                                mapTemplate.CreateMobInterval = infoPropNode.GetIntValue();
+
+                            else if (name == "onFirstUserEnter")
+                                mapTemplate.OnFirstUserEnter = infoPropNode.GetStringValue();
+                            else if (name == "onUserEnter")
+                                mapTemplate.OnUserEnter = infoPropNode.GetStringValue();
+
+                            else if (name == "VRRight")
+                                mapTemplate.VRRight = infoPropNode.GetIntValue();
+                            else if (name == "VRBottom")
+                                mapTemplate.VRBottom = infoPropNode.GetIntValue();
+                            else if (name == "VRLeft")
+                                mapTemplate.VRLeft = infoPropNode.GetIntValue();
+                            else if (name == "VRTop")
+                                mapTemplate.VRTop = infoPropNode.GetIntValue();
+
+                            else if (name == "decHP")
+                                mapTemplate.DecHP = infoPropNode.GetIntValue();
+                            else if (name == "decInterval")
+                                mapTemplate.DecInterval = infoPropNode.GetIntValue();
+                            else if (name == "protectItem")
+                                mapTemplate.ProtectItem = infoPropNode.GetIntValue();
+                            else if (name == "timeLimit")
+                                mapTemplate.TimeLimit = infoPropNode.GetIntValue();
+                            else if (name == "fieldLimit")
+                                mapTemplate.FieldLimit = infoPropNode.GetIntValue();
+                            else if (name == "fieldType")
+                                mapTemplate.FieldType = infoPropNode.GetIntValue();
+
+                            else if (name == "recovery")
+                                mapTemplate.RecoveryRate = infoPropNode.GetFloatValue();
+                            else if (name == "fixedMobCapacity")
+                                mapTemplate.FixedMobCapacity = infoPropNode.GetIntValue();
+
+                            else if (nodeType == "timeMob")
                             {
-                                var timeMobPropName = timeMobProp.GetName();
-                                if (timeMobPropName == "id")
-                                    timeMob.Id = timeMobProp.GetIntValue();
-                                else if (timeMobPropName == "message")
-                                    timeMob.Message = timeMobProp.GetStringValue() ?? "";
-                                else if (timeMobPropName == "startHour")
-                                    timeMob.StartHour = timeMobProp.GetIntValue();
-                                else if (timeMobPropName == "endHour")
-                                    timeMob.EndHour = timeMobProp.GetIntValue();
+                                var timeMob = new MapTimeMobTemplate();
+                                foreach (var timeMobProp in infoPropNode.Elements())
+                                {
+                                    var timeMobPropName = timeMobProp.GetName();
+                                    if (timeMobPropName == "id")
+                                        timeMob.Id = timeMobProp.GetIntValue();
+                                    else if (timeMobPropName == "message")
+                                        timeMob.Message = timeMobProp.GetStringValue() ?? "";
+                                    else if (timeMobPropName == "startHour")
+                                        timeMob.StartHour = timeMobProp.GetIntValue();
+                                    else if (timeMobPropName == "endHour")
+                                        timeMob.EndHour = timeMobProp.GetIntValue();
+                                }
+                                mapTemplate.TimeMob = timeMob;
                             }
-                            mapTemplate.TimeMob = timeMob;
                         }
                     }
-                }
 
-                else if (nodeType == "shipObj")
-                    mapTemplate.HasShip = true;
-                else if (nodeType == "clock")
-                    mapTemplate.HasClock = true;
+                    else if (nodeType == "shipObj")
+                        mapTemplate.HasShip = true;
+                    else if (nodeType == "clock")
+                        mapTemplate.HasClock = true;
 
-                else if (nodeType == "monsterCarnival")
-                    ProcessMC(mapTemplate, item);
-                else if (nodeType == "snowball")
-                    ProcessSnowball(mapTemplate, item);
-                else if (nodeType == "coconut")
-                    ProcessCoconut(mapTemplate, item);
+                    else if (nodeType == "monsterCarnival")
+                        ProcessMC(mapTemplate, item);
+                    else if (nodeType == "snowball")
+                        ProcessSnowball(mapTemplate, item);
+                    else if (nodeType == "coconut")
+                        ProcessCoconut(mapTemplate, item);
 
-                else if (nodeType == "foothold")
-                {
-                    ProcessMapFoothold(mapTemplate, item);
-                }
-
-                else if (nodeType == "back")
-                {
-                    ProcessMapBack(mapTemplate, item);
-                }
-
-                else if (nodeType == "portal")
-                {
-                    ProcessMapPortal(mapTemplate, item);
-                }
-
-                else if (nodeType == "life")
-                {
-                    ProcessMapLife(mapTemplate, item);
-                }
-
-                else if (nodeType == "reactor")
-                {
-                    ProcessMapReactor(mapTemplate, item);
-                }
-
-                else if (nodeType == "miniMap")
-                {
-                    var mini = new MapMiniMapTemplate();
-                    foreach (var timeMobProp in item.Elements())
+                    else if (nodeType == "foothold")
                     {
-                        var timeMobPropName = timeMobProp.GetName();
-                        if (timeMobPropName == "width")
-                            mini.Width = timeMobProp.GetIntValue();
-                        else if (timeMobPropName == "height")
-                            mini.Height = timeMobProp.GetIntValue();
-                        else if (timeMobPropName == "centerX")
-                            mini.CenterX = timeMobProp.GetIntValue();
-                        else if (timeMobPropName == "centerY")
-                            mini.CenterY = timeMobProp.GetIntValue();
+                        ProcessMapFoothold(mapTemplate, item);
                     }
-                    mapTemplate.MiniMap = mini;
-                }
 
-                else if (nodeType == "area")
-                {
-                    var list = new List<MapAreaTemplate>();
-                    foreach (var areaItem in item.Elements())
+                    else if (nodeType == "back")
                     {
-                        var model = new MapAreaTemplate();
-                        foreach (var areaProp in areaItem.Elements())
+                        ProcessMapBack(mapTemplate, item);
+                    }
+
+                    else if (nodeType == "portal")
+                    {
+                        ProcessMapPortal(mapTemplate, item);
+                    }
+
+                    else if (nodeType == "life")
+                    {
+                        ProcessMapLife(mapTemplate, item);
+                    }
+
+                    else if (nodeType == "reactor")
+                    {
+                        ProcessMapReactor(mapTemplate, item);
+                    }
+
+                    else if (nodeType == "miniMap")
+                    {
+                        var mini = new MapMiniMapTemplate();
+                        foreach (var timeMobProp in item.Elements())
                         {
-                            var areaPropName = areaProp.GetName();
-                            if (areaPropName == "x1")
-                                model.X1 = areaProp.GetIntValue();
-                            else if (areaPropName == "x2")
-                                model.X2 = areaProp.GetIntValue();
-                            else if (areaPropName == "y1")
-                                model.Y1 = areaProp.GetIntValue();
-                            else if (areaPropName == "y2")
-                                model.Y2 = areaProp.GetIntValue();
+                            var timeMobPropName = timeMobProp.GetName();
+                            if (timeMobPropName == "width")
+                                mini.Width = timeMobProp.GetIntValue();
+                            else if (timeMobPropName == "height")
+                                mini.Height = timeMobProp.GetIntValue();
+                            else if (timeMobPropName == "centerX")
+                                mini.CenterX = timeMobProp.GetIntValue();
+                            else if (timeMobPropName == "centerY")
+                                mini.CenterY = timeMobProp.GetIntValue();
                         }
+                        mapTemplate.MiniMap = mini;
                     }
-                    mapTemplate.Areas = list.ToArray();
-                }
 
-                else if (nodeType == "seat")
-                {
-                    mapTemplate.SeatCount = item.Elements().Count();
+                    else if (nodeType == "area")
+                    {
+                        var list = new List<MapAreaTemplate>();
+                        foreach (var areaItem in item.Elements())
+                        {
+                            var model = new MapAreaTemplate();
+                            foreach (var areaProp in areaItem.Elements())
+                            {
+                                var areaPropName = areaProp.GetName();
+                                if (areaPropName == "x1")
+                                    model.X1 = areaProp.GetIntValue();
+                                else if (areaPropName == "x2")
+                                    model.X2 = areaProp.GetIntValue();
+                                else if (areaPropName == "y1")
+                                    model.Y1 = areaProp.GetIntValue();
+                                else if (areaPropName == "y2")
+                                    model.Y2 = areaProp.GetIntValue();
+                            }
+                        }
+                        mapTemplate.Areas = list.ToArray();
+                    }
+
+                    else if (nodeType == "seat")
+                    {
+                        mapTemplate.SeatCount = item.Elements().Count();
+                    }
                 }
+                InsertItem(mapTemplate);
+                return [mapTemplate];
             }
-            InsertItem(mapTemplate);
-            return [mapTemplate];
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
         }
 
         private static void ProcessMapBack(MapTemplate mapTemplate, XElement item)

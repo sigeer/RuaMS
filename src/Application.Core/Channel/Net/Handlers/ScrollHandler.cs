@@ -116,7 +116,7 @@ public class ScrollHandler : ChannelHandlerBase
                     }
                 }
 
-                var scrolled = (Equip?)ii.scrollEquipWithId(toScroll, scroll.getItemId(), whiteScroll, 0, chr.isGM());
+                var scrolled = ii.scrollEquipWithId(toScroll, scroll.getItemId(), whiteScroll, 0, chr.isGM());
                 var scrollSuccess = Equip.ScrollResult.FAIL; // fail
                 if (scrolled == null)
                 {

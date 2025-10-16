@@ -201,7 +201,6 @@ namespace Application.Core.Game.Players
 
         public bool canHoldUniques(List<int> itemids)
         {
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
             return itemids.All(x => CanHoldUniquesOnly(x));
         }
 
@@ -605,7 +604,7 @@ namespace Application.Core.Game.Players
                                 {
                                     it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                                 }
-                                item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
+                                item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
                             }
 
                             if (randomStats)

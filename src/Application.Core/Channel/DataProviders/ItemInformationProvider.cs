@@ -24,6 +24,7 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Resources;
+using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Templates;
 using Application.Templates.Character;
@@ -40,6 +41,7 @@ using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz.Impl.AdoJobStore.Common;
 using server;
 using tools;
 
@@ -120,8 +122,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public AbstractItemTemplate GetTrustTemplate(int itemId)
     {
         var provider = GetProvider(itemId);
-        return provider.GetItem(itemId) ?? throw new TemplateNotFoundException(provider.GetType().Name, itemId);
+        return provider.GetItem(itemId) ?? throw new TemplateNotFoundException(provider.ProviderName, itemId);
     }
+    public EquipTemplate? GetEquipTemplate(int equipId) => _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
     public bool noCancelMouse(int itemId)
     {
         return GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;
@@ -277,7 +280,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public int getEquipLevelReq(int itemId)
     {
-        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.ReqLevel ?? 0;
+        return GetEquipTemplate(itemId)?.ReqLevel ?? 0;
     }
 
     public int[] getScrollReqs(int itemId)
@@ -649,12 +652,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     */
     public bool canUseCleanSlate(Equip equip)
     {
-        var equipTemplate = GetProvider(equip.getItemId()).GetRequiredItem<EquipTemplate>(equip.getItemId());
-        if (equipTemplate == null)
-        {
-            return false;
-        }
-        int totalUpgradeCount = equipTemplate.TUC;
+        int totalUpgradeCount = equip.SourceTemplate.TUC;
         int freeUpgradeCount = equip.getUpgradeSlots();
         int viciousCount = equip.getVicious();
         int appliedScrollCount = equip.getLevel();
@@ -670,90 +668,87 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <param name="vegaItemId"></param>
     /// <param name="isGM"></param>
     /// <returns></returns>
-    public Item? scrollEquipWithId(Item equip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
+    public Equip scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
     {
         bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
 
         var scrollTemplate = _itemProvider.GetRequiredItem<ScrollItemTemplate>(scrollId);
         if (scrollTemplate == null)
-            return equip;
+            return nEquip;
 
-        if (equip is Equip nEquip)
+        if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
         {
-            if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
+            double prop = scrollTemplate.SuccessRate;
+
+            switch (vegaItemId)
             {
-                double prop = scrollTemplate.SuccessRate;
+                case ItemId.VEGAS_SPELL_10:
+                    if (prop == 10.0f)
+                    {
+                        prop = 30.0f;
+                    }
+                    break;
+                case ItemId.VEGAS_SPELL_60:
+                    if (prop == 60.0f)
+                    {
+                        prop = 90.0f;
+                    }
+                    break;
+                case ItemId.CHAOS_SCROll_60:
+                    prop = 100.0f;
+                    break;
+            }
 
-                switch (vegaItemId)
+            if (assertGM || rollSuccessChance(prop))
+            {
+                short flag = nEquip.getFlag();
+                if (scrollTemplate.PreventSlip)
                 {
-                    case ItemId.VEGAS_SPELL_10:
-                        if (prop == 10.0f)
-                        {
-                            prop = 30.0f;
-                        }
-                        break;
-                    case ItemId.VEGAS_SPELL_60:
-                        if (prop == 60.0f)
-                        {
-                            prop = 90.0f;
-                        }
-                        break;
-                    case ItemId.CHAOS_SCROll_60:
-                        prop = 100.0f;
-                        break;
+                    flag |= ItemConstants.SPIKES;
+                    nEquip.setFlag((byte)flag);
                 }
-
-                if (assertGM || rollSuccessChance(prop))
+                if (scrollTemplate.PreventSlip)
                 {
-                    short flag = nEquip.getFlag();
-                    if (scrollTemplate.PreventSlip)
+                    flag |= ItemConstants.COLD;
+                    nEquip.setFlag((byte)flag);
+                }
+                if (scrollTemplate.Recover)
+                {
+                    if (canUseCleanSlate(nEquip))
                     {
-                        flag |= ItemConstants.SPIKES;
-                        nEquip.setFlag((byte)flag);
+                        nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
                     }
-                    if (scrollTemplate.PreventSlip)
-                    {
-                        flag |= ItemConstants.COLD;
-                        nEquip.setFlag((byte)flag);
-                    }
-                    if (scrollTemplate.Recover)
-                    {
-                        if (canUseCleanSlate(nEquip))
-                        {
-                            nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
-                        }
-                    }
-                    if (scrollTemplate.RandStat)
-                    {
-                        scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
-                    }
-                    else
-                    {
-                        improveEquipStats(nEquip, scrollTemplate);
-                    }
-                    if (!ItemConstants.isCleanSlate(scrollId))
-                    {
-                        if (!assertGM && !ItemConstants.isModifierScroll(scrollId))
-                        {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                            nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
-                        }
-                        nEquip.setLevel((byte)(nEquip.getLevel() + 1));
-                    }
+                }
+                if (scrollTemplate.RandStat)
+                {
+                    scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
                 }
                 else
                 {
-                    if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId))
-                    {
+                    improveEquipStats(nEquip, scrollTemplate);
+                }
+                if (!ItemConstants.isCleanSlate(scrollId))
+                {
+                    if (!assertGM && !ItemConstants.isModifierScroll(scrollId))
+                    {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
                         nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                     }
-                    if (Randomizer.nextInt(100) < scrollTemplate.CursedRate)
-                    {
-                        return null;
-                    }
+                    nEquip.setLevel((byte)(nEquip.getLevel() + 1));
+                }
+            }
+            else
+            {
+                if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId))
+                {
+                    nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
+                }
+                if (Randomizer.nextInt(100) < scrollTemplate.CursedRate)
+                {
+                    return null;
                 }
             }
         }
-        return equip;
+        return nEquip;
     }
 
     public static void improveEquipStats(Equip nEquip, ScrollItemTemplate scrollTemplate)
@@ -831,12 +826,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
-    public Item? GetEquipByTemplate(EquipTemplate? equipTemplate)
+    public Equip? GetEquipByTemplate(EquipTemplate? equipTemplate)
     {
         if (equipTemplate == null)
             return null;
 
-        var nEquip = new Equip(equipTemplate.TemplateId, 0);
+        var nEquip = new Equip(equipTemplate, 0);
         nEquip.setQuantity(1);
 
         nEquip.setStr(equipTemplate.IncSTR);
@@ -874,47 +869,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
-    public Item getEquipById(int equipId, int ringId = -1)
+    public Equip getEquipById(int equipId)
     {
-        var nEquip = new Equip(equipId, 0, ringId);
-        nEquip.setQuantity(1);
-        var equipTemplate = GetProvider(equipId).GetRequiredItem<EquipTemplate>(equipId);
-        if (equipTemplate != null)
-        {
-            nEquip.setStr(equipTemplate.IncSTR);
-            nEquip.setDex(equipTemplate.IncDEX);
-            nEquip.setInt(equipTemplate.IncINT);
-            nEquip.setLuk(equipTemplate.IncLUK);
-
-            nEquip.setWatk(equipTemplate.IncPAD);
-            nEquip.setWdef(equipTemplate.IncPDD);
-            nEquip.setMatk(equipTemplate.IncMAD);
-            nEquip.setMdef(equipTemplate.IncMDD);
-
-            nEquip.setAcc(equipTemplate.IncACC);
-            nEquip.setAvoid(equipTemplate.IncEVA);
-
-            nEquip.setSpeed(equipTemplate.IncSpeed);
-            nEquip.setJump(equipTemplate.IncJump);
-            nEquip.setHp(equipTemplate.IncMHP);
-            nEquip.setMp(equipTemplate.IncMMP);
-            nEquip.setUpgradeSlots(equipTemplate.TUC);
-
-            if (isUntradeableRestricted(equipId))
-            {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
-                short flag = nEquip.getFlag();
-                flag |= ItemConstants.UNTRADEABLE;
-                nEquip.setFlag(flag);
-            }
-            if (equipTemplate.Fs > 0)
-            {
-                short flag = nEquip.getFlag();
-                flag |= ItemConstants.SPIKES;
-                nEquip.setFlag(flag);
-            }
-        }
-        return nEquip;
-        //return nEquip.copy(); // Q.为什么要用copy？
+        return GetEquipByTemplate(GetEquipTemplate(equipId)) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId);
     }
 
     /// <summary>
@@ -1017,7 +974,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool IsValidEquip(int itemId, EquipSlot equipType)
     {
-        var template = _equipProvider.GetRequiredItem<EquipTemplate>(itemId);
+        var template = GetEquipTemplate(itemId);
         if (template == null)
             return false;
 
@@ -1108,11 +1065,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public int[] getCardTierSize()
     {
         return monsterBookID.Keys.GroupBy(x => (int)(Math.Floor(x / 1000d))).Select(x => x.Count()).ToArray();
-    }
-
-    public bool isUntradeableOnEquip(int itemId)
-    {
-        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.EquipTradeBlock ?? false;
     }
 
     public ScriptItemTemplate? GetScriptItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ScriptItemTemplate>(itemId);
@@ -1207,16 +1159,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return GetProvider(itemId).GetItem(itemId)?.Cash ?? false;
     }
 
-    public bool isUpgradeable(int itemId)
-    {
-        Item it = getEquipById(itemId);
-        Equip eq = (Equip)it;
-
-        return eq.getUpgradeSlots() > 0 || eq.getStr() > 0 || eq.getDex() > 0 || eq.getInt() > 0 || eq.getLuk() > 0 ||
-                eq.getWatk() > 0 || eq.getMatk() > 0 || eq.getWdef() > 0 || eq.getMdef() > 0 || eq.getAcc() > 0 ||
-                eq.getAvoid() > 0 || eq.getSpeed() > 0 || eq.getJump() > 0 || eq.getHp() > 0 || eq.getMp() > 0;
-    }
-
     public bool isUnmerchable(int itemId)
     {
         if (YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_CASH && isCash(itemId))
@@ -1275,8 +1217,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         {
             Equip equip = (Equip)item;
 
-            var equipTemplate = GetProvider(equip.getItemId()).GetRequiredItem<EquipTemplate>(equip.getItemId())!;
-            int reqLevel = equipTemplate.ReqLevel;
+            int reqLevel = equip.SourceTemplate.ReqLevel;
             if (highfivestamp)
             {
                 reqLevel -= 5;
@@ -1295,23 +1236,23 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             {
                 continue;
             }
-            else if (equipTemplate.ReqDEX > tdex)
+            else if (equip.SourceTemplate.ReqDEX > tdex)
             {
                 continue;
             }
-            else if (equipTemplate.ReqSTR > tstr)
+            else if (equip.SourceTemplate.ReqSTR > tstr)
             {
                 continue;
             }
-            else if (equipTemplate.ReqLUK > tluk)
+            else if (equip.SourceTemplate.ReqLUK > tluk)
             {
                 continue;
             }
-            else if (equipTemplate.ReqINT > tint)
+            else if (equip.SourceTemplate.ReqINT > tint)
             {
                 continue;
             }
-            var reqPOP = equipTemplate.ReqPOP;
+            var reqPOP = equip.SourceTemplate.ReqPOP;
             if (reqPOP > 0)
             {
                 if (reqPOP > fame)
@@ -1336,11 +1277,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return false;
         }
 
-        var equipTemplate = GetProvider(id).GetRequiredItem<EquipTemplate>(id);
-        if (equipTemplate == null)
-            return false;
-
-        if (!EquipSlot.getFromTextSlot(equipTemplate.Islot).isAllowed(dst, isCash(id)))
+        if (!EquipSlot.getFromTextSlot(equip.SourceTemplate.Islot).isAllowed(dst, isCash(id)))
         {
             equip.wear(false);
             var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
@@ -1360,7 +1297,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         bool highfivestamp = chr.Bag[InventoryType.CASH].HasItem(5590000);
 
-        int reqLevel = equipTemplate.ReqLevel;
+        int reqLevel = equip.SourceTemplate.ReqLevel;
         if (highfivestamp)
         {
             reqLevel -= 5;
@@ -1371,23 +1308,23 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         {
             i++;
         }
-        else if (equipTemplate.ReqDEX > chr.getTotalDex())
+        else if (equip.SourceTemplate.ReqDEX > chr.getTotalDex())
         {
             i++;
         }
-        else if (equipTemplate.ReqSTR > chr.getTotalStr())
+        else if (equip.SourceTemplate.ReqSTR > chr.getTotalStr())
         {
             i++;
         }
-        else if (equipTemplate.ReqLUK > chr.getTotalLuk())
+        else if (equip.SourceTemplate.ReqLUK > chr.getTotalLuk())
         {
             i++;
         }
-        else if (equipTemplate.ReqINT > chr.getTotalInt())
+        else if (equip.SourceTemplate.ReqINT > chr.getTotalInt())
         {
             i++;
         }
-        var reqPOP = equipTemplate.ReqPOP;
+        var reqPOP = equip.SourceTemplate.ReqPOP;
         if (reqPOP > 0)
         {
             if (reqPOP > chr.getFame())
@@ -1405,27 +1342,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return true;
     }
 
-    public bool IsEquipElemental(int itemId)
-    {
-        return GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId)?.IsElemental ?? false;
-    }
-
-    public int getEquipLevel(int itemId, bool getMaxLevel)
-    {
-        var equipTemplate = GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId);
-        if (equipTemplate == null)
-            return 1;
-
-        return (equipTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1;
-    }
-
-    public List<KeyValuePair<string, int>> getItemLevelupStats(int itemId, int level)
+    public List<KeyValuePair<string, int>> getItemLevelupStats(EquipTemplate template, int level)
     {
         List<KeyValuePair<string, int>> list = new();
-        var template = GetProvider(itemId).GetRequiredItem<EquipTemplate>(itemId);
-        if (template == null)
-            return new List<KeyValuePair<string, int>>();
-
         var levelData = template.LevelData.FirstOrDefault(x => x.Level == level);
         if (levelData != null)
         {

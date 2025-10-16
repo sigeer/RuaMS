@@ -14,13 +14,13 @@ namespace Application.Templates.Exceptions
 
     public class TemplateFormatException : Exception
     {
-        public TemplateFormatException(string type, string filePath) : base($"{type} 下找到了 {filePath} ，但是不符合读取规则。")
+        public TemplateFormatException(string type, string? filePath) : base($"{type} 下找到了 {filePath} ，但是不符合读取规则。")
         {
             ProviderName = type;
             FilePath = filePath;
         }
 
         public string ProviderName { get; set; }
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
     }
 }

@@ -105,5 +105,12 @@ namespace Application.Templates.Character
         {
             LevelData = Array.Empty<EquipLevelData>();
         }
+
+        public bool IsUpgradeable()
+        {
+            return TUC > 0 || IncSTR > 0 || IncDEX > 0 || IncINT > 0 || IncLUK > 0 ||
+                IncPAD > 0 || IncMAD > 0 || IncPDD > 0 || IncMDD > 0 ||
+                IncACC > 0 || IncEVA > 0 || IncSpeed > 0 || IncJump > 0 || IncMHP > 0 || IncMMP > 0;
+        }
     }
 }

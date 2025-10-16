@@ -1,6 +1,6 @@
 using Application.Core.Channel.DataProviders;
-using Application.Resources;
 using Application.Shared.Constants.Job;
+using Application.Templates.Exceptions;
 using Application.Templates.Item.Consume;
 using Application.Templates.Providers;
 using Application.Templates.String;
@@ -17,7 +17,7 @@ namespace ServiceTest.Infrastructure.WZ
     {
         OldItemInformationProvider oldProvider;
         ItemInformationProvider newProvider;
-        StringProvider _stringProvider ;
+        StringProvider _stringProvider;
         JsonSerializerSettings options;
 
         public ItemInfomationTests()
@@ -62,7 +62,7 @@ namespace ServiceTest.Infrastructure.WZ
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        int[] TakeEquipRandom(int count = 10) => TakeByTypeRandom(x => x < 200);
+        int[] TakeEquipRandom(int count = 10) => TakeByTypeRandom(x => x < 200, count);
 
         int[] TakeByTypeRandom(Func<int, bool> func, int count = 10)
         {
@@ -153,7 +153,17 @@ namespace ServiceTest.Infrastructure.WZ
         {
             foreach (var item in TakeRandom())
             {
-                Assert.That(newProvider.isUntradeableOnEquip(item), Is.EqualTo(oldProvider.isUntradeableOnEquip(item)), $"Id = {item}");
+                Equip? equip = null;
+                try
+                {
+                    equip = newProvider.getEquipById(item);
+                }
+                catch (TemplateNotFoundException)
+                {
+                    Assert.That(oldProvider.isUntradeableOnEquip(item), Is.EqualTo(false), $"Id = {item}");
+                }
+                if (equip != null)
+                    Assert.That(equip.SourceTemplate.EquipTradeBlock, Is.EqualTo(oldProvider.isUntradeableOnEquip(item)), $"Id = {item}");
             }
         }
 
@@ -199,7 +209,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             foreach (var item in TakeEquipRandom())
             {
-                Assert.That(newProvider.isUpgradeable(item), Is.EqualTo(oldProvider.isUpgradeable(item)), $"Id = {item}");
+                Assert.That(newProvider.getEquipById(item).SourceTemplate.IsUpgradeable(), Is.EqualTo(oldProvider.isUpgradeable(item)), $"Id = {item}");
             }
         }
 
@@ -208,7 +218,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             foreach (var item in TakeEquipRandom())
             {
-                Assert.That(newProvider.IsEquipElemental(item), Is.EqualTo(oldProvider.getEquipLevel(item, false) > 1), $"Id = {item}");
+                Assert.That(newProvider.getEquipById(item).IsElemental, Is.EqualTo(oldProvider.getEquipLevel(item, false) > 1), $"Id = {item}");
             }
         }
 
@@ -217,7 +227,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             foreach (var item in TakeEquipRandom())
             {
-                Assert.That(newProvider.getEquipLevel(item, true), Is.EqualTo(oldProvider.getEquipLevel(item, true)), $"Id = {item}");
+                Assert.That(newProvider.getEquipById(item).MaxLevel, Is.EqualTo(oldProvider.getEquipLevel(item, true)), $"Id = {item}");
             }
         }
 

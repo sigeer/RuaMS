@@ -494,14 +494,8 @@ namespace Application.Module.Maker.Channel
                 return false;
             }
 
-            var item = ii.getEquipById(itemid);
-            if (item == null)
-            {
-                return false;
-            }
-
-            Equip eqp = (Equip)item;
-            if (ItemConstants.isAccessory(item.getItemId()) && eqp.getUpgradeSlots() <= 0)
+            var eqp = ii.getEquipById(itemid);
+            if (ItemConstants.isAccessory(eqp.getItemId()) && eqp.getUpgradeSlots() <= 0)
             {
                 eqp.setUpgradeSlots(3);
             }
@@ -512,7 +506,7 @@ namespace Application.Module.Maker.Channel
                 {
                     eqp.setUpgradeSlots(eqp.getUpgradeSlots() + 1);
                 }
-                item = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
+                eqp = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
             }
 
             if (reagentids.Count > 0)
@@ -582,7 +576,7 @@ namespace Application.Module.Maker.Channel
                 eqp = ii.randomizeUpgradeStats(eqp);
             }
 
-            InventoryManipulator.addFromDrop(c, item, false);
+            InventoryManipulator.addFromDrop(c, eqp, false);
             return true;
         }
     }

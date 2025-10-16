@@ -144,7 +144,7 @@ namespace Application.Core.Mappers
             CreateMap<ItemProto.RingDto, RingSourceModel>().ReverseMap();
 
             CreateMap<Dto.ItemDto, Equip>()
-                    .ConstructUsing(source => new Equip(source.Itemid, (short)source.Position))
+                    .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position))
                     .AfterMap((rs, dest, ctx) =>
                     {
                         dest.setOwner(rs.Owner);

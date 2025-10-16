@@ -628,7 +628,7 @@ public class InventoryManipulator
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
         Inventory eqpdInv = chr.getInventory(InventoryType.EQUIPPED);
 
-        var source = (Equip?)eqpInv.getItem(src);
+        var source = eqpInv.getItem(src) as Equip;
         if (source == null || !ii.canWearEquipment(chr, source, dst))
         {
             c.sendPacket(PacketCreator.enableActions());
@@ -640,7 +640,7 @@ public class InventoryManipulator
             return;
         }
         bool itemChanged = false;
-        if (ii.isUntradeableOnEquip(source.getItemId()))
+        if (source.SourceTemplate.EquipTradeBlock)
         {
             short flag = source.getFlag();      // thanks BHB for noticing flags missing after equipping these
             flag |= ItemConstants.UNTRADEABLE;
@@ -676,8 +676,8 @@ public class InventoryManipulator
                     unequip(c, -6, eqpInv.getNextFreeSlot());
                 }
                 break;
-            case -10: // check if weapon is two-handed
-                var weapon = eqpdInv.getItem(-11);
+            case EquipSlot.Shield: // check if weapon is two-handed
+                var weapon = eqpdInv.getItem(EquipSlot.Weapon);
                 if (weapon != null && ii.isTwoHanded(weapon.getItemId()))
                 {
                     if (eqpInv.isFull())
@@ -686,11 +686,11 @@ public class InventoryManipulator
                         c.sendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -11, eqpInv.getNextFreeSlot());
+                    unequip(c, EquipSlot.Weapon, eqpInv.getNextFreeSlot());
                 }
                 break;
-            case -11:
-                var shield = eqpdInv.getItem(-10);
+            case EquipSlot.Weapon:
+                var shield = eqpdInv.getItem(EquipSlot.Shield);
                 if (shield != null && ii.isTwoHanded(source.getItemId()))
                 {
                     if (eqpInv.isFull())
@@ -699,7 +699,7 @@ public class InventoryManipulator
                         c.sendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -10, eqpInv.getNextFreeSlot());
+                    unequip(c, EquipSlot.Shield, eqpInv.getNextFreeSlot());
                 }
                 break;
             case -18:
