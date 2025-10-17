@@ -16,6 +16,7 @@ using System.Text;
 using Yitter.IdGenerator;
 
 #if IsStandalone
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.InProgress;
 #endif
 
@@ -155,6 +156,9 @@ try
 
     var app = builder.Build();
 
+#if IsStandalone
+    DataProviderSource.Initialize();
+#endif
     var bootstrap = app.Services.GetServices<IServerBootstrap>();
     foreach (var item in bootstrap)
     {

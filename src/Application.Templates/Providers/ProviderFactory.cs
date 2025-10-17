@@ -1,4 +1,5 @@
 using Application.Templates.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Templates.Providers
 {
@@ -7,40 +8,66 @@ namespace Application.Templates.Providers
         private static string? _globalDataDir;
         public static string GetEffectDir(string? inputDir)
         {
-            if (!string.IsNullOrEmpty(inputDir) && Directory.Exists(inputDir))
+            if (Directory.Exists(inputDir))
                 return inputDir;
 
-            if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
+            if (!Directory.Exists(_globalDataDir))
             {
+                if (Directory.Exists(Instance.DataDir))
+                    return Instance.DataDir;
+
                 var pathFromEnv = Environment.GetEnvironmentVariable("ms-wz") ?? Environment.GetEnvironmentVariable("RUA_MS_ms-wz");
                 if (Directory.Exists(pathFromEnv))
-                {
-                    _globalDataDir = pathFromEnv;
-                }
-                else
-                {
-                    var pathFromDefault = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz");
-                    if (Directory.Exists(_globalDataDir))
-                        _globalDataDir = pathFromDefault;
-                }
-            }
+                    return _globalDataDir = pathFromEnv;
 
-            if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
+                var pathFromDefault = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz");
+                if (Directory.Exists(pathFromDefault))
+                    return pathFromDefault;
+
                 throw new DataDirNotFoundException("没有设置wz的目录，默认路径也没有找到wz。");
+            }
 
             return _globalDataDir;
         }
-        public static void Initilaize(Action<ProviderFactoryInstance> action)
-        {
-            action(Instance);
 
-            _globalDataDir = GetEffectDir(_globalDataDir);
+        /// <summary>
+        /// 替换设置
+        /// <para><see cref="Apply"/> 后生效。</para>
+        /// </summary>
+        /// <param name="action"></param>
+        public static void Configure(Action<ProviderFactoryInstance> action)
+        {
+            if (_instance != null)
+            {
+                _instance.Dispose();
+                _instance = null;
+            }
+
+            ConfigureWith(action);
+        }
+
+        public static void ConfigureWith(Action<ProviderFactoryInstance> action)
+        {
+            _instance ??= new ProviderFactoryInstance();
+            action?.Invoke(_instance);
+            _globalDataDir = GetEffectDir(_instance.DataDir);
+
+            LibLog.Logger.LogDebug("WZ - 默认目录：{DataDir}", _globalDataDir);
+            Instance.Debug();
         }
 
         public static TProvider GetProvider<TProvider>() where TProvider : IProvider => Instance.GetProvider<TProvider>();
-        public static IProvider GetProviderByKey(string key) => Instance.GetProviderByKey(key);
-        public static void Clear() => Instance.Clear();
+        public static TProvider GetProviderByKey<TProvider>(string key) where TProvider : IKeyedProvider => Instance.GetProviderByKey<TProvider>(key);
+        public static void Clear()
+        {
+            if (_instance != null)
+            {
+                _instance.Dispose();
+                _instance = null;
+            }
+        }
 
-        static ProviderFactoryInstance Instance = new ProviderFactoryInstance();
+        static ProviderFactoryInstance? _instance;
+        static ProviderFactoryInstance Instance => _instance ?? throw new Exception("ProviderFactory 尚未初始化");
     }
 }

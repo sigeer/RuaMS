@@ -2,7 +2,6 @@ using Application.Resources;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
-using Newtonsoft.Json;
 using System.Globalization;
 using XmlWzReader.wz;
 
@@ -10,23 +9,33 @@ namespace ServiceTest.Infrastructure.WZ
 {
     [TestFixture("en-US")]
     [TestFixture("zh-CN")]
-    internal class StringTests
+    internal class StringTests: WzTestBase
     {
         CultureInfo testCulture;
         public StringTests(string currentCulture)
         {
             testCulture = CultureInfo.GetCultureInfo(currentCulture);
+        }
 
-            ProviderFactory.Clear();
-            ProviderFactory.Initilaize(o =>
+        protected override void OnProviderRegistering()
+        {
+            ProviderFactory.ConfigureWith(o =>
             {
-                o.RegisterProvider(new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
+                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
             });
+        }
 
+        protected override void OnProviderRegistered()
+        {
             if (testCulture.Name == "zh-CN")
             {
                 WZFiles.DIRECTORY += "-zh-CN";
             }
+        }
+
+        protected override void RunAfterTest()
+        {
+            WZFiles.DIRECTORY = WZFiles.getWzDirectory();
         }
 
         [Test]
@@ -34,7 +43,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(StringCategory.Item);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item);
 
             var oldList = oldProvider.GetAllItem().OrderBy(x => x.Id).ToList();
             foreach (var item in oldList)
@@ -55,7 +64,7 @@ namespace ServiceTest.Infrastructure.WZ
 
             var oldList = oldProvider.GetAllMap().OrderBy(x => x.Id).ToList();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(StringCategory.Map);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Map);
             foreach (var item in oldList)
             {
                 var newData = newProvider.GetRequiredItem<StringMapTemplate>(item.Id);
@@ -74,7 +83,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Npc);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Npc);
 
             var oldList = oldProvider.GetAllNpcList().OrderBy(x => x.Id).ToList();
 
@@ -97,7 +106,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Mob);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Mob);
 
             var oldList = oldProvider.GetAllMonster().OrderBy(x => x.Id).ToList();
 
@@ -118,7 +127,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = new StringProvider(new Application.Templates.TemplateOptions(), testCulture).GetSubProvider(Application.Templates.String.StringCategory.Skill);
+            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Skill);
 
             var oldList = oldProvider.GetAllSkillList().OrderBy(x => x.Id).ToList();
 

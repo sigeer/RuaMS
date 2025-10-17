@@ -32,10 +32,9 @@ namespace Application.Templates.Providers
             _dataBaseDir = ProviderFactory.GetEffectDir(options.DataDir);
 
             _fileProvider = new WzFileProvider(_dataBaseDir);
-
-
         }
 
+        public string GetBaseDir() => _dataBaseDir;
         /// <summary>
         /// 读取所有img，有缓存
         /// </summary>

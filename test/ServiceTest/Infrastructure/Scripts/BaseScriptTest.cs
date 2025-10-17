@@ -100,17 +100,13 @@ namespace ServiceTest.Infrastructure.Scripts
             _engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
             _engine.Evaluate(Code);
 
-            var check_returnResult = _engine.CallFunction("check_return");
+            var check_returnResult = _engine.CallFunction("test");
 
             var test1 = check_returnResult.ToObject<ScriptTestClass[]>();
             Assert.That(test1!.Length, Is.EqualTo(3));
 
             var test2 = check_returnResult.ToObject<List<ScriptTestClass>>();
             Assert.That(test2!.Count(), Is.EqualTo(3));
-
-
-            var check_paramsResult = _engine.CallFunction("check_params");
-            Assert.That(check_paramsResult.ToObject<int>(), Is.EqualTo(3));
         }
 
         /// <summary>

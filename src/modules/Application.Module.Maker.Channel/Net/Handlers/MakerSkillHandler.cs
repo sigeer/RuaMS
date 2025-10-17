@@ -1,5 +1,3 @@
-using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net;
 using Application.Core.Client;
 using Application.Shared.Constants;
@@ -15,12 +13,10 @@ namespace Application.Module.Maker.Channel.Net.Handlers
     public class MakerSkillHandler : ChannelHandlerBase
     {
         readonly MakerManager _service;
-        readonly ItemInformationProvider ii;
         readonly ILogger<MakerSkillHandler> _logger;
-        public MakerSkillHandler(MakerManager service, ItemInformationProvider itemInformationProvider, ILogger<MakerSkillHandler> logger)
+        public MakerSkillHandler(MakerManager service, ILogger<MakerSkillHandler> logger)
         {
             _service = service;
-            ii = itemInformationProvider;
             _logger = logger;
         }
 

@@ -43,7 +43,7 @@ namespace Application.Core.Channel.Net
 
         public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
-        public ClientCulture CurrentCulture { get; set; } = new ClientCulture();
+        public ClientCulture CurrentCulture { get; set; } = new ClientCulture(0);
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;

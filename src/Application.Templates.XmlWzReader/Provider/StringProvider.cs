@@ -9,7 +9,7 @@ namespace Application.Templates.XmlWzReader.Provider
         CultureInfo _culture;
         public override string ProviderName => ProviderNames.String;
         public StringProvider(TemplateOptions options, CultureInfo cultureInfo)
-            : base(options)
+            : base(cultureInfo.Name, options)
         {
             _culture = cultureInfo;
 
@@ -23,7 +23,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         public IEnumerable<AbstractTemplate> Search(StringCategory category, string searchText, int maxCount = 50)
         {
-            var categoryData = GetSubProvider((int)category);
+            var categoryData = GetRequiredSubProvider((int)category);
             if (categoryData == null)
                 return [];
 
@@ -32,7 +32,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
         public StringBaseProvider GetSubProvider(StringCategory key)
         {
-            return GetSubProvider((int)key) ?? throw new ArgumentException($"不支持的{nameof(StringCategory)}, value={key}。");
+            return GetRequiredSubProvider((int)key) ?? throw new ArgumentException($"不支持的{nameof(StringCategory)}, value={key}。");
         }
     }
 }

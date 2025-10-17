@@ -13,26 +13,14 @@ namespace Application.Core.Channel.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
-            // Environment.SetEnvironmentVariable("ms-wz", "C:\\Demo\\MS\\wz");
+            ProviderFactory.ConfigureWith(o =>
+            {
+                o.UseLogger(app.Logger);
+            });
 
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
                     app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
                     app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
-
-            ProviderFactory.Initilaize(option =>
-            {
-                option.RegisterProvider(new MapProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new ReactorProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new QuestProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new EquipProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new ItemProvider(new Templates.TemplateOptions()));
-                option.RegisterProvider(new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
-                option.RegisterProvider(new EtcNpcLocationProvider(new Templates.TemplateOptions()));
-
-                option.RegisterKeydProvider("zh-CN", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
-                option.RegisterKeydProvider("en-US", new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
-                option.UseLogger(app.Logger);
-            });
 
             var staticServices = app.Services.GetServices<IStaticService>();
             foreach (var srv in staticServices)

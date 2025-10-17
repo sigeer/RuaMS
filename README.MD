@@ -28,7 +28,7 @@
 - **Application.Core.Login** 登录服务器、主服务器实现
 - **Application.Proto** proto文件
 - **Application.Utility** 工具类
-- **Application.Resource** 资源：yaml配置文件（后期逐步移除）
+- **Application.Resource** 资源：yaml配置文件（后期逐步移除）、script、wz
 - **Application.Shared** 一些公用数据结构、类型
 - **XmlWzReader** xml格式的wz读取工具
 - **Application.Templates** wz数据模板，附[Template.md](https://github.com/sigeer/RuaMS/blob/master/src/Application.Templates/Template.md)

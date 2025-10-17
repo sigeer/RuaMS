@@ -1438,7 +1438,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         {
             exp = template.Exp,
             grade = template.Grade,
-            items = template.ConsumeItems.ToDictionary(x => x.ItemId, x => x.Value),
+            items = template.ConsumeItems.GroupBy(x => x.ItemId).ToDictionary(x => x.Key, x => x.Sum(u => u.Value)),
             questid = template.QuestID
         };
     }

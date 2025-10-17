@@ -1,16 +1,25 @@
 using Application.Templates.Etc;
+using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using client.creator;
+using ServiceTest.TestUtilities;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class EtcMakeCharInfoTests
+    internal class EtcMakeCharInfoTests: WzTestBase
     {
+        protected override void OnProviderRegistering()
+        {
+            ProviderFactory.ConfigureWith(o =>
+            {
+                o.RegisterProvider<EtcMakeCharInfoProvider>(() => new EtcMakeCharInfoProvider(new Application.Templates.TemplateOptions()));
+            });
+        }
 
         [Test]
         public void DataEquals()
         {
-            var newProvider = new EtcMakeCharInfoProvider(new Application.Templates.TemplateOptions());
+            var newProvider = ProviderFactory.GetProvider<EtcMakeCharInfoProvider>();
 
             var newData = newProvider.GetItem(0)!;
 

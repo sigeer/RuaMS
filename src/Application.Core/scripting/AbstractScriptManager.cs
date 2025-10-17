@@ -195,7 +195,6 @@ public abstract class AbstractScriptManager
         return ScriptResFactory.GetScriptFullPath(relativePath);
     }
 
-    protected ScriptFile GetSpecialScriptPath(string path) => new ScriptFile("BeiDouSpecial", path);
     protected ScriptFile GetNpcScriptPath(string path) => new ScriptFile("npc", path);
     protected ScriptFile GetItemScriptPath(string path) => new ScriptFile("item", path);
     protected ScriptFile GetQuestScriptPath(string path) => new ScriptFile("quest", path);
