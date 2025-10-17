@@ -127,7 +127,7 @@ public class NPCScriptManager : AbstractScriptManager
                 {
                     if (fileName != null)
                     {
-                        scriptMeta = GetScriptMeta(GetNpcScriptPath(fileName)) ?? GetScriptMeta(GetSpecialScriptPath(fileName));
+                        scriptMeta = GetScriptMeta(GetNpcScriptPath(fileName));
                     }
                 }
                 else
