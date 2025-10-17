@@ -25,6 +25,7 @@
     </PackageReference>
 
 	  <PackageReference Include="Mapster" Version="7.4.0" />
+	  <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>
