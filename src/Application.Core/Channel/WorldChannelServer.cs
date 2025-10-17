@@ -320,14 +320,6 @@ namespace Application.Core.Channel
             if (ServerConfig.ChannelConfig.Count == 0)
                 throw new BusinessFatalException("必须包含频道");
 
-            ProviderFactory.Apply();
-
-            var staticServices = ServiceProvider.GetServices<IStaticService>();
-            foreach (var srv in staticServices)
-            {
-                srv.Register(ServiceProvider);
-            }
-
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>

@@ -8,14 +8,17 @@ namespace Application.Templates.Providers
         private static string? _globalDataDir;
         public static string GetEffectDir(string? inputDir)
         {
-            if (!string.IsNullOrEmpty(inputDir) && Directory.Exists(inputDir))
+            if (Directory.Exists(inputDir))
                 return inputDir;
 
-            if (string.IsNullOrEmpty(_globalDataDir) || !Directory.Exists(_globalDataDir))
+            if (!Directory.Exists(_globalDataDir))
             {
+                if (Directory.Exists(Instance.DataDir))
+                    return Instance.DataDir;
+
                 var pathFromEnv = Environment.GetEnvironmentVariable("ms-wz") ?? Environment.GetEnvironmentVariable("RUA_MS_ms-wz");
                 if (Directory.Exists(pathFromEnv))
-                    return pathFromEnv;
+                    return _globalDataDir = pathFromEnv;
 
                 var pathFromDefault = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz");
                 if (Directory.Exists(pathFromDefault))
@@ -27,8 +30,6 @@ namespace Application.Templates.Providers
             return _globalDataDir;
         }
 
-
-        static Action<ProviderFactoryInstance>? instanceAction;
         /// <summary>
         /// 替换设置
         /// <para><see cref="Apply"/> 后生效。</para>
@@ -36,27 +37,19 @@ namespace Application.Templates.Providers
         /// <param name="action"></param>
         public static void Configure(Action<ProviderFactoryInstance> action)
         {
-            instanceAction = action;
+            if (_instance != null)
+            {
+                _instance.Dispose();
+                _instance = null;
+            }
+
+            ConfigureWith(action);
         }
-        /// <summary>
-        /// 合并设置
-        /// <para><see cref="Apply"/> 后生效。</para>
-        /// </summary>
-        /// <param name="action"></param>
+
         public static void ConfigureWith(Action<ProviderFactoryInstance> action)
         {
-            if (instanceAction == null)
-                instanceAction = action;
-            else
-                instanceAction += action;
-        }
-        /// <summary>
-        /// 调用后内容更新
-        /// </summary>
-        public static void Apply()
-        {
-            _instance = new ProviderFactoryInstance();
-            instanceAction?.Invoke(_instance);
+            _instance ??= new ProviderFactoryInstance();
+            action?.Invoke(_instance);
             _globalDataDir = GetEffectDir(_instance.DataDir);
 
             LibLog.Logger.LogDebug("WZ - 默认目录：{DataDir}", _globalDataDir);
@@ -72,7 +65,6 @@ namespace Application.Templates.Providers
                 _instance.Dispose();
                 _instance = null;
             }
-            instanceAction = null;
         }
 
         static ProviderFactoryInstance? _instance;

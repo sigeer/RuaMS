@@ -11,6 +11,7 @@ using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Resources;
 using Application.Shared.Servers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using server.life;

@@ -11,6 +11,7 @@ using Application.Utility;
 using Application.Protos;
 using ServiceProto;
 using Application.Host.Channel;
+using Application.Core.Channel.DataProviders;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -67,6 +68,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
+DataProviderSource.Initialize();
 var bootstrap = app.Services.GetServices<IServerBootstrap>();
 foreach (var item in bootstrap)
 {

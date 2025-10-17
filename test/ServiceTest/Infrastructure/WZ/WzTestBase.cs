@@ -8,14 +8,12 @@ namespace ServiceTest.Infrastructure.WZ
         [OneTimeSetUp]
         public void RunBeforeAnyTests()
         {
-            ProviderFactory.Clear();
             ProviderFactory.Configure(o =>
             {
                 o.DataDir = TestVariable.WzPath;
             });
             OnProviderRegistering();
 
-            ProviderFactory.Apply();
             OnProviderRegistered();
         }
 

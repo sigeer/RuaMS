@@ -14,6 +14,8 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
+using Application.Core.Channel.DataProviders;
+
 
 #if IsStandalone
 using Application.Core.Channel.InProgress;
@@ -155,6 +157,9 @@ try
 
     var app = builder.Build();
 
+#if IsStandalone
+    DataProviderSource.Initialize();
+#endif
     var bootstrap = app.Services.GetServices<IServerBootstrap>();
     foreach (var item in bootstrap)
     {

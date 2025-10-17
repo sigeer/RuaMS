@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.InProgress;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
@@ -59,6 +60,9 @@ namespace ServiceTest.Games
 
             var idGeneratorOptions = new IdGeneratorOptions(1);
             YitIdHelper.SetIdGenerator(idGeneratorOptions);
+
+            DataProviderSource.Initialize();
+            DataProviderSource.ResetPath(TestVariable.WzPath);
 
             var bootstrap = app.Services.GetServices<IServerBootstrap>();
             foreach (var item in bootstrap)

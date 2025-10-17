@@ -1,4 +1,6 @@
+using Application.Core.Channel.DataProviders;
 using Application.Templates.Providers;
+using Google.Protobuf.WellKnownTypes;
 using ServiceTest.TestUtilities;
 
 namespace ServiceTest.Games
@@ -11,10 +13,6 @@ namespace ServiceTest.Games
         public async Task RunBeforeAnyTests()
         {
             TestServer = new LocalTestServer();
-            ProviderFactory.ConfigureWith(option =>
-            {
-                option.DataDir = TestVariable.WzPath;
-            });
             await TestServer.StartServer();
         }
     }
