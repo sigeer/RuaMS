@@ -40,7 +40,7 @@ namespace ServiceTest.Infrastructure.WZ
             });
         }
 
-        protected override void OnProviderRegisterd()
+        protected override void OnProviderRegistered()
         {
             oldProvider = new OldItemInformationProvider();
             newProvider = new ItemInformationProvider(

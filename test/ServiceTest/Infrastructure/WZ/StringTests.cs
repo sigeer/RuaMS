@@ -25,7 +25,7 @@ namespace ServiceTest.Infrastructure.WZ
             });
         }
 
-        protected override void OnProviderRegisterd()
+        protected override void OnProviderRegistered()
         {
             if (testCulture.Name == "zh-CN")
             {

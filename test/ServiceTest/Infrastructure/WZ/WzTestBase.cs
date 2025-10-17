@@ -16,6 +16,7 @@ namespace ServiceTest.Infrastructure.WZ
             OnProviderRegistering();
 
             ProviderFactory.Apply();
+            OnProviderRegistered();
         }
 
         /// <summary>
@@ -28,9 +29,8 @@ namespace ServiceTest.Infrastructure.WZ
         /// <summary>
         /// provider 注册完成
         /// </summary>
-        protected virtual void OnProviderRegisterd()
+        protected virtual void OnProviderRegistered()
         {
-
         }
 
         [OneTimeTearDown]
