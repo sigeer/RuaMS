@@ -36,12 +36,6 @@ namespace Application.Core.Channel.Modules
                 option.RegisterKeydProvider("en-US", () => new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
                 option.UseLogger(app.Logger);
             });
-
-            var staticServices = app.Services.GetServices<IStaticService>();
-            foreach (var srv in staticServices)
-            {
-                srv.Register(app.Services);
-            }
         }
     }
 }

@@ -4,22 +4,18 @@ using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
 using server.maps;
-using ServiceTest.TestUtilities;
 using System.Text;
 using XmlWzReader;
 using XmlWzReader.wz;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class MapTests
+    internal class MapTests: WzTestBase
     {
-        public MapTests()
+        protected override void OnProviderRegistering()
         {
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
+            ProviderFactory.ConfigureWith(o =>
             {
-                o.DataDir = TestVariable.WzPath;
-
                 o.RegisterProvider<MapProvider>(() => new MapProvider(new Application.Templates.TemplateOptions()));
                 o.RegisterProvider<ReactorProvider>(() => new ReactorProvider(new Application.Templates.TemplateOptions()));
             });

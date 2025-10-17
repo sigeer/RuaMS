@@ -15,8 +15,8 @@ namespace ServiceTest.Games.Inventory
         [Test]
         public async Task LoadPetDataTest()
         {
-            var chr = GlobalSetup.TestServer.GetPlayer();
-            var server = GlobalSetup.TestServer.ServiceProvider.GetRequiredService<MasterServer>();
+            var chr = GameTestGlobal.TestServer.GetPlayer();
+            var server = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<MasterServer>();
             var inv = chr.Bag[InventoryType.CASH];
             var old = inv.list();
             Assert.That(InventoryManipulator.addById(chr.Client, 5000041, 1));
@@ -26,17 +26,17 @@ namespace ServiceTest.Games.Inventory
             Assert.That(item is Pet);
 
             chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.ChangeServer);
-            var storageSerivce = GlobalSetup.TestServer.ServiceProvider.GetRequiredService<ServerManager>();
+            var storageSerivce = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<ServerManager>();
             await storageSerivce.CommitAllImmediately();
             //模拟重新登录
-            var chr1 = GlobalSetup.TestServer.GetPlayer()!;
+            var chr1 = GameTestGlobal.TestServer.GetPlayer()!;
             var inv1 = chr1.Bag[InventoryType.CASH];
             var item1 = inv1.findById(5000041);
             Assert.That(item1 is Pet);
 
             server.CharacterManager.Dispose();
             // 模拟第一次登录
-            var chr2 = GlobalSetup.TestServer.GetPlayer();
+            var chr2 = GameTestGlobal.TestServer.GetPlayer();
             var inv2 = chr2.Bag[InventoryType.CASH];
             var item2 = inv2.findById(5000041);
             Assert.That(item2 is Pet);

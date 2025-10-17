@@ -14,33 +14,14 @@ using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    public class ItemInfomationTests
+    internal class ItemInfomationTests : WzTestBase
     {
         OldItemInformationProvider oldProvider;
         ItemInformationProvider newProvider;
-        StringProvider _stringProvider;
         JsonSerializerSettings options;
 
         public ItemInfomationTests()
         {
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
-            {
-                o.DataDir = TestVariable.WzPath;
-
-                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
-
-                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
-            });
-            oldProvider = new OldItemInformationProvider();
-            newProvider = new ItemInformationProvider(
-                new Mock<ILogger<DataBootstrap>>().Object,
-                null
-                );
-            newProvider.Register(newProvider);
-            _stringProvider = ProviderFactory.GetProvider<StringProvider>();
-
             options = new JsonSerializerSettings
             {
                 ContractResolver = new PrivateContractResolver(),
@@ -48,15 +29,31 @@ namespace ServiceTest.Infrastructure.WZ
             };
         }
 
-        [OneTimeTearDown]
-        public void Finally()
+        protected override void OnProviderRegistering()
         {
-            _stringProvider.Dispose();
+            ProviderFactory.ConfigureWith(o =>
+            {
+                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
+                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
+
+                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
+            });
         }
+
+        protected override void OnProviderRegisterd()
+        {
+            oldProvider = new OldItemInformationProvider();
+            newProvider = new ItemInformationProvider(
+                new Mock<ILogger<DataBootstrap>>().Object,
+                null
+                );
+            newProvider.Register(newProvider);
+        }
+
 
         int[] TakeRandom(int count = 10)
         {
-            return _stringProvider.GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
+            return ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Values.SelectMany(x => x).ToArray();
@@ -70,7 +67,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         int[] TakeByTypeRandom(Func<int, bool> func, int count = 10)
         {
-            return _stringProvider.GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
+            return ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Where(x => func(x.Key)).SelectMany(x => x.Value).ToArray();

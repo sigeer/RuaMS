@@ -11,15 +11,12 @@ using System.Drawing;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class ItemTests
+    internal class ItemTests: WzTestBase
     {
-        public ItemTests()
+        protected override void OnProviderRegistering()
         {
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
+            ProviderFactory.ConfigureWith(o =>
             {
-                o.DataDir = TestVariable.WzPath;
-
                 o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
                 o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
             });

@@ -2,8 +2,6 @@ using Application.Resources;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
-using Newtonsoft.Json;
-using ServiceTest.TestUtilities;
 using System.Globalization;
 using XmlWzReader.wz;
 
@@ -11,29 +9,31 @@ namespace ServiceTest.Infrastructure.WZ
 {
     [TestFixture("en-US")]
     [TestFixture("zh-CN")]
-    internal class StringTests
+    internal class StringTests: WzTestBase
     {
         CultureInfo testCulture;
         public StringTests(string currentCulture)
         {
             testCulture = CultureInfo.GetCultureInfo(currentCulture);
+        }
 
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
+        protected override void OnProviderRegistering()
+        {
+            ProviderFactory.ConfigureWith(o =>
             {
-                o.DataDir = TestVariable.WzPath;
-
                 o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
             });
+        }
 
+        protected override void OnProviderRegisterd()
+        {
             if (testCulture.Name == "zh-CN")
             {
                 WZFiles.DIRECTORY += "-zh-CN";
             }
         }
 
-        [OneTimeTearDown]
-        public void Back()
+        protected override void RunAfterTest()
         {
             WZFiles.DIRECTORY = WZFiles.getWzDirectory();
         }

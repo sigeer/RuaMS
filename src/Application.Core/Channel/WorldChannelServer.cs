@@ -11,6 +11,7 @@ using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
+using Application.Templates.Providers;
 using Config;
 using constants.game;
 using Dto;
@@ -318,6 +319,14 @@ namespace Application.Core.Channel
 
             if (ServerConfig.ChannelConfig.Count == 0)
                 throw new BusinessFatalException("必须包含频道");
+
+            ProviderFactory.Apply();
+
+            var staticServices = ServiceProvider.GetServices<IStaticService>();
+            foreach (var srv in staticServices)
+            {
+                srv.Register(ServiceProvider);
+            }
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {

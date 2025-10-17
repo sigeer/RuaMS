@@ -16,7 +16,7 @@ namespace ServiceTest.Games.Account
         [Test]
         public void BaseTest()
         {
-            var p = GlobalSetup.TestServer.GetPlayer();
+            var p = GameTestGlobal.TestServer.GetPlayer();
             Assert.That(p is not null);
         }
 
@@ -53,7 +53,7 @@ namespace ServiceTest.Games.Account
         [Test]
         public bool CheckCharacterName_Test(string name)
         {
-            return GlobalSetup.TestServer.GetMasterServer().CharacterManager.CheckCharacterName(name);
+            return GameTestGlobal.TestServer.GetMasterServer().CharacterManager.CheckCharacterName(name);
         }
     }
 }

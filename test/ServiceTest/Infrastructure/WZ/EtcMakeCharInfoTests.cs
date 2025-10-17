@@ -6,15 +6,12 @@ using ServiceTest.TestUtilities;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class EtcMakeCharInfoTests
+    internal class EtcMakeCharInfoTests: WzTestBase
     {
-        public EtcMakeCharInfoTests()
+        protected override void OnProviderRegistering()
         {
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
+            ProviderFactory.ConfigureWith(o =>
             {
-                o.DataDir = TestVariable.WzPath;
-
                 o.RegisterProvider<EtcMakeCharInfoProvider>(() => new EtcMakeCharInfoProvider(new Application.Templates.TemplateOptions()));
             });
         }

@@ -31,7 +31,7 @@ namespace ServiceTest.Games.Gameplay
             Assert.That(!testCommand.CheckArguments(["A", "3"]));
             testCommand.CurrentCommand = "demo";
             Assert.That(testCommand.ValidSytax, Is.EqualTo("!demo [a|b|c] <id>"));
-            testCommand.Run(GlobalSetup.TestServer.GetPlayer().Client, ["a", "123"]);
+            testCommand.Run(GameTestGlobal.TestServer.GetPlayer().Client, ["a", "123"]);
         }
     }
 

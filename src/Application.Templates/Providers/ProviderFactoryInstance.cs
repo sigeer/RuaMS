@@ -37,24 +37,53 @@ namespace Application.Templates.Providers
 
             throw new ProviderNotFoundException(type.Name.ToString());
         }
-        Dictionary<string, Lazy<IProvider>> _kedProviders = new();
-        public void RegisterKeydProvider(string key, Func<IProvider> func)
+        Dictionary<string, Lazy<IKeyedProvider>> _keyedProviders = new();
+        public void RegisterKeydProvider(string key, Func<IKeyedProvider> func)
         {
-            if (!_kedProviders.TryAdd(key, new Lazy<IProvider>(func)))
+            if (!_keyedProviders.TryAdd(key, new Lazy<IKeyedProvider>(func)))
                 throw new ProviderDuplicateException(key);
         }
-        internal TProvider GetProviderByKey<TProvider>(string key) where TProvider : IProvider
+        internal TProvider GetProviderByKey<TProvider>(string key) where TProvider : IKeyedProvider
         {
-            if (_kedProviders.TryGetValue(key, out var data) && data.Value is TProvider p)
+            if (_keyedProviders.TryGetValue(key, out var data) && data.Value is TProvider p)
                 return p;
 
             throw new ProviderNotFoundException(key);
         }
 
-        internal void Clear()
+        internal void Dispose()
         {
-            _kedProviders.Clear();
-            _providers.Clear();
+            foreach (var item in _keyedProviders)
+            {
+                if (item.Value.IsValueCreated)
+                    item.Value.Value.Dispose();
+            }
+
+            foreach (var item in _providers)
+            {
+                if (item.Value.IsValueCreated)
+                    item.Value.Value.Dispose();
+            }
+        }
+
+        internal void Debug()
+        {
+            LibLog.Logger.LogDebug("====> 已注册Provider：");
+            foreach (var item in _providers)
+            {
+                LibLog.Logger.LogDebug("Type: {ProviderName} {ProviderType}, 读取目录: {BaseDir}", 
+                    item.Value.Value.ProviderName, item.Value.Value.GetType().Name, item.Value.Value.GetBaseDir());
+            }
+
+            LibLog.Logger.LogDebug("====> 已注册KeyedProvider：");
+            foreach (var item in _keyedProviders.Values)
+            {
+                foreach (var keydItem in item.Value.GetSubProviders())
+                {
+                    LibLog.Logger.LogDebug("Key: {Key}, Type: {ProviderName} {ProviderType}, 读取目录: {BaseDir}",
+                        item.Value.Key, keydItem.ProviderName, keydItem.GetType().Name, keydItem.GetBaseDir());
+                }
+            }
         }
     }
 }

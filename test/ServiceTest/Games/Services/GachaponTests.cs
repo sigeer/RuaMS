@@ -11,7 +11,7 @@ namespace ServiceTest.Games.Services
 
         public GachaponTests()
         {
-            _gachaponManager = GlobalSetup.TestServer.ServiceProvider.GetRequiredService<GachaponManager>();
+            _gachaponManager = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<GachaponManager>();
         }
 
         [Test]

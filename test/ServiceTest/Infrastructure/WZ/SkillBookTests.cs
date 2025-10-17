@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Templates;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
@@ -7,20 +8,18 @@ using System.Diagnostics;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    public class SkillBookTests
+    internal class SkillBookTests: WzTestBase
     {
+        protected override void OnProviderRegistering()
+        {
+            ProviderFactory.ConfigureWith(o =>
+            {
+                o.RegisterProvider<QuestProvider>(() => new QuestProvider(new Application.Templates.TemplateOptions()));
+            });
+        }
         [Test]
         public void LoadFromQuestTest()
         {
-            Console.WriteLine($"TestVariable.WzPath: {TestVariable.WzPath}");
-
-            ProviderFactory.Clear();
-            ProviderFactory.Configure(o =>
-            {
-                o.DataDir = TestVariable.WzPath;
-
-                o.RegisterProvider<QuestProvider>(() => new QuestProvider(new Application.Templates.TemplateOptions()));
-            });
             var dataProvider = new SkillbookInformationProvider(null, null);
             Stopwatch sw = new Stopwatch();
 

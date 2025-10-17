@@ -7,7 +7,7 @@ namespace ServiceTest.Games.Services
         [Test]
         public void RequestReactorDropTest()
         {
-            var data = GlobalSetup.TestServer.GetChannel(1).Service.RequestAllReactorDrops();
+            var data = GameTestGlobal.TestServer.GetChannel(1).Service.RequestAllReactorDrops();
             Assert.That(data.Count > 0);
         }
     }
