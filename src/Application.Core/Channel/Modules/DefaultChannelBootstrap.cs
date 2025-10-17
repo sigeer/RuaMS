@@ -13,6 +13,11 @@ namespace Application.Core.Channel.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
+            ProviderFactory.ConfigureWith(o =>
+            {
+                o.UseLogger(app.Logger);
+            });
+
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
                     app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
                     app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());

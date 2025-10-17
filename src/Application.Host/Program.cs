@@ -14,10 +14,9 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
-using Application.Core.Channel.DataProviders;
-
 
 #if IsStandalone
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.InProgress;
 #endif
 
