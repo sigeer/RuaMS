@@ -24,8 +24,8 @@ RUN dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.cspr
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY ./src/Application.Resources/wz /app/publish/wz
-COPY ./src/Application.Resources/wz-zh-CN /app/publish/wz-zh-CN
+COPY ./src/Application.Resources/wz /app/wz
+COPY ./src/Application.Resources/wz-zh-CN /app/wz-zh-CN
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
