@@ -1035,4 +1035,7 @@
   <data name="AlreadyInMap" xml:space="preserve">
     <value>你已经在这个地图里了。</value>
   </data>
+  <data name="LoadedWithin" xml:space="preserve">
+    <value>加载耗时 {0} 秒。</value>
+  </data>
 </root>

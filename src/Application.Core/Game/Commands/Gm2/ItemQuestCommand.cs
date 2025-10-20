@@ -1,6 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
+using Application.Templates.String;
 using client.inventory.manipulator;
 using server.life;
 using System.Text;
@@ -19,14 +20,15 @@ namespace Application.Core.Game.Commands.Gm2
 
             if (!int.TryParse(questInput, out var questId))
             {
-                var matchedQuestList = QuestFactory.Instance.getMatchedQuests(questInput);
+                var matchedQuestList = client.CurrentCulture.StringProvider.GetSubProvider(Templates.String.StringCategory.Quest)
+                    .Search(questInput).OfType<StringQuestTemplate>().ToList();
                 if (matchedQuestList.Count == 0)
                 {
                     client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.QuestNotFound), questInput);
                 }
                 else if (matchedQuestList.Count == 1)
                 {
-                    questId = matchedQuestList[0].getId();
+                    questId = matchedQuestList[0].TemplateId;
                 }
                 else
                 {
@@ -34,24 +36,25 @@ namespace Application.Core.Game.Commands.Gm2
                     for (int i = 0; i < matchedQuestList.Count; i++)
                     {
                         var item = matchedQuestList[i];
-                        sb.Append($"\r\n#L{i}# {item.getId()} #t{item.getId()}# - {item.Name} #l");
+                        sb.Append($"\r\n#L{i}# {item.TemplateId} #t{item.TemplateId}# - {item.Name} #l");
                     }
                     TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                     {
-                        ApplyQuestData(client, matchedQuestList[i].getId());
+                        ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
                     });
                 }
                 return;
             }
 
-            ApplyQuestData(client, questId);
+            ApplyQuestData(client, questInput, questId);
         }
 
-        void ApplyQuestData(IChannelClient client, int questId)
+        void ApplyQuestData(IChannelClient client, string input, int questId)
         {
             var questInfo = QuestFactory.Instance.GetInstance(questId);
             if (string.IsNullOrEmpty(questInfo.Name))
             {
+                client.OnlinedCharacter.Yellow(nameof(ClientMessage.QuestNotFound), input);
                 return;
             }
 
