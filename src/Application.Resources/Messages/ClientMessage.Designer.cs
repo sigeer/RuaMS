@@ -1429,6 +1429,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 加载耗时 {0} 秒。 的本地化字符串。
+        /// </summary>
+        public static string LoadedWithin {
+            get {
+                return ResourceManager.GetString("LoadedWithin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 魔法森林 的本地化字符串。
         /// </summary>
         public static string Map_Ellinia {

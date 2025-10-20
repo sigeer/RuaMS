@@ -1,6 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
+using Application.Scripting.JS;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
@@ -28,44 +29,39 @@ public class SearchCommand : CommandBase
 
         string search = joinStringFrom(paramsValue, 1);
 
-        if (Enum.TryParse<StringCategory>(paramsValue[0], true, out var type) || paramsValue[0].Equals("QUEST", StringComparison.OrdinalIgnoreCase))
+        if (Enum.TryParse<StringCategory>(paramsValue[0], true, out var type))
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            if (paramsValue[0].Equals("QUEST", StringComparison.OrdinalIgnoreCase))
+            foreach (var item in c.CurrentCulture.StringProvider.Search(type, search))
             {
-                foreach (Quest mq in QuestFactory.Instance.getMatchedQuests(search))
+                if (item is StringMapTemplate mapData)
                 {
-                    sb.Append("#b").Append(mq.getId()).Append("#k - #r");
-                    if (!string.IsNullOrEmpty(mq.Parent))
-                    {
-                        sb.Append(mq.Parent).Append(" - ");
-                    }
-                    sb.Append(mq.Name).Append("\r\n");
+                    sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(mapData.StreetName).Append(" - ").Append(mapData.MapName).Append("\r\n");
                 }
-            }
-            else
-            {
-                foreach (var item in c.CurrentCulture.StringProvider.Search(type, search))
+                else if (item is StringTemplate stringData)
                 {
-                    if (item is StringMapTemplate mapData)
+                    sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(stringData.Name).Append("\r\n");
+                }
+                else if (item is StringNpcTemplate npcData)
+                {
+                    sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(npcData.Name).Append("\r\n");
+                }
+                else if (item is StringQuestTemplate questData)
+                {
+                    sb.Append("#b").Append(questData.TemplateId).Append("#k - #r");
+                    if (!string.IsNullOrEmpty(questData.ParentName))
                     {
-                        sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(mapData.StreetName).Append(" - ").Append(mapData.MapName).Append("\r\n");
+                        sb.Append(questData.ParentName).Append(" - ");
                     }
-                    else if (item is StringTemplate stringData)
-                    {
-                        sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(stringData.Name).Append("\r\n");
-                    }
-                    else if (item is StringNpcTemplate npcData)
-                    {
-                        sb.Append("#b").Append(item.TemplateId).Append("#k - #r").Append(npcData.Name).Append("\r\n");
-                    }
+                    sb.Append(questData.Name).Append("\r\n");
                 }
             }
 
             sw.Stop();
-            sb.Append("\r\n#kLoaded within ").Append(sw.Elapsed.TotalSeconds).Append(" seconds.");//because I can, and it's free
+            sb.Append("\r\n").Append("#k");
+            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.LoadedWithin), sw.Elapsed.TotalSeconds.ToString()));
         }
         else
         {

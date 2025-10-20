@@ -18,6 +18,7 @@ namespace Application.Templates.XmlWzReader.Provider
             _categoryData[(int)StringCategory.Mob] = new StringMobProvider(options, cultureInfo);
             _categoryData[(int)StringCategory.Npc] = new StringNpcProvider(options, cultureInfo);
             _categoryData[(int)StringCategory.Skill] = new StringSkillProvider(options, cultureInfo);
+            _categoryData[(int)StringCategory.Quest] = new StringQuestProvider(options, cultureInfo);
         }
 
 

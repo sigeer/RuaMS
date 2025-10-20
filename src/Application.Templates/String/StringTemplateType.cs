@@ -30,5 +30,7 @@ namespace Application.Templates.String
         Npc,
 
         Skill,
+
+        QuestInfo
     }
 }

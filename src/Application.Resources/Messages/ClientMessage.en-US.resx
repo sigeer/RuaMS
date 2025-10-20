@@ -1035,4 +1035,7 @@
   <data name="AlreadyInMap" xml:space="preserve">
     <value>You are already on this map.</value>
   </data>
+  <data name="LoadedWithin" xml:space="preserve">
+    <value>Loaded within {0} seconds.</value>
+  </data>
 </root>
