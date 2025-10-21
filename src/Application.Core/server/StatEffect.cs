@@ -407,13 +407,7 @@ public class StatEffect
             moveTo = scroll.MoveTo;
         }
 
-        if (item is IMapProtectEffect mapProtect)
-        {
-            if (mapProtect.Thaw != 0)
-            {
-                mapProtection = (byte)(mapProtect.Thaw > 0 ? 1 : 2);
-            }
-        }
+        mapProtection = GetMapProtection(sourceid);
 
         if (overTime)
         {
@@ -436,7 +430,14 @@ public class StatEffect
 
             addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, ghost);
             addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, morphId);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, mapProtection);
+
+            if (item is IMapProtectEffect mapProtect)
+            {
+                if (mapProtect.Thaw != 0)
+                {
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, (byte)(mapProtect.Thaw > 0 ? 1 : 2));
+                }
+            }
         }
 
         statups.TrimExcess();

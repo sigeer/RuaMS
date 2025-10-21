@@ -337,8 +337,6 @@ namespace Application.Core.Channel.Services
                 }
 
             }
-
-            chr.sendPacket(PacketCreator.showCash(chr));
         }
 
         public void BuyCashItemForGift(IPlayer chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)

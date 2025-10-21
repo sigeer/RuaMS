@@ -706,6 +706,7 @@ namespace Application.Core.Game.Players
                     return ;
 
                 CashShopModel.BuyCashItem(cashType, cItem);
+                sendPacket(PacketCreator.showCash(this));
             }
         }
 
