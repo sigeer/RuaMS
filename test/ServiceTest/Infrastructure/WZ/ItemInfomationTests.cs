@@ -440,7 +440,7 @@ namespace ServiceTest.Infrastructure.WZ
             // 罗赛伦药水, 新旧代码对specEx/spec处理方式不同
             int[] special = [2022224, 2022225, 2022226, 2022227, 2022228];
 
-            var specialId = 2022186;
+            var specialId = 02383033;
             var newSpecialData = newProvider.getItemEffect(specialId);
             var oldSpecialData = oldProvider.getItemEffect(specialId);
             Assert.That(ToJson(newSpecialData), Is.EqualTo(ToJson(oldSpecialData)), $"Id = {specialId}");
