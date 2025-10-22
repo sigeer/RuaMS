@@ -68,6 +68,9 @@ public class MapItem : AbstractMapObject, IItemProp
         this.meso = meso;
         this.type = type;
         this.playerDrop = playerDrop;
+
+        dropTime = dropper.getMap().ChannelServer.Container.getCurrentTime();
+        ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
     }
 
     public Item getItem()

@@ -719,6 +719,7 @@ public class MapleMap : IMap
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
         var itemPos = mob.getPosition();
+        var startPosX = itemPos.X;
         foreach (var de in dropEntry)
         {
             int dropChance = de.Chance;
@@ -730,7 +731,7 @@ public class MapleMap : IMap
 
             if (de.CanDrop(dropChance))
             {
-                itemPos.X = de.GetDropPosX(droptype, itemPos.X, dIndex);
+                itemPos.X = de.GetDropPosX(droptype, startPosX, dIndex);
                 if (de.ItemId == 0)
                 {
                     // meso
