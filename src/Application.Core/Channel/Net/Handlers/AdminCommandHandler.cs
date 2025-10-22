@@ -25,7 +25,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Scripting.JS;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
