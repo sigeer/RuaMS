@@ -3,6 +3,8 @@ namespace Application.Templates.Map
     //[GenerateTag] // 代码生成器没有适配foothold的格式
     public sealed class MapTemplate : AbstractTemplate, ILinkTemplate<MapTemplate>
     {
+        [WZPath("info/mobRate")]
+        public float MobRate { get; set; }
         [WZPath("info/createMobInterval")]
         public int CreateMobInterval { get; set; } = 5000;
         [WZPath("info/VRTop")]

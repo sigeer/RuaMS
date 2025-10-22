@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -34,7 +34,7 @@ function onRestingSpot() {
 }
 
 function isFinalBossDone() {
-    return cm.getMapId() >= 970032700 && cm.getMapId() < 970032800 && cm.getMap().getMonsters().isEmpty();
+    return cm.getMapId() >= 970032700 && cm.getMapId() < 970032800 && cm.getMap().countMonsters() == 0;
 }
 
 function detectTeamLobby(team) {

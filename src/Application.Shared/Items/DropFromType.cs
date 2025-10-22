@@ -1,6 +1,6 @@
 namespace Application.Shared.Items
 {
-    public enum DropType
+    public enum DropFromType
     {
         GlobalDrop,
         MonsterDrop,

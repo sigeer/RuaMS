@@ -514,7 +514,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public int partyMembersInMap()
     {
-        return getPlayer().getMap().getCharacters().Count(x => x.getParty() == getPlayer().getParty());
+        return getPlayer().getMap().getAllPlayers().Count(x => x.getParty() == getPlayer().getParty());
     }
 
     public server.events.gm.Event? getEvent()
@@ -560,7 +560,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             map = mapManager.getMap(mapid + b);
             //They cannot warp to the next map before the timer ends ( in map = mapManager.getMap(mapid + b);
-            if (map.getCharacters().Count > 0)
+            if (map.getAllPlayers().Count > 0)
             {
                 continue;
             }
@@ -736,20 +736,20 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             return true;
         }
-        if (c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayers().Count > 0)
         {
             return true;
         }
-        if (c.CurrentServer.getMapFactory().getMap(980000101 + field * 100).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980000101 + field * 100).getAllPlayers().Count > 0)
         {
             return true;
         }
-        return c.CurrentServer.getMapFactory().getMap(980000102 + field * 100).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980000102 + field * 100).getAllPlayers().Count > 0;
     }
 
     public bool fieldLobbied(int field)
     {
-        return c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayers().Count > 0;
     }
 
     public void cpqLobby(int field)
@@ -1035,20 +1035,20 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             return true;
         }
-        if (c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayers().Count > 0)
         {
             return true;
         }
-        if (c.CurrentServer.getMapFactory().getMap(980031100 + field * 1000).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980031100 + field * 1000).getAllPlayers().Count > 0)
         {
             return true;
         }
-        return c.CurrentServer.getMapFactory().getMap(980031200 + field * 1000).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980031200 + field * 1000).getAllPlayers().Count > 0;
     }
 
     public bool fieldLobbied2(int field)
     {
-        return c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayers().Count > 0;
     }
 
     public void cpqLobby2(int field)
@@ -1102,7 +1102,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         IPlayer? leader = null;
         var map = c.CurrentServer.getMapFactory().getMap(980031000 + 1000 * field);
-        foreach (var mmo in map.getAllPlayer())
+        foreach (var mmo in map.getAllPlayers())
         {
             var mc = (IPlayer)mmo;
             if (mc.getParty() == null)
@@ -1140,14 +1140,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         IPlayer? leader = null;
         var map = c.CurrentServer.getMapFactory().getMap(980000100 + 100 * field);
-        if (map.getAllPlayer().Count != getPlayer().getParty()!.GetChannelMembers(c.CurrentServer).Count)
+        if (map.getAllPlayers().Count != getPlayer().getParty()!.GetChannelMembers(c.CurrentServer).Count)
         {
             sendOk("An unexpected error regarding the other party has occurred.");
             return;
         }
-        foreach (var mmo in map.getAllPlayer())
+        foreach (var mc in map.getAllPlayers())
         {
-            var mc = (IPlayer)mmo;
             if (mc.getParty() == null)
             {
                 sendOk(LanguageConstants.getMessage(mc, LanguageConstants.CPQFindError));

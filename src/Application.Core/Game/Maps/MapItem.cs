@@ -12,9 +12,10 @@ public class MapItem : AbstractMapObject, IItemProp
     protected Item? item;
     protected IMapObject dropper;
     protected int character_ownerid, party_ownerid, meso, questid = -1;
-    protected byte type;
+    protected DropType type;
     protected bool pickedUp = false, playerDrop;
     protected long dropTime;
+    public long ExpiredTime { get; }
     private object itemLock = new object();
     public bool IsPartyDrop => this.party_ownerid != -1;
 
@@ -22,7 +23,7 @@ public class MapItem : AbstractMapObject, IItemProp
         && !ItemId.isNxCard(getItemId())
         && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
 
-    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop)
+    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
     {
         setPosition(position);
         this.item = item;
@@ -34,6 +35,9 @@ public class MapItem : AbstractMapObject, IItemProp
         this.meso = 0;
         this.type = type;
         this.playerDrop = playerDrop;
+
+        dropTime = dropper.getMap().ChannelServer.Container.getCurrentTime();
+        ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
     }
 
     /// <summary>
@@ -46,13 +50,13 @@ public class MapItem : AbstractMapObject, IItemProp
     /// <param name="type">0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA</param>
     /// <param name="playerDrop"></param>
     /// <param name="questid"></param>
-    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop, int questid)
+    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop, int questid)
         : this(item, position, dropper, owner, type, playerDrop)
     {
         this.questid = questid;
     }
 
-    public MapItem(int meso, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop)
+    public MapItem(int meso, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
     {
         setPosition(position);
         this.item = null;
@@ -125,7 +129,7 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public bool isFFADrop()
     {
-        return type == 2 || type == 3 || hasExpiredOwnershipTime();
+        return type == DropType.FreeForAll || type == DropType.FreeForAll_Explosive || hasExpiredOwnershipTime();
     }
 
     public bool hasExpiredOwnershipTime()
@@ -205,7 +209,7 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public byte getDropType()
     {
-        return type;
+        return (byte)type;
     }
 
     public void lockItem()

@@ -1,4 +1,4 @@
-﻿/*2101014.js - Lobby and Entrance
+/*2101014.js - Lobby and Entrance
  * @author Jvlaple
  * For Jvlaple's AriantPQ
  */
@@ -51,17 +51,17 @@ function action(mode, type, selection) {
 
                 if (expedicao == null) {
                     toSnd += "#L0#Battle Arena (1) (Empty)#l\r\n";
-                } else if (channelMaps.getMap(980010101).getCharacters().isEmpty()) {
+                } else if (channelMaps.getMap(980010101).getAllPlayers().isEmpty()) {
                     toSnd += "#L0#Join Battle Arena (1)  Owner (" + expedicao.getLeader().getName() + ")" + " Current Member: " + cm.getExpeditionMemberNames(exped) + "\r\n";
                 }
                 if (expedicao1 == null) {
                     toSnd += "#L1#Battle Arena (2) (Empty)#l\r\n";
-                } else if (channelMaps.getMap(980010201).getCharacters().isEmpty()) {
+                } else if (channelMaps.getMap(980010201).getAllPlayers().isEmpty()) {
                     toSnd += "#L1#Join Battle Arena (2)  Owner (" + expedicao1.getLeader().getName() + ")" + " Current Member: " + cm.getExpeditionMemberNames(exped1) + "\r\n";
                 }
                 if (expedicao2 == null) {
                     toSnd += "#L2#Battle Arena (3) (Empty)#l\r\n";
-                } else if (channelMaps.getMap(980010301).getCharacters().isEmpty()) {
+                } else if (channelMaps.getMap(980010301).getAllPlayers().isEmpty()) {
                     toSnd += "#L2#Join Battle Arena (3)  Owner (" + expedicao2.getLeader().getName() + ")" + " Current Member: " + cm.getExpeditionMemberNames(exped2) + "\r\n";
                 }
                 if (toSnd === startSnd) {

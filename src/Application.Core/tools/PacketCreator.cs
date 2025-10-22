@@ -1592,13 +1592,13 @@ public class PacketCreator
         return killMonster(objId, animation ? 1 : 0);
     }
 
-    /**
-     * Gets a packet telling the client that a monster was killed.
-     *
-     * @param objId     The objectID of the killed monster.
-     * @param animation 0 = dissapear, 1 = fade out, 2+ = special
-     * @return The kill monster packet.
-     */
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="objId"></param>
+    /// <param name="animation">0 = dissapear, 1 = fade out, 2+ = special</param>
+    /// <returns></returns>
     public static Packet killMonster(int objId, int animation)
     {
         OutPacket p = OutPacket.create(SendOpcode.KILL_MONSTER);
@@ -1628,6 +1628,21 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="drop"></param>
+    /// <param name="dropfrom"></param>
+    /// <param name="dropto"></param>
+    /// <param name="mod">
+    /// <para>0. ?</para>
+    /// <para>1. spawn</para>
+    /// <para>2. update</para>
+    /// <para>3. remove?</para>
+    /// </param>
+    /// <param name="delay"></param>
+    /// <returns></returns>
     public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
     {
         int dropType = drop.getDropType();

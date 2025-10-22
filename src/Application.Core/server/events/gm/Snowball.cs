@@ -47,7 +47,7 @@ public class Snowball
 
         snowmanhp = this.map.SnowManHP;
 
-        foreach (var chr in map.getCharacters())
+        foreach (var chr in map.getAllPlayers())
         {
             if (chr.getTeam() == team)
             {

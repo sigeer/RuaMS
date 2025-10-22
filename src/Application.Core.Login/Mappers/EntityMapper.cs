@@ -78,7 +78,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
                 .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Reactorid))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.ReactorDrop))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropFromType.ReactorDrop))
                 .ForMember(dest => dest.MinCount, src => src.MapFrom(x => 1))
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => 1))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
@@ -87,7 +87,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
                 .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Dropperid))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.MonsterDrop))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropFromType.MonsterDrop))
                 .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
@@ -96,7 +96,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
                 .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Continent))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.GlobalDrop))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropFromType.GlobalDrop))
                 .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));

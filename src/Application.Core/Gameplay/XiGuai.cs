@@ -26,11 +26,10 @@ namespace Application.Core.Game.Gameplay
 
         public void Start()
         {
-            var monsterList = MapModel.getAllMonsters();
-            foreach (var monster in monsterList)
+            MapModel.ProcessMonster(monster =>
             {
                 ApplyMonster(monster);
-            }
+            });
             Controller.message("开启吸怪");
         }
 

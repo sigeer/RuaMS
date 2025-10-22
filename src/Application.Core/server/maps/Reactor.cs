@@ -508,4 +508,14 @@ public class Reactor : AbstractMapObject
     {
         return facingDirection;
     }
+
+    public override int GetSourceId()
+    {
+        return getId();
+    }
+
+    public override string GetName()
+    {
+        return getName();
+    }
 }

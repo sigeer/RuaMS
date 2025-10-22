@@ -580,6 +580,17 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return MapObjectType.PLAYER_SHOP;
     }
 
+    public override string GetName()
+    {
+        return OwnerName;
+    }
+
+    public override int GetSourceId()
+    {
+        return SourceItemId;
+    }
+
+
     Lock tradeLock = new();
     public bool TradeLock()
     {

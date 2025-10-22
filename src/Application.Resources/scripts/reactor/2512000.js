@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -41,7 +41,7 @@ function act() {
     rm.dropItems(true, 1, 30, 60, 15);
 
     var map = rm.getMap();
-    if (map.getMonsters().size() == 0 && passedGrindMode(map, eim)) {
+    if (map.countMonsters() == 0 && passedGrindMode(map, eim)) {
         eim.showClearEffect(map.getId());
     }
 }

@@ -32,7 +32,7 @@ end
 
 function EllinPQ:respawnStages(eim)
     local stg2Map = eim:getMapInstance(930000200)
-    if stg2Map:getPlayers().Count > 0 then
+    if stg2Map:getAllPlayers().Count > 0 then
         stg2Map:instanceMapRespawn()
     end
     eim:schedule("respawnStages", 4 * 1000)

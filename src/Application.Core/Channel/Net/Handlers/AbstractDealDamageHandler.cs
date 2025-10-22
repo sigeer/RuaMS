@@ -265,7 +265,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                                     int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
                                     var position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
-                                    map.spawnMesoDrop(meso, position, monster, player, true, 2, delay);
+                                    map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
                                     delay += 100;
                                 }
                             }

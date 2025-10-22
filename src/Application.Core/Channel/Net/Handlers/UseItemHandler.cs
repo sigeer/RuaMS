@@ -92,7 +92,7 @@ public class UseItemHandler : ChannelHandlerBase
             else
             {
                 var mse = ii.GetItemEffectTrust(toUse.getItemId());
-                foreach (var player in chr.getMap().getCharacters())
+                foreach (var player in chr.getMap().getAllPlayers())
                 {
                     mse.applyTo(player);
                 }

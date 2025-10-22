@@ -25,6 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Scripting.JS;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
@@ -105,7 +106,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 {
                     case 0:// /u
                         StringBuilder sb = new StringBuilder("USERS ON THIS MAP: ");
-                        foreach (var mc in c.OnlinedCharacter.getMap().getCharacters())
+                        foreach (var mc in c.OnlinedCharacter.getMap().getAllPlayers())
                         {
                             sb.Append(mc.getName());
                             sb.Append(" ");
@@ -148,15 +149,14 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x18: // Maple & Mobhp
                 int mobHp = p.readInt();
                 c.OnlinedCharacter.dropMessage("Monsters HP");
-                List<IMapObject> monsters = c.OnlinedCharacter.getMap().GetMapObjects(x => x.getType() == MapObjectType.MONSTER);
-                foreach (var mobs in monsters)
-                {
-                    Monster monster = (Monster)mobs;
-                    if (monster.getId() == mobHp)
+                c.OnlinedCharacter.getMap().ProcessMonster(
+                    monster =>
                     {
-                        c.OnlinedCharacter.dropMessage(monster.getName() + ": " + monster.getHp());
-                    }
-                }
+                        if (monster.getId() == mobHp)
+                        {
+                            c.OnlinedCharacter.dropMessage(monster.getName() + ": " + monster.getHp());
+                        }
+                    });
                 break;
             case 0x1E: // Warn
                 victim = p.readString();

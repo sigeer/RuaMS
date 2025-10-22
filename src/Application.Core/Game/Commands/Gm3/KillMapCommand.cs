@@ -9,7 +9,7 @@ public class KillMapCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var mch in player.getMap().getCharacters())
+        foreach (var mch in player.getMap().getAllPlayers())
         {
             mch.KilledBy(player);
         }

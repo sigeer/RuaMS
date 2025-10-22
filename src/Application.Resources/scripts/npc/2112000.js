@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -33,7 +33,7 @@ function start() {
 
 function playersTooClose() {
     var npcpos = cm.getMap().getMapObject(cm.getNpcObjectId()).getPosition();
-    var listchr = cm.getMap().getPlayers();
+    var listchr = cm.getMap().getAllPlayers();
 
     for (var chr of listchr) {
         var chrpos = chr.getPosition();

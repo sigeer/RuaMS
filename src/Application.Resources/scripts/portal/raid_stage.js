@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -25,7 +25,7 @@ BossRushPQ - Next Stage
 */
 
 function enter(pi) {
-    if (pi.getMap().getMonsters().isEmpty()) {
+    if (pi.getMap().countMonsters() == 0) {
         var nextStage;
 
         if (pi.getMapId() % 500 >= 100) {

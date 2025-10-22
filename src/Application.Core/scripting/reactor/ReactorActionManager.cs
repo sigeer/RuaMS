@@ -172,7 +172,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             int baseDrop = d.GetRandomCount(minMeso, maxMeso);
             int mesoDrop = (int)(baseDrop * worldMesoRate);
             if (mesoDrop > 0)
-                map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
+                map.spawnMesoDrop(mesoDrop, dropPos, reactor, chr, false, DropType.FreeForAll, delay);
         }
         else
         {
@@ -325,13 +325,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)
         {
-            foreach (var mons in getMap().getAllMonsters())
+            getMap().ProcessMonster(mons =>
             {
                 if (mons.getTeam() == team)
                 {
                     mons.dispelSkill(skil.getSkill());
                 }
-            }
+            });
 
             if (getPlayer().getMap() is ICPQMap map)
             {

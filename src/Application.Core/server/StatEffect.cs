@@ -1169,12 +1169,14 @@ public class StatEffect
 
     public bool applyEchoOfHero(IPlayer applyfrom)
     {
-        Dictionary<int, IPlayer> mapPlayers = applyfrom.getMap().getMapPlayers();
-        mapPlayers.Remove(applyfrom.getId());
+        var mapPlayers = applyfrom.getMap().getAllPlayers();
 
         bool hwResult = applyTo(applyfrom);
-        foreach (IPlayer chr in mapPlayers.Values)
-        {    // Echo of Hero not buffing players in the map detected thanks to Masterrulax
+        foreach (IPlayer chr in mapPlayers)
+        {
+            if (chr == applyfrom)
+                continue;
+            // Echo of Hero not buffing players in the map detected thanks to Masterrulax
             applyTo(applyfrom, chr, false, null, false, 1);
         }
 

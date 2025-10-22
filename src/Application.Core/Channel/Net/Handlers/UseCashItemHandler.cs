@@ -386,7 +386,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             if (ii.getStateChangeItem(itemId) != 0)
             {
-                foreach (var mChar in player.getMap().getCharacters())
+                foreach (var mChar in player.getMap().getAllPlayers())
                 {
                     ii.getItemEffect(ii.getStateChangeItem(itemId))?.applyTo(mChar);
                 }

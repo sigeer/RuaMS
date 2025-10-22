@@ -60,7 +60,7 @@ public class OxQuiz
     public void sendQuestion()
     {
         int gm = 0;
-        foreach (var mc in map.getCharacters())
+        foreach (var mc in map.getAllPlayers())
         {
             if (mc.gmLevel() > 1)
             {
@@ -72,7 +72,7 @@ public class OxQuiz
         map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-            List<IPlayer> chars = new(map.getCharacters());
+            List<IPlayer> chars = new(map.getAllPlayers());
 
             foreach (var chr in chars)
             {
@@ -98,7 +98,7 @@ public class OxQuiz
                 question++;
             }
             //send question
-            if (map.getCharacters().Count - number <= 2)
+            if (map.getAllPlayers().Count - number <= 2)
             {
                 map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
                 map.getPortal("join00")!.setPortalStatus(true);

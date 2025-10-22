@@ -45,10 +45,11 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
         }
 
         if (!chr.isHidden())
-        {  // thanks Lame (Conrad) for noticing hidden characters controlling mobs
-            foreach (var mo in chr.getMap().getMonsters())
-            {    // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
-                Monster m = (Monster)mo;
+        {
+            // thanks Lame (Conrad) for noticing hidden characters controlling mobs
+            chr.getMap().ProcessMonster(m =>
+            {
+                // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
                 if (m.getSpawnEffect() == 0 || m.getHp() < m.getMaxHp())
                 {     // avoid effect-spawning mobs
                     if (m.getController() == chr)
@@ -65,7 +66,7 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
                     m.sendSpawnData(c);
                     m.aggroSwitchController(chr, false);
                 }
-            }
+            });
         }
     }
 }

@@ -78,7 +78,7 @@ function action(mode, type, selection) {
                         if (mode == 0) {
                             cm.sendNext("哈哈！你这样的心，想要给谁留下好印象呢？\r\n还是回到你应该去的地方吧！");
                         } else {
-                            if (cm.getClient().getChannelServer().getMapFactory().getMap(925020010).getCharacters().size() > 0) {
+                            if (cm.getClient().getChannelServer().getMapFactory().getMap(925020010).getAllPlayers().Count > 0) {
                                 cm.sendOk("有人已经在道馆里了。");
                                 cm.dispose();
                                 return;
@@ -97,7 +97,7 @@ function action(mode, type, selection) {
                     }
                 } else {
                     for (var i = 1; i < 39; i++) { //only 32 stages, but 38 maps
-                        if (cm.getClient().getChannelServer().getMapFactory().getMap(925020000 + 100 * i).getCharacters().size() > 0) {
+                        if (cm.getClient().getChannelServer().getMapFactory().getMap(925020000 + 100 * i).getAllPlayers().Count > 0) {
                             cm.sendOk("有人已经在道馆里了。" + i);
                             cm.dispose();
                             return;
@@ -125,7 +125,7 @@ function action(mode, type, selection) {
                     cm.sendNext("你的队伍成员等级范围太广，无法进入。请确保你的所有队伍成员等级相差不超过#r30级#k。");
                 } else {
                     for (var i = 1; i < 39; i++) { //only 32 stages, but 38 maps
-                        if (cm.getClient().getChannelServer().getMapFactory().getMap(925020000 + 100 * i).getCharacters().size() > 0) {
+                        if (cm.getClient().getChannelServer().getMapFactory().getMap(925020000 + 100 * i).getAllPlayers().Count > 0) {
                             cm.sendOk("有人已经在道馆里了。");
                             cm.dispose();
                             return;

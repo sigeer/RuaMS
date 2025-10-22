@@ -537,11 +537,10 @@ public partial class Player
                     MapModel.broadcastNONGMMessage(this, PacketCreator.spawnSummon(ms, false), false);
                 }
 
-                foreach (IMapObject mo in this.MapModel.getMonsters())
+                this.MapModel.ProcessMonster(m =>
                 {
-                    Monster m = (Monster)mo;
                     m.aggroUpdateController();
-                }
+                });
             }
             else
             {

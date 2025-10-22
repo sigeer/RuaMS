@@ -1,4 +1,4 @@
-﻿var status = -1;
+var status = -1;
 var level = 1;
 
 function start() {
@@ -86,7 +86,7 @@ function action(mode, type, selection) {
                 cm.dispose();
                 break;
             case 925100201:
-                if (cm.getMap().getMonsters().size() == 0) {
+                if (cm.getMap().countMonsters() == 0) {
                     cm.sendNext("海盗之王的宝箱出现了！如果你碰巧有一把钥匙，就把它放在宝箱旁边，揭示宝藏。这肯定会让他很生气。");
                     if (eim.getProperty("stage2a") == "0") {
                         cm.getMap().setReactorState();
@@ -98,7 +98,7 @@ function action(mode, type, selection) {
                 cm.dispose();
                 break;
             case 925100301:
-                if (cm.getMap().getMonsters().size() == 0) {
+                if (cm.getMap().countMonsters() == 0) {
                     cm.sendNext("海盗之王的宝箱出现了！如果你碰巧有一把钥匙，就把它放在宝箱旁边，揭示宝藏。这肯定会让他很生气。");
                     if (eim.getProperty("stage3a") === "0") {
                         cm.getMap().setReactorState();
@@ -119,7 +119,7 @@ function action(mode, type, selection) {
                 cm.dispose();
                 break;
             case 925100500:
-                if (cm.getMap().getMonsters().size() == 0) {
+                if (cm.getMap().countMonsters() == 0) {
                     cm.sendNext("谢谢你救了我们的领袖！我们欠你一份人情。");
                 } else {
                     cm.sendNext("打败所有的怪物！甚至是海盗王的手下！");

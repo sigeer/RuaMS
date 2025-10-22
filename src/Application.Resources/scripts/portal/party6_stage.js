@@ -1,4 +1,4 @@
-﻿function enter(pi) {
+function enter(pi) {
     switch (pi.getMapId()) {
         case 930000000:
             pi.playPortalSound();
@@ -6,7 +6,7 @@
             return true;
             break;
         case 930000100:
-            if (pi.getMap().getMonsters().size() == 0) {
+            if (pi.getMap().countMonsters() == 0) {
                 pi.playPortalSound();
                 pi.warp(930000200, 0);
                 return true;

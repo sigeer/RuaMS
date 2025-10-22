@@ -34,14 +34,23 @@ public enum FieldLimit
     CANNOTVIPROCK = 0x40,
     CANNOTMINIGAME = 0x80,
     //SPECIFIC_PORTAL_SCROLL_LIMIT = 0x100, // APQ and a couple quest maps have this
+    /// <summary>
+    /// 无法骑宠
+    /// </summary>
     CANNOTUSEMOUNTS = 0x200,
     //STAT_CHANGE_ITEM_CONSUME_LIMIT = 0x400, // Monster carnival?
     //PARTY_BOSS_CHANGE_LIMIT = 0x800, // Monster carnival?
+    /// <summary>
+    /// 无法喝药
+    /// </summary>
     CANNOTUSEPOTION = 0x1000,
     //WEDDING_INVITATION_LIMIT = 0x2000, // No notes
     //CASH_WEATHER_CONSUME_LIMIT = 0x4000,
     //NO_PET = 0x8000, // Ariant colosseum-related?
     //ANTI_MACRO_LIMIT = 0x10000, // No notes
+    /// <summary>
+    /// 无法下跳
+    /// </summary>
     CANNOTJUMPDOWN = 0x20000,
     //SUMMON_NPC_LIMIT = 0x40000; // Seems to .. disable Rush if 0x2 is set
 

@@ -1,4 +1,4 @@
-﻿function passedGrindMode(map, eim) {
+function passedGrindMode(map, eim) {
     if (eim.getIntProperty("grindMode") == 0) {
         return true;
     }
@@ -6,7 +6,7 @@
 }
 
 function enter(pi) {
-    if (pi.getMap().getMonsters().size() == 0 && passedGrindMode(pi.getMap(), pi.getEventInstance())) {
+    if (pi.getMap().countMonsters() == 0 && passedGrindMode(pi.getMap(), pi.getEventInstance())) {
         pi.playPortalSound();
         pi.warp(925100400, 0); //next
         return true;

@@ -39,7 +39,7 @@ public class MapMonitor
         this.portal = map.getPortal(portal);
         this.monitorSchedule = map.ChannelServer.Container.TimerManager.register(() =>
         {
-            if (map.getCharacters().Count < 1)
+            if (map.getAllPlayers().Count < 1)
             {
                 cancelAction();
             }

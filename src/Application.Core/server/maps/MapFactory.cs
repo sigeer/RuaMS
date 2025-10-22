@@ -131,7 +131,7 @@ public class MapFactory : IStaticService
 
         if (MapConstants.IsCPQMap(mapid) && mapData.MonsterCarnival != null)
         {
-            var cpqMap = new MonsterCarnivalMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            var cpqMap = new MonsterCarnivalMap(mapData, worldChannel, evt);
             var mcData = mapData.MonsterCarnival;
             cpqMap.DeathCP = mcData.DeathCP;
             cpqMap.MaxMobs = mcData.MaxMobs;    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
@@ -175,7 +175,7 @@ public class MapFactory : IStaticService
 
         else if (mapData.Coconut != null)
         {
-            var coconutMap = new CoconutMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            var coconutMap = new CoconutMap(mapData, worldChannel, evt);
             coconutMap.CountFalling = mapData.Coconut.CountFalling;
             coconutMap.CountBombing = mapData.Coconut.CountBombing;
             coconutMap.CountStopped = mapData.Coconut.CountStopped;
@@ -194,7 +194,7 @@ public class MapFactory : IStaticService
 
         else if (mapData.Snowball != null)
         {
-            var snowBallMap = new SnowBallMap(mapid, worldChannel, mapData.ReturnMap, evt);
+            var snowBallMap = new SnowBallMap(mapData, worldChannel, evt);
             snowBallMap.DamageSnowBall = mapData.Snowball.DamageSnowBall;
             snowBallMap.DamageSnowMan0 = mapData.Snowball.DamageSnowMan0;
             snowBallMap.DamageSnowMan1 = mapData.Snowball.DamageSnowMan1;
@@ -205,11 +205,7 @@ public class MapFactory : IStaticService
         }
 
         else
-            map = new MapleMap(mapid, worldChannel, mapData.ReturnMap, evt);
-
-        var mapStr = mapid.ToString();
-        map.setOnFirstUserEnter(mapData.OnFirstUserEnter ?? mapStr);
-        map.setOnUserEnter(mapData.OnUserEnter ?? mapStr);
+            map = new MapleMap(mapData, worldChannel, evt);
 
         map.setFieldLimit(mapData.FieldLimit);
         map.setMobInterval((short)mapData.CreateMobInterval);
@@ -217,72 +213,6 @@ public class MapFactory : IStaticService
         foreach (var item in mapData.Portals)
         {
             map.addPortal(portalFactory.makePortal(item.nPortalType, item));
-        }
-
-        if (mapData.TimeMob != null)
-        {
-            map.TimeMob = new TimeMob(mapData.TimeMob.Id,
-                mapData.TimeMob.Message ?? "",
-                mapData.TimeMob.StartHour,
-                mapData.TimeMob.EndHour);
-        }
-
-        if (mapData.VRTop == mapData.VRBottom)
-        {    // old-style baked map
-
-            if (mapData.MiniMap != null)
-            {
-                map.setMapPointBoundings(-mapData.MiniMap.CenterX, -mapData.MiniMap.CenterY, mapData.MiniMap.Height, mapData.MiniMap.Width);
-            }
-            else
-            {
-                int dist = (1 << 18);
-                map.setMapPointBoundings(-dist / 2, -dist / 2, dist, dist);
-            }
-        }
-        else
-        {
-            map.setMapLineBoundings(mapData.VRTop, mapData.VRBottom, mapData.VRLeft, mapData.VRRight);
-        }
-
-        List<Foothold> allFootholds = new();
-        Point lBound = new Point();
-        Point uBound = new Point();
-
-        foreach (var item in mapData.Footholds)
-        {
-            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.Index);
-            fh.setPrev(item.Prev);
-            fh.setNext(item.Next);
-            if (fh.getX1() < lBound.X)
-            {
-                lBound.X = fh.getX1();
-            }
-            if (fh.getX2() > uBound.X)
-            {
-                uBound.X = fh.getX2();
-            }
-            if (fh.getY1() < lBound.Y)
-            {
-                lBound.Y = fh.getY1();
-            }
-            if (fh.getY2() > uBound.Y)
-            {
-                uBound.Y = fh.getY2();
-            }
-            allFootholds.Add(fh);
-        }
-
-        FootholdTree fTree = new FootholdTree(lBound, uBound);
-        foreach (Foothold fh in allFootholds)
-        {
-            fTree.insert(fh);
-        }
-        map.setFootholds(fTree);
-
-        foreach (var area in mapData.Areas)
-        {
-            map.addMapleArea(new Rectangle(area.X1, area.Y1, (area.X2 - area.X1), (area.Y2 - area.Y1)));
         }
 
         map.setSeats(mapData.SeatCount);
@@ -309,7 +239,6 @@ public class MapFactory : IStaticService
         map.IsTown = mapData.Town;
         map.setHPDec(mapData.DecHP);
         map.setHPDecProtect(mapData.ProtectItem);
-        map.setForcedReturnMap(mapData.ForcedReturn);
         map.setBoat(mapData.HasShip);
         map.setTimeLimit(mapData.TimeLimit);
         map.setFieldType(mapData.FieldType);

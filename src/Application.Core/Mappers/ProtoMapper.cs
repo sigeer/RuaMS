@@ -226,11 +226,11 @@ namespace Application.Core.Mappers
             CreateMap<Dto.DropItemDto, DropEntry>()
                 .ConvertUsing((src, ctx) =>
                 {
-                    if (src.Type == (int)DropType.ReactorDrop)
+                    if (src.Type == (int)DropFromType.ReactorDrop)
                         return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, (short)src.QuestId);
-                    if (src.Type == (int)DropType.MonsterDrop)
+                    if (src.Type == (int)DropFromType.MonsterDrop)
                         return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
-                    if (src.Type == (int)DropType.GlobalDrop)
+                    if (src.Type == (int)DropFromType.GlobalDrop)
                         return DropEntry.Global(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
                     throw new BusinessFatalException("不支持的掉落类型");
                 });

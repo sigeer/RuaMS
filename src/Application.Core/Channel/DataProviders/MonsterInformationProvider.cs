@@ -106,9 +106,9 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
     {
         var dataSource = _transport.RequestDropData().Items;
 
-        globaldrops = _mapper.Map<List<DropEntry>>(dataSource.Where(x => x.Type == (int)DropType.GlobalDrop));
+        globaldrops = _mapper.Map<List<DropEntry>>(dataSource.Where(x => x.Type == (int)DropFromType.GlobalDrop));
 
-        drops = dataSource.Where(x => x.Type == (int)DropType.MonsterDrop).GroupBy(x => x.DropperId)
+        drops = dataSource.Where(x => x.Type == (int)DropFromType.MonsterDrop).GroupBy(x => x.DropperId)
             .ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x));
     }
 
