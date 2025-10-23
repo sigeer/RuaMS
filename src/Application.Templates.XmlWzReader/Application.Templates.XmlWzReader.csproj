@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
 	  <Compile Include="..\Application.Templates\**\*.cs" Exclude="..\Application.Templates\bin\**;..\Application.Templates\obj\**" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
@@ -16,5 +16,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\tools\XmlWzReader.SouceGenerator\XmlWzReader.SouceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\Application.Templates\Application.Templates.csproj" />
 	</ItemGroup>
 </Project>

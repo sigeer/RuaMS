@@ -580,7 +580,7 @@ namespace Application.Core.Channel.Services
             var checkpos = chr.getMap().getGroundBelow(chr.getPosition());
             int xpos = checkpos.X;
             int ypos = checkpos.Y;
-            int fh = chr.getMap().getFootholds()!.findBelow(checkpos)!.getId();
+            int fh = chr.getMap().Footholds.FindBelowFoothold(checkpos)!.getId();
 
             _transport.SendCreatePLife(new LifeProto.CreatePLifeRequest
             {

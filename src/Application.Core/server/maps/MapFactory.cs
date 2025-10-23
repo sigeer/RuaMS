@@ -207,15 +207,12 @@ public class MapFactory : IStaticService
         else
             map = new MapleMap(mapData, worldChannel, evt);
 
-        map.setFieldLimit(mapData.FieldLimit);
-        map.setMobInterval((short)mapData.CreateMobInterval);
         PortalFactory portalFactory = new PortalFactory();
         foreach (var item in mapData.Portals)
         {
             map.addPortal(portalFactory.makePortal(item.nPortalType, item));
         }
 
-        map.setSeats(mapData.SeatCount);
         if (evt == null)
         {
             map.ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(map);
@@ -234,29 +231,6 @@ public class MapFactory : IStaticService
         map.setMapName(loadPlaceName(mapid));
         map.setStreetName(loadStreetName(mapid));
 
-        map.setClock(mapData.HasClock);
-        map.setEverlast(mapData.Everlast); // thanks davidlafriniere for noticing value 0 accounting as true
-        map.IsTown = mapData.Town;
-        map.setHPDec(mapData.DecHP);
-        map.setHPDecProtect(mapData.ProtectItem);
-        map.setBoat(mapData.HasShip);
-        map.setTimeLimit(mapData.TimeLimit);
-        map.setFieldType(mapData.FieldType);
-        map.setMobCapacity(mapData.FixedMobCapacity);//Is there a map that contains more than 500 mobs?
-        map.setRecovery(mapData.RecoveryRate);
-
-        Dictionary<int, int> backTypes = new();
-        try
-        {
-            backTypes = mapData.Backs.ToDictionary(x => x.Index, x => x.Type);
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            // swallow cause I'm cool
-        }
-
-        map.setBackgroundTypes(backTypes);
         map.generateMapDropRangeCache();
 
         return map;

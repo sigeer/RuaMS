@@ -101,7 +101,7 @@ namespace Application.Module.PlayerNPC.Channel.Models
             Rx0 = newPos.X + 50;
             Rx1 = newPos.X - 50;
             Cy = newPos.Y;
-            Fh = map.getFootholds().findBelow(newPos)!.getId();
+            Fh = map.Footholds.FindBelowFoothold(newPos)!.getId();
         }
     }
 }

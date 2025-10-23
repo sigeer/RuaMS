@@ -20,7 +20,7 @@ public class WhereaMiCommand : CommandBase
         sb.Append("我在...\r\n");
         sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
-        sb.Append("Foothold Id：").Append(player.getMap().getFootholds().findBelow(player.getPosition())?.getId()).Append("\r\n");
+        sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
         sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)
         {

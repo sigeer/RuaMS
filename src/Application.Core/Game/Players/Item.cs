@@ -566,7 +566,7 @@ namespace Application.Core.Game.Players
                         Point pos = getPosition();
                         pos.Y -= 12;
                         evolved.setPos(pos);
-                        evolved.setFh(getMap().getFootholds().findBelow(evolved.getPos()).getId());
+                        evolved.setFh(getMap().Footholds.FindBelowFoothold(evolved.getPos()).getId());
                         evolved.setStance(0);
                         evolved.Summoned = true;
 

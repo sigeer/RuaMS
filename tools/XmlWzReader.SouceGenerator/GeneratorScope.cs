@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +9,14 @@ namespace XmlWzReader.SouceGenerator
     public class GeneratorScope : IDisposable
     {
         readonly GeneratorExecutionContext _context;
-        readonly ClassDeclarationSyntax _classSyntax;
+        readonly INamedTypeSymbol classSymbol;
 
         Dictionary<string, PropertyData> _properyMapping = new Dictionary<string, PropertyData>();
 
-        public GeneratorScope(GeneratorExecutionContext context, ClassDeclarationSyntax classDeclarationSyntax)
+        public GeneratorScope(GeneratorExecutionContext context, INamedTypeSymbol classSymbol)
         {
             _context = context;
-            _classSyntax = classDeclarationSyntax;
+            this.classSymbol = classSymbol;
         }
 
         IEnumerable<IPropertySymbol> GetAllProperties(INamedTypeSymbol type)
@@ -51,10 +50,6 @@ namespace XmlWzReader.SouceGenerator
         public void Build()
         {
             var compilation = _context.Compilation;
-            var model = compilation.GetSemanticModel(_classSyntax.SyntaxTree);
-            var classSymbol = model.GetDeclaredSymbol(_classSyntax) as INamedTypeSymbol;
-            if (classSymbol == null)
-                return;
             if (classSymbol.IsAbstract)
                 return;
             var tagAttr = classSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "GenerateTagAttribute");
@@ -165,7 +160,7 @@ namespace XmlWzReader.SouceGenerator
                     if (string.IsNullOrEmpty(path))
                         path = GenratePath(lastPath, propSymbol.Name.FirstCharToLower());
                     else if (path.StartsWith("~"))
-                        path = path.Replace("~", lastPath) ;
+                        path = path.Replace("~", lastPath);
 
                     var matchName = path.Split('/').Last();
 

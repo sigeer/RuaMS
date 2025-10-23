@@ -66,23 +66,18 @@ public class MapleMap : IMap
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
     private Dictionary<int, Portal> portals = new();
-    private Dictionary<int, int> backgroundTypes = new();
     private Dictionary<string, int> environment = new();
 
     private List<WeakReference<IMapObject>> registeredDrops = new();
     private ConcurrentQueue<Action> statUpdateRunnables = new();
 
     private List<Rectangle> areas;
-    private FootholdTree footholds;
+    public FootholdTree Footholds { get; }
     private KeyValuePair<int, int> xLimits;  // caches the min and max x's with available footholds
     private Rectangle mapArea;
     private int mapid;
     private int runningOid = 1000000001;
-    private int returnMapId;
 
-    private int seats;
-    private bool clock;
-    private bool boat;
     private bool docked = false;
     public EventInstanceManager? EventInstanceManager { get; private set; }
     public bool IsTrackedByEvent { get; set; }
@@ -90,28 +85,16 @@ public class MapleMap : IMap
     private string mapName;
     private string streetName;
     private MapEffect? mapEffect = null;
-    private bool everlast = false;
-    private int forcedReturnMap = MapId.NONE;
-    private int timeLimit;
-    private int decHP = 0;
-    private float recovery = 1.0f;
-    private int protectItem = 0;
-    public bool IsTown { get; set; }
-
 
     private bool dropsOn = true;
     private string onFirstUserEnter;
     private string onUserEnter;
-    private int fieldType;
-    private int fieldLimit = 0;
-    private int mobCapacity = -1;
     private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
     private ScheduledFuture? itemMonitor = null;
     private ScheduledFuture? expireItemsTask = null;
     private ScheduledFuture? characterStatUpdateTask = null;
     private short itemMonitorTimeout;
     public TimeMob? TimeMob { get; set; }
-    private short mobInterval = 5000;
     private bool _allowSummons = true; // All maps should have this true at the beginning
     private IPlayer? mapOwner = null;
     private long mapOwnerLastActivityTime = long.MaxValue;
@@ -143,13 +126,13 @@ public class MapleMap : IMap
     private static object bndLock = new object();
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
+    public MapTemplate SourceTemplate { get; }
     public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim)
     {
+        SourceTemplate = mapTemplate;
         Id = mapTemplate.TemplateId;
         this.mapid = mapTemplate.TemplateId;
         ChannelServer = worldChannel;
-        this.returnMapId = mapTemplate.ReturnMap;
-        forcedReturnMap = mapTemplate.ForcedReturn;
         this.MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator(this);
         onFirstUserEnter = string.IsNullOrEmpty(mapTemplate.OnFirstUserEnter) ? Id.ToString() : mapTemplate.OnFirstUserEnter;
@@ -174,69 +157,11 @@ public class MapleMap : IMap
         #endregion
 
         #region area
-        mapArea = new();
-        if (mapTemplate.VRTop == mapTemplate.VRBottom)
-        {
-            // old-style baked map
-            if (mapTemplate.MiniMap != null)
-            {
-                mapArea.X = -mapTemplate.MiniMap.CenterX;
-                mapArea.Y = -mapTemplate.MiniMap.CenterY;
-                mapArea.Width = mapTemplate.MiniMap.Width;
-                mapArea.Height = mapTemplate.MiniMap.Height;
-            }
-            else
-            {
-                int dist = (1 << 18);
-                mapArea.X = -dist / 2;
-                mapArea.Y = -dist / 2;
-                mapArea.Width = dist;
-                mapArea.Height = dist;
-            }
-        }
-        else
-        {
-            mapArea.X = mapTemplate.VRLeft;
-            mapArea.Y = mapTemplate.VRTop;
-            mapArea.Width = mapTemplate.VRRight - mapTemplate.VRLeft;
-            mapArea.Height = mapTemplate.VRBottom - mapTemplate.VRTop;
-        }
+        mapArea = mapTemplate.GetMapRectangle();
         #endregion
 
         #region foothold
-        List<Foothold> allFootholds = new();
-        Point lBound = new Point();
-        Point uBound = new Point();
-
-        foreach (var item in mapTemplate.Footholds)
-        {
-            Foothold fh = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.Index);
-            fh.setPrev(item.Prev);
-            fh.setNext(item.Next);
-            if (fh.getX1() < lBound.X)
-            {
-                lBound.X = fh.getX1();
-            }
-            if (fh.getX2() > uBound.X)
-            {
-                uBound.X = fh.getX2();
-            }
-            if (fh.getY1() < lBound.Y)
-            {
-                lBound.Y = fh.getY1();
-            }
-            if (fh.getY2() > uBound.Y)
-            {
-                uBound.Y = fh.getY2();
-            }
-            allFootholds.Add(fh);
-        }
-
-        footholds = new FootholdTree(lBound, uBound);
-        foreach (Foothold fh in allFootholds)
-        {
-            footholds.insert(fh);
-        }
+        Footholds = FootholdTree.FromTemplate(mapTemplate);
         #endregion
 
         if (mapTemplate.TimeMob != null)
@@ -281,8 +206,11 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            getAllPlayers().Where(chrFilter).ToList()
-                    .ForEach(chr => chr.sendPacket(packet));
+            foreach (var item in getAllPlayers())
+            {
+                if (chrFilter(item))
+                    item.sendPacket(packet);
+            }
         }
         finally
         {
@@ -312,36 +240,24 @@ public class MapleMap : IMap
 
     public IMap getReturnMap()
     {
-        if (returnMapId == MapId.NONE)
+        if (SourceTemplate.ReturnMap == MapId.NONE)
         {
             return this;
         }
-        return getChannelServer().getMapFactory().getMap(returnMapId);
+        return getChannelServer().getMapFactory().getMap(SourceTemplate.ReturnMap);
     }
 
-    public int getReturnMapId()
-    {
-        return returnMapId;
-    }
-
+    public int getReturnMapId() => SourceTemplate.ReturnMap;
     public IMap getForcedReturnMap()
     {
-        return getChannelServer().getMapFactory().getMap(forcedReturnMap);
+        return getChannelServer().getMapFactory().getMap(SourceTemplate.ForcedReturn);
     }
 
-    public int getForcedReturnId()
-    {
-        return forcedReturnMap;
-    }
+    public int getForcedReturnId() => SourceTemplate.ForcedReturn;
 
     public int getTimeLimit()
     {
-        return timeLimit;
-    }
-
-    public void setTimeLimit(int timeLimit)
-    {
-        this.timeLimit = timeLimit;
+        return SourceTemplate.TimeLimit;
     }
 
     public void setReactorState()
@@ -532,27 +448,7 @@ public class MapleMap : IMap
 
     private Point? calcPointBelow(Point initial)
     {
-        var fh = footholds?.findBelow(initial);
-        if (fh == null)
-        {
-            return null;
-        }
-        int dropY = fh.getY1();
-        if (!fh.isWall() && fh.getY1() != fh.getY2())
-        {
-            double s1 = Math.Abs(fh.getY2() - fh.getY1());
-            double s2 = Math.Abs(fh.getX2() - fh.getX1());
-            double s5 = Math.Cos(Math.Atan(s2 / s1)) * (Math.Abs(initial.X - fh.getX1()) / Math.Cos(Math.Atan(s1 / s2)));
-            if (fh.getY2() < fh.getY1())
-            {
-                dropY = fh.getY1() - (int)s5;
-            }
-            else
-            {
-                dropY = fh.getY1() + (int)s5;
-            }
-        }
-        return new Point(initial.X, dropY);
+        return Footholds.FindBelowPoint(initial);
     }
 
     public void generateMapDropRangeCache()
@@ -756,7 +652,7 @@ public class MapleMap : IMap
                 {
                     if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
                     {
-                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.ItemId));
+                        idrop = ii.randomizeStats(ii.getEquipById(de.ItemId));
                     }
                     else
                     {
@@ -1982,7 +1878,7 @@ public class MapleMap : IMap
 
     public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
     {
-        if (mobCapacity != -1 && mobCapacity == spawnedMonstersOnMap.get())
+        if (SourceTemplate.FixedMobCapacity != -1 && SourceTemplate.FixedMobCapacity == spawnedMonstersOnMap.get())
         {
             return;//PyPQ
         }
@@ -2450,31 +2346,7 @@ public class MapleMap : IMap
 
     private void broadcastMessage(IPlayer? source, Packet packet, double rangeSq, Point? rangedFrom)
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            foreach (IPlayer chr in getAllPlayers())
-            {
-                if (chr != source)
-                {
-                    if (rangeSq < double.PositiveInfinity)
-                    {
-                        if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
-                        {
-                            chr.sendPacket(packet);
-                        }
-                    }
-                    else
-                    {
-                        chr.sendPacket(packet);
-                    }
-                }
-            }
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        Broadcast(source, rangeSq, rangedFrom, chr => chr.sendPacket(packet));
     }
 
     private void updateBossSpawn(Monster monster)
@@ -2790,16 +2662,6 @@ public class MapleMap : IMap
         return areas[index];
     }
 
-    public void setFootholds(FootholdTree footholds)
-    {
-        this.footholds = footholds;
-    }
-
-    public FootholdTree getFootholds()
-    {
-        return footholds;
-    }
-
     public MonsterAggroCoordinator getAggroCoordinator()
     {
         return aggroMonitor;
@@ -2815,7 +2677,7 @@ public class MapleMap : IMap
     {
         Point newpos = calcPointBelow(monster.getPosition())!.Value;
         newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
+        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, SourceTemplate.CreateMobInterval, team);
         monsterSpawn.Add(sp);
         if (sp.shouldSpawn() || mobTime == -1)
         {
@@ -2832,7 +2694,7 @@ public class MapleMap : IMap
     {
         Point newpos = calcPointBelow(monster.getPosition())!.Value;
         newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
+        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, SourceTemplate.CreateMobInterval, team);
         allMonsterSpawn.Add(sp);
 
         if (!_hasLongLifeMob && mobTime > 0)
@@ -3030,15 +2892,8 @@ public class MapleMap : IMap
         return streetName;
     }
 
-    public void setClock(bool hasClock)
-    {
-        this.clock = hasClock;
-    }
 
-    public bool hasClock()
-    {
-        return clock;
-    }
+    public bool hasClock() => SourceTemplate.HasClock;
 
     public bool isMuted()
     {
@@ -3055,39 +2910,21 @@ public class MapleMap : IMap
         this.streetName = streetName;
     }
 
-    public void setEverlast(bool everlast)
-    {
-        this.everlast = everlast;
-    }
-
-    public bool getEverlast()
-    {
-        return everlast;
-    }
+    public bool getEverlast() => SourceTemplate.Everlast;
 
     public int getSpawnedMonstersOnMap()
     {
         return spawnedMonstersOnMap.get();
     }
 
-    public void setMobCapacity(int capacity)
-    {
-        this.mobCapacity = capacity;
-    }
-
-    public void setBackgroundTypes(Dictionary<int, int> backTypes)
-    {
-        backgroundTypes.putAll(backTypes);
-    }
-
     // not really costly to keep generating imo
     public void sendNightEffect(IPlayer chr)
     {
-        foreach (var types in backgroundTypes)
+        foreach (var types in SourceTemplate.Backs)
         {
-            if (types.Value >= 3)
+            if (types.Type >= 3)
             { // 3 is a special number
-                chr.sendPacket(PacketCreator.changeBackgroundEffect(true, types.Key, 0));
+                chr.sendPacket(PacketCreator.changeBackgroundEffect(true, types.Index, 0));
             }
         }
     }
@@ -3502,44 +3339,14 @@ public class MapleMap : IMap
     //    public Func<IPlayer, bool>? canSpawn;
     //}
 
-    public int getHPDec()
-    {
-        return decHP;
-    }
+    public int getHPDec() => SourceTemplate.DecHP;
+    public int getHPDecProtect() => SourceTemplate.ProtectItem;
 
-    public void setHPDec(int delta)
-    {
-        decHP = delta;
-    }
-
-    public int getHPDecProtect()
-    {
-        return protectItem;
-    }
-
-    public void setHPDecProtect(int delta)
-    {
-        this.protectItem = delta;
-    }
-
-    public float getRecovery()
-    {
-        return recovery;
-    }
-
-    public void setRecovery(float recRate)
-    {
-        recovery = recRate;
-    }
+    public float getRecovery() => SourceTemplate.RecoveryRate;
 
     private int hasBoat()
     {
-        return !boat ? 0 : (docked ? 1 : 2);
-    }
-
-    public void setBoat(bool hasBoat)
-    {
-        this.boat = hasBoat;
+        return !SourceTemplate.HasShip ? 0 : (docked ? 1 : 2);
     }
 
     public void setDocked(bool isDocked)
@@ -3552,15 +3359,7 @@ public class MapleMap : IMap
         return this.docked;
     }
 
-    public void setSeats(int seats)
-    {
-        this.seats = seats;
-    }
-
-    public int getSeats()
-    {
-        return seats;
-    }
+    public int getSeats() => SourceTemplate.SeatCount;
 
     public void broadcastGMMessage(IPlayer source, Packet packet, bool repeatToSource)
     {
@@ -3627,12 +3426,7 @@ public class MapleMap : IMap
 
     private bool hasForcedEquip()
     {
-        return fieldType == 81 || fieldType == 82;
-    }
-
-    public void setFieldType(int fieldType)
-    {
-        this.fieldType = fieldType;
+        return SourceTemplate.FieldType == 81 || SourceTemplate.FieldType == 82;
     }
 
     public void clearDrops()
@@ -3645,15 +3439,7 @@ public class MapleMap : IMap
         });
     }
 
-    public void setFieldLimit(int fieldLimit)
-    {
-        this.fieldLimit = fieldLimit;
-    }
-
-    public int getFieldLimit()
-    {
-        return fieldLimit;
-    }
+    public int getFieldLimit() => SourceTemplate.FieldLimit;
 
     public void allowSummonState(bool b)
     {
@@ -3688,7 +3474,7 @@ public class MapleMap : IMap
     private bool specialEquip()
     {
         //Maybe I shouldn't use fieldType :\
-        return fieldType == 4 || fieldType == 19;
+        return SourceTemplate.FieldType == 4 || SourceTemplate.FieldType == 19;
     }
 
     public void warpOutByTeam(int team, int mapid)
@@ -3740,11 +3526,6 @@ public class MapleMap : IMap
     {
         return this.mapid == MapId.EVENT_PHYSICAL_FITNESS || this.mapid == MapId.EVENT_OX_QUIZ ||
                 this.mapid == MapId.EVENT_FIND_THE_JEWEL || this.mapid == MapId.EVENT_OLA_OLA_0 || this.mapid == MapId.EVENT_OLA_OLA_1;
-    }
-
-    public void setMobInterval(short interval)
-    {
-        this.mobInterval = interval;
     }
 
     public void clearMapObjects()
@@ -4159,19 +3940,23 @@ public class MapleMap : IMap
         }
     }
 
+    protected virtual void OnPlayerEnter(IPlayer chr)
+    {
+
+    }
+
     public void addPlayer(IPlayer chr)
     {
         int chrSize;
         chrLock.EnterWriteLock();
         try
         {
-            if (characters.ContainsKey(chr.Id))
+            if (!characters.TryAdd(chr.Id, chr))
             {
                 log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
                 return;
             }
 
-            characters.Add(chr.Id, chr);
             chrSize = characters.Count;
 
             itemMonitorTimeout = 1;
@@ -4186,11 +3971,11 @@ public class MapleMap : IMap
 
         if (this.getHPDec() > 0)
         {
-            getChannelServer().Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
+            ChannelServer.Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
         }
         else
         {
-            getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
+            ChannelServer.Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
         }
 
         MapScriptManager msm = ChannelServer.MapScriptManager;
@@ -4216,15 +4001,16 @@ public class MapleMap : IMap
 
             msm.runMapScript(chr.getClient(), "onUserEnter/" + onUserEnter, false);
         }
-        if (FieldLimit.CANNOTUSEMOUNTS.check(fieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
+        if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
         {
             chr.cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
             chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
         }
 
         if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
-        { // To Ereve (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+        { 
+            // To Ereve (SkyFerry)
+            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.Container.TimerManager.schedule(() =>
             {
@@ -4235,8 +4021,9 @@ public class MapleMap : IMap
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
-        { // To Victoria Island (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+        { 
+            // To Victoria Island (SkyFerry)
+            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.Container.TimerManager.schedule(() =>
             {
@@ -4247,8 +4034,9 @@ public class MapleMap : IMap
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
-        { // To Orbis (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+        {
+            // To Orbis (SkyFerry)
+            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.Container.TimerManager.schedule(() =>
             {
@@ -4259,8 +4047,9 @@ public class MapleMap : IMap
             }, travelTime);
         }
         else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
-        { // To Ereve From Orbis (SkyFerry)
-            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+        { 
+            // To Ereve From Orbis (SkyFerry)
+            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.Container.TimerManager.schedule(() =>
             {
@@ -4428,6 +4217,8 @@ public class MapleMap : IMap
 
         chr.receivePartyMemberHP();
         ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
+
+        OnPlayerEnter(chr);
     }
 
     public void removePlayer(IPlayer chr)

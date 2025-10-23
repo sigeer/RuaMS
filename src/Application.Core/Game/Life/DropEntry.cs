@@ -81,12 +81,6 @@ namespace Application.Core.Game.Life
             return Randomizer.rand(MinCount, MaxCount);
         }
 
-        public int GetDropPosX(int dropType, int mobPos, int index)
-        {
-            var step = dropType == 3 ? 40 : 25;
-            return mobPos + ((index % 2 == 0) ? (step * ((index + 1) / 2)) : -(step * (index / 2)));
-        }
-
         public int GetDropPosX(DropType dropType, int mobPos, int index)
         {
             var step = dropType == DropType.FreeForAll_Explosive ? 40 : 25;

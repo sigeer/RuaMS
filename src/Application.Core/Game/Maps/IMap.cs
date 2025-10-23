@@ -5,6 +5,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
+using Application.Templates.Map;
 using client.inventory;
 using net.server.coordinator.world;
 using scripting.Event;
@@ -23,6 +24,8 @@ namespace Application.Core.Game.Maps
         string InstanceName { get; }
         XiGuai? XiGuai { get; set; }
         public WorldChannel ChannelServer { get; }
+        FootholdTree Footholds { get; }
+        MapTemplate SourceTemplate { get; }
         /// <summary>
         /// 当存在小数时，则是概率生成
         /// </summary>
@@ -33,7 +36,6 @@ namespace Application.Core.Game.Maps
         /// 似乎并没有派上用
         /// </summary>
         public TimeMob? TimeMob { get; set; }
-        bool IsTown { get; set; }
         bool IsTrackedByEvent { get; set; }
         EventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
@@ -117,7 +119,6 @@ namespace Application.Core.Game.Maps
         EventInstanceManager? getEventInstance();
         bool getEverlast();
         int getFieldLimit();
-        FootholdTree getFootholds();
         int getForcedReturnId();
         IMap getForcedReturnMap();
         Point getGroundBelow(Point pos);
@@ -215,28 +216,13 @@ namespace Application.Core.Game.Maps
         void searchItemReactors(Reactor react);
         void sendNightEffect(IPlayer chr);
         void setAllowSpawnPointInBox(bool allow, Rectangle box);
-        void setBackgroundTypes(Dictionary<int, int> backTypes);
-        void setBoat(bool hasBoat);
-        void setClock(bool hasClock);
         void setDocked(bool isDocked);
         void setEventStarted(bool @event);
-        void setEverlast(bool everlast);
-        void setFieldLimit(int fieldLimit);
-        void setFieldType(int fieldType);
-        void setFootholds(FootholdTree footholds);
-        void setHPDec(int delta);
-        void setHPDecProtect(int delta);
         void setMapName(string mapName);
-        void setMobCapacity(int capacity);
-        void setMobInterval(short interval);
         void setMuted(bool mute);
         void setOxQuiz(bool b);
         void setReactorState();
-        void setRecovery(float recRate);
-        void setSeats(int seats);
         void setStreetName(string streetName);
-
-        void setTimeLimit(int timeLimit);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
         void softKillAllMonsters();

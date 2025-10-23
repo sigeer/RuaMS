@@ -25,9 +25,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
 using client.inventory;
+using Jint.Native.ShadowRealm;
 using server.life;
 using server.maps;
 using server.partyquest;
+using server.quest;
 
 namespace scripting.reactor;
 
@@ -180,12 +182,12 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
             if (ItemConstants.getInventoryType(d.ItemId) != InventoryType.EQUIP)
             {
-                drop = new Item(d.ItemId, 0, 1);
+                drop = Item.CreateVirtualItem(d.ItemId, 1);
             }
             else
             {
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                drop = ii.randomizeStats((Equip)ii.getEquipById(d.ItemId));
+                drop = ii.randomizeStats(ii.getEquipById(d.ItemId));
             }
 
             reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
