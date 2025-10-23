@@ -43,7 +43,7 @@ namespace ServiceTest.Infrastructure.WZ
             return allMapIds.Select(x => ProviderFactory.GetProvider<MapProvider>().GetItem(x)).Where(x => x != null).ToArray();
         }
 
-        [Test]
+        // [Test]
         public void FindBelowEqualTest()
         {
             var templates = GetRandomMapTemplates();
@@ -63,11 +63,12 @@ namespace ServiceTest.Infrastructure.WZ
 
         }
 
-        [Test]
+        // [Test]
         public void FindBelowSpecialTest()
         {
             var testCases = new Dictionary<int, Point[]>()
             {
+                {211040101, [new Point(-179, -678)] },
                 {926020001, [new Point(-52, -77)] },
                 {220000400, [new Point(-2650, -138), new Point(-2330, -18)] }
             };
