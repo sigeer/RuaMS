@@ -166,7 +166,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         {
             int movementDataStart = p.getPosition();
             updatePosition(p, monster, -2);  // Thanks Doodle & ZERO傑洛 for noticing sponge-based bosses moving out of stage in case of no-offset applied
-            long movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
+            int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
             if (YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE)

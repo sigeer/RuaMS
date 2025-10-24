@@ -2142,7 +2142,7 @@ public class MapleMap : IMap
             }
         }, null);
 
-        // 不明，对比spawnDrop多出来的一段 是否可以移除？
+        /// 不明，对比<see cref="spawnDrop"/> 多出来的一段 是否可以移除？
         mdrop.lockItem();
         try
         {

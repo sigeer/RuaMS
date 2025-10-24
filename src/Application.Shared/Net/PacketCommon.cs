@@ -1,5 +1,6 @@
 using Application.Shared.Constants;
 using Application.Shared.Net.Encryption;
+using Application.Utility;
 using DotNetty.Buffers;
 using System;
 using System.Collections.Generic;
@@ -153,5 +154,25 @@ namespace Application.Shared.Net
             p.writeShort(0);
             return p;
         }
+
+        [Obsolete("使用 RebroadcastMovementList")]
+        public static void rebroadcastMovementListOld(OutPacket op, InPacket ip, int movementDataLength)
+        {
+            //movement command length is sent by client, probably not a big issue? (could be calculated on server)
+            //if multiple write/reads are slow, could use (and cache?) a byte[] buffer
+            for (long i = 0; i < movementDataLength; i++)
+            {
+                op.writeByte(ip.readByte());
+            }
+        }
+
+        public static void RebroadcastMovementList(OutPacket op, InPacket ip, int movementDataLength)
+        {
+#if DEBUG
+            MethodEventSource.Instance.TrackCall(nameof(PacketCommon.RebroadcastMovementList));
+#endif
+            op.WriteBytes(ip, movementDataLength);
+        }
+
     }
 }
