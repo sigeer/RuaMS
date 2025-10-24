@@ -73,7 +73,7 @@ public class Foothold : IComparable<Foothold>, IEquatable<Foothold>
     /// </summary>
     /// <param name="x"></param>
     /// <returns></returns>
-    public int calculateFooting(int x)
+    public double calculateFooting(int x)
     {
         if (p1.Y == p2.Y)
         {
@@ -81,7 +81,7 @@ public class Foothold : IComparable<Foothold>, IEquatable<Foothold>
         }
 
         //(y1 - y2) / (x1 - x2) = (y - y1) / (x - x1) ==> y = y1 + (x - x1) * (y1 - y2) / (x1 - x2)
-        return (int)Math.Ceiling(p1.Y + (x - p1.X) * (double)(p1.Y - p2.Y) / (p1.X - p2.X));
+        return p1.Y + (x - p1.X) * (double)(p1.Y - p2.Y) / (p1.X - p2.X);
     }
 
     public int CompareTo(Foothold? other)

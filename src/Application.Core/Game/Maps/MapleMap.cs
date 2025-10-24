@@ -65,10 +65,10 @@ public class MapleMap : IMap
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
-    private Dictionary<int, Portal> portals = new();
+    private Dictionary<int, Portal> portals;
     private Dictionary<string, int> environment = new();
 
-    private List<WeakReference<IMapObject>> registeredDrops = new();
+    private Queue<WeakReference<IMapObject>> registeredDrops = new();
     private ConcurrentQueue<Action> statUpdateRunnables = new();
 
     private List<Rectangle> areas;
@@ -147,6 +147,16 @@ public class MapleMap : IMap
             InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
         else
             InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}_{GetHashCode()}";
+
+        #region portals
+        portals = new();
+        PortalFactory portalFactory = new PortalFactory();
+        foreach (var item in mapTemplate.Portals)
+        {
+            var portal = portalFactory.makePortal(item.nPortalType, item);
+            portals[portal.getId()] = portal;
+        }
+        #endregion
 
         #region areas
         areas = new();
@@ -433,7 +443,23 @@ public class MapleMap : IMap
         objectLock.EnterWriteLock();
         try
         {
-            this.mapobjects.Remove(objectId);
+            mapobjects.Remove(objectId);
+        }
+        finally
+        {
+            objectLock.ExitWriteLock();
+        }
+    }
+
+    void RemoveMapObjects(IEnumerable<int> objectIds)
+    {
+        objectLock.EnterWriteLock();
+        try
+        {
+            foreach (var objectId in objectIds)
+            {
+                mapobjects.Remove(objectId);
+            }
         }
         finally
         {
@@ -762,7 +788,7 @@ public class MapleMap : IMap
         objectLock.EnterWriteLock();
         try
         {
-            registeredDrops.RemoveAll(x => x == null);
+            registeredDrops = new(registeredDrops.Where(x => x != null));
         }
         finally
         {
@@ -865,11 +891,11 @@ public class MapleMap : IMap
         {
             long timeNow = ChannelServer.Container.getCurrentTime();
 
-            foreach (var it in droppedItems)
+            foreach (var it in getDroppedItems())
             {
-                if (it.Value < timeNow)
+                if (it.ExpiredTime < timeNow)
                 {
-                    toDisappear.Add(it.Key);
+                    toDisappear.Add(it);
                 }
             }
         }
@@ -881,19 +907,6 @@ public class MapleMap : IMap
         foreach (MapItem mmi in toDisappear)
         {
             makeDisappearItemFromMap(mmi);
-        }
-
-        objectLock.EnterWriteLock();
-        try
-        {
-            foreach (MapItem mmi in toDisappear)
-            {
-                droppedItems.Remove(mmi);
-            }
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
         }
     }
 
@@ -1612,7 +1625,7 @@ public class MapleMap : IMap
                     broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
                     broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
 
-                    this.mapobjects.Remove(obj.getObjectId());
+                    removeMapObject(obj.getObjectId());
                 }
             }
         }
@@ -2184,16 +2197,7 @@ public class MapleMap : IMap
             int reactItem = reactProp.ItemId, reactQty = reactProp.Quantity;
             Rectangle reactArea = react.getArea();
 
-            List<MapItem> list;
-            objectLock.EnterReadLock();
-            try
-            {
-                list = new(droppedItems.Keys);
-            }
-            finally
-            {
-                objectLock.ExitReadLock();
-            }
+            List<MapItem> list = getDroppedItems();
 
             foreach (MapItem drop in list)
             {
@@ -2513,12 +2517,7 @@ public class MapleMap : IMap
 
         if (removedSummonObjects.Count > 0)
         {
-            objectLock.EnterWriteLock();
-            foreach (var item in removedSummonObjects)
-            {
-                mapobjects.Remove(item);
-            }
-            objectLock.ExitWriteLock();
+            RemoveMapObjects(removedSummonObjects);
         }
     }
 
@@ -2635,11 +2634,6 @@ public class MapleMap : IMap
         {
             objectLock.ExitReadLock();
         }
-    }
-
-    public void addPortal(Portal myPortal)
-    {
-        portals.AddOrUpdate(myPortal.getId(), myPortal);
     }
 
     public Portal? getPortal(string portalname)
@@ -3050,8 +3044,8 @@ public class MapleMap : IMap
         private MapItem mapitem;
         private Reactor reactor;
         private IChannelClient c;
-        private IMap _map;
-        public ActivateItemReactor(IMap map, MapItem mapitem, Reactor reactor, IChannelClient c)
+        private MapleMap _map;
+        public ActivateItemReactor(MapleMap map, MapItem mapitem, Reactor reactor, IChannelClient c)
         {
             _map = map;
             this.mapitem = mapitem;
@@ -3080,8 +3074,6 @@ public class MapleMap : IMap
 
                             reactor.setShouldCollect(false);
                             _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem.getPosition());
-
-                            _map.removeMapObject(mapitem);
 
                             reactor.hitReactor(c);
 
@@ -3433,7 +3425,6 @@ public class MapleMap : IMap
     {
         ProcessMapObject(x => x.getType() == MapObjectType.ITEM, i =>
         {
-            removeMapObject(i);
             this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), MapItemRemoveAnimation.Expired, 0));
             unregisterItemDrop((MapItem)i);
         });
@@ -4336,12 +4327,7 @@ public class MapleMap : IMap
     #endregion
 
     #region Objects: MapItem
-    private ConcurrentDictionary<MapItem, long> droppedItems = new();
-
-    public int getDroppedItemCount()
-    {
-        return countItems();
-    }
+    private List<MapItem> droppedItems = new();
 
     private void instantiateItemDrop(MapItem mdrop)
     {
@@ -4358,12 +4344,9 @@ public class MapleMap : IMap
                 {
                     while (mapobj == null)
                     {
-                        if (registeredDrops.Count == 0)
-                        {
+                        if (!registeredDrops.TryDequeue(out var item))
                             break;
-                        }
-                        var item = registeredDrops[0];
-                        registeredDrops.RemoveAt(0);
+
                         if (item?.TryGetTarget(out var d) ?? false)
                             mapobj = d;
                     }
@@ -4378,8 +4361,8 @@ public class MapleMap : IMap
         objectLock.EnterWriteLock();
         try
         {
-            registerItemDrop(mdrop);
-            registeredDrops.Add(new(mdrop));
+            droppedItems.Add(mdrop);
+            registeredDrops.Enqueue(new(mdrop));
         }
         finally
         {
@@ -4387,17 +4370,13 @@ public class MapleMap : IMap
         }
     }
 
-    private void registerItemDrop(MapItem mdrop)
-    {
-        droppedItems[mdrop] = mdrop.ExpiredTime;
-    }
-
     public void unregisterItemDrop(MapItem mdrop)
     {
         objectLock.EnterWriteLock();
         try
         {
-            droppedItems.TryRemove(mdrop, out _);
+            removeMapObject(mdrop);
+            droppedItems.Remove(mdrop);
         }
         finally
         {
@@ -4410,7 +4389,7 @@ public class MapleMap : IMap
         objectLock.EnterReadLock();
         try
         {
-            return new(droppedItems.Keys);
+            return new(droppedItems);
         }
         finally
         {
@@ -4437,19 +4416,26 @@ public class MapleMap : IMap
         // mdrop must be already locked and not-pickedup checked at this point
         broadcastMessage(pickupPacket, mdrop.getPosition());
 
-        this.removeMapObject(mdrop);
         mdrop.setPickedUp(true);
         unregisterItemDrop(mdrop);
     }
 
     public int countItems()
     {
-        return droppedItems.Count;
+        objectLock.EnterReadLock();
+        try
+        {
+            return droppedItems.Count;
+        }
+        finally
+        {
+            objectLock.ExitReadLock();
+        }
     }
 
     public List<MapItem> getItems()
     {
-        return droppedItems.Keys.ToList();
+        return getDroppedItems();
     }
     #endregion
 

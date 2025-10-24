@@ -207,12 +207,6 @@ public class MapFactory : IStaticService
         else
             map = new MapleMap(mapData, worldChannel, evt);
 
-        PortalFactory portalFactory = new PortalFactory();
-        foreach (var item in mapData.Portals)
-        {
-            map.addPortal(portalFactory.makePortal(item.nPortalType, item));
-        }
-
         if (evt == null)
         {
             map.ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(map);

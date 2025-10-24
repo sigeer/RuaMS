@@ -1,9 +1,13 @@
 // See https://aka.ms/new-console-template for more information
 using Application.Benchmark;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 
-BenchmarkRunner.Run<PacketReadStringBenchmark>();
+var config = ManualConfig.Create(DefaultConfig.Instance)
+    .WithBuildTimeout(TimeSpan.FromMinutes(5));
+
+BenchmarkRunner.Run<FootholdBenchmark>(config);
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)

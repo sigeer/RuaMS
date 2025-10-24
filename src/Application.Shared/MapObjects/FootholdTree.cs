@@ -10,26 +10,17 @@ namespace Application.Shared.MapObjects
         public FootholdTree(List<Foothold> list)
         {
             footholds = list;
+            footholds.Sort();
         }
 
         public Foothold? FindBelowFoothold(Point p)
         {
-            List<Foothold> xMatches = new();
             foreach (Foothold fh in footholds)
             {
-                if (fh.getX1() <= p.X && fh.getX2() >= p.X)
+                if (!fh.isWall() && fh.getX1() <= p.X && fh.getX2() >= p.X && (p.Y <= fh.getY1() || p.Y <= fh.getY2()))
                 {
-                    xMatches.Add(fh);
-                }
-            }
-            xMatches.Sort();
-
-            foreach (Foothold fh in xMatches)
-            {
-                if (!fh.isWall())
-                {
-                    int calcY = fh.calculateFooting(p.X);
-                    if (p.Y <= calcY)
+                    var calcY = fh.calculateFooting(p.X);
+                    if (p.Y <= (int)Math.Ceiling(calcY))
                     {
                         return fh;
                     }
@@ -40,24 +31,14 @@ namespace Application.Shared.MapObjects
 
         public Point? FindBelowPoint(Point p)
         {
-            List<Foothold> xMatches = new();
             foreach (Foothold fh in footholds)
             {
-                if (fh.getX1() <= p.X && fh.getX2() >= p.X)
+                if (!fh.isWall() && fh.getX1() <= p.X && fh.getX2() >= p.X && (p.Y <= fh.getY1() || p.Y <= fh.getY2()))
                 {
-                    xMatches.Add(fh);
-                }
-            }
-            xMatches.Sort();
-
-            foreach (Foothold fh in xMatches)
-            {
-                if (!fh.isWall())
-                {
-                    int calcY = fh.calculateFooting(p.X);
-                    if (p.Y <= calcY)
+                    var calcY = fh.calculateFooting(p.X);
+                    if (p.Y <= (int)Math.Ceiling(calcY))
                     {
-                        return new Point(p.X, calcY);
+                        return new Point(p.X, (int)Math.Floor(calcY));
                     }
                 }
             }

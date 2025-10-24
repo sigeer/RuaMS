@@ -45,7 +45,6 @@ namespace Application.Core.Game.Maps
         void addPlayer(IPlayer chr);
         void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(IPlayer player);
-        void addPortal(Portal myPortal);
         void addSelfDestructive(Monster mob);
         void allowSummonState(bool b);
         void broadcastBalrogVictory(string leaderName);
@@ -113,7 +112,6 @@ namespace Application.Core.Game.Maps
         bool getDocked();
         Portal? getDoorPortal(int doorid);
         KeyValuePair<string, int>? getDoorPositionStatus(Point pos);
-        int getDroppedItemCount();
         int getDroppedItemsCountById(int itemid);
         IDictionary<string, int> getEnvironment();
         EventInstanceManager? getEventInstance();
@@ -252,7 +250,6 @@ namespace Application.Core.Game.Maps
         void toggleEnvironment(string ms);
         IPlayer? unclaimOwnership();
         bool unclaimOwnership(IPlayer? chr);
-        void unregisterItemDrop(MapItem mapitem);
         void updatePartyItemDropsToNewcomer(IPlayer newcomer, List<MapItem> partyItems);
         List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<IPlayer> partyMembers, IPlayer? partyLeaver);
         void warpEveryone(int to);

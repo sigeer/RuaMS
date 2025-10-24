@@ -11,7 +11,7 @@ public class DropLimitCommand : CommandBase
     }
     public override void Execute(IChannelClient c, string[] paramValues)
     {
-        int dropCount = c.OnlinedCharacter.getMap().getDroppedItemCount();
+        int dropCount = c.OnlinedCharacter.getMap().countItems();
         if (((float)dropCount) / YamlConfig.config.server.ITEM_LIMIT_ON_MAP < 0.75f)
         {
             c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.DropLimitCommand_Message1)) 
