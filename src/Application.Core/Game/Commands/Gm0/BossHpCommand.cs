@@ -11,7 +11,7 @@ public class BossHpCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var monster in player.getMap().getAllMonsters())
+        player.getMap().ProcessMonster(monster =>
         {
             if (monster != null && monster.isBoss() && monster.getHp() > 0)
             {
@@ -25,6 +25,6 @@ public class BossHpCommand : CommandBase
                 player.YellowMessageI18N(nameof(ClientMessage.BossHpCommand_Message1), c.CurrentCulture.GetMobName(monster.getId()), monster.getId().ToString(), percent.ToString());
                 player.YellowMessageI18N(nameof(ClientMessage.BossHpCommand_Message2), bar);
             }
-        }
+        });
     }
 }

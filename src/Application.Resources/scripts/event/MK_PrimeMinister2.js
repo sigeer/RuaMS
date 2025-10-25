@@ -1,4 +1,4 @@
-﻿var eventTime = 10 * 60 * 1000;     // 10 minutes
+var eventTime = 10 * 60 * 1000;     // 10 minutes
 var entryMap = 106021601;
 var exitMap = 106021402;
 var recruitMap = 106021402;
@@ -49,7 +49,7 @@ function afterSetup(eim) {}
 
 function primeMinisterCheck(eim) {
     var map = eim.getMapInstance(entryMap);
-    return !map.getAllPlayers().isEmpty();
+    return map.getAllPlayers().Count > 0;
 }
 
 function respawn(eim) {

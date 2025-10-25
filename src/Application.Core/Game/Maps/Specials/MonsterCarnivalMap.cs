@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Shared.Events;
+using Application.Templates.Map;
 using scripting.Event;
 using server.maps;
 using server.partyquest;
@@ -55,7 +56,7 @@ namespace Application.Core.Game.Maps.Specials
         private List<Point> takenSpawns = new();
         private List<KeyValuePair<int, int>> mobsToSpawn = new();
 
-        public MonsterCarnivalMap(int mapid, WorldChannel worldChannel, int returnMapId, EventInstanceManager? eim) : base(mapid, worldChannel, returnMapId, eim)
+        public MonsterCarnivalMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
         {
         }
 
@@ -189,7 +190,7 @@ namespace Application.Core.Game.Maps.Specials
                 this.spawnReactor(reactor);
                 reactor.setGuardian(pt);
                 this.buffMonsters(team, skill);
-                getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayer().get(0)).getClient());
+                getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayers().get(0)).getClient());
             }
             catch (Exception e)
             {

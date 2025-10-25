@@ -1,4 +1,4 @@
-﻿/* Monstrous Looking Statue
+/* Monstrous Looking Statue
 	Puppeteer's Secret Passage (910510100)
 	Puppeteer JQ.
  */
@@ -27,7 +27,7 @@ function action(mode, type, selection) {
         if (status == 0) {
             cm.sendYesNo("前方等待着大师本人。你准备好面对他了吗？");
         } else {
-            if (cm.getClient().getChannelServer().getMapFactory().getMap(925020010).getCharacters().size() > 0) {
+            if (cm.getClient().getChannelServer().getMapFactory().getMap(925020010).getAllPlayers().Count > 0) {
                 cm.sendOk("有人已经在挑战大师了。请稍后再试。");
             } else {
                 cm.getWarpMap(910510202).spawnMonsterOnGroundBelow(LifeFactory.getMonster(9300346), new Point(95, 200));

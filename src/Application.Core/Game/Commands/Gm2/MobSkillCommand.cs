@@ -31,8 +31,6 @@ public class MobSkillCommand : CommandBase
 
         var chr = client.OnlinedCharacter;
         MobSkill mobSkill = possibleSkill;
-        chr.getMap().getAllMonsters().ForEach(
-                monster => mobSkill.applyEffect(chr, monster, false, [])
-        );
+        chr.getMap().ProcessMonster(monster => mobSkill.applyEffect(chr, monster, false, []));
     }
 }

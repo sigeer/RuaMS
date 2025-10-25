@@ -2,6 +2,7 @@ using Application.Shared.Net;
 using Application.Utility;
 using BenchmarkDotNet.Attributes;
 using DotNetty.Buffers;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Text;
 
@@ -93,6 +94,7 @@ namespace Application.Benchmark
         [Benchmark(Baseline = true)]
         public void ReadStringOld()
         {
+            reader.seek(0);
             reader.readStringOld();
         }
 
@@ -100,7 +102,54 @@ namespace Application.Benchmark
         [Benchmark]
         public void ReadStringNew()
         {
+            reader.seek(0);
             reader.readString();
+        }
+    }
+
+    /// <summary>
+    /// | Method    | Mean     | Error     | StdDev    | Median   | Allocated |
+    /// |---------- |---------:|----------:|----------:|---------:|----------:|
+    /// | MethodOld | 8.735 us | 0.2605 us | 0.7348 us | 8.650 us |     808 B |
+    /// | MethodNew | 3.872 us | 0.2734 us | 0.7622 us | 3.600 us |    1096 B |
+    /// </summary>
+    [MemoryDiagnoser]
+    public class RebroadcastMovementBenchmark
+    {
+        ByteBufOutPacket inPacketSource = new ByteBufOutPacket();
+
+        ByteBufInPacket inPacket;
+        [GlobalSetup]
+        public void Setup()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            inPacketSource.writeByte(1);
+            inPacketSource.writeShort(32000);
+            inPacketSource.writeString("qwertyuiopasdfghjklzxcvbnm123456789");
+            inPacketSource.writeLong(1234567890123456789L);
+        }
+
+        [IterationSetup]
+        public void IterationSetup()
+        {
+            inPacket = new ByteBufInPacket(inPacketSource.getBytes());
+        }
+
+        [Benchmark]
+        public void MethodOld()
+        {
+            var outPacket = new ByteBufOutPacket();
+            inPacket.seek(3);
+            PacketCommon.rebroadcastMovementListOld(outPacket, inPacket, 20);
+        }
+
+        [Benchmark]
+        public void MethodNew()
+        {
+            var outPacket = new ByteBufOutPacket();
+            inPacket.seek(3);
+            PacketCommon.RebroadcastMovementList(outPacket, inPacket, 20);
         }
     }
 }

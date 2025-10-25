@@ -8,12 +8,12 @@ public class MobHpCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var monster in player.getMap().getAllMonsters())
+        player.getMap().ProcessMonster(monster =>
         {
             if (monster != null && monster.getHp() > 0)
             {
                 player.yellowMessage(c.CurrentCulture.GetMobName(monster.getId()) + " (" + monster.getId() + ") has " + monster.getHp() + " / " + monster.getMaxHp() + " HP.");
             }
-        }
+        });
     }
 }

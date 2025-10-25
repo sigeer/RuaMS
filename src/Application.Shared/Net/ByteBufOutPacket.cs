@@ -41,6 +41,11 @@ public class ByteBufOutPacket : PacketBase, OutPacket
         byteBuf.WriteBytes(value);
     }
 
+    public void WriteBytes(InPacket inPacket, int length)
+    {
+        byteBuf.WriteBytes(inPacket.GetByteBuffer(), length);
+    }
+
     public void writeSBytes(sbyte[] value)
     {
         byteBuf.WriteBytes(MemoryMarshal.Cast<sbyte, byte>(value).ToArray());

@@ -1,8 +1,15 @@
+using System.Drawing;
+
 namespace Application.Templates.Map
 {
     //[GenerateTag] // 代码生成器没有适配foothold的格式
     public sealed class MapTemplate : AbstractTemplate, ILinkTemplate<MapTemplate>
     {
+        [WZPath("info/mobRate")]
+        public float MobRate { get; set; }
+        /// <summary>
+        /// 默认：5000
+        /// </summary>
         [WZPath("info/createMobInterval")]
         public int CreateMobInterval { get; set; } = 5000;
         [WZPath("info/VRTop")]
@@ -16,9 +23,9 @@ namespace Application.Templates.Map
         [WZPath("info/everlast")]
         public bool Everlast { get; set; }
         [WZPath("info/forcedReturn")]
-        public int ForcedReturn { get; set; }
+        public int ForcedReturn { get; set; } = 999999999;
         [WZPath("info/returnMap")]
-        public int ReturnMap { get; set; }
+        public int ReturnMap { get; set; } = 999999999;
 
         [WZPath("info/fly")]
         public bool FlyMap { get; set; }
@@ -44,6 +51,9 @@ namespace Application.Templates.Map
         public int TimeLimit { get; set; } = -1;
         [WZPath("info/timeMob")]
         public MapTimeMobTemplate? TimeMob { get; set; }
+        /// <summary>
+        /// 默认：500
+        /// </summary>
         [WZPath("info/fixedMobCapacity")]
         public int FixedMobCapacity { get; set; } = 500;
         [WZPath("info/recovery")]
@@ -107,6 +117,38 @@ namespace Application.Templates.Map
             sourceTemplate.MiniMap = MiniMap;
             sourceTemplate.Areas = Areas;
             sourceTemplate.SeatCount = SeatCount;
+        }
+
+        public Rectangle GetMapRectangle()
+        {
+            var mapArea = new Rectangle();
+            if (VRTop == VRBottom)
+            {
+                // old-style baked map
+                if (MiniMap != null)
+                {
+                    mapArea.X = -MiniMap.CenterX;
+                    mapArea.Y = -MiniMap.CenterY;
+                    mapArea.Width = MiniMap.Width;
+                    mapArea.Height = MiniMap.Height;
+                }
+                else
+                {
+                    int dist = (1 << 18);
+                    mapArea.X = -dist / 2;
+                    mapArea.Y = -dist / 2;
+                    mapArea.Width = dist;
+                    mapArea.Height = dist;
+                }
+            }
+            else
+            {
+                mapArea.X = VRLeft;
+                mapArea.Y = VRTop;
+                mapArea.Width = VRRight - VRLeft;
+                mapArea.Height = VRBottom - VRTop;
+            }
+            return mapArea;
         }
     }
 }

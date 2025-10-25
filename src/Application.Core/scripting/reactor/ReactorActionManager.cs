@@ -25,9 +25,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
 using client.inventory;
+using Jint.Native.ShadowRealm;
 using server.life;
 using server.maps;
 using server.partyquest;
+using server.quest;
 
 namespace scripting.reactor;
 
@@ -172,7 +174,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             int baseDrop = d.GetRandomCount(minMeso, maxMeso);
             int mesoDrop = (int)(baseDrop * worldMesoRate);
             if (mesoDrop > 0)
-                map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
+                map.spawnMesoDrop(mesoDrop, dropPos, reactor, chr, false, DropType.FreeForAll, delay);
         }
         else
         {
@@ -180,12 +182,12 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
             if (ItemConstants.getInventoryType(d.ItemId) != InventoryType.EQUIP)
             {
-                drop = new Item(d.ItemId, 0, 1);
+                drop = Item.CreateVirtualItem(d.ItemId, 1);
             }
             else
             {
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                drop = ii.randomizeStats((Equip)ii.getEquipById(d.ItemId));
+                drop = ii.randomizeStats(ii.getEquipById(d.ItemId));
             }
 
             reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
@@ -325,13 +327,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)
         {
-            foreach (var mons in getMap().getAllMonsters())
+            getMap().ProcessMonster(mons =>
             {
                 if (mons.getTeam() == team)
                 {
                     mons.dispelSkill(skil.getSkill());
                 }
-            }
+            });
 
             if (getPlayer().getMap() is ICPQMap map)
             {

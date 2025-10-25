@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -131,7 +131,7 @@ function setup(level, lobbyid) {
 function afterSetup(eim) {}
 
 function respawnStg2(eim) {
-    if (!eim.getMapInstance(930000200).getPlayers().isEmpty()) {
+    if (!eim.getMapInstance(930000200).getAllPlayers().Count == 0) {
         eim.getMapInstance(930000200).instanceMapRespawn();
     }
     eim.schedule("respawnStg2", 4 * 1000);

@@ -206,7 +206,7 @@ namespace Application.Module.PlayerNPC.Channel
                     MapId = mapId,
                     ScriptId = scriptId,
                     Dir = 1,
-                    Fh = map.getFootholds().findBelow(pos.Value).getId(),
+                    Fh = map.Footholds.FindBelowFoothold(pos.Value).getId(),
                     Rx0 = pos.Value.X + 50,
                     Rx1 = pos.Value.X - 50,
                     JobId = jobId,

@@ -1592,13 +1592,13 @@ public class PacketCreator
         return killMonster(objId, animation ? 1 : 0);
     }
 
-    /**
-     * Gets a packet telling the client that a monster was killed.
-     *
-     * @param objId     The objectID of the killed monster.
-     * @param animation 0 = dissapear, 1 = fade out, 2+ = special
-     * @return The kill monster packet.
-     */
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="objId"></param>
+    /// <param name="animation">0 = dissapear, 1 = fade out, 2+ = special</param>
+    /// <returns></returns>
     public static Packet killMonster(int objId, int animation)
     {
         OutPacket p = OutPacket.create(SendOpcode.KILL_MONSTER);
@@ -1628,6 +1628,21 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="drop"></param>
+    /// <param name="dropfrom"></param>
+    /// <param name="dropto"></param>
+    /// <param name="mod">
+    /// <para>0. ?</para>
+    /// <para>1. spawn</para>
+    /// <para>2. update</para>
+    /// <para>3. remove?</para>
+    /// </param>
+    /// <param name="delay"></param>
+    /// <returns></returns>
     public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
     {
         int dropType = drop.getDropType();
@@ -2152,15 +2167,6 @@ public class PacketCreator
         return p;
     }
 
-    private static void rebroadcastMovementList(OutPacket op, InPacket ip, long movementDataLength)
-    {
-        //movement command length is sent by client, probably not a big issue? (could be calculated on server)
-        //if multiple write/reads are slow, could use (and cache?) a byte[] buffer
-        for (long i = 0; i < movementDataLength; i++)
-        {
-            op.writeByte(ip.readByte());
-        }
-    }
 
     private static void serializeMovementList(OutPacket p, List<LifeMovementFragment> moves)
     {
@@ -2171,12 +2177,12 @@ public class PacketCreator
         }
     }
 
-    public static Packet movePlayer(int chrId, InPacket movementPacket, long movementDataLength)
+    public static Packet movePlayer(int chrId, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
         p.writeInt(chrId);
         p.writeInt(0);
-        rebroadcastMovementList(p, movementPacket, movementDataLength);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }
 
@@ -2189,13 +2195,13 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet moveSummon(int cid, int oid, Point startPos, InPacket movementPacket, long movementDataLength)
+    public static Packet moveSummon(int cid, int oid, Point startPos, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_SUMMON);
         p.writeInt(cid);
         p.writeInt(oid);
         p.writePos(startPos);
-        rebroadcastMovementList(p, movementPacket, movementDataLength);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }
 
@@ -2216,7 +2222,7 @@ public class PacketCreator
     }
 
     public static Packet moveMonster(int oid, bool skillPossible, int skill, int skillId, int skillLevel, int pOption,
-                                     Point startPos, InPacket movementPacket, long movementDataLength)
+                                     Point startPos, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_MONSTER);
         p.writeInt(oid);
@@ -2227,7 +2233,7 @@ public class PacketCreator
         p.writeByte(skillLevel);
         p.writeShort(pOption);
         p.writePos(startPos);
-        rebroadcastMovementList(p, movementPacket, movementDataLength);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }
 
@@ -7203,12 +7209,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet moveDragon(Dragon dragon, Point startPos, InPacket movementPacket, long movementDataLength)
+    public static Packet moveDragon(Dragon dragon, Point startPos, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_DRAGON);
         p.writeInt(dragon.getOwner().getId());
         p.writePos(startPos);
-        rebroadcastMovementList(p, movementPacket, movementDataLength);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }
 

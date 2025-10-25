@@ -40,7 +40,7 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
         {   // thanks Sa for noticing empty movement sequences crashing players
             int movementDataStart = p.getPosition();
             updatePosition(p, c.OnlinedCharacter, 0);
-            long movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
+            int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
             c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());

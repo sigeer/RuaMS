@@ -991,7 +991,7 @@ public class AbstractPlayerInteraction
             npc.setCy(pos.Y);
             npc.setRx0(pos.X + 50);
             npc.setRx1(pos.X - 50);
-            npc.setFh(map.getFootholds()!.findBelow(pos)!.getId());
+            npc.setFh(map.Footholds.FindBelowFoothold(pos)!.getId());
             map.addMapObject(npc);
             map.broadcastMessage(PacketCreator.spawnNPC(npc));
         }

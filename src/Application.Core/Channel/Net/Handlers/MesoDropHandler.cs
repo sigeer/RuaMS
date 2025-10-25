@@ -89,7 +89,7 @@ public class MesoDropHandler : ChannelHandlerBase
         }
         else
         {
-            player.getMap().spawnMesoDrop(meso, player.getPosition(), player, player, true, 2);
+            player.getMap().spawnMesoDrop(meso, player.getPosition(), player, player, true, DropType.FreeForAll);
         }
     }
 }

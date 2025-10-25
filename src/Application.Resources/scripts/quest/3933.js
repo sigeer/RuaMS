@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -45,7 +45,7 @@ function start(mode, type, selection) {
         } else if (status == 2) {
             qm.sendNext("很好，我喜欢你的自信。");
         } else if (status == 3) {
-            if (qm.getWarpMap(926000000).getCharacters().size() > 0) {
+            if (qm.getWarpMap(926000000).getAllPlayers().Count > 0) {
                 qm.sendOk("此地图中当前有人，请稍后再试。");
                 qm.dispose();
             } else {

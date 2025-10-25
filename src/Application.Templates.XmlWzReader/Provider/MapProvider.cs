@@ -60,6 +60,8 @@ namespace Application.Templates.XmlWzReader.Provider
                                 mapTemplate.Everlast = infoPropNode.GetBoolValue();
                             else if (name == "createMobInterval")
                                 mapTemplate.CreateMobInterval = infoPropNode.GetIntValue();
+                            else if (name == "mobRate")
+                                mapTemplate.MobRate = infoPropNode.GetFloatValue();
 
                             else if (name == "onFirstUserEnter")
                                 mapTemplate.OnFirstUserEnter = infoPropNode.GetStringValue();

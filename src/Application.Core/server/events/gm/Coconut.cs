@@ -76,7 +76,7 @@ public class Coconut : Event
             else
             {
                 var winnerTeam = getMapleScore() > getStoryScore() ? 0 : 1;
-                foreach (var chr in Map.getCharacters())
+                foreach (var chr in Map.getAllPlayers())
                 {
                     if (chr.getTeam() == winnerTeam)
                     {
@@ -105,7 +105,7 @@ public class Coconut : Event
         setCoconutsHittable(false);
         Map.ChannelServer.Container.TimerManager.schedule(() =>
         {
-            List<IPlayer> chars = new(Map.getCharacters());
+            List<IPlayer> chars = new(Map.getAllPlayers());
 
             foreach (var chr in chars)
             {

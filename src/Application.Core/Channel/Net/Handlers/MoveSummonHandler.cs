@@ -47,7 +47,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
             {
                 int movementDataStart = p.getPosition();
                 updatePosition(p, summon, 0);
-                long movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
+                int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
                 player.getMap().broadcastMessage(player, PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), summon.getPosition());

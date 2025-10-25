@@ -1,4 +1,4 @@
-﻿var status;
+var status;
 
 function start() {
     status = -1;
@@ -22,7 +22,7 @@ function action(mode, type, selection) {
         if (status == 0) {
             if (cm.getEventInstance().isEventCleared()) {
                 cm.sendOk("哇！你打败了巴尔洛格。");
-            } else if (cm.getPlayer().getMap().getCharacters().size() > 1) {
+            } else if (cm.getPlayer().getMap().getAllPlayers().Count > 1) {
                 cm.sendYesNo("你真的要离开这场战斗，让你的同伴们去死吗？");
             } else {
                 cm.sendYesNo("如果你是个懦夫，你会离开。");

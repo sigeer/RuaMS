@@ -96,7 +96,7 @@ public class SpawnPetProcessor
             Point pos = chr.getPosition();
             pos.Y -= 12;
             pet.setPos(pos);
-            pet.setFh(chr.getMap().getFootholds().findBelow(pet.getPos()).getId());
+            pet.setFh(chr.getMap().Footholds.FindBelowFoothold(pet.getPos()).getId());
             pet.setStance(0);
             pet.setSummoned(true);
             chr.addPet(pet);

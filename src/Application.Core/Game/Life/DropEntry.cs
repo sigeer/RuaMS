@@ -35,7 +35,7 @@ namespace Application.Core.Game.Life
             {
                 ContinentId = continentId,
                 QuestId = questId,
-                Type = DropType.GlobalDrop
+                Type = DropFromType.GlobalDrop
             };
         }
         public static DropEntry MobDrop(int mobId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
@@ -44,7 +44,7 @@ namespace Application.Core.Game.Life
             {
                 DropperId = mobId,
                 QuestId = questId,
-                Type = DropType.MonsterDrop
+                Type = DropFromType.MonsterDrop
             };
         }
 
@@ -54,7 +54,7 @@ namespace Application.Core.Game.Life
             {
                 DropperId = reactorId,
                 QuestId = questId,
-                Type = DropType.ReactorDrop
+                Type = DropFromType.ReactorDrop
             };
         }
 
@@ -62,13 +62,13 @@ namespace Application.Core.Game.Life
         {
             return new DropEntry(0, chance, 1, 1)
             {
-                Type = DropType.ReactorDrop
+                Type = DropFromType.ReactorDrop
             };
         }
 
         public short QuestId { get; set; } = -1;
         public int? ContinentId { get; set; }
-        public DropType Type { get; set; }
+        public DropFromType Type { get; set; }
         public int DropperId { get; set; }
 
         public int GetRandomCount(int min, int max)
@@ -81,9 +81,9 @@ namespace Application.Core.Game.Life
             return Randomizer.rand(MinCount, MaxCount);
         }
 
-        public int GetDropPosX(int dropType, int mobPos, int index)
+        public int GetDropPosX(DropType dropType, int mobPos, int index)
         {
-            var step = dropType == 3 ? 40 : 25;
+            var step = dropType == DropType.FreeForAll_Explosive ? 40 : 25;
             return mobPos + ((index % 2 == 0) ? (step * ((index + 1) / 2)) : -(step * (index / 2)));
         }
 

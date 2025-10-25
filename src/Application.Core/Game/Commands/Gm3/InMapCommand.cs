@@ -13,7 +13,7 @@ public class InMapCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        string st = string.Join("\r\n", player.getMap().getCharacters());
+        string st = string.Join("\r\n", player.getMap().getAllPlayers());
         TempConversation.Create(c)?.RegisterTalk(st);
 
     }

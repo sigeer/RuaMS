@@ -28,7 +28,7 @@ namespace Application.Shared.MapObjects;
 /**
  * @author Matze
  */
-public class Foothold : IComparable<Foothold>
+public class Foothold : IComparable<Foothold>, IEquatable<Foothold>
 {
     private Point p1;
     private Point p2;
@@ -68,15 +68,20 @@ public class Foothold : IComparable<Foothold>
     }
 
     // XXX may need more precision
-    public int calculateFooting(int x)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    public double calculateFooting(int x)
     {
         if (p1.Y == p2.Y)
         {
             return p2.Y; // y at both ends is the same
         }
-        int slope = (p1.Y - p2.Y) / (p1.X - p2.X);
-        int intercept = p1.Y - (slope * p1.X);
-        return (slope * x) + intercept;
+
+        //(y1 - y2) / (x1 - x2) = (y - y1) / (x - x1) ==> y = y1 + (x - x1) * (y1 - y2) / (x1 - x2)
+        return p1.Y + (x - p1.X) * (double)(p1.Y - p2.Y) / (p1.X - p2.X);
     }
 
     public int CompareTo(Foothold? other)
@@ -121,5 +126,18 @@ public class Foothold : IComparable<Foothold>
     public void setPrev(int prev)
     {
         this.prev = prev;
+    }
+
+    public bool Equals(Foothold? other)
+    {
+        if (other == null)
+            return false;
+
+        return other.id == id && other.p1 == p1 && other.p2 == p2 && other.prev == prev && other.next == next;
+    }
+
+    public override string ToString()
+    {
+        return $"Id {id}, LeftTop {p1}, RightBottom {p2}";
     }
 }

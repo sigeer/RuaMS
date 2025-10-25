@@ -43,7 +43,7 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
             {
                 int movementDataStart = p.getPosition();
                 updatePosition(p, dragon, 0);
-                long movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
+                int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
                 if (chr.isHidden())

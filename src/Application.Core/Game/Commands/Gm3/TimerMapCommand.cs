@@ -20,7 +20,7 @@ public class TimerMapCommand : CommandBase
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var victim in player.getMap().getCharacters())
+            foreach (var victim in player.getMap().getAllPlayers())
             {
                 victim.sendPacket(PacketCreator.removeClock());
             }
@@ -30,7 +30,7 @@ public class TimerMapCommand : CommandBase
             try
             {
                 int seconds = int.Parse(paramsValue[0]);
-                foreach (var victim in player.getMap().getCharacters())
+                foreach (var victim in player.getMap().getAllPlayers())
                 {
                     victim.sendPacket(PacketCreator.getClock(seconds));
                 }

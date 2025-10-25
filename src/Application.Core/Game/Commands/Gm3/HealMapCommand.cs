@@ -10,7 +10,7 @@ public class HealMapCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var mch in player.getMap().getCharacters())
+        foreach (var mch in player.getMap().getAllPlayers())
         {
             if (mch != null)
             {

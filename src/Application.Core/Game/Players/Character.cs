@@ -537,11 +537,10 @@ public partial class Player
                     MapModel.broadcastNONGMMessage(this, PacketCreator.spawnSummon(ms, false), false);
                 }
 
-                foreach (IMapObject mo in this.MapModel.getMonsters())
+                this.MapModel.ProcessMonster(m =>
                 {
-                    Monster m = (Monster)mo;
                     m.aggroUpdateController();
-                }
+                });
             }
             else
             {
@@ -2347,7 +2346,8 @@ public partial class Player
         Point pos = this.getPosition();
         pos.Y -= 6;
 
-        return MapModel.getFootholds()?.findBelow(pos)?.getY1() ?? 0;
+        // 其他获取Fh都是取id，为什么这里取y1
+        return MapModel.Footholds.FindBelowFoothold(pos)?.getY1() ?? 0;
     }
 
 
@@ -3475,7 +3475,7 @@ public partial class Player
             {  // thanks Conrad for noticing missing FieldLimit check
                 int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
 
-                if (MapModel.IsTown)
+                if (MapModel.SourceTemplate.Town)
                 {    // thanks MindLove, SIayerMonkey, HaItsNotOver for noting players only lose 1% on town maps
                     XPdummy /= 100;
                 }

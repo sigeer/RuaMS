@@ -107,8 +107,8 @@ public class Door
         IMap target = this.getTarget();
         IMap town = this.getTown();
 
-        var targetChars = target.getCharacters();
-        var townChars = town.getCharacters();
+        var targetChars = target.getAllPlayers();
+        var townChars = town.getAllPlayers();
 
         target.removeMapObject(areaDoor);
         town.removeMapObject(townDoor);

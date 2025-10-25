@@ -5,6 +5,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
+using Application.Templates.Map;
 using client.inventory;
 using net.server.coordinator.world;
 using scripting.Event;
@@ -23,6 +24,8 @@ namespace Application.Core.Game.Maps
         string InstanceName { get; }
         XiGuai? XiGuai { get; set; }
         public WorldChannel ChannelServer { get; }
+        FootholdTree Footholds { get; }
+        MapTemplate SourceTemplate { get; }
         /// <summary>
         /// 当存在小数时，则是概率生成
         /// </summary>
@@ -33,19 +36,15 @@ namespace Application.Core.Game.Maps
         /// 似乎并没有派上用
         /// </summary>
         public TimeMob? TimeMob { get; set; }
-        bool IsTown { get; set; }
         bool IsTrackedByEvent { get; set; }
         EventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
-
-        void addMapleArea(Rectangle rec);
         void addMapObject(IMapObject mapobject);
 
         void addMonsterSpawn(Monster monster, int mobTime, int team);
         void addPlayer(IPlayer chr);
         void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(IPlayer player);
-        void addPortal(Portal myPortal);
         void addSelfDestructive(Monster mob);
         void allowSummonState(bool b);
         void broadcastBalrogVictory(string leaderName);
@@ -93,7 +92,6 @@ namespace Application.Core.Game.Maps
         void dismissRemoveAfter(Monster monster);
         void dropFromFriendlyMonster(IPlayer chr, Monster mob);
         void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
-        byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
         void DropItemFromMonsterBySteal(List<DropEntry> list, IPlayer chr, Monster mob, short delay);
         void dropMessage(int type, string message);
         bool eventStarted();
@@ -104,8 +102,6 @@ namespace Application.Core.Game.Maps
         Portal? findMarketPortal();
         void generateMapDropRangeCache();
         MonsterAggroCoordinator getAggroCoordinator();
-        List<Monster> getAllMonsters();
-        List<IMapObject> getAllPlayer();
         List<IPlayer> getAllPlayers();
         List<Reactor> getAllReactors();
         Rectangle getArea(int index);
@@ -113,17 +109,14 @@ namespace Application.Core.Game.Maps
         WorldChannel getChannelServer();
         IPlayer? getCharacterById(int id);
         IPlayer? getCharacterByName(string name);
-        IReadOnlyCollection<IPlayer> getCharacters();
         bool getDocked();
         Portal? getDoorPortal(int doorid);
         KeyValuePair<string, int>? getDoorPositionStatus(Point pos);
-        int getDroppedItemCount();
         int getDroppedItemsCountById(int itemid);
         IDictionary<string, int> getEnvironment();
         EventInstanceManager? getEventInstance();
         bool getEverlast();
         int getFieldLimit();
-        FootholdTree getFootholds();
         int getForcedReturnId();
         IMap getForcedReturnMap();
         Point getGroundBelow(Point pos);
@@ -133,24 +126,19 @@ namespace Application.Core.Game.Maps
         List<MapItem> getItems();
         Rectangle getMapArea();
         string getMapName();
+        void ProcessMonster(Action<Monster> action);
+        void ProcessMapObject(Func<IMapObject, bool> codition, Action<IMapObject> action);
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
         Dictionary<int, IPlayer> getMapPlayers();
-
-        short getMobInterval();
-
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
-        List<IMapObject> getMonsters();
         NPC? getNPCById(int id);
         int getNumPlayersInArea(int index);
         int getNumPlayersInRect(Rectangle rect);
-        string getOnFirstUserEnter();
-        string getOnUserEnter();
-        List<IMapObject> getPlayers();
         List<IPlayer> getPlayersInRange(Rectangle box);
         Point? getPointBelow(Point pos);
         Portal? getPortal(int portalid);
@@ -196,6 +184,7 @@ namespace Application.Core.Game.Maps
         void killMonster(int mobId);
         public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, short dropDelay = 0);
         void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation, short dropDelay);
+        public bool removeKilledMonsterObject(Monster monster);
         void killMonsterWithDrops(int mobId);
         bool makeDisappearItemFromMap(MapItem mapitem);
         bool makeDisappearItemFromMap(IMapObject? mapobj);
@@ -225,35 +214,13 @@ namespace Application.Core.Game.Maps
         void searchItemReactors(Reactor react);
         void sendNightEffect(IPlayer chr);
         void setAllowSpawnPointInBox(bool allow, Rectangle box);
-        void setAllowSpawnPointInRange(bool allow, Point from, double rangeSq);
-        void setBackgroundTypes(Dictionary<int, int> backTypes);
-        void setBoat(bool hasBoat);
-        void setClock(bool hasClock);
         void setDocked(bool isDocked);
-        void setEventInstance(EventInstanceManager? eim);
         void setEventStarted(bool @event);
-        void setEverlast(bool everlast);
-        void setFieldLimit(int fieldLimit);
-        void setFieldType(int fieldType);
-        void setFootholds(FootholdTree footholds);
-        void setForcedReturnMap(int map);
-        void setHPDec(int delta);
-        void setHPDecProtect(int delta);
-        void setMapLineBoundings(int vrTop, int vrBottom, int vrLeft, int vrRight);
         void setMapName(string mapName);
-        void setMapPointBoundings(int px, int py, int h, int w);
-        void setMobCapacity(int capacity);
-        void setMobInterval(short interval);
         void setMuted(bool mute);
-        void setOnFirstUserEnter(string onFirstUserEnter);
-        void setOnUserEnter(string onUserEnter);
         void setOxQuiz(bool b);
         void setReactorState();
-        void setRecovery(float recRate);
-        void setSeats(int seats);
         void setStreetName(string streetName);
-
-        void setTimeLimit(int timeLimit);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
         void softKillAllMonsters();
@@ -266,9 +233,8 @@ namespace Application.Core.Game.Maps
 
         void spawnHorntailOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
-        void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, byte dropType, bool playerDrop);
         void spawnKite(Kite kite);
-        void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short delay = 0);
+        void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, DropType droptype, short delay = 0);
         void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
         void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
@@ -282,10 +248,8 @@ namespace Application.Core.Game.Maps
         void startMapEffect(string msg, int itemId, long time = 30000);
         void toggleDrops();
         void toggleEnvironment(string ms);
-        void toggleHiddenNPC(int id);
         IPlayer? unclaimOwnership();
         bool unclaimOwnership(IPlayer? chr);
-        void unregisterItemDrop(MapItem mapitem);
         void updatePartyItemDropsToNewcomer(IPlayer newcomer, List<MapItem> partyItems);
         List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<IPlayer> partyMembers, IPlayer? partyLeaver);
         void warpEveryone(int to);

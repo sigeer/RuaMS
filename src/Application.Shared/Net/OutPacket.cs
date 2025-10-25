@@ -8,6 +8,7 @@ public interface OutPacket : Packet
     void writeByte(int value);
     void writeSByte(sbyte value);
     void writeBytes(byte[] value);
+    void WriteBytes(InPacket inPacket, int length);
     void writeSBytes(sbyte[] value);
     void writeShort(int value);
     void writeInt(int value);
