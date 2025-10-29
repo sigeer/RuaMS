@@ -40,13 +40,15 @@ public class UseCatchItemHandler : ChannelHandlerBase
         abm.setTimestamp(5, c.CurrentServerContainer.getCurrentTimestamp(), 4);
         p.readShort();
         int itemId = p.readInt();
-        int monsterid = p.readInt();
 
-        var mob = chr.getMap().getMonsterByOid(monsterid);
-        if (chr.getInventory(ItemConstants.getInventoryType(itemId)).countById(itemId) <= 0)
+        var invType = ItemConstants.getInventoryType(itemId);
+        if (chr.getInventory(invType).countById(itemId) <= 0)
         {
             return;
         }
+
+        int objectId = p.readInt();
+        var mob = chr.getMap().getMonsterByOid(objectId);
         if (mob == null)
         {
             return;
@@ -58,209 +60,55 @@ public class UseCatchItemHandler : ChannelHandlerBase
             return;
         }
 
-        switch (itemId)
+        if (itemTemplate.UseDelay > 0 && abm.getLastSpam(10) > 0)
         {
-            case ItemId.PHEROMONE_PERFUME:
-                if (mob.getId() == MobId.TAMABLE_HOG)
+            if (abm.getLastSpam(10) + itemTemplate.UseDelay >= c.CurrentServerContainer.getCurrentTime())
+            {
+                if (!string.IsNullOrEmpty(itemTemplate.DelayMsg))
                 {
-                    chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                    mob.getMap().killMonster(mob, null, false);
-                    InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                    InventoryManipulator.addById(c, ItemId.HOG, 1, "");
+                    chr.Pink(itemTemplate.DelayMsg);
                 }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.POUCH:
-                if (mob.getId() == MobId.GHOST)
+                if (itemId == ItemId.ARPQ_ELEMENT_ROCK)
                 {
-                    if ((abm.getLastSpam(10) + 1000) < c.CurrentServerContainer.getCurrentTime())
-                    {
-                        if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
-                        {
-                            chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                            mob.getMap().killMonster(mob, null, false);
-                            InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                            InventoryManipulator.addById(c, ItemId.GHOST_SACK, 1, "");
-                        }
-                        else
-                        {
-                            abm.spam(10);
-                            c.sendPacket(PacketCreator.catchMessage(0));
-                        }
-                    }
-                    c.sendPacket(PacketCreator.enableActions());
+                    c.sendPacket(PacketCreator.catchMessage(1));
                 }
-                break;
-            case ItemId.ARPQ_ELEMENT_ROCK:
-                if (mob.getId() == MobId.ARPQ_SCORPION)
-                {
-                    if ((abm.getLastSpam(10) + 800) < c.CurrentServerContainer.getCurrentTime())
-                    {
-                        if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
-                        {
-                            if (chr.canHold(ItemId.ARPQ_SPIRIT_JEWEL, 1))
-                            {
-                                if (Randomizer.nextDouble() < 0.5)
-                                { // 50% chance
-                                    chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                                    mob.getMap().killMonster(mob, null, false);
-                                    InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                                    InventoryManipulator.addById(c, ItemId.ARPQ_SPIRIT_JEWEL, 1, "");
-                                    chr.updateAriantScore();
-                                }
-                                else
-                                {
-                                    chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 0));
-                                }
-                            }
-                            else
-                            {
-                                chr.dropMessage(5, "Make a ETC slot available before using this item.");
-                            }
-
-                            abm.spam(10);
-                        }
-                        else
-                        {
-                            c.sendPacket(PacketCreator.catchMessage(0));
-                        }
-                    }
-                    c.sendPacket(PacketCreator.enableActions());
-                }
-                break;
-            case ItemId.MAGIC_CANE:
-                if (mob.getId() == MobId.LOST_RUDOLPH)
-                {
-                    if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
-                    {
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.TAMED_RUDOLPH, 1, "");
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.catchMessage(0));
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.TRANSPARENT_MARBLE_1:
-                if (mob.getId() == MobId.KING_SLIME_DOJO)
-                {
-                    if (mob.getHp() < ((mob.getMaxHp() / 10) * 3))
-                    {
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_1, 1, "");
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.catchMessage(0));
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.TRANSPARENT_MARBLE_2:
-                if (mob.getId() == MobId.FAUST_DOJO)
-                {
-                    if (mob.getHp() < ((mob.getMaxHp() / 10) * 3))
-                    {
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_2, 1, "");
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.catchMessage(0));
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.TRANSPARENT_MARBLE_3:
-                if (mob.getId() == MobId.MUSHMOM_DOJO)
-                {
-                    if (mob.getHp() < ((mob.getMaxHp() / 10) * 3))
-                    {
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_3, 1, "");
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.catchMessage(0));
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.EPQ_PURIFICATION_MARBLE:
-                if (mob.getId() == MobId.POISON_FLOWER)
-                {
-                    if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
-                    {
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.EPQ_MONSTER_MARBLE, 1, "");
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.catchMessage(0));
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-            case ItemId.FISH_NET:
-                if (mob.getId() == MobId.P_JUNIOR)
-                {
-                    if ((abm.getLastSpam(10) + 3000) < c.CurrentServerContainer.getCurrentTime())
-                    {
-                        abm.spam(10);
-                        chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                        mob.getMap().killMonster(mob, null, false);
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.FISH_NET_WITH_A_CATCH, 1, "");
-                    }
-                    else
-                    {
-                        chr.message("You cannot use the Fishing Net yet.");
-                    }
-                    c.sendPacket(PacketCreator.enableActions());
-                }
-                break;
-            default:
-                // proper Fish catch, thanks to Dragohe4rt
-                if (itemTemplate.Create != 0 && itemTemplate.Mob == mob.getId())
-                {
-                    if (itemTemplate.UseDelay != 0 && (abm.getLastSpam(10) + itemTemplate.UseDelay) < c.CurrentServerContainer.getCurrentTime())
-                    {
-                        if (itemTemplate.MobHP != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * itemTemplate.MobHP))
-                        {
-                            chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
-                            mob.getMap().killMonster(mob, null, false);
-                            InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                            InventoryManipulator.addById(c, itemTemplate.Create, 1, "");
-                        }
-                        else if (mob.getId() != MobId.P_JUNIOR)
-                        {
-                            if (itemTemplate.MobHP != 0)
-                            {
-                                abm.spam(10);
-                                c.sendPacket(PacketCreator.catchMessage(0));
-                            }
-                        }
-                        else
-                        {
-                            chr.message("You cannot use the Fishing Net yet.");
-                        }
-                    }
-                }
-                c.sendPacket(PacketCreator.enableActions());
-                break;
-                // Console.WriteLine("UseCatchItemHandler: \r\n" + slea.ToString());
+                return;
+            }
         }
+
+        abm.spam(10);
+
+        if (itemTemplate.MobHP > 0 && mob.getHp() < ((mob.getMaxHp() / 100.0) * itemTemplate.MobHP))
+        {
+            c.sendPacket(PacketCreator.catchMessage(0));
+            return;
+        }
+
+        if (itemTemplate.Create > 0 && !chr.canHold(itemTemplate.Create, 1))
+        {
+            chr.Pink("Make a ETC slot available before using this item.");
+            return;
+        }
+
+        if (itemTemplate.BridleProp == 0 || Random.Shared.Next(100) < itemTemplate.BridleProp)
+        {
+            chr.getMap().broadcastMessage(PacketCreator.catchMonster(objectId, itemId, true));
+            mob.getMap().killMonster(mob, null, false);
+            InventoryManipulator.removeById(c, invType, itemId, 1, true, true);
+
+            if (itemTemplate.Create > 0)
+            {
+                InventoryManipulator.addById(c, itemTemplate.Create, 1);
+
+                if (itemTemplate.Create == ItemId.ARPQ_SPIRIT_JEWEL)
+                    chr.updateAriantScore();
+            }
+        }
+        else
+        {
+            chr.getMap().broadcastMessage(PacketCreator.catchMonster(objectId, itemId, false));
+        }
+
+        c.sendPacket(PacketCreator.enableActions());
     }
 }
