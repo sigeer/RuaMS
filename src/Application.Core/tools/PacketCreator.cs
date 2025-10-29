@@ -2484,6 +2484,14 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="message">
+    /// <para>0. 目标怪兽体力太强，无法捕获。</para>
+    /// <para>1. 速成石不能连续使用。</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet catchMessage(int message)
     {
         // not done, I guess
@@ -4399,19 +4407,20 @@ public class PacketCreator
     }
 
     public static Packet catchMonster(int mobOid, byte success)
-    {   // updated packet structure found thanks to Rien dev team
+    {  
+        // updated packet structure found thanks to Rien dev team
         OutPacket p = OutPacket.create(SendOpcode.CATCH_MONSTER);
         p.writeInt(mobOid);
         p.writeByte(success);
         return p;
     }
 
-    public static Packet catchMonster(int mobOid, int itemid, byte success)
+    public static Packet catchMonster(int mobOid, int itemid, bool success)
     {
         OutPacket p = OutPacket.create(SendOpcode.CATCH_MONSTER_WITH_ITEM);
         p.writeInt(mobOid);
         p.writeInt(itemid);
-        p.writeByte(success);
+        p.writeBool(success);
         return p;
     }
 

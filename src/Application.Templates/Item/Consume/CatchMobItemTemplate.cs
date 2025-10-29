@@ -18,5 +18,9 @@ namespace Application.Templates.Item.Consume
         public int UseDelay { get; set; }
         [WZPath("info/create")]
         public int Create { get; set; }
+        [WZPath("info/useDelay")]
+        public string? DelayMsg { get; set; }
+        [WZPath("info/bridleProp")]
+        public int BridleProp { get; set; }
     }
 }
