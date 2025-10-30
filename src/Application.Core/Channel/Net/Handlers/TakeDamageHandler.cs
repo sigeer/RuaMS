@@ -122,7 +122,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                                             inv.unlockInventory();
                                         }
 
-                                        if (loseItem.Id == 4031868)
+                                        if (loseItem.Id == ItemId.ARPQ_SPIRIT_JEWEL)
                                         {
                                             chr.updateAriantScore();
                                         }

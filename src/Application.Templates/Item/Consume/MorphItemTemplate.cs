@@ -1,4 +1,5 @@
 using Application.Templates.Item.Consume;
+using Application.Templates.StatEffectProps;
 
 namespace Application.Templates.Item.Cash
 {
@@ -6,7 +7,7 @@ namespace Application.Templates.Item.Cash
     /// 530, 221
     /// </summary>
     [GenerateTag]
-    public sealed class MorphItemTemplate : ConsumeItemTemplate, IMorphPotionItem
+    public sealed class MorphItemTemplate : ConsumeItemTemplate, IStatEffectMorph
     {
         [WZPath("spec/hp")]
         public int HP { get; set; }

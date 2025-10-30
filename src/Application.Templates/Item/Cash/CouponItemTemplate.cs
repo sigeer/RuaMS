@@ -1,10 +1,12 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Cash
 {
     /// <summary>
     /// 521, 536
     /// </summary>
     [GenerateTag]
-    public class CouponItemTemplate : CashItemTemplate
+    public class CouponItemTemplate : EffectCashItemTemplate, IItemStatEffectProp
     {
         public CouponItemTemplate(int templateId) : base(templateId)
         {

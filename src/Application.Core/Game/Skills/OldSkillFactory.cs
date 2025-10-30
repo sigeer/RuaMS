@@ -21,20 +21,16 @@
 */
 
 
-using Application.Templates;
-using Application.Templates.Providers;
-using Application.Templates.Skill;
-using Application.Templates.XmlWzReader.Provider;
 using server;
 
 namespace Application.Core.Game.Skills;
 
-
-public class SkillFactory
+[Obsolete("使用SkillFactory")]
+public class OldSkillFactory
 {
     private static volatile Dictionary<int, Skill> skills = [];
+    private static DataProvider datasource = DataProviderFactory.getDataProvider(WZFiles.SKILL);
 
-    public static SkillProvider SkillProvider = ProviderFactory.GetProvider<SkillProvider>();
     public static Skill? getSkill(int id)
     {
         return skills.GetValueOrDefault(id);
@@ -42,23 +38,47 @@ public class SkillFactory
 
     public static Skill GetSkillTrust(int id)
     {
-        return getSkill(id) ?? throw new BusinessResException($"SkillFactory.getSkill({id})");
+        return skills.GetValueOrDefault(id) ?? throw new BusinessResException($"SkillFactory.getSkill({id})");
     }
 
     public static void LoadAllSkills()
     {
-        foreach (var item in SkillProvider.LoadAll())
+        Dictionary<int, Skill> loadedSkills = [];
+        DataDirectoryEntry root = datasource.getRoot();
+        foreach (DataFileEntry topDir in root.getFiles())
         {
-            skills[item.TemplateId] = loadFromData(item as SkillTemplate);
+            var topDirName = topDir.getName();
+            // Loop thru jobs
+            if (topDirName?.Length <= 8)
+            {
+                foreach (var data in datasource.getData(topDirName))
+                {
+                    // Loop thru each jobs
+                    if (data.getName() == "skill")
+                    {
+                        foreach (Data data2 in data)
+                        {
+                            // Loop thru each jobs
+                            if (data2 != null)
+                            {
+                                if (int.TryParse(data2.getName(), out var skillId))
+                                    loadedSkills.AddOrUpdate(skillId, loadFromData(skillId, data2));
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        skills = loadedSkills;
     }
 
-    private static Skill loadFromData(SkillTemplate template)
+    private static Skill loadFromData(int id, Data data)
     {
-        Skill ret = new Skill(template.TemplateId);
+        Skill ret = new Skill(id);
         bool isBuff = false;
-        int skillType = template.SkillType;
-        var elem = template.ElemAttr;
+        int skillType = DataTool.getInt("skillType", data, -1);
+        var elem = DataTool.getString("elemAttr", data);
         if (elem != null)
         {
             ret.setElement(Element.getFromChar(elem.ElementAt(0)));
@@ -67,23 +87,27 @@ public class SkillFactory
         {
             ret.setElement(Element.NEUTRAL);
         }
-        var effect = template.EffectData;
+        var effect = data.getChildByPath("effect");
         if (skillType != -1)
         {
-            isBuff = skillType == 2;
+            if (skillType == 2)
+            {
+                isBuff = true;
+            }
         }
         else
         {
+            var action_ = data.getChildByPath("action");
             bool action = false;
-            if (template.ActionData == null)
+            if (action_ == null)
             {
-                if (template.PrepareAction != null)
+                if (data.getChildByPath("prepare/action") != null)
                 {
                     action = true;
                 }
                 else
                 {
-                    switch (template.TemplateId)
+                    switch (id)
                     {
                         case Gunslinger.INVISIBLE_SHOT:
                         case Corsair.HYPNOTIZE:
@@ -97,8 +121,11 @@ public class SkillFactory
                 action = true;
             }
             ret.setAction(action);
-
-            switch (template.TemplateId)
+            var hit = data.getChildByPath("hit");
+            var ball = data.getChildByPath("ball");
+            isBuff = effect != null && hit == null && ball == null;
+            isBuff |= action_ != null && DataTool.getString("0", action_) == "alert2";
+            switch (id)
             {
                 case Hero.RUSH:
                 case Paladin.RUSH:
@@ -317,23 +344,19 @@ public class SkillFactory
                 case Evan.SLOW:
                     isBuff = true;
                     break;
-                default:
-                    isBuff = template.EffectData != null && !template.HasHitNode && !template.HasBallNode;
-                    isBuff |= template.ActionData?.Str0 == "alert2";
-                    break;
             }
         }
 
-        foreach (var level in template.LevelData)
+        foreach (var level in data.getChildByPath("level"))
         {
-            ret.addLevelEffect(new StatEffect(level, template, isBuff));
+            ret.addLevelEffect(StatEffect.loadSkillEffectFromData(level, id, isBuff));
         }
         ret.setAnimationTime(0);
         if (effect != null)
         {
             foreach (var effectEntry in effect)
             {
-                ret.incAnimationTime(effectEntry.Delay);
+                ret.incAnimationTime(DataTool.getIntConvert("delay", effectEntry, 0));
             }
         }
         return ret;

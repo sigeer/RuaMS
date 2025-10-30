@@ -265,6 +265,7 @@ namespace XmlWzReader.SouceGenerator
                 "int?" => "GetIntValue()",
                 "bool" => "GetBoolValue()",
                 "System.Drawing.Point" => "GetVectorValue()",
+                "System.Drawing.Point?" => "GetVectorValue()",
                 "double" => "GetDoubleValue()",
                 "double?" => "GetDoubleValue()",
                 "float" => "GetFloatValue()",

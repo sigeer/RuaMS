@@ -60,7 +60,10 @@ namespace Application.Templates.XmlWzReader.Provider
         {
             return LoadConsume(_files.FirstOrDefault(x => x.EndsWith("0228.img.xml") || x.EndsWith("0229.img.xml"))!).OfType<MasteryItemTemplate>().ToList();
         }
-
+        public List<ConsumeItemTemplate> GetAllConsume()
+        {
+            return _files.Where(x => x.Contains("Consume")).SelectMany(x => LoadConsume(x)).OfType<ConsumeItemTemplate>().ToList();
+        }
 
         private IEnumerable<AbstractTemplate> LoadPets(string imgPath)
         {

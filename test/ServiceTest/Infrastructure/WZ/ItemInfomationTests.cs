@@ -11,6 +11,7 @@ using Moq;
 using Newtonsoft.Json;
 using ServiceTest.TestUtilities;
 using System.Globalization;
+using System.Text;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -437,19 +438,31 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void getItemEffect()
         {
-            // 罗赛伦药水, 新旧代码对specEx/spec处理方式不同
-            int[] special = [2022224, 2022225, 2022226, 2022227, 2022228];
+            int[] special = [
+                2022124, 2022459,02022460,02022461,02022529,                // 非怪物卡片却提供了mesoupbyitem，原代码不支持
+                02022462, 02022463,02022530,02022531,                        // 非怪物卡片却提供了itemupbyitem，原代码不支持
+                02022442, 2022450, 02022451,02022452,                       //没有time， 或者time为int.MaxValue，不明
+                ];
 
-            var specialId = 02383033;
+            int[] cashItems = [
+                5300000
+                ];
+
+            var specialId = 5300000;
             var newSpecialData = newProvider.getItemEffect(specialId);
             var oldSpecialData = oldProvider.getItemEffect(specialId);
             Assert.That(ToJson(newSpecialData), Is.EqualTo(ToJson(oldSpecialData)), $"Id = {specialId}");
 
-            foreach (var item in TakeByTypeRandom(x => x >= 200 && x < 300).Except(special))
+            var allItems = ProviderFactory.GetProvider<ItemProvider>().GetAllConsume().Select(x => x.TemplateId).ToArray();
+            foreach (var item in allItems.Except(special))
             {
                 var newData = newProvider.getItemEffect(item);
                 var oldData = oldProvider.getItemEffect(item);
-                Assert.That(ToJson(newData), Is.EqualTo(ToJson(oldData)), $"Id = {item}");
+
+                var newDataStr = ToJson(newData);
+                var oldDataStr = ToJson(oldData);
+                
+                Assert.That(newDataStr, Is.EqualTo(oldDataStr), $"Id = {item}");
             }
         }
 

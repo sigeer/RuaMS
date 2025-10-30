@@ -48,54 +48,21 @@ public class UseItemHandler : ChannelHandlerBase
         var toUse = chr.getInventory(InventoryType.USE).getItem(slot);
         if (toUse != null && toUse.getQuantity() > 0 && toUse.getItemId() == itemId)
         {
-            if (itemId == ItemId.ALL_CURE_POTION)
+            var itemEffect = ii.GetItemEffectTrust(toUse.getItemId());
+            if (toUse.getItemId() != ItemId.HAPPY_BIRTHDAY)
             {
-                chr.dispelDebuffs();
-                remove(c, slot);
-                return;
-            }
-            else if (itemId == ItemId.EYEDROP)
-            {
-                chr.dispelDebuff(Disease.DARKNESS);
-                remove(c, slot);
-                return;
-            }
-            else if (itemId == ItemId.TONIC)
-            {
-                chr.dispelDebuff(Disease.WEAKEN);
-                chr.dispelDebuff(Disease.SLOW);
-                remove(c, slot);
-                return;
-            }
-            else if (itemId == ItemId.HOLY_WATER)
-            {
-                chr.dispelDebuff(Disease.SEAL);
-                chr.dispelDebuff(Disease.CURSE);
-                remove(c, slot);
-                return;
-            }
-            else if (ItemConstants.isTownScroll(itemId))
-            {
-                if (ii.GetItemEffectTrust(toUse.getItemId()).applyTo(chr))
+                if (itemEffect.applyTo(chr))
                 {
                     remove(c, slot);
                 }
-                return;
-            }
-
-            remove(c, slot);
-
-            if (toUse.getItemId() != ItemId.HAPPY_BIRTHDAY)
-            {
-                ii.GetItemEffectTrust(toUse.getItemId()).applyTo(chr);
             }
             else
             {
-                var mse = ii.GetItemEffectTrust(toUse.getItemId());
                 foreach (var player in chr.getMap().getAllPlayers())
                 {
-                    mse.applyTo(player);
+                    itemEffect.applyTo(player);
                 }
+                remove(c, slot);
             }
         }
     }

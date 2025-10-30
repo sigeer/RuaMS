@@ -1,7 +1,9 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Consume
 {
     [GenerateTag]
-    public sealed class TownScrollItemTemplate : ConsumeItemTemplate, IEffectItem
+    public sealed class TownScrollItemTemplate : ConsumeItemTemplate, IStatEffectProp
     {
         public TownScrollItemTemplate(int templateId) : base(templateId)
         {

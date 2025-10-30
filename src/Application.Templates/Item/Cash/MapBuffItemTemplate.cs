@@ -4,7 +4,7 @@ namespace Application.Templates.Item.Cash
     /// 512
     /// </summary>
     [GenerateTag]
-    public class MapBuffItemTemplate : CashItemTemplate
+    public sealed class MapBuffItemTemplate : ItemTemplateBase
     {
         public MapBuffItemTemplate(int templateId) : base(templateId)
         {

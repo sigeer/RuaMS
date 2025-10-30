@@ -1,24 +1,35 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Skill
 {
-    public sealed class SkillTemplate : AbstractTemplate
+    [GenerateTag]
+    public sealed class SkillTemplate : AbstractTemplate, IStatEffectSource
     {
         public SkillTemplate(int nSkillID) : base(nSkillID)
         {
-            EffectData = Array.Empty<SkillEffectData>();
             LevelData = Array.Empty<SkillLevelData>();
         }
+        [GenerateIgnoreProperty]
+        public int SourceId => TemplateId;
 
+        [WZPath("elemAttr")]
         public string? ElemAttr { get; set; }
-        public int MaxLevel { get; set; }
+        [WZPath("masterLevel")]
+        public int MasterLevel { get; set; }
         public int SkillType { get; set; } = -1;
+        [WZPath("hit/$existed")]
         public bool HasHitNode { get; set; }
+        [WZPath("ball/$existed")]
         public bool HasBallNode { get; set; }
-        [WZPath("skill/xxx/action/0")]
-        public string? Action0 { get; set; }
-        [WZPath("skill/xxx/prepare/action")]
+        [WZPath("prepare/action")]
         public string? PrepareAction { get; set; }
-        public SkillEffectData[] EffectData { get; set; }
-        [WZPath("skill/xxx/action/level")]
+        [WZPath("effect/-")]
+        public SkillEffectData[]? EffectData { get; set; }
+        [WZPath("level/-")]
         public SkillLevelData[] LevelData { get; set; }
+        [WZPath("action")]
+        public SkillActionData? ActionData { get; set; }
+        [WZPath("summon/$existed")]
+        public bool HasSummonNode { get; set; }
     }
 }

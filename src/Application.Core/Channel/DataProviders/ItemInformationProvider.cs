@@ -35,6 +35,7 @@ using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
+using Application.Templates.StatEffectProps;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
@@ -948,10 +949,10 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (itemEffects.TryGetValue(itemId, out var data))
             return data;
 
-        var item = GetProvider(itemId).GetItem(itemId);
+        var item = GetProvider(itemId).GetItem(itemId) as IItemStatEffectProp;
         if (item == null)
             return null;
-        return itemEffects[itemId] = new StatEffect(item);
+        return itemEffects[itemId] = new StatEffect(item, item, false);
     }
 
     public StatEffect GetItemEffectTrust(int itemId) => getItemEffect(itemId) ?? throw new BusinessResException($"getItemEffect({itemId})");
@@ -1086,7 +1087,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public RewardData[] GetItemRewardData(int itemId)
     {
-        var data = GetProvider(itemId).GetItem(itemId) as IPackagedItem;
+        var data = GetProvider(itemId).GetItem(itemId) as IStatEffectReward;
         if (data == null)
             return [];
 
@@ -1094,7 +1095,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
-        var data = GetProvider(itemId).GetItem(itemId) as IPackagedItem;
+        var data = GetProvider(itemId).GetItem(itemId) as IStatEffectReward;
         if (data == null)
             return new KeyValuePair<int, List<RewardItem>>(0, []);
 

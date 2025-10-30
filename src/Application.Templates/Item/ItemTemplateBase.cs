@@ -1,5 +1,8 @@
 namespace Application.Templates.Item
 {
+    /// <summary>
+    /// 用于和装备类型物品区分
+    /// </summary>
     public class ItemTemplateBase : AbstractItemTemplate
     {
         public ItemTemplateBase(int templateId) : base(templateId)

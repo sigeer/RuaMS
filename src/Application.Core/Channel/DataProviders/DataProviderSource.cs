@@ -22,6 +22,7 @@ namespace Application.Core.Channel.DataProviders
                 option.RegisterProvider<ItemProvider>(() => new ItemProvider(new Templates.TemplateOptions()));
                 option.RegisterProvider<MobSkillProvider>(() => new MobSkillProvider(new Templates.TemplateOptions() { UseCache = false }));
                 option.RegisterProvider<EtcNpcLocationProvider>(() => new EtcNpcLocationProvider(new Templates.TemplateOptions()));
+                option.RegisterProvider<SkillProvider>(() => new SkillProvider(new Templates.TemplateOptions() { UseCache = false }));
 
                 option.RegisterKeydProvider("zh-CN", () => new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("zh-CN")));
                 option.RegisterKeydProvider("en-US", () => new StringProvider(new Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));

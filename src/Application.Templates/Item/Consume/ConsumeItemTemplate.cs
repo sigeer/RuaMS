@@ -1,9 +1,13 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Consume
 {
     [GenerateTag]
-    public class ConsumeItemTemplate : ItemTemplateBase
+    public class ConsumeItemTemplate : ItemTemplateBase, IItemStatEffectProp
     {
 
+        [GenerateIgnoreProperty]
+        public int SourceId => TemplateId;
         [WZPath("info/monsterBook")]
         public bool MonsterBook { get; set; }
 
@@ -13,9 +17,6 @@ namespace Application.Templates.Item.Consume
         public bool ConsumeOnPickupEx { get; set; }
         [WZPath("info/noCancelMouse")]
         public bool NoCancelMouse { get; set; }
-
-        [WZPath("spec/expinc")]
-        public int ExpInc { get; set; }
 
         [WZPath("info/type")]
         public int InfoType { get; set; }
