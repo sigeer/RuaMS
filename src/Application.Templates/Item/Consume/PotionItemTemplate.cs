@@ -1,10 +1,23 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
     /// 治疗、解除debuff、附加增益buff
     /// </summary>
     [GenerateTag]
-    public class PotionItemTemplate : ConsumeItemTemplate, IPackagedItem, IMesoUpEffect, IItemUpEffect, IMapProtectEffect
+    public class PotionItemTemplate : ConsumeItemTemplate, 
+        IStatEffectReward, 
+        IItemStatEffectMesoUp, 
+        IItemStatEffectItemUp, 
+        IStatEffectMapProtection, 
+        IStatEffectHeal,
+        IStatEffectCure,
+        IItemStatEffectMC,
+        IItemStatEffectMobSkill,
+        IStatEffectPower,
+        IStatEffectExpInc,
+        IStatEffectIncMountFatigue
     {
         public PotionItemTemplate(int templateId) : base(templateId)
         {
@@ -87,6 +100,8 @@ namespace Application.Templates.Item.Consume
         public int Jump { get; set; }
         [WZPath("spec/jumpRate")]
         public int JumpRate { get; set; }
+        [WZPath("spec/expinc")]
+        public int ExpInc { get; set; }
 
 
         [WZPath("spec/seal")]
@@ -105,10 +120,14 @@ namespace Application.Templates.Item.Consume
         public bool Cure_Darkness { get; set; }
 
         [WZPath("spec/mesoupbyitem")]
-        public bool MesoUpByItem { get; set; }
+        public bool MesoUp { get; set; }
 
         [WZPath("spec/itemupbyitem")]
-        public int ItemUpByItem { get; set; }
+        public int ItemUp { get; set; }
+        [WZPath("spec/itemCode")]
+        public int ItemCode { get; set; }
+        [WZPath("spec/itemRange")]
+        public int ItemRange { get; set; }
         [WZPath("spec/prob")]
         public int Prob { get; set; } = 1;
 

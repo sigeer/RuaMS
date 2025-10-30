@@ -28,11 +28,10 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using Application.Templates;
-using Application.Templates.Item;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
+using Application.Templates.StatEffectProps;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;
@@ -57,7 +56,6 @@ public class StatEffect
     private sbyte mhpR, mmpR;
     private short mpCon, hpCon;
     private int duration = -1, target, barrier;
-    public int ExpBuff { get; set; }
     private bool overTime;
     private int sourceid;
     private int moveTo = -1;
@@ -67,12 +65,11 @@ public class StatEffect
     private List<BuffStatValue> statups;
     private Dictionary<MonsterStatus, int> monsterStatus;
     private int x, y, mobCount = 1, moneyCon, cooldown, morphId = 0, ghost, fatigue, berserk, booster;
-    private double prop = 1.0;
+    private int prop = 100;
     private int itemCon, itemConNo;
     private int damage = 100, attackCount = 1, fixdamage = -1;
     private Point? lt, rb;
     private short bulletCount = 1, bulletConsume;
-    private byte mapProtection;
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
 
@@ -180,7 +177,7 @@ public class StatEffect
         {
             return 1;   //elnath cold
         }
-        else if (sourceid == ItemId.AIR_BUBBLE)
+        else if (sourceid == ItemId.AIR_BUBBLE || sourceid == 2022187)
         {
             return 2;   //aqua road underwater
         }
@@ -189,86 +186,190 @@ public class StatEffect
             return 0;
         }
     }
-
-    public StatEffect(AbstractItemTemplate item)
+    public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
     {
-        duration = item.Time;
-        sourceid = item.TemplateId;
-        skill = false;
-        if (duration > -1)
-            overTime = true;
-        else
-            duration *= 1000;
+        sourceid = sourceTemplate.SourceId;
 
-        cureDebuffs = new List<Disease>();
-        statups = new List<BuffStatValue>();
-        monsterStatus = new Dictionary<MonsterStatus, int>();
-
-        if (item is PotionItemTemplate potion)
+        bool isSummonProp = false;
+        if (sourceTemplate is SkillTemplate skillSource)
         {
-            hp = (short)potion.HP;
-            hpR = potion.HPR / 100.0;
-            mp = (short)potion.MP;
-            mpR = potion.MPR / 100.0;
+            skill = true;
+            duration = template.Time > 0 ? template.Time * 1000 : -1;
+            overTime = isBuff;
 
-            ExpBuff = potion.ExpBuffRate;
-            cp = potion.CP;
-            nuffSkill = potion.CPSkill;
+            isSummonProp = skillSource.HasSummonNode;
+        }
+        else
+        {
+            duration = template.Time > 0 ? template.Time : -1;
+            overTime = duration > -1;
+        }
 
-            if (potion.Cure_Poison)
+        if (template is IStatEffectHeal heal)
+        {
+            hp = (short)heal.HP;
+            hpR = heal.HPR / 100.0;
+            mp = (short)heal.MP;
+            mpR = heal.MPR / 100.0;
+        }
+
+        cureDebuffs = new();
+        if (template is IStatEffectCure cure)
+        {
+            if (cure.Cure_Poison)
                 cureDebuffs.Add(Disease.POISON);
-            if (potion.Cure_Seal)
+            if (cure.Cure_Seal)
                 cureDebuffs.Add(Disease.SEAL);
-            if (potion.Cure_Darkness)
+            if (cure.Cure_Darkness)
                 cureDebuffs.Add(Disease.DARKNESS);
-            if (potion.Cure_Weakness)
+            if (cure.Cure_Weakness)
             {
                 cureDebuffs.Add(Disease.WEAKEN);
                 cureDebuffs.Add(Disease.SLOW);
             }
-            if (potion.Cure_Curse)
+            if (cure.Cure_Curse)
                 cureDebuffs.Add(Disease.CURSE);
+        }
 
-            fatigue = potion.IncFatigue;
+        statups = new();
+        if (template is IStatEffectPower power)
+        {
+            mhpR = (sbyte)power.MHPR;
+            mhpRRate = (short)(power.MHPRate * 100);
+            mmpR = (sbyte)power.MMPR;
+            mmpRRate = (short)(power.MMPRate * 100);
 
-            if (potion.MobSkill != null)
+            watk = (short)power.PAD;
+            wdef = (short)power.PDD;
+            matk = (short)power.MAD;
+            mdef = (short)power.MDD;
+            acc = (short)power.ACC;
+            avoid = (short)power.EVA;
+            speed = (short)power.Speed;
+            jump = (short)power.Jump;
+
+            // 强化疾风步
+            if (YamlConfig.config.server.USE_ULTRA_NIMBLE_FEET
+                    && (sourceid == Beginner.NIMBLE_FEET || sourceid == Noblesse.NIMBLE_FEET || sourceid == Evan.NIMBLE_FEET || sourceid == Legend.AGILE_BODY))
             {
-                mobSkill = (short)potion.MobSkill.MobSkill;
-                mobSkillLevel = (short)potion.MobSkill.Level;
-                target = potion.MobSkill.Target;
+                jump = (short)(speed * 4);
+                speed *= 15;
             }
 
-            watk = (short)potion.PAD;
-            wdef = (short)potion.PDD;
-            matk = (short)potion.MAD;
-            mdef = (short)potion.MDD;
-            acc = (short)potion.ACC;
-            avoid = (short)potion.EVA;
-            speed = (short)potion.Speed;
-            jump = (short)potion.Jump;
+            // 属性可能是使用技能时对技能的临时加成，仅对buff起效（召唤也是overtime 需要排除）
+            if (overTime && !isSummonProp)
+            {
+                // buffstat名字上看是回复，但是属性又是提升上限
+                addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
 
-            barrier = potion.Barrier;
-
-            if (ItemId.isPyramidBuff(sourceid))
-            {
-                berserk = potion.Berserk;
-                booster = potion.Booster;
-            }
-            else if (ItemId.isDojoBuff(sourceid) || isHpMpRecovery(sourceid))
-            {
-                mhpR = (sbyte)potion.MHPR;
-                mhpRRate = (short)(potion.MHPRate * 100);
-                mmpR = (sbyte)potion.MMPR;
-                mmpRRate = (short)(potion.MMPRate * 100);
-            }
-            else if (ItemId.isExpIncrease(sourceid))
-            {
-                // 02022442 也有这个节点 但是不被isExpIncrease包含
-                addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_INCREASE, potion.ExpInc);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, power.ExpBuffRate);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MDEF, mdef);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.ACC, acc);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.AVOID, avoid);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, speed);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
             }
         }
 
-        if (item is MonsterCardItemTemplate mobCard)
+        if (template is IStatEffectExpInc expInc && expInc.ExpInc > 0)
+        {
+            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_INCREASE, expInc.ExpInc);
+        }
+
+        if (template is IItemStatEffectMC mcItem)
+        {
+            cp = mcItem.CP;
+            nuffSkill = mcItem.CPSkill;
+        }
+
+        if (template is IStatEffectIncMountFatigue fatigueItem)
+        {
+            fatigue = fatigueItem.IncFatigue;
+        }
+
+        if (template is IItemStatEffectMobSkill mobSkillItem && mobSkillItem.MobSkill != null)
+        {
+            mobSkill = (short)mobSkillItem.MobSkill.MobSkill;
+            mobSkillLevel = (short)mobSkillItem.MobSkill.Level;
+            target = (short)mobSkillItem.MobSkill.Target;
+        }
+
+        if (template is IStatEffectMorphGhost morphGhost)
+        {
+            ghost = morphGhost.Ghost;
+            addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, ghost);
+        }
+
+        if (template is IStatEffectMorph morphEffect)
+        {
+            morphId = morphEffect.Morph;
+            hp = (short)morphEffect.HP;
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, morphId);
+        }
+
+        if (template is TownScrollItemTemplate scroll)
+        {
+            moveTo = scroll.MoveTo;
+        }
+
+        if (template is CouponItemTemplate coupon)
+        {
+            if (coupon.IsExp)
+            {
+                switch (coupon.Rate)
+                {
+                    case 1:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP1, 1);
+                        break;
+
+                    case 2:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP2, 1);
+                        break;
+
+                    case 3:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP3, 1);
+                        break;
+
+                    case 4:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP4, 1);
+                        break;
+                }
+            }
+            if (coupon.IsDrop)
+            {
+                switch (coupon.Rate)
+                {
+                    case 1:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP1, 1);
+                        break;
+
+                    case 2:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP2, 1);
+                        break;
+
+                    case 3:
+                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP3, 1);
+                        break;
+                }
+            }
+        }
+
+        if (template is PotionItemTemplate other)
+        {
+            barrier = other.Barrier;
+            berserk = other.Berserk;
+            booster = other.Booster;
+
+            addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, berserk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, booster);
+        }
+
+        if (template is MonsterCardItemTemplate mobCard)
         {
             int prob = 0, itemupCode = int.MaxValue;
             List<KeyValuePair<int, int>>? areas = null;
@@ -296,20 +397,19 @@ public class StatEffect
                 }
             }
 
-            if (mobCard.MesoUpByItem)
+            if (mobCard.MesoUp)
             {
-                if (overTime)
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, 4);
+                // 为什么是4？
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, 4);
                 prob = mobCard.Prob;
             }
 
-            if (mobCard.ItemUpByItem > 0)
+            if (mobCard.ItemUp > 0)
             {
-                if (overTime)
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.ITEM_UP_BY_ITEM, 4);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.ITEM_UP_BY_ITEM, 4);
                 prob = mobCard.Prob;
 
-                switch (mobCard.ItemUpByItem)
+                switch (mobCard.ItemUp)
                 {
                     case 2:
                         itemupCode = mobCard.ItemCode;
@@ -347,104 +447,455 @@ public class StatEffect
                 }
             }
         }
-
-        if (item is CouponItemTemplate coupon)
+        else
         {
-            if (coupon.IsExp && overTime)
+            if (template is IItemStatEffectMesoUp mesoUp && mesoUp.MesoUp)
             {
-                switch (coupon.Rate)
-                {
-                    case 1:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP1, 1);
-                        break;
-
-                    case 2:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP2, 1);
-                        break;
-
-                    case 3:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP3, 1);
-                        break;
-
-                    case 4:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP4, 1);
-                        break;
-                }
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, mesoUp.Prob);
             }
-            if (coupon.IsDrop && overTime)
+
+            if (template is IItemStatEffectItemUp itemUp && itemUp.ItemUp > 0)
             {
-                switch (coupon.Rate)
-                {
-                    case 1:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP1, 1);
-                        break;
-
-                    case 2:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP2, 1);
-                        break;
-
-                    case 3:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP3, 1);
-                        break;
-                }
+                addBuffStatPairToListIfNotZero(statups, BuffStat.ITEM_UP_BY_ITEM, itemUp.Prob);
             }
         }
 
-        if (item is MorphItemTemplate morph)
+        if (template is IStatEffectMapProtection mapProtect && mapProtect.Thaw != 0)
         {
-            morphId = morph.Morph;
-            hp = (short)morph.HP;
-
+            // 10. 水下保护，-6. 寒冷保护，直接把Thaw的值写进value是否会有问题？
+            if (mapProtect.Thaw == 10)
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, 1);
+            else if (mapProtect.Thaw == -6)
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, 2);
         }
 
-        if (item is GhostItemTemplate ghostTemplate)
+        monsterStatus = new();
+        if (template is SkillLevelData skillData)
         {
-            ghost = ghostTemplate.Ghost;
-        }
+            SkillLevel = skillData.Level;
+            lt = skillData.LeftTop;
+            rb = skillData.RightBottom;
 
-        if (item is TownScrollItemTemplate scroll)
-        {
-            moveTo = scroll.MoveTo;
-        }
-
-        mapProtection = GetMapProtection(sourceid);
-
-        if (overTime)
-        {
-            addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, berserk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, booster);
-
-            addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
-
-            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, ExpBuff);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MDEF, mdef);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.ACC, acc);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.AVOID, avoid);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, speed);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
-
-            addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, ghost);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, morphId);
-
-            if (item is IMapProtectEffect mapProtect)
+            if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO
+                && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
             {
-                if (mapProtect.Thaw != 0)
-                {
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, (byte)(mapProtect.Thaw > 0 ? 1 : 2));
-                }
+                lt = new Point(int.MinValue, int.MinValue);
+                rb = new Point(int.MaxValue, int.MaxValue);
+            }
+
+            x = skillData.X;
+
+            if (YamlConfig.config.server.USE_ULTRA_RECOVERY
+                && (sourceid == Beginner.RECOVERY || sourceid == Noblesse.RECOVERY || sourceid == Evan.RECOVERY || sourceid == Legend.RECOVERY))
+            {
+                x *= 10;
+            }
+            y = skillData.Y;
+
+            damage = skillData.Damage;
+            fixdamage = skillData.FixDamage;
+            attackCount = skillData.AttackCount;
+            bulletConsume = (short)skillData.BulletConsume;
+            bulletCount = (short)skillData.BulletCount;
+            mobCount = skillData.MobCount;
+            prop = skillData.Prop;
+            cooldown = skillData.Cooltime;
+
+            moneyCon = skillData.MoneyCon;
+            itemCon = skillData.ItemCon;
+            itemConNo = skillData.ItemConNo;
+
+            mpCon = (short)skillData.MpCon;
+            hpCon = (short)skillData.HpCon;
+
+            if (isMapChair(sourceid))
+            {
+                addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_CHAIR, 1);
+            }
+
+
+            switch (sourceid)
+            {
+                // BEGINNER
+                case Beginner.RECOVERY:
+                case Noblesse.RECOVERY:
+                case Legend.RECOVERY:
+                case Evan.RECOVERY:
+                    statups.Add(new(BuffStat.RECOVERY, x));
+                    break;
+                case Beginner.ECHO_OF_HERO:
+                case Noblesse.ECHO_OF_HERO:
+                case Legend.ECHO_OF_HERO:
+                case Evan.ECHO_OF_HERO:
+                    statups.Add(new(BuffStat.ECHO_OF_HERO, x));
+                    break;
+                case Beginner.MONSTER_RIDER:
+                case Noblesse.MONSTER_RIDER:
+                case Legend.MONSTER_RIDER:
+                case Corsair.BATTLE_SHIP:
+                case Beginner.SPACESHIP:
+                case Noblesse.SPACESHIP:
+                case Beginner.YETI_MOUNT1:
+                case Beginner.YETI_MOUNT2:
+                case Noblesse.YETI_MOUNT1:
+                case Noblesse.YETI_MOUNT2:
+                case Legend.YETI_MOUNT1:
+                case Legend.YETI_MOUNT2:
+                case Beginner.WITCH_BROOMSTICK:
+                case Noblesse.WITCH_BROOMSTICK:
+                case Legend.WITCH_BROOMSTICK:
+                case Beginner.BALROG_MOUNT:
+                case Noblesse.BALROG_MOUNT:
+                case Legend.BALROG_MOUNT:
+                    statups.Add(new(BuffStat.MONSTER_RIDING, sourceid));
+                    break;
+                case Beginner.INVINCIBLE_BARRIER:
+                case Noblesse.INVINCIBLE_BARRIER:
+                case Legend.INVICIBLE_BARRIER:
+                case Evan.INVINCIBLE_BARRIER:
+                    statups.Add(new(BuffStat.DIVINE_BODY, 1));
+                    break;
+                case Fighter.POWER_GUARD:
+                case Page.POWER_GUARD:
+                    statups.Add(new(BuffStat.POWERGUARD, x));
+                    break;
+                case Spearman.HYPER_BODY:
+                case GM.HYPER_BODY:
+                case SuperGM.HYPER_BODY:
+                    statups.Add(new(BuffStat.HYPERBODYHP, x));
+                    statups.Add(new(BuffStat.HYPERBODYMP, y));
+                    break;
+                case Crusader.COMBO:
+                case DawnWarrior.COMBO:
+                    statups.Add(new(BuffStat.COMBO, 1));
+                    break;
+                case WhiteKnight.BW_FIRE_CHARGE:
+                case WhiteKnight.BW_ICE_CHARGE:
+                case WhiteKnight.BW_LIT_CHARGE:
+                case WhiteKnight.SWORD_FIRE_CHARGE:
+                case WhiteKnight.SWORD_ICE_CHARGE:
+                case WhiteKnight.SWORD_LIT_CHARGE:
+                case Paladin.BW_HOLY_CHARGE:
+                case Paladin.SWORD_HOLY_CHARGE:
+                case DawnWarrior.SOUL_CHARGE:
+                case ThunderBreaker.LIGHTNING_CHARGE:
+                    statups.Add(new(BuffStat.WK_CHARGE, x));
+                    break;
+                case DragonKnight.DRAGON_BLOOD:
+                    statups.Add(new(BuffStat.DRAGONBLOOD, x));
+                    break;
+                case Hero.STANCE:
+                case Paladin.STANCE:
+                case DarkKnight.STANCE:
+                case Aran.FREEZE_STANDING:
+                    statups.Add(new(BuffStat.STANCE, prop));
+                    break;
+                case DawnWarrior.FINAL_ATTACK:
+                case WindArcher.FINAL_ATTACK:
+                    statups.Add(new(BuffStat.FINALATTACK, x));
+                    break;
+                // MAGICIAN
+                case Magician.MAGIC_GUARD:
+                case BlazeWizard.MAGIC_GUARD:
+                case Evan.MAGIC_GUARD:
+                    statups.Add(new(BuffStat.MAGIC_GUARD, x));
+                    break;
+                case Cleric.INVINCIBLE:
+                    statups.Add(new(BuffStat.INVINCIBLE, x));
+                    break;
+                case Priest.HOLY_SYMBOL:
+                case SuperGM.HOLY_SYMBOL:
+                    statups.Add(new(BuffStat.HOLY_SYMBOL, x));
+                    break;
+                case FPArchMage.INFINITY:
+                case ILArchMage.INFINITY:
+                case Bishop.INFINITY:
+                    statups.Add(new(BuffStat.INFINITY, x));
+                    break;
+                case FPArchMage.MANA_REFLECTION:
+                case ILArchMage.MANA_REFLECTION:
+                case Bishop.MANA_REFLECTION:
+                    statups.Add(new(BuffStat.MANA_REFLECTION, 1));
+                    break;
+                case Bishop.HOLY_SHIELD:
+                    statups.Add(new(BuffStat.HOLY_SHIELD, x));
+                    break;
+                case BlazeWizard.ELEMENTAL_RESET:
+                case Evan.ELEMENTAL_RESET:
+                    statups.Add(new(BuffStat.ELEMENTAL_RESET, x));
+                    break;
+                case Evan.MAGIC_SHIELD:
+                    statups.Add(new(BuffStat.MAGIC_SHIELD, x));
+                    break;
+                case Evan.MAGIC_RESISTANCE:
+                    statups.Add(new(BuffStat.MAGIC_RESISTANCE, x));
+                    break;
+                case Evan.SLOW:
+                    statups.Add(new(BuffStat.SLOW, x));
+                    goto case Priest.MYSTIC_DOOR;
+                // BOWMAN
+                case Priest.MYSTIC_DOOR:
+                case Hunter.SOUL_ARROW:
+                case Crossbowman.SOUL_ARROW:
+                case WindArcher.SOUL_ARROW:
+                    statups.Add(new(BuffStat.SOULARROW, x));
+                    break;
+                case Ranger.PUPPET:
+                case Sniper.PUPPET:
+                case WindArcher.PUPPET:
+                case Outlaw.OCTOPUS:
+                case Corsair.WRATH_OF_THE_OCTOPI:
+                    statups.Add(new(BuffStat.PUPPET, 1));
+                    break;
+                case Bowmaster.CONCENTRATE:
+                    statups.Add(new(BuffStat.CONCENTRATE, x));
+                    break;
+                case Bowmaster.HAMSTRING:
+                    statups.Add(new(BuffStat.HAMSTRING, x));
+                    monsterStatus.AddOrUpdate(MonsterStatus.SPEED, x);
+                    break;
+                case Marksman.BLIND:
+                    statups.Add(new(BuffStat.BLIND, x));
+                    monsterStatus.AddOrUpdate(MonsterStatus.ACC, x);
+                    break;
+                case Bowmaster.SHARP_EYES:
+                case Marksman.SHARP_EYES:
+                    statups.Add(new(BuffStat.SHARP_EYES, x << 8 | y));
+                    break;
+                case WindArcher.WIND_WALK:
+                    statups.Add(new(BuffStat.WIND_WALK, x));
+                    goto case Rogue.DARK_SIGHT;
+                //break;    thanks Vcoc for noticing WW not showing for other players when changing maps
+                case Rogue.DARK_SIGHT:
+                case NightWalker.DARK_SIGHT:
+                    statups.Add(new(BuffStat.DARKSIGHT, x));
+                    break;
+                case Hermit.MESO_UP:
+                    statups.Add(new(BuffStat.MESOUP, x));
+                    break;
+                case Hermit.SHADOW_PARTNER:
+                case NightWalker.SHADOW_PARTNER:
+                    statups.Add(new(BuffStat.SHADOWPARTNER, x));
+                    break;
+                case ChiefBandit.MESO_GUARD:
+                    statups.Add(new(BuffStat.MESOGUARD, x));
+                    break;
+                case ChiefBandit.PICKPOCKET:
+                    statups.Add(new(BuffStat.PICKPOCKET, x));
+                    break;
+                case NightLord.SHADOW_STARS:
+                    statups.Add(new(BuffStat.SHADOW_CLAW, 0));
+                    break;
+                // PIRATE
+                case Pirate.DASH:
+                case ThunderBreaker.DASH:
+                case Beginner.SPACE_DASH:
+                case Noblesse.SPACE_DASH:
+                    statups.Add(new(BuffStat.DASH2, x));
+                    statups.Add(new(BuffStat.DASH, y));
+                    break;
+                case Corsair.SPEED_INFUSION:
+                case Buccaneer.SPEED_INFUSION:
+                case ThunderBreaker.SPEED_INFUSION:
+                    statups.Add(new(BuffStat.SPEED_INFUSION, x));
+                    break;
+                case Outlaw.HOMING_BEACON:
+                case Corsair.BULLSEYE:
+                    statups.Add(new(BuffStat.HOMING_BEACON, x));
+                    break;
+                case ThunderBreaker.SPARK:
+                    statups.Add(new(BuffStat.SPARK, x));
+                    break;
+                // MULTIPLE
+                case Aran.POLEARM_BOOSTER:
+                case Fighter.AXE_BOOSTER:
+                case Fighter.SWORD_BOOSTER:
+                case Page.BW_BOOSTER:
+                case Page.SWORD_BOOSTER:
+                case Spearman.POLEARM_BOOSTER:
+                case Spearman.SPEAR_BOOSTER:
+                case Hunter.BOW_BOOSTER:
+                case Crossbowman.CROSSBOW_BOOSTER:
+                case Assassin.CLAW_BOOSTER:
+                case Bandit.DAGGER_BOOSTER:
+                case FPMage.SPELL_BOOSTER:
+                case ILMage.SPELL_BOOSTER:
+                case Brawler.KNUCKLER_BOOSTER:
+                case Gunslinger.GUN_BOOSTER:
+                case DawnWarrior.SWORD_BOOSTER:
+                case BlazeWizard.SPELL_BOOSTER:
+                case WindArcher.BOW_BOOSTER:
+                case NightWalker.CLAW_BOOSTER:
+                case ThunderBreaker.KNUCKLER_BOOSTER:
+                case Evan.MAGIC_BOOSTER:
+                case Beginner.POWER_EXPLOSION:
+                case Noblesse.POWER_EXPLOSION:
+                case Legend.POWER_EXPLOSION:
+                    statups.Add(new(BuffStat.BOOSTER, x));
+                    break;
+                case Hero.MAPLE_WARRIOR:
+                case Paladin.MAPLE_WARRIOR:
+                case DarkKnight.MAPLE_WARRIOR:
+                case FPArchMage.MAPLE_WARRIOR:
+                case ILArchMage.MAPLE_WARRIOR:
+                case Bishop.MAPLE_WARRIOR:
+                case Bowmaster.MAPLE_WARRIOR:
+                case Marksman.MAPLE_WARRIOR:
+                case NightLord.MAPLE_WARRIOR:
+                case Shadower.MAPLE_WARRIOR:
+                case Corsair.MAPLE_WARRIOR:
+                case Buccaneer.MAPLE_WARRIOR:
+                case Aran.MAPLE_WARRIOR:
+                case Evan.MAPLE_WARRIOR:
+                    statups.Add(new(BuffStat.MAPLE_WARRIOR, x));
+                    break;
+                // SUMMON
+                case Ranger.SILVER_HAWK:
+                case Sniper.GOLDEN_EAGLE:
+                    statups.Add(new(BuffStat.SUMMON, 1));
+                    monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
+                    break;
+                case FPArchMage.ELQUINES:
+                case Marksman.FROST_PREY:
+                    statups.Add(new(BuffStat.SUMMON, 1));
+                    monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
+                    break;
+                case Priest.SUMMON_DRAGON:
+                case Bowmaster.PHOENIX:
+                case ILArchMage.IFRIT:
+                case Bishop.BAHAMUT:
+                case DarkKnight.BEHOLDER:
+                case Outlaw.GAVIOTA:
+                case DawnWarrior.SOUL:
+                case BlazeWizard.FLAME:
+                case WindArcher.STORM:
+                case NightWalker.DARKNESS:
+                case ThunderBreaker.LIGHTNING:
+                case BlazeWizard.IFRIT:
+                    statups.Add(new(BuffStat.SUMMON, 1));
+                    break;
+                // ----------------------------- MONSTER STATUS ---------------------------------- //
+                case Crusader.ARMOR_CRASH:
+                case DragonKnight.POWER_CRASH:
+                case WhiteKnight.MAGIC_CRASH:
+                    monsterStatus.AddOrUpdate(MonsterStatus.SEAL_SKILL, 1);
+                    break;
+                case Rogue.DISORDER:
+                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, y);
+                    break;
+                case Corsair.HYPNOTIZE:
+                    monsterStatus.AddOrUpdate(MonsterStatus.INERTMOB, 1);
+                    break;
+                case NightLord.NINJA_AMBUSH:
+                case Shadower.NINJA_AMBUSH:
+                    monsterStatus.AddOrUpdate(MonsterStatus.NINJA_AMBUSH, damage);
+                    break;
+                case Page.THREATEN:
+                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, y);
+                    break;
+                case DragonKnight.DRAGON_ROAR:
+                    hpR = -x / 100.0;
+                    monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
+                    break;
+                case Crusader.AXE_COMA:
+                case Crusader.SWORD_COMA:
+                case Crusader.SHOUT:
+                case WhiteKnight.CHARGE_BLOW:
+                case Hunter.ARROW_BOMB:
+                case ChiefBandit.ASSAULTER:
+                case Shadower.BOOMERANG_STEP:
+                case Brawler.BACK_SPIN_BLOW:
+                case Brawler.DOUBLE_UPPERCUT:
+                case Buccaneer.DEMOLITION:
+                case Buccaneer.SNATCH:
+                case Buccaneer.BARRAGE:
+                case Gunslinger.BLANK_SHOT:
+                case DawnWarrior.COMA:
+                case ThunderBreaker.BARRAGE:
+                case Aran.ROLLING_SPIN:
+                case Evan.FIRE_BREATH:
+                case Evan.BLAZE:
+                    monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
+                    break;
+                case NightLord.TAUNT:
+                case Shadower.TAUNT:
+                    monsterStatus.AddOrUpdate(MonsterStatus.SHOWDOWN, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.MDEF, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, x);
+                    break;
+                case ILWizard.COLD_BEAM:
+                case ILMage.ICE_STRIKE:
+                case ILArchMage.BLIZZARD:
+                case ILMage.ELEMENT_COMPOSITION:
+                case Sniper.BLIZZARD:
+                case Outlaw.ICE_SPLITTER:
+                case FPArchMage.PARALYZE:
+                case Aran.COMBO_TEMPEST:
+                case Evan.ICE_BREATH:
+                    monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
+                    duration *= 2; // freezing skills are a little strange
+                    break;
+                case FPWizard.SLOW:
+                case ILWizard.SLOW:
+                case BlazeWizard.SLOW:
+                    monsterStatus.AddOrUpdate(MonsterStatus.SPEED, x);
+                    break;
+                case FPWizard.POISON_BREATH:
+                case FPMage.ELEMENT_COMPOSITION:
+                    monsterStatus.AddOrUpdate(MonsterStatus.POISON, 1);
+                    break;
+                case Priest.DOOM:
+                    monsterStatus.AddOrUpdate(MonsterStatus.DOOM, 1);
+                    break;
+                case ILMage.SEAL:
+                case FPMage.SEAL:
+                case BlazeWizard.SEAL:
+                    monsterStatus.AddOrUpdate(MonsterStatus.SEAL, 1);
+                    break;
+                case Hermit.SHADOW_WEB: // shadow web
+                case NightWalker.SHADOW_WEB:
+                    monsterStatus.AddOrUpdate(MonsterStatus.SHADOW_WEB, 1);
+                    break;
+                case FPArchMage.FIRE_DEMON:
+                case ILArchMage.ICE_DEMON:
+                    monsterStatus.AddOrUpdate(MonsterStatus.POISON, 1);
+                    monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
+                    break;
+                case Evan.PHANTOM_IMPRINT:
+                    monsterStatus.AddOrUpdate(MonsterStatus.PHANTOM_IMPRINT, x);
+                    goto case Aran.COMBO_ABILITY;
+                //ARAN
+                case Aran.COMBO_ABILITY:
+                    statups.Add(new(BuffStat.ARAN_COMBO, 100));
+                    break;
+                case Aran.COMBO_BARRIER:
+                    statups.Add(new(BuffStat.COMBO_BARRIER, x));
+                    break;
+                case Aran.COMBO_DRAIN:
+                    statups.Add(new(BuffStat.COMBO_DRAIN, x));
+                    break;
+                case Aran.SMART_KNOCKBACK:
+                    statups.Add(new(BuffStat.SMART_KNOCKBACK, x));
+                    break;
+                case Aran.BODY_PRESSURE:
+                    statups.Add(new(BuffStat.BODY_PRESSURE, x));
+                    break;
+                case Aran.SNOW_CHARGE:
+                    statups.Add(new(BuffStat.WK_CHARGE, duration));
+                    break;
+                default:
+                    break;
             }
         }
+
+
 
         statups.TrimExcess();
-
-
     }
 
+    [Obsolete]
     private StatEffect(Data? source, int sourceid, bool skill, bool overTime)
     {
         duration = DataTool.getIntConvert("time", source, -1);
@@ -454,9 +905,8 @@ public class StatEffect
         mpR = DataTool.getInt("mpR", source, 0) / 100.0;
         mpCon = (short)DataTool.getInt("mpCon", source, 0);
         hpCon = (short)DataTool.getInt("hpCon", source, 0);
-        int iprop = DataTool.getInt("prop", source, 100);
-        prop = iprop / 100.0;
-        ExpBuff = DataTool.getInt("expBuff", source, 0);
+        prop = DataTool.getInt("prop", source, 100);
+
 
         cp = DataTool.getInt("cp", source, 0);
         List<Disease> cure = new(5);
@@ -512,7 +962,8 @@ public class StatEffect
         }
         else
         {
-            duration *= 1000; // items have their times stored in ms, of course
+            if (duration > -1)
+                duration *= 1000; // items have their times stored in ms, of course
             this.overTime = overTime;
         }
 
@@ -530,8 +981,7 @@ public class StatEffect
         barrier = DataTool.getInt("barrier", source, 0);
         addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
 
-        mapProtection = GetMapProtection(sourceid);
-        addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, mapProtection);
+        addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, GetMapProtection(sourceid));
 
         if (this.overTime && getSummonMovementType() == null)
         {
@@ -697,7 +1147,7 @@ public class StatEffect
                     speed *= 15;
                 }
             }
-            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, ExpBuff);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, DataTool.getInt("expBuff", source, 0));
             addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
             addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
             addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
@@ -816,7 +1266,7 @@ public class StatEffect
                 case Paladin.STANCE:
                 case DarkKnight.STANCE:
                 case Aran.FREEZE_STANDING:
-                    statups.Add(new(BuffStat.STANCE, iprop));
+                    statups.Add(new(BuffStat.STANCE, prop));
                     break;
                 case DawnWarrior.FINAL_ATTACK:
                 case WindArcher.FINAL_ATTACK:
@@ -2068,7 +2518,7 @@ public class StatEffect
 
     public static bool isHpMpRecovery(int sourceid)
     {
-        return sourceid == ItemId.RUSSELLONS_PILLS || sourceid == ItemId.SORCERERS_POTION;
+        return sourceid == ItemId.RUSSELLONS_PILLS || sourceid == ItemId.SORCERERS_POTION || sourceid == 2022546;
     }
 
     public static bool isAriantShield(int sourceid)
@@ -2346,7 +2796,7 @@ public class StatEffect
 
     public bool makeChanceResult()
     {
-        return prop == 1.0 || Randomizer.nextDouble() < prop;
+        return prop == 100 || Randomizer.nextInt(100) < prop;
     }
 
     /*

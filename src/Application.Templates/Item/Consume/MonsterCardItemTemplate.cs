@@ -1,10 +1,12 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
     /// 238
     /// </summary>
     [GenerateTag]
-    public class MonsterCardItemTemplate : PotionItemTemplate, IMesoUpEffect, IItemUpEffect, IMapProtectEffect
+    public class MonsterCardItemTemplate : PotionItemTemplate, IStatEffectMapProtection
     {
         public MonsterCardItemTemplate(int templateId) : base(templateId)
         {
@@ -14,10 +16,6 @@ namespace Application.Templates.Item.Consume
         [WZPath("info/mob")]
         public int MobId { get; set; }
 
-        [WZPath("spec/itemCode")]
-        public int ItemCode { get; set; } = 1;
-        [WZPath("spec/itemRange")]
-        public int ItemRange { get; set; } = 1;
         [WZPath("spec/respectPimmune")]
         public bool RespectPimmune { get; set; }
         [WZPath("spec/respectMimmune")]

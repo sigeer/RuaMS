@@ -1,10 +1,12 @@
+using Application.Templates.StatEffectProps;
+
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
     /// 236
     /// </summary>
     [GenerateTag]
-    public class GhostItemTemplate : ConsumeItemTemplate, IEffectItem
+    public class GhostItemTemplate : ConsumeItemTemplate, IStatEffectMorphGhost
     {
         public GhostItemTemplate(int templateId) : base(templateId)
         {

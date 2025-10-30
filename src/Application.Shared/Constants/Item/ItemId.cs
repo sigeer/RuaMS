@@ -29,7 +29,7 @@ public class ItemId
 
     public static bool isExpIncrease(int itemId)
     {
-        return itemId >= 2022450 && itemId <= 2022452;
+        return itemId == 2022442 || itemId >= 2022450 && itemId <= 2022452;
     }
 
     public static bool isRateCoupon(int itemId)
