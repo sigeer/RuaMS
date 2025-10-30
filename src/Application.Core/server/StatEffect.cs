@@ -73,6 +73,8 @@ public class StatEffect
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
 
+    public IStatEffectProp Source { get; }
+
     public class CardItemupStats
     {
         public int itemCode, prob;
@@ -188,6 +190,7 @@ public class StatEffect
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
     {
+        Source = template;
         sourceid = sourceTemplate.SourceId;
 
         bool isSummonProp = false;
@@ -2369,13 +2372,15 @@ public class StatEffect
                     }
                 }
                 mpchange -= (int)(mpCon * mod);
-                if (applyfrom.getBuffedValue(BuffStat.INFINITY) != null)
+
+                int? curBuffValue;
+                if ((curBuffValue = applyfrom.getBuffedValue(BuffStat.INFINITY)) != null)
                 {
                     mpchange = 0;
                 }
-                else if (applyfrom.getBuffedValue(BuffStat.CONCENTRATE) != null)
+                else if ((curBuffValue = applyfrom.getBuffedValue(BuffStat.CONCENTRATE)) != null)
                 {
-                    mpchange -= mpchange * ((applyfrom.getBuffedValue(BuffStat.CONCENTRATE) ?? 0) / 100);
+                    mpchange -= (int)(mpchange * (curBuffValue.Value / 100.0));
                 }
             }
         }

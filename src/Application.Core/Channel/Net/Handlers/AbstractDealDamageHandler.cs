@@ -701,24 +701,24 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
         // Find the base damage to base futher calculations on.
         // Several skills have their own formula in this section.
-        long calcDmgMax;
+        double calcDmgMax;
 
         if (magic && ret.skill != 0)
         {
             // thanks onechord for noticing a few false positives stemming from maxdmg as 0
-            calcDmgMax = (long)(Math.Ceiling((chr.getTotalMagic() * Math.Ceiling(chr.getTotalMagic() / 1000.0) + chr.getTotalMagic()) / 30.0) + Math.Ceiling(chr.getTotalInt() / 200.0));
+            calcDmgMax = (Math.Ceiling((chr.getTotalMagic() * Math.Ceiling(chr.getTotalMagic() / 1000.0) + chr.getTotalMagic()) / 30.0) + Math.Ceiling(chr.getTotalInt() / 200.0));
         }
         else if (ret.skill == Rogue.LUCKY_SEVEN || ret.skill == NightWalker.LUCKY_SEVEN || ret.skill == NightLord.TRIPLE_THROW)
         {
-            calcDmgMax = (long)((chr.getTotalLuk() * 5) * Math.Ceiling(chr.getTotalWatk() / 100.0));
+            calcDmgMax = ((chr.getTotalLuk() * 5) * Math.Ceiling(chr.getTotalWatk() / 100.0));
         }
         else if (ret.skill == DragonKnight.DRAGON_ROAR)
         {
-            calcDmgMax = (long)((chr.getTotalStr() * 4 + chr.getTotalDex()) * Math.Ceiling(chr.getTotalWatk() / 100.0));
+            calcDmgMax = ((chr.getTotalStr() * 4 + chr.getTotalDex()) * Math.Ceiling(chr.getTotalWatk() / 100.0));
         }
         else if (ret.skill == NightLord.VENOMOUS_STAR || ret.skill == Shadower.VENOMOUS_STAB)
         {
-            calcDmgMax = (long)(Math.Ceiling((18.5 * (chr.getTotalStr() + chr.getTotalLuk()) + chr.getTotalDex() * 2) / 100.0) * chr.calculateMaxBaseDamage(chr.getTotalWatk()));
+            calcDmgMax = (Math.Ceiling((18.5 * (chr.getTotalStr() + chr.getTotalLuk()) + chr.getTotalDex() * 2) / 100.0) * chr.calculateMaxBaseDamage(chr.getTotalWatk()));
         }
         else
         {
@@ -771,7 +771,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 if (ret.skill == Cleric.HEAL)
                 {
                     // This formula is still a bit wonky, but it is fairly accurate.
-                    calcDmgMax = (int)Math.Round((chr.getTotalInt() * 4.8 + chr.getTotalLuk() * 4) * chr.getTotalMagic() / 1000);
+                    calcDmgMax = Math.Round((chr.getTotalInt() * 4.8 + chr.getTotalLuk() * 4) * chr.getTotalMagic() / 1000);
                     calcDmgMax = calcDmgMax * effect.getHp() / 100;
 
                     ret.speed = 7;
@@ -781,7 +781,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             {
                 // Shadow Meso also has its own formula
                 calcDmgMax = effect.getMoneyCon() * 10;
-                calcDmgMax = (int)Math.Floor(calcDmgMax * 1.5);
+                calcDmgMax = Math.Floor(calcDmgMax * 1.5);
             }
             else
             {
@@ -800,7 +800,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             {
                 // Advanced Combo
                 StatEffect skillEfect = chr.GetPlayerSkillEffect(advcomboid);
-                calcDmgMax = (long)Math.Floor(calcDmgMax * (skillEfect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
+                calcDmgMax = Math.Floor(calcDmgMax * (skillEfect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
             }
             else
             {
@@ -814,7 +814,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 if (skillLv > 0)
                 {
                     StatEffect ceffect = SkillFactory.GetSkillTrust(oid).getEffect(skillLv);
-                    calcDmgMax = (long)Math.Floor(calcDmgMax * (ceffect.getDamage() + 50) / 100 + Math.Floor((double)(comboBuff.Value - 1) * (skillLv / 6)) / 100);
+                    calcDmgMax = Math.Floor(calcDmgMax * (ceffect.getDamage() + 50) / 100 + Math.Floor((double)(comboBuff.Value - 1) * (skillLv / 6)) / 100);
                 }
             }
 
@@ -824,11 +824,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 int orbs = comboBuff.Value - 1;
                 if (orbs == 2)
                 {
-                    calcDmgMax = (long)(calcDmgMax * 1.2);
+                    calcDmgMax = (calcDmgMax * 1.2);
                 }
                 else if (orbs == 3)
                 {
-                    calcDmgMax = (long)(calcDmgMax * 1.54);
+                    calcDmgMax = (calcDmgMax * 1.54);
                 }
                 else if (orbs == 4)
                 {
@@ -836,7 +836,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 }
                 else if (orbs >= 5)
                 {
-                    calcDmgMax = (long)(calcDmgMax * 2.5);
+                    calcDmgMax = (calcDmgMax * 2.5);
                 }
             }
         }
@@ -845,7 +845,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         {
             int energycharge = chr.isCygnus() ? ThunderBreaker.ENERGY_CHARGE : Marauder.ENERGY_CHARGE;
             StatEffect ceffect = chr.GetPlayerSkillEffect(energycharge);
-            calcDmgMax = (long)(calcDmgMax * ((100 + ceffect.getDamage()) / 100d));
+            calcDmgMax = (calcDmgMax * (100 + ceffect.getDamage()) / 100d);
         }
 
         int bonusDmgBuff = 100;
@@ -858,7 +858,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         if (bonusDmgBuff != 100)
         {
             float dmgBuff = bonusDmgBuff / 100.0f;
-            calcDmgMax = (long)Math.Ceiling(calcDmgMax * dmgBuff);
+            calcDmgMax = Math.Ceiling(calcDmgMax * dmgBuff);
         }
 
         if (chr.getMapId() >= MapId.ARAN_TUTORIAL_START && chr.getMapId() <= MapId.ARAN_TUTORIAL_MAX)
@@ -881,7 +881,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             // and calc it in.
 
             canCrit = true;
-            calcDmgMax = (long)(calcDmgMax * 1.4);
+            calcDmgMax = (calcDmgMax * 1.4);
         }
 
         bool shadowPartner = chr.getBuffEffect(BuffStat.SHADOWPARTNER) != null;
@@ -915,28 +915,28 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     {
                         if (monster.getStats().getEffectiveness(Element.FIRE) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
+                            calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_ICE_CHARGE || sourceID == WhiteKnight.SWORD_ICE_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.ICE) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
+                            calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_LIT_CHARGE || sourceID == WhiteKnight.SWORD_LIT_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.LIGHTING) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
+                            calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == Paladin.BW_HOLY_CHARGE || sourceID == Paladin.SWORD_HOLY_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.HOLY) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax = (long)(calcDmgMax * (1.2 + level * 0.015));
+                            calcDmgMax = (calcDmgMax * (1.2 + level * 0.015));
                         }
                     }
                 }
@@ -944,7 +944,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 {
                     // Since we already know the skill has an elemental attribute, but we dont know if the monster is weak or not, lets
                     // take the safe approach and just assume they are weak.
-                    calcDmgMax = (long)(calcDmgMax * 1.5);
+                    calcDmgMax = (calcDmgMax * 1.5);
                 }
             }
 
@@ -959,7 +959,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         ElementalEffectiveness eff = monster.getElementalEffectiveness(skill.getElement());
                         if (eff == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax = (long)(calcDmgMax * 1.5);
+                            calcDmgMax = (calcDmgMax * 1.5);
                         }
                         else if (eff == ElementalEffectiveness.STRONG)
                         {
@@ -970,7 +970,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     {
                         // Since we already know the skill has an elemental attribute, but we dont know if the monster is weak or not, lets
                         // take the safe approach and just assume they are weak.
-                        calcDmgMax = (long)(calcDmgMax * 1.5);
+                        calcDmgMax = (calcDmgMax * 1.5);
                     }
                 }
                 if (ret.skill == FPWizard.POISON_BREATH || ret.skill == FPMage.POISON_MIST || ret.skill == FPArchMage.FIRE_DEMON || ret.skill == ILArchMage.ICE_DEMON)
@@ -1011,12 +1011,12 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             for (int j = 0; j < ret.numDamage; j++)
             {
                 int damage = p.readInt();
-                long hitDmgMax = calcDmgMax;
+                double hitDmgMax = calcDmgMax;
                 if (ret.skill == Buccaneer.BARRAGE || ret.skill == ThunderBreaker.BARRAGE)
                 {
                     if (j > 3)
                     {
-                        hitDmgMax *= (long)Math.Pow(2, (j - 3));
+                        hitDmgMax *= Math.Pow(2, (j - 3));
                     }
                 }
                 if (shadowPartner)
@@ -1025,7 +1025,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     // in for the crit effects.
                     if (j >= ret.numDamage / 2)
                     {
-                        hitDmgMax = (long)(hitDmgMax * 0.5);
+                        hitDmgMax = (hitDmgMax * 0.5);
                     }
                 }
 
@@ -1039,7 +1039,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     hitDmgMax = 82569000; // 30% of Max HP of strongest Dojo boss
                 }
 
-                long maxWithCrit = hitDmgMax;
+                double maxWithCrit = hitDmgMax;
                 if (canCrit) // They can crit, so up the max.
                 {
                     maxWithCrit *= 2;
