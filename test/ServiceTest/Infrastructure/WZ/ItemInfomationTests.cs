@@ -444,7 +444,11 @@ namespace ServiceTest.Infrastructure.WZ
                 02022442, 2022450, 02022451,02022452,                       //没有time， 或者time为int.MaxValue，不明
                 ];
 
-            var specialId = 2022546;
+            int[] cashItems = [
+                5300000
+                ];
+
+            var specialId = 5300000;
             var newSpecialData = newProvider.getItemEffect(specialId);
             var oldSpecialData = oldProvider.getItemEffect(specialId);
             Assert.That(ToJson(newSpecialData), Is.EqualTo(ToJson(oldSpecialData)), $"Id = {specialId}");

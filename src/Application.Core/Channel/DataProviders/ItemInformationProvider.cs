@@ -949,7 +949,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (itemEffects.TryGetValue(itemId, out var data))
             return data;
 
-        var item = GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId);
+        var item = GetProvider(itemId).GetItem(itemId) as IItemStatEffectProp;
         if (item == null)
             return null;
         return itemEffects[itemId] = new StatEffect(item, item, false);
