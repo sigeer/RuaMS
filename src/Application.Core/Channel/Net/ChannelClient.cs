@@ -328,19 +328,9 @@ namespace Application.Core.Channel.Net
         {
             ScriptEngines.Remove(name);
         }
-
-        public bool CanGainCharacterSlot()
-        {
-            return AccountEntity!.Characterslots < Limits.MaxCharacterSlots;
-        }
         public bool GainCharacterSlot()
         {
-            if (CanGainCharacterSlot())
-            {
-                AccountEntity!.Characterslots += 1;
-                return true;
-            }
-            return false;
+            return CurrentServerContainer.Transport.GainCharacterSlot(AccountId);
         }
 
         public void ChangeChannel(int channel)

@@ -266,21 +266,16 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    if (!c.CanGainCharacterSlot())
-                    {
-                        chr.dropMessage(1, "You have already used up all 12 extra character slots.");
-                        c.enableCSActions();
-                        return;
-                    }
-                    cs.Buy(cash, cItem);
+
                     if (c.GainCharacterSlot())
                     {
+                        cs.Buy(cash, cItem);
                         c.sendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
                         c.sendPacket(PacketCreator.showCash(chr));
                     }
                     else
                     {
-                        _logger.LogWarning("Could not add a chr slot to {CharacterName}'s account", CharacterManager.makeMapleReadable(chr.getName()));
+                        chr.dropMessage(1, "You have already used up all 12 extra character slots.");
                         c.enableCSActions();
                         return;
                     }

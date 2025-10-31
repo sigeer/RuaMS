@@ -51,6 +51,7 @@ public class SetGenderHandler : LoginHandlerBase
             if (confirmed == 0x01)
             {
                 c.AccountEntity.Gender = p.ReadSByte();
+                c.CurrentServer.CommitAccountEntity(c.AccountEntity);
                 c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));
 
                 _server.RegisterLoginState(c);

@@ -17,6 +17,7 @@ import "Dto/ClientInfo.proto";
 import "Config/Shutdown.proto";
 import "Config/ServerState.proto";
 import "Server/MonitorData.proto";
+import "Sync/GainCharacterSlot.proto";
 
 package ServiceProto;
 
@@ -49,6 +50,7 @@ service SystemService {
 	rpc DisconnectPlayer(SystemProto.DisconnectPlayerByNameRequest) returns(SystemProto.DisconnectPlayerByNameResponse);
 	rpc DisconnectAll(SystemProto.DisconnectAllRequest) returns(google.protobuf.Empty);
 	rpc GetOnlinedClients(google.protobuf.Empty) returns(Dto.GetAllClientInfo);
+	rpc GainCharacterSlot(SyncProto.GainAccountCharacterSlotRequest) returns(SyncProto.GainAccountCharacterSlotResponse);
 
 	rpc CompleteChannelShutdown(SystemProto.ChannelShutdownCallback) returns(google.protobuf.Empty);
 	rpc ShutdownMaster(SystemProto.ShutdownMasterRequest) returns(google.protobuf.Empty);

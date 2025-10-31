@@ -205,5 +205,6 @@ namespace Application.Core.ServerTransports
 
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
         void SendEarnTitleMessage(EarnTitleMessageRequest earnTitleMessageRequest);
+        bool GainCharacterSlot(int accountId);
     }
 }

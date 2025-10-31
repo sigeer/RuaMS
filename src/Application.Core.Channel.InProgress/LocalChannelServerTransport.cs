@@ -755,5 +755,10 @@ namespace Application.Core.Channel.InProgress
         {
             _server.DropEarnTitleMessage(data.Message, data.OnlyGM);
         }
+
+        public bool GainCharacterSlot(int accountId)
+        {
+            return _server.AccountManager.GainCharacterSlot(accountId);
+        }
     }
 }

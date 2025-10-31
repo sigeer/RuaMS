@@ -68,6 +68,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
         if (string.IsNullOrEmpty(c.AccountEntity.Pic))
         {
             c.AccountEntity.Pic = pic;
+            c.CurrentServer.CommitAccountEntity(c.AccountEntity);
 
             if (_server.IsWorldCapacityFull())
             {
