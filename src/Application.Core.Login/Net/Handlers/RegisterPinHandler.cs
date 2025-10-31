@@ -57,6 +57,7 @@ public class RegisterPinHandler : LoginHandlerBase
                 if (c.AccountEntity != null)
                 {
                     c.AccountEntity.Pin = pin;
+                    c.CurrentServer.CommitAccountEntity(c.AccountEntity);
                     c.sendPacket(LoginPacketCreator.pinRegistered());
                 }
 

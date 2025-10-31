@@ -291,6 +291,7 @@ namespace Application.Core.Login.Client
                 return true;
 
             AccountEntity.Tos = true;
+            CurrentServer.CommitAccountEntity(AccountEntity);
             return false;
         }
 

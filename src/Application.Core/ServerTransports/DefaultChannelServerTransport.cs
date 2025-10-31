@@ -753,5 +753,10 @@ namespace Application.Core.ServerTransports
         {
             _gameClient.SendEarnTitleMessage(data);
         }
+
+        public bool GainCharacterSlot(int accountId)
+        {
+            return _systemClient.GainCharacterSlot(new GainAccountCharacterSlotRequest { AccId = accountId }).Code == 0;
+        }
     }
 }

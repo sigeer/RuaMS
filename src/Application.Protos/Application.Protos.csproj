@@ -98,6 +98,9 @@
 		<Protobuf Include="Services\Team.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\Guild.proto" GrpcServices="Both" />
 		<Protobuf Include="Sync\GuildQueue.proto" GrpcServices="None" />
+		<Protobuf Include="Sync\GainCharacterSlot.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Sync\PlayerTimerQuest.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>

@@ -1076,7 +1076,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
 
     public AbstractItemTemplate? GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
-    public CashItemTemplate? GetCashItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<CashItemTemplate>(itemId);
+    public ConsumeItemTemplate? GetConsumeItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId);
 
     public int getStateChangeItem(int itemId)
     {
