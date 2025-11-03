@@ -1312,47 +1312,29 @@ public partial class Player
         if (itemId / 1000000 == 2)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            if (ii.isConsumeOnPickup(itemId))
+
+            var template = ii.GetConsumeItemTemplate(itemId);
+            if (template == null)
+                return false;
+
+            if (template.ConsumeOnPickup || template.ConsumeOnPickupEx)
             {
-                if (ItemConstants.isPartyItem(itemId))
+                var mse = ii.getItemEffect(itemId);
+                if (template.Party)
                 {
-                    List<IPlayer> partyMembers = this.getPartyMembersOnSameMap();
-                    if (!ItemId.isPartyAllCure(itemId))
+                    List<IPlayer> partyMembers = getPartyMembersOnSameMap();
+                    foreach (IPlayer mc in partyMembers)
                     {
-                        var mse = ii.getItemEffect(itemId);
-                        if (partyMembers.Count > 0)
+                        if (mc.isAlive())
                         {
-                            foreach (IPlayer mc in partyMembers)
-                            {
-                                if (mc.isAlive())
-                                {
-                                    mse?.applyTo(mc);
-                                }
-                            }
-                        }
-                        else if (this.isAlive())
-                        {
-                            mse?.applyTo(this);
-                        }
-                    }
-                    else
-                    {
-                        if (partyMembers.Count > 0)
-                        {
-                            foreach (IPlayer mc in partyMembers)
-                            {
-                                mc.dispelDebuffs();
-                            }
-                        }
-                        else
-                        {
-                            this.dispelDebuffs();
+                            mse?.applyTo(mc);
                         }
                     }
                 }
                 else
                 {
-                    ii.getItemEffect(itemId)?.applyTo(this);
+                    if (isAlive())
+                        mse?.applyTo(this);
                 }
 
                 if (ItemId.isMonsterCard(itemId))

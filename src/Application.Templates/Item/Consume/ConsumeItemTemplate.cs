@@ -15,6 +15,8 @@ namespace Application.Templates.Item.Consume
         public bool ConsumeOnPickup { get; set; }
         [WZPath("specEx/consumeOnPickup")]
         public bool ConsumeOnPickupEx { get; set; }
+        [WZPath("spec/party")]
+        public bool Party { get; set; }
         [WZPath("info/noCancelMouse")]
         public bool NoCancelMouse { get; set; }
 

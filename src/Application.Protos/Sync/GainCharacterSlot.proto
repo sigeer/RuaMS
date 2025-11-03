@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package SyncProto;
+
+message GainAccountCharacterSlotRequest {
+	int32 accId = 1;
+}
+
+message GainAccountCharacterSlotResponse {
+	int32 code = 1;
+}

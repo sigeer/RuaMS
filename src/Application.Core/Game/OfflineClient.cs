@@ -319,11 +319,6 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        bool IChannelClient.CanGainCharacterSlot()
-        {
-            throw new NotImplementedException();
-        }
-
         void IChannelClient.ChangeChannel(int channel)
         {
             throw new NotImplementedException();

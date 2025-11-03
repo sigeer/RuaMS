@@ -2,6 +2,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Utility;
@@ -224,6 +225,7 @@ namespace Application.Core.Login.Datas
 
             var accountDto = GetAccount(targetChr.Character.AccountId)!;
             accountDto.GMLevel = (sbyte)request.Level;
+            UpdateAccount(accountDto);
 
             _server.Transport.BroadcastGmLevelChanged(new SystemProto.SetGmLevelBroadcast
             {
@@ -233,6 +235,19 @@ namespace Application.Core.Login.Datas
                 Level = request.Level
             });
             return new SystemProto.SetGmLevelResponse();
+        }
+
+        public bool GainCharacterSlot(int accId)
+        {
+            var acc = GetAccount(accId)!;
+            if (acc.Characterslots < Limits.MaxCharacterSlots)
+            {
+                acc.Characterslots += 1;
+                UpdateAccount(acc);
+
+                return true;
+            }
+            return false;
         }
 
         public GetAllClientInfo GetOnliendClientInfo()

@@ -31,7 +31,6 @@ namespace Application.Core.Client
         void announceServerMessage();
         void closePlayerScriptInteractions();
         void announceHint(string msg, int length);
-        bool CanGainCharacterSlot();
         bool GainCharacterSlot();
         void ChangeChannel(int channel);
         bool attemptCsCoupon();
