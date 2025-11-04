@@ -2369,13 +2369,15 @@ public class StatEffect
                     }
                 }
                 mpchange -= (int)(mpCon * mod);
-                if (applyfrom.getBuffedValue(BuffStat.INFINITY) != null)
+
+                int? curBuffValue;
+                if ((curBuffValue = applyfrom.getBuffedValue(BuffStat.INFINITY)) != null)
                 {
                     mpchange = 0;
                 }
-                else if (applyfrom.getBuffedValue(BuffStat.CONCENTRATE) != null)
+                else if ((curBuffValue = applyfrom.getBuffedValue(BuffStat.CONCENTRATE)) != null)
                 {
-                    mpchange -= mpchange * ((applyfrom.getBuffedValue(BuffStat.CONCENTRATE) ?? 0) / 100);
+                    mpchange -= (int)(mpchange * (curBuffValue.Value / 100.0));
                 }
             }
         }
