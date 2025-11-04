@@ -73,8 +73,6 @@ public class StatEffect
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
 
-    public IStatEffectProp Source { get; }
-
     public class CardItemupStats
     {
         public int itemCode, prob;
@@ -190,7 +188,6 @@ public class StatEffect
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
     {
-        Source = template;
         sourceid = sourceTemplate.SourceId;
 
         bool isSummonProp = false;
