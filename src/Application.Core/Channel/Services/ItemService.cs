@@ -63,35 +63,32 @@ namespace Application.Core.Channel.Services
                 item = Item.CreateVirtualItem(cashItem.getItemId(), cashItem.getCount());
             }
 
-            if (ItemConstants.EXPIRING_ITEMS)
+            if (cashItem.Period == 1)
             {
-                if (cashItem.Period == 1)
+                switch (cashItem.getItemId())
                 {
-                    switch (cashItem.getItemId())
-                    {
-                        case ItemId.DROP_COUPON_2X_4H:
-                        case ItemId.EXP_COUPON_2X_4H: // 4 Hour 2X coupons, the period is 1, but we don't want them to last a day.
-                            item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromHours(4).TotalMilliseconds);
-                            /*
-                            } else if(itemId == 5211047 || itemId == 5360014) { // 3 Hour 2X coupons, unused as of now
-                                    item.setExpiration(Server.getInstance().getCurrentTime() + HOURS.toMillis(3));
-                            */
-                            break;
-                        case ItemId.EXP_COUPON_3X_2H:
-                            item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromHours(2).TotalMilliseconds);
-                            break;
-                        default:
-                            item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(1).TotalMilliseconds);
-                            break;
-                    }
+                    case ItemId.DROP_COUPON_2X_4H:
+                    case ItemId.EXP_COUPON_2X_4H: // 4 Hour 2X coupons, the period is 1, but we don't want them to last a day.
+                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromHours(4).TotalMilliseconds);
+                        /*
+                        } else if(itemId == 5211047 || itemId == 5360014) { // 3 Hour 2X coupons, unused as of now
+                                item.setExpiration(Server.getInstance().getCurrentTime() + HOURS.toMillis(3));
+                        */
+                        break;
+                    case ItemId.EXP_COUPON_3X_2H:
+                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromHours(2).TotalMilliseconds);
+                        break;
+                    default:
+                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(1).TotalMilliseconds);
+                        break;
                 }
+            }
+            else
+            {
+                if (abTemplate is PetItemTemplate subPet)
+                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.Life).TotalMilliseconds);
                 else
-                {
-                    if (abTemplate is PetItemTemplate subPet)
-                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.Life).TotalMilliseconds);
-                    else
-                        item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
-                }
+                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
             }
 
             item.setSN(cashItem.getSN());

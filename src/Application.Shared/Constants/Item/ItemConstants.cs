@@ -45,18 +45,6 @@ public class ItemConstants
     public const short ACCOUNT_SHARING = 0x100;
     public const short MERGE_UNTRADEABLE = 0x200;
 
-    public static bool EXPIRING_ITEMS = true;
-    public static HashSet<int> permanentItemids = new();
-
-    static ItemConstants()
-    {
-        // i ain't going to open one gigantic itemid cache just for 4 perma itemids, no way!
-        foreach (int petItemId in ItemId.getPermaPets())
-        {
-            permanentItemids.Add(petItemId);
-        }
-    }
-
     public static int getFlagByInt(int type)
     {
         if (type == 128)
@@ -133,11 +121,6 @@ public class ItemConstants
     public static bool isExpirablePet(int itemId)
     {
         return YamlConfig.config.server.USE_ERASE_PET_ON_EXPIRATION || itemId == ItemId.PET_SNAIL;
-    }
-
-    public static bool isPermanentItem(int itemId)
-    {
-        return permanentItemids.Contains(itemId);
     }
 
     public static bool isNewYearCardEtc(int itemId)

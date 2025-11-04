@@ -1,6 +1,8 @@
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
+using Application.Templates.Item.Cash;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -56,7 +58,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         BlackList = [];
 
         Type = PlayerShopType.HiredMerchant;
-        SoldNotify = ItemId.MerchantWithNotifyBegin <= item.getItemId() && ItemId.MerchantWithNotifyEnd >= item.getItemId();
+        SoldNotify = (ItemInformationProvider.getInstance().GetTemplate(item.getItemId()) as HiredMerchantItemTemplate)!.NotifyWhenSold;
         Status = new AtomicEnum<PlayerShopStatus>(PlayerShopStatus.Maintenance);
     }
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -67,6 +67,7 @@ function setEventRequirements() {
     reqStr += eventTime + " 分钟";
 
     em.setProperty("party", reqStr);
+    em.SetRequirement(minPlayers, maxPlayers, minLevel, maxLevel, eventTime);
 }
 
 function setEventExclusives(eim) {

@@ -43,6 +43,7 @@ EventManager一般在js中通过`newInstance`，创建 EventInstanceManager（ei
 
 `/event/HenesysPQ.js`
 入口：`/npc/1012112.js`
+过关NPC：`/npc/1012114.js`
 
 ##### 废都
 

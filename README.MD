@@ -47,7 +47,7 @@
 
 ##### wz
 
-当前项目没有包含`wz`，为配合脚本，建议也使用[BeiDou](https://github.com/BeiDouMS/BeiDou-Server) 的wz。
+当前项目使用的`wz`来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server) 。
 
 ### tools
 
