@@ -20,6 +20,7 @@ namespace ServiceTest.Infrastructure.WZ
             OnProviderRegistering();
 
             OnProviderRegistered();
+            _providerSource.Debug();
         }
 
         /// <summary>

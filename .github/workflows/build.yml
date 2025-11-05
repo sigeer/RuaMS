@@ -22,6 +22,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      RUA_MS_WZConfig__BaseDir: ${{ github.workspace }}/src/Application.Resources/wz
+      RUA_MS_ScriptConfig__BaseDir: ${{ github.workspace }}/src/Application.Resources/scripts
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
