@@ -24,8 +24,8 @@ function levelMain()
 
     cm:sendSelectLevel(
         cm:GetTalkMessage("KerningPQ_Description", em:GetRequirementDescription(cm:getClient())) .. 
-        "#L0" .. cm:GetTalkMessage("PartyQuest_Participate") .. "\r\n#l" .. 
-        "#L1" .. cm:GetTalkMessage("PartyQuest_Intro") .. "\r\n#l")
+        "#L0#" .. cm:GetTalkMessage("PartyQuest_Participate") .. "\r\n#l" .. 
+        "#L1#" .. cm:GetTalkMessage("PartyQuest_Intro") .. "\r\n#l")
 end
 
 function level0( ... )

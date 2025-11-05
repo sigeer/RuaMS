@@ -294,10 +294,10 @@ public class EventManager
     public void SetRequirement(int minCount, int maxCount, int minLevel, int maxLevel, int eventTime)
     {
         props["CountMin"] = minCount.ToString();
-        props["CountMax"] = minCount.ToString();
-        props["LevelMin"] = minCount.ToString();
-        props["LevelMax"] = minCount.ToString();
-        props["EventTime"] = minCount.ToString();
+        props["CountMax"] = maxCount.ToString();
+        props["LevelMin"] = minLevel.ToString();
+        props["LevelMax"] = maxLevel.ToString();
+        props["EventTime"] = eventTime.ToString();
     }
     public void setProperty(string key, string value)
     {
