@@ -40,13 +40,5 @@ namespace Application.Templates.Providers
         {
             return string.Empty;
         }
-
-        public void SetDir(string dir)
-        {
-            //foreach (var item in GetSubProviders())
-            //{
-            //    item.SetDir(dir);
-            //}
-        }
     }
 }

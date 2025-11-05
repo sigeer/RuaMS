@@ -28,7 +28,7 @@ namespace Application.Benchmark
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                [$"{AppSettingKeys.Section_WZ}:BaseDir"] = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"))
+                ["BaseDir"] = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"))
             });
             var configuration = configurationBuilder.Build();
             var providerFactory = new ProviderSource(configuration)

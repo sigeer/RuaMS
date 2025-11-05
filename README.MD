@@ -118,7 +118,7 @@ sigeer/ruams-standalone
 ### 步骤
 
 1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
-2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
+2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`RUA_MS_WZConfig__BaseDir`/`WZConfig__BaseDir`
 
 ### 单进程模式（master-standalone）
 

@@ -5,7 +5,6 @@ using Application.Module.Duey.Master;
 using Application.Module.ExpeditionBossLog.Master;
 using Application.Module.Maker.Master;
 using Application.Module.PlayerNPC.Master;
-using Application.Shared.Servers;
 using Application.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -15,9 +14,6 @@ using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
 using Application.Core.Channel.HostExtensions;
-
-
-
 
 #if IsStandalone
 using Application.Core.Channel.InProgress;

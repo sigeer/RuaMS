@@ -21,9 +21,6 @@ jobs:
           - windows-latest
 
     runs-on: ${{ matrix.os }}
-    env:
-      ms-wz: ${{ github.workspace }}/src/Application.Resources/wz
-      ms-script: ${{ github.workspace }}/src/Application.Resources/scripts
 
     steps:
       - name: Checkout repository
