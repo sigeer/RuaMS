@@ -9,17 +9,17 @@ function start()
         local ret = checkJob();
         if (ret == -1) then
             cm:sendOk("请组建一个队伍，然后再和我交谈。");
-        else if (ret == 0) then
+        elseif (ret == 0) then
             cm:sendOk("请确保你的队伍人数是2人。");
-        else if (ret == 1) then
+        elseif (ret == 1) then
             cm:sendOk("你的团队成员之一的职业不符合进入另一个世界的资格。");
-        else if (ret == 2) then
+        elseif (ret == 2) then
             cm:sendOk("你的队伍成员之一的等级不符合进入另一个世界的条件。");
         else 
             local em = cm:getEventManager("s4aWorld");
             if (em == null) then
                 cm:sendOk("由于未知原因，您不被允许进入。请再试一次。");
-            else if (em:getProperty("started") == "true") then
+            elseif (em:getProperty("started") == "true") then
                 cm:sendOk("另外一个世界已经有其他人在尝试击败小巴尔洛格了。");
             else
                 local eli = em:getEligibleParty(cm:getParty())

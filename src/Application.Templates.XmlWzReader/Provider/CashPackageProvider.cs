@@ -8,7 +8,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public sealed class CashPackageProvider : AbstractAllProvider<CashPackageTemplate>
     {
         public override string ProviderName => ProviderNames.Etc;
-        public CashPackageProvider(TemplateOptions options)
+        public CashPackageProvider(ProviderOption options)
             : base(options, "CashPackage.img.xml")
         {
         }

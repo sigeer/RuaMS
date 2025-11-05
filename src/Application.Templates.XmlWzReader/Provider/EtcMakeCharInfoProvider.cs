@@ -8,7 +8,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class EtcMakeCharInfoProvider : AbstractAllProvider<MakerCharInfoTemplate>
     {
-        public EtcMakeCharInfoProvider(TemplateOptions options) : base(options, "MakeCharInfo.img.xml")
+        public EtcMakeCharInfoProvider(ProviderOption options) : base(options, "MakeCharInfo.img.xml")
         {
         }
 

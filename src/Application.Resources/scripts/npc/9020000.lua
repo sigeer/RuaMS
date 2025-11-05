@@ -3,10 +3,11 @@
 local em
 
 function start( ... )
-	if cm:getMapId() >= 103000800 && cm:getMapId() <= 103000805 then
+	if cm:getMapId() >= 103000800 and cm:getMapId() <= 103000805 then
         cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("KerningPQ_Abandon"))
     else
         levelMain()
+    end
 end
 
 function levelMain()
@@ -30,7 +31,7 @@ end
 function level0( ... )
     if cm:getParty() == nil then
         cm:sendOkLevel(cm:GetTalkMessage("PartyQuest_CannotStart_Party"))
-    else if (not cm:isLeader()) then
+    elseif (not cm:isLeader()) then
         cm:sendOkLevel(cm:GetTalkMessage("PartyQuest_NeedLeaderTalk"))
     else
         local eli = em:getEligibleParty(cm:getParty())
@@ -44,7 +45,7 @@ function level0( ... )
     end
 end
 
-function leve1( ... )
+function level1( ... )
     cm:sendOkLevel(cm:GetTalkMessage("KerningPQ_Intro"))
 end
 

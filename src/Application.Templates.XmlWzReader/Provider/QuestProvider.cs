@@ -11,7 +11,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public sealed class QuestProvider : AbstractCompositeProvider<QuestTemplate>
     {
         public override string ProviderName => ProviderNames.Quest;
-        public QuestProvider(TemplateOptions options)
+        public QuestProvider(ProviderOption options)
             : base(options, ["QuestInfo.img.xml", "Act.img.xml", "Check.img.xml"])
         {
         }

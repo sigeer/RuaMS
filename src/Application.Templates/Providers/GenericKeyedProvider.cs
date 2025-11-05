@@ -1,13 +1,12 @@
-using Application.Templates.Providers;
-
-namespace Application.Templates.XmlWzReader.Provider
+namespace Application.Templates.Providers
 {
     public abstract class GenericKeyedProvider<TSubProvider> : IKeyedProvider
-        where TSubProvider : AbstractProvider<AbstractTemplate> 
+        where TSubProvider : AbstractProvider<AbstractTemplate>
     {
         public string Key { get; }
         public abstract string ProviderName { get; }
-        protected GenericKeyedProvider(string key, TemplateOptions options)
+
+        protected GenericKeyedProvider(string key, ProviderOption options)
         {
             Key = key;
             _categoryData = new();
@@ -40,6 +39,14 @@ namespace Application.Templates.XmlWzReader.Provider
         public string GetBaseDir()
         {
             return string.Empty;
+        }
+
+        public void SetDir(string dir)
+        {
+            //foreach (var item in GetSubProviders())
+            //{
+            //    item.SetDir(dir);
+            //}
         }
     }
 }

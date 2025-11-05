@@ -6,7 +6,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class StringMapProvider : StringBaseProvider
     {
-        public StringMapProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Map])
+        public StringMapProvider(ProviderOption options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Map])
         {
         }
 

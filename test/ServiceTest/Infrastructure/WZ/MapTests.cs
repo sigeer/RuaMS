@@ -14,11 +14,9 @@ namespace ServiceTest.Infrastructure.WZ
     {
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<MapProvider>(() => new MapProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider<ReactorProvider>(() => new ReactorProvider(new Application.Templates.TemplateOptions()));
-            });
+            _providerSource.TryRegisterProvider<MapProvider>(o => new MapProvider(o));
+            _providerSource.TryRegisterProvider<ReactorProvider>(o => new ReactorProvider(o));
+            ProviderSource.Instance = _providerSource;
         }
 
         int mapId = 001000000;
@@ -39,7 +37,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void MapTemplateDataCheck()
         {
-            var provider = ProviderFactory.GetProvider<MapProvider>();
+            var provider = _providerSource.GetProvider<MapProvider>();
             var cpqMap = provider.GetItem(980000101)!;
 
             Assert.That(cpqMap.MonsterCarnival.Skills, Does.Contain(1));
@@ -72,7 +70,7 @@ namespace ServiceTest.Infrastructure.WZ
             var specialOldStr = JsonConvert.SerializeObject(specialOld, options);
             Assert.That(specialNewStr, Is.EqualTo(specialOldStr));
 
-            var randomList = ProviderFactory.GetProvider<ReactorProvider>().LoadAll()
+            var randomList = _providerSource.GetProvider<ReactorProvider>().LoadAll()
                 .Select(x => x.TemplateId).OrderBy(x => Guid.NewGuid()).Take(100).ToArray();
 
             foreach (var reactorId in randomList)
@@ -100,7 +98,7 @@ namespace ServiceTest.Infrastructure.WZ
 
             var oldData = oldProvider.getData(GetMapImg(mapId));
             var infoData = oldData.getChildByPath("info")!;
-            var newProvider = ProviderFactory.GetProvider<MapProvider>();
+            var newProvider = _providerSource.GetProvider<MapProvider>();
             var newData = newProvider.GetItem(mapId)!;
 
             Assert.That(newData.HasClock, Is.EqualTo(oldData.getChildByPath("clock") != null));

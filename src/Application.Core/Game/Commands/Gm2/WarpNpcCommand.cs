@@ -52,7 +52,7 @@ namespace Application.Core.Game.Commands.Gm2
 
         void HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)
         {
-            var template = ProviderFactory.GetProvider<EtcNpcLocationProvider>().GetItem(npcId);
+            var template = ProviderSource.Instance.GetProvider<EtcNpcLocationProvider>().GetItem(npcId);
             if (template == null)
             {
                 client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), npcName);

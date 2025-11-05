@@ -8,7 +8,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class EtcNpcLocationProvider : AbstractAllProvider<NpcLocationTemplate>
     {
-        public EtcNpcLocationProvider(TemplateOptions options) : base(options, "NpcLocation.img.xml")
+        public EtcNpcLocationProvider(ProviderOption options) : base(options, "NpcLocation.img.xml")
         {
 
         }

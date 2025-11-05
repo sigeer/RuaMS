@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Module.Duey.Channel;
 using Application.Module.Maker.Channel;
 using Application.Module.PlayerNPC.Channel;
@@ -11,7 +10,7 @@ using Application.Utility;
 using Application.Protos;
 using ServiceProto;
 using Application.Host.Channel;
-using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.HostExtensions;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -48,7 +47,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
-builder.Services.AddChannelServer();
+builder.AddChannelServer();
 builder.Services.AddGrpc(options =>
 {
     options.Interceptors.Add<LoggingInterceptor>();
@@ -68,12 +67,8 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-DataProviderSource.Initialize();
-var bootstrap = app.Services.GetServices<IServerBootstrap>();
-foreach (var item in bootstrap)
-{
-    item.ConfigureHost(app);
-}
+app.UseChannelServer();
+
 app.MapGrpcService<WorldChannelGrpcServer>();
 
 app.Run();

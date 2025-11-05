@@ -10,7 +10,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Skill;
 
-        public MobSkillProvider(TemplateOptions options) : base(options, "MobSkill.img.xml")
+        public MobSkillProvider(ProviderOption options) : base(options, "MobSkill.img.xml")
         {
         }
 

@@ -1,7 +1,9 @@
 using Application.Shared.MapObjects;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
+using Application.Utility;
 using BenchmarkDotNet.Attributes;
+using Microsoft.Extensions.Configuration;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
@@ -23,14 +25,17 @@ namespace Application.Benchmark
         [GlobalSetup]
         public void Setup()
         {
-            ProviderFactory.Configure(o =>
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                o.DataDir = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"));
-                o.RegisterProvider<MapProvider>(() => new MapProvider(new Templates.TemplateOptions()));
+                [$"{AppSettingKeys.Section_WZ}:BaseDir"] = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"))
             });
+            var configuration = configurationBuilder.Build();
+            var providerFactory = new ProviderSource(configuration)
+                .RegisterProvider<MapProvider>(o => new MapProvider(o));
 
-            oldTree = FootholdTreeOld.FromTemplate(ProviderFactory.GetProvider<MapProvider>().GetItem(211040101)!);
-            newTree = FootholdTree.FromTemplate(ProviderFactory.GetProvider<MapProvider>().GetItem(211040101)!);
+            oldTree = FootholdTreeOld.FromTemplate(providerFactory.GetProvider<MapProvider>().GetItem(211040101)!);
+            newTree = FootholdTree.FromTemplate(providerFactory.GetProvider<MapProvider>().GetItem(211040101)!);
             p = new Point(-179, -678);
         }
 

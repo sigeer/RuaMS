@@ -21,7 +21,7 @@ namespace Application.Benchmark
         [Benchmark]
         public void NewProvider_Load()
         {
-            var provider = new MapProvider(new Application.Templates.TemplateOptions());
+            var provider = new MapProvider(new Application.Templates.ProviderOption());
             var fullData = provider.GetItem(mapId);
         }
 

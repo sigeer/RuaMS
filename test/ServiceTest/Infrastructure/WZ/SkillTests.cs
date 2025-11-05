@@ -22,11 +22,9 @@ namespace ServiceTest.Infrastructure.WZ
         }
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<SkillProvider>(() => new SkillProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
-            });
+            _providerSource.TryRegisterProvider<SkillProvider>(o => new SkillProvider(o));
+            _providerSource.TryRegisterProvider<StringProvider>(o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")));
+            ProviderSource.Instance = _providerSource;
         }
         string ToJson(object? obj)
         {
@@ -36,7 +34,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void SkillStatEffectTest()
         {
-            var allSkills = ProviderFactory.GetProvider<SkillProvider>().LoadAll().OfType<SkillTemplate>().ToArray();
+            var allSkills = _providerSource.GetProvider<SkillProvider>().LoadAll().OfType<SkillTemplate>().ToArray();
             OldSkillFactory.LoadAllSkills();
             SkillFactory.LoadAllSkills();
             foreach (var item in allSkills)

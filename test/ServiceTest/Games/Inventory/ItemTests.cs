@@ -11,7 +11,7 @@ namespace ServiceTest.Games.Inventory
         [Test]
         public void MonsterCardTest()
         {
-            var newProvider = ProviderFactory.GetProvider<ItemProvider>();
+            var newProvider = ProviderSource.Instance.GetProvider<ItemProvider>();
 
             var dict = newProvider.GetAllMonsterCard().OrderBy(x => x.TemplateId).ToDictionary(x => x.TemplateId, x => x.MobId);
             var str1 = JsonConvert.SerializeObject(dict);

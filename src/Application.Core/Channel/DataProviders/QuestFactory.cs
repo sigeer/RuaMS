@@ -14,7 +14,7 @@ namespace Application.Core.Channel.DataProviders
         private static QuestFactory? _instance;
 
         public static QuestFactory Instance => _instance ?? throw new BusinessFatalException("QuestFactory 未注册");
-        QuestProvider provider = ProviderFactory.GetProvider<QuestProvider>();
+        QuestProvider provider = ProviderSource.Instance.GetProvider<QuestProvider>();
         public QuestFactory(ILogger<DataBootstrap> logger) : base(logger)
         {
             Name = "任务";
@@ -70,7 +70,7 @@ namespace Application.Core.Channel.DataProviders
             if (quests.TryGetValue(id, out var q))
                 return q;
 
-            return quests[id] = new Quest(ProviderFactory.GetProvider<QuestProvider>().GetItem(id) ?? new QuestTemplate(new QuestInfoTemplate(id)));
+            return quests[id] = new Quest(ProviderSource.Instance.GetProvider<QuestProvider>().GetItem(id) ?? new QuestTemplate(new QuestInfoTemplate(id)));
         }
 
         public Quest GetInstanceFromInfoNumber(int infoNumber)

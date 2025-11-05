@@ -21,7 +21,7 @@ namespace Application.Core.Channel
         public ClientCulture(CultureInfo cultureInfo)
         {
             CultureInfo = cultureInfo;
-            StringProvider = ProviderFactory.GetProviderByKey<StringProvider>(CultureInfo.Name)
+            StringProvider = ProviderSource.Instance.GetProviderByKey<StringProvider>(CultureInfo.Name)
                 ?? throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到{CultureInfo.Name}相应的wz资源");
         }
 

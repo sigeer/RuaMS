@@ -14,10 +14,11 @@ using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using net.server.coordinator.matchchecker;
 using server.life;
 using server.maps;
 
-namespace Application.Core.Channel
+namespace Application.Core.Channel.HostExtensions
 {
     public static class ServiceCollectionExtensions
     {
@@ -130,23 +131,46 @@ namespace Application.Core.Channel
             return services;
         }
 
-        public static IServiceCollection AddChannelServer(this IServiceCollection services)
+        public static WebApplicationBuilder AddChannelServer(this WebApplicationBuilder builder)
         {
-            services.AddChannelCommands();
-            services.AddChannelHandlers();
+            builder.AddDataSource();
 
-            services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
-            services.AddSingleton<IServerBootstrap, DefaultChannelBootstrap>();
+            builder.Services.AddChannelCommands();
+            builder.Services.AddChannelHandlers();
 
-            services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
-            services.AddSingleton<WorldChannelServer>();
-            services.AddChannelService();
+            builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
 
-            services.AddSingleton<DataService>();
+            builder.Services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
+            builder.Services.AddSingleton<WorldChannelServer>();
+            builder.Services.AddChannelService();
 
-            services.AddAutoMapper(typeof(ProtoMapper));
-            services.AddHostedService<ChannelHost>();
-            return services;
+            builder.Services.AddSingleton<DataService>();
+
+            builder.Services.AddAutoMapper(typeof(ProtoMapper));
+            builder.Services.AddHostedService<ChannelHost>();
+
+            return builder;
+        }
+
+        public static void UseChannelServer(this WebApplication app)
+        {
+            app.UseDataSource();
+
+            MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
+                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
+                app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
+
+            var staticServices = app.Services.GetServices<IStaticService>();
+            foreach (var srv in staticServices)
+            {
+                srv.Register(app.Services);
+            }
+
+            var bootstrap = app.Services.GetServices<IServerBootstrap>();
+            foreach (var item in bootstrap)
+            {
+                item.ConfigureHost(app);
+            }
         }
     }
 }

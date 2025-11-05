@@ -5,10 +5,10 @@ namespace Application.Templates
 {
     public class WzFileProvider
     {
-        string _defaultDir;
+        public string BaseDir { get; }
         public WzFileProvider(string baseDir)
         {
-            _defaultDir = baseDir;
+            BaseDir = baseDir;
         }
 
         /// <summary>
@@ -23,10 +23,10 @@ namespace Application.Templates
             if (string.IsNullOrEmpty(relativePath))
                 throw new ImgNotFound($"WzFileProvider没有找到文件", relativePath);
 
-            string filePath = Path.Combine(_defaultDir, relativePath);
+            string filePath = Path.Combine(BaseDir, relativePath);
             if (culture != null && culture.Name != "en-US")
             {
-                var cultureDir = $"{_defaultDir}-{culture.Name}";
+                var cultureDir = $"{BaseDir}-{culture.Name}";
                 var cultureFile = Path.Combine(cultureDir, relativePath);
 
                 if (File.Exists(cultureFile))

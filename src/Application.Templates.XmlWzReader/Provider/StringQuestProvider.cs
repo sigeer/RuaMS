@@ -7,7 +7,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public class StringQuestProvider : StringBaseProvider
     {
-        public StringQuestProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.QuestInfo])
+        public StringQuestProvider(ProviderOption options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.QuestInfo])
         {
         }
 

@@ -63,7 +63,7 @@ public class MapFactory : IStaticService
 
     public MapFactory()
     {
-        mapSource = ProviderFactory.GetProvider<MapProvider>();
+        mapSource = ProviderSource.Instance.GetProvider<MapProvider>();
     }
 
     private void loadLifeFromWz(IMap map, MapTemplate mapData)

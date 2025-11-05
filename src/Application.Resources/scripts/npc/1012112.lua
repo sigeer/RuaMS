@@ -25,18 +25,18 @@ function levelStart( ... )
             "#L1" .. cm:GetTalkMessage("PartyQuest_Intro") .. "\r\n#l" .. 
             "#L2" .. cm:GetTalkMessage("HenesysPQ_Redeem") .. "\r\n#l")
 
-    else if cm:getMapId() == 910010100 then
-        cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("HenesysPQ_Complete"));
-    else if cm:getMapId() == 910010400 then
-        cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("AreYouReturningMap", cm:GetTalkMessage("Henesys")));
+    elseif cm:getMapId() == 910010100 then
+        cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("HenesysPQ_Complete"))
+    elseif cm:getMapId() == 910010400 then
+        cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("AreYouReturningMap", cm:GetTalkMessage("Henesys")))
     end
 end
 
 function level0( ... )
     if cm:getParty() == nil then
-        cm:sendOkLevel(cm:GetTalkMessage("HenesysPQ_EnterTalk1"));
-    else if (not cm:isLeader()) then
-        cm:sendOkLevel(cm:GetTalkMessage("PartyQuest_NeedLeaderTalk"));
+        cm:sendOkLevel(cm:GetTalkMessage("HenesysPQ_EnterTalk1"))
+    elseif (not cm:isLeader()) then
+        cm:sendOkLevel(cm:GetTalkMessage("PartyQuest_NeedLeaderTalk"))
     else
         local eli = em:getEligibleParty(cm:getParty())
         if (eli.Count > 0) then
@@ -73,7 +73,7 @@ function levelExitYes()
         return
     end
     if (cm:getEventInstance():giveEventReward(cm:getPlayer())) then
-        cm:warp(100000200);
+        cm:warp(100000200)
     else
         cm:sendOkLevel(cm:GetTalkMessage("Redeem_InventoryFull"))
     end

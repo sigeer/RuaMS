@@ -1,17 +1,22 @@
 using Application.Templates.Providers;
+using Microsoft.Extensions.Configuration;
 using ServiceTest.TestUtilities;
 
 namespace ServiceTest.Infrastructure.WZ
 {
     internal abstract class WzTestBase
     {
+        protected ProviderSource _providerSource;
         [OneTimeSetUp]
         public void RunBeforeAnyTests()
         {
-            ProviderFactory.Configure(o =>
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                o.DataDir = TestVariable.WzPath;
+                ["BaseDir"] = TestVariable.WzPath
             });
+            var configuration = configurationBuilder.Build();
+            _providerSource = new ProviderSource(configuration);
             OnProviderRegistering();
 
             OnProviderRegistered();
@@ -34,7 +39,7 @@ namespace ServiceTest.Infrastructure.WZ
         [OneTimeTearDown]
         public void RunAfterAnyTests()
         {
-            
+
         }
 
         protected virtual void RunAfterTest()

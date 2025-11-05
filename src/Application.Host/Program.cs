@@ -14,15 +14,17 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
+using Application.Core.Channel.HostExtensions;
+
+
+
 
 #if IsStandalone
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.InProgress;
 #endif
 
 try
 {
-
     var builder = WebApplication.CreateBuilder(args);
     builder.Configuration.AddEnvironmentVariables(AppSettingKeys.EnvPrefix);
 
@@ -155,15 +157,9 @@ try
     }
 
     var app = builder.Build();
-
 #if IsStandalone
-    DataProviderSource.Initialize();
+    app.UseChannelServer();
 #endif
-    var bootstrap = app.Services.GetServices<IServerBootstrap>();
-    foreach (var item in bootstrap)
-    {
-        item.ConfigureHost(app);
-    }
 
     if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
     {

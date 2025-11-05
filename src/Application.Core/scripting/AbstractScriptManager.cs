@@ -66,17 +66,29 @@ public abstract class AbstractScriptManager
     {
         return JsCache.GetOrAdd(file.CacheKey, (key) =>
         {
+            string? fileContent;
             var fullPath = GetFullScriptPath(Path.Combine(file.Category, file.FileName));
-            if (File.Exists(fullPath))
-                return new ScriptMeta(file, JintEngine.Prepare(File.ReadAllText(fullPath)), fullPath);
+            try
+            {
+                fileContent = File.ReadAllText(fullPath);
+            }
+            catch (FileNotFoundException)
+            {
+                file.ToggleType();
+                fullPath = GetFullScriptPath(Path.Combine(file.Category, file.FileName));
 
-            file.UpdateType(ScriptType.Lua);
-            fullPath = GetFullScriptPath(Path.Combine(file.Category, file.FileName));
-            if (File.Exists(fullPath))
-                return new ScriptMeta(file, NLuaScriptEngine.Prepare(File.ReadAllText(fullPath)), fullPath);
+                try
+                {
+                    fileContent = File.ReadAllText(fullPath);
+                }
+                catch (FileNotFoundException)
+                {
+                    _logger.LogWarning("{Category}脚本{Name}没有找到。", file.Category, file.Name);
+                    return null;
+                }
+            }
 
-            _logger.LogWarning("{Category}脚本{Name}没有找到。", file.Category, file.Name);
-            return null;
+            return new ScriptMeta(file, file.Type == ScriptType.Js ? JintEngine.Prepare(fileContent) : NLuaScriptEngine.Prepare(fileContent), fullPath);
         });
     }
 
@@ -87,7 +99,7 @@ public abstract class AbstractScriptManager
             return null;
         }
 
-        IEngine engine = new JintEngine();
+        IEngine engine;
         if (jsContent.ScriptFile.Type == ScriptType.Js)
             engine = new JintEngine();
         else if (jsContent.ScriptFile.Type == ScriptType.Lua)
@@ -192,14 +204,14 @@ public abstract class AbstractScriptManager
 
     protected string GetFullScriptPath(string relativePath)
     {
-        return ScriptResFactory.GetScriptFullPath(relativePath);
+        return ScriptSource.Instance.GetScriptFullPath(relativePath);
     }
 
-    protected ScriptFile GetNpcScriptPath(string path) => new ScriptFile("npc", path);
-    protected ScriptFile GetItemScriptPath(string path) => new ScriptFile("item", path);
-    protected ScriptFile GetQuestScriptPath(string path) => new ScriptFile("quest", path);
-    protected ScriptFile GetEventScriptPath(string path) => new ScriptFile(ScriptDir.Event, path);
-    protected ScriptFile GetPortalScriptPath(string path) => new ScriptFile("portal", path);
-    protected ScriptFile GetReactorScriptPath(string path) => new ScriptFile("reactor", path);
-    protected ScriptFile GetMapScriptPath(string path) => new ScriptFile("map", path);
+    protected ScriptFile GetNpcScriptPath(string path) => new ScriptFile("npc", path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetItemScriptPath(string path) => new ScriptFile("item", path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetQuestScriptPath(string path) => new ScriptFile("quest", path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetEventScriptPath(string path) => new ScriptFile(ScriptSource.Instance.EventDirName, path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetPortalScriptPath(string path) => new ScriptFile("portal", path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetReactorScriptPath(string path) => new ScriptFile("reactor", path, ScriptSource.Instance.DefaultScriptType);
+    protected ScriptFile GetMapScriptPath(string path) => new ScriptFile("map", path, ScriptSource.Instance.DefaultScriptType);
 }

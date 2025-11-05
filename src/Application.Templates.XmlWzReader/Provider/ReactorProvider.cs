@@ -11,7 +11,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Reactor;
 
-        public ReactorProvider(TemplateOptions options)
+        public ReactorProvider(ProviderOption options)
             : base(options) { }
 
         protected override string? GetImgPathByTemplateId(int reactorId)

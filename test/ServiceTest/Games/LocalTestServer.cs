@@ -1,31 +1,26 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.HostExtensions;
 using Application.Core.Channel.InProgress;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Services;
-using Application.Core.net.server.coordinator.matchchecker.listener;
-using Application.Core.ServerTransports;
 using Application.Module.Duey.Master;
 using Application.Module.ExpeditionBossLog.Master;
 using Application.Module.Maker.Master;
-using Application.Module.PlayerNPC.Channel.InProgress;
 using Application.Module.PlayerNPC.Master;
 using Application.Shared.Login;
 using Application.Shared.Servers;
-using Application.Utility.Configs;
+using Application.Utility;
 using DotNetty.Transport.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.matchchecker;
 using Serilog;
 using ServiceTest.TestUtilities;
 using System.Text;
-using System.Threading.Tasks;
 using Yitter.IdGenerator;
 
 namespace ServiceTest.Games
@@ -36,7 +31,6 @@ namespace ServiceTest.Games
         public LocalTestServer()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
             var builder = WebApplication.CreateBuilder();
 
@@ -54,6 +48,11 @@ namespace ServiceTest.Games
 
             builder.Services.AddScoped<IChannel, MockChannel>();
 
+            var debugConfig = new Dictionary<string, string?>
+            {
+                [$"{AppSettingKeys.Section_WZ}:BaseDir"] = TestVariable.WzPath,
+            };
+            builder.Configuration.AddInMemoryCollection(debugConfig);
 
             var app = builder.Build();
             ServiceProvider = app.Services;
@@ -61,8 +60,7 @@ namespace ServiceTest.Games
             var idGeneratorOptions = new IdGeneratorOptions(1);
             YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
-            DataProviderSource.Initialize();
-            DataProviderSource.ResetPath(TestVariable.WzPath);
+            app.UseChannelServer();
 
             var bootstrap = app.Services.GetServices<IServerBootstrap>();
             foreach (var item in bootstrap)
