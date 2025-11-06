@@ -11,6 +11,10 @@ on:
       - 'src/**/*.cs'
       - 'test/**/*.cs'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   BuildAndTest:
     strategy:
@@ -41,7 +45,7 @@ jobs:
         run: dotnet build "./src/Application.Host/Application.Host.csproj" --no-restore -c Release
 
       - name: Test Infrastructure
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure" --blame-crash  --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure" --blame-crash --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
 
       - name: Test Server
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games" --blame-crash  --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games" --blame-crash --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"

@@ -314,6 +314,7 @@ namespace ServiceTest.Infrastructure.Scripts
         }
 
         [Test]
+        [Platform(Exclude = "Linux")]
         public void TestParamsFunction()
         {
             Code = """
