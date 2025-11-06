@@ -44,7 +44,7 @@ public class EventScriptManager : AbstractScriptManager
     public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, channel, addtionalRegistries)
     {
-        eventScripts = ScriptResFactory.GetEvents();
+        eventScripts = ScriptSource.Instance.GetEvents();
     }
 
     public int ReloadEventScript()

@@ -61,6 +61,212 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 你确定要离开吗？ 的本地化字符串。
+        /// </summary>
+        public static string AreYouReturning {
+            get {
+                return ResourceManager.GetString("AreYouReturning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 那么，你现在要返回{0}吗？ 的本地化字符串。
+        /// </summary>
+        public static string AreYouReturningMap {
+            get {
+                return ResourceManager.GetString("AreYouReturningMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 射手村 的本地化字符串。
+        /// </summary>
+        public static string Henesys {
+            get {
+                return ResourceManager.GetString("Henesys", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 我建议你检查并确保你确实收集了#b10 #t4001101#s#k。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_CommitTask_Fail {
+            get {
+                return ResourceManager.GetString("HenesysPQ_CommitTask_Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 哦...这不是月兔做的年糕吗？请把年糕给我。嗯...这些看起来很美味。下次再来找我拿更多#b#t4001101##k。一路平安！ 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_CommitTask_Success {
+            get {
+                return ResourceManager.GetString("HenesysPQ_CommitTask_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 感谢你帮助喂养兴儿。事实上，你们团队已经因走到这一步而获得了奖励。这个问题现在已经解决了，但现在又出现了另一个问题，如果你感兴趣，可以找那边的 #b达尔米#k 了解信息。那么，你现在要直接返回射手村吗？ 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Complete {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #e#b&lt;组队任务: 迎月花山丘&gt;
+        ///#k#n{0}
+        ///
+        ///我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Description {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 嗨！我是达尔利。这个地方笼罩着满月的神秘气息，任何人都不能独自进入这里。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_EnterTalk1 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_EnterTalk1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 月妙组队任务遇到了错误。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Error {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #e#b&lt;组队任务: 迎月花山丘&gt;#k#n
+        ///从地图底部的花朵上收集迎月花种子，然后把它们扔到上方的平台。迎月花种子的颜色必须匹配才能让种子生长，所以要不断尝试直到找到正确的组合。当所有种子都种下后，也就是任务的第二阶段开始了，在月妙为饥饿的兴儿准备年糕时进行侦查。一旦兴儿吃饱了，你的任务就完成了。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Intro {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Intro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 我想兑换一件年糕的帽子。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Redeem {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Redeem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 这片地方可以说是绝佳之处，每逢满月你都能品尝到月兔制作的美味年糕。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Tutorial0 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Tutorial0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在这片区域收集遍布各处的迎月花种子，然后把种子种在月牙附近的土壤里，就能看到迎月花盛开。迎月花有六种，每种都需要不同的土壤。土壤必须适合花的种子，这一点至关重要。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Tutorial1 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Tutorial1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 当迎月花盛开时，满月就会升起，那时月兔就会出现并开始舂米。你的任务是击退怪物，确保月兔能专心制作出最美味的年糕。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Tutorial2 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Tutorial2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 我希望你和你的队员们合作，在规定时间内给我 10 个年糕。 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_Tutorial3 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_Tutorial3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 吼！我是兴儿，时刻准备守护这片地方。你来这儿干什么？\r\n#b#L0# 请告诉我这片地方是怎么回事。#l\r\n#L1# 我带来了 #t4001101#。#l\r\n#L2# 我想离开这片地方。#l 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_TutorialTalk0 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_TutorialTalk0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 吼！我是兴儿，时刻准备守护这片地方。你来这儿干什么？\r\n#b#L0# 请告诉我这片地方是怎么回事。#l\r\n#L2# 我想离开这片地方。#l 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_TutorialTalk1 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_TutorialTalk1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 那你最好给我收集些美味的年糕，因为时间不多了，吼！ 的本地化字符串。
+        /// </summary>
+        public static string HenesysPQ_TutorialTalk2 {
+            get {
+                return ResourceManager.GetString("HenesysPQ_TutorialTalk2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你希望放弃这个区域吗？ 的本地化字符串。
+        /// </summary>
+        public static string KerningPQ_Abandon {
+            get {
+                return ResourceManager.GetString("KerningPQ_Abandon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #e#b&lt;组队任务：第一次合作&gt;
+        ///#k#n{0}
+        ///
+        ///你和你的队伍成员一起完成任务怎么样？在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。如果你想尝试，请告诉你的#b队伍领袖#k来找我谈谈。#b 的本地化字符串。
+        /// </summary>
+        public static string KerningPQ_Description {
+            get {
+                return ResourceManager.GetString("KerningPQ_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 废弃都市组队任务遇到了一个错误。 的本地化字符串。
+        /// </summary>
+        public static string KerningPQ_Error {
+            get {
+                return ResourceManager.GetString("KerningPQ_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #e#b&lt;组队任务：第一次合作&gt;#k#n
+        ///在完成这个组队任务的子目标时，你的队伍必须通过许多障碍和谜题。与你的团队协调合作，以便进一步前进，击败最终BOSS，并收集掉落物品以获得奖励和额外阶段的机会。 的本地化字符串。
+        /// </summary>
+        public static string KerningPQ_Intro {
+            get {
+                return ResourceManager.GetString("KerningPQ_Intro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 金币 的本地化字符串。
         /// </summary>
         public static string Meso {
@@ -336,6 +542,99 @@ namespace Application.Resources.Messages {
         public static string Npc1002000_Sleepywood4 {
             get {
                 return ResourceManager.GetString("Npc1002000_Sleepywood4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已经有人在尝试这个组队任务了。请等待他们完成，或者寻找其他频道。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_CannotStart_ChannelFull {
+            get {
+                return ResourceManager.GetString("PartyQuest_CannotStart_ChannelFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 只有当你加入一个队伍时，你才能参加组队任务。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_CannotStart_Party {
+            get {
+                return ResourceManager.GetString("PartyQuest_CannotStart_Party", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你还不能开始这个组队任务，因为你的队伍人数可能不在规定范围内，或者你的一些队员不符合参与条件，又或者他们不在这个地图里。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_CannotStart_Req {
+            get {
+                return ResourceManager.GetString("PartyQuest_CannotStart_Req", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 我想了解更多详情。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_Intro {
+            get {
+                return ResourceManager.GetString("PartyQuest_Intro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 如果你想进入这里，必须由你的队长和我交谈。和你的队长说一下这件事。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_NeedLeaderTalk {
+            get {
+                return ResourceManager.GetString("PartyQuest_NeedLeaderTalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 我想参加组队任务。 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_Participate {
+            get {
+                return ResourceManager.GetString("PartyQuest_Participate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 
+        ///   组队人数：{0}
+        ///   等级要求：{1} 
+        ///   时间限制：{2} 分钟 的本地化字符串。
+        /// </summary>
+        public static string PartyQuest_Requirement {
+            get {
+                return ResourceManager.GetString("PartyQuest_Requirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 看起来你的某个背包空间不足。请先检查一下，以便正确获得奖励。 的本地化字符串。
+        /// </summary>
+        public static string Redeem_InventoryFull {
+            get {
+                return ResourceManager.GetString("Redeem_InventoryFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你还没有足够的 {0} 来兑换它！ 的本地化字符串。
+        /// </summary>
+        public static string Redeem_NotEnough {
+            get {
+                return ResourceManager.GetString("Redeem_NotEnough", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 给你。尽情享用！ 的本地化字符串。
+        /// </summary>
+        public static string Redeem_Success {
+            get {
+                return ResourceManager.GetString("Redeem_Success", resourceCulture);
             }
         }
     }

@@ -9,7 +9,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Etc;
 
-        public CashCommodityProvider(TemplateOptions options)
+        public CashCommodityProvider(ProviderOption options)
             : base(options, "Commodity.img.xml")
         {
         }

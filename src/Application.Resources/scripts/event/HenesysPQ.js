@@ -67,20 +67,16 @@ function setEventRequirements() {
     reqStr += eventTime + " 分钟";
 
     em.setProperty("party", reqStr);
+    em.SetRequirement(minPlayers, maxPlayers, minLevel, maxLevel, eventTime);
 }
 
 function setEventExclusives(eim) {
-    var itemSet = [4001095, 4001096, 4001097, 4001098, 4001099, 4001100, 4001101];
+    var itemSet = [4001095, 4001096, 4001097, 4001098, 4001099, 4001100];
     eim.setExclusiveItems(itemSet);
 }
 
 function setEventRewards(eim) {
     var itemSet, itemQty, evLevel, expStages;
-
-    evLevel = 1;    //Rewards at clear PQ
-    itemSet = [4001158];
-    itemQty = [1];
-    eim.setEventRewards(evLevel, itemSet, itemQty);
 
     expStages = [1600];    //bonus exp given on CLEAR stage signal
     eim.setEventClearStageExp(expStages);
@@ -258,7 +254,7 @@ function friendlyItemDrop(eim, mob) {
     if (mob.getId() == 9300061) {
         var cakes = eim.getIntProperty("bunnyCake") + 1;
         eim.setIntProperty("bunnyCake", cakes);
-        mob.getMap().broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny made rice cake number " + cakes + "."));
+        mob.getMap().LightBlue("Event_HenesysPQ_Message1", cakes.toString());
     }
 }
 
@@ -266,7 +262,7 @@ function friendlyDamaged(eim, mob) {
     if (mob.getId() == 9300061) {
         var bunnyDamage = eim.getIntProperty("bunnyDamaged") + 1;
         if (bunnyDamage > 5) {
-            broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny is feeling sick. Please protect it so it can make delicious rice cakes."));
+            mob.getMap().LightBlue("Event_HenesysPQ_Message2");
             eim.setIntProperty("bunnyDamaged", 0);
         }
     }

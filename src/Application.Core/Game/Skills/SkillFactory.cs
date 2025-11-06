@@ -34,7 +34,7 @@ public class SkillFactory
 {
     private static volatile Dictionary<int, Skill> skills = [];
 
-    public static SkillProvider SkillProvider = ProviderFactory.GetProvider<SkillProvider>();
+    public static SkillProvider SkillProvider = ProviderSource.Instance.GetProvider<SkillProvider>();
     public static Skill? getSkill(int id)
     {
         return skills.GetValueOrDefault(id);

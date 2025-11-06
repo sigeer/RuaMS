@@ -1038,4 +1038,19 @@
   <data name="LoadedWithin" xml:space="preserve">
     <value>Loaded within {0} seconds.</value>
   </data>
+  <data name="LanguageCommand_Description" xml:space="preserve">
+    <value>查看/修改当前语言，仅本次登录时生效</value>
+  </data>
+  <data name="LanguageCommand_Syntax" xml:space="preserve">
+    <value>Syntax：!language [&lt;0|1&gt;]</value>
+  </data>
+  <data name="Language_ShowCurrent" xml:space="preserve">
+    <value>Current: {0}</value>
+  </data>
+  <data name="Event_HenesysPQ_Message1" xml:space="preserve">
+    <value>The Moon Bunny made rice cake number {0} .</value>
+  </data>
+  <data name="Event_HenesysPQ_Message2" xml:space="preserve">
+    <value>The Moon Bunny is feeling sick. Please protect it so it can make delicious rice cakes.</value>
+  </data>
 </root>

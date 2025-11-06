@@ -19,10 +19,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), testCulture));
-            });
+            _providerSource.TryRegisterProvider<StringProvider>(o => new StringProvider(o, testCulture));
         }
 
         protected override void OnProviderRegistered()
@@ -43,7 +40,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item);
+            var newProvider = _providerSource.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item);
 
             var oldList = oldProvider.GetAllItem().OrderBy(x => x.Id).ToList();
             foreach (var item in oldList)
@@ -64,7 +61,7 @@ namespace ServiceTest.Infrastructure.WZ
 
             var oldList = oldProvider.GetAllMap().OrderBy(x => x.Id).ToList();
 
-            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Map);
+            var newProvider = _providerSource.GetProvider<StringProvider>().GetSubProvider(StringCategory.Map);
             foreach (var item in oldList)
             {
                 var newData = newProvider.GetRequiredItem<StringMapTemplate>(item.Id);
@@ -83,7 +80,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Npc);
+            var newProvider = _providerSource.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Npc);
 
             var oldList = oldProvider.GetAllNpcList().OrderBy(x => x.Id).ToList();
 
@@ -106,7 +103,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Mob);
+            var newProvider = _providerSource.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Mob);
 
             var oldList = oldProvider.GetAllMonster().OrderBy(x => x.Id).ToList();
 
@@ -127,7 +124,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var oldProvider = new WzStringProvider();
 
-            var newProvider = ProviderFactory.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Skill);
+            var newProvider = _providerSource.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Skill);
 
             var oldList = oldProvider.GetAllSkillList().OrderBy(x => x.Id).ToList();
 

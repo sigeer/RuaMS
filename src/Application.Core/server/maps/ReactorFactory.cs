@@ -30,7 +30,7 @@ namespace server.maps;
 
 public class ReactorFactory
 {
-    private static ReactorProvider data = ProviderFactory.GetProvider<ReactorProvider>();
+    private static ReactorProvider data = ProviderSource.Instance.GetProvider<ReactorProvider>();
     private static Dictionary<int, ReactorStats> reactorStats = new();
 
     public static ReactorStats getReactorS(int rid)

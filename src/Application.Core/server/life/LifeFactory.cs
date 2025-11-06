@@ -63,10 +63,11 @@ public class LifeFactory : IStaticService
 
     public LifeFactory()
     {
-        hpbarBosses = getHpBarBosses();
+        hpbarBosses = ProviderSource.Instance.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).ToHashSet();
     }
 
-    private HashSet<int> getHpBarBosses()
+    [Obsolete]
+    public static HashSet<int> getHpBarBosses()
     {
         HashSet<int> ret = new();
         Data uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI).getData("UIWindow.img");

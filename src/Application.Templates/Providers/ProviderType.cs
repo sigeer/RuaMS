@@ -12,6 +12,7 @@ namespace Application.Templates.Providers
         public const string Reactor = "Reactor.wz";
         public const string Skill = "Skill.wz";
         public const string String = "String.wz";
+        public const string UI = "UI.wz";
     }
 
     //public enum ProviderType

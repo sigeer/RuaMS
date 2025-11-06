@@ -26,6 +26,8 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Resources.Messages;
+using Microsoft.AspNetCore.Authentication;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
@@ -33,6 +35,7 @@ using server.life;
 using server.quest;
 using System.Collections.Concurrent;
 using tools.exceptions;
+using static System.Net.Mime.MediaTypeNames;
 
 //using jdk.nashorn.api.scripting;
 
@@ -278,6 +281,24 @@ public class EventManager
         }, YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
     }
 
+    public string GetRequirementDescription(IChannelClient client)
+    {
+        var countRange = props["CountMin"] == props["CountMax"] ? props["CountMin"] : props["CountMin"] + " ~ " + props["CountMax"];
+        var levelRange = props["LevelMin"] == props["LevelMax"] ? props["LevelMin"] : props["LevelMin"] + " ~ " + props["LevelMax"];
+        return client.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_Requirement),
+            countRange,
+            levelRange,
+            props["EventTime"]);
+    }
+
+    public void SetRequirement(int minCount, int maxCount, int minLevel, int maxLevel, int eventTime)
+    {
+        props["CountMin"] = minCount.ToString();
+        props["CountMax"] = maxCount.ToString();
+        props["LevelMin"] = minLevel.ToString();
+        props["LevelMax"] = maxLevel.ToString();
+        props["EventTime"] = eventTime.ToString();
+    }
     public void setProperty(string key, string value)
     {
         props.AddOrUpdate(key, value);

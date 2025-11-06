@@ -1,3 +1,4 @@
+using Application.Core.Channel.HostExtensions;
 using Application.Core.ServerTransports;
 using Application.Module.Duey.Channel.InProgress;
 using Application.Module.Maker.Channel.InProgress;
@@ -13,7 +14,7 @@ namespace Application.Core.Channel.InProgress
         public static void AddChannelServerInProgress(this WebApplicationBuilder builder)
         {
             builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-            builder.Services.AddChannelServer();
+            builder.AddChannelServer();
 
             builder.Services.AddDueyInProgress();
             builder.Services.AddMakerInProgress();

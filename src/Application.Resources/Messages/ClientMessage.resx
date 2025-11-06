@@ -1038,4 +1038,19 @@
   <data name="LoadedWithin" xml:space="preserve">
     <value>加载耗时 {0} 秒。</value>
   </data>
+  <data name="LanguageCommand_Description" xml:space="preserve">
+    <value>查看/修改当前语言，仅本次登录时生效</value>
+  </data>
+  <data name="LanguageCommand_Syntax" xml:space="preserve">
+    <value>格式：!language [&lt;0|1&gt;]</value>
+  </data>
+  <data name="Language_ShowCurrent" xml:space="preserve">
+    <value>当前语言：{0}</value>
+  </data>
+  <data name="Event_HenesysPQ_Message1" xml:space="preserve">
+    <value>玉兔月妙成功捣出了第 {0} 份年糕！</value>
+  </data>
+  <data name="Event_HenesysPQ_Message2" xml:space="preserve">
+    <value>玉兔月妙受到了伤害，请保护好它，这样它才能继续做出美味的年糕！</value>
+  </data>
 </root>

@@ -15,17 +15,14 @@ namespace ServiceTest.Infrastructure.WZ
     {
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
-            });
+            _providerSource.TryRegisterProvider<ItemProvider>(o => new ItemProvider(o));
+            _providerSource.TryRegisterProvider<EquipProvider>(o => new EquipProvider(o));
         }
 
         [Test]
         public void CashItemTemplateDataCheck()
         {
-            var provider = ProviderFactory.GetProvider<ItemProvider>();
+            var provider = _providerSource.GetProvider<ItemProvider>();
 
             var areaEffectItem = provider.GetRequiredItem<AreaEffectItemTemplate>(5281000)!;
             Assert.That(areaEffectItem.Time, Is.EqualTo(60));
@@ -67,7 +64,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void ConsumeItemTemplateDataCheck()
         {
-            var provider = ProviderFactory.GetProvider<ItemProvider>();
+            var provider = _providerSource.GetProvider<ItemProvider>();
             var townScrollItem = provider.GetRequiredItem<TownScrollItemTemplate>(2031000);
             Assert.That(townScrollItem!.MoveTo, Is.EqualTo(229010000));
             Assert.That(townScrollItem!.IgnoreContinent, Is.EqualTo(true));
@@ -125,7 +122,7 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void EtcItemTemplateDataCheck()
         {
-            var provider = ProviderFactory.GetProvider<ItemProvider>();
+            var provider = _providerSource.GetProvider<ItemProvider>();
 
             var item = provider.GetRequiredItem<EtcItemTemplate>(4000113)!;
             Assert.That(item.lv, Is.EqualTo(34));
@@ -140,10 +137,9 @@ namespace ServiceTest.Infrastructure.WZ
         [Test]
         public void EquipItemTemplateDataCheck()
         {
-            var provider = ProviderFactory.GetProvider<EquipProvider>();
+            var provider = _providerSource.GetProvider<EquipProvider>();
             var item = provider.GetRequiredItem<EquipTemplate>(01002430)!;
 
-            Console.WriteLine(JsonConvert.SerializeObject(item));
             Assert.That(item.ReqLevel, Is.EqualTo(60));
 
         }

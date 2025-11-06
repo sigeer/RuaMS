@@ -210,4 +210,111 @@
   <data name="Meso" xml:space="preserve">
     <value>mesos</value>
   </data>
+  <data name="PartyQuest_Requirement" xml:space="preserve">
+    <value>
+    Number of players: {0}
+    Level range: {1}
+    Time limit: {2} minutes</value>
+  </data>
+  <data name="HenesysPQ_Description" xml:space="preserve">
+    <value>#e#b&lt;Party Quest: Primrose Hill&gt;
+#k#n{0}
+
+I'm Tory. Inside here is a beautiful hill where the primrose blooms. There's a tiger that lives in the hill, Growlie, and he seems to be looking for something to eat. Would you like to head over to the hill of primrose and join forces with your party members to help Growlie out?#b</value>
+  </data>
+  <data name="PartyQuest_Participate" xml:space="preserve">
+    <value>I want to participate in the party quest.</value>
+  </data>
+  <data name="PartyQuest_Intro" xml:space="preserve">
+    <value>I would like to hear more details.</value>
+  </data>
+  <data name="HenesysPQ_Redeem" xml:space="preserve">
+    <value>I would like to redeem an instance hat.</value>
+  </data>
+  <data name="HenesysPQ_Complete" xml:space="preserve">
+    <value>Thank you for aiding in the effort of feeding the Growlie. As a matter of fact, your team has already been rewarded for reaching this far. With this problem now solved, there is another issue happening right now, if you are interessed check #bTommy#k there for the info. So, are you returning straight to Henesys now?</value>
+  </data>
+  <data name="HenesysPQ_Tutorial0" xml:space="preserve">
+    <value>This place can be best described as the prime spot where you can taste the delicious rice cakes made by Moon Bunny every full moon.</value>
+  </data>
+  <data name="HenesysPQ_Tutorial1" xml:space="preserve">
+    <value>Gather up the primrose seeds from the primrose leaves all over this area, and plant the seeds at the footing near the crescent moon to see the primrose bloom. There are 6 types of primroses, and all of them require different footings. It is imperative that the footing fits the seed of the flower.</value>
+  </data>
+  <data name="HenesysPQ_Tutorial2" xml:space="preserve">
+    <value>When the flowers of primrose blooms, the full moon will rise, and that's when the Moon Bunnies will appear and start pounding the mill. Your task is to fight off the monsters to make sure that Moon Bunny can concentrate on making the best rice cake possible.</value>
+  </data>
+  <data name="HenesysPQ_Tutorial3" xml:space="preserve">
+    <value>I would like for you and your party members to cooperate and get me 10 rice cakes. I strongly advise you to get me the rice cakes within the allotted time.</value>
+  </data>
+  <data name="HenesysPQ_EnterTalk1" xml:space="preserve">
+    <value>Hi there! I'm Tory. This place is covered with mysterious aura of the full moon, and no one person can enter here by him/herself.</value>
+  </data>
+  <data name="HenesysPQ_Intro" xml:space="preserve">
+    <value>#e#b&lt;Party Quest: Primrose Hill&gt;#k#n
+Collect primrose seeds from the flowers at the bottom part of the map and drop them by the platforms above the stage. Primrose seed color must match to grow the seeds, so test until you find the correct combination. When all the seeds have been planted, that is, starting second part of the mission, scout the Moon Bunny while it prepares Rice Cakes for the hungry Growlie. Once Growlie becomes satisfied, your mission is complete.</value>
+  </data>
+  <data name="PartyQuest_NeedLeaderTalk" xml:space="preserve">
+    <value>If you'd like to enter here, the leader of your party will have to talk to me. Talk to your party leader about this.</value>
+  </data>
+  <data name="PartyQuest_CannotStart_Req" xml:space="preserve">
+    <value>You cannot start this party quest yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map.</value>
+  </data>
+  <data name="PartyQuest_CannotStart_ChannelFull" xml:space="preserve">
+    <value>Someone is already attempting the PQ. Please wait for them to finish, or find another channel.</value>
+  </data>
+  <data name="Redeem_NotEnough" xml:space="preserve">
+    <value>You don't have enough {0} to buy it yet!</value>
+  </data>
+  <data name="Redeem_InventoryFull" xml:space="preserve">
+    <value>It seems you are short on space in one of your inventories. Please check that first to get rewarded properly.</value>
+  </data>
+  <data name="Redeem_Success" xml:space="preserve">
+    <value>Here it is. Enjoy!</value>
+  </data>
+  <data name="Henesys" xml:space="preserve">
+    <value>Henesys</value>
+  </data>
+  <data name="AreYouReturningMap" xml:space="preserve">
+    <value>So, are you returning to {0} now?</value>
+  </data>
+  <data name="HenesysPQ_TutorialTalk0" xml:space="preserve">
+    <value>Growl! I am Growlie, always ready to protect this place. What brought you here?\r\n#b#L0# Please tell me what this place is all about.#l\r\n#L1# I have brought #t4001101#.#l\r\n#L2# I would like to leave this place.#l</value>
+  </data>
+  <data name="HenesysPQ_TutorialTalk1" xml:space="preserve">
+    <value>Growl! I am Growlie, always ready to protect this place. What brought you here?\r\n#b#L0# Please tell me what this place is all about.#l\r\n#L2# I would like to leave this place.#l</value>
+  </data>
+  <data name="HenesysPQ_Error" xml:space="preserve">
+    <value>The Henesys PQ has encountered an error.</value>
+  </data>
+  <data name="AreYouReturning" xml:space="preserve">
+    <value>Are you sure you want to leave?</value>
+  </data>
+  <data name="HenesysPQ_CommitTask_Success" xml:space="preserve">
+    <value>Oh... isn't this rice cake made by Moon Bunny? Please hand me the rice cake. Mmmm ... these seems delicious. Please come see me next time for more #b#t4001101##k. Have a safe trip home!</value>
+  </data>
+  <data name="HenesysPQ_CommitTask_Fail" xml:space="preserve">
+    <value>I advise you to check and make sure that you have indeed gathered up #b10 #t4001101#s#k.</value>
+  </data>
+  <data name="HenesysPQ_TutorialTalk2" xml:space="preserve">
+    <value>You better collect some delicious rice cakes for me then, because time is running out, Growl!</value>
+  </data>
+  <data name="PartyQuest_CannotStart_Party" xml:space="preserve">
+    <value>You can participate in the party quest only if you are in a party.</value>
+  </data>
+  <data name="KerningPQ_Description" xml:space="preserve">
+    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;
+#k#n{0}
+
+How about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b</value>
+  </data>
+  <data name="KerningPQ_Intro" xml:space="preserve">
+    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;#k#n
+Your party must pass through many obstacles and puzzles while traversing the sub-objectives of this Party Quest. Coordinate with your team in order to further advance and defeat the final boss and collect the dropped item in order to access the rewards and bonus stage.</value>
+  </data>
+  <data name="KerningPQ_Error" xml:space="preserve">
+    <value>The Kerning PQ has encountered an error.</value>
+  </data>
+  <data name="KerningPQ_Abandon" xml:space="preserve">
+    <value>Do you wish to abandon this area?</value>
+  </data>
 </root>

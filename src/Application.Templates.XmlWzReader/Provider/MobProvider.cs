@@ -12,13 +12,13 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Mob;
 
-        public MobProvider(TemplateOptions options)
+        public MobProvider(ProviderOption options)
             : base(options) { }
 
         protected override string? GetImgPathByTemplateId(int mobId)
         {
             string fileName = mobId.ToString().PadLeft(7, '0') + ".img.xml";
-            return Path.Combine(_dataBaseDir, ProviderName, fileName);
+            return Path.Combine(GetBaseDir(), ProviderName, fileName);
         }
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? imgPath)

@@ -314,7 +314,7 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            if (!Directory.Exists(ScriptResFactory.ScriptDirName))
+            if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
             if (ServerConfig.ChannelConfig.Count == 0)

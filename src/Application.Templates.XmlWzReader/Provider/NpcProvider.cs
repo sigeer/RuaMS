@@ -7,7 +7,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Npc;
 
-        public NpcProvider(TemplateOptions options)
+        public NpcProvider(ProviderOption options)
             : base(options) { }
 
         protected override string? GetImgPathByTemplateId(int key)

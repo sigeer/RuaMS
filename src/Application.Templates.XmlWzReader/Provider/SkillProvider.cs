@@ -9,7 +9,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public class SkillProvider : AbstractGroupProvider<SkillTemplate>
     {
         public override string ProviderName => ProviderNames.Skill;
-        public SkillProvider(TemplateOptions options) : base(options)
+        public SkillProvider(ProviderOption options) : base(options)
         {
         }
 

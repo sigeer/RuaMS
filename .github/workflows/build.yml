@@ -11,6 +11,9 @@ on:
       - 'src/**/*.cs'
       - 'test/**/*.cs'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   BuildAndTest:
@@ -21,9 +24,10 @@ jobs:
           - windows-latest
 
     runs-on: ${{ matrix.os }}
+
     env:
-      ms-wz: ${{ github.workspace }}/src/Application.Resources/wz
-      ms-script: ${{ github.workspace }}/src/Application.Resources/scripts
+      RUA_MS_WZConfig__BaseDir: ${{ github.workspace }}/src/Application.Resources/wz
+      RUA_MS_ScriptConfig__BaseDir: ${{ github.workspace }}/src/Application.Resources/scripts
 
     steps:
       - name: Checkout repository
@@ -41,7 +45,7 @@ jobs:
         run: dotnet build "./src/Application.Host/Application.Host.csproj" --no-restore -c Release
 
       - name: Test Infrastructure
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure"  --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure" --blame-crash --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
 
       - name: Test Server
-        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games"  --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
+        run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Games" --blame-crash --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"

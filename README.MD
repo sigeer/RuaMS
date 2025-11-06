@@ -12,7 +12,7 @@
 ## 开发环境
 
 - .Net9
-- Mysql8
+- Mysql8（可选）
 
 ## 项目结构
 
@@ -47,66 +47,17 @@
 
 ##### wz
 
-当前项目没有包含`wz`，为配合脚本，建议也使用[BeiDou](https://github.com/BeiDouMS/BeiDou-Server) 的wz。
+当前项目使用的`wz`来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server) 。
 
 ### tools
 
-- CodeMigration：转换代码的迁移工具
+- **CodeMigration**：转换代码的迁移工具
 	- ReplaceJsContent类：用于替换js脚本中的Java代码
 
 ### test
 
-- ServiceTest 测试
-
-## 发布
-
-通过设置 -p:IsStandalone 切换输出版本
-
-### master-standalone
-
-内置`Application.Core.Channel.InProgress`，可通过设置`ChannelServerConfig`调整频道，也可通过设置`UseExtraChannel=true`接入其他频道服务器
-
-### master
-
-必须设置`UseExtraChannel=true`，不然毫无意义
-
-### channel
-
-通过设置`ChannelServerConfig.MasterServerGrpcAddress`连接到`MasterServer`
-
-### docker（默认单机模式）
-
-**生成镜像**
-
-`docker build -f ./src/Application.Host/Dockerfile-standalone -t ruams-standalone:latest -t ruams-standalone:0.0.1 .`
-
-**运行**
-
-```bash
-docker run -itd \
--p 8080:8080 \
--p 8484:8484 \
--p 7575-7600:7575-7600 \
--v ./logs:/app/logs \
---name ruams-standalone \
-sigeer/ruams-standalone
-
-# 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
-
-# 使用Mysql需要设置数据库类型及连接字符串
--e "RUA_MS_Database=MySql" \
--e "RUA_MS_ConnectionStrings__MySql=" \
-
-# 公网运行运行需要修改`ChannelServerConfig.ServerHost`
--e "RUA_MS_ChannelServerConfig__ServerHost=" \
-
-# 允许接入其他频道服务器
--p 7878:7878 \
--e "RUA_MS_UseExtraChannel=true" \
-```
-
-**sqlite数据库备份**  
-`docker cp [container_id]:/app/database.db ./backup.db`
+- **ServiceTest** 测试
+- **XmlWzReader.SouceGenerator** 代码生成，辅助生成Template赋值代码
 
 ## 运行
 
@@ -118,11 +69,11 @@ sigeer/ruams-standalone
 ### 步骤
 
 1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
-2. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
+2. 检查wz路径：放在当前应用根目录，或者设置环境变量`RUA_MS_WZConfig__BaseDir`/`WZConfig__BaseDir`
 
 ### 单进程模式（master-standalone）
 
-配置`UseExtraChannel=false`，登录服务器 和 频道服务器处于同一进程内，直接运行`Application.Host.exe`即可
+配置`UseExtraChannel=false`，直接运行`Application.Host.exe`
 
 
 ### 多进程模式

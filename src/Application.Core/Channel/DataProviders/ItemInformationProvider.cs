@@ -65,8 +65,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     readonly AutoBanDataManager _autoBanDataManager;
 
-    readonly EquipProvider _equipProvider = ProviderFactory.GetProvider<EquipProvider>();
-    readonly ItemProvider _itemProvider = ProviderFactory.GetProvider<ItemProvider>();
+    readonly EquipProvider _equipProvider = ProviderSource.Instance.GetProvider<EquipProvider>();
+    readonly ItemProvider _itemProvider = ProviderSource.Instance.GetProvider<ItemProvider>();
     public ItemInformationProvider(
         ILogger<DataBootstrap> logger,
         AutoBanDataManager autoBanDataManager) : base(logger)

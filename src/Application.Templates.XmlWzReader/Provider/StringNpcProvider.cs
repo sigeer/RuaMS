@@ -6,7 +6,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     internal class StringNpcProvider : StringBaseProvider
     {
-        public StringNpcProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Npc])
+        public StringNpcProvider(ProviderOption options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Npc])
         {
         }
 

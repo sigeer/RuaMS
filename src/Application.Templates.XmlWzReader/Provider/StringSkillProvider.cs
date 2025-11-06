@@ -6,7 +6,7 @@ namespace Application.Templates.XmlWzReader.Provider
 {
     public sealed class StringSkillProvider : StringBaseProvider
     {
-        public StringSkillProvider(TemplateOptions options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Skill])
+        public StringSkillProvider(ProviderOption options, CultureInfo cultureInfo) : base(options, cultureInfo, [StringTemplateType.Skill])
         {
         }
 

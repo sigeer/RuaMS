@@ -2,10 +2,6 @@ namespace Application.Scripting
 {
     public class ScriptFile
     {
-        public ScriptFile(string category, string name) : this(category, name, ScriptType.Js)
-        {
-        }
-
         public ScriptFile(string category, string name, ScriptType type)
         {
             Category = category;
@@ -21,9 +17,9 @@ namespace Application.Scripting
         public string CacheKey => $"{Category}_{Name}";
         public string FileName => $"{Name}.{Type.ToString().ToLower()}";
 
-        public void UpdateType(ScriptType type)
+        public void ToggleType()
         {
-            Type = type;
+            Type = Type == ScriptType.Js ? ScriptType.Lua : ScriptType.Js;
         }
     }
 }

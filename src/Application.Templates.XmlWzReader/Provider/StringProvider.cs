@@ -8,7 +8,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         CultureInfo _culture;
         public override string ProviderName => ProviderNames.String;
-        public StringProvider(TemplateOptions options, CultureInfo cultureInfo)
+        public StringProvider(ProviderOption options, CultureInfo cultureInfo)
             : base(cultureInfo.Name, options)
         {
             _culture = cultureInfo;

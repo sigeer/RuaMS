@@ -34,7 +34,7 @@ public class DevtestScriptManager : AbstractScriptManager
 
     public IEngine? GetScriptEngine(string path)
     {
-        return base.getInvocableScriptEngine(new ScriptFile("", path));
+        return base.getInvocableScriptEngine(new ScriptFile("", path, ScriptType.Js));
     }
 
 }

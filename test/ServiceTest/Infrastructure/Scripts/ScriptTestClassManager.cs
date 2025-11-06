@@ -55,5 +55,11 @@ namespace ServiceTest.Infrastructure.Scripts
             Console.WriteLine("C#: " + str);
             return str;
         }
+
+
+        public static string ParamsFunction(string input, params string[] paramsValue)
+        {
+            return string.Format(input, paramsValue);
+        }
     }
 }

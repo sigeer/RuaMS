@@ -11,11 +11,11 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Map;
 
-        public MapProvider(TemplateOptions options)
+        public MapProvider(ProviderOption options)
             : base(options)
         {
-            _files = Directory.GetFiles(Path.Combine(_dataBaseDir, ProviderName, "Map"), "*.xml", SearchOption.AllDirectories)
-                    .Select(x => Path.GetRelativePath(_dataBaseDir, x))
+            _files = Directory.GetFiles(Path.Combine(GetBaseDir(), ProviderName, "Map"), "*.xml", SearchOption.AllDirectories)
+                    .Select(x => Path.GetRelativePath(GetBaseDir(), x))
                     .ToArray();
         }
 

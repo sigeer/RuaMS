@@ -16,7 +16,7 @@ namespace Application.Templates.XmlWzReader.Provider
     {
         public override string ProviderName => ProviderNames.Item;
 
-        public ItemProvider(TemplateOptions options) : base(options)
+        public ItemProvider(ProviderOption options) : base(options)
         {
         }
 

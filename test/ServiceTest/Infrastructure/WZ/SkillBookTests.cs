@@ -12,10 +12,8 @@ namespace ServiceTest.Infrastructure.WZ
     {
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<QuestProvider>(() => new QuestProvider(new Application.Templates.TemplateOptions()));
-            });
+            _providerSource.TryRegisterProvider<QuestProvider>(o => new QuestProvider(o));
+            ProviderSource.Instance = _providerSource;
         }
         [Test]
         public void LoadFromQuestTest()
@@ -35,7 +33,7 @@ namespace ServiceTest.Infrastructure.WZ
             sw.Stop();
             Console.WriteLine("new " + sw.Elapsed.TotalSeconds);
 
-            var provider = ProviderFactory.GetProvider<QuestProvider>();
+            var provider = _providerSource.GetProvider<QuestProvider>();
             var newStr = JsonConvert.SerializeObject(newData);
 
             Assert.That(newStr, Is.EqualTo(oldStr));

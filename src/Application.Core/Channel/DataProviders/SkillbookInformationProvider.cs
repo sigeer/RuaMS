@@ -45,7 +45,7 @@ public class SkillbookInformationProvider : DataBootstrap
     private Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
-    QuestProvider questProvider = ProviderFactory.GetProvider<QuestProvider>();
+    QuestProvider questProvider = ProviderSource.Instance.GetProvider<QuestProvider>();
 
     public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<DataBootstrap> logger) : base(logger)
     {
@@ -342,7 +342,7 @@ public class SkillbookInformationProvider : DataBootstrap
         {
             Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
 
-            foreach (var file in ScriptResFactory.LoadAllScript())
+            foreach (var file in ScriptSource.Instance.LoadAllScript())
             {
                 if (file.Name.EndsWith(".js"))
                 {

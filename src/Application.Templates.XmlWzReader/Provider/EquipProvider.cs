@@ -10,7 +10,7 @@ namespace Application.Templates.XmlWzReader.Provider
     public sealed class EquipProvider : AbstractGroupProvider<AbstractItemTemplate>
     {
         public override string ProviderName => ProviderNames.Character;
-        public EquipProvider(TemplateOptions options) : base(options)
+        public EquipProvider(ProviderOption options) : base(options)
         {
         }
 

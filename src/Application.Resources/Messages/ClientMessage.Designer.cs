@@ -646,6 +646,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 玉兔月妙成功捣出了第 {0} 份年糕！ 的本地化字符串。
+        /// </summary>
+        public static string Event_HenesysPQ_Message1 {
+            get {
+                return ResourceManager.GetString("Event_HenesysPQ_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玉兔月妙受到了伤害，请保护好它，这样它才能继续做出美味的年糕！ 的本地化字符串。
+        /// </summary>
+        public static string Event_HenesysPQ_Message2 {
+            get {
+                return ResourceManager.GetString("Event_HenesysPQ_Message2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 犹泰：呃...你们真让我作呕。我想要的不过是让这个国家成为全世界最伟大的炼金术强国。如果他们不接受，我不惜一切代价也要独自实现这个目标！！！ 的本地化字符串。
         /// </summary>
         public static string Event_MagatiaPQ_Message1 {
@@ -1398,6 +1416,33 @@ namespace Application.Resources.Messages {
         public static string KillMapCommand_Description {
             get {
                 return ResourceManager.GetString("KillMapCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 当前语言：{0} 的本地化字符串。
+        /// </summary>
+        public static string Language_ShowCurrent {
+            get {
+                return ResourceManager.GetString("Language_ShowCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 查看/修改当前语言，仅本次登录时生效 的本地化字符串。
+        /// </summary>
+        public static string LanguageCommand_Description {
+            get {
+                return ResourceManager.GetString("LanguageCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 格式：!language [&lt;0|1&gt;] 的本地化字符串。
+        /// </summary>
+        public static string LanguageCommand_Syntax {
+            get {
+                return ResourceManager.GetString("LanguageCommand_Syntax", resourceCulture);
             }
         }
         

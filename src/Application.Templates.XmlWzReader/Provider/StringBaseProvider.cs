@@ -13,7 +13,7 @@ namespace Application.Templates.XmlWzReader.Provider
         protected StringTemplateType[] _types;
         protected CultureInfo _culture;
         protected string[] _files;
-        protected StringBaseProvider(TemplateOptions options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
+        protected StringBaseProvider(ProviderOption options, CultureInfo currentCulture, StringTemplateType[] types) : base(options)
         {
             _types = types;
 

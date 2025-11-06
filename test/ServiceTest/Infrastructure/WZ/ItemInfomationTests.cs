@@ -9,9 +9,7 @@ using client.inventory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
-using ServiceTest.TestUtilities;
 using System.Globalization;
-using System.Text;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -32,13 +30,11 @@ namespace ServiceTest.Infrastructure.WZ
 
         protected override void OnProviderRegistering()
         {
-            ProviderFactory.ConfigureWith(o =>
-            {
-                o.RegisterProvider<ItemProvider>(() => new ItemProvider(new Application.Templates.TemplateOptions()));
-                o.RegisterProvider<EquipProvider>(() => new EquipProvider(new Application.Templates.TemplateOptions()));
+            _providerSource.TryRegisterProvider<ItemProvider>(o => new ItemProvider(o));
+            _providerSource.TryRegisterProvider<EquipProvider>(o => new EquipProvider(o));
 
-                o.RegisterProvider<StringProvider>(() => new StringProvider(new Application.Templates.TemplateOptions(), CultureInfo.GetCultureInfo("en-US")));
-            });
+            _providerSource.TryRegisterProvider<StringProvider>(o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")));
+            ProviderSource.Instance = _providerSource;
         }
 
         protected override void OnProviderRegistered()
@@ -54,7 +50,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         int[] TakeRandom(int count = 10)
         {
-            return ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
+            return _providerSource.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Values.SelectMany(x => x).ToArray();
@@ -68,7 +64,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         int[] TakeByTypeRandom(Func<int, bool> func, int count = 10)
         {
-            return ProviderFactory.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
+            return _providerSource.GetProvider<StringProvider>().GetSubProvider(StringCategory.Item).LoadAll().Select(x => x.TemplateId)
                 .Where(x => x > 1000000) // 脸型、发型等也被算作装备，这里排除
                 .GroupBy(x => x / 10000).ToDictionary(x => x.Key, x => x.OrderBy(x => Guid.NewGuid()).Take(count).ToArray()) // 分类 让每种类型的物品都通过测试哪怕实际上并不会调用到方法
                 .Where(x => func(x.Key)).SelectMany(x => x.Value).ToArray();
@@ -453,7 +449,7 @@ namespace ServiceTest.Infrastructure.WZ
             var oldSpecialData = oldProvider.getItemEffect(specialId);
             Assert.That(ToJson(newSpecialData), Is.EqualTo(ToJson(oldSpecialData)), $"Id = {specialId}");
 
-            var allItems = ProviderFactory.GetProvider<ItemProvider>().GetAllConsume().Select(x => x.TemplateId).ToArray();
+            var allItems = _providerSource.GetProvider<ItemProvider>().GetAllConsume().Select(x => x.TemplateId).ToArray();
             foreach (var item in allItems.Except(special))
             {
                 var newData = newProvider.getItemEffect(item);
@@ -461,7 +457,7 @@ namespace ServiceTest.Infrastructure.WZ
 
                 var newDataStr = ToJson(newData);
                 var oldDataStr = ToJson(oldData);
-                
+
                 Assert.That(newDataStr, Is.EqualTo(oldDataStr), $"Id = {item}");
             }
         }

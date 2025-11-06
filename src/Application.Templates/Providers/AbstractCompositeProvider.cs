@@ -7,7 +7,7 @@ namespace Application.Templates.Providers
     public abstract class AbstractCompositeProvider<TTemplate> : AbstractProvider<TTemplate> where TTemplate : AbstractTemplate
     {
         protected string[] _files;
-        public AbstractCompositeProvider(TemplateOptions options, string[] files) : base(options)
+        public AbstractCompositeProvider(ProviderOption options, string[] files) : base(options)
         {
             _files = files.Select(x => Path.Combine(ProviderName, x)).ToArray();
         }

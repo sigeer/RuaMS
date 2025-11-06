@@ -32,7 +32,7 @@ public class MobSkillFactory
 {
     private static Dictionary<string, MobSkill> mobSkills = new();
     private static ReaderWriterLockSlim mainLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-    static MobSkillProvider _provider = ProviderFactory.GetProvider<MobSkillProvider>();
+    static MobSkillProvider _provider = ProviderSource.Instance.GetProvider<MobSkillProvider>();
 
     public static MobSkill? GetMobSkill(int type, int level)
     {

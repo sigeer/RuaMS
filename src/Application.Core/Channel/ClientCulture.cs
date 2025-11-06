@@ -21,7 +21,7 @@ namespace Application.Core.Channel
         public ClientCulture(CultureInfo cultureInfo)
         {
             CultureInfo = cultureInfo;
-            StringProvider = ProviderFactory.GetProviderByKey<StringProvider>(CultureInfo.Name)
+            StringProvider = ProviderSource.Instance.GetProviderByKey<StringProvider>(CultureInfo.Name)
                 ?? throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到{CultureInfo.Name}相应的wz资源");
         }
 
@@ -50,7 +50,7 @@ namespace Application.Core.Channel
             return string.Format(message, paramsValue);
         }
 
-        public string GetScriptTalkByKey(string key, params string[] paramsValue)
+        public string GetScriptTalkByKey(string key, params object[] paramsValue)
         {
             var message = ScriptTalk.ResourceManager.GetString(key, CultureInfo);
             if (string.IsNullOrEmpty(message))

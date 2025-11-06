@@ -7,7 +7,7 @@ namespace Application.Templates.Providers
     public abstract class AbstractAllProvider<TTemplate> : AbstractProvider<TTemplate> where TTemplate : AbstractTemplate
     {
         protected string _file;
-        protected AbstractAllProvider(TemplateOptions options, string file) : base(options)
+        protected AbstractAllProvider(ProviderOption options, string file) : base(options)
         {
             _file = Path.Combine(ProviderName, file);
         }

@@ -12,10 +12,10 @@ namespace Application.Templates.Providers
         /// .img.xml文件对wz根目录的相对路径
         /// </summary>
         protected string[] _files;
-        protected AbstractGroupProvider(TemplateOptions options) : base(options)
+        protected AbstractGroupProvider(ProviderOption options) : base(options)
         {
-            _files = Directory.GetFiles(Path.Combine(_dataBaseDir, ProviderName), "*.xml", SearchOption.AllDirectories)
-                .Select(x => Path.GetRelativePath(_dataBaseDir, x))
+            _files = Directory.GetFiles(Path.Combine(GetBaseDir(), ProviderName), "*.xml", SearchOption.AllDirectories)
+                .Select(x => Path.GetRelativePath(GetBaseDir(), x))
                 .ToArray();
         }
 

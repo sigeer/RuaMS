@@ -177,7 +177,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    public void action(IChannelClient c, sbyte mode, sbyte type, int selection)
+    public bool action(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -196,11 +196,12 @@ public class NPCScriptManager : AbstractScriptManager
                     else
                     {
                         c.NPCConversationManager?.dispose();
-                        return;
                     }
                 }
                 else
                     iv.CallFunction("action", mode, type, selection);
+
+                return true;
             }
             catch (Exception t)
             {
@@ -209,8 +210,10 @@ public class NPCScriptManager : AbstractScriptManager
                     _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.ScriptMeta, c.NPCConversationManager.getNpc());
                     c.NPCConversationManager.dispose();
                 }
+                return false;
             }
         }
+        return false;
     }
 
     public void dispose(NPCConversationManager cm)

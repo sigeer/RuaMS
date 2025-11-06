@@ -11,12 +11,11 @@ namespace Application.Templates.Providers
         public abstract string ProviderName { get; }
 
 
-        protected readonly TemplateOptions _options;
+        protected readonly ProviderOption _options;
         /// <summary>
         /// wz根目录
         /// </summary>
-        protected string _dataBaseDir;
-
+        protected string? _dataBaseDir;
         protected WzFileProvider _fileProvider;
 
         private int _refCount = 0;
@@ -24,17 +23,17 @@ namespace Application.Templates.Providers
         bool _hasAllLoaded = false;
         Lock _loadAllLock = new Lock();
 
-        internal protected AbstractProvider(TemplateOptions options)
+        internal protected AbstractProvider(ProviderOption options)
         {
             _templates = new();
 
             _options = options;
-            _dataBaseDir = ProviderFactory.GetEffectDir(options.DataDir);
+            _dataBaseDir = options.DataDir;
 
-            _fileProvider = new WzFileProvider(_dataBaseDir);
+            _fileProvider = new WzFileProvider(GetBaseDir());
         }
 
-        public string GetBaseDir() => _dataBaseDir;
+        public string GetBaseDir() => _dataBaseDir ?? throw new ArgumentNullException(nameof(_dataBaseDir));
         /// <summary>
         /// 读取所有img，有缓存
         /// </summary>
