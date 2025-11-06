@@ -21,9 +21,9 @@ function levelStart( ... )
 
         cm:sendSelectLevel(
             cm:GetTalkMessage("HenesysPQ_Description", em:GetRequirementDescription(cm:getClient())) .. 
-            "#L0#" .. cm:GetTalkMessage("PartyQuest_Participate") .. "\r\n#l" .. 
-            "#L1#" .. cm:GetTalkMessage("PartyQuest_Intro") .. "\r\n#l" .. 
-            "#L2#" .. cm:GetTalkMessage("HenesysPQ_Redeem") .. "\r\n#l")
+            "\r\n#L0#" .. cm:GetTalkMessage("PartyQuest_Participate") .. "#l" .. 
+            "\r\n#L1#" .. cm:GetTalkMessage("PartyQuest_Intro") .. "#l" .. 
+            "\r\n#L2#" .. cm:GetTalkMessage("HenesysPQ_Redeem") .. "#l")
 
     elseif cm:getMapId() == 910010100 then
         cm:sendYesNoLevel("dispose", "ExitYes", cm:GetTalkMessage("HenesysPQ_Complete"))

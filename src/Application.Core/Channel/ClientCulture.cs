@@ -50,7 +50,7 @@ namespace Application.Core.Channel
             return string.Format(message, paramsValue);
         }
 
-        public string GetScriptTalkByKey(string key, params string[] paramsValue)
+        public string GetScriptTalkByKey(string key, params object[] paramsValue)
         {
             var message = ScriptTalk.ResourceManager.GetString(key, CultureInfo);
             if (string.IsNullOrEmpty(message))

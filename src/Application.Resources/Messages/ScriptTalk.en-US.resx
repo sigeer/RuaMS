@@ -211,10 +211,16 @@
     <value>mesos</value>
   </data>
   <data name="PartyQuest_Requirement" xml:space="preserve">
-    <value>\r\n    Number of players: {0}\r\n    Level range: {1}\r\n    Time limit: {2} minutes</value>
+    <value>
+    Number of players: {0}
+    Level range: {1}
+    Time limit: {2} minutes</value>
   </data>
   <data name="HenesysPQ_Description" xml:space="preserve">
-    <value>#e#b&lt;Party Quest: Primrose Hill&gt;\r\n#k#n{0}\r\n\r\nI'm Tory. Inside here is a beautiful hill where the primrose blooms. There's a tiger that lives in the hill, Growlie, and he seems to be looking for something to eat. Would you like to head over to the hill of primrose and join forces with your party members to help Growlie out?#b\r\n</value>
+    <value>#e#b&lt;Party Quest: Primrose Hill&gt;
+#k#n{0}
+
+I'm Tory. Inside here is a beautiful hill where the primrose blooms. There's a tiger that lives in the hill, Growlie, and he seems to be looking for something to eat. Would you like to head over to the hill of primrose and join forces with your party members to help Growlie out?#b</value>
   </data>
   <data name="PartyQuest_Participate" xml:space="preserve">
     <value>I want to participate in the party quest.</value>
@@ -244,7 +250,8 @@
     <value>Hi there! I'm Tory. This place is covered with mysterious aura of the full moon, and no one person can enter here by him/herself.</value>
   </data>
   <data name="HenesysPQ_Intro" xml:space="preserve">
-    <value>#e#b&lt;Party Quest: Primrose Hill&gt;#k#n\r\nCollect primrose seeds from the flowers at the bottom part of the map and drop them by the platforms above the stage. Primrose seed color must match to grow the seeds, so test until you find the correct combination. When all the seeds have been planted, that is, starting second part of the mission, scout the Moon Bunny while it prepares Rice Cakes for the hungry Growlie. Once Growlie becomes satisfied, your mission is complete.</value>
+    <value>#e#b&lt;Party Quest: Primrose Hill&gt;#k#n
+Collect primrose seeds from the flowers at the bottom part of the map and drop them by the platforms above the stage. Primrose seed color must match to grow the seeds, so test until you find the correct combination. When all the seeds have been planted, that is, starting second part of the mission, scout the Moon Bunny while it prepares Rice Cakes for the hungry Growlie. Once Growlie becomes satisfied, your mission is complete.</value>
   </data>
   <data name="PartyQuest_NeedLeaderTalk" xml:space="preserve">
     <value>If you'd like to enter here, the leader of your party will have to talk to me. Talk to your party leader about this.</value>
@@ -295,10 +302,14 @@
     <value>You can participate in the party quest only if you are in a party.</value>
   </data>
   <data name="KerningPQ_Description" xml:space="preserve">
-    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;\r\n#k#n{0}\r\n\r\nHow about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n</value>
+    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;
+#k#n{0}
+
+How about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b</value>
   </data>
   <data name="KerningPQ_Intro" xml:space="preserve">
-    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;#k#n\r\nYour party must pass through many obstacles and puzzles while traversing the sub-objectives of this Party Quest. Coordinate with your team in order to further advance and defeat the final boss and collect the dropped item in order to access the rewards and bonus stage.</value>
+    <value>#e#b&lt;Party Quest: 1st Accompaniment&gt;#k#n
+Your party must pass through many obstacles and puzzles while traversing the sub-objectives of this Party Quest. Coordinate with your team in order to further advance and defeat the final boss and collect the dropped item in order to access the rewards and bonus stage.</value>
   </data>
   <data name="KerningPQ_Error" xml:space="preserve">
     <value>The Kerning PQ has encountered an error.</value>

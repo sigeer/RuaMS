@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +21,7 @@ namespace Application.Core.Channel.HostExtensions
                 var debugConfig = new Dictionary<string, string?>
                 {
                     [$"{AppSettingKeys.Section_WZ}:BaseDir"] = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Application.Resources", "wz")),
+                    [$"{AppSettingKeys.Section_Script}:BaseDir"] = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Application.Resources", "scripts")),
                 };
                 builder.Configuration.AddInMemoryCollection(debugConfig);
             }
@@ -39,6 +41,7 @@ namespace Application.Core.Channel.HostExtensions
                 .RegisterProvider<MobSkillProvider>(o => { o.UseCache = false; return new MobSkillProvider(o); })
                 .RegisterProvider<EtcNpcLocationProvider>(o => new EtcNpcLocationProvider(o))
                 .RegisterProvider<SkillProvider>(o => { o.UseCache = false; return new SkillProvider(o); })
+                .RegisterProvider<MobWithBossHpBarProvider>(o => { o.UseCache = false; return new MobWithBossHpBarProvider(o); })
 
                 .RegisterKeydProvider("zh-CN", o => new StringProvider(o, CultureInfo.GetCultureInfo("zh-CN")))
                 .RegisterKeydProvider("en-US", o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")))

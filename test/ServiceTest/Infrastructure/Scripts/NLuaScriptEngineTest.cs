@@ -2,6 +2,7 @@ using Application.Scripting.JS;
 using Application.Scripting.Lua;
 using Application.Utility.Extensions;
 using System.Drawing;
+using System.Text;
 
 namespace ServiceTest.Infrastructure.Scripts
 {
@@ -310,6 +311,30 @@ namespace ServiceTest.Infrastructure.Scripts
                 """;
 
             base.TestChinese();
+        }
+
+        [Test]
+        public void TestParamsFunction()
+        {
+            Code = """
+                function test1()
+                    return ScriptTestStaticClass.ParamsFunction("s1{0}", "s2")
+                end
+
+                function test2()
+                    return ScriptTestStaticClass.ParamsFunction("s1s2")
+                end
+                """;
+            _engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
+            _engine.Evaluate(Code);
+
+
+            Assert.That(_engine.CallFunction("test1").ToObject<string>(), Is.EqualTo("s1s2"));
+            Assert.That(_engine.CallFunction("test2").ToObject<string>(), Is.EqualTo("s1s2"));
+
+            // 推测：NLua 对 params string[] 参数类型的栈处理存在 bug。第二次调用时栈状态不干净，导致 CreateParamsArray 崩溃
+            // 改用 params object[] 即可解决
+            Assert.Throws<NullReferenceException>(() => _engine.CallFunction("test1").ToObject<string>());
         }
     }
 }

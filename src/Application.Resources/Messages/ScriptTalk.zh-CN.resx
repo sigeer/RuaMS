@@ -211,10 +211,16 @@
     <value>金币</value>
   </data>
   <data name="PartyQuest_Requirement" xml:space="preserve">
-    <value>\r\n   组队人数：{0}\r\n   等级要求：{1} \r\n   时间限制：{2} 分钟</value>
+    <value>
+   组队人数：{0}
+   等级要求：{1} 
+   时间限制：{2} 分钟</value>
   </data>
   <data name="HenesysPQ_Description" xml:space="preserve">
-    <value>#e#b&lt;组队任务: 迎月花山丘&gt;\r\n#k#n{0}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n</value>
+    <value>#e#b&lt;组队任务: 迎月花山丘&gt;
+#k#n{0}
+
+我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b</value>
   </data>
   <data name="PartyQuest_Participate" xml:space="preserve">
     <value>我想参加组队任务。</value>
@@ -244,7 +250,8 @@
     <value>嗨！我是达尔利。这个地方笼罩着满月的神秘气息，任何人都不能独自进入这里。</value>
   </data>
   <data name="HenesysPQ_Intro" xml:space="preserve">
-    <value>#e#b&lt;组队任务: 迎月花山丘&gt;#k#n\r\n从地图底部的花朵上收集迎月花种子，然后把它们扔到上方的平台。迎月花种子的颜色必须匹配才能让种子生长，所以要不断尝试直到找到正确的组合。当所有种子都种下后，也就是任务的第二阶段开始了，在月妙为饥饿的兴儿准备年糕时进行侦查。一旦兴儿吃饱了，你的任务就完成了。</value>
+    <value>#e#b&lt;组队任务: 迎月花山丘&gt;#k#n
+从地图底部的花朵上收集迎月花种子，然后把它们扔到上方的平台。迎月花种子的颜色必须匹配才能让种子生长，所以要不断尝试直到找到正确的组合。当所有种子都种下后，也就是任务的第二阶段开始了，在月妙为饥饿的兴儿准备年糕时进行侦查。一旦兴儿吃饱了，你的任务就完成了。</value>
   </data>
   <data name="PartyQuest_NeedLeaderTalk" xml:space="preserve">
     <value>如果你想进入这里，必须由你的队长和我交谈。和你的队长说一下这件事。</value>
@@ -295,10 +302,14 @@
     <value>只有当你加入一个队伍时，你才能参加组队任务。</value>
   </data>
   <data name="KerningPQ_Description" xml:space="preserve">
-    <value>#e#b&lt;组队任务：第一次合作&gt;\r\n#k#n{0}\r\n\r\n你和你的队伍成员一起完成任务怎么样？在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。如果你想尝试，请告诉你的#b队伍领袖#k来找我谈谈。#b\r\n</value>
+    <value>#e#b&lt;组队任务：第一次合作&gt;
+#k#n{0}
+
+你和你的队伍成员一起完成任务怎么样？在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。如果你想尝试，请告诉你的#b队伍领袖#k来找我谈谈。#b</value>
   </data>
   <data name="KerningPQ_Intro" xml:space="preserve">
-    <value>#e#b&lt;组队任务：第一次合作&gt;#k#n\r\n在完成这个组队任务的子目标时，你的队伍必须通过许多障碍和谜题。与你的团队协调合作，以便进一步前进，击败最终BOSS，并收集掉落物品以获得奖励和额外阶段的机会。</value>
+    <value>#e#b&lt;组队任务：第一次合作&gt;#k#n
+在完成这个组队任务的子目标时，你的队伍必须通过许多障碍和谜题。与你的团队协调合作，以便进一步前进，击败最终BOSS，并收集掉落物品以获得奖励和额外阶段的机会。</value>
   </data>
   <data name="KerningPQ_Error" xml:space="preserve">
     <value>废弃都市组队任务遇到了一个错误。</value>

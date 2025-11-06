@@ -112,7 +112,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
         sendOk(getDefaultTalk(npc));
     }
 
-    public string GetTalkMessage(string text, params string[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="param">使用 params string[] 时，可能报错</param>
+    /// <returns></returns>
+    public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
 
     public void sendNext(string text, byte speaker = 0)
     {

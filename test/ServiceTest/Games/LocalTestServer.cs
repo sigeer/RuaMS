@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using ServiceTest.TestUtilities;
 using System.Text;
 using Yitter.IdGenerator;
@@ -34,8 +35,18 @@ namespace ServiceTest.Games
 
             var builder = WebApplication.CreateBuilder();
 
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+                .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
             builder.Logging.ClearProviders();
-            builder.Logging.AddSerilog();
+            builder.Logging.AddSerilog(Log.Logger);
 
             // 需要先启动Master
             builder.Services.AddLoginServer(builder.Configuration);
@@ -98,14 +109,16 @@ namespace ServiceTest.Games
             acc.CurrentHwid = "12345678";
             acc.CurrentIP = "127.0.0.1";
             mainServer.UpdateAccountState(1, LoginStage.LOGIN_SERVER_TRANSITION);
-            var obj = loginService.PlayerLogin("12345678", 1);
+            var obj = loginService.PlayerLogin("12345678", cid);
             var charSrv = ServiceProvider.GetRequiredService<Application.Core.Channel.Services.DataService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(ServiceProvider, (long)1, channel);
             //var mockChannel = new Mock<ChannelClient>();
             //mockChannel.Setup(x => x.getChannel())
             //    .Returns(1);
-            return charSrv.Serialize(client, obj);
+            var p = charSrv.Serialize(client, obj);
+            p.setEnteredChannelWorld(channel.getId());
+            return p;
         }
     }
 }
