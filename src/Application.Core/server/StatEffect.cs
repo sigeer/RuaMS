@@ -294,7 +294,7 @@ public class StatEffect
             nuffSkill = mcItem.CPSkill;
         }
 
-        if (template is IStatEffectIncMountFatigue fatigueItem && fatigueItem.IncFatigue > 0)
+        if (template is IStatEffectIncMountFatigue fatigueItem && fatigueItem.IncFatigue != 0)
         {
             fatigue = fatigueItem.IncFatigue;
         }
