@@ -233,11 +233,16 @@ namespace Application.Templates.XmlWzReader.Provider
                 case 201:
                 case 202:
                 case 205:
-                case 226:
-                case 245:
                     {
                         var template = new PotionItemTemplate(itemId);
                         PotionItemTemplateGenerated.ApplyProperties(template, itemNode);
+                        return template;
+                    }
+                case 226:
+                case 245:
+                    {
+                        var template = new OtherConsumeItemTemplate(itemId);
+                        OtherConsumeItemTemplateGenerated.ApplyProperties(template, itemNode);
                         return template;
                     }
                 default:

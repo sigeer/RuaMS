@@ -511,7 +511,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 格式：!debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE 的本地化字符串。
+        ///   查找类似 格式：!debuff {0} [&lt;level&gt;] 的本地化字符串。
         /// </summary>
         public static string DebuffCommand_Syntax {
             get {

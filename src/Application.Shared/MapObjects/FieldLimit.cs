@@ -23,6 +23,7 @@ namespace Application.Shared.MapObjects;
 /**
  * @author AngelSL
  */
+[Flags]
 public enum FieldLimit
 {
     JUMP = 0x01,

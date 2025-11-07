@@ -232,7 +232,7 @@
     <value>给附近玩家上debuff</value>
   </data>
   <data name="DebuffCommand_Syntax" xml:space="preserve">
-    <value>格式：!debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE</value>
+    <value>格式：!debuff {0} [&lt;level&gt;]</value>
   </data>
   <data name="FameCommand_Description" xml:space="preserve">
     <value>修改玩家人气值</value>

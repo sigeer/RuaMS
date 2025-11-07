@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 using Application.Templates.Providers;
+using Application.Templates.Skill;
 using Application.Templates.XmlWzReader.Provider;
 
 namespace server.life;
@@ -66,7 +67,12 @@ public class MobSkillFactory
             if (template == null)
                 return null;
 
-            var levelData = template.GetLevelData(level);
+            MobSkillLevelData? levelData;
+            if (level == -1)
+                levelData = template.LevelData.OrderByDescending(x => x.nSLV).FirstOrDefault();
+            else
+                levelData = template.GetLevelData(level);
+
             if (levelData == null)
                 return null;
 

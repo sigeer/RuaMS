@@ -38,11 +38,11 @@ public class CarnivalFactory
             int id = int.Parse(z.getName());
             int spendCp = DataTool.getInt("spendCP", z, 0);
             int mobSkillId = DataTool.getInt("mobSkillID", z, 0);
-            MobSkillType? mobSkillType = null;
-            if (mobSkillId != 0)
+            if (mobSkillId == 0)
             {
-                mobSkillType = MobSkillTypeUtils.from(mobSkillId);
+                continue;
             }
+            MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkillId);
             int level = DataTool.getInt("level", z, 0);
             bool isMultiTarget = DataTool.getInt("target", z, 1) > 1;
             MCSkill ms = new MCSkill(spendCp, mobSkillType, level, isMultiTarget);
@@ -82,13 +82,13 @@ public class CarnivalFactory
     public MCSkill? getSkill(int id)
     {
         var skill = skills.GetValueOrDefault(id);
-        if (skill != null && skill.mobSkillType == null)
+        if (skill != null)
         {
             return randomizeSkill(skill.targetsAll);
         }
         else
         {
-            return skill;
+            return null;
         }
     }
 
@@ -97,11 +97,11 @@ public class CarnivalFactory
         return guardians.GetValueOrDefault(id);
     }
 
-    public record MCSkill(int cpLoss, MobSkillType? mobSkillType, int level, bool targetsAll)
+    public record MCSkill(int cpLoss, MobSkillType mobSkillType, int level, bool targetsAll)
     {
-        public MobSkill? getSkill()
+        public MobSkill getSkill()
         {
-            return mobSkillType == null ? null : MobSkillFactory.getMobSkillOrThrow(mobSkillType.Value, level);
+            return MobSkillFactory.getMobSkillOrThrow(mobSkillType, level);
         }
 
         public Disease? getDisease()

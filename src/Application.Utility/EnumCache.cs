@@ -50,6 +50,7 @@ namespace Application.Utility
         /// 获取所有枚举值（只读数组）
         /// </summary>
         public static IReadOnlyList<T> GetValues() => Values;
+        public static T? GetValue(string name) => Values.FirstOrDefault(x => x.name().Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
 }

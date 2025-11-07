@@ -18,11 +18,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ClientMessage.resx</DependentUpon>
     </Compile>
-    <Compile Update="Messages\ScriptTalk.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ScriptTalk.resx</DependentUpon>
-    </Compile>
     <Compile Update="Messages\SystemMessage.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
