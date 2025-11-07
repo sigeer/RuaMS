@@ -38,6 +38,7 @@ using client.status;
 using server.life;
 using server.maps;
 using server.partyquest;
+using System.Text.Json.Serialization;
 using tools;
 
 namespace server;
@@ -72,6 +73,8 @@ public class StatEffect
     private short bulletCount = 1, bulletConsume;
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
+
+    public IStatEffectProp Source { get; }
 
     public class CardItemupStats
     {
@@ -188,6 +191,7 @@ public class StatEffect
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
     {
+        Source = template;
         sourceid = sourceTemplate.SourceId;
 
         bool isSummonProp = false;
@@ -263,7 +267,6 @@ public class StatEffect
                 addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
 
-                addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, power.ExpBuffRate);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
@@ -273,6 +276,11 @@ public class StatEffect
                 addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, speed);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
             }
+        }
+
+        if (template is IStatEffectExp exp && exp.ExpBuffRate > 0)
+        {
+            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, exp.ExpBuffRate);
         }
 
         if (template is IStatEffectExpInc expInc && expInc.ExpInc > 0)
@@ -286,7 +294,7 @@ public class StatEffect
             nuffSkill = mcItem.CPSkill;
         }
 
-        if (template is IStatEffectIncMountFatigue fatigueItem)
+        if (template is IStatEffectIncMountFatigue fatigueItem && fatigueItem.IncFatigue != 0)
         {
             fatigue = fatigueItem.IncFatigue;
         }
@@ -1657,6 +1665,12 @@ public class StatEffect
             return true;
         }
 
+        // 200, 201, 202, 205都被视作药品
+        if (Source is PotionItemTemplate && (applyfrom.hasDisease(Disease.StopPotion) || ((FieldLimit)applyfrom.getMap().getFieldLimit()).HasFlag(FieldLimit.CANNOTUSEPOTION)))
+        {
+            return false;
+        }
+
         if (primary && isHeal())
         {
             affectedPlayers = applyBuff(applyfrom, useMaxRange);
@@ -1893,7 +1907,7 @@ public class StatEffect
                             }
                             else
                             {
-                                MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(dis.getMobSkillType()!.Value, skill.level);
+                                MobSkill mobSkill = skill.getSkill();
                                 chrApp.giveDebuff(dis, mobSkill);
                             }
                         }
@@ -1911,7 +1925,7 @@ public class StatEffect
                         }
                         else
                         {
-                            MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(dis.getMobSkillType()!.Value, skill.level);
+                            MobSkill mobSkill = skill.getSkill();
                             chrApp.giveDebuff(dis, mobSkill);
                         }
                     }

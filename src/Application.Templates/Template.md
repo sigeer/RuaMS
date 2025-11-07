@@ -58,7 +58,7 @@ spec/expR: 名称上看是经验倍率，但是有些与`info/rate`不同，比�
 219：测谎仪  
 221：变身药水  `MorphItemTemplate`  
 224：结婚道具  
-226：坐骑回复疲劳`PotionItemTemplate`  
+226：坐骑回复疲劳`OtherConsumeItemTemplate`  
 227：捕捉怪物道具`CatchMobItemTemplate`  
 228：技能册`MasteryItemTemplate`  
 229：能手册`MasteryItemTemplate`  
@@ -68,7 +68,7 @@ spec/expR: 名称上看是经验倍率，但是有些与`info/rate`不同，比�
 237：经验书`SolomenItemTemplate`  
 238：怪物卡片`MonsterCardItemTemplate`  
 243：任务用到的消耗道具？`ScriptItemTemplate`  
-245：幸运的狩猎`PotionItemTemplate`  
+245：幸运的狩猎`OtherConsumeItemTemplate`  
 
 
 #### Etc 400 - 431

@@ -38,14 +38,9 @@ public class CarnivalFactory
             int id = int.Parse(z.getName());
             int spendCp = DataTool.getInt("spendCP", z, 0);
             int mobSkillId = DataTool.getInt("mobSkillID", z, 0);
-            MobSkillType? mobSkillType = null;
-            if (mobSkillId != 0)
-            {
-                mobSkillType = MobSkillTypeUtils.from(mobSkillId);
-            }
             int level = DataTool.getInt("level", z, 0);
             bool isMultiTarget = DataTool.getInt("target", z, 1) > 1;
-            MCSkill ms = new MCSkill(spendCp, mobSkillType, level, isMultiTarget);
+            MCSkill ms = new MCSkill(spendCp, mobSkillId, level, isMultiTarget);
 
             skills.AddOrUpdate(id, ms);
             if (ms.targetsAll)
@@ -61,9 +56,8 @@ public class CarnivalFactory
         {
             int spendCp = DataTool.getInt("spendCP", z, 0);
             int mobSkillId = DataTool.getInt("mobSkillID", z, 0);
-            MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkillId);
             int level = DataTool.getInt("level", z, 0);
-            guardians.AddOrUpdate(int.Parse(z.getName()), new MCSkill(spendCp, mobSkillType, level, true));
+            guardians.AddOrUpdate(int.Parse(z.getName()), new MCSkill(spendCp, mobSkillId, level, true));
         }
     }
 
@@ -82,7 +76,7 @@ public class CarnivalFactory
     public MCSkill? getSkill(int id)
     {
         var skill = skills.GetValueOrDefault(id);
-        if (skill != null && skill.mobSkillType == null)
+        if (skill != null && skill.MobSkillId == 0)
         {
             return randomizeSkill(skill.targetsAll);
         }
@@ -97,16 +91,16 @@ public class CarnivalFactory
         return guardians.GetValueOrDefault(id);
     }
 
-    public record MCSkill(int cpLoss, MobSkillType? mobSkillType, int level, bool targetsAll)
+    public record MCSkill(int cpLoss, int MobSkillId, int level, bool targetsAll)
     {
-        public MobSkill? getSkill()
+        public MobSkill getSkill()
         {
-            return mobSkillType == null ? null : MobSkillFactory.getMobSkillOrThrow(mobSkillType.Value, level);
+            return MobSkillFactory.getMobSkillOrThrow((MobSkillType)MobSkillId, level);
         }
 
         public Disease? getDisease()
         {
-            return Disease.getBySkill(mobSkillType);
+            return Disease.getBySkill((MobSkillType)MobSkillId);
         }
     }
 }

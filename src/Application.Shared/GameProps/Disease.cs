@@ -17,7 +17,7 @@ namespace Application.Shared.GameProps
         /// </summary>
         public static readonly Disease SEDUCE = new(0x80, MobSkillType.SEDUCE);
         public static readonly Disease FISHABLE = new(0x100);
-        public static readonly Disease ZOMBIFY = new(0x4000);
+        public static readonly Disease ZOMBIFY = new(0x4000, MobSkillType.UNDEAD);
         /// <summary>
         /// 混乱
         /// </summary>
@@ -33,7 +33,7 @@ namespace Application.Shared.GameProps
         /// <summary>
         /// 封印
         /// </summary>
-        public static readonly Disease SEAL = new(0x8000000000000L, MobSkillType.SEAL);
+        public static readonly Disease SEAL = new(0x8_0000_0000_0000L, MobSkillType.SEAL);
         /// <summary>
         /// 暗黑
         /// </summary>
@@ -45,20 +45,39 @@ namespace Application.Shared.GameProps
         /// <summary>
         /// 诅咒
         /// </summary>
-        public static readonly Disease CURSE = new(0x8000000000000000L, MobSkillType.CURSE);
+        public static readonly Disease CURSE = new(0x8000_0000_0000_0000L, MobSkillType.CURSE);
+        /// <summary>
+        /// 无法喝药
+        /// </summary>
+        public static readonly Disease StopPotion = new Disease(0x800_0000_0000, MobSkillType.STOP_POTION, true);
+        /// <summary>
+        /// 无法移动
+        /// </summary>
+        public static readonly Disease StopMotion = new Disease(0x1000_0000_0000, MobSkillType.STOP_MOTION, true);
+        /// <summary>
+        /// 致盲
+        /// </summary>
+        public static readonly Disease Blind = new Disease(0x2000_0000_0000, MobSkillType.FEAR, true);
 
         private ulong i;
-        private MobSkillType? mobSkillType;
+        private MobSkillType mobSkillType;
+        bool _isFirst;
 
-        Disease(ulong i) : this(i, null)
+        Disease(ulong i) : this(i, 0)
         {
 
         }
 
-        Disease(ulong i, MobSkillType? skill)
+        Disease(ulong i, MobSkillType skill) : this(i, 0, false)
+        {
+
+        }
+
+        Disease(ulong i, MobSkillType skill, bool priority)
         {
             this.i = i;
             this.mobSkillType = skill;
+            this._isFirst = priority;
         }
 
         public ulong getValue()
@@ -68,10 +87,10 @@ namespace Application.Shared.GameProps
 
         public bool isFirst()
         {
-            return false;
+            return _isFirst;
         }
 
-        public MobSkillType? getMobSkillType()
+        public MobSkillType getMobSkillType()
         {
             return mobSkillType;
         }

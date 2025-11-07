@@ -40,7 +40,7 @@ namespace Application.Templates.StatEffectProps
 
         public int Jump { get; }
         public int JumpRate { get; }
-        public int ExpBuffRate { get; }
+
 
     }
 }

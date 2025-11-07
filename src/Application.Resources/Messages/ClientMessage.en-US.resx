@@ -232,7 +232,7 @@
     <value>Put a debuff on all nearby players.</value>
   </data>
   <data name="DebuffCommand_Syntax" xml:space="preserve">
-    <value>Syntax: !debuff SLOW|SEDUCE|ZOMBIFY|CONFUSE|STUN|POISON|SEAL|DARKNESS|WEAKEN|CURSE</value>
+    <value>Syntax: !debuff {0} [&lt;level&gt;]</value>
   </data>
   <data name="FameCommand_Description" xml:space="preserve">
     <value>Set new fame value of a player.</value>

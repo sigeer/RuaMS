@@ -16,8 +16,7 @@ namespace Application.Templates.Item.Consume
         IItemStatEffectMC,
         IItemStatEffectMobSkill,
         IStatEffectPower,
-        IStatEffectExpInc,
-        IStatEffectIncMountFatigue
+        IStatEffectExpInc
     {
         public PotionItemTemplate(int templateId) : base(templateId)
         {
@@ -131,19 +130,12 @@ namespace Application.Templates.Item.Consume
         [WZPath("spec/prob")]
         public int Prob { get; set; } = 1;
 
-        [WZPath("spec/expBuff")]
-        public int ExpBuffRate { get; set; }
-
         #region MC 里的道具？
         [WZPath("spec/cp")]
         public int CP { get; set; }
         [WZPath("spec/nuffSkill")]
         public int CPSkill { get; set; } // nuffSkill -> exists in Skill.wz
         #endregion
-
-        [WZPath("spec/incFatigue")]
-        public int IncFatigue { get; set; }
-
 
         //[WZPath("spec/repeatEffect")]
         //public bool RepeatEffect { get; set; }

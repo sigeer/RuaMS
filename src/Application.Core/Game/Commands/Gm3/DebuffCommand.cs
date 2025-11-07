@@ -17,68 +17,21 @@ public class DebuffCommand : CommandBase
             return;
         }
 
-        Disease? disease = null;
-        MobSkill? skill = null;
-
-        switch (paramsValue[0].ToUpper())
+        var disease = EnumClassCache<Disease>.GetValue(paramsValue[0]);
+        if (disease == null)
         {
-            case "SLOW":
-                {
-                    disease = Disease.SLOW;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.SLOW, 7);
-                    break;
-                }
-            case "SEDUCE":
-                {
-                    disease = Disease.SEDUCE;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.SEDUCE, 7);
-                    break;
-                }
-            case "ZOMBIFY":
-                {
-                    disease = Disease.ZOMBIFY;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.UNDEAD, 1); break;
-                }
-            case "CONFUSE":
-                {
-                    disease = Disease.CONFUSE;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.REVERSE_INPUT, 2); break;
-                }
-            case "STUN":
-                {
-                    disease = Disease.STUN;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.STUN, 7); break;
-                }
-            case "POISON":
-                {
-                    disease = Disease.POISON;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.POISON, 5); break;
-                }
-            case "SEAL":
-                {
-                    disease = Disease.SEAL;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.SEAL, 1); break;
-                }
-            case "DARKNESS":
-                {
-                    disease = Disease.DARKNESS;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.DARKNESS, 1); break;
-                }
-            case "WEAKEN":
-                {
-                    disease = Disease.WEAKEN;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.WEAKNESS, 1); break;
-                }
-            case "CURSE":
-                {
-                    disease = Disease.CURSE;
-                    skill = MobSkillFactory.getMobSkill(MobSkillType.CURSE, 1); break;
-                }
+            player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
+            return;
         }
 
-        if (disease == null || skill == null)
+        int level = -1;
+        if (paramsValue.Length > 1)
+            int.TryParse(paramsValue[1], out level);
+
+        var skill = MobSkillFactory.getMobSkill(disease.getMobSkillType(), level);
+        if (skill == null)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.DebuffCommand_Syntax));
+            player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
             return;
         }
 

@@ -5,7 +5,7 @@ namespace Application.Core.Game.Commands.Gm1
 {
     public class LanguageCommand : CommandBase
     {
-        public LanguageCommand() : base(1, "language")
+        public LanguageCommand() : base(1, "language", "lang")
         {
         }
 
@@ -18,7 +18,7 @@ namespace Application.Core.Game.Commands.Gm1
             }
 
             var setValue = values[0];
-            if (!int.TryParse(setValue, out var lang))
+            if (!int.TryParse(setValue, out var lang) || lang != 0 && lang != 1)
             {
                 client.OnlinedCharacter.Yellow(nameof(ClientMessage.LanguageCommand_Syntax));
                 return;

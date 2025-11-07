@@ -23,7 +23,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver(),
+                ContractResolver = new PrivateContractResolver("Source"),
                 Formatting = Formatting.Indented
             };
         }
