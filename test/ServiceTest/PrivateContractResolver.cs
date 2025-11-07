@@ -6,6 +6,11 @@ namespace ServiceTest
 {
     public class PrivateContractResolver : DefaultContractResolver
     {
+        private readonly string[] _propsToIgnore;
+        public PrivateContractResolver(params string[] propNames)
+        {
+            _propsToIgnore = propNames ?? Array.Empty<string>();
+        }
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
             // 获取所有字段（包含私有的）
@@ -21,7 +26,7 @@ namespace ServiceTest
                 p.Writable = true;
             }
 
-            return props;
+            return props.Where(p => !_propsToIgnore.Any(x => $"<{x}>k__BackingField" == p.PropertyName)).ToList();
         }
     }
 }

@@ -74,7 +74,6 @@ public class StatEffect
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
 
-    [JsonIgnore]
     public IStatEffectProp Source { get; }
 
     public class CardItemupStats
@@ -1926,7 +1925,7 @@ public class StatEffect
                         }
                         else
                         {
-                            MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(dis.getMobSkillType(), skill.level);
+                            MobSkill mobSkill = skill.getSkill();
                             chrApp.giveDebuff(dis, mobSkill);
                         }
                     }
