@@ -1908,7 +1908,7 @@ public class StatEffect
                             }
                             else
                             {
-                                MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(skill.mobSkillType, skill.level);
+                                MobSkill mobSkill = skill.getSkill();
                                 chrApp.giveDebuff(dis, mobSkill);
                             }
                         }
