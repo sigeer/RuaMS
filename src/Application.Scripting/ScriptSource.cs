@@ -20,7 +20,7 @@ namespace Application.Scripting
         public ScriptSource(IConfiguration configuration)
         {
             BaseDir = configuration.GetValue<string>("BaseDir", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts"));
-            DefaultScriptType = configuration.GetValue<ScriptType>("DefaultScriptType", ScriptType.Lua);
+            DefaultScriptType = configuration.GetValue<ScriptType>("DefaultScriptType", ScriptType.Js);
             EventDirName = configuration.GetValue("EventDirName", "event");
         }
 
