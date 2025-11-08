@@ -35,7 +35,7 @@
 - **Application.Templates.XmlWzReader** wz数据模板数据绑定 wz/xml读取实现
 - **Application.Scripting** 脚本引擎
 - **Application.Scripting.JS** js脚本引擎
-- **Application.Scripting.Lua** lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）
+- **Application.Scripting.Lua** lua脚本引擎（未投入使用）
 - **Application.Benchmark** 重构代码时，在该项目测试新代码的性能是否优于旧代码
 
 #### 资源说明
