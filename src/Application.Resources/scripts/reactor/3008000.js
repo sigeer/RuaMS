@@ -7,7 +7,8 @@
 
 function hit() {
     const eim = rm.getEventInstance();
-    eim.giveEventPlayersExp(52000, rm.getMapId());
+    if (eim != null)
+        eim.giveEventPlayersExp(52000, rm.getMapId());
 }
 
 function act() {} //do nothing
