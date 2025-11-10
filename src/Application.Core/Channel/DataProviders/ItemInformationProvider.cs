@@ -1075,7 +1075,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return GetProvider(itemId).GetItem(itemId)?.TradeAvailable ?? false;
     }
 
-    public AbstractItemTemplate? GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
     public ConsumeItemTemplate? GetConsumeItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId);
 
     public int getStateChangeItem(int itemId)

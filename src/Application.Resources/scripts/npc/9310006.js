@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 东方神州系列地图脚本
  * 北斗项目组	https://github.com/BeiDouMS/BeiDou-Server
  * 作者：@Magical-H
@@ -45,7 +45,7 @@ function levelEnter() {
     } else {
         var eli = em.getEligibleParty(cm.getParty());
         if (eli.size() > 0) {
-            if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), EventLevel)) {
+            if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), EventLevel)) {
                 msg = '已经有其他人员在执行#b秘密任务#k了，请稍后再试。';
             }
         } else {

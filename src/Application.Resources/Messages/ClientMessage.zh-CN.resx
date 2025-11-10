@@ -1053,4 +1053,25 @@
   <data name="Event_HenesysPQ_Message2" xml:space="preserve">
     <value>玉兔月妙受到了伤害，请保护好它，这样它才能继续做出美味的年糕！</value>
   </data>
+  <data name="As the Pentacle swayed in the shadows, you were brought to the Subway Ticketing Booth." xml:space="preserve">
+    <value>随着五芒星在阴影中晃动，你被带到了地铁售票亭。</value>
+  </data>
+  <data name="EllinPQ_NeedDefeatBossFirst" xml:space="preserve">
+    <value>请消灭超强化石头人。</value>
+  </data>
+  <data name="Tip_CheckEtcSizeBeforeEnterPortal" xml:space="preserve">
+    <value>进入传送点前请先检查其他栏。</value>
+  </data>
+  <data name="Tip_WaitForLeaderEnterPortal" xml:space="preserve">
+    <value>请等待队长先通过传送门。</value>
+  </data>
+  <data name="Tip_EliminateAllMonster" xml:space="preserve">
+    <value>消灭所有怪物。</value>
+  </data>
+  <data name="EllinPQ_SpineBlockWay" xml:space="preserve">
+    <value>荆棘挡住了道路。</value>
+  </data>
+  <data name="Tip_UnknownPortal" xml:space="preserve">
+    <value>该传送门通往未知。</value>
+  </data>
 </root>

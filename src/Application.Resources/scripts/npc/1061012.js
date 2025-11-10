@@ -1,4 +1,4 @@
-﻿/*
+/*
 	NPC Name: 		Insiginificant Being
 	Map(s): 		Dungeon : Another Entrance
 	Description: 		Takes you to another Dimension
@@ -24,8 +24,8 @@ function start() {
             } else {
                 var eli = em.getEligibleParty(cm.getParty());
                 if (eli.size() > 0) {
-                    if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
-                        cm.sendOk("“以你的名义注册的派对已经在此实例中注册。”");
+                    if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
+                        cm.sendOk("以你的名义注册的派对已经在此实例中注册。");
                     }
                 } else {
                     cm.sendOk("你目前无法开始这个组队任务，因为你的队伍可能不符合人数要求，有些队员可能不符合尝试条件，或者他们不在这张地图上。如果你找不到队员，可以尝试使用组队搜索功能。");

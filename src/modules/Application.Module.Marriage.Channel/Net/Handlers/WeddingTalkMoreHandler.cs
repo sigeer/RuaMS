@@ -24,7 +24,6 @@ using Application.Core.Channel.Net;
 using Application.Core.Client;
 using Application.Shared.Net;
 using tools;
-using tools.packets;
 
 namespace Application.Module.Marriage.Channel.Net.Handlers;
 

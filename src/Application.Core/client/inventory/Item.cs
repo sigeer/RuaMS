@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
-using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 
@@ -220,7 +219,7 @@ public class Item : IComparable<Item>, IItemProp
 
     public int GetSortKey()
     {
-        var template = ItemInformationProvider.getInstance().GetItemTemplate(id);
+        var template = ItemInformationProvider.getInstance().GetTemplate(id);
         if (template == null || template is not BulletItemTemplate bulletItemTemplate)
             return id;
 

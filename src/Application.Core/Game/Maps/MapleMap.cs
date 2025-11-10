@@ -660,9 +660,10 @@ public class MapleMap : IMap
                     float mesos = de.GetRandomCount();
                     if (mesos > 0)
                     {
-                        if (chr.getBuffedValue(BuffStat.MESOUP) != null)
+                        var mesoUpBuff = chr.getBuffedValue(BuffStat.MESOUP);
+                        if (mesoUpBuff != null)
                         {
-                            mesos = (mesos * chr.getBuffedValue(BuffStat.MESOUP)!.Value / 100f);
+                            mesos = (mesos * mesoUpBuff.Value / 100f);
                         }
                         mesos = mesos * chr.getMesoRate();
                         if (mesos <= 0)

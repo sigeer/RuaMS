@@ -161,7 +161,7 @@ function action(mode, type, selection) {
                         if (eli.size() > 0) {
                             var lobby = detectTeamLobby(eli), i;
                             for (i = lobby; i < 8; i++) {
-                                if (em.startInstance(i, cm.getParty(), cm.getPlayer().getMap(), 1)) {
+                                if (em.StartPQInstance(i, cm.getParty(), cm.getPlayer().getMap(), 1)) {
                                     break;
                                 }
                             }

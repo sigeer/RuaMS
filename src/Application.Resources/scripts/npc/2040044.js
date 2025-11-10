@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -70,9 +70,7 @@ function action(mode, type, selection) {
                         cm.gainItem(4001023, -1);
                         eim.setProperty("statusStg" + stage, 1);
 
-                        var list = eim.getClearStageBonus(stage);     // will give bonus exp & mesos to everyone in the event
-                        eim.giveEventPlayersExp(list.get(0));
-                        eim.giveEventPlayersMeso(list.get(1));
+                        eim.giveEventPlayersStageReward(stage);
 
                         eim.setProperty(stage + "stageclear", "true");
                         eim.showClearEffect(true);

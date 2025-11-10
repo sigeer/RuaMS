@@ -168,7 +168,7 @@ function action(mode, type, selection) {
 
             em.setProperty("leader", player.getName());
             em.setProperty("channel", player.getClient().getChannel());
-            if (!em.startInstance(expedition)) {
+            if (!em.StartExpeditionInstance(expedition)) {
                 cm.sendOk("另一支探险队已经主动挑战了" + expedBoss + "，让我们为这些勇敢的灵魂祈祷吧。");
                 cm.dispose();
                 return;

@@ -224,9 +224,10 @@ public class TakeDamageHandler : ChannelHandlerBase
             {
                 if (damagefrom == -1)
                 {
-                    if (chr.getBuffedValue(BuffStat.POWERGUARD) != null)
+                    var powerGuardBuff = chr.getBuffedValue(BuffStat.POWERGUARD);
+                    if (powerGuardBuff != null)
                     { // PG works on bosses, but only at half of the rate.
-                        int bouncedamage = damage * (chr.getBuffedValue(BuffStat.POWERGUARD)!.Value / (attacker.isBoss() ? 200 : 100));
+                        int bouncedamage = damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200 : 100));
                         bouncedamage = Math.Min(bouncedamage, attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
                         map.damageMonster(chr, attacker, bouncedamage);
@@ -275,10 +276,11 @@ public class TakeDamageHandler : ChannelHandlerBase
                     damage = (int)(damage * Math.Ceiling(highDef.getEffect(hdLevel).getX() / 1000.0));
                 }
             }
-            var mesoguard = chr.getBuffedValue(BuffStat.MESOGUARD);
-            if (chr.getBuffedValue(BuffStat.MAGIC_GUARD) != null && mpattack == 0)
+
+            int? buffValue = null;
+            if ((buffValue = chr.getBuffedValue(BuffStat.MAGIC_GUARD)) != null && mpattack == 0)
             {
-                int mploss = (int)(damage * (chr.getBuffedValue(BuffStat.MAGIC_GUARD)!.Value / 100.0));
+                int mploss = (int)(damage * (buffValue.Value / 100.0));
                 int hploss = damage - mploss;
 
                 int curmp = chr.MP;
@@ -294,10 +296,10 @@ public class TakeDamageHandler : ChannelHandlerBase
                     chr.ChangeMP(-mploss);
                 });
             }
-            else if (mesoguard != null)
+            else if ((buffValue = chr.getBuffedValue(BuffStat.MESOGUARD)) != null)
             {
                 damage = (int)Math.Round((double)damage / 2);
-                int mesoloss = (int)(damage * (mesoguard / 100.0));
+                int mesoloss = (int)(damage * (buffValue.Value / 100.0));
                 if (chr.getMeso() < mesoloss)
                 {
                     chr.gainMeso(-chr.getMeso(), false);

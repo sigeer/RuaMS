@@ -9,6 +9,10 @@ namespace Application.Shared.Events
         LevelChanged,
         JobChanged,
         Auto,
-        System
+        System,
+        /// <summary>
+        /// 清理过期数据
+        /// </summary>
+        ClearExpired,
     }
 }

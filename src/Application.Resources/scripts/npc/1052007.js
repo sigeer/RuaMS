@@ -1,4 +1,4 @@
-﻿var status = 0;
+var status = 0;
 var ticketSelection = -1;
 var text = "Here's the ticket reader.";
 var hasTicket = false;

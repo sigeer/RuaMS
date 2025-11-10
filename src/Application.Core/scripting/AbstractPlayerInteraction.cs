@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -45,7 +46,7 @@ using static Application.Core.Game.Players.Player;
 
 namespace scripting;
 
-public class AbstractPlayerInteraction
+public class AbstractPlayerInteraction : IClientMessenger
 {
 
     public IChannelClient c;
@@ -748,116 +749,9 @@ public class AbstractPlayerInteraction
         return getEventInstance() != null && getPlayer().getId() == getEventInstance()!.getLeaderId();
     }
 
-    public void givePartyItems(int id, short quantity, List<IPlayer> partyMembers)
-    {
-        foreach (var chr in partyMembers)
-        {
-            var cl = chr.Client;
-            if (quantity >= 0)
-            {
-                InventoryManipulator.addById(cl, id, quantity);
-            }
-            else
-            {
-                InventoryManipulator.removeById(cl, ItemConstants.getInventoryType(id), id, -quantity, true, false);
-            }
-            cl.sendPacket(PacketCreator.getShowItemGain(id, quantity, true));
-        }
-    }
-
-    public void removePartyItems(int id)
-    {
-        if (getParty() == null)
-        {
-            removeAll(id);
-            return;
-        }
-        foreach (var chr in getParty()!.GetChannelMembers(c.CurrentServer))
-        {
-            if (chr != null && chr.getClient() != null)
-            {
-                removeAll(id, chr.Client);
-            }
-        }
-    }
-
     public void giveCharacterExp(int amount, IPlayer chr)
     {
         chr.gainExp((int)(amount * chr.getExpRate()), true, true);
-    }
-
-    public void givePartyExp(int amount, List<IPlayer> party)
-    {
-        foreach (var chr in party)
-        {
-            giveCharacterExp(amount, chr);
-        }
-    }
-
-    public void givePartyExp(string PQ)
-    {
-        givePartyExp(PQ, true);
-    }
-
-    public void givePartyExp(string PQ, bool instance)
-    {
-        //1 player  =  +0% bonus (100)
-        //2 players =  +0% bonus (100)
-        //3 players =  +0% bonus (100)
-        //4 players = +10% bonus (110)
-        //5 players = +20% bonus (120)
-        //6 players = +30% bonus (130)
-        var party = getPlayer().getParty();
-        if (party == null)
-            return;
-
-        int size = party.GetMemberCount();
-
-        if (instance)
-        {
-            foreach (var chr in party.GetChannelMembers(c.CurrentServer))
-            {
-                if (!chr.IsOnlined || chr.getEventInstance() == null)
-                {
-                    size--;
-                }
-            }
-        }
-
-        int bonus = size < 4 ? 100 : 70 + (size * 10);
-        foreach (var player in party.GetChannelMembers(c.CurrentServer))
-        {
-            if (player == null || player.getEventInstance() == null)
-            {
-                continue;
-            }
-            if (instance && player.getEventInstance() == null)
-            {
-                continue; // They aren't in the instance, don't give EXP.
-            }
-            int baseValue = PartyQuest.getExp(PQ, player.getLevel());
-            int exp = baseValue * bonus / 100;
-            player.gainExp(exp, true, true);
-            if (YamlConfig.config.server.PQ_BONUS_EXP_RATE > 0)
-            {
-                player.gainExp((int)(exp * YamlConfig.config.server.PQ_BONUS_EXP_RATE), true, true);
-            }
-        }
-    }
-
-    public void removeFromParty(int id, List<IPlayer> party)
-    {
-        foreach (var chr in party)
-        {
-            InventoryType type = ItemConstants.getInventoryType(id);
-            Inventory iv = chr.getInventory(type);
-            int possesed = iv.countById(id);
-            if (possesed > 0)
-            {
-                InventoryManipulator.removeById(c, ItemConstants.getInventoryType(id), id, possesed, true, false);
-                chr.sendPacket(PacketCreator.getShowItemGain(id, (short)-possesed, true));
-            }
-        }
     }
 
     public void removeAll(int id)
@@ -871,7 +765,7 @@ public class AbstractPlayerInteraction
         int possessed = cl.OnlinedCharacter.getInventory(invType).countById(id);
         if (possessed > 0)
         {
-            InventoryManipulator.removeById(cl, ItemConstants.getInventoryType(id), id, possessed, true, false);
+            InventoryManipulator.removeById(cl, invType, id, possessed, true, false);
             cl.sendPacket(PacketCreator.getShowItemGain(id, (short)-possessed, true));
         }
 
@@ -885,7 +779,7 @@ public class AbstractPlayerInteraction
         }
     }
 
-    public int getMapId()
+    public virtual int getMapId()
     {
         return c.OnlinedCharacter.getMap().getId();
     }
@@ -1272,8 +1166,49 @@ public class AbstractPlayerInteraction
         getPlayer().sendKeymap();
     }
 
-    public string GetMessage(string key, params string[] param)
+    public void TypedMessage(int type, string messageKey, params string[] param)
     {
-        return c.CurrentCulture.GetMessageByKey(key, param);
+        getPlayer().TypedMessage(type, messageKey, param);
     }
+
+    public void Dialog(string key, params string[] param)
+    {
+        getPlayer().Dialog(key, param);
+    }
+
+    public void Yellow(string key, params string[] param)
+    {
+        getPlayer().Yellow(key, param);
+    }
+
+    public void Notice(string key, params string[] param)
+    {
+        TypedMessage(0, key, param);
+    }
+
+    public void Popup(string key, params string[] param)
+    {
+        TypedMessage(1, key, param);
+    }
+
+    public void Pink(string key, params string[] param)
+    {
+        TypedMessage(5, key, param);
+    }
+
+    public void LightBlue(string key, params string[] param)
+    {
+        TypedMessage(6, key, param);
+    }
+
+    public void LightBlue(Func<ClientCulture, string> action)
+    {
+        getPlayer().LightBlue(action);
+    }
+
+    public void TopScrolling(string key, params string[] param)
+    {
+        getPlayer().TopScrolling(key, param);
+    }
+
 }

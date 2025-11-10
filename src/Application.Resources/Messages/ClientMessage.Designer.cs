@@ -88,6 +88,16 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 随着五芒星在阴影中晃动，你被带到了地铁售票亭。 的本地化字符串。
+        /// </summary>
+        public static string As_the_Pentacle_swayed_in_the_shadows__you_were_brought_to_the_Subway_Ticketing_Booth_ {
+            get {
+                return ResourceManager.GetString("As the Pentacle swayed in the shadows, you were brought to the Subway Ticketing B" +
+                        "ooth.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 你被 #b{0}#k 封禁了。 的本地化字符串。
         /// </summary>
         public static string Ban_NoticePlayer {
@@ -579,6 +589,24 @@ namespace Application.Resources.Messages {
         public static string DropRateCommand_Description {
             get {
                 return ResourceManager.GetString("DropRateCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请消灭超强化石头人。 的本地化字符串。
+        /// </summary>
+        public static string EllinPQ_NeedDefeatBossFirst {
+            get {
+                return ResourceManager.GetString("EllinPQ_NeedDefeatBossFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 荆棘挡住了道路。 的本地化字符串。
+        /// </summary>
+        public static string EllinPQ_SpineBlockWay {
+            get {
+                return ResourceManager.GetString("EllinPQ_SpineBlockWay", resourceCulture);
             }
         }
         
@@ -2514,6 +2542,42 @@ namespace Application.Resources.Messages {
         public static string TimerMapCommand_Syntax {
             get {
                 return ResourceManager.GetString("TimerMapCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 进入传送点前请先检查其他栏。 的本地化字符串。
+        /// </summary>
+        public static string Tip_CheckEtcSizeBeforeEnterPortal {
+            get {
+                return ResourceManager.GetString("Tip_CheckEtcSizeBeforeEnterPortal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 消灭所有怪物。 的本地化字符串。
+        /// </summary>
+        public static string Tip_EliminateAllMonster {
+            get {
+                return ResourceManager.GetString("Tip_EliminateAllMonster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 该传送门通往未知。 的本地化字符串。
+        /// </summary>
+        public static string Tip_UnknownPortal {
+            get {
+                return ResourceManager.GetString("Tip_UnknownPortal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请等待队长先通过传送门。 的本地化字符串。
+        /// </summary>
+        public static string Tip_WaitForLeaderEnterPortal {
+            get {
+                return ResourceManager.GetString("Tip_WaitForLeaderEnterPortal", resourceCulture);
             }
         }
         

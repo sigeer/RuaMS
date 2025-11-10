@@ -301,7 +301,7 @@ public class EventManager
     }
     public void setProperty(string key, string value)
     {
-        props.AddOrUpdate(key, value);
+        props[key] = value;
     }
 
     public void setIntProperty(string key, int value)
@@ -403,18 +403,19 @@ public class EventManager
         eim.LobbyId = lobbyId;
     }
 
-    public bool startInstance(Expedition exped)
+    #region Expedition
+    public bool StartExpeditionInstance(Expedition exped)
     {
-        return startInstance(-1, exped);
+        return StartExpeditionInstance(-1, exped);
     }
 
-    public bool startInstance(int lobbyId, Expedition exped)
+    public bool StartExpeditionInstance(int lobbyId, Expedition exped)
     {
-        return startInstance(lobbyId, exped, exped.getLeader());
+        return StartExpeditionInstance(lobbyId, exped, exped.getLeader());
     }
 
     //Expedition method: starts an expedition
-    public bool startInstance(int lobbyId, Expedition exped, IPlayer leader)
+    bool StartExpeditionInstance(int lobbyId, Expedition exped, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -496,6 +497,8 @@ public class EventManager
 
         return false;
     }
+    #endregion
+
 
     //Regular method: player 
     public bool startInstance(IPlayer chr)
@@ -508,7 +511,7 @@ public class EventManager
         return startInstance(lobbyId, leader, leader, 1);
     }
 
-    public bool startInstance(int lobbyId, IPlayer chr, IPlayer leader, int difficulty)
+    bool startInstance(int lobbyId, IPlayer chr, IPlayer leader, int difficulty)
     {
         if (this.isDisposed())
         {
@@ -592,34 +595,25 @@ public class EventManager
         return false;
     }
 
+    #region Party Quest
     //PQ method: starts a PQ
-    public bool startInstance(Team party, IMap map)
+    public bool StartPQInstance(Team party, IMap map)
     {
-        return startInstance(-1, party, map);
+        return StartPQInstance(party, map, 0);
     }
 
-    public bool startInstance(int lobbyId, Team party, IMap map)
+    public bool StartPQInstance(int lobbyId, Team party, IMap map)
     {
-        return startInstance(lobbyId, party, map, party.GetChannelLeader(cserv));
-    }
-
-    public bool startInstance(int lobbyId, Team party, IMap map, IPlayer? leader)
-    {
-        return startInstance(lobbyId, party, map, 0, leader);
+        return StartPQInstance(lobbyId, party, map, 0, party.GetChannelLeader(cserv));
     }
 
     //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
-    public bool startInstance(Team party, IMap map, int difficulty)
+    public bool StartPQInstance(Team party, IMap map, int difficulty)
     {
-        return startInstance(-1, party, map, difficulty);
+        return StartPQInstance(-1, party, map, difficulty, party.GetChannelLeader(cserv));
     }
 
-    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty)
-    {
-        return startInstance(lobbyId, party, map, difficulty, party.GetChannelLeader(cserv));
-    }
-
-    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer? leader)
+    bool StartPQInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer? leader)
     {
         if (leader == null)
         {
@@ -663,6 +657,7 @@ public class EventManager
                         {
                             eim = createInstance("setup", difficulty, (lobbyId > -1) ? lobbyId : party.getLeaderId());
                             registerEventInstance(eim, lobbyId);
+                            eim.Type = Application.Shared.Events.EventInstanceType.PartyQuest;
                         }
                         catch (Exception e)
                         {
@@ -707,6 +702,8 @@ public class EventManager
 
         return false;
     }
+    #endregion
+
 
     //non-PQ method for starting instance
     //public bool startInstance(EventInstanceManager eim, string ldr)
@@ -839,11 +836,6 @@ public class EventManager
         }
     }
 
-    public Monster? getMonster(int mid)
-    {
-        return (LifeFactory.Instance.getMonster(mid));
-    }
-
     private void exportReadyGuild(int guildId)
     {
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
@@ -893,13 +885,6 @@ public class EventManager
         }
     }
 
-    public int getQueueSize()
-    {
-        lock (queuedGuilds)
-        {
-            return queuedGuilds.Count;
-        }
-    }
 
     public sbyte addGuildToQueue(int guildId, int leaderId)
     {
