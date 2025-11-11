@@ -68,7 +68,7 @@ namespace Application.Shared.GameProps
 
         }
 
-        Disease(ulong i, MobSkillType skill) : this(i, 0, false)
+        Disease(ulong i, MobSkillType skill) : this(i, skill, false)
         {
 
         }
