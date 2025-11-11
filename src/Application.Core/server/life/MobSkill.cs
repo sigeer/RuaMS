@@ -499,20 +499,14 @@ public class MobSkill : ISkill
             int i = 0;
             foreach (var character in getPlayersInRange(monster))
             {
-                if (!character.hasActiveBuff(Bishop.HOLY_SHIELD))
+                if (i < count)
                 {
-                    if (disease.Equals(Disease.SEDUCE))
-                    {
-                        if (i < count)
-                        {
-                            character.giveDebuff(Disease.SEDUCE, this);
-                            i++;
-                        }
-                    }
-                    else
-                    {
-                        character.giveDebuff(disease, this);
-                    }
+                    character.giveDebuff(disease, this);
+                    i++;
+                }
+                else
+                {
+                    break;
                 }
             }
         }
@@ -569,7 +563,7 @@ public class MobSkill : ISkill
 
     public bool makeChanceResult()
     {
-        return Randomizer.nextDouble() < prop;
+        return prop == 0 || Randomizer.nextDouble() < prop;
     }
 
     private Rectangle calculateBoundingBox(Point posFrom)
