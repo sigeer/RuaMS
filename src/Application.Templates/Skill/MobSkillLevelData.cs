@@ -29,7 +29,7 @@ namespace Application.Templates.Skill
         public int[] SummonIDs { get; set; }
         public int SummonEffect { get; set; }
         public int Limit { get; set; }
-        public int Count { get; set; }
+        public int Count { get; set; } = 1;
         public Point Lt { get; set; }
         public Point Rb { get; set; }
     }
