@@ -28,6 +28,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Shared.Events;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
@@ -85,6 +86,7 @@ public class EventInstanceManager : IClientMessenger
 
     // forces deletion of items not supposed to be held outside of the event, dealt on a player's leaving moment.
     private HashSet<int> exclusiveItems = new();
+    public EventInstanceType Type { get; set; }
 
     public EventInstanceManager(EventManager em, string name)
     {
@@ -165,18 +167,17 @@ public class EventInstanceManager : IClientMessenger
 
     public void giveEventPlayersExp(int gain, int mapId = -1)
     {
-        if (gain == 0)
-        {
+        if (gain <= 0)
             return;
-        }
 
+        var bonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
         List<IPlayer> players = getPlayerList();
 
         if (mapId == -1)
         {
             foreach (IPlayer mc in players)
             {
-                mc.gainExp((int)(gain * mc.getExpRate()), true, true);
+                mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
             }
         }
         else
@@ -185,7 +186,7 @@ public class EventInstanceManager : IClientMessenger
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainExp((int)(gain * mc.getExpRate()), true, true);
+                    mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
                 }
             }
         }
@@ -332,36 +333,6 @@ public class EventInstanceManager : IClientMessenger
                 log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", em.getName());
             }
         }, time);
-    }
-
-    public void addEventTimer(long time)
-    {
-        if (event_schedule != null)
-        {
-            if (event_schedule.cancel(false))
-            {
-                long nextTime = getTimeLeft() + time;
-                eventTime += time;
-
-                event_schedule = em.getChannelServer().Container.TimerManager.schedule(() =>
-                {
-                    dismissEventTimer();
-
-                    try
-                    {
-                        invokeScriptFunction("scheduledTimeout", this);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", em.getName());
-                    }
-                }, nextTime);
-            }
-        }
-        else
-        {
-            startEventTimer(time);
-        }
     }
 
     private void dismissEventTimer()
@@ -521,7 +492,8 @@ public class EventInstanceManager : IClientMessenger
     public void registerMonster(Monster mob)
     {
         if (!mob.getStats().isFriendly())
-        { //We cannot register moon bunny
+        { 
+            //We cannot register moon bunny
             mobs.Add(mob);
         }
     }
@@ -656,17 +628,14 @@ public class EventInstanceManager : IClientMessenger
 
     public void playerKilled(IPlayer chr)
     {
-        ThreadManager.getInstance().newTask(() =>
+        try
         {
-            try
-            {
-                invokeScriptFunction("playerDead", this, chr);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDead", em.getName());
-            } // optional
-        });
+            invokeScriptFunction("playerDead", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDead", em.getName());
+        } // optional
     }
 
     public void reviveMonster(Monster mob)
@@ -997,6 +966,10 @@ public class EventInstanceManager : IClientMessenger
         }
     }
 
+    /// <summary>
+    /// playerExit
+    /// </summary>
+    /// <param name="chr"></param>
     public void removePlayer(IPlayer chr)
     {
         try
@@ -1156,12 +1129,13 @@ public class EventInstanceManager : IClientMessenger
 
     private void dropExclusiveItems(IPlayer chr)
     {
-        AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
+        chr.Bag.ClearPartyQuestItems();
+        //AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
 
-        foreach (int item in exclusiveItems)
-        {
-            api.removeAll(item);
-        }
+        //foreach (int item in exclusiveItems)
+        //{
+        //    api.removeAll(item);
+        //}
     }
 
     public void dropAllExclusiveItems()

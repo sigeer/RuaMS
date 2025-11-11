@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -79,7 +79,7 @@ function action(mode, type, selection) {
             var map = eim.getMapInstance(109020001);
             var members = eim.getPlayers();
             cm.warpMembers(map, members);
-            cm.givePartyExp(2500, eim.getPlayers());
+            eim.giveEventPlayersExp(2500);
             cm.dispose();
         } else if (status == 10) {
             eim.setProperty("leader" + nthtext + "preamble", "done");

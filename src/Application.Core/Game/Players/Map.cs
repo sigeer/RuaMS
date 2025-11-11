@@ -91,7 +91,7 @@ namespace Application.Core.Game.Players
 
             if (banishInfo.msg != null)
             {
-                dropMessage(5, banishInfo.msg);
+                Pink(banishInfo.msg);
             }
 
             IMap map_ = getWarpMap(banishInfo.map);

@@ -1,5 +1,8 @@
+using Application.Core.Channel.DataProviders;
+using Application.Templates.Item;
 using client.inventory;
 using client.inventory.manipulator;
+using tools;
 
 namespace Application.Core.Game.Players
 {
@@ -110,6 +113,39 @@ namespace Application.Core.Game.Players
             finally
             {
                 inv.unlockInventory();
+            }
+        }
+
+        /// <summary>
+        /// 移除背包中所有组队任务道具
+        /// </summary>
+        /// <param name="chr"></param>
+        public void ClearPartyQuestItems()
+        {
+            InventoryType[] includedInv = [InventoryType.USE, InventoryType.ETC];
+            foreach (var type in includedInv)
+            {
+                Inventory inv = this[type];
+                int slotLimit = inv.getSlotLimit();
+
+                for (short i = 0; i <= slotLimit; i++)
+                {
+                    var item = inv.getItem(i);
+                    if (item != null)
+                    {
+                        var template = ItemInformationProvider.getInstance().GetTemplate(item.getItemId()) as ItemTemplateBase;
+                        if (template == null)
+                            continue;
+
+                        if (template.PartyQuest)
+                        {
+                            var itemCount = item.getQuantity();
+                            inv.removeItem(i, itemCount);
+                            InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, true, false);
+                            Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), itemCount, true));
+                        }
+                    }
+                }
             }
         }
     }

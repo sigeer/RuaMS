@@ -18,7 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Channel.ServerData;
 using scripting.Event;
 using System.Collections.Concurrent;
 

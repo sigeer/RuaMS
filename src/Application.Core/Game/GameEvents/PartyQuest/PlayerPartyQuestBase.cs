@@ -48,7 +48,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             }
 
             Player.TeamModel!.setEligibleMembers(effectTeam);
-            if (!EventManager.startInstance(Player.TeamModel!, Player.MapModel, 1))
+            if (!EventManager.StartPQInstance(Player.TeamModel!, Player.MapModel, 1))
             {
                 Player.dropMessage(1, "当前频道已经有一个队伍正在进行任务");
                 return;

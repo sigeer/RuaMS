@@ -49,6 +49,11 @@ public class ReactorActionManager : AbstractPlayerInteraction
         this.iv = iv;
     }
 
+    public override int getMapId()
+    {
+        return reactor.getMap().getId();
+    }
+
     public void hitReactor()
     {
         reactor.hitReactor(c);

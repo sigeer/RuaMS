@@ -141,11 +141,7 @@ namespace Application.Core.Channel.Net
 
             if (!serverTransition)
             {
-                var eim = player.getEventInstance();
-                if (eim != null)
-                {
-                    eim.playerDisconnected(player);
-                }
+                player.getEventInstance()?.playerDisconnected(player);
 
                 player.getMonsterCarnival()?.playerDisconnected(player);
 

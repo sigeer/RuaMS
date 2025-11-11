@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -42,7 +42,7 @@ function start() {
 
         var eli = em.getEligibleParty(cm.getParty());
         if (eli.size() > 0) {
-            if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
+            if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
                 cm.sendOk("另一个队伍已经在挑战这个副本了。请尝试其他频道，或者等待当前队伍完成。");
             }
         } else {

@@ -11,13 +11,13 @@ function enter(pi) {
                 pi.warp(930000200, 0);
                 return true;
             } else {
-                pi.playerMessage(5, "Eliminate all the monsters.");
+                pi.Pink("Tip_EliminateAllMonster");
                 return false;
             }
             break;
         case 930000200:
             if (pi.getMap().getReactorByName("spine") != null && pi.getMap().getReactorByName("spine").getState() < 4) {
-                pi.playerMessage(5, "The spine blocks the way.");
+                pi.Pink("EllinPQ_SpineBlockWay");
                 return false;
             } else {
                 pi.playPortalSound();
@@ -27,7 +27,7 @@ function enter(pi) {
             break;
 
         default:
-            pi.playerMessage(5, "This portal leads to an unbound path.");
+            pi.Pink("Tip_UnknownPortal");
             return false;
     }
 }

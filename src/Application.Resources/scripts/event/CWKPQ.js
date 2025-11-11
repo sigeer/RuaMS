@@ -211,7 +211,7 @@ function setup(channel) {
     var pos_y = Array(-204, -384, -504, -384, -204);
     var map = eim.getInstanceMap(610030540);
     for (var z = 0; z < pos_x.length; z++) {
-        var mob = em.getMonster(9400594);
+        var mob = eim.getMonster(9400594);
         eim.registerMonster(mob);
         map.spawnMonsterOnGroundBelow(mob, new Point(pos_x[z], pos_y[z]));
     }

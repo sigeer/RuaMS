@@ -115,10 +115,12 @@ EventManager一般在js中通过`newInstance`，创建 EventInstanceManager（ei
 传送点过关，脚本`/portal/party6_*.js`
 部分关卡NPC：`/npc/2133001.js` 
 跳跳关卡NPC：`/npc/2133004.js`
-奖励：`/portal/party6_stage800.js`
+离开传送：`/portal/party6_stage800.js`
 
-
-
+```
+em.startInstance -> script.setup -> em.newInstance
+```
+     
 ```
 BuffStat：状态
 

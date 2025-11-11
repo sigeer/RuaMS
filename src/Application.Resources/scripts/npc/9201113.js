@@ -155,7 +155,7 @@ function action(mode, type, selection) {
 
             em.setProperty("leader", player.getName());
             em.setProperty("channel", player.getClient().getChannel());
-            if (!em.startInstance(expedition)) {
+            if (!em.StartExpeditionInstance(expedition)) {
                 cm.sendOk("另一支探险队已经采取了主动行动，完成了红木城堡派对任务，让我们为那些勇敢的灵魂祈祷吧。");
                 cm.dispose();
                 return;

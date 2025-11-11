@@ -1,4 +1,4 @@
-﻿function enter(pi) {
+function enter(pi) {
     if (pi.isQuestCompleted(2331)) {
         pi.openNpc(1300013);
         return false;
@@ -27,7 +27,7 @@
         if (party != null) {
             var eli = em.getEligibleParty(pi.getParty());   // thanks Conrad for pointing out missing eligible party declaration here
             if (eli.size() > 0) {
-                if (em.startInstance(party, pi.getMap(), 1)) {
+                if (em.StartPQInstance(party, pi.getMap(), 1)) {
                     pi.playPortalSound();
                     return true;
                 } else {
@@ -51,7 +51,7 @@
         if (party != null) {
             var eli = em.getEligibleParty(pi.getParty());
             if (eli.size() > 0) {
-                if (em.startInstance(party, pi.getMap(), 1)) {
+                if (em.StartPQInstance(party, pi.getMap(), 1)) {
                     pi.playPortalSound();
                     return true;
                 } else {

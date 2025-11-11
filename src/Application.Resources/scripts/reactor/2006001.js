@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -26,11 +26,12 @@
 
 function act() {
     rm.spawnNpc(2013002);
-    rm.getEventInstance().clearPQ();
+    const eim = rm.getEventInstance();
+    eim.clearPQ();
 
-    rm.getEventInstance().setProperty("statusStg8", "1");
+    eim.setProperty("statusStg8", "1");
     eim.giveEventPlayersExp(3500);
     eim.showClearEffect(true);
 
-    rm.getEventInstance().startEventTimer(5 * 60000); //bonus time
+    eim.startEventTimer(5 * 60000); //bonus time
 }

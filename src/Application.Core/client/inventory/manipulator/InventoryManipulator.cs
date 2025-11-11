@@ -24,7 +24,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Resources.Messages;
-using Application.Shared.Items;
 using Application.Templates.Item.Pet;
 using tools;
 
@@ -468,7 +467,7 @@ public class InventoryManipulator
     /// <param name="slot"></param>
     /// <param name="quantity"></param>
     /// <param name="fromDrop">不明</param>
-    /// <param name="consume">对于子弹、飞镖等物品，consume为true时不会移除</param>
+    /// <param name="consume">true：数量0时不会移除</param>
     public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;

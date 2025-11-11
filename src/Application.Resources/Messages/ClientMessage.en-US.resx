@@ -1053,4 +1053,25 @@
   <data name="Event_HenesysPQ_Message2" xml:space="preserve">
     <value>The Moon Bunny is feeling sick. Please protect it so it can make delicious rice cakes.</value>
   </data>
+  <data name="As the Pentacle swayed in the shadows, you were brought to the Subway Ticketing Booth." xml:space="preserve">
+    <value>As the Pentacle swayed in the shadows, you were brought to the Subway Ticketing Booth.</value>
+  </data>
+  <data name="EllinPQ_NeedDefeatBossFirst" xml:space="preserve">
+    <value>Please eliminate the Poison Golem.</value>
+  </data>
+  <data name="Tip_CheckEtcSizeBeforeEnterPortal" xml:space="preserve">
+    <value>Check for a free space on your ETC inventory before entering this portal.</value>
+  </data>
+  <data name="Tip_WaitForLeaderEnterPortal" xml:space="preserve">
+    <value>Wait for the leader to pass through the portal.</value>
+  </data>
+  <data name="Tip_EliminateAllMonster" xml:space="preserve">
+    <value>Eliminate all the monsters.</value>
+  </data>
+  <data name="EllinPQ_SpineBlockWay" xml:space="preserve">
+    <value>The spine blocks the way.</value>
+  </data>
+  <data name="Tip_UnknownPortal" xml:space="preserve">
+    <value>This portal leads to an unbound path.</value>
+  </data>
 </root>

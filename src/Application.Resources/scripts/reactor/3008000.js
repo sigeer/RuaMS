@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @author: Ronan
  * @reactor: Water Fountain
  * @map: 930000800 - Forest of Poison Haze - Outer Forest Exit
@@ -6,11 +6,9 @@
  */
 
 function hit() {
-    var players = rm.getMap().getAllPlayers().toArray();
-
-    for (var i = 0; i < players.length; i++) {
-        rm.giveCharacterExp(52000, players[i]);
-    }
+    const eim = rm.getEventInstance();
+    if (eim != null)
+        eim.giveEventPlayersExp(52000, rm.getMapId());
 }
 
 function act() {} //do nothing
