@@ -47,7 +47,7 @@ public class StorageProcessor
         if (!storage.TakeOutItemCheck(item))
             return;
 
-        if (storage.Items.Remove(item))
+        if (storage.RemoveItem(item))
         {
             KarmaManipulator.toggleKarmaFlagToUntradeable(item);
             InventoryManipulator.addFromDrop(storage.Owner.Client, item, false);
@@ -62,7 +62,7 @@ public class StorageProcessor
             storage.Owner.sendPacket(StoragePacketCreator.takeOutStorage(
                 storage.Slots,
                 item.getInventoryType(),
-                storage.Items));
+                storage.GetTypedItems(item.getInventoryType())));
             return;
         }
         else
@@ -101,6 +101,7 @@ public class StorageProcessor
                 }
 
                 item = item.copy();
+                item.setQuantity(quantity);
                 InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
             }
             else
@@ -118,7 +119,7 @@ public class StorageProcessor
 
         KarmaManipulator.toggleKarmaFlagToUntradeable(item);
 
-        storage.Items.Add(item);
+        storage.AddItem(item);
 
         _logger.Debug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})",
             storage.Owner.Name,
@@ -128,7 +129,7 @@ public class StorageProcessor
         storage.Owner.sendPacket(StoragePacketCreator.storeStorage(
             storage.Slots,
             invType,
-            storage.Items));
+            storage.GetTypedItems(invType)));
     }
 
     /// <summary>

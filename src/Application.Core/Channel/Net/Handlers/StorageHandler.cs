@@ -97,7 +97,7 @@ public class StorageHandler : ChannelHandlerBase
                                 return;
                             }
 
-                            var item = storage.GetItemBySlot(slot);
+                            var item = storage.GetItemByTypedSlot(InventoryTypeUtils.getByType(type), slot);
                             if (item != null)
                             {
                                 StorageProcessor.TakeOut(storage, item);

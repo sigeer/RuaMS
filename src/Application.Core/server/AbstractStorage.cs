@@ -3,6 +3,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using server;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Server
 {
@@ -16,13 +17,16 @@ namespace Application.Core.Server
 
             Items = new List<Item>(slots);
             Items.AddRange(items);
+
+            _typedItems = new();
         }
 
         public int Meso { get; set; }
         public byte Slots { get; set; }
 
         public IPlayer Owner { get; }
-        public List<Item> Items { get; protected set; }
+        protected List<Item> Items { get; set; }
+        protected Dictionary<InventoryType, List<Item>> _typedItems;
 
         protected Lock lockObj = new Lock();
 
@@ -44,6 +48,14 @@ namespace Application.Core.Server
             finally
             {
                 lockObj.Exit();
+            }
+        }
+
+        public Item? GetItemByTypedSlot(InventoryType type, int typedSlot)
+        {
+            lock (lockObj)
+            {
+                return _typedItems.GetValueOrDefault(type)?.ElementAt(typedSlot);
             }
         }
 
@@ -132,6 +144,10 @@ namespace Application.Core.Server
                     return 1;
                 });
 
+                foreach (var inv in EnumCache<InventoryType>.Values)
+                {
+                    _typedItems[inv] = Items.ToList();
+                }
 
                 Owner.sendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
                 Owner.CurrentStorage = this;
@@ -163,5 +179,22 @@ namespace Application.Core.Server
             }
         }
 
+        public void AddItem(Item item)
+        {
+            Items.Add(item);
+            _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
+        }
+
+        public bool RemoveItem(Item item)
+        {
+            if (Items.Remove(item))
+            {
+                _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
+                return true;
+            }
+            return false;
+        }
+
+        public List<Item> GetTypedItems(InventoryType type) => _typedItems.GetValueOrDefault(type, []);
     }
 }
