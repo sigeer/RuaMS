@@ -67,12 +67,10 @@ public class MobSkillFactory
             if (template == null)
                 return null;
 
-            MobSkillLevelData? levelData;
             if (level == -1)
-                levelData = template.LevelData.OrderByDescending(x => x.nSLV).FirstOrDefault();
-            else
-                levelData = template.GetLevelData(level);
+                level = template.LevelData.Max(x => x.nSLV);
 
+            var levelData = template.GetLevelData(level);
             if (levelData == null)
                 return null;
 
