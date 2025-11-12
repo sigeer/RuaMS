@@ -106,6 +106,7 @@ namespace Application.Core.Login.Datas
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
                 origin.FameLogs = _mapper.Map<FameLogModel[]>(obj.FameLogs);
+                origin.GachaponStorage = _mapper.Map<StorageModel>(obj.GachaponStorage);
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
@@ -344,6 +345,9 @@ namespace Application.Core.Login.Datas
 
                 var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
+                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == 1)) ?? new StorageModel(characterId.Value, 1);
+                gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
+
                 var buddyData = (from a in dbContext.Buddies
                                  where a.CharacterId == characterId
                                  select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
@@ -382,6 +386,7 @@ namespace Application.Core.Login.Datas
                     CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
                     NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
+                    GachaponStorage = gachponStore
                 };
 
                 _idDataSource[characterEntity.Id] = d;

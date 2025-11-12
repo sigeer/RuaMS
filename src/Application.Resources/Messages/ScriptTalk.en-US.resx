@@ -317,4 +317,7 @@ Your party must pass through many obstacles and puzzles while traversing the sub
   <data name="KerningPQ_Abandon" xml:space="preserve">
     <value>Do you wish to abandon this area?</value>
   </data>
+  <data name="Tip_ObtainItem" xml:space="preserve">
+    <value>You have obtained a #b#t{0}##k.</value>
+  </data>
 </root>

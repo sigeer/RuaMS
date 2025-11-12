@@ -21,6 +21,7 @@ namespace Application.Core.Models
     {
         public int PoolId { get; set; }
         public int ItemId { get; set; }
+        public int Quantity { get; set; }
         public int Level { get; set; }
     }
 }

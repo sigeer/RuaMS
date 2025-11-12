@@ -1044,7 +1044,7 @@ public class EventInstanceManager : IClientMessenger
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        NPC npc = LifeFactory.Instance.getNPC(npcId);
+        var npc = LifeFactory.Instance.getNPC(npcId);
         if (npc != null)
         {
             npc.setPosition(pos);
@@ -1098,7 +1098,7 @@ public class EventInstanceManager : IClientMessenger
         onMapClearMeso.AddRange(convertToIntegerList(gain));
     }
 
-    public int getClearStageExp(int stage)
+    int getClearStageExp(int stage)
     {
         //stage counts from ONE.
         if (stage > onMapClearExp.Count)
@@ -1108,7 +1108,7 @@ public class EventInstanceManager : IClientMessenger
         return onMapClearExp.ElementAt(stage - 1);
     }
 
-    public int getClearStageMeso(int stage)
+    int getClearStageMeso(int stage)
     {
         //stage counts from ONE.
         if (stage > onMapClearMeso.Count)
@@ -1118,7 +1118,7 @@ public class EventInstanceManager : IClientMessenger
         return onMapClearMeso.ElementAt(stage - 1);
     }
 
-    public List<int> getClearStageBonus(int stage)
+    List<int> getClearStageBonus(int stage)
     {
         List<int> list = new();
         list.Add(getClearStageExp(stage));

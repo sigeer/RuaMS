@@ -4,18 +4,20 @@ namespace Application.Core.Login.Models
     {
 
         public StorageModel() { }
-
-        public StorageModel(int accountid)
+        public StorageModel(int accountid, int type)
         {
-            Accountid = accountid;
+            OwnerId = accountid;
             Slots = 4;
             Meso = 0;
+            Type = type;
         }
 
-        public int Accountid { get; set; }
+        public int OwnerId { get; set; }
 
         public byte Slots { get; set; }
 
         public int Meso { get; set; }
+        public ItemModel[] Items { get; set; } = [];
+        public int Type { get; set; }
     }
 }

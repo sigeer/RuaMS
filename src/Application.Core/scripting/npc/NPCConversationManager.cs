@@ -28,6 +28,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
+using Application.Core.Server;
 using Application.Resources;
 using Application.Shared.Events;
 using Application.Templates.Providers;
@@ -41,6 +42,7 @@ using server.expeditions;
 using server.life;
 using server.partyquest;
 using tools;
+using static Application.Templates.Quest.QuestAct;
 using static server.partyquest.Pyramid;
 
 
@@ -119,6 +121,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     /// <param name="param">使用 params string[] 时，可能报错</param>
     /// <returns></returns>
     public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
+    public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
     public void sendNext(string text, byte speaker = 0)
     {
@@ -447,13 +450,24 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    public void doGachapon()
+    public bool CheckGachaponStorage(int willGot)
     {
-        var item = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
+        return c.OnlinedCharacter.GachaponStorage.CanGetItemCount(willGot);
+    }
 
-        var itemGained = gainItem(item.ItemId, (short)(ItemConstants.isPotion(item.ItemId) ? 100 : 1), true, true); // For normal potions, make it give 100.
+    public void OpenGachaponStorage()
+    {
+        c.OnlinedCharacter.GachaponStorage.OpenStorage(npc);
+    }
 
-        sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
+    public GachaponPoolItemDataObject? doGachapon()
+    {
+        var reward = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
+        var rewardItem = ItemInformationProvider.getInstance().GenerateItemById(reward.ItemId, reward.Quantity);
+        if (rewardItem == null)
+            return null;
+
+        c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem);
 
         int[] maps = {
             MapId.HENESYS,
@@ -474,13 +488,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         LogFactory.GetLogger(LogType.Gachapon).Information(
             "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
-            getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(item.ItemId), item.ItemId, map);
+            getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(reward.ItemId), reward.ItemId, map);
 
-        if (item.Level > 0)
+        if (reward.Level > 0)
         {
             //Uncommon and Rare
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
+        return reward;
     }
 
     public void upgradeAlliance()

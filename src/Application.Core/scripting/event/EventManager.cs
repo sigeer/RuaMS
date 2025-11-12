@@ -79,6 +79,7 @@ public class EventManager
 
     public int MaxLobbys { get; set; }
     public const int DefaultMaxLobbys = 1;
+    bool AllowReconnect { get; set; }
 
 
     public EventManager(WorldChannel cserv, IEngine iv, string name)
@@ -142,6 +143,11 @@ public class EventManager
     public long getLobbyDelay()
     {
         return YamlConfig.config.server.EVENT_LOBBY_DELAY;
+    }
+
+    public void SetAllowReconnect()
+    {
+        AllowReconnect = true;
     }
 
     private int getMaxLobbies()

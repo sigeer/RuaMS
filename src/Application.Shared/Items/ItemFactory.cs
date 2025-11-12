@@ -35,6 +35,7 @@ namespace Application.Shared.Items
         /// MTS
         /// </summary>
         public static readonly ItemFactory MTS = new(ItemType.MTS, false);
+        public static readonly ItemFactory ExtraStorage_Gachapon = new ItemFactory(ItemType.ExtraStorage_Gachapon, false);
         private ItemType value;
         public bool IsAccount { get; }
 

@@ -1,5 +1,9 @@
+using Application.Templates.Exceptions;
 using Application.Templates.Npc;
 using Application.Templates.Providers;
+using Microsoft.Extensions.Logging;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Application.Templates.XmlWzReader.Provider
 {
@@ -17,13 +21,26 @@ namespace Application.Templates.XmlWzReader.Provider
 
         protected override IEnumerable<AbstractTemplate> GetDataFromImg(string? path)
         {
-            if (int.TryParse(Path.GetFileName(path).AsSpan(0, 7), out var npcId))
+            try
             {
+                using var fis = _fileProvider.ReadFile(path);
+                using var reader = XmlReader.Create(fis, XmlReaderUtils.ReaderSettings);
+                var xDoc = XDocument.Load(reader).Root!;
+
+                if (!int.TryParse(xDoc.GetName().AsSpan(0, 7), out var npcId))
+                    throw new TemplateFormatException(ProviderName, path);
+
                 var model = new NpcTemplate(npcId);
+                NpcTemplateGenerated.ApplyProperties(model, xDoc);
                 InsertItem(model);
                 return [model];
             }
-            return [];
+            catch (Exception ex)
+            {
+                LibLog.Logger.LogError(ex.ToString());
+                return [];
+            }
+
         }
     }
 }

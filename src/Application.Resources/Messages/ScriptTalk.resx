@@ -317,4 +317,7 @@
   <data name="KerningPQ_Abandon" xml:space="preserve">
     <value>你希望放弃这个区域吗？</value>
   </data>
+  <data name="Tip_ObtainItem" xml:space="preserve">
+    <value>你得到了 #b#t{0}##k。</value>
+  </data>
 </root>

@@ -1074,4 +1074,16 @@
   <data name="Tip_UnknownPortal" xml:space="preserve">
     <value>该传送门通往未知。</value>
   </data>
+  <data name="Storage_NeedLevel" xml:space="preserve">
+    <value>15级以后才可以使用仓库服务</value>
+  </data>
+  <data name="RewardStorage_CannotStore" xml:space="preserve">
+    <value>奖品仓库无法存放物品或金币。</value>
+  </data>
+  <data name="Map_Ludibrium" xml:space="preserve">
+    <value>玩具城</value>
+  </data>
+  <data name="Map_ElNath" xml:space="preserve">
+    <value>冰峰雪域</value>
+  </data>
 </root>

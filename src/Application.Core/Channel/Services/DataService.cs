@@ -133,8 +133,10 @@ namespace Application.Core.Channel.Services
             }
             player.CheckMarriageData();
 
-            player.Storage = _mapper.Map<Storage>(o.AccountGame.Storage);
-            player.Storage.LoadItems(_mapper.Map<Item[]>(o.AccountGame.StorageItems));
+            player.Storage = new Storage(player, 
+                o.AccountGame.Storage.OwnerId, (byte)o.AccountGame.Storage.Slots, o.AccountGame.Storage.Meso,
+                _mapper.Map<Item[]>(o.AccountGame.Storage.Items));
+            player.GachaponStorage = new(player, o.GachaponStorage.Meso, _mapper.Map<Item[]>(o.GachaponStorage.Items));
 
             c.SetAccount(_mapper.Map<AccountCtrl>(o.Account));
             c.SetPlayer(player);
@@ -366,15 +368,20 @@ namespace Application.Core.Channel.Services
                 Id = playerDto.AccountId,
                 Storage = new Dto.StorageDto
                 {
-                    Accountid = playerDto.AccountId,
-                    Meso = player.Storage.getMeso(),
-                    Slots = player.Storage.getSlots()
+                    OwnerId = playerDto.AccountId,
+                    Meso = player.Storage.Meso,
+                    Slots = player.Storage.Slots,
                 },
                 QuickSlot = quickSlotDto,
             };
-            data.AccountGame.StorageItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.Storage.getItems(), opt =>
+            data.AccountGame.Storage.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(player.Storage.GetItems(), opt =>
             {
                 opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+            }));
+            data.GachaponStorage = new Dto.StorageDto { Meso = player.GachaponStorage.Meso };
+            data.GachaponStorage.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(player.GachaponStorage.GetItems(), opt =>
+            {
+                opt.Items["Type"] = ItemFactory.ExtraStorage_Gachapon.getValue();
             }));
             var cashFactoryType = player.CashShopModel.Factory;
             if (cashFactoryType == ItemType.CashOverall)

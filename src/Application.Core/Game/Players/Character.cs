@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Core.Server;
 using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
@@ -82,6 +83,7 @@ public partial class Player
     public Guild? GuildModel => getGuild();
     public Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
+    public RewardStorage GachaponStorage { get; set; } = null!;
 
     private ILogger? _log;
     public ILogger Log => _log ?? (_log = LogFactory.GetCharacterLog(AccountId, Id));

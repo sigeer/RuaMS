@@ -19,6 +19,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Application.Templates.Npc;
+
 namespace server.life;
 
 /**
@@ -27,10 +29,12 @@ namespace server.life;
 public class NPCStats
 {
     private string name;
+    public NpcTemplate SourceTemplate { get; }
 
-    public NPCStats(string name)
+    public NPCStats(string name, NpcTemplate template)
     {
         this.name = name;
+        SourceTemplate = template;
     }
 
     public string getName()

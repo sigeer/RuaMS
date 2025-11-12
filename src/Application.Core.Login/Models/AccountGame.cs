@@ -12,7 +12,7 @@ namespace Application.Core.Login.Models
 
         public QuickSlotModel? QuickSlot { get; set; }
         public StorageModel? Storage { get; set; }
-        public ItemModel[] StorageItems { get; set; } = [];
+
         public ItemModel[] CashExplorerItems { get; set; } = [];
         public ItemModel[] CashCygnusItems { get; set; } = [];
         public ItemModel[] CashAranItems { get; set; } = [];

@@ -14,6 +14,7 @@ using net.server;
 using server;
 using server.life;
 using server.maps;
+using Application.Core.Server;
 
 namespace Application.Core.Mappers
 {
@@ -204,15 +205,10 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.RingSourceInfo, source => source.MapFrom(x => x.RingSource));
             #endregion 
 
-            CreateMap<Dto.StorageDto, Storage>()
-                .ConstructUsing((x, ctx) =>
-                {
-                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso);
-                })
-                .ReverseMap()
-                .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
-                .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
-                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));
+            CreateMap<Storage, Dto.StorageDto>()
+                .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.Meso))
+                .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.Slots))
+                .ForMember(dest => dest.OwnerId, source => source.MapFrom(x => x.AccountId));
 
             CreateMap<Dto.SkillMacroDto, SkillMacro>().ReverseMap();
             CreateMap<Dto.FameLogRecordDto, FameLogObject>().ReverseMap();
@@ -235,8 +231,7 @@ namespace Application.Core.Mappers
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
 
-            CreateMap<Dto.NoteDto, NoteObject>()
-                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.Instance.GetNPCStats(x.FromId).getName() : x.From));
+            CreateMap<Dto.NoteDto, NoteObject>();
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
             CreateMap<Dto.ShopItemDto, ShopItem>()

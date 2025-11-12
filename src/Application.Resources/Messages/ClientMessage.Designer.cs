@@ -1520,6 +1520,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 冰峰雪域 的本地化字符串。
+        /// </summary>
+        public static string Map_ElNath {
+            get {
+                return ResourceManager.GetString("Map_ElNath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 射手村 的本地化字符串。
         /// </summary>
         public static string Map_Henesys {
@@ -1534,6 +1543,15 @@ namespace Application.Resources.Messages {
         public static string Map_KerningCity {
             get {
                 return ResourceManager.GetString("Map_KerningCity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玩具城 的本地化字符串。
+        /// </summary>
+        public static string Map_Ludibrium {
+            get {
+                return ResourceManager.GetString("Map_Ludibrium", resourceCulture);
             }
         }
         
@@ -2240,6 +2258,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 奖品仓库无法存放物品或金币。 的本地化字符串。
+        /// </summary>
+        public static string RewardStorage_CannotStore {
+            get {
+                return ResourceManager.GetString("RewardStorage_CannotStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 通过名称查找id 的本地化字符串。
         /// </summary>
         public static string SearchCommand_Description {
@@ -2425,6 +2452,15 @@ namespace Application.Resources.Messages {
         public static string StartEventCommand_Notice {
             get {
                 return ResourceManager.GetString("StartEventCommand_Notice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 15级以后才可以使用仓库服务 的本地化字符串。
+        /// </summary>
+        public static string Storage_NeedLevel {
+            get {
+                return ResourceManager.GetString("Storage_NeedLevel", resourceCulture);
             }
         }
         

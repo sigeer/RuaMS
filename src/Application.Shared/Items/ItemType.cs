@@ -11,6 +11,8 @@ namespace Application.Shared.Items
         CashOverall,
         MarriageGift,
         Duey,
-        MTS
+        MTS,
+
+        ExtraStorage_Gachapon
     }
 }

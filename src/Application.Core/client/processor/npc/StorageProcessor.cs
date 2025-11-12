@@ -21,14 +21,154 @@
  */
 
 
+
+using Application.Core.Channel;
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Server;
+using client.inventory;
+using client.inventory.manipulator;
+using tools;
+using ZLinq;
+
 /**
  * @author Matze
  * @author Ronan - inventory concurrency protection on storing items
  */
 public class StorageProcessor
 {
+    static ILogger _logger = LogFactory.GetLogger(LogType.Storage);
     public static bool hasGMRestrictions(IPlayer character)
     {
         return character.isGM() && character.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE;
+    }
+
+    public static void TakeOut(AbstractStorage storage, Item item)
+    {
+        if (!storage.TakeOutItemCheck(item))
+            return;
+
+        if (storage.Items.Remove(item))
+        {
+            KarmaManipulator.toggleKarmaFlagToUntradeable(item);
+            InventoryManipulator.addFromDrop(storage.Owner.Client, item, false);
+            storage.OnTakeOutSuccess(item);
+
+            _logger.Debug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})",
+                storage.Owner.getName(),
+                item.getQuantity(),
+                ClientCulture.SystemCulture.GetItemName(item.getItemId()),
+                item.getItemId());
+
+            storage.Owner.sendPacket(StoragePacketCreator.takeOutStorage(
+                storage.Slots,
+                item.getInventoryType(),
+                storage.Items));
+            return;
+        }
+        else
+        {
+            storage.Owner.sendPacket(PacketCreator.enableActions());
+            return;
+        }
+    }
+
+    public static void Store(AbstractStorage storage, short slot, int itemId, short quantity)
+    {
+        if (!storage.StoreItemCheck(slot, itemId, quantity))
+            return;
+
+        InventoryType invType = ItemConstants.getInventoryType(itemId);
+        Inventory inv = storage.Owner.getInventory(invType);
+
+        Item? item;
+
+        inv.lockInventory(); // thanks imbee for pointing a dupe within storage
+        try
+        {
+            item = inv.getItem(slot);
+            if (item != null && item.getItemId() == itemId
+                    && (item.getQuantity() >= quantity || ItemConstants.isRechargeable(itemId)))
+            {
+                if (ItemId.isWeddingRing(itemId) || ItemId.isWeddingToken(itemId))
+                {
+                    storage.Owner.sendPacket(PacketCreator.enableActions());
+                    return;
+                }
+
+                if (ItemConstants.isRechargeable(itemId))
+                {
+                    quantity = item.getQuantity();
+                }
+
+                item = item.copy();
+                InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
+            }
+            else
+            {
+                storage.Owner.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+        }
+        finally
+        {
+            inv.unlockInventory();
+        }
+
+        storage.OnStoreSuccess(slot, itemId, quantity);
+
+        KarmaManipulator.toggleKarmaFlagToUntradeable(item);
+
+        storage.Items.Add(item);
+
+        _logger.Debug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})",
+            storage.Owner.Name,
+            quantity,
+            ClientCulture.SystemCulture.GetItemName(item.getItemId()),
+            item.getItemId());
+        storage.Owner.sendPacket(StoragePacketCreator.storeStorage(
+            storage.Slots,
+            invType,
+            storage.Items));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="storage"></param>
+    /// <param name="chr"></param>
+    /// <param name="meso">大于0取出，小于0存入</param>
+    public static void SetMeso(AbstractStorage storage, int meso)
+    {
+        if ((meso > 0 && storage.TakeOutMeso(meso)) || (meso < 0 && storage.StoreMeso(-meso)))
+        {
+            if (meso < 0 && (storage.Meso - meso) < 0)
+            {
+                meso = int.MinValue + storage.Meso;
+                if (meso < storage.Owner.getMeso())
+                {
+                    storage.Owner.sendPacket(PacketCreator.enableActions());
+                    return;
+                }
+            }
+            else if (meso > 0 && (storage.Owner.getMeso() + meso) < 0)
+            {
+                meso = int.MaxValue - storage.Owner.getMeso();
+                if (meso > storage.Meso)
+                {
+                    storage.Owner.sendPacket(PacketCreator.enableActions());
+                    return;
+                }
+            }
+            storage.Meso -= meso;
+
+            storage.Owner.GainMeso(meso, false, true, false);
+            _logger.Debug("Chr {CharacterName} {0} {meso} mesos", storage.Owner.Name, meso > 0 ? "took out" : "stored", Math.Abs(meso));
+            storage.UpdateMeso();
+        }
+        else
+        {
+            storage.Owner.sendPacket(PacketCreator.enableActions());
+            return;
+        }
     }
 }

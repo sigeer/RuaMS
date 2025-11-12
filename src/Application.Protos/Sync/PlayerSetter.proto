@@ -39,9 +39,9 @@ message PlayerSaveDto {
   repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
   repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
   Dto.QuickSlotDto quickSlot = 16; // CHECK TYPE
-  Dto.StorageDto storageInfo = 17; // CHECK TYPE
   repeated int32 wishItems = 19;
   repeated Dto.FameLogRecordDto fameLogs = 20;
   repeated PlayerTimerQuestDto runningTimerQuests = 21;
   int32 Trigger = 22;
+  Dto.StorageDto gachaponStorage = 23;
 }

@@ -85,13 +85,13 @@ public class NPCTalkHandler : ChannelHandlerBase
                 {
                     c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "gachapon", null);
                 }
-                else if (npc.getName().EndsWith("Maple TV"))
+                else if (npc.SourceTemplate.MapleTV)
                 {
                     c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "mapleTV", null);
                 }
                 else
                 {
-                    bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, null);
+                    bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, npc.SourceTemplate.Script, null);
                     if (!hasNpcScript)
                     {
                         if (!npc.hasShop(c))

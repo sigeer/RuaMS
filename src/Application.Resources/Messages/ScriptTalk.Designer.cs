@@ -637,5 +637,14 @@ namespace Application.Resources.Messages {
                 return ResourceManager.GetString("Redeem_Success", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   查找类似 你得到了 #b#t{0}##k。 的本地化字符串。
+        /// </summary>
+        public static string Tip_ObtainItem {
+            get {
+                return ResourceManager.GetString("Tip_ObtainItem", resourceCulture);
+            }
+        }
     }
 }

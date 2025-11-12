@@ -21,6 +21,7 @@
 */
 
 
+using Application.Templates.Npc;
 using server.life;
 using tools;
 
@@ -29,6 +30,7 @@ namespace Application.Core.Game.Life;
 public class NPC : AbstractLifeObject
 {
     private NPCStats stats;
+    public NpcTemplate SourceTemplate => stats.SourceTemplate;
 
     public NPC(int id, NPCStats stats) : base(id)
     {

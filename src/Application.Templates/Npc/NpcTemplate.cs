@@ -1,5 +1,6 @@
 namespace Application.Templates.Npc
 {
+    [GenerateTag]
     public sealed class NpcTemplate : AbstractTemplate
     {
 
@@ -10,12 +11,13 @@ namespace Application.Templates.Npc
         public string? Script { get; set; }
 
 
-        [WZPath("trunkPut")]
+        [WZPath("info/trunkPut")]
         public int TrunkPut { get; set; }
+        [WZPath("info/trunkGet")]
+        public int TrunkGet { get; set; }
         public NpcTemplate(int templateId)
             : base(templateId)
         {
-            Script = "";
         }
     }
 }
