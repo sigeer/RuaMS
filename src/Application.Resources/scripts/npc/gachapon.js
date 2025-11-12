@@ -51,11 +51,13 @@ function level2() {
     cm.gainItem(ticketId, -1);
     const itemObj = cm.doGachapon();
     if (itemObj == null) {
+        cm.sendOkLevel("谢谢惠顾。");
         return;
     }
     cm.sendNextLevel(cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId));
 }
 
 function level3() {
+    cm.dispose();
     cm.OpenGachaponStorage();
 }

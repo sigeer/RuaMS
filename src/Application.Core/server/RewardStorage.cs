@@ -1,6 +1,6 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Resources.Messages;
 using client.inventory;
-using server;
 
 namespace Application.Core.Server
 {
@@ -13,12 +13,15 @@ namespace Application.Core.Server
         public override bool StoreItemCheck(short slot, int itemId, short quantity)
         {
             Owner.Popup(nameof(ClientMessage.RewardStorage_CannotStore));
+            Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
         }
 
         public override bool StoreMeso(int meso)
         {
             Owner.Popup(nameof(ClientMessage.RewardStorage_CannotStore));
+            // 如果不返回STORAGE数据包，窗口会卡住
+            Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
         }
         public bool CanGetItemCount(int count)

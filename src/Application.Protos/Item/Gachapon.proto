@@ -20,6 +20,7 @@ message GachaponPoolItemDto {
 	int32 poolId = 2;
 	int32 itemId = 3;
 	int32 level = 4;
+	int32 quantity = 5;
 }
 
 message GacheponDataDto {

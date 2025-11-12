@@ -134,6 +134,7 @@ namespace Application.Core.Server
 
 
                 Owner.sendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
+                Owner.CurrentStorage = this;
             }
             finally
             {

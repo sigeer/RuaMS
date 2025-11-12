@@ -84,6 +84,7 @@ public partial class Player
     public Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
     public RewardStorage GachaponStorage { get; set; } = null!;
+    public AbstractStorage? CurrentStorage { get; set; }
 
     private ILogger? _log;
     public ILogger Log => _log ?? (_log = LogFactory.GetCharacterLog(AccountId, Id));

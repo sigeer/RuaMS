@@ -72,7 +72,12 @@ public class StorageHandler : ChannelHandlerBase
             return;
         }
 
-        Storage storage = chr.getStorage();
+        var storage = chr.CurrentStorage;
+        if (storage == null)
+        {
+            c.sendPacket(PacketCreator.enableActions());
+            return;
+        }
         if (c.tryacquireClient())
         {
             try
@@ -83,7 +88,7 @@ public class StorageHandler : ChannelHandlerBase
                         { // Take out
                             sbyte type = p.ReadSByte();
                             sbyte slot = p.ReadSByte();
-                            if (slot < 0 || slot > storage.getSlots())
+                            if (slot < 0 || slot > storage.Slots)
                             {
                                 // removal starts at zero
                                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
@@ -132,6 +137,7 @@ public class StorageHandler : ChannelHandlerBase
                             break;
                         }
                     case 8: // Close (unless the player decides to enter cash shop)
+                        chr.CurrentStorage = null;
                         c.sendPacket(PacketCreator.enableActions());
                         break;
                 }

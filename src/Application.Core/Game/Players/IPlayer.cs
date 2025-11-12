@@ -47,6 +47,7 @@ namespace Application.Core.Game.Players
         public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
+        AbstractStorage? CurrentStorage { get; set; }
         public Storage Storage { get; set; }
         RewardStorage GachaponStorage { get; set; }
         public CashShop CashShopModel { get; set; }
