@@ -1644,7 +1644,7 @@ public class OldItemInformationProvider
             reward.quantity = (short)DataTool.getInt("count", child, 0);
             reward.effect = DataTool.getString("Effect", child) ?? "";
             reward.worldmsg = DataTool.getString("worldMsg", child);
-            reward.period = DataTool.getInt("period", child, -1);
+            reward.period = DataTool.getInt("period", child, 0);
 
             totalprob += reward.prob;
 
