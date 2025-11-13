@@ -28,21 +28,14 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Server;
-using Application.Resources;
 using Application.Shared.Events;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
-using constants.game;
 using constants.String;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
 using server;
 using server.expeditions;
-using server.life;
 using server.partyquest;
 using tools;
-using static Application.Templates.Quest.QuestAct;
 using static server.partyquest.Pyramid;
 
 
@@ -409,10 +402,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return JobFactory.GetById(id).Name;
     }
 
-    public StatEffect? getItemEffect(int itemId)
-    {
-        return ItemInformationProvider.getInstance().getItemEffect(itemId);
-    }
 
     public void resetStats()
     {
@@ -450,47 +439,55 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
+    public void OpenStorage()
+    {
+        c.OnlinedCharacter.Storage.OpenStorage(npc);
+    }
+
     public bool CheckGachaponStorage(int willGot)
     {
-        return c.OnlinedCharacter.GachaponStorage.CanGetItemCount(willGot);
+        return c.OnlinedCharacter.GachaponStorage.CanGainItem(willGot);
     }
 
     public void OpenGachaponStorage()
     {
         c.OnlinedCharacter.GachaponStorage.OpenStorage(npc);
     }
-
+    static Dictionary<int, int> gachaponNpcMapMapping = new Dictionary<int, int>()
+    {
+        { NpcId.GACHAPON_HENESYS, MapId.HENESYS },
+        { NpcId.GACHAPON_ELLINIA, MapId.ELLINIA },
+        { NpcId.GACHAPON_PERION, MapId.PERION },
+        { NpcId.GACHAPON_KERNING, MapId.KERNING_CITY },
+        { NpcId.GACHAPON_SLEEPYWOOD, MapId.SLEEPYWOOD },
+        { NpcId.GRANDPA_MOON_BUNNY, MapId.MUSHROOM_SHRINE },
+        { NpcId.GACHAPON_SHOWA_MALE, MapId.SHOWA_SPA_M },
+        { NpcId.GACHAPON_SHOWA_FEMALE, MapId.SHOWA_SPA_F },
+        { NpcId.GACHAPON_NLC, MapId.NEW_LEAF_CITY },
+        { NpcId.GACHAPON_EL_NATH, MapId.EL_NATH },
+        { NpcId.GACHAPON_NAUTILUS, MapId.NAUTILUS_HARBOR },
+    };
+    public string GetGachaponMapName()
+    {
+        return c.CurrentCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
+    }
     public GachaponPoolItemDataObject? doGachapon()
     {
         var reward = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
-        var rewardItem = ItemInformationProvider.getInstance().GenerateItemById(reward.ItemId, reward.Quantity);
+        var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity);
         if (rewardItem == null)
             return null;
 
-        c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem);
+        if (!c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem))
+            return null;
 
-        int[] maps = {
-            MapId.HENESYS,
-            MapId.ELLINIA,
-            MapId.PERION,
-            MapId.KERNING_CITY,
-            MapId.SLEEPYWOOD,
-            MapId.MUSHROOM_SHRINE,
-            MapId.SHOWA_SPA_M,
-            MapId.SHOWA_SPA_F,
-            MapId.NEW_LEAF_CITY,
-            MapId.NAUTILUS_HARBOR
-        };
-        int mapId = maps[(getNpc() != NpcId.GACHAPON_NAUTILUS && getNpc() != NpcId.GACHAPON_NLC)
-            ? (getNpc() - NpcId.GACHAPON_HENESYS)
-            : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
-        string map = c.CurrentServer.getMapFactory().getMap(mapId).getMapName();
+        string map = ClientCulture.SystemCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
 
         LogFactory.GetLogger(LogType.Gachapon).Information(
             "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
             getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(reward.ItemId), reward.ItemId, map);
 
-        if (reward.Level > 0)
+        if (reward.Level > 1)
         {
             //Uncommon and Rare
             c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));

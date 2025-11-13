@@ -38,7 +38,17 @@ namespace Application.Core.Server
             }
         }
 
-        public Item? GetItemBySlot(sbyte slot)
+        public bool CanGainItem(int count)
+        {
+            return Items.Count + count <= Slots;
+        }
+
+        public bool CanGainSlots(int slots)
+        {
+            return slots + Slots <= Limits.MaxStorageSlots;
+        }
+
+        public Item? GetItemBySlot(int slot)
         {
             lockObj.Enter();
             try
@@ -106,12 +116,12 @@ namespace Application.Core.Server
             return true;
         }
 
-        public virtual bool TakeOutMeso(int meso)
+        public virtual bool TakeOutMesoCheck(int meso)
         {
             return meso <= Meso;
         }
 
-        public virtual bool StoreMeso(int meso)
+        public virtual bool StoreMesoCheck(int meso)
         {
             return Owner.getMeso() >= meso;
         }
@@ -126,22 +136,14 @@ namespace Application.Core.Server
 
         }
 
-        public void OpenStorage(int npcId)
+        public virtual void OpenStorage(int npcId)
         {
             lockObj.Enter();
             try
             {
                 Items.Sort((o1, o2) =>
                 {
-                    if (o1.getInventoryType().getType() < o2.getInventoryType().getType())
-                    {
-                        return -1;
-                    }
-                    else if (o1.getInventoryType() == o2.getInventoryType())
-                    {
-                        return 0;
-                    }
-                    return 1;
+                    return o1.getInventoryType().getType().CompareTo(o2.getInventoryType().getType());
                 });
 
                 foreach (var inv in EnumCache<InventoryType>.Values)
@@ -163,7 +165,7 @@ namespace Application.Core.Server
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
         }
 
-        public void ArrangeItems()
+        public virtual void ArrangeItems()
         {
             lockObj.Enter();
             try

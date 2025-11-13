@@ -6827,7 +6827,7 @@ public class PacketCreator
             addCashItemInformation(p, item, c.AccountEntity!.Id);
         }
 
-        p.writeShort(c.OnlinedCharacter.getStorage().getSlots());
+        p.writeShort(c.OnlinedCharacter.Storage.Slots);
         p.writeShort(c.AccountEntity!.Characterslots);
 
         return p;

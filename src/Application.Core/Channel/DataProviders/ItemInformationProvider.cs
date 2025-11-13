@@ -872,7 +872,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
-    public Item? GenerateItemById(int itemId, int quantity, bool randomizeEquip = true)
+    public Item? GenerateVirtualItemById(int itemId, int quantity, bool randomizeEquip = true)
     {
         if (quantity <= 0)
             return null;

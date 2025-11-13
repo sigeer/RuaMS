@@ -87,17 +87,17 @@ public class StorageHandler : ChannelHandlerBase
                     case 4:
                         { // Take out
                             sbyte type = p.ReadSByte();
-                            sbyte slot = p.ReadSByte();
-                            if (slot < 0 || slot > storage.Slots)
+                            sbyte storageSlot = p.ReadSByte();
+                            if (storageSlot < 0 || storageSlot > storage.Slots)
                             {
                                 // removal starts at zero
                                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
-                                _logger.LogWarning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), slot);
+                                _logger.LogWarning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), storageSlot);
                                 c.Disconnect(true, false);
                                 return;
                             }
 
-                            var item = storage.GetItemByTypedSlot(InventoryTypeUtils.getByType(type), slot);
+                            var item = storage.GetItemByTypedSlot((InventoryType)type, storageSlot);
                             if (item != null)
                             {
                                 StorageProcessor.TakeOut(storage, item);
@@ -106,21 +106,21 @@ public class StorageHandler : ChannelHandlerBase
                         }
                     case 5:
                         { // Store
-                            short slot = p.readShort();
+                            short invSlot = p.readShort();
                             int itemId = p.readInt();
                             short quantity = p.readShort();
                             InventoryType invType = ItemConstants.getInventoryType(itemId);
                             Inventory inv = chr.getInventory(invType);
-                            if (slot < 1 || slot > inv.getSlotLimit())
+                            if (invSlot < 1 || invSlot > inv.getSlotLimit())
                             {
                                 // player inv starts at one
                                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
-                                _logger.LogWarning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), slot);
+                                _logger.LogWarning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), invSlot);
                                 c.Disconnect(true, false);
                                 return;
                             }
 
-                            StorageProcessor.Store(storage, slot, itemId, quantity);
+                            StorageProcessor.Store(storage, invSlot, itemId, quantity);
                             break;
                         }
                     case 6: // Arrange items

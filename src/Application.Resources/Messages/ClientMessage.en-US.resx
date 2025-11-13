@@ -1077,13 +1077,22 @@
   <data name="Storage_NeedLevel" xml:space="preserve">
     <value>You may only use the storage once you have reached level 15.</value>
   </data>
-  <data name="RewardStorage_CannotStore" xml:space="preserve">
-    <value>The prize warehouse cannot store items.</value>
+  <data name="RewardStorage_OnlyAllowTakeOut" xml:space="preserve">
+    <value>The prize warehouse can only retrieve items, not store or arrange them.</value>
   </data>
   <data name="Map_Ludibrium" xml:space="preserve">
     <value>Ludibrium</value>
   </data>
   <data name="Map_ElNath" xml:space="preserve">
     <value>El Nath</value>
+  </data>
+  <data name="RewardStorage_NewItem" xml:space="preserve">
+    <value>奖品仓库收纳了新的物品：{0}。</value>
+  </data>
+  <data name="ExtraStorageCommand_Syntax" xml:space="preserve">
+    <value>Syntax：!storage</value>
+  </data>
+  <data name="ExtraStorageCommand_Description" xml:space="preserve">
+    <value>打开奖品仓库。</value>
   </data>
 </root>

@@ -6,9 +6,9 @@ namespace Application.Templates.Item
         public int ItemID { get; set; }
         public int Count { get; set; }
         public int Prob { get; set; }
-        public int Period { get; set; } = -1;
+        public int Period { get; set; }
         [WZPath("reward/-/Effect")]
-        public string Effect { get; set; } = string.Empty;
+        public string? Effect { get; set; }
         [WZPath("reward/-/worldMsg")]
         public string? WorldMessage { get; set; }
     }

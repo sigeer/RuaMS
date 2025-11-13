@@ -345,7 +345,8 @@ namespace Application.Core.Login.Datas
 
                 var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
-                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == 1)) ?? new StorageModel(characterId.Value, 1);
+                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage)) 
+                    ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
                 gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
 
                 var buddyData = (from a in dbContext.Buddies

@@ -140,7 +140,7 @@ public class StorageProcessor
     /// <param name="meso">大于0取出，小于0存入</param>
     public static void SetMeso(AbstractStorage storage, int meso)
     {
-        if ((meso > 0 && storage.TakeOutMeso(meso)) || (meso < 0 && storage.StoreMeso(-meso)))
+        if ((meso > 0 && storage.TakeOutMesoCheck(meso)) || (meso < 0 && storage.StoreMesoCheck(-meso)))
         {
             if (meso < 0 && (storage.Meso - meso) < 0)
             {

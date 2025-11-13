@@ -151,8 +151,8 @@ namespace Application.Core.Login.Datas
                 ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
 
             var storage = _maaper.Map<StorageModel>(
-                    dbContext.Storages.FirstOrDefault(x => x.OwnerId == accountId && x.Type == 0)
-                    ) ?? new StorageModel(accountId, 0);
+                    dbContext.Storages.FirstOrDefault(x => x.OwnerId == accountId && x.Type == (int)StorageType.AccountStorage)
+                    ) ?? new StorageModel(accountId, (int)StorageType.AccountStorage);
             storage.Items = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray();
 
             data = new AccountGame

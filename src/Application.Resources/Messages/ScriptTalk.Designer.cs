@@ -639,11 +639,38 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 请确保你的#r奖品仓库#k中至少有{0}个空位。 的本地化字符串。
+        /// </summary>
+        public static string Storage_CheckGachaponStorage {
+            get {
+                return ResourceManager.GetString("Storage_CheckGachaponStorage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请确保你有 #i{0}##b#t{0}#x{1}#k。 的本地化字符串。
+        /// </summary>
+        public static string Tip_CheckItemWithId {
+            get {
+                return ResourceManager.GetString("Tip_CheckItemWithId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 你得到了 #b#t{0}##k。 的本地化字符串。
         /// </summary>
         public static string Tip_ObtainItem {
             get {
                 return ResourceManager.GetString("Tip_ObtainItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 谢谢惠顾 的本地化字符串。
+        /// </summary>
+        public static string Tip_ThankPatronage {
+            get {
+                return ResourceManager.GetString("Tip_ThankPatronage", resourceCulture);
             }
         }
     }

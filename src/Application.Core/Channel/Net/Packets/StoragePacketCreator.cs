@@ -11,6 +11,7 @@ namespace Application.Core.Channel.Net.Packets
             p.writeByte(0x16);
             p.writeInt(npcId);
             p.writeByte(slots);
+            // 01111110 正好对应不同栏物品
             p.writeShort(0x7E);
             p.writeShort(0);
             p.writeInt(0);
@@ -46,6 +47,7 @@ namespace Application.Core.Channel.Net.Packets
             OutPacket p = OutPacket.create(SendOpcode.STORAGE);
             p.writeByte(0x13);
             p.writeByte(slots);
+            // 2 << 0
             p.writeShort(2);
             p.writeShort(0);
             p.writeInt(0);
@@ -77,7 +79,7 @@ namespace Application.Core.Channel.Net.Packets
             p.writeShort(type.getBitfieldEncoding());
             p.writeShort(0);
             p.writeInt(0);
-            p.writeByte(items.Count());
+            p.writeByte(items.Count());  
             foreach (Item item in items)
             {
                 PacketCreator.addItemInfo(p, item, true);
@@ -90,6 +92,7 @@ namespace Application.Core.Channel.Net.Packets
             OutPacket p = OutPacket.create(SendOpcode.STORAGE);
             p.writeByte(0xF);
             p.writeByte(slots);
+            // 126(7E) - 2
             p.writeByte(124);
             p.skip(10);
             p.writeByte(items.Count());

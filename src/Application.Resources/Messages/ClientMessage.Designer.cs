@@ -854,6 +854,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 打开奖品仓库。 的本地化字符串。
+        /// </summary>
+        public static string ExtraStorageCommand_Description {
+            get {
+                return ResourceManager.GetString("ExtraStorageCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 格式：!storage 的本地化字符串。
+        /// </summary>
+        public static string ExtraStorageCommand_Syntax {
+            get {
+                return ResourceManager.GetString("ExtraStorageCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 改变玩家的脸型 的本地化字符串。
         /// </summary>
         public static string FaceCommand_Description {
@@ -2258,11 +2276,20 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 奖品仓库无法存放物品或金币。 的本地化字符串。
+        ///   查找类似 奖品仓库收纳了新的物品：{0}。 的本地化字符串。
         /// </summary>
-        public static string RewardStorage_CannotStore {
+        public static string RewardStorage_NewItem {
             get {
-                return ResourceManager.GetString("RewardStorage_CannotStore", resourceCulture);
+                return ResourceManager.GetString("RewardStorage_NewItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 奖品仓库只能取出，无法存放/排列。 的本地化字符串。
+        /// </summary>
+        public static string RewardStorage_OnlyAllowTakeOut {
+            get {
+                return ResourceManager.GetString("RewardStorage_OnlyAllowTakeOut", resourceCulture);
             }
         }
         

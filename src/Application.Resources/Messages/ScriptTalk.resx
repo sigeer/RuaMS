@@ -320,4 +320,13 @@
   <data name="Tip_ObtainItem" xml:space="preserve">
     <value>你得到了 #b#t{0}##k。</value>
   </data>
+  <data name="Storage_CheckGachaponStorage" xml:space="preserve">
+    <value>请确保你的#r奖品仓库#k中至少有{0}个空位。</value>
+  </data>
+  <data name="Tip_CheckItemWithId" xml:space="preserve">
+    <value>请确保你有 #i{0}##b#t{0}#x{1}#k。</value>
+  </data>
+  <data name="Tip_ThankPatronage" xml:space="preserve">
+    <value>谢谢惠顾</value>
+  </data>
 </root>

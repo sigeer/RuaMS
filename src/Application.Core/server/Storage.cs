@@ -47,27 +47,15 @@ public class Storage : AbstractStorage
         this.AccountId = id;
     }
 
-    public byte getSlots()
-    {
-        return Slots;
-    }
 
-    public bool canGainSlots(int slots)
-    {
-        Slots += this.Slots;
-        return Slots <= 48;
-    }
-
-    public bool gainSlots(int slots)
+    public bool TryGainSlots(int slots)
     {
         lockObj.Enter();
         try
         {
-            if (canGainSlots(Slots))
+            if (CanGainSlots(Slots))
             {
-                Slots += this.Slots;
-                this.Slots = (byte)Slots;
-
+                this.Slots += (byte)slots;
                 return true;
             }
 
@@ -115,16 +103,16 @@ public class Storage : AbstractStorage
             Owner.GainMeso(-NpcTemplate.TrunkPut, false, true, false);
     }
 
-    public void sendStorage(IChannelClient c, int npcId)
+    public override void OpenStorage(int npcId)
     {
-        if (c.OnlinedCharacter.getLevel() < 15)
+        if (Owner.getLevel() < 15)
         {
-            c.OnlinedCharacter.Popup(nameof(ClientMessage.Storage_NeedLevel));
-            c.sendPacket(PacketCreator.enableActions());
+            Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            Owner.sendPacket(PacketCreator.enableActions());
             return;
         }
 
         NpcTemplate = ProviderSource.Instance.GetProvider<NpcProvider>().GetItem(npcId);
-        OpenStorage(npcId);
+        base.OpenStorage(npcId);
     }
 }
