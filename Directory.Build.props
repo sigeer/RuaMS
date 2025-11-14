@@ -1,14 +1,11 @@
 <Project>
 	<PropertyGroup>
+	  <TargetFramework>net10.0</TargetFramework>
+
 	  <Version>0.0.1</Version>
 	  <FileVersion>0.0.1.0</FileVersion>
 	  <RepositoryUrl>https://github.com/sigeer/RuaMS</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
 	  <PackageProjectUrl>https://github.com/sigeer/RuaMS</PackageProjectUrl>
   </PropertyGroup>
-
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	</PropertyGroup>
 </Project>

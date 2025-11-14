@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11205.157 d18.0
+VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Core", "src\Application.Core\Application.Core.csproj", "{2AF986EB-2A1B-42E0-9B89-D6285A050413}"
 EndProject
@@ -41,7 +41,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
-		src\Directory.Packages.props = src\Directory.Packages.props
 		docker-compose.yml = docker-compose.yml
 		NuGet.config = NuGet.config
 	EndProjectSection
@@ -147,6 +146,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Templates.XmlWzReader", "src\Application.Templates.XmlWzReader\Application.Templates.XmlWzReader.csproj", "{F863BF7C-EB8F-4648-A058-367C41B37108}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlWzReader.SouceGenerator", "tools\XmlWzReader.SouceGenerator\XmlWzReader.SouceGenerator.csproj", "{363D317E-5D74-BA2C-5B78-5730B6D67435}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "srcItems", "srcItems", "{C6D16591-7424-40CE-91F5-264640DCF620}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+		src\Directory.Packages.props = src\Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -352,7 +357,6 @@ Global
 		{F6C02188-4758-4B58-8872-F9B5954A3EC7} = {7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}
 		{45FF432D-41A4-4F93-9F98-37F50A0D2224} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{561EC084-A6EA-4366-BFC7-B5C987D57515} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
-		{0BF5D534-3E6E-48C7-A7DA-F52236CB2A1B} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{79AFD6B5-5964-4CCD-AE20-8C72D688A767} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{D000318F-55A6-4B49-B73C-4D5568C4FDC9} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{495690B4-0416-4C12-A9FA-5742C47EEB24} = {DCCF81D5-1F6C-40F8-BE70-D6DD24878D59}
@@ -404,6 +408,7 @@ Global
 		{8620B2C8-7B47-46BF-AAC4-F5F82F32D34E} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{F863BF7C-EB8F-4648-A058-367C41B37108} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{363D317E-5D74-BA2C-5B78-5730B6D67435} = {7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}
+		{C6D16591-7424-40CE-91F5-264640DCF620} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}
