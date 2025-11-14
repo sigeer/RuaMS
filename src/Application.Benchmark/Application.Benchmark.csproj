@@ -2,19 +2,15 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Configurations>Debug;Release;Benchmark</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="Facet" Version="2.1.0" />
-    <PackageReference Include="Facet.Extensions" Version="2.1.0" />
-    <PackageReference Include="Facet.Mapping" Version="2.1.0" />
-    <PackageReference Include="Mapster" Version="7.4.0" />
-	  <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Mapster" />
+	<PackageReference Include="FastExpressionCompiler" />
   </ItemGroup>
 
   <ItemGroup>

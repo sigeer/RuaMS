@@ -3,7 +3,6 @@ using Application.Core.Login.Models.Items;
 using Application.EF.Entities;
 using AutoMapper;
 using BenchmarkDotNet.Attributes;
-using Facet;
 using FastExpressionCompiler;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,32 +54,6 @@ namespace Application.Benchmark
             var model = new FredrickStoreModel { Meso = 1 };
             model.Adapt<FredstorageEntity>();
         }
-
-        /// <summary>
-        /// 性能最佳，但是不支持双向映射。更倾向于创建复制类型而不是类型映射
-        /// </summary>
-        [Benchmark()]
-        public void UseFacet()
-        {
-            var model = new FredrickStoreModel { Meso = 1 };
-            new FredstorageEntityLocal(model);
-        }
     }
-
-
-    [Facet(typeof(FredrickStoreModel), nameof(FredrickStoreModel.Items))]
-    public partial class FredstorageEntityLocal { }
-
-    //public class FredstorageMapper : IFacetMapConfiguration<FredrickStoreModel, FredstorageEntity>
-    //{
-    //    public static void Map(FredrickStoreModel source, FredstorageEntity target)
-    //    {
-    //        target.Daynotes = source.Daynotes;
-    //        target.Cid = source.Cid;
-    //        target.Id = source.Id;
-    //        target.Meso = source.Meso;
-    //        target.ItemMeso = (int)source.ItemMeso;
-    //    }
-    //}
 
 }

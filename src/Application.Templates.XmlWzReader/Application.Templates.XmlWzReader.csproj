@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -9,10 +8,6 @@
   <!--<ItemGroup>
 	  <Compile Include="..\Application.Templates\**\*.cs" Exclude="..\Application.Templates\bin\**;..\Application.Templates\obj\**" />
   </ItemGroup>-->
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
-  </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\tools\XmlWzReader.SouceGenerator\XmlWzReader.SouceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

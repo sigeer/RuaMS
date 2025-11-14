@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -22,6 +21,13 @@
 
 	<ItemGroup>
 		<FilesToDelete Include="$(OutputPath)cache\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="logs\**" />
+	  <Content Remove="logs\**" />
+	  <EmbeddedResource Remove="logs\**" />
+	  <None Remove="logs\**" />
 	</ItemGroup>
 	<Target Name="DeleteFile" BeforeTargets="Clean">
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
