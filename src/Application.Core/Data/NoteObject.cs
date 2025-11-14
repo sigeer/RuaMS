@@ -1,3 +1,5 @@
+using server.life;
+
 namespace Application.Core.Models
 {
     public class NoteObject
@@ -6,7 +8,8 @@ namespace Application.Core.Models
 
         public string To { get; set; } = null!;
 
-        public string From { get; set; } = null!;
+        public int FromId { get; set; }
+        public string? From { get; set; }
 
         public string Message { get; set; } = null!;
 
@@ -15,5 +18,9 @@ namespace Application.Core.Models
         public int Fame { get; set; }
 
         public int Deleted { get; set; }
+        public string GetFromName(IChannelClient client)
+        {
+            return FromId < 0 ? client.CurrentCulture.GetNpcName(FromId) : From!;
+        }
     }
 }

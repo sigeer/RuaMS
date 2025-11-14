@@ -15,5 +15,6 @@ namespace Application.Shared.Constants
         public const int VISITOR_HISTORY_LIMIT = 10;
         public const int BLACKLIST_LIMIT = 20;
 
+        public const int MaxStorageSlots = 48;
     }
 }

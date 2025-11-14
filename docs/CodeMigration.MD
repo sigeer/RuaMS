@@ -54,10 +54,10 @@ TimeSpan.FromSeconds($1)
 | - | `Wedding` -> `WeddingPackets` | - | jint保持了相同的别名，暂不用处理 |
 | - | `RingActionHandler` -> `RingManager` | ❗ | 静态方法移动 |
 | `commands.js` | - | ❗ | 需要重写 |
-| `gachaponInfo.js` | `Gachapon.GachaponType` -> `GachaponManager`| ❗ |  |
 | `2xEvent.js` | `Server.getInstance().getWorld(em.getChannelServer().getWorld());` -> `em.getWorldServer();` | - | CodeMigration替换 |
 | `1021.js`, `21010.js` | `getHp()` -> `HP`,`updateHp` -> `SetHP` | ❗ | hp/mp相关代码重构，这里需要手动修改一下 |
 | - | `party.getMembers()` -> `GetChannelMembers` | ❗ |  |
 | - | `em.getChannelServer().getMapFactory().getMap()` -> `em.GetMap` | ❗ |  |
 | - | `startInstance()` -> `StartExpeditionInstance` 或  `StartPQInstance` | ❗ |  |
 | - | `em.getMonster(mobId)` -> `eim.getMonster(mobId)` | ❗ |  |
+| - | `cm.getPlayer().getStorage().sendStorage(cm.getClient(), npcId)` -> `cm.OpenStorage()` | ❗ | `cm\.getPlayer\(\)\.getStorage\(\)\.sendStorage\(cm\.getClient\(\), \d*\)` -> `cm.OpenStorage()` |

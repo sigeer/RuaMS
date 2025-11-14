@@ -135,6 +135,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("PoolId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
@@ -3119,17 +3122,21 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("storageid");
 
-                    b.Property<int>("Accountid")
-                        .HasColumnType("int")
-                        .HasColumnName("accountid");
-
                     b.Property<int>("Meso")
                         .HasColumnType("int")
                         .HasColumnName("meso");
 
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("int")
+                        .HasColumnName("OwnerId");
+
                     b.Property<int>("Slots")
                         .HasColumnType("int")
                         .HasColumnName("slots");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("Type");
 
                     b.HasKey("Storageid")
                         .HasName("PRIMARY");

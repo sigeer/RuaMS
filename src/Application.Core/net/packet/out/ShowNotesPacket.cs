@@ -5,17 +5,17 @@ namespace net.packet.outs;
 public class ShowNotesPacket : ByteBufOutPacket
 {
 
-    public ShowNotesPacket(List<NoteObject> notes) : base(SendOpcode.MEMO_RESULT)
+    public ShowNotesPacket(IChannelClient client, List<NoteObject> notes) : base(SendOpcode.MEMO_RESULT)
     {
         writeByte(3);
         writeByte(notes.Count);
-        notes.ForEach(writeNote);
+        notes.ForEach(x => writeNote(client, x));
     }
 
-    private void writeNote(NoteObject note)
+    private void writeNote(IChannelClient client, NoteObject note)
     {
         writeInt(note.Id);
-        writeString(note.From + " "); //Stupid nexon forgot space lol
+        writeString(note.GetFromName(client) + " "); //Stupid nexon forgot space lol
         writeString(note.Message);
         writeLong(PacketCommon.getTime(note.Timestamp));
         writeByte(note.Fame);

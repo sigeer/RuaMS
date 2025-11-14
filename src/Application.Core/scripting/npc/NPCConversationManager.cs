@@ -28,17 +28,12 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using Application.Resources;
 using Application.Shared.Events;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
-using constants.game;
 using constants.String;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
 using server;
 using server.expeditions;
-using server.life;
 using server.partyquest;
 using tools;
 using static server.partyquest.Pyramid;
@@ -119,6 +114,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     /// <param name="param">使用 params string[] 时，可能报错</param>
     /// <returns></returns>
     public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
+    public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
     public void sendNext(string text, byte speaker = 0)
     {
@@ -406,10 +402,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return JobFactory.GetById(id).Name;
     }
 
-    public StatEffect? getItemEffect(int itemId)
-    {
-        return ItemInformationProvider.getInstance().getItemEffect(itemId);
-    }
 
     public void resetStats()
     {
@@ -447,40 +439,60 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    public void doGachapon()
+    public void OpenStorage()
     {
-        var item = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
+        c.OnlinedCharacter.Storage.OpenStorage(npc);
+    }
 
-        var itemGained = gainItem(item.ItemId, (short)(ItemConstants.isPotion(item.ItemId) ? 100 : 1), true, true); // For normal potions, make it give 100.
+    public bool CheckGachaponStorage(int willGot)
+    {
+        return c.OnlinedCharacter.GachaponStorage.CanGainItem(willGot);
+    }
 
-        sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
+    public void OpenGachaponStorage()
+    {
+        c.OnlinedCharacter.GachaponStorage.OpenStorage(npc);
+    }
+    static Dictionary<int, int> gachaponNpcMapMapping = new Dictionary<int, int>()
+    {
+        { NpcId.GACHAPON_HENESYS, MapId.HENESYS },
+        { NpcId.GACHAPON_ELLINIA, MapId.ELLINIA },
+        { NpcId.GACHAPON_PERION, MapId.PERION },
+        { NpcId.GACHAPON_KERNING, MapId.KERNING_CITY },
+        { NpcId.GACHAPON_SLEEPYWOOD, MapId.SLEEPYWOOD },
+        { NpcId.GRANDPA_MOON_BUNNY, MapId.MUSHROOM_SHRINE },
+        { NpcId.GACHAPON_SHOWA_MALE, MapId.SHOWA_SPA_M },
+        { NpcId.GACHAPON_SHOWA_FEMALE, MapId.SHOWA_SPA_F },
+        { NpcId.GACHAPON_NLC, MapId.NEW_LEAF_CITY },
+        { NpcId.GACHAPON_EL_NATH, MapId.EL_NATH },
+        { NpcId.GACHAPON_NAUTILUS, MapId.NAUTILUS_HARBOR },
+    };
+    public string GetGachaponMapName()
+    {
+        return c.CurrentCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
+    }
+    public GachaponPoolItemDataObject? doGachapon()
+    {
+        var reward = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
+        var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity);
+        if (rewardItem == null)
+            return null;
 
-        int[] maps = {
-            MapId.HENESYS,
-            MapId.ELLINIA,
-            MapId.PERION,
-            MapId.KERNING_CITY,
-            MapId.SLEEPYWOOD,
-            MapId.MUSHROOM_SHRINE,
-            MapId.SHOWA_SPA_M,
-            MapId.SHOWA_SPA_F,
-            MapId.NEW_LEAF_CITY,
-            MapId.NAUTILUS_HARBOR
-        };
-        int mapId = maps[(getNpc() != NpcId.GACHAPON_NAUTILUS && getNpc() != NpcId.GACHAPON_NLC)
-            ? (getNpc() - NpcId.GACHAPON_HENESYS)
-            : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
-        string map = c.CurrentServer.getMapFactory().getMap(mapId).getMapName();
+        if (!c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem))
+            return null;
+
+        string map = ClientCulture.SystemCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
 
         LogFactory.GetLogger(LogType.Gachapon).Information(
             "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
-            getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(item.ItemId), item.ItemId, map);
+            getPlayer().getName(), ClientCulture.SystemCulture.GetItemName(reward.ItemId), reward.ItemId, map);
 
-        if (item.Level > 0)
+        if (reward.Level > 1)
         {
             //Uncommon and Rare
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
+        return reward;
     }
 
     public void upgradeAlliance()
@@ -1302,6 +1314,24 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         sendNextPrev(text, speaker);
         NextLevelContext.TwoOption(NextLevelType.SEND_LAST_NEXT, lastLevel, nextLevel);
+    }
+
+    public void SendParamedNextLevel(string level, object nextParam, string text, byte speaker = 0)
+    {
+        sendNext(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_NEXT, level, nextParam);
+    }
+
+    public void SendParamedLastLevel(string level, object lastParam, string text, byte speaker = 0)
+    {
+        sendPrev(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_LAST, level, lastParam);
+    }
+
+    public void SendParamedLastNextLevel(string level, string lastLevelParam, object nextLevelParam, string text, byte speaker = 0)
+    {
+        sendNextPrev(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_LAST_NEXT, level, lastLevelParam, nextLevelParam);
     }
 
     /// <summary>

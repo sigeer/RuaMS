@@ -150,6 +150,11 @@ namespace Application.Core.Login.Datas
             var allAccountItems = _server.InventoryManager.LoadItems(dbContext, true, accountId,
                 ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
 
+            var storage = _maaper.Map<StorageModel>(
+                    dbContext.Storages.FirstOrDefault(x => x.OwnerId == accountId && x.Type == (int)StorageType.AccountStorage)
+                    ) ?? new StorageModel(accountId, (int)StorageType.AccountStorage);
+            storage.Items = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray();
+
             data = new AccountGame
             {
                 Id = accountData.Id,
@@ -157,15 +162,12 @@ namespace Application.Core.Login.Datas
                 MaplePoint = accountData.MaplePoint ?? 0,
                 NxPrepaid = accountData.NxPrepaid ?? 0,
 
-                StorageItems = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray(),
                 CashOverallItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashOverall).ToArray(),
                 CashAranItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashAran).ToArray(),
                 CashCygnusItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashCygnus).ToArray(),
                 CashExplorerItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashExplorer).ToArray(),
                 QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
-                Storage = _maaper.Map<StorageModel>(
-                    dbContext.Storages.FirstOrDefault(x => x.Accountid == accountId)
-                    ) ?? new StorageModel(accountId)
+                Storage = storage
             };
             _accGameDataSource[accountId] = data;
             return data;

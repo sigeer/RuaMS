@@ -2,11 +2,13 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+import "Dto/Item.proto";
 
 package Dto;
 
 message StorageDto {
-  int32 accountid = 1;
+  int32 ownerId = 1;
   int32 slots = 2;
   int32 meso = 3;
+  repeated ItemDto items = 4;
 }

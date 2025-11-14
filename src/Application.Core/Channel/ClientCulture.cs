@@ -29,7 +29,7 @@ namespace Application.Core.Channel
         {
         }
 
-        public string GetMessageByKey(string key, params string[] paramsValue)
+        public string GetMessageByKey(string key, params object[] paramsValue)
         {
             var message = ClientMessage.ResourceManager.GetString(key, CultureInfo);
             if (string.IsNullOrEmpty(message))

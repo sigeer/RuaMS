@@ -1963,15 +1963,18 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.Storageid)
                 .HasColumnName("storageid");
-            entity.Property(e => e.Accountid)
+            entity.Property(e => e.OwnerId)
                 .HasColumnType("int")
-                .HasColumnName("accountid");
+                .HasColumnName("OwnerId");
             entity.Property(e => e.Meso)
                 .HasColumnType("int")
                 .HasColumnName("meso");
             entity.Property(e => e.Slots)
                 .HasColumnType("int")
                 .HasColumnName("slots");
+            entity.Property(e => e.Type)
+                .HasColumnType("int")
+                .HasColumnName("Type");
         });
 
         modelBuilder.Entity<Trocklocation>(entity =>

@@ -317,4 +317,16 @@ Your party must pass through many obstacles and puzzles while traversing the sub
   <data name="KerningPQ_Abandon" xml:space="preserve">
     <value>Do you wish to abandon this area?</value>
   </data>
+  <data name="Tip_ObtainItem" xml:space="preserve">
+    <value>You have obtained a #b#t{0}##k.</value>
+  </data>
+  <data name="Storage_CheckGachaponStorage" xml:space="preserve">
+    <value>Please ensure that there is at least {0} empty slot in your #r prize warehouse #k.</value>
+  </data>
+  <data name="Tip_CheckItemWithId" xml:space="preserve">
+    <value>Please ensure you have #i${0}##b#t${0}#x{1}#k.</value>
+  </data>
+  <data name="Tip_ThankPatronage" xml:space="preserve">
+    <value>Thank you for your patronage.</value>
+  </data>
 </root>

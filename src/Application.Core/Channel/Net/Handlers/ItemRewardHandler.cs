@@ -57,21 +57,24 @@ public class ItemRewardHandler : ChannelHandlerBase
                 break;
             }
             if (Randomizer.nextInt(rewards.Key) < reward.prob)
-            {//Is it even possible to get an item with prob 1?
+            {
+                //Is it even possible to get an item with prob 1?
+                Item item;
                 if (ItemConstants.getInventoryType(reward.itemid) == InventoryType.EQUIP)
                 {
-                    Item item = ii.getEquipById(reward.itemid);
-                    if (reward.period != -1)
-                    {
-                        // TODO is this a bug, meant to be 60 * 60 * 1000?
-                        item.setExpiration(c.CurrentServerContainer.getCurrentTime() + reward.period * 60 * 60 * 10);
-                    }
-                    InventoryManipulator.addFromDrop(c, item, false);
+                    item = ii.getEquipById(reward.itemid);
                 }
                 else
                 {
-                    InventoryManipulator.addById(c, reward.itemid, reward.quantity, "");
+                    item = Item.CreateVirtualItem(reward.itemid, reward.quantity);
                 }
+
+                if (reward.period > 0)
+                {
+                    // TODO is this a bug, meant to be 60 * 60 * 1000?
+                    item.setExpiration(c.CurrentServerContainer.getCurrentTime() + reward.period * 60 * 60 * 10);
+                }
+                InventoryManipulator.addFromDrop(c, item, false);
                 InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, false, false);
                 if (reward.worldmsg != null)
                 {

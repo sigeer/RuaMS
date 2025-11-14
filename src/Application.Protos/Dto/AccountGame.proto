@@ -20,7 +20,6 @@ message AccountGameDto {
   repeated ItemDto cashCygnusItems = 7;
   repeated ItemDto cashAranItems = 8;
   repeated ItemDto cashOverallItems = 9;
-  repeated ItemDto storageItems = 10;
 
   StorageDto storage = 11;
 

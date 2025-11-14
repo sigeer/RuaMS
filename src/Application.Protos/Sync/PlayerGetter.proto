@@ -23,6 +23,7 @@ import "Dto/NewYearCard.proto";
 import "Dto/ServerCrossCallback.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
+import "Dto/Storage.proto";
 
 package SyncProto;
 
@@ -60,6 +61,7 @@ message PlayerGetterDto {
   repeated Dto.NewYearCardDto newYearCards = 21;
   repeated Dto.RemoteCallDto remoteCallList = 23;
   repeated PlayerTimerQuestDto runningTimerQuests = 24;
+  Dto.StorageDto gachaponStorage = 25;
 }
 
 message GetPlayerByLoginRequest {

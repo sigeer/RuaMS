@@ -55,6 +55,7 @@ public class LifeFactory : IStaticService
 
     private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
+    NpcProvider _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
 
     private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
 
@@ -356,13 +357,12 @@ public class LifeFactory : IStaticService
         }
     }
 
-    public NPC getNPC(int nid)
+    public NPC? getNPC(int nid)
     {
-        return new NPC(nid, GetNPCStats(nid));
-    }
+        var npcTemplate = _npcProvider.GetItem(nid);
+        if (npcTemplate != null)
+            return new NPC(nid, new NPCStats(ClientCulture.SystemCulture.GetNpcName(nid), npcTemplate));
 
-    public NPCStats GetNPCStats(int npcId)
-    {
-        return new NPCStats(ClientCulture.SystemCulture.GetNpcName(npcId));
+        return null;
     }
 }

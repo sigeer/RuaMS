@@ -669,7 +669,7 @@ public class MapleMap : IMap
                         if (mesos <= 0)
                         {
                             log.Warning("Character {CharacterName}, Id = {CharacterId}, MesoRate {MesoRate}", chr, chr.Id, chr.getMesoRate());
-                            mesos = int.MaxValue;
+                            mesos = 0;
                         }
 
                         spawnMesoDrop((int)mesos, itemPos, mob, chr, false, droptype, dropDelay);

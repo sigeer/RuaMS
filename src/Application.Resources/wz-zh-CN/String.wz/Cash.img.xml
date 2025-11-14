@@ -1905,7 +1905,7 @@
     </imgdir>
     <imgdir name="5120034">
         <string name="name" value="天降甜甜圈"/>
-        <string name="msg" value="%%s的甜甜圈: %s"/>
+        <string name="msg" value="%s的甜甜圈: %s"/>
         <string name="desc" value="天空中掉下甜甜圈，持续30秒。\n"/>
     </imgdir>
     <imgdir name="5120033">

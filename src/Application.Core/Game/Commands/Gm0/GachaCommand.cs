@@ -28,7 +28,9 @@ public class GachaCommand : CommandBase
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_MushroomShrine)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaMale)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaFemale)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Ludibrium)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NewLeafCity)),
+            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ElNath)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NautilusHarbor))
         };
         int[] ids = [
@@ -40,7 +42,9 @@ public class GachaCommand : CommandBase
             NpcId.GACHAPON_MUSHROOM_SHRINE,
             NpcId.GACHAPON_SHOWA_MALE,
             NpcId.GACHAPON_SHOWA_FEMALE,
+            NpcId.GACHAPON_LUDIBRIUM,
             NpcId.GACHAPON_NLC,
+            NpcId.GACHAPON_EL_NATH,
             NpcId.GACHAPON_NAUTILUS];
 
         for (int i = 0; i < names.Length; i++)

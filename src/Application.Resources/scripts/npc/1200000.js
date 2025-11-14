@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@ Version 1.0 - Script Done.(11/6/2010)
 =============================================================
 */
 function start() {
-    cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1200000);
+    cm.OpenStorage();
     cm.dispose();
 }

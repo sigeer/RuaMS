@@ -1,5 +1,3 @@
-using Application.Core.Login.Shared;
-
 namespace Application.Core.Login.Models.Gachpons
 {
     public class GachaponPoolModel
@@ -24,5 +22,6 @@ namespace Application.Core.Login.Models.Gachpons
         public int PoolId { get; set; }
         public int ItemId { get; set; }
         public int Level { get; set; }
+        public int Quantity { get; set; }
     }
 }

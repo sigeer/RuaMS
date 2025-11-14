@@ -38,6 +38,7 @@ namespace Application.Core.Login.Models
         public Dictionary<int, BuddyModel> BuddyList { get; set; }
         public NewYearCardModel[] NewYearCards { get; set; }
         public FameLogModel[] FameLogs { get; set; }
+        public StorageModel GachaponStorage { get; set; }
 
     }
 

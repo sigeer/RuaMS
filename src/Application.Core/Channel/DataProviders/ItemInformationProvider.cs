@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
 using Application.Resources;
 using Application.Shared.Constants.Item;
@@ -40,6 +41,7 @@ using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
+using client.inventory.manipulator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz.Impl.AdoJobStore.Common;
@@ -870,6 +872,37 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
+    public Item? GenerateVirtualItemById(int itemId, int quantity, bool randomizeEquip = true)
+    {
+        if (quantity <= 0)
+            return null;
+
+        var abTemplate = GetTemplate(itemId);
+        if (abTemplate == null)
+            return null;
+
+        if (abTemplate is EquipTemplate equipTemplate)
+        {
+            var item = GetEquipByTemplate(equipTemplate);
+            if (item != null)
+            {
+                if (randomizeEquip)
+                {
+                    randomizeStats(item);
+                }
+                return item;
+            }
+        }
+
+        else
+        {
+            return Item.CreateVirtualItem(itemId, (short)quantity);
+        }
+
+        return null;
+
+    }
+
     public Equip getEquipById(int equipId)
     {
         return GetEquipByTemplate(GetEquipTemplate(equipId)) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId);
@@ -1043,7 +1076,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isQuestItem(int itemId)
     {
-        if (itemId <= 0) 
+        if (itemId <= 0)
             return false;
         return GetProvider(itemId).GetItem(itemId)?.Quest ?? false;
     }

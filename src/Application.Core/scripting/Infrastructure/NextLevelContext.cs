@@ -41,16 +41,19 @@ namespace Application.Core.scripting.Infrastructure
         /// <summary>
         /// sendYesNoLevel
         /// </summary>
-        SEND_YES_NO
+        SEND_YES_NO,
+
+        SEND_PARAMED_NEXT,
     }
 
-    public record NextLevelFunction(string Name, params object?[] Params);
+    public record NextLevelFunction(string Name, params object?[]? Params);
 
     public class NextLevelContext
     {
         public NextLevelType? LevelType { get; set; }
         private string? lastLevel;
         private string? nextLevel;
+        private object?[]? paramsValue;
 
         public bool TryGetInvokeFunction(IChannelClient c, sbyte mode, sbyte type, int selection, out NextLevelFunction? nextLevelFunction)
         {
@@ -89,7 +92,7 @@ namespace Application.Core.scripting.Infrastructure
                     if (string.IsNullOrWhiteSpace(nextOption) || nextOption.Equals("dispose", StringComparison.OrdinalIgnoreCase))
                         return false;
 
-                    nextLevelFunction = new NextLevelFunction("level" + nextOption);
+                    nextLevelFunction = new NextLevelFunction("level" + nextOption, paramsValue);
                     break;
                 default:
                     LogFactory.GetLogger("Script/NextLevel").Error("Unsupported level type: {LevelType}", LevelType);
@@ -98,20 +101,21 @@ namespace Application.Core.scripting.Infrastructure
             return true;
         }
 
-        public void OneOption(NextLevelType levelType, string? nameValue)
+        public void OneOption(NextLevelType levelType, string? nameValue, params object?[] paramValue)
         {
             if (levelType == NextLevelType.SEND_LAST)
-                TwoOption(levelType, nameValue, null);
+                TwoOption(levelType, nameValue, null, paramValue);
             else
-                TwoOption(levelType, null, nameValue);
+                TwoOption(levelType, null, nameValue, paramValue);
         }
 
-        public void TwoOption(NextLevelType nextLevelType, string? lastLevel, string? nextLevel)
+        public void TwoOption(NextLevelType nextLevelType, string? lastLevel, string? nextLevel, params object?[] paramValue)
         {
             Clear();
             this.lastLevel = lastLevel;
             this.nextLevel = nextLevel;
             this.LevelType = nextLevelType;
+            this.paramsValue = paramValue;
         }
 
         object? tempData;
@@ -126,6 +130,7 @@ namespace Application.Core.scripting.Infrastructure
             this.LevelType = null;
             this.lastLevel = null;
             this.nextLevel = null;
+            paramsValue = null;
             tempData = null;
         }
     }

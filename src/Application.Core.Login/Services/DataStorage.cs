@@ -109,6 +109,7 @@ namespace Application.Core.Login.Services
                 await dbContext.Queststatuses.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Medalmaps.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Famelogs.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Storages.Where(x => updateData.Keys.Contains(x.OwnerId) && x.Type == (int)StorageType.GachaponRewardStorage).ExecuteDeleteAsync();
 
                 foreach (var obj in updateData.Values)
                 {
@@ -124,6 +125,9 @@ namespace Application.Core.Login.Services
                         obj.SkillMacros.Where(x => x != null).Select(x => new SkillMacroEntity(obj.Character.Id, (sbyte)x.Position, x.Skill1, x.Skill2, x.Skill3, x.Name, (sbyte)x.Shout)));
 
                     await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+
+                    dbContext.Storages.Add(new StorageEntity(obj.Character.Id, (int)StorageType.GachaponRewardStorage, obj.GachaponStorage.Slots, obj.GachaponStorage.Meso));
+                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.GachaponStorage.Items, ItemFactory.ExtraStorage_Gachapon);
 
                     await dbContext.Cooldowns.AddRangeAsync(
                         obj.CoolDowns.Select(x => new CooldownEntity(obj.Character.Id, x.SkillId, x.Length, x.StartTime)));
@@ -223,15 +227,15 @@ namespace Application.Core.Login.Services
                 return;
 
             await dbContext.Quickslotkeymappeds.Where(x => updateData.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
-            await dbContext.Storages.Where(x => updateData.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
+            await dbContext.Storages.Where(x => updateData.Keys.Contains(x.OwnerId) && x.Type == (int)StorageType.AccountStorage).ExecuteDeleteAsync();
 
             foreach (var acc in updateData)
             {
                 if (acc.Value.QuickSlot != null)
                     dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(acc.Key, acc.Value.QuickSlot.LongValue));
 
-                dbContext.Storages.Add(new StorageEntity(acc.Key, acc.Value.Storage?.Slots ?? 4, acc.Value.Storage?.Meso ?? 0));
-                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.StorageItems, ItemFactory.STORAGE);
+                dbContext.Storages.Add(new StorageEntity(acc.Key, (int)StorageType.AccountStorage, acc.Value.Storage?.Slots ?? 4, acc.Value.Storage?.Meso ?? 0));
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.Storage?.Items ?? [], ItemFactory.STORAGE);
 
                 await dbContext.Accounts.Where(x => x.Id == acc.Key).ExecuteUpdateAsync(
                     x => x.SetProperty(y => y.MaplePoint, acc.Value.MaplePoint).SetProperty(y => y.NxPrepaid, acc.Value.NxPrepaid).SetProperty(y => y.NxCredit, acc.Value.NxCredit)

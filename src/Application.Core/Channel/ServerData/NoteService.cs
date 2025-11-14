@@ -20,7 +20,7 @@ namespace Application.Core.Channel.ServerData
             var chr = _server.FindPlayerById(data.ReceiverChannel, data.ReceiverId);
             if (chr != null)
             {
-                chr.sendPacket(new ShowNotesPacket(_mapper.Map<List<NoteObject>>(data.List)));
+                chr.sendPacket(new ShowNotesPacket(chr.Client, _mapper.Map<List<NoteObject>>(data.List)));
             }
         }
     }

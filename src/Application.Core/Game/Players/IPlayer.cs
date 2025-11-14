@@ -11,6 +11,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
+using Application.Core.Server;
 using Application.Shared.Events;
 using Application.Shared.Languages;
 using Application.Shared.Objects;
@@ -46,7 +47,9 @@ namespace Application.Core.Game.Players
         public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
+        AbstractStorage? CurrentStorage { get; set; }
         public Storage Storage { get; set; }
+        RewardStorage GachaponStorage { get; set; }
         public CashShop CashShopModel { get; set; }
         public PlayerSavedLocation SavedLocations { get; set; }
         public PlayerKeyMap KeyMap { get; set; }

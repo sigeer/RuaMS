@@ -205,23 +205,21 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
+
                         int qty = 4;
-                        if (!chr.getStorage().canGainSlots(qty))
+                        if (chr.getStorage().TryGainSlots(qty))
                         {
-                            c.enableCSActions();
-                            return;
-                        }
-                        cs.gainCash(cash, -4000);
-                        if (chr.getStorage().gainSlots(qty))
-                        {
+                            cs.gainCash(cash, -4000);
                             _logger.LogDebug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.OnlinedCharacter.getName(), qty);
 
-                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
+                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
+                            c.enableCSActions();
+                            return;
                         }
                     }
                     else
@@ -234,23 +232,20 @@ public class CashOperationHandler : ChannelHandlerBase
                             return;
                         }
                         int qty = 8;
-                        if (!chr.getStorage().canGainSlots(qty))
+                        if (chr.getStorage().TryGainSlots(qty))
                         {
-                            c.enableCSActions();
-                            return;
-                        }
-                        cs.Buy(cash, cItem);
-                        if (chr.getStorage().gainSlots(qty))
-                        {
+                            cs.Buy(cash, cItem);
                             // thanks ABaldParrot & Thora for detecting storage issues here
                             _logger.LogDebug("Chr {CharacterName} bought {Slot} slots to their account storage", c.OnlinedCharacter.getName(), qty);
 
-                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
+                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account", qty, CharacterManager.makeMapleReadable(chr.getName()));
+                            c.enableCSActions();
+                            return;
                         }
                     }
                 }
