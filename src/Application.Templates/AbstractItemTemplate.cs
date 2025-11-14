@@ -58,44 +58,4 @@ namespace Application.Templates
         public string Message { get; set; } = string.Empty;
         public int Period { get; set; }
     }
-
-    public sealed class LotteryItemTemplate : AbstractItemTemplate
-    {
-        /*
-		 * 00000000 CItemInfo::LOTTERYITEM struc ; (sizeof=0x8, align=0x4, copyof_5727)
-		   00000000 aEntity ZArray<CItemInfo::LOTTERY_ENTITY> ?
-		   00000004 nTotalProb dd ?
-		   00000008 CItemInfo::LOTTERYITEM ends
-		 */
-
-        public LotteryEntity[] Entity { get; set; }
-        public int TotalProb { get; set; }
-
-        public LotteryItemTemplate(int templateId) : base(templateId)
-        {
-
-        }
-
-        public sealed class LotteryEntity
-        {
-            /*
-			 * 00000000 CItemInfo::LOTTERY_ENTITY struc ; (sizeof=0x1C, align=0x4, copyof_5725)
-			   00000000 nItemID dd ?
-			   00000004 nProb dd ?
-			   00000008 nQuantity dd ?
-			   0000000C sEffect ZXString<char> ?
-			   00000010 sWorldMsg ZXString<char> ?
-			   00000014 nPeriod dd ?
-			   00000018 sDateExpire ZXString<char> ?
-			   0000001C CItemInfo::LOTTERY_ENTITY ends
-			 */
-
-            public int Prob { get; set; }
-            public int Quantity { get; set; }
-            public string Effect { get; set; }
-            public string WorldMsg { get; set; }
-            public int Period { get; set; }
-            public DateTime DateExpire { get; set; }
-        }
-    }
 }

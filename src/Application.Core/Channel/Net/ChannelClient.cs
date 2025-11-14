@@ -146,6 +146,8 @@ namespace Application.Core.Channel.Net
                 player.getMonsterCarnival()?.playerDisconnected(player);
 
                 player.getAriantColiseum()?.playerDisconnected(player);
+
+                player.Bag.ClearWhenLogout();
             }
 
             if (player.getMap() != null)

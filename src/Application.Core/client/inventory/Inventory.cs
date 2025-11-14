@@ -318,22 +318,37 @@ public class Inventory : IEnumerable<Item>
         }
     }
 
-    public void removeItem(short slot, short quantity = 1, bool allowZero = false)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="slot"></param>
+    /// <param name="quantity"></param>
+    /// <param name="allowZero"></param>
+    /// <returns>移除的数量</returns>
+    public short removeItem(short slot, short quantity = 1, bool allowZero = false)
     {
         var item = getItem(slot);
         if (item == null)
-        {// TODO is it ok not to throw an exception here?
-            return;
+        {
+            // TODO is it ok not to throw an exception here?
+            return 0;
         }
-        item.setQuantity((short)(item.getQuantity() - quantity));
-        if (item.getQuantity() < 0)
+
+        var original = item.getQuantity();
+        var left = original - quantity;
+        if (left < 0)
         {
             item.setQuantity(0);
+            if (allowZero)
+                removeSlot(slot);
+            return original;
         }
-        if (item.getQuantity() == 0 && !allowZero)
+        else
         {
-            removeSlot(slot);
+            item.setQuantity((short)left);
+            return quantity;
         }
+
     }
 
     public virtual short addSlot(Item item)

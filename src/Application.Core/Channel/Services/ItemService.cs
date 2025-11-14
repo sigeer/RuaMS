@@ -216,7 +216,7 @@ namespace Application.Core.Channel.Services
                 if (res.Code == 0)
                     return true;
 
-                player.dropMessage(1, "MapleTV is already in use.");
+                player.Popup("MapleTV is already in use.");
                 return false;
             });
         }
