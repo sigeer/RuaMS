@@ -32,6 +32,7 @@ function level3() {
     doGachapon(10);
 }
 
+let rewards = [];
 function doGachapon(count) {
     if (!cm.haveItem(ticketId, count)) {
         cm.sendOkLevel(cm.GetTalkMessage("Tip_CheckItemWithId", ticketId, count));
@@ -43,13 +44,26 @@ function doGachapon(count) {
     }
 
     cm.gainItem(ticketId, -count);
+    rewards = [];
     for (var i = 0; i < count; i++) {
         const itemObj = cm.doGachapon();
-        if (itemObj == null) {
-            cm.sendOkLevel(cm.GetTalkMessage("Tip_ThankPatronage"));
-            return;
-        }
-        cm.sendOkLevel(cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId));
+        rewards.push(itemObj);
+    }
+    levelShowRewards(0);
+}
+
+function levelShowRewards(i) {
+    if (i >= rewards.length || i < 0) {
+        cm.dispose();
+        return;
+    }
+
+    const itemObj = rewards[i];
+    const msg = itemObj == null ? cm.GetTalkMessage("Tip_ThankPatronage") : cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId);
+    if (i == 0) {
+        cm.SendParamedNextLevel("LastNextReward", i + 1, msg);
+    } else {
+        cm.SendParamedLastNextLevel("LastNextReward", i - 1, i + 1, msg);
     }
 }
 

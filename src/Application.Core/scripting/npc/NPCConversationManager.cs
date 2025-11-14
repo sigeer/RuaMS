@@ -1316,6 +1316,24 @@ public class NPCConversationManager : AbstractPlayerInteraction
         NextLevelContext.TwoOption(NextLevelType.SEND_LAST_NEXT, lastLevel, nextLevel);
     }
 
+    public void SendParamedNextLevel(string level, object nextParam, string text, byte speaker = 0)
+    {
+        sendNext(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_NEXT, level, nextParam);
+    }
+
+    public void SendParamedLastLevel(string level, object lastParam, string text, byte speaker = 0)
+    {
+        sendPrev(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_LAST, level, lastParam);
+    }
+
+    public void SendParamedLastNextLevel(string level, string lastLevelParam, object nextLevelParam, string text, byte speaker = 0)
+    {
+        sendNextPrev(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_LAST_NEXT, level, lastLevelParam, nextLevelParam);
+    }
+
     /// <summary>
     /// 只有ok按钮的对话
     /// 对应sendOk，OK后调用level{nextLevel}
