@@ -91,7 +91,7 @@ namespace Application.Core.Game.Players
                         {
                             foreach (Item item in toberemove)
                             {
-                                InventoryManipulator.removeFromSlot(Client, inv.getType(), item.getPosition(), item.getQuantity(), true);
+                                Bag.RemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
                             }
 
                             ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -104,7 +104,7 @@ namespace Application.Core.Game.Players
                                     toadd.Add(replace.ItemId);
                                     if (!string.IsNullOrEmpty(replace.Message))
                                     {
-                                        dropMessage(replace.Message);
+                                        Notice(replace.Message);
                                     }
                                 }
                                 foreach (int itemid in toadd)

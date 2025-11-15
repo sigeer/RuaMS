@@ -2,6 +2,8 @@ using Application.Core.Channel.DataProviders;
 using Application.Templates.Item;
 using client.inventory;
 using client.inventory.manipulator;
+using Humanizer;
+using System;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -75,12 +77,12 @@ namespace Application.Core.Game.Players
             Dispose(disposing: true);
         }
 
-        public void RemoveFromSlot(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
+        public short RemoveFromSlot(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
         {
             Inventory inv = this[type];
-            var item = inv.getItem(slot);
+            var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -slot : slot));
             if (item == null)
-                return;
+                return 0;
 
             inv.lockInventory();
             try
@@ -104,10 +106,60 @@ namespace Application.Core.Game.Players
                 }
 
                 bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                inv.removeItem(slot, quantity, allowZero);
+                var removedCount = inv.removeItem(slot, quantity, allowZero);
                 if (type != InventoryType.CANHOLD)
                 {
                     InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
+                }
+                return removedCount;
+            }
+            finally
+            {
+                inv.unlockInventory();
+            }
+        }
+
+        void RemoveFromInventory(Inventory inv, Func<Item, bool>? filter = null)
+        {
+            inv.lockInventory();
+            try
+            {
+                int slotLimit = inv.getSlotLimit();
+                var type = inv.getType();
+
+                for (short i = 0; i <= slotLimit; i++)
+                {
+                    var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                    if (item != null)
+                    {
+                        if (filter == null || filter(item))
+                        {
+                            if (type == InventoryType.EQUIPPED)
+                            {
+                                Owner.unequippedItem((Equip)item);
+                            }
+                            else
+                            {
+                                var petid = item.PetId;
+                                if (petid > -1)
+                                {
+                                    int petIdx = Owner.getPetIndex(petid);
+                                    if (petIdx > -1)
+                                    {
+                                        var pet = Owner.getPet(petIdx)!;
+                                        Owner.unequipPet(pet, true);
+                                    }
+                                }
+                            }
+
+                            var removedCount = inv.removeItem(i, item.getQuantity());
+                            if (type != InventoryType.CANHOLD)
+                            {
+                                InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, true, false);
+                            }
+                            Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)-removedCount, true));
+                        }
+                    }
                 }
             }
             finally
@@ -125,27 +177,19 @@ namespace Application.Core.Game.Players
             InventoryType[] includedInv = [InventoryType.USE, InventoryType.ETC];
             foreach (var type in includedInv)
             {
-                Inventory inv = this[type];
-                int slotLimit = inv.getSlotLimit();
+                RemoveFromInventory(this[type], item => (ItemInformationProvider.getInstance().GetTemplate(item.getItemId()) as ItemTemplateBase)?.PartyQuest ?? false);
+            }
+        }
 
-                for (short i = 0; i <= slotLimit; i++)
-                {
-                    var item = inv.getItem(i);
-                    if (item != null)
-                    {
-                        var template = ItemInformationProvider.getInstance().GetTemplate(item.getItemId()) as ItemTemplateBase;
-                        if (template == null)
-                            continue;
-
-                        if (template.PartyQuest)
-                        {
-                            var itemCount = item.getQuantity();
-                            inv.removeItem(i, itemCount);
-                            InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, true, false);
-                            Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), itemCount, true));
-                        }
-                    }
-                }
+        /// <summary>
+        /// 离线时移除
+        /// </summary>
+        public void ClearWhenLogout()
+        {
+            InventoryType[] includedInv = [InventoryType.EQUIP, InventoryType.EQUIPPED, InventoryType.SETUP, InventoryType.ETC];
+            foreach (var type in includedInv)
+            {
+                RemoveFromInventory(this[type], item => ItemInformationProvider.getInstance().GetTemplate(item.getItemId())?.ExpireOnLogout ?? false);
             }
         }
     }

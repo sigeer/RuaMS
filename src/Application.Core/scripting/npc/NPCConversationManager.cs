@@ -1328,10 +1328,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
         NextLevelContext.OneOption(NextLevelType.SEND_LAST, level, lastParam);
     }
 
-    public void SendParamedLastNextLevel(string level, string lastLevelParam, object nextLevelParam, string text, byte speaker = 0)
+    public void SendParamedLastNextLevel(string level, object lastLevelParam, object nextLevelParam, string text, byte speaker = 0)
     {
         sendNextPrev(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_LAST_NEXT, level, lastLevelParam, nextLevelParam);
+        NextLevelContext.TwoOption(NextLevelType.SEND_LAST_NEXT, level, level, lastLevelParam, nextLevelParam);
     }
 
     /// <summary>

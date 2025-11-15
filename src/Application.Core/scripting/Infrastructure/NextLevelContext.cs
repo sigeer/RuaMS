@@ -92,7 +92,15 @@ namespace Application.Core.scripting.Infrastructure
                     if (string.IsNullOrWhiteSpace(nextOption) || nextOption.Equals("dispose", StringComparison.OrdinalIgnoreCase))
                         return false;
 
-                    nextLevelFunction = new NextLevelFunction("level" + nextOption, paramsValue);
+                    object? paramValue = null;
+                    if (paramsValue != null)
+                    {
+                        if (paramsValue.Length == 1)
+                            paramValue = paramsValue[0];
+                        else if (paramsValue.Length > 1)
+                            paramValue = mode == 0 ? paramsValue[0] : paramsValue[1];
+                    }
+                    nextLevelFunction = new NextLevelFunction("level" + nextOption, paramValue);
                     break;
                 default:
                     LogFactory.GetLogger("Script/NextLevel").Error("Unsupported level type: {LevelType}", LevelType);
