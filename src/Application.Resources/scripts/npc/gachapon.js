@@ -53,6 +53,7 @@ function doGachapon(count) {
 }
 
 function levelShowRewards(i) {
+    i = parseInt(i);
     if (i >= rewards.length || i < 0) {
         cm.dispose();
         return;
@@ -61,9 +62,9 @@ function levelShowRewards(i) {
     const itemObj = rewards[i];
     const msg = itemObj == null ? cm.GetTalkMessage("Tip_ThankPatronage") : cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId);
     if (i == 0) {
-        cm.SendParamedNextLevel("LastNextReward", i + 1, msg);
+        cm.SendParamedNextLevel("ShowRewards", i + 1, msg);
     } else {
-        cm.SendParamedLastNextLevel("LastNextReward", i - 1, i + 1, msg);
+        cm.SendParamedLastNextLevel("ShowRewards", i - 1, i + 1, msg);
     }
 }
 
