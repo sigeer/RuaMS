@@ -336,18 +336,20 @@ public class Inventory : IEnumerable<Item>
 
         var original = item.getQuantity();
         var left = original - quantity;
+        short removed = 0;
         if (left < 0)
         {
             item.setQuantity(0);
-            if (allowZero)
-                removeSlot(slot);
-            return original;
+            removed = original;
         }
         else
         {
             item.setQuantity((short)left);
-            return quantity;
+            removed = quantity;
         }
+        if (allowZero)
+            removeSlot(slot);
+        return removed;
 
     }
 
