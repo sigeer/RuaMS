@@ -218,12 +218,8 @@ public class Quest
         }
     }
 
-    public void complete(IPlayer chr, int npc)
-    {
-        complete(chr, npc, null);
-    }
 
-    public void complete(IPlayer chr, int npc, int? selection)
+    public void complete(IPlayer chr, int npc, int? selection = null)
     {
         if (autoPreComplete || canComplete(chr, npc))
         {
@@ -273,7 +269,7 @@ public class Quest
     {
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.STARTED, npc);
 
-        QuestStatus oldStatus = chr.getQuest(this.getId());
+        QuestStatus oldStatus = chr.GetOrAddQuest(this.getId());
         foreach (var e in oldStatus.getProgress())
         {
             newStatus.setProgress(e.Key, e.Value);
@@ -308,7 +304,10 @@ public class Quest
         }
 
         chr.updateQuestStatus(newStatus);
-
+        if (YamlConfig.config.server.USE_DEBUG)
+        {
+            Log.Logger.Debug("开始任务：{QuestId}", id);
+        }
         return true;
     }
 

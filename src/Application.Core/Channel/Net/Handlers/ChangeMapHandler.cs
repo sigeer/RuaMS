@@ -180,7 +180,7 @@ public class ChangeMapHandler : ChannelHandlerBase
 
             if (portal != null && !portal.getPortalStatus())
             {
-                c.sendPacket(PacketCreator.blockedMessage(1));
+                c.sendPacket(PacketCreator.BlockMapMessage(1));
                 c.sendPacket(PacketCreator.enableActions());
                 return;
             }

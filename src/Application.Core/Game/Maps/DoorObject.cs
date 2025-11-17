@@ -108,7 +108,7 @@ public class DoorObject : AbstractMapObject
         }
         else
         {
-            chr.sendPacket(PacketCreator.blockedMessage(6));
+            chr.sendPacket(PacketCreator.BlockMapMessage(6));
             chr.sendPacket(PacketCreator.enableActions());
         }
     }

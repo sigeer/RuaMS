@@ -55,7 +55,7 @@ public class DoorHandler : ChannelHandlerBase
             }
         }
 
-        c.sendPacket(PacketCreator.blockedMessage(6));
+        c.sendPacket(PacketCreator.BlockMapMessage(6));
         c.sendPacket(PacketCreator.enableActions());
     }
 }

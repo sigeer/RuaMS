@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -49,7 +49,7 @@ function enter(pi) {
     } else {    //fail
         pRow--;
         pi.playPortalSound();
-        pi.warp(pi.getMapId(), (pRow / 4) > 1 ? (pRow / 4) : 5);  // thanks Chloek3, seth1 for noticing next plaform issues
+        pi.warp(pi.getMapId(), (pRow / 4) > 1 ? parseInt(pRow / 4) : 5);  // thanks Chloek3, seth1 for noticing next plaform issues
     }
 
     return true;
