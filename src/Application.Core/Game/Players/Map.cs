@@ -351,10 +351,7 @@ namespace Application.Core.Game.Players
 
         public void enteredScript(string script, int mapid)
         {
-            if (!entered.ContainsKey(mapid))
-            {
-                entered.Add(mapid, script);
-            }
+            entered.TryAdd(mapid, script);
         }
 
         public void visitMap(IMap map)

@@ -41,9 +41,7 @@ namespace Application.Core.scripting.Infrastructure
         /// <summary>
         /// sendYesNoLevel
         /// </summary>
-        SEND_YES_NO,
-
-        SEND_PARAMED_NEXT,
+        SEND_YES_NO
     }
 
     public record NextLevelFunction(string Name, params object?[]? Params);

@@ -75,11 +75,6 @@ public class NPCScriptManager : AbstractScriptManager
         return start(c, npc, oid, fileName, chr, false, "cm");
     }
 
-    public bool start(IChannelClient c, ScriptedItem scriptItem, IPlayer? chr)
-    {
-        return start(c, scriptItem.getNpc(), -1, scriptItem.getScript(), chr, true, "im");
-    }
-
     public bool StartScriptByItem(IChannelClient c, int npc, string? script)
     {
         return start(c, npc, -1, script, null, true, "im");

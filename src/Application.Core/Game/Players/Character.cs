@@ -159,7 +159,6 @@ public partial class Player
 
     public int ChatRoomId { get; set; }
 
-    private PlayerShop? playerShop = null;
     private Shop? shop = null;
 
     private Trade? trade = null;

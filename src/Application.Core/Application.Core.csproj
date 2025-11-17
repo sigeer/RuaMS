@@ -1,30 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Gameplay\Wedding\**" />
-    <Compile Remove="Net\server\coordinator\login\**" />
-    <Compile Remove="service\**" />
-    <Compile Remove="tools\mapletools\**" />
-    <EmbeddedResource Remove="Gameplay\Wedding\**" />
-    <EmbeddedResource Remove="Net\server\coordinator\login\**" />
-    <EmbeddedResource Remove="service\**" />
-    <EmbeddedResource Remove="tools\mapletools\**" />
-    <None Remove="Gameplay\Wedding\**" />
-    <None Remove="Net\server\coordinator\login\**" />
-    <None Remove="service\**" />
-    <None Remove="tools\mapletools\**" />
-  </ItemGroup>
-
-	<ItemGroup>
-
-		<PackageReference Include="System.Text.Json" />
-	</ItemGroup>
-
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Application.Protos\Application.Protos.csproj" />
@@ -37,19 +16,4 @@
 		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />
 	</ItemGroup>
 
-
-	<ItemGroup>
-	  <Folder Include="constants\net\" />
-	  <Folder Include="Managers\Constants\" />
-	  <Folder Include="Net\opcodes\" />
-	  <Folder Include="Net\server\coordinator\session\" />
-	  <Folder Include="server\life\positioner\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="handbook\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	
 </Project>

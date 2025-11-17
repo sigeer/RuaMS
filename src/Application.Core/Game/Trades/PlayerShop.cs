@@ -11,7 +11,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 {
 
     public IPlayer Owner { get; private set; }
-    private int itemid;
 
     private IPlayer?[] visitors = new IPlayer[3];
 
