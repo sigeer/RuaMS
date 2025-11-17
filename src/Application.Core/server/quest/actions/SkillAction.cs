@@ -36,7 +36,6 @@ namespace server.quest.actions;
  */
 public class SkillAction : AbstractQuestAction
 {
-    int itemEffect;
     Dictionary<int, SkillData> skillData = new();
 
     public SkillAction(Quest quest, ActSkill[] data) : base(QuestActionType.SKILL, quest)

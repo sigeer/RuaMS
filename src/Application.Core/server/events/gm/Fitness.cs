@@ -49,7 +49,7 @@ public class Fitness
             {
                 chr.changeMap(chr.getMap().getReturnMap());
             }
-        }, 900000);
+        }, 900_000);
     }
 
     public void startFitness()
