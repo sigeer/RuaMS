@@ -136,7 +136,7 @@
     <value>传送到地图</value>
   </data>
   <data name="WarpCommand_Syntax" xml:space="preserve">
-    <value>语法错误：!warp &lt;地图Id/地图名&gt;</value>
+    <value>语法错误：!warp &lt;地图Id/地图名&gt; [传送点]</value>
   </data>
   <data name="MapNotFound" xml:space="preserve">
     <value>地图 {0} 不存在</value>
