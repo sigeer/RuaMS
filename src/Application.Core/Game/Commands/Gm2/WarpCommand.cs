@@ -1,4 +1,5 @@
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Maps;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using server.maps;
@@ -44,7 +45,8 @@ public class WarpCommand : ParamsCommandBase
                             var mapItem = findResult.MatchedItems[idx];
                             ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
                             {
-                                WarpMapById(player, mapFactory, mapItem.Id);
+                                if (TryGetMapModel(player, mapFactory, mapId, out var target))
+                                    player.changeMap(target, target.getRandomPlayerSpawnpoint());
                                 ctx.dispose();
                             });
                         });
@@ -57,7 +59,23 @@ public class WarpCommand : ParamsCommandBase
                 }
             }
 
-            WarpMapById(player, mapFactory, mapId);
+            if (TryGetMapModel(player, mapFactory, mapId, out var target))
+            {
+                Portal? portal = null;
+                if (paramsValue.Length == 2 && !string.IsNullOrEmpty(paramsValue[1]))
+                {
+                    if (int.TryParse(paramsValue[1], out var portalId))
+                    {
+                        portal = target.getPortal(portalId);
+                    }
+                    else
+                    {
+                        portal = target.getPortal(paramsValue[1]);
+                    }
+                }
+
+                player.changeMap(target, portal ?? target.getRandomPlayerSpawnpoint());
+            }
         }
         catch (Exception ex)
         {
@@ -66,15 +84,15 @@ public class WarpCommand : ParamsCommandBase
         }
     }
 
-    private void WarpMapById(IPlayer admin, MapManager mapManager, int mapId)
+    bool TryGetMapModel(IPlayer admin, MapManager mapManager, int mapId, out IMap target)
     {
-        var target = mapManager.getMap(mapId);
+        target = mapManager.getMap(mapId);
         if (target == null)
         {
             admin.YellowMessageI18N(nameof(ClientMessage.MapNotFound), mapId.ToString());
-            return;
+            return false;
         }
 
-        admin.changeMap(target, target.getRandomPlayerSpawnpoint());
+        return true;
     }
 }

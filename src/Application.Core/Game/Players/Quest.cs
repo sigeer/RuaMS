@@ -49,7 +49,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public QuestStatus getQuest(int quest)
+        public QuestStatus GetOrAddQuest(int quest)
         {
             return getQuest(Quest.getInstance(quest));
         }
@@ -59,25 +59,17 @@ namespace Application.Core.Game.Players
             lock (quests)
             {
                 short questid = quest.getId();
-                QuestStatus? qs = quests.GetValueOrDefault(questid);
-                if (qs == null)
-                {
-                    qs = new QuestStatus(quest, QuestStatus.Status.NOT_STARTED);
-                    quests.AddOrUpdate(questid, qs);
-                }
-                return qs;
+                return quests.GetOrAdd(questid, new QuestStatus(quest, QuestStatus.Status.NOT_STARTED));
             }
         }
 
         public void setQuestProgress(int id, int infoNumber, string progress)
         {
-            Quest q = Quest.getInstance(id);
-            QuestStatus qs = getQuest(q);
+            QuestStatus qs = GetOrAddQuest(id);
 
             if (infoNumber > 0 && qs.getInfoNumber() == infoNumber)
             {
-                Quest iq = Quest.getInstance(infoNumber);
-                QuestStatus iqs = getQuest(iq);
+                QuestStatus iqs = GetOrAddQuest(infoNumber);
                 iqs.setProgress(0, progress);
             }
             else

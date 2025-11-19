@@ -15,6 +15,6 @@ function start() {
         cm.sendOkLevel(cm.GetTalkMessage("Tip_ThankPatronage"));
         return;
     }
-    cm.sendOkLevel("showResult", cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId));
+    cm.sendOkLevel(cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId, itemObj.Quantity));
 }
 

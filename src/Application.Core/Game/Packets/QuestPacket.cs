@@ -25,7 +25,7 @@ namespace Application.Core.Game.Packets
                 short infoNumber = qs.getInfoNumber();
                 if (infoNumber > 0)
                 {
-                    QuestStatus iqs = chr.getQuest(infoNumber);
+                    QuestStatus iqs = chr.GetOrAddQuest(infoNumber);
                     p.writeShort(infoNumber);
                     p.writeString(iqs.getProgressData());
                 }
@@ -93,7 +93,7 @@ namespace Application.Core.Game.Packets
             p.writeByte(1);
             if (infoUpdate)
             {
-                QuestStatus iqs = chr.getQuest(qs.getInfoNumber());
+                QuestStatus iqs = chr.GetOrAddQuest(qs.getInfoNumber());
                 p.writeShort(iqs.getQuestID());
                 p.writeByte(1);
                 p.writeString(iqs.getProgressData());

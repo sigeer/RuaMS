@@ -6323,20 +6323,20 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a "block" packet (ie. the cash shop is unavailable, etc)
-     * <p>
-     * Possible values for <code>type</code>:<br> 1: The portal is closed for
-     * now.<br> 2: You cannot go to that place.<br> 3: Unable to approach due to
-     * the force of the ground.<br> 4: You cannot teleport to or on this
-     * map.<br> 5: Unable to approach due to the force of the ground.<br> 6:
-     * Only party members can enter this map.<br> 7: The Cash Shop is
-     * currently not available. Stay tuned...<br>
-     *
-     * @param type The type
-     * @return The "block" packet.
-     */
-    public static Packet blockedMessage(int type)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="type">
+    /// <para>1: The portal is closed for now.</para>
+    /// <para>2: You cannot go to that place.</para>
+    /// <para>3: Unable to approach due to the force of the ground.</para>
+    /// <para>4: You cannot teleport to or on this map.</para>
+    /// <para>5: Unable to approach due to the force of the ground.</para>
+    /// <para>6: Only party members can enter this map.</para>
+    /// <para>7: The Cash Shop is currently not available. Stay tuned...</para>
+    /// </param>
+    /// <returns></returns>
+    public static Packet BlockMapMessage(int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.BLOCKED_MAP);
         p.writeByte(type);
@@ -6356,7 +6356,7 @@ public class PacketCreator
      * @param type The type
      * @return The "block" packet.
      */
-    public static Packet blockedMessage2(int type)
+    public static Packet BlockServerMessage(int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.BLOCKED_SERVER);
         p.writeByte(type);

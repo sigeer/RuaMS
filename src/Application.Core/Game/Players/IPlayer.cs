@@ -395,7 +395,7 @@ namespace Application.Core.Game.Players
         Pet?[] getPets();
         Door? getPlayerDoor();
         int getPossibleReports();
-        QuestStatus getQuest(int quest);
+        QuestStatus GetOrAddQuest(int quest);
         QuestStatus getQuest(Quest quest);
         float getQuestExpRate();
         float getQuestMesoRate();

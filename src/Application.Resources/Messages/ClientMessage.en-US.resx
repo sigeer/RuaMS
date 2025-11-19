@@ -136,7 +136,7 @@
     <value>Warp to a map.</value>
   </data>
   <data name="WarpCommand_Syntax" xml:space="preserve">
-    <value>syntax: !warp &lt;mapid/mapname&gt;</value>
+    <value>syntax: !warp &lt;mapid/mapname&gt; [portalid/name]</value>
   </data>
   <data name="MapNotFound" xml:space="preserve">
     <value>Map {0} is invalid.</value>

@@ -37,7 +37,6 @@ namespace server.quest.actions;
 public class SkillAction : AbstractQuestAction
 {
     Dictionary<int, SkillData> skillData = new();
-
     public SkillAction(Quest quest, ActSkill[] data) : base(QuestActionType.SKILL, quest)
     {
 
@@ -49,7 +48,7 @@ public class SkillAction : AbstractQuestAction
         foreach (SkillData skill in skillData.Values)
         {
             var skillObject = SkillFactory.getSkill(skill.getId());
-            if (skillObject == null)
+            if (skillObject is null)
             {
                 continue;
             }

@@ -42,6 +42,6 @@ public class BuffAction : AbstractQuestAction
     }
     public override void run(IPlayer chr, int? extSelection)
     {
-        ItemInformationProvider.getInstance().getItemEffect(itemEffect).applyTo(chr);
+        ItemInformationProvider.getInstance().getItemEffect(itemEffect)?.applyTo(chr);
     }
 }

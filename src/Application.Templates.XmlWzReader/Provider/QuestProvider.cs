@@ -275,7 +275,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 act.Money = stepPropNode.GetIntValue();
                             else if (propName == "exp")
                                 act.Exp = stepPropNode.GetIntValue();
-                            else if (propName == "fame")
+                            else if (propName == "fame" || propName == "pop")
                                 act.Fame = stepPropNode.GetIntValue();
                             else if (propName == "lvmin")
                                 act.LevelMin = stepPropNode.GetIntValue();

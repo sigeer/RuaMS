@@ -60,7 +60,7 @@ function levelShowRewards(i) {
     }
 
     const itemObj = rewards[i];
-    const msg = itemObj == null ? cm.GetTalkMessage("Tip_ThankPatronage") : cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId);
+    const msg = itemObj == null ? cm.GetTalkMessage("Tip_ThankPatronage") : cm.GetTalkMessage("Tip_ObtainItem", itemObj.ItemId, itemObj.Quantity);
     if (i == 0) {
         cm.SendParamedNextLevel("ShowRewards", i + 1, msg);
     } else {
