@@ -22,6 +22,8 @@
  * Event - Kyrin's Test Quest
  **/
 
+var name = "4jsuper";
+var eventType = "Solo";
 var entryMap = 912010100;
 var exitMap = 120000101;
 

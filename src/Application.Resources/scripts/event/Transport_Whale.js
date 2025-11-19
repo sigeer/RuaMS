@@ -1,3 +1,4 @@
+var name = "Whale";
 var returnTo = [140020300, 104000000];
 var rideTo = [104000000, 140020300];
 var birdRide = [200090070, 200090060];
@@ -12,7 +13,6 @@ var rideTime = 60 * 1000;
 
 function init() {
     rideTime = em.getTransportationTime(rideTime);
-    return "Whale";
 }
 
 function setup(level, lobbyid) {

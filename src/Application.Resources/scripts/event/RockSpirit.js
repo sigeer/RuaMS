@@ -19,6 +19,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var name = "RockSpirit";
+var eventType = "Solo";
 var entryMap;
 var exitMap;
 var otherMap;

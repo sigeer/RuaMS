@@ -23,7 +23,8 @@
  * @event: Showa Boss Battle
  */
 
-var isPq = true;
+var name = "ShowaBattle";
+var eventType = "Expedition";
 var minPlayers = 3, maxPlayers = 30;
 var minLevel = 100, maxLevel = 255;
 var entryMap = 801040100;

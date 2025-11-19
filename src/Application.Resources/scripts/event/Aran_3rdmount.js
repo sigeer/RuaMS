@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -22,6 +22,8 @@
  * Event - Wolves' Mount Quest
  **/
 
+var name = "Aran_3rdmount";
+var eventType = "Solo";
 var entryMap = 914030000;
 var exitMap = 140010210;
 

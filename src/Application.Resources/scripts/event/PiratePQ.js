@@ -23,6 +23,8 @@
  * @event: Pirate PQ
  */
 
+var name = "PiratePQ";
+var eventType = "PartyQuest";
 var isPq = true;
 var isGrindMode = false;     // stages done after breaking all boxes on maps
 

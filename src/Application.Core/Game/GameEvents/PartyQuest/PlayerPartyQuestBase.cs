@@ -1,3 +1,4 @@
+using Application.Core.Scripting.Events;
 using scripting.Event;
 
 namespace Application.Core.Game.GameEvents.PartyQuest
@@ -16,7 +17,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
         public int EndMapId { get; set; }
         public abstract int ClearMapId { get; }
         public IPlayer Player { get; }
-        public EventManager EventManager => Player.getChannelServer().getEventSM().getEventManager(EventName) ?? throw new BusinessResException($"{EventName} 对应的脚本没有找到");
+        public PartyQuestEventManager EventManager => Player.getChannelServer().getEventSM().getEventManager(EventName) as PartyQuestEventManager ?? throw new BusinessResException($"{EventName} 对应的脚本没有找到");
         protected PlayerPartyQuestBase(string name, string evtFamily, IPlayer player)
         {
             EventName = name;
@@ -55,7 +56,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             }
         }
 
-        protected virtual void PassStage(EventInstanceManager eim, int curStg, int curMapId)
+        protected virtual void PassStage(AbstractEventInstanceManager eim, int curStg, int curMapId)
         {
             eim.setProperty(curStg + "stageclear", "true");
             eim.showClearEffect(true);
@@ -88,7 +89,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             }
         }
 
-        public virtual void CompleteQuest(EventInstanceManager eim)
+        public virtual void CompleteQuest(AbstractEventInstanceManager eim)
         {
             eim.clearPQ();
         }

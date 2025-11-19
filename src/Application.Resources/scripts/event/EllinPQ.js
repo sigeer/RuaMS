@@ -23,7 +23,8 @@
  * @event: Ellin PQ
  */
 
-var isPq = true;
+var name = "EllinPQ";
+var eventType = "PartyQuest";
 var minPlayers = 4, maxPlayers = 6;
 var minLevel = 44, maxLevel = 55;
 var entryMap = 930000000;

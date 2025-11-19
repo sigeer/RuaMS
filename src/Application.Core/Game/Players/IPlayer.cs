@@ -11,6 +11,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
+using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Shared.Events;
 using Application.Shared.Languages;
@@ -305,7 +306,7 @@ namespace Application.Core.Game.Players
         Dragon? getDragon();
         float getDropRate();
         int getEnergyBar();
-        EventInstanceManager? getEventInstance();
+        AbstractEventInstanceManager? getEventInstance();
         Dictionary<string, Events> getEvents();
         Dictionary<long, HashSet<int>> getExcluded();
         HashSet<int> getExcludedItems();
@@ -557,7 +558,7 @@ namespace Application.Core.Game.Players
         void resetExcluded(long petId);
         void resetPlayerAggro();
         void resetStats();
-        void respawn(EventInstanceManager? eim, int returnMap);
+        void respawn(AbstractEventInstanceManager? eim, int returnMap);
         void respawn(int returnMap);
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
@@ -596,7 +597,7 @@ namespace Application.Core.Game.Players
         void setDragon(Dragon dragon);
         void setEnergyBar(int set);
 
-        void setEventInstance(EventInstanceManager? eventInstance);
+        void setEventInstance(AbstractEventInstanceManager? eventInstance);
         void setExp(int amount);
         void setFace(int face);
         void setFame(int fame);

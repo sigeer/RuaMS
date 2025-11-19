@@ -1,4 +1,5 @@
 // 渡轮相关地图变量
+var name = "Boats";
 var Orbis_btf; // 候船室<开往魔法密林>
 var Boat_to_Orbis; // 开往天空之城
 var Orbis_Boat_Cabin; // 船仓<开往天空之城>

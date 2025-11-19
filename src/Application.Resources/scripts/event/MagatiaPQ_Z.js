@@ -23,7 +23,8 @@
  * @event: Magatia PQ (Zenumist)
  */
 
-var isPq = true;
+var name = "MagatiaPQ_Z";
+var eventType = "PartyQuest";
 var minPlayers = 4, maxPlayers = 4;
 var minLevel = 71, maxLevel = 85;
 var entryMap = 926100000;

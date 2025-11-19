@@ -1,4 +1,5 @@
 using Application.Core.Managers;
+using Application.Core.Scripting.Events;
 using client.inventory;
 using client.inventory.manipulator;
 using scripting.Event;
@@ -15,7 +16,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
         public override int GetStageFromMap(int mapId) => (mapId % 1000) / 100;
         public override int ClearMapId => 930000600;
 
-        protected override void PassStage(EventInstanceManager eim, int curStg, int curMapId)
+        protected override void PassStage(AbstractEventInstanceManager eim, int curStg, int curMapId)
         {
             // 第1关打怪，传送点过关 party6_stage
             if (curMapId == 930000100)

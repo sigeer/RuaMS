@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -21,7 +21,8 @@
  * @Author Ronan
  * 3rd Job Event - Bowman
  **/
-
+var name = "3rdJob_bowman";
+var eventType = "Solo";
 var entryMap = 108010100;
 var exitMap = 105040305;
 

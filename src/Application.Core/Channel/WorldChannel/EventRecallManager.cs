@@ -18,6 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Scripting.Events;
 using scripting.Event;
 using System.Collections.Concurrent;
 
@@ -29,7 +30,7 @@ namespace Application.Core.Channel;
 public class EventRecallManager : TaskBase
 {
 
-    private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();
+    private ConcurrentDictionary<int, AbstractEventInstanceManager> eventHistory = new();
 
     public EventRecallManager(WorldChannel worldChannel)
         : base($"Channel:{worldChannel.Id}_{nameof(EventRecallManager)}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
@@ -58,19 +59,19 @@ public class EventRecallManager : TaskBase
     }
 
 
-    private bool isRecallableEvent(EventInstanceManager? eim)
+    private bool isRecallableEvent(AbstractEventInstanceManager? eim)
     {
         return eim != null && !eim.isEventDisposed() && !eim.isEventCleared();
     }
 
-    public EventInstanceManager? recallEventInstance(int characterId)
+    public AbstractEventInstanceManager? recallEventInstance(int characterId)
     {
         if (eventHistory.TryRemove(characterId, out var eim))
             return isRecallableEvent(eim) ? eim : null;
         return null;
     }
 
-    public void storeEventInstance(int characterId, EventInstanceManager eim)
+    public void storeEventInstance(int characterId, AbstractEventInstanceManager eim)
     {
         if (YamlConfig.config.server.USE_ENABLE_RECALL_EVENT && isRecallableEvent(eim))
         {

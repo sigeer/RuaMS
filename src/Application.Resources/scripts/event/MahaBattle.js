@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,6 +23,8 @@
  * @event: Vs Uncontrollable Maha
  */
 
+var name = "MahaBattle";
+var eventType = "Solo";
 var entryMap = 914020000;
 var exitMap = 140000000;
 var recruitMap = 140000000;

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Cafe PQ 3
  */
 
-var isPq = true;
+var name = "CafePQ_3";
+var eventType = "PartyQuest";
 var minPlayers = 3, maxPlayers = 6;
 var minLevel = 21, maxLevel = 120;
 var entryMap = 192000000;

@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Scripting.Events;
 using Application.Templates.Map;
 using scripting.Event;
 using server.events.gm;
@@ -22,7 +23,7 @@ namespace Application.Core.Game.Maps.Specials
         public const string DefaultSoundWin = "Coconut/Victory";
         public const string DefaultSoundLose = "Coconut/Failed";
 
-        public CoconutMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
+        public CoconutMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
         {
         }
 

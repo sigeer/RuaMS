@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Vs Latanica
  */
 
-var isPq = true;
+var name = "LatanicaBattle";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 6;
 var minLevel = 1, maxLevel = 255;
 var entryMap = 541010100;

@@ -23,6 +23,8 @@
 
 using Application.Core.Channel;
 using Application.Core.Game.Commands;
+using Application.Core.Scripting.Events;
+using Application.Shared.Events;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -57,35 +59,24 @@ public class EventScriptManager : AbstractScriptManager
             {
                 var em = initializeEventEntry(script);
 
-                string? eventName;
                 try
                 {
-                    eventName = em.getIv().CallFunction("init").ToString();
+                    em.getIv().CallFunction("init").ToString();
                 }
                 catch (Exception ex)
                 {
                     throw new BusinessFatalException($"事件脚本{script}加载失败：" + ex.Message);
                 }
 
-                if (string.IsNullOrEmpty(eventName))
+                if (!events.TryAdd(em.getName(), em))
                 {
-                    eventName = GetEventName(script);
-                }
-                if (!events.TryAdd(eventName, em))
-                {
-                    throw new BusinessFatalException($"事件名重复，名称：{eventName}");
+                    throw new BusinessFatalException($"事件名重复，名称：{em.getName()}");
                 }
             }
         }
         active = events.Count > 0;
         return events.Count;
     }
-
-    private string GetEventName(string eventScript)
-    {
-        return Path.GetFileNameWithoutExtension(eventScript);
-    }
-
 
     public EventManager? getEventManager(string evt)
     {
@@ -100,10 +91,38 @@ public class EventScriptManager : AbstractScriptManager
 
     private EventManager initializeEventEntry(string script)
     {
-        var engine = getInvocableScriptEngine(GetEventScriptPath(script));
-        EventManager eventManager = new EventManager(_channelServer, engine, script);
-        engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);
-        return eventManager;
+        var scriptFile = GetEventScriptPath(script);
+        var engine = getInvocableScriptEngine(scriptFile);
+
+        EventManager em;
+        var evenTypeStr = engine.GetValue("eventType").ToObject<string>();
+        if (Enum.TryParse<EventType>(evenTypeStr, true, out var type))
+        {
+            switch (type)
+            {
+                case EventType.PartyQuest:
+                    em = new PartyQuestEventManager(_channelServer, engine, scriptFile);
+                    break;
+                case EventType.Expedition:
+                    em = new ExpeditionEventManager(_channelServer, engine, scriptFile);
+                    break;
+                case EventType.Solo:
+                    em = new SoloEventManager(_channelServer, engine, scriptFile);
+                    break;
+                case EventType.GuildQuest:
+                    em = new GuildQuestEventManager(_channelServer, engine, scriptFile);
+                    break;
+                default:
+                    em = new EventManager(_channelServer, engine, scriptFile);
+                    break;
+            }
+        }
+        else
+        {
+            em = new EventManager(_channelServer, engine, scriptFile);
+        }
+        engine.AddHostedObject(INJECTED_VARIABLE_NAME, em);
+        return em;
     }
 
 
@@ -112,7 +131,7 @@ public class EventScriptManager : AbstractScriptManager
         active = false;
         foreach (var entry in events.Values)
         {
-            entry.cancel();
+            entry.Dispose();
         }
     }
 
@@ -121,7 +140,7 @@ public class EventScriptManager : AbstractScriptManager
         var cleanEvents = events.Values.ToList();
         foreach (var old in cleanEvents)
         {
-            old.cancel();
+            old.Dispose();
         }
         events.Clear();
     }

@@ -1,3 +1,5 @@
+var name = "q3239";
+var eventType = "Solo";
 var entryMap;
 var exitMap;
 var eventLength = 20;

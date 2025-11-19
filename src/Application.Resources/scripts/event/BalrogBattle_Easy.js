@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Vs Balrog
  */
 
-var isPq = true;
+var name = "BalrogBattle_Easy";
+var eventType = "Expedition";
 var minPlayers = 3, maxPlayers = 30;
 var minLevel = 50, maxLevel = 255;
 var entryMap = 105100400;

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Boss Rush PQ
  */
 
-var isPq = true;
+var name = "BossRushPQ";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 6;
 var minLevel = 1, maxLevel = 255;
 var entryMap = 970030100;
