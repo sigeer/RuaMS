@@ -20,11 +20,11 @@ namespace ServiceTest.Infrastructure.Scripts
         public override void GetValueTest()
         {
             Code = """
-                var v1 = 1;
-                var v2 = "2";
-                var v3 = "v3";
-                var v4 = "1.4";
-                var v5;
+                var p1 = 1;
+                var p2 = "2";
+                var p3 = "v3";
+                var p4 = "1.4";
+                var p5;
                 """;
             base.GetValueTest();
         }

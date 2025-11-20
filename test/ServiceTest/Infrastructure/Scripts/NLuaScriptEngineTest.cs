@@ -24,11 +24,11 @@ namespace ServiceTest.Infrastructure.Scripts
         public override void GetValueTest()
         {
             Code = """
-                v1 = 1
-                v2 = "2"
-                v3 = "v3"
-                v4 = 1.4
-                local v5
+                p1 = 1
+                p2 = "2"
+                p3 = "v3"
+                p4 = 1.4
+                local p5
                 """;
             base.GetValueTest();
         }

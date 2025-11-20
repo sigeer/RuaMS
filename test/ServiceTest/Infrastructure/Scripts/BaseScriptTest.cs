@@ -14,12 +14,12 @@ namespace ServiceTest.Infrastructure.Scripts
         {
             _engine.Evaluate(Code);
 
-            Assert.That(_engine.GetValue("v1").ToObject<int>(), Is.EqualTo(1));
-            Assert.That(_engine.GetValue("v2").ToObject<string>(), Is.EqualTo("2"));
-            Assert.That(_engine.GetValue("v3").ToObject<string>(), Is.EqualTo("v3"));
-            Assert.That(_engine.GetValue("v4").ToObject<double>(), Is.EqualTo(1.4));
-            Assert.That(_engine.GetValue("v5").ToObject(), Is.EqualTo(null));
-            Assert.That(_engine.GetValue("v6").ToObject(), Is.EqualTo(null));
+            Assert.That(_engine.GetValue("p1").ToObject<int>(), Is.EqualTo(1));
+            Assert.That(_engine.GetValue("p2").ToObject<string>(), Is.EqualTo("2"));
+            Assert.That(_engine.GetValue("p3").ToObject<string>(), Is.EqualTo("v3"));
+            Assert.That(_engine.GetValue("p4").ToObject<double>(), Is.EqualTo(1.4));
+            Assert.That(_engine.GetValue("p5").ToObject(), Is.EqualTo(null));
+            Assert.That(_engine.GetValue("p6").ToObject(), Is.EqualTo(null));
         }
 
         public virtual void CheckMathRandomTest()
