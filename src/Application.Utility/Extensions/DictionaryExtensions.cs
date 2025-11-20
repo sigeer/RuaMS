@@ -80,6 +80,19 @@ namespace Application.Utility.Extensions
             if (!Unsafe.IsNullRef(ref valueRef))
                 valueRef = valueFunc(valueRef);
         }
+
+        public static void Update<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue?, TValue> valueFunc) where TKey : notnull
+        {
+            ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(dictionary, key);
+            if (!Unsafe.IsNullRef(ref valueRef))
+                valueRef = valueFunc(valueRef);
+            else
+            {
+                // 键不存在，我们使用初始值调用valueFunc，然后将结果添加到字典
+                var newValue = valueFunc(default(TValue));
+                dictionary.Add(key, newValue);
+            }
+        }
     }
 
     public static class ConcurrentDictionaryExtensions

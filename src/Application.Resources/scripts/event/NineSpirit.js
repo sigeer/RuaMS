@@ -1,4 +1,6 @@
-﻿var minPlayers = 1;
+var name = "NineSpirit";
+var eventType = "Solo";
+var minPlayers = 1;
 var timeLimit = 5; //5 minutes
 var eventTimer = 1000 * 60 * timeLimit;
 var exitMap = 240040610;

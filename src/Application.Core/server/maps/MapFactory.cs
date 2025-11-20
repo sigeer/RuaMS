@@ -26,6 +26,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Core.Scripting.Events;
 using Application.Resources;
 using Application.Shared.MapObjects;
 using Application.Shared.Objects;
@@ -120,7 +121,7 @@ public class MapFactory : IStaticService
         }
     }
 
-    public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, EventInstanceManager? evt)
+    public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, AbstractEventInstanceManager? evt)
     {
         IMap? map = null;
 

@@ -34,6 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Resources.Messages;
 using Application.Shared.Events;
@@ -122,7 +123,7 @@ public partial class Player
 
     private long totalExpGained = 0;
 
-    private EventInstanceManager? eventInstance = null;
+    private AbstractEventInstanceManager? eventInstance = null;
 
 
     private Job? jobModel = null;
@@ -1940,7 +1941,7 @@ public partial class Player
         return energybar;
     }
 
-    public void setEventInstance(EventInstanceManager? eventInstance)
+    public void setEventInstance(AbstractEventInstanceManager? eventInstance)
     {
         Monitor.Enter(evtLock);
         try
@@ -1952,7 +1953,7 @@ public partial class Player
             Monitor.Exit(evtLock);
         }
     }
-    public EventInstanceManager? getEventInstance()
+    public AbstractEventInstanceManager? getEventInstance()
     {
         Monitor.Enter(evtLock);
         try
@@ -3430,7 +3431,7 @@ public partial class Player
         dispelDebuffs();
         lastDeathtime = Client.CurrentServerContainer.getCurrentTime();
 
-        EventInstanceManager? eim = getEventInstance();
+        var eim = getEventInstance();
         if (eim != null)
         {
             eim.playerKilled(this);
@@ -3500,7 +3501,7 @@ public partial class Player
         respawn(null, returnMap);    // unspecified EIM, don't force EIM unregister in this case
     }
 
-    public void respawn(EventInstanceManager? eim, int returnMap)
+    public void respawn(AbstractEventInstanceManager? eim, int returnMap)
     {
         if (eim != null)
         {

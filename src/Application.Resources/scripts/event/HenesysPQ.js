@@ -23,7 +23,8 @@
  * @event: Henesys PQ
  */
 
-var isPq = true;
+var name = "HenesysPQ";
+var eventType = "PartyQuest";
 var minPlayers = 3, maxPlayers = 6;
 var minLevel = 10, maxLevel = 255;
 var entryMap = 910010000;

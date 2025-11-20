@@ -31,6 +31,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
+using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
@@ -79,7 +80,7 @@ public class MapleMap : IMap
     private int runningOid = 1000000001;
 
     private bool docked = false;
-    public EventInstanceManager? EventInstanceManager { get; private set; }
+    public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
     public bool IsTrackedByEvent { get; set; }
 
     private string mapName;
@@ -127,7 +128,7 @@ public class MapleMap : IMap
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
     public MapTemplate SourceTemplate { get; }
-    public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim)
+    public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim)
     {
         SourceTemplate = mapTemplate;
         Id = mapTemplate.TemplateId;
@@ -191,7 +192,7 @@ public class MapleMap : IMap
     }
 
 
-    public EventInstanceManager? getEventInstance()
+    public AbstractEventInstanceManager? getEventInstance()
     {
         return EventInstanceManager;
     }

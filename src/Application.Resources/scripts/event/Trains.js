@@ -1,3 +1,4 @@
+var name = "Trains";
 // 天空之城 - 玩具城
 var Orbis_btf;
 var Train_to_Orbis;

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Treasure PQ
  */
 
-var isPq = true;
+var name = "TreasurePQ";
+var eventType = "PartyQuest";
 var minPlayers = 4, maxPlayers = 6;
 var minLevel = 140, maxLevel = 255;
 var entryMap = 674030000;

@@ -23,7 +23,8 @@
  * @event: Zakum Battle
  */
 
-var isPq = true;
+var name = "ZakumBattle";
+var eventType = "Expedition";
 var minPlayers = 6, maxPlayers = 30;
 var minLevel = 50, maxLevel = 255;
 var entryMap = 280030000;

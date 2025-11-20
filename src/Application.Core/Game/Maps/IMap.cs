@@ -3,6 +3,7 @@ using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Scripting.Events;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
@@ -37,7 +38,7 @@ namespace Application.Core.Game.Maps
         /// </summary>
         public TimeMob? TimeMob { get; set; }
         bool IsTrackedByEvent { get; set; }
-        EventInstanceManager? EventInstanceManager { get; }
+        AbstractEventInstanceManager? EventInstanceManager { get; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
         void addMapObject(IMapObject mapobject);
 
@@ -114,7 +115,7 @@ namespace Application.Core.Game.Maps
         KeyValuePair<string, int>? getDoorPositionStatus(Point pos);
         int getDroppedItemsCountById(int itemid);
         IDictionary<string, int> getEnvironment();
-        EventInstanceManager? getEventInstance();
+        AbstractEventInstanceManager? getEventInstance();
         bool getEverlast();
         int getFieldLimit();
         int getForcedReturnId();

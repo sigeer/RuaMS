@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Amoria PQ
  */
 
-var isPq = true;
+var name = "AmoriaPQ";
+var eventType = "PartyQuest";
 var onlyMarriedPlayers = true;
 var minPlayers = 6, maxPlayers = 6;
 var minLevel = 40, maxLevel = 255;

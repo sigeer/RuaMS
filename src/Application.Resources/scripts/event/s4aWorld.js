@@ -1,7 +1,9 @@
-﻿/*
+/*
  * 4th Job Snipe / Concentration
  */
 
+var name = "s4aWorld";
+var eventType = "PartyQuest";
 var minPlayers = 1;
 
 function init() {

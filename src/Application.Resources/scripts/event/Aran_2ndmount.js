@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -22,6 +22,8 @@
  * Event - Scadur's Mount Quest
  **/
 
+var name = "Aran_2ndmount";
+var eventType = "Solo";
 var entryMap = 921110000;
 var exitMap = 211050000;
 

@@ -1,4 +1,6 @@
-﻿var minPlayers = 1;
+var name = "KingPepeAndYetis";
+var eventType = "PartyQuest";
+var minPlayers = 1;
 var timeLimit = 20; //20 minutes
 var eventTimer = 1000 * 60 * timeLimit;
 var exitMap = 106021400;

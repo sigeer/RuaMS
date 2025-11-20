@@ -1,5 +1,6 @@
-﻿// 事件实例化变量
-var isPq = false; // 是否为PQ（Party Quest）类型事件。
+// 事件实例化变量
+var name = "YaoSengPQ";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 6; // 该事件实例允许的队伍成员数量范围。
 var minLevel = 120, maxLevel = 255;     // 合格队伍成员的等级范围。
 var entryMap = 702060000;               // 事件启动时玩家进入的初始地图。

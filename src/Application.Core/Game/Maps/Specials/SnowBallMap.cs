@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Scripting.Events;
 using Application.Templates.Map;
 using scripting.Event;
 using server.events.gm;
@@ -29,7 +30,7 @@ namespace Application.Core.Game.Maps.Specials
         private Snowball? snowball0 = null;
         private Snowball? snowball1 = null;
 
-        public SnowBallMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
+        public SnowBallMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
         {
         }
 

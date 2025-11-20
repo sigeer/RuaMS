@@ -1,4 +1,5 @@
-﻿var returnTo = [200000141, 250000100];
+var name = "Hak";
+var returnTo = [200000141, 250000100];
 var rideTo = [250000100, 200000141];
 var birdRide = [200090300, 200090310];
 var myRide;

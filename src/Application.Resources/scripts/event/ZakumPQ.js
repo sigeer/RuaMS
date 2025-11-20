@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Zakum PQ
  */
 
-var isPq = true;
+var name = "ZakumPQ";
+var eventType = "PartyQuest";
 var minPlayers = 6, maxPlayers = 6;
 var minLevel = 50, maxLevel = 255;
 var entryMap = 280010000;

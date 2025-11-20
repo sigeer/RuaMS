@@ -1,4 +1,6 @@
-﻿var minPlayers = 1;
+var name = "Cygnus_Magic_Library";
+var eventType = "Solo";
+var minPlayers = 1;
 var timeLimit = 10; //10 minutes
 var eventTimer = 1000 * 60 * timeLimit;
 var entryMap = 101000000;

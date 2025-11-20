@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
+using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using Application.Templates.Map;
 using scripting.Event;
@@ -56,7 +57,7 @@ namespace Application.Core.Game.Maps.Specials
         private List<Point> takenSpawns = new();
         private List<KeyValuePair<int, int>> mobsToSpawn = new();
 
-        public MonsterCarnivalMap(MapTemplate mapTemplate, WorldChannel worldChannel, EventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
+        public MonsterCarnivalMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim) : base(mapTemplate, worldChannel, eim)
         {
         }
 

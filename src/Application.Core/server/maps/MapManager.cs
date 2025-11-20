@@ -22,19 +22,19 @@
 
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using scripting.Event;
+using Application.Core.Scripting.Events;
 using System.Collections.Concurrent;
 
 namespace server.maps;
 
 public class MapManager : IDisposable
 {
-    private EventInstanceManager? evt;
+    private AbstractEventInstanceManager? evt;
     readonly WorldChannel _channelServer;
 
     private ConcurrentDictionary<int, IMap> maps = new();
 
-    public MapManager(EventInstanceManager? eim, WorldChannel worldChannel)
+    public MapManager(AbstractEventInstanceManager? eim, WorldChannel worldChannel)
     {
         _channelServer = worldChannel;
         this.evt = eim;

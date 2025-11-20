@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -22,6 +22,8 @@
  * Event - Jonathan's Test Quest
  **/
 
+var name = "4jaerial";
+var eventType = "Solo";
 var entryMap = 912020000;
 var exitMap = 120000102;
 

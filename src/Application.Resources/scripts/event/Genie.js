@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var name = "Genie";
 // 天空之城 - 阿里安特
 var Orbis_btf;
 var Genie_to_Orbis;

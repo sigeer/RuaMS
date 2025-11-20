@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: ElNath PQ
  */
 
-var isPq = true;
+var name = "ElnathPQ";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 4;
 var minLevel = 80, maxLevel = 255;
 var entryMap = 921100300;

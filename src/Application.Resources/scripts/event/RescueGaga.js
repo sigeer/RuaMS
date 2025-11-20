@@ -1,9 +1,10 @@
-﻿/**
+/**
  * @author: kevintjuh93
  * @author: Ronan
  */
 
-var isPq = true;
+var name = "RescueGaga";
+var eventType = "Solo";
 var minPlayers = 1, maxPlayers = 1;
 var minLevel = 12, maxLevel = 255;
 var entryMap = 922240000;

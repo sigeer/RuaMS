@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -22,6 +22,8 @@
  * 3rd Job Event - Thief
  **/
 
+var name = "3rdJob_thief";
+var eventType = "Solo";
 var entryMap = 108010400;
 var exitMap = 107000402;
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -25,7 +25,8 @@
 
 // GMS-like event string data thanks to iHealForLove
 
-var isPq = true;
+var name = "HolidayPQ_3";
+var eventType = "PartyQuest";
 var minPlayers = 3, maxPlayers = 6;
 var minLevel = 41, maxLevel = 50;
 var entryMap = 889100021;

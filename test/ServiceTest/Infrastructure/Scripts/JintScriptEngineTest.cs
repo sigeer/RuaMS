@@ -17,6 +17,19 @@ namespace ServiceTest.Infrastructure.Scripts
         }
 
         [Test]
+        public override void GetValueTest()
+        {
+            Code = """
+                var p1 = 1;
+                var p2 = "2";
+                var p3 = "v3";
+                var p4 = "1.4";
+                var p5;
+                """;
+            base.GetValueTest();
+        }
+
+        [Test]
         public override void CallStaticMethod()
         {
             Code = """
@@ -51,6 +64,7 @@ namespace ServiceTest.Infrastructure.Scripts
                 """;
             base.CheckExsited();
         }
+
 
         [Test]
         public void CheckExtension()

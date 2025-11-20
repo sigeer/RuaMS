@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Vs Aufheben
  */
 
-var isPq = true;
+var name = "TD_Battle3";
+var eventType = "PartyQuest";
 var minPlayers = 2, maxPlayers = 6;
 var minLevel = 70, maxLevel = 255;
 var entryMap = 240070403;

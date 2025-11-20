@@ -1,5 +1,6 @@
 using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
+using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;

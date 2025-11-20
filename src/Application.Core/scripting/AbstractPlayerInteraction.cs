@@ -28,6 +28,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using client;
@@ -204,7 +205,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getClient().getEventManager(@event);
     }
 
-    public EventInstanceManager? getEventInstance()
+    public AbstractEventInstanceManager? getEventInstance()
     {
         return getPlayer().getEventInstance();
     }

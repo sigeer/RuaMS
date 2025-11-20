@@ -1,4 +1,6 @@
-﻿var eventTime = 10 * 60 * 1000;     // 10 minutes
+var name = "MK_PrimeMinister";
+var eventType = "PartyQuest";
+var eventTime = 10 * 60 * 1000;     // 10 minutes
 var entryMap = 106021600;
 var exitMap = 106021402;
 var recruitMap = 106021402;

@@ -92,11 +92,11 @@ public abstract class AbstractScriptManager
         });
     }
 
-    private IEngine? getInvocableScriptEngine(ScriptMeta? jsContent)
+    private IEngine getInvocableScriptEngine(ScriptMeta? jsContent)
     {
         if (jsContent == null)
         {
-            return null;
+            throw new BusinessException($"脚本不存在");
         }
 
         IEngine engine;
@@ -123,7 +123,7 @@ public abstract class AbstractScriptManager
         }
     }
 
-    protected IEngine? getInvocableScriptEngine(ScriptFile file)
+    protected IEngine getInvocableScriptEngine(ScriptFile file)
     {
         return getInvocableScriptEngine(GetScriptMeta(file));
     }
@@ -180,7 +180,7 @@ public abstract class AbstractScriptManager
         var engine = c.ScriptEngines[meta.ScriptFile.CacheKey];
         if (engine == null)
         {
-            engine = getInvocableScriptEngine(meta)!;
+            engine = getInvocableScriptEngine(meta);
             c.ScriptEngines[meta.ScriptFile.CacheKey] = engine;
         }
 

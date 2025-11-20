@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
+using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
 using scripting;
 using scripting.Event;

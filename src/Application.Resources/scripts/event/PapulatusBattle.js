@@ -23,7 +23,8 @@
  * @event: Vs Papulatus
  */
 
-var isPq = true;
+var name = "PapulatusBattle";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 6;
 var minLevel = 1, maxLevel = 255;
 var entryMap = 220080001;

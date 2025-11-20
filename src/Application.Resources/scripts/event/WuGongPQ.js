@@ -1,5 +1,6 @@
-﻿// 事件实例化变量
-var isPq = true; // 是否为PQ（Party Quest）类型事件。
+// 事件实例化变量
+var name = "WuGongPQ";
+var eventType = "PartyQuest";
 var minPlayers = 1, maxPlayers = 6; // 该事件实例允许的队伍成员数量范围。
 var minLevel = 25, maxLevel = 90;     // 合格队伍成员的等级范围。
 var entryMap = 701010323;               // 事件启动时玩家进入的初始地图。

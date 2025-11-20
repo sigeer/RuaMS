@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Vs Elemental Thanatos
  */
 
-var isPq = true;
+var name = "ElementalBattle";
+var eventType = "PartyQuest";
 var minPlayers = 2, maxPlayers = 2;
 var minLevel = 100, maxLevel = 255;
 var entryMap = 922020100;

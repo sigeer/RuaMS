@@ -23,7 +23,8 @@
  * @event: Vs Balrog
  */
 
-var isPq = true;
+var name = "BalrogBattle";
+var eventType = "Expedition";
 var minPlayers = 6, maxPlayers = 30;
 var minLevel = 50, maxLevel = 255;
 var entryMap = 105100300;

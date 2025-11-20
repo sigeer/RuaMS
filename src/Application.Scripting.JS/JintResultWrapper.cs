@@ -19,7 +19,7 @@ namespace Application.Scripting.JS
 
         public override TObject ToObject<TObject>()
         {
-            if (Value.IsNull())
+            if (Value.IsNull() || Value.IsUndefined())
                 return default;
 
             var obj = Value.ToObject();

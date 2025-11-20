@@ -1,5 +1,6 @@
-﻿// 事件实例化变量
-var isPq = true; // 是否为PQ（Party Quest）类型事件。
+// 事件实例化变量
+var name = "";              // 非必须，事件名，否则使用文件名作为事件名
+var eventType = "";         // 非必须，仅支持 "PartyQuest": 组队任务，"Solo": 单人任务, "GuildQuest": 家族任务，"Expedition": 远征队
 var minPlayers, maxPlayers; // 该事件实例允许的队伍成员数量范围。
 var minLevel, maxLevel;     // 合格队伍成员的等级范围。
 var entryMap;               // 事件启动时玩家进入的初始地图。

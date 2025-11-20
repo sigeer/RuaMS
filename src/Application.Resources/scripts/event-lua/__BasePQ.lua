@@ -7,6 +7,7 @@ function BasePQ:new(config)
 
     -- 基础配置
     instance.name = config.name
+    instance.eventType = config.eventType
     instance.instanceName = config.instanceName
     instance.minPlayers = config.minPlayers
     instance.maxPlayers = config.maxPlayers

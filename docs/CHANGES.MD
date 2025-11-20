@@ -95,3 +95,14 @@
 5. 婚姻状态：原先通过有无结婚戒指`marriageRing != null && PartnerId > 0`来判断、现在通过`marriage.Status`判断。婚姻状态将以`marriage`为主。
 
 婚姻同时涉及到 `marriage`, `ring`，也许可能存在婚姻状态尚存，戒指丢失的情况。或者婚姻状态结束，戒指没有销毁的情况。
+
+### EventManager
+
+重构`EventManager`和`EventInstanceManager`，对各种事件进行分类。目的是自定义事件时方便扩展。
+
+- `EventManager` 不会创建副本的事件（比如各种传送）
+- `AbstractInstancedEventManager` 会创建副本的事件的抽象类
+- `GuildQuestEventManager`：家族任务
+- `ExpeditionEventManager`：远征队
+- `SoloEventManager`：单人副本
+- `PartyQuestEventManager`：组队任务

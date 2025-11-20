@@ -20,6 +20,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var name = "Elevator";
 //Time Setting is in millisecond
 var beginTime = 60 * 1000; //The time to begin the ride
 var rideTime = 60 * 1000; //The time that require move to destination

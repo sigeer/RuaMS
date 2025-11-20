@@ -23,7 +23,8 @@
  * @event: Pink Bean Battle
  */
 
-var isPq = true;
+var name = "PinkBeanBattle";
+var eventType = "Expedition";
 var minPlayers = 6, maxPlayers = 30;
 var minLevel = 120, maxLevel = 255;
 var entryMap = 270050100;

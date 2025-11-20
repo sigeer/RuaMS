@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Ludibrium PQ
  */
 
-var isPq = true;
+var name = "LudiPQ";
+var eventType = "PartyQuest";
 var minPlayers = 5, maxPlayers = 6;
 var minLevel = 35, maxLevel = 50;
 var entryMap = 922010100;

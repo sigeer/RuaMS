@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -23,7 +23,8 @@
  * @event: Orbis PQ
  */
 
-var isPq = true;
+var name = "OrbisPQ";
+var eventType = "PartyQuest";
 var minPlayers = 5, maxPlayers = 6;
 var minLevel = 51, maxLevel = 70;
 var entryMap = 920010000;
