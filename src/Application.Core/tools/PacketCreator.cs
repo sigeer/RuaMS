@@ -3782,11 +3782,10 @@ public class PacketCreator
                 p.writeInt(-2);
         }
         p.writeInt(party.getLeaderId());
-        Dictionary<int, IPlayer> forChannelMembers = party.GetActiveMembers().ToDictionary(x => x.Id, x => x);
         foreach (var partychar in partymembers)
         {
-            if (forChannelMembers.TryGetValue(partychar.Id, out var player) && player.getChannelServer().getId() == forchannel)
-                p.writeInt(player.getMapId());
+            if (partychar.Channel == forchannel)
+                p.writeInt(partychar.MapId);
             else
                 p.writeInt(0);
         }
@@ -3794,7 +3793,7 @@ public class PacketCreator
         Dictionary<int, Door> partyDoors = party.getDoors();
         foreach (var partychar in partymembers)
         {
-            if (forChannelMembers.TryGetValue(partychar.Id, out var player) && !leaving)
+            if (partychar.Channel == forchannel && !leaving)
             {
                 if (partyDoors.Count > 0)
                 {
@@ -7040,7 +7039,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet playerSummoned(string name, int tab, int number)
+    public static Packet CPQ_PlayerSummoned(string name, int tab, int number)
     {
         OutPacket p = OutPacket.create(SendOpcode.MONSTER_CARNIVAL_SUMMON);
         p.writeByte(tab);
@@ -7049,7 +7048,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet playerDiedMessage(string name, int lostCP, int team)
+    public static Packet CPQ_PlayerDied(string name, int lostCP, int team)
     { // CPQ
         OutPacket p = OutPacket.create(SendOpcode.MONSTER_CARNIVAL_DIED);
         p.writeByte(team); // team

@@ -5,6 +5,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Shared.Constants.Map;
 using Application.Shared.Events;
 using Humanizer;
 using scripting.Event.scheduler;
@@ -22,6 +23,10 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
+    /// <summary>
+    /// 每关 已领取奖励的玩家
+    /// </summary>
+    protected Dictionary<int, HashSet<int>> rewardedChr = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<IPlayer, int> killCount = new();
@@ -659,7 +664,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return eventTime - (EventManager.getChannelServer().Container.getCurrentTime() - timeStarted);
     }
 
-    public void registerParty(IPlayer chr)
+    public virtual void registerParty(IPlayer chr)
     {
         if (chr.isPartyLeader())
         {
@@ -667,7 +672,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public void registerParty(Team party, IMap map)
+    public virtual void registerParty(Team party, IMap map)
     {
         foreach (var mpc in party.getEligibleMembers())
         {
@@ -682,9 +687,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             }
         }
     }
-
-
-
 
     public int getPlayerCount()
     {
@@ -741,20 +743,20 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     public void registerMonster(Monster mob)
     {
         if (!mob.getStats().isFriendly())
-        { 
+        {
             //We cannot register moon bunny
             mobs.Add(mob);
         }
     }
 
-  
+
     public int getKillCount(IPlayer chr)
     {
         return killCount.GetValueOrDefault(chr, 0);
     }
 
 
-    Lock disposeLock = new ();
+    Lock disposeLock = new();
     public virtual void Dispose()
     {
         lock (disposeLock)
@@ -1227,17 +1229,23 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         List<int>? rewardsSet, rewardsQty;
         int rewardExp;
+        var rewardIndex = eventLevel - 1;
 
         lockObj.EnterReadLock();
         try
         {
-            eventLevel--;       //event level starts counting from 1
-            if (eventLevel >= eventRewards.Count)
+            if (!CanGiveReward(player, eventLevel))
             {
                 return true;
             }
 
-            var item = eventRewards.GetValueOrDefault(eventLevel)!;
+
+            if (rewardIndex >= eventRewards.Count)
+            {
+                return true;
+            }
+
+            var item = eventRewards.GetValueOrDefault(rewardIndex)!;
             rewardsSet = item.Rewards;
             rewardsQty = item.Quantity;
 
@@ -1248,28 +1256,23 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             lockObj.ExitReadLock();
         }
 
-        if (rewardsSet == null || rewardsSet.Count == 0)
+        if (rewardsSet.Count > 0)
         {
-            if (rewardExp > 0)
+            if (!hasRewardSlot(player, rewardIndex))
             {
-                player.gainExp(rewardExp);
+                return false;
             }
-            return true;
+
+            var api = player.getAbstractPlayerInteraction();
+            int rnd = (int)Math.Floor(Randomizer.nextDouble() * rewardsSet.Count);
+
+            api.gainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd));
         }
-
-        if (!hasRewardSlot(player, eventLevel))
-        {
-            return false;
-        }
-
-        var api = player.getAbstractPlayerInteraction();
-        int rnd = (int)Math.Floor(Randomizer.nextDouble() * rewardsSet.Count);
-
-        api.gainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd));
         if (rewardExp > 0)
         {
             player.gainExp(rewardExp);
         }
+        SetRewardClaimed(player, eventLevel);
         return true;
     }
 
@@ -1533,8 +1536,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     public void giveEventPlayersStageReward(int thisStage)
     {
         List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
-        giveEventPlayersExp(list[0]);
-        giveEventPlayersMeso(list[1]);
+
+        var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
+        var players = getPlayerList();
+        foreach (IPlayer mc in players)
+        {
+            if (CanGiveReward(mc, thisStage))
+            {
+                SetRewardClaimed(mc, thisStage);
+                mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
+                mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+            }
+        }
     }
 
     public void linkToNextStage(int thisStage, string eventFamily, int thisMapId)
@@ -1704,6 +1717,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             chr.TopScrolling(key, param);
         }
+    }
+
+    bool CanGiveReward(IPlayer chr, int stage = 1)
+    {
+        return chars.ContainsKey(chr.Id) && !rewardedChr.GetValueOrDefault(stage, []).Contains(chr.Id);
+    }
+
+    void SetRewardClaimed(IPlayer chr, int stage = 1)
+    {
+        if (rewardedChr.TryGetValue(stage, out var arr))
+            arr.Add(chr.Id);
+        else
+            rewardedChr[stage] = new HashSet<int>() { chr.Id };
     }
 }
 

@@ -196,7 +196,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         }
                     }
                     c.OnlinedCharacter.gainCP(-neededCP);
-                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.playerSummoned(c.OnlinedCharacter.getName(), tab, num));
+                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.CPQ_PlayerSummoned(c.OnlinedCharacter.getName(), tab, num));
                 }
                 catch (Exception e)
                 {

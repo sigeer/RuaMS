@@ -5,59 +5,23 @@
  ---------------------------------------------------------------------------------------------------
  **/
 
-var status = 0;
-var party;
-
-function start(chrs) {
-    status = -1;
-    party = chrs;
-    action(1, 0, 0);
+function start() {
+    showChallengerInfo();
+}
+function levelDispose() {
+    cm.getEventInstance().AcceptChanllege(false);
 }
 
-function action(mode, type, selection) {
-    if (mode == -1) {
-        cm.answerCPQChallenge(false);
-        cm.getChar().setChallenged(false);
-        cm.dispose();
-    } else {
-        if (mode == 0) {
-            cm.answerCPQChallenge(false);
-            cm.getChar().setChallenged(false);
-            cm.dispose();
-            return;
-        }
+function showChallengerInfo() {
+    const eim = cm.getEventInstance();
+    var teamMembers = eim.Room.Team1.getEligibleMembers();
+    var snd = "";
+    for (var i = 0; i < teamMembers.Count; i++) {
+        snd += "#b名称：" + teamMembers[i].Name + " / (等级：" + teamMembers[i].Level + ") / " + teamMembers[i].JobModel.Name + "#k\r\n\r\n";
     }
-    if (mode == -1) {
-        cm.dispose();
-    } else {
-        if (mode == 1) {
-            status++;
-        } else {
-            status--;
-        }
+    cm.sendAcceptDeclineLevel("Dispose", "Accept", snd + "你想在怪物嘉年华上和这个队伍战斗吗？");
+}
 
-        if (status == 0) {
-            if (cm.getParty().GetTeamMembers().size() == party.size()) {
-                cm.getPlayer().setChallenged(true);
-                var snd = "";
-                for (var i = 0; i < party.size(); i++) {
-                    snd += "#b名称：" + party.get(i).getName() + " / (等级：" + party.get(i).getLevel() + ") / " + GameConstants.getJobName(party.get(i).getJobId()) + "#k\r\n\r\n";
-                }
-                cm.sendAcceptDecline(snd + "你想在怪物嘉年华上和这个队伍战斗吗？");
-            } else {
-                cm.answerCPQChallenge(false);
-                cm.getChar().setChallenged(false);
-                cm.dispose();
-            }
-        } else if (status == 1) {
-            if (party.size() == cm.getParty().GetTeamMembers().size()) {
-                cm.answerCPQChallenge(true);
-            } else {
-                cm.answerCPQChallenge(false);
-                cm.getChar().setChallenged(false);
-                cm.sendOk("队伍之间的玩家数量不一样。");
-            }
-            cm.dispose();
-        }
-    }
+function levelAccept() {
+    cm.getEventInstance().AcceptChanllege(true);
 }

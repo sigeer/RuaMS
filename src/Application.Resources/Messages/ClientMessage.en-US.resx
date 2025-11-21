@@ -1095,4 +1095,64 @@
   <data name="ExtraStorageCommand_Description" xml:space="preserve">
     <value>打开奖品仓库。</value>
   </data>
+  <data name="CPQ_PlayerExit" xml:space="preserve">
+    <value>{0} left the Carnival of Monsters.</value>
+  </data>
+  <data name="CPQ_ExtendTime" xml:space="preserve">
+    <value>The time has been extended.</value>
+  </data>
+  <data name="CPQ_LeaderNotFound" xml:space="preserve">
+    <value>Could not find the Leader.</value>
+  </data>
+  <data name="CPQ_Error" xml:space="preserve">
+    <value>There was a problem. Please re-create a room.</value>
+  </data>
+  <data name="CPQ_PickRoom" xml:space="preserve">
+    <value>Sign up for the Monster Festival!\r\n{{0}}</value>
+  </data>
+  <data name="CPQ_ChallengeRoomAnswer" xml:space="preserve">
+    <value>The group is currently facing a challenge.</value>
+  </data>
+  <data name="CPQ_ChallengeRoomSent" xml:space="preserve">
+    <value>A challenge has been sent to the group in the room. Please wait a while.</value>
+  </data>
+  <data name="CPQ_ChallengeRoomDenied" xml:space="preserve">
+    <value>The group in the room canceled your challenge.</value>
+  </data>
+  <data name="CPQ_FindError" xml:space="preserve">
+    <value>We could not find a group in this room.\r\nProbably the group was scrapped inside the room!</value>
+  </data>
+  <data name="CPQ_EntryLobby" xml:space="preserve">
+    <value>You will now receive challenges from other groups. If you do not accept a challenge within 3 minutes, you will be taken out.</value>
+  </data>
+  <data name="CPQ_Entry" xml:space="preserve">
+    <value>You can select "Summon Monsters", "Ability", or "Protector" as your tactic during the Monster Carnival. Use Tab and F1 ~ F12 for quick access!</value>
+  </data>
+  <data name="TeamRed" xml:space="preserve">
+    <value>TeamRed</value>
+  </data>
+  <data name="Event_FatelError" xml:space="preserve">
+    <value>事件遇到错误。</value>
+  </data>
+  <data name="Exchange_Fail" xml:space="preserve">
+    <value>Check and see if you are missing #b#t{0}##k or if your {1} inventory is full.</value>
+  </data>
+  <data name="USE" xml:space="preserve">
+    <value>USE</value>
+  </data>
+  <data name="ETC" xml:space="preserve">
+    <value>ETC</value>
+  </data>
+  <data name="EPQ" xml:space="preserve">
+    <value>EPQ</value>
+  </data>
+  <data name="CPQ_NoEmptyRoom" xml:space="preserve">
+    <value>All Monster Carnival fields are currently in use! Try again later.</value>
+  </data>
+  <data name="CPQ_Room" xml:space="preserve">
+    <value>Carnival Field</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>Level</value>
+  </data>
 </root>

@@ -4082,15 +4082,6 @@ public class MapleMap : IMap
         }
         chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
 
-        if (chr.getMonsterCarnival() != null)
-        {
-            chr.sendPacket(PacketCreator.getClock(chr.getMonsterCarnival()!.getTimeLeftSeconds()));
-            if (isCPQMap())
-            {
-                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
-            }
-        }
-
         chr.removeSandboxItems();
 
         if (chr.getChalkboard() != null)

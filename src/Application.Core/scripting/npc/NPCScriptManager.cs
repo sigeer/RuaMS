@@ -191,6 +191,13 @@ public class NPCScriptManager : AbstractScriptManager
                     }
                     else
                     {
+                        try
+                        {
+                            iv.CallFunction("levelDispose");
+                        }
+                        catch (Exception)
+                        {
+                        }
                         c.NPCConversationManager?.dispose();
                     }
                 }

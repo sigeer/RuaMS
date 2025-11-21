@@ -598,7 +598,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         if (!party)
         {
-            partyz = new Team(c.CurrentServer.LifeScope.ServiceProvider.GetRequiredService<WorldChannelServer>(), -1, getPlayer().Id);
+            partyz = new Team(-1, getPlayer().Id);
         }
         Pyramid py = new Pyramid(c.CurrentServer, partyz, mod, map.getId());
         getPlayer().setPartyQuest(py);

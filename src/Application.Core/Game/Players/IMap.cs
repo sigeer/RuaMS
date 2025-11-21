@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Shared.WzEntity;
 using server.maps;
 
@@ -16,6 +16,12 @@ namespace Application.Core.Game.Players
         void changeMap(IMap target, Portal? pto);
 
         void changeMapBanish(BanishInfo banishInfo);
+
+        /// <summary>
+        /// 和 <see cref="changeMap(IMap, Portal?)"/>什么差异？可以跨事件传送？
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="pto"></param>
         void forceChangeMap(IMap target, Portal? pto);
         void enteredScript(string script, int mapid);
 

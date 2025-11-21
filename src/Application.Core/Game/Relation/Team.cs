@@ -1,5 +1,7 @@
 using Application.Core.Channel;
+using Application.Core.Game.GameEvents.CPQ;
 using server.maps;
+using server.partyquest;
 
 namespace Application.Core.Game.Relation
 {
@@ -16,13 +18,25 @@ namespace Application.Core.Game.Relation
         private Dictionary<int, Door> doors = new();
 
         private object lockObj = new object();
+        public MonsterCarnivalTeam? MCTeam { get; set; }
 
-        readonly WorldChannelServer _server;
-        public Team(WorldChannelServer server, int id, int leaderId)
+        public Team(int id, int leaderId)
         {
-            _server = server;
             this.leaderId = leaderId;
             this.id = id;
+        }
+
+        public Dictionary<int, TeamMember> GetMembers()
+        {
+            Monitor.Enter(lockObj);
+            try
+            {
+                return new Dictionary<int, TeamMember>(members);
+            }
+            finally
+            {
+                Monitor.Exit(lockObj);
+            }
         }
 
         public bool containsMembers(int memberId)
@@ -131,12 +145,17 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public List<IPlayer> GetActiveMembers()
+        /// <summary>
+        /// 在<see cref="server"/>上的队员
+        /// </summary>
+        /// <param name="server"></param>
+        /// <returns></returns>
+        public List<IPlayer> GetActiveMembers(WorldChannelServer server)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.Values.Select(x => _server.FindPlayerById(x.Channel, x.Id)).Where(x => x != null).ToList()!;
+                return members.Values.Select(x => server.FindPlayerById(x.Channel, x.Id)).Where(x => x != null).ToList()!;
             }
             finally
             {
@@ -145,7 +164,7 @@ namespace Application.Core.Game.Relation
         }
 
         // used whenever entering PQs: will draw every party member that can attempt a target PQ while ingnoring those unfit.
-        public ICollection<IPlayer> getEligibleMembers()
+        public List<IPlayer> getEligibleMembers()
         {
             return pqMembers.ToList();
         }
@@ -180,7 +199,7 @@ namespace Application.Core.Game.Relation
             Monitor.Enter(lockObj);
             try
             {
-                return GetChannelMembers(server).FirstOrDefault(x => x.getId() == leaderId);
+                return  server.Players.getCharacterById(leaderId);
             }
             finally
             {

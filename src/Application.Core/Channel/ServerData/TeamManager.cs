@@ -49,7 +49,7 @@ namespace Application.Core.Channel.ServerData
                     player.dropMessage(5, "创建队伍失败：发生了未知错误");
                     return false;
                 }
-                party = new Team(_server, remoteData.Id, remoteData.LeaderId);
+                party = new Team(remoteData.Id, remoteData.LeaderId);
                 foreach (var member in remoteData.Members)
                 {
                     party.addMember(_mapper.Map<TeamMember>(member));
@@ -157,7 +157,7 @@ namespace Application.Core.Channel.ServerData
                 default:
                     break;
             }
-            var partyMembers = party.GetActiveMembers();
+            var partyMembers = party.GetActiveMembers(_server);
 
             foreach (var partychar in partyMembers)
             {
@@ -287,7 +287,7 @@ namespace Application.Core.Channel.ServerData
             if (dataRemote == null)
                 return null;
 
-            d = new Team(_server, party, dataRemote.LeaderId);
+            d = new Team(party, dataRemote.LeaderId);
             foreach (var member in dataRemote.Members)
             {
                 d.addMember(_mapper.Map<TeamMember>(member));

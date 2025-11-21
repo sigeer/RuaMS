@@ -44,7 +44,6 @@ public class MonsterCarnivalParty
         {
             if (mc != null)
             {
-                mc.MCTeam = this;
                 mc.setTeam(TeamFlag);
                 mc.setMonsterCarnival(@event);
                 mc.setFestivalPoints(0);
@@ -108,6 +107,9 @@ public class MonsterCarnivalParty
         }
     }
 
+    /// <summary>
+    /// 清理状态，前往结算地图
+    /// </summary>
     public void Finish()
     {
         var mapFactory = Event.getEventMap().getChannelServer().getMapFactory();
@@ -126,7 +128,10 @@ public class MonsterCarnivalParty
             }
         }
     }
-
+    /// <summary>
+    /// 清理状态，回到大厅
+    /// </summary>
+    /// <param name="warpout"></param>
     public void Dispose(bool warpout)
     {
         var outMap = Event.GetOutMap();
@@ -141,7 +146,6 @@ public class MonsterCarnivalParty
                 {
                     mc.changeMap(outMap, outMap.getPortal(0));
                 }
-                mc.MCTeam = null;
             }
         }
         this.Enemy = null;

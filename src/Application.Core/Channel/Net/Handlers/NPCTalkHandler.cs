@@ -89,6 +89,10 @@ public class NPCTalkHandler : ChannelHandlerBase
                 {
                     c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "mapleTV", null);
                 }
+                else if (npc.SourceTemplate.Script?.StartsWith("mc") ?? false)
+                {
+                    c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "2042000_New", null);
+                }
                 else
                 {
                     bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, npc.SourceTemplate.Script, null);

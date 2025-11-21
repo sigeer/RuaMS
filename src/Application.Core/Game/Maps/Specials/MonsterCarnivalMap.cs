@@ -36,6 +36,8 @@ namespace Application.Core.Game.Maps.Specials
 
         List<MCSkill> getBlueTeamBuffs();
         List<MCSkill> getRedTeamBuffs();
+
+        int GetInitPortal(sbyte team);
     }
     /// <summary>
     /// 0. 准备地图  1. 战场 3. 胜利地图 4. 失败地图
@@ -295,6 +297,15 @@ namespace Application.Core.Game.Maps.Specials
                     }
                 }
             }
+        }
+
+        public int GetInitPortal(sbyte team)
+        {
+            if (isPurpleCPQMap())
+            {
+                return team == 0 ? 2 : 1;
+            }
+            return 0;
         }
     }
 }

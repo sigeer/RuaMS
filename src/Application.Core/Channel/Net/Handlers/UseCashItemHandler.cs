@@ -136,7 +136,9 @@ public class UseCashItemHandler : ChannelHandlerBase
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(targetMap.getId())))
                     {
                         if (!victim.isGM() || victim.gmLevel() <= player.gmLevel())
-                        {   // thanks Yoboes for noticing non-GM's being unreachable through rocks
+                        {
+                            // thanks Yoboes for noticing non-GM's being unreachable through rocks
+                            // forceChangeMap 可以跨事件传送，岂不是缩地石可以中途参与事件？
                             player.forceChangeMap(targetMap, targetMap.findClosestPlayerSpawnpoint(victim.getPosition()));
                             success = true;
                         }
@@ -152,7 +154,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    player.dropMessage(1, "Player could not be found in this channel.");
+                    player.Popup(nameof(ClientMessage.PlayerNotFoundInChannel), name);
                 }
             }
 

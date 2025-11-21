@@ -3415,18 +3415,6 @@ public partial class Player
     }
     private void playerDead()
     {
-        if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
-        {
-            int losing = cpqMap.DeathCP;
-            if (AvailableCP < losing)
-            {
-                losing = AvailableCP;
-            }
-            MapModel.broadcastMessage(PacketCreator.playerDiedMessage(getName(), losing, MCTeam!.TeamFlag));
-            gainCP(-losing);
-            return;
-        }
-
         cancelAllBuffs(false);
         dispelDebuffs();
         lastDeathtime = Client.CurrentServerContainer.getCurrentTime();
