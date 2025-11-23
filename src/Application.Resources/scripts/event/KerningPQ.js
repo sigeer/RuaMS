@@ -23,7 +23,8 @@
  * @event: Kerning PQ
  */
 
-var isPq = true;
+var name = "KerningPQ";
+var eventType = "PartyQuest";
 var minPlayers = 3, maxPlayers = 6;
 var minLevel = 21, maxLevel = 30;
 var entryMap = 103000800;

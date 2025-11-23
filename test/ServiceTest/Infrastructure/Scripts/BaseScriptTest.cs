@@ -13,8 +13,13 @@ namespace ServiceTest.Infrastructure.Scripts
         public virtual void GetValueTest()
         {
             _engine.Evaluate(Code);
-            var d = _engine.GetValue("test").ToObject<string>();
-            Assert.That(d.Equals("test"));
+
+            Assert.That(_engine.GetValue("p1").ToObject<int>(), Is.EqualTo(1));
+            Assert.That(_engine.GetValue("p2").ToObject<string>(), Is.EqualTo("2"));
+            Assert.That(_engine.GetValue("p3").ToObject<string>(), Is.EqualTo("v3"));
+            Assert.That(_engine.GetValue("p4").ToObject<double>(), Is.EqualTo(1.4));
+            Assert.That(_engine.GetValue("p5").ToObject(), Is.EqualTo(null));
+            Assert.That(_engine.GetValue("p6").ToObject(), Is.EqualTo(null));
         }
 
         public virtual void CheckMathRandomTest()
@@ -208,6 +213,7 @@ namespace ServiceTest.Infrastructure.Scripts
             Assert.That(_engine.IsExisted("v1"), Is.EqualTo(false));
             Assert.That(_engine.IsExisted("v2"), Is.EqualTo(true));
         }
+
 
         public virtual void Script2CSharpArray()
         {

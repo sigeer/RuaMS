@@ -22,6 +22,8 @@
  * 3rd Job Event - Kenta's Mount Quest
  **/
 
+var name = "3rdJob_mount";
+var eventType = "Solo";
 var entryMap = 923010000;
 var exitMap = 923010100;
 

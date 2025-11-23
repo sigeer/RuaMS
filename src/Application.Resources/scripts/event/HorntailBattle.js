@@ -23,7 +23,8 @@
  * @event: Horntail Battle
  */
 
-var isPq = true;
+var name = "HorntailBattle";
+var eventType = "Expedition";
 var minPlayers = 6, maxPlayers = 30;
 var minLevel = 100, maxLevel = 255;
 var entryMap = 240060000;

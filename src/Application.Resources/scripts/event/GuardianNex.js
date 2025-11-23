@@ -1,4 +1,6 @@
-﻿var minPlayers = 1;
+var name = "GuardianNex";
+var eventType = "Solo";
+var minPlayers = 1;
 var timeLimit = 15; //15 minutes
 var eventTimer = 1000 * 60 * timeLimit;
 var exitMap = 240070000;

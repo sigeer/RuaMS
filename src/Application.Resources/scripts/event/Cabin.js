@@ -39,7 +39,7 @@
  1.0 - First Version by Information
  ---------------------------------------------------------------------------------------------------
  **/
-
+var name = "Cabin";
 var Orbis_btf;
 var Leafre_btf;
 var Cabin_to_Orbis;

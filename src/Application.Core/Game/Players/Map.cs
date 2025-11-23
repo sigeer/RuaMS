@@ -309,7 +309,7 @@ namespace Application.Core.Game.Players
                     playerEim.exitPlayer(this);
                     if (playerEim.getPlayerCount() == 0)
                     {
-                        playerEim.dispose();
+                        playerEim.Dispose();
                     }
                 }
 

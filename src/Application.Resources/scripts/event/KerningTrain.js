@@ -1,4 +1,5 @@
-﻿var returnTo = [103000100, 103000310];
+var name = "KerningTrain";
+var returnTo = [103000100, 103000310];
 var rideTo = [103000310, 103000100];
 var trainRide = [103000301, 103000302];
 var myRide;

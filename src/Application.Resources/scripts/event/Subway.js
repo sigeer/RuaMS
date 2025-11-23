@@ -1,3 +1,4 @@
+var name = "Subway";
 var KC_Waiting;
 var Subway_to_KC;
 var KC_docked;

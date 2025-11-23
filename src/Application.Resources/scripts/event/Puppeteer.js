@@ -1,4 +1,6 @@
-﻿var minPlayers = 1;
+var name = "Puppeteer";
+var eventType = "Solo";
+var minPlayers = 1;
 var timeLimit = 1; //10 minutes
 var eventTimer = 1000 * 60 * timeLimit;
 var exitMap = 105070300;

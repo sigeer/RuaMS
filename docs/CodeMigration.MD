@@ -61,3 +61,5 @@ TimeSpan.FromSeconds($1)
 | - | `startInstance()` -> `StartExpeditionInstance` 或  `StartPQInstance` | ❗ |  |
 | - | `em.getMonster(mobId)` -> `eim.getMonster(mobId)` | ❗ |  |
 | - | `cm.getPlayer().getStorage().sendStorage(cm.getClient(), npcId)` -> `cm.OpenStorage()` | ❗ | `cm\.getPlayer\(\)\.getStorage\(\)\.sendStorage\(cm\.getClient\(\), \d*\)` -> `cm.OpenStorage()` |
+| `event/*` | 增加属性`eventName` | ❗ | 原事件名基于文件名。现修改文件名进行分类，通过`eventName`保留原事件名 |
+| `event/*` | 增加属性`eventType` | ❗ | `EventManager`重构后，对`event`脚本进行了分类，通过`eventType`使用不同的`EventManager` |

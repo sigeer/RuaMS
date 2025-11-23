@@ -22,6 +22,8 @@
  * Event - Kyrin's Test Quest
  **/
 
+var name = "4jship";
+var eventType = "Solo";
 var entryMap = 912010000;
 var exitMap = 120000101;
 

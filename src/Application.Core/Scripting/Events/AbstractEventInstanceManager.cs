@@ -1,26 +1,3 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-		       Matthias Butz <matze@odinms.de>
-		       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
@@ -29,28 +6,26 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Shared.Events;
+using Humanizer;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
 using server.life;
 using server.maps;
 using System;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
-namespace scripting.Event;
+namespace Application.Core.Scripting.Events;
 
-/**
- * @author Matze
- * @author Ronan
- */
-public class EventInstanceManager : IClientMessenger
+public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<IPlayer, int> killCount = new();
-    private EventManager em;
+    public AbstractInstancedEventManager EventManager { get; }
     private EventScriptScheduler ess;
     private MapManager mapManager;
     private string name;
@@ -58,18 +33,18 @@ public class EventInstanceManager : IClientMessenger
     private Dictionary<string, object> objectProps = new();
     private long timeStarted = 0;
     private long eventTime = 0;
-    private Expedition? expedition = null;
+
     public int LobbyId { get; set; } = -1;
 
     private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    private object propertyLock = new object();
-    private object scriptLock = new object();
+    protected object propertyLock = new object();
+    protected object scriptLock = new object();
 
     private ScheduledFuture? event_schedule = null;
     private bool disposed = false;
-    private bool eventCleared = false;
-    private bool eventStarted = false;
+    protected bool eventCleared = false;
+    protected bool eventStarted = false;
 
     // multi-leveled PQ rewards!
     Dictionary<int, EventRewardsPair> eventRewards = new Dictionary<int, EventRewardsPair>(YamlConfig.config.server.MAX_EVENT_LEVELS);
@@ -88,12 +63,12 @@ public class EventInstanceManager : IClientMessenger
     private HashSet<int> exclusiveItems = new();
     public EventInstanceType Type { get; set; }
 
-    public EventInstanceManager(EventManager em, string name)
+    public AbstractEventInstanceManager(AbstractInstancedEventManager em, string name)
     {
-        this.em = em;
+        EventManager = em;
         this.name = name;
-        this.ess = new EventScriptScheduler(em.getChannelServer());
-        this.mapManager = new MapManager(this, em.getChannelServer());
+        this.ess = new EventScriptScheduler(EventManager.getChannelServer());
+        this.mapManager = new MapManager(this, EventManager.getChannelServer());
     }
 
     public void setName(string name)
@@ -101,18 +76,7 @@ public class EventInstanceManager : IClientMessenger
         this.name = name;
     }
 
-    public EventManager getEm()
-    {
-        Monitor.Enter(scriptLock);
-        try
-        {
-            return em;
-        }
-        finally
-        {
-            Monitor.Exit(scriptLock);
-        }
-    }
+    public EventManager getEm() => EventManager;
 
     public int getEventPlayersJobs()
     {
@@ -222,17 +186,361 @@ public class EventInstanceManager : IClientMessenger
 
     }
 
+
+
+    #region 触发脚本事件
     public object? invokeScriptFunction(string name, params object[] args)
     {
         if (!disposed)
         {
-            return em.getIv().CallFunction(name, args).ToObject();
+            return EventManager.getIv().CallFunction(name, args).ToObject();
         }
         else
         {
             return null;
         }
     }
+
+    /// <summary>
+    /// 离开地图
+    /// </summary>
+    /// <param name="chr"></param>
+    public virtual void exitPlayer(IPlayer chr)
+    {
+        if (chr == null || !chr.isLoggedin())
+        {
+            return;
+        }
+
+        unregisterPlayer(chr);
+
+        try
+        {
+            invokeScriptFunction("playerExit", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", EventManager.getName());
+        }
+    }
+
+    public virtual void unregisterPlayer(IPlayer chr)
+    {
+        try
+        {
+            invokeScriptFunction("playerUnregistered", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Event script {ScriptName} does not implement the playerUnregistered function", EventManager.getName());
+        }
+
+        lockObj.EnterWriteLock();
+        try
+        {
+            chars.Remove(chr.getId());
+            chr.setEventInstance(null);
+        }
+        finally
+        {
+            lockObj.ExitWriteLock();
+        }
+
+        gridRemove(chr);
+        dropExclusiveItems(chr);
+    }
+
+    public virtual void changedMap(IPlayer chr, int mapId)
+    {
+        try
+        {
+            invokeScriptFunction("changedMap", this, chr, mapId);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedMap", EventManager.getName());
+        } // optional
+    }
+
+    public virtual void afterChangedMap(IPlayer chr, int mapId)
+    {
+        try
+        {
+            invokeScriptFunction("afterChangedMap", this, chr, mapId);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterChangedMap", EventManager.getName());
+        } // optional
+    }
+
+    object changeLeaderLock = new object();
+    public virtual void changedLeader(IPlayer ldr)
+    {
+        lock (changeLeaderLock)
+        {
+            try
+            {
+                invokeScriptFunction("changedLeader", this, ldr);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedLeader", EventManager.getName());
+            }
+
+            leaderId = ldr.getId();
+        }
+
+    }
+
+    public virtual void monsterKilled(Monster mob, bool hasKiller)
+    {
+        int scriptResult = 0;
+
+        Monitor.Enter(scriptLock);
+        try
+        {
+            mobs.Remove(mob);
+
+            if (eventStarted)
+            {
+                scriptResult = 1;
+
+                if (mobs.Count == 0)
+                {
+                    scriptResult = 2;
+                }
+            }
+        }
+        finally
+        {
+            Monitor.Exit(scriptLock);
+        }
+
+        if (scriptResult > 0)
+        {
+            try
+            {
+                invokeScriptFunction("monsterKilled", mob, this, hasKiller);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterKilled", EventManager.getName());
+            }
+
+            if (scriptResult > 1)
+            {
+                try
+                {
+                    invokeScriptFunction("allMonstersDead", this, hasKiller);
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "allMonstersDead", EventManager.getName());
+                }
+            }
+        }
+    }
+
+    public virtual void friendlyKilled(Monster mob, bool hasKiller)
+    {
+        try
+        {
+            invokeScriptFunction("friendlyKilled", mob, this, hasKiller);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyKilled", EventManager.getName());
+        } //optional
+    }
+
+    public virtual void friendlyDamaged(Monster mob)
+    {
+        try
+        {
+            invokeScriptFunction("friendlyDamaged", this, mob);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyDamaged", EventManager.getName());
+        } // optional
+    }
+
+    public virtual void friendlyItemDrop(Monster mob)
+    {
+        try
+        {
+            invokeScriptFunction("friendlyItemDrop", this, mob);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyItemDrop", EventManager.getName());
+        } // optional
+    }
+
+    public virtual void playerKilled(IPlayer chr)
+    {
+        try
+        {
+            invokeScriptFunction("playerDead", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDead", EventManager.getName());
+        } // optional
+    }
+
+    public virtual void reviveMonster(Monster mob)
+    {
+        try
+        {
+            invokeScriptFunction("monsterRevive", this, mob);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterRevive", EventManager.getName());
+        } // optional
+    }
+
+    public virtual bool revivePlayer(IPlayer chr)
+    {
+        try
+        {
+            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr) ?? true);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerRevive", EventManager.getName());
+        } // optional
+
+        return true;
+    }
+
+    public virtual void playerDisconnected(IPlayer chr)
+    {
+        try
+        {
+            invokeScriptFunction("playerDisconnected", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDisconnected", EventManager.getName());
+        }
+
+        if (getEm().AllowReconnect)
+        {
+            chr.Client.CurrentServer.EventRecallManager?.storeEventInstance(chr.Id, this);
+        }
+    }
+
+    public virtual void monsterKilled(IPlayer chr, Monster mob)
+    {
+        try
+        {
+            int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
+
+            if (inc != 0)
+            {
+                OnMonsterValueChanged(chr, mob, inc);
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterValue", EventManager.getName());
+        }
+    }
+
+    protected virtual void OnMonsterValueChanged(IPlayer chr, Monster mob, int val)
+    {
+        killCount[chr] = killCount.GetValueOrDefault(chr) + val;
+    }
+
+    public virtual void leftParty(IPlayer chr)
+    {
+        try
+        {
+            invokeScriptFunction("leftParty", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "leftParty", EventManager.getName());
+        }
+    }
+
+    public virtual void disbandParty()
+    {
+        try
+        {
+            invokeScriptFunction("disbandParty", this);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "disbandParty", EventManager.getName());
+        }
+    }
+
+    public virtual void clearPQ()
+    {
+        try
+        {
+            invokeScriptFunction("clearPQ", this);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "clearPQ", EventManager.getName());
+        }
+    }
+
+    /// <summary>
+    /// playerExit
+    /// </summary>
+    /// <param name="chr"></param>
+    public virtual void removePlayer(IPlayer chr)
+    {
+        try
+        {
+            invokeScriptFunction("playerExit", this, chr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", EventManager.getName());
+        }
+    }
+
+    public virtual void startEvent()
+    {
+        try
+        {
+            invokeScriptFunction("afterSetup", this);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterSetup", EventManager.getName());
+        }
+    }
+
+    public virtual void setEventCleared()
+    {
+        eventCleared = true;
+
+        foreach (IPlayer chr in getPlayers())
+        {
+            chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
+        }
+
+        Monitor.Enter(scriptLock);
+        try
+        {
+            EventManager.disposeInstance(name);
+        }
+        finally
+        {
+            Monitor.Exit(scriptLock);
+        }
+
+
+    }
+    #endregion
 
     object registerLock = new object();
 
@@ -270,37 +578,20 @@ public class EventInstanceManager : IClientMessenger
                 }
                 catch (Exception ex)
                 {
-                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerEntry", em.getName());
+                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerEntry", EventManager.getName());
                 }
             }
         }
 
     }
 
-    public void exitPlayer(IPlayer chr)
-    {
-        if (chr == null || !chr.isLoggedin())
-        {
-            return;
-        }
 
-        unregisterPlayer(chr);
-
-        try
-        {
-            invokeScriptFunction("playerExit", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", em.getName());
-        }
-    }
 
     public void dropMessage(int type, string message)
     {
         foreach (IPlayer chr in getPlayers())
         {
-            chr.dropMessage(type, message);
+            chr.TypedMessage(type, message);
         }
     }
 
@@ -312,7 +603,7 @@ public class EventInstanceManager : IClientMessenger
 
     public void startEventTimer(long time)
     {
-        timeStarted = em.getChannelServer().Container.getCurrentTime();
+        timeStarted = EventManager.getChannelServer().Container.getCurrentTime();
         eventTime = time;
 
         foreach (IPlayer chr in getPlayers())
@@ -320,7 +611,7 @@ public class EventInstanceManager : IClientMessenger
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
 
-        event_schedule = em.getChannelServer().Container.TimerManager.schedule(() =>
+        event_schedule = EventManager.getChannelServer().Container.TimerManager.schedule(() =>
         {
             dismissEventTimer();
 
@@ -330,7 +621,7 @@ public class EventInstanceManager : IClientMessenger
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", em.getName());
+                log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", EventManager.getName());
             }
         }, time);
     }
@@ -365,7 +656,7 @@ public class EventInstanceManager : IClientMessenger
 
     public long getTimeLeft()
     {
-        return eventTime - (em.getChannelServer().Container.getCurrentTime() - timeStarted);
+        return eventTime - (EventManager.getChannelServer().Container.getCurrentTime() - timeStarted);
     }
 
     public void registerParty(IPlayer chr)
@@ -392,50 +683,8 @@ public class EventInstanceManager : IClientMessenger
         }
     }
 
-    public void registerExpedition(Expedition exped)
-    {
-        expedition = exped;
-        registerExpeditionTeam(exped, exped.getRecruitingMap().getId());
-    }
 
-    private void registerExpeditionTeam(Expedition exped, int recruitMap)
-    {
-        expedition = exped;
 
-        foreach (IPlayer chr in exped.getActiveMembers())
-        {
-            if (chr.getMapId() == recruitMap)
-            {
-                registerPlayer(chr);
-            }
-        }
-    }
-
-    public void unregisterPlayer(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("playerUnregistered", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Event script {ScriptName} does not implement the playerUnregistered function", em.getName());
-        }
-
-        lockObj.EnterWriteLock();
-        try
-        {
-            chars.Remove(chr.getId());
-            chr.setEventInstance(null);
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
-
-        gridRemove(chr);
-        dropExclusiveItems(chr);
-    }
 
     public int getPlayerCount()
     {
@@ -498,213 +747,15 @@ public class EventInstanceManager : IClientMessenger
         }
     }
 
-    public void changedMap(IPlayer chr, int mapId)
-    {
-        try
-        {
-            invokeScriptFunction("changedMap", this, chr, mapId);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedMap", em.getName());
-        } // optional
-    }
-
-    public void afterChangedMap(IPlayer chr, int mapId)
-    {
-        try
-        {
-            invokeScriptFunction("afterChangedMap", this, chr, mapId);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterChangedMap", em.getName());
-        } // optional
-    }
-
-    object changeLeaderLock = new object();
-    public void changedLeader(IPlayer ldr)
-    {
-        lock (changeLeaderLock)
-        {
-            try
-            {
-                invokeScriptFunction("changedLeader", this, ldr);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedLeader", em.getName());
-            }
-
-            leaderId = ldr.getId();
-        }
-
-    }
-
-    public void monsterKilled(Monster mob, bool hasKiller)
-    {
-        int scriptResult = 0;
-
-        Monitor.Enter(scriptLock);
-        try
-        {
-            mobs.Remove(mob);
-
-            if (eventStarted)
-            {
-                scriptResult = 1;
-
-                if (mobs.Count == 0)
-                {
-                    scriptResult = 2;
-                }
-            }
-        }
-        finally
-        {
-            Monitor.Exit(scriptLock);
-        }
-
-        if (scriptResult > 0)
-        {
-            try
-            {
-                invokeScriptFunction("monsterKilled", mob, this, hasKiller);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterKilled", em.getName());
-            }
-
-            if (scriptResult > 1)
-            {
-                try
-                {
-                    invokeScriptFunction("allMonstersDead", this, hasKiller);
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "allMonstersDead", em.getName());
-                }
-            }
-        }
-    }
-
-    public void friendlyKilled(Monster mob, bool hasKiller)
-    {
-        try
-        {
-            invokeScriptFunction("friendlyKilled", mob, this, hasKiller);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyKilled", em.getName());
-        } //optional
-    }
-
-    public void friendlyDamaged(Monster mob)
-    {
-        try
-        {
-            invokeScriptFunction("friendlyDamaged", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyDamaged", em.getName());
-        } // optional
-    }
-
-    public void friendlyItemDrop(Monster mob)
-    {
-        try
-        {
-            invokeScriptFunction("friendlyItemDrop", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyItemDrop", em.getName());
-        } // optional
-    }
-
-    public void playerKilled(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("playerDead", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDead", em.getName());
-        } // optional
-    }
-
-    public void reviveMonster(Monster mob)
-    {
-        try
-        {
-            invokeScriptFunction("monsterRevive", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterRevive", em.getName());
-        } // optional
-    }
-
-    public bool revivePlayer(IPlayer chr)
-    {
-        try
-        {
-            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr) ?? true);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerRevive", em.getName());
-        } // optional
-
-        return true;
-    }
-
-    public void playerDisconnected(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("playerDisconnected", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDisconnected", em.getName());
-        }
-
-        chr.Client.CurrentServer.EventRecallManager?.storeEventInstance(chr.Id, this);
-    }
-
-    public void monsterKilled(IPlayer chr, Monster mob)
-    {
-        try
-        {
-            int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
-
-            if (inc != 0)
-            {
-                var kc = killCount.GetValueOrDefault(chr) + inc;
-                killCount.AddOrUpdate(chr, kc);
-                expedition?.monsterKilled(chr, mob);
-            }
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterValue", em.getName());
-        }
-    }
-
+  
     public int getKillCount(IPlayer chr)
     {
         return killCount.GetValueOrDefault(chr, 0);
     }
 
 
-    object disposeLock = new object();
-    public virtual void dispose(bool shutdown = false)
+    Lock disposeLock = new ();
+    public virtual void Dispose()
     {
         lock (disposeLock)
         {
@@ -720,7 +771,7 @@ public class EventInstanceManager : IClientMessenger
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", em.getName());
+                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.getName());
             }
             disposed = true;
 
@@ -752,14 +803,12 @@ public class EventInstanceManager : IClientMessenger
             props.Clear();
             objectProps.Clear();
 
-            disposeExpedition();
-
             Monitor.Enter(scriptLock);
             try
             {
                 if (!eventCleared)
                 {
-                    em.disposeInstance(name);
+                    EventManager.disposeInstance(name);
                 }
             }
             finally
@@ -767,14 +816,14 @@ public class EventInstanceManager : IClientMessenger
                 Monitor.Exit(scriptLock);
             }
 
-            em.getChannelServer().Container.TimerManager.schedule(() =>
+            EventManager.getChannelServer().Container.TimerManager.schedule(() =>
             {
                 mapManager.Dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
                 //lockObj.EnterWriteLock();
                 //try
                 //{
                 //    mapManager = null;
-                //    em = null;
+                //    EventManager = null;
                 //}
                 //finally
                 //{
@@ -804,7 +853,7 @@ public class EventInstanceManager : IClientMessenger
                     }
                     catch (Exception ex)
                     {
-                        log.Error(ex, "Invoke {JsFunction} from {ScriptName}", methodName, em.getName());
+                        log.Error(ex, "Invoke {JsFunction} from {ScriptName}", methodName, EventManager.getName());
                     }
                 };
 
@@ -930,57 +979,7 @@ public class EventInstanceManager : IClientMessenger
         }
     }
 
-    public void leftParty(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("leftParty", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "leftParty", em.getName());
-        }
-    }
 
-    public void disbandParty()
-    {
-        try
-        {
-            invokeScriptFunction("disbandParty", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "disbandParty", em.getName());
-        }
-    }
-
-    public void clearPQ()
-    {
-        try
-        {
-            invokeScriptFunction("clearPQ", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "clearPQ", em.getName());
-        }
-    }
-
-    /// <summary>
-    /// playerExit
-    /// </summary>
-    /// <param name="chr"></param>
-    public void removePlayer(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("playerExit", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", em.getName());
-        }
-    }
 
     public bool isLeader(IPlayer chr)
     {
@@ -1030,7 +1029,7 @@ public class EventInstanceManager : IClientMessenger
                     }
                 }
 
-                dispose();
+                Dispose();
                 return true;
             }
         }
@@ -1263,7 +1262,7 @@ public class EventInstanceManager : IClientMessenger
             return false;
         }
 
-        AbstractPlayerInteraction api = player.getAbstractPlayerInteraction();
+        var api = player.getAbstractPlayerInteraction();
         int rnd = (int)Math.Floor(Randomizer.nextDouble() * rewardsSet.Count);
 
         api.gainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd));
@@ -1274,65 +1273,6 @@ public class EventInstanceManager : IClientMessenger
         return true;
     }
 
-    private void disposeExpedition()
-    {
-        if (expedition != null)
-        {
-            expedition.dispose(eventCleared);
-
-            Monitor.Enter(scriptLock);
-            try
-            {
-                expedition.removeChannelExpedition(em.getChannelServer());
-            }
-            finally
-            {
-                Monitor.Exit(scriptLock);
-            }
-
-            expedition = null;
-        }
-    }
-
-    object startEvtLock = new object();
-    public void startEvent()
-    {
-        lock (startEvtLock)
-        {
-            eventStarted = true;
-
-            try
-            {
-                invokeScriptFunction("afterSetup", this);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterSetup", em.getName());
-            }
-        }
-    }
-
-    public void setEventCleared()
-    {
-        eventCleared = true;
-
-        foreach (IPlayer chr in getPlayers())
-        {
-            chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
-        }
-
-        Monitor.Enter(scriptLock);
-        try
-        {
-            em.disposeInstance(name);
-        }
-        finally
-        {
-            Monitor.Exit(scriptLock);
-        }
-
-        disposeExpedition();
-    }
 
     public bool isEventCleared()
     {

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 					   Matthias Butz <matze@odinms.de>
@@ -23,6 +23,8 @@
  *Dollhouse Event
  **/
 
+var eventName = "DollHouse";
+var eventType = "Solo";
 var entryMap = 922000010;
 var exitMap = 221024400;
 var eventTime = 10;     //10 minutes
