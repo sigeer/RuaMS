@@ -1,11 +1,9 @@
 using Application.Core.Game.GameEvents.CPQ;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
 using Application.Resources.Messages;
-using constants.String;
-using server.events.gm;
-using server.partyquest;
 using tools;
 
 namespace Application.Core.Scripting.Events
@@ -15,7 +13,6 @@ namespace Application.Core.Scripting.Events
         public MonsterCarnivalPreparationRoom Room { get; set; } = null!;
         public IMap LobbyMap { get; set; } = null!;
         public ICPQMap EventMap { get; set; } = null!;
-        public IMap ExitMap { get; set; } = null!;
         public int CurrentStage { get; set; }
 
         /// <summary>
@@ -29,6 +26,7 @@ namespace Application.Core.Scripting.Events
 
         public MonsterCarnivalEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
         {
+            mapManager = getEm().getChannelServer().getMapFactory();
         }
 
         public void Initialize(Team team, MonsterCarnivalPreparationRoom room)
@@ -37,13 +35,16 @@ namespace Application.Core.Scripting.Events
             Room = room;
             LobbyMap = getInstanceMap(Room.Map)!;
             EventMap = (getInstanceMap(Room.Map + Room.RecruitMap == 980030000 ? 100 : 1) as ICPQMap)!;
-            ExitMap = getInstanceMap(EventMap.getForcedReturnId())!;
             CurrentStage = 0;
         }
 
         public override void unregisterPlayer(IPlayer chr)
         {
             base.unregisterPlayer(chr);
+
+            if (chr.TeamModel?.MCTeam != null)
+                chr.TeamModel.MCTeam.EligibleMembers.Remove(chr);
+
             chr.resetCP();
             chr.setTeam(-1);
         }
@@ -87,12 +88,8 @@ namespace Application.Core.Scripting.Events
                 {
                     mc.resetCP();
                     mc.setTeam(-1);
-                    mc.setMonsterCarnival(null);
-                    if (mc.MapModel == EventMap)
-                    {
-                        mc.changeMap(ExitMap);
-                    }
                     mc.setEventInstance(null);
+                    mc.ForcedWarpOut();
                 }
             }
             base.Dispose();
@@ -138,34 +135,8 @@ namespace Application.Core.Scripting.Events
             Team0.MCTeam = new MonsterCarnivalTeam(this, Team0, 0);
             Team1.MCTeam = new MonsterCarnivalTeam(this, Team1, 1);
 
-            Team0.MCTeam.SetEnemy(Team1.MCTeam);
-            Team1.MCTeam.SetEnemy(Team0.MCTeam);
-
-            foreach (var mc in Team0.MCTeam.EligibleMembers)
-            {
-                if (mc != null)
-                {
-                    mc.setTeam(0);
-                    mc.setFestivalPoints(0);
-                    mc.changeMap(EventMap, EventMap.GetInitPortal(0));
-                    mc.sendPacket(PacketCreator.startMonsterCarnival(mc));
-                    mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
-                }
-            }
-
-            foreach (var mc in Team1.MCTeam.EligibleMembers)
-            {
-                if (mc != null)
-                {
-                    mc.setTeam(1);
-                    mc.setFestivalPoints(0);
-                    mc.changeMap(EventMap, EventMap.GetInitPortal(1));
-                    mc.sendPacket(PacketCreator.startMonsterCarnival(mc));
-                    mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
-                }
-            }
-
-
+            Team0.MCTeam.Initialize(Team1.MCTeam);
+            Team1.MCTeam.Initialize(Team0.MCTeam);
         }
 
         public override void playerKilled(IPlayer chr)
@@ -177,8 +148,18 @@ namespace Application.Core.Scripting.Events
             {
                 losing = chr.AvailableCP;
             }
-            EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(getName(), losing, chr.MCTeam!.TeamFlag));
             chr.gainCP(-losing);
+            EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(chr.Name, losing, chr.MCTeam!.TeamFlag));
+        }
+
+        public override void monsterKilled(IPlayer chr, Monster mob)
+        {
+            base.monsterKilled(chr, mob);
+
+            if (mob.getCP() > 0)
+            {
+                chr.gainCP(mob.getCP());
+            }
         }
 
         public override void setEventCleared()
@@ -202,11 +183,6 @@ namespace Application.Core.Scripting.Events
         public bool IsWinner(IPlayer chr)
         {
             return chr.TeamModel?.MCTeam?.IsWinner ?? false;
-        }
-
-        public void EndInstance(IPlayer chr)
-        {
-            chr.setEventInstance(null);
         }
     }
 }

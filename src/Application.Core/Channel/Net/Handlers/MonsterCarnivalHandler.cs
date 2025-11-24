@@ -112,9 +112,9 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             int hitChance = rollHitChance((MobSkillType)skill.MobSkillId);
                             if (hitChance <= 80)
                             {
-                                foreach (var mc in enemies.Team.GetChannelMembers(c.CurrentServer))
+                                foreach (var mc in enemies.EligibleMembers)
                                 {
-                                    if (mc != null)
+                                    if (mc.IsOnlined)
                                     {
                                         if (dis == null)
                                         {

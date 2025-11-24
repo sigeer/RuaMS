@@ -183,12 +183,6 @@ namespace Application.Core.Channel.ServerData
             {
                 if (targetPlayer != null)
                 {
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
-
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
@@ -203,12 +197,6 @@ namespace Application.Core.Channel.ServerData
             {
                 if (targetPlayer != null)
                 {
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
-
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
@@ -221,12 +209,6 @@ namespace Application.Core.Channel.ServerData
                 if (targetPlayer != null)
                 {
                     var preData = targetPlayer.getPartyMembersOnline();
-
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
 
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)

@@ -63,10 +63,6 @@ function playerExit(eim, player) {
     // 在解散事件实例前对玩家进行某些操作。
 }
 
-function playerLeft(eim, player) {
-    // 在玩家离开队伍前对其进行某些操作。
-}
-
 function changedMap(eim, player, mapid) {
     // 当玩家更换地图时根据mapid执行的操作。
 }

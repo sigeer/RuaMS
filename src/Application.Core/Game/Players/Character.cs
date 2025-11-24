@@ -956,7 +956,7 @@ public partial class Player
             {
                 if (!this.isGM())
                 {
-                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + JobModel.Name + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
+                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(JobModel) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
                 }
             }
 
@@ -4993,16 +4993,6 @@ public partial class Player
 
     // MCPQ
 
-
-    public bool isChallenged()
-    {
-        return challenged;
-    }
-
-    public void setChallenged(bool challenged)
-    {
-        this.challenged = challenged;
-    }
 
     public bool isChasing()
     {

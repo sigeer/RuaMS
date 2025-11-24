@@ -1,4 +1,4 @@
-﻿/*
+/*
 [CelticMS] Monster Carnival Reviving Field 1
 */
 
@@ -12,7 +12,7 @@ function enter(pi) {
             portal = 3;
             break;
     }
-    pi.warp(980000301, portal);
+    pi.WarpReturn(portal);
     pi.playPortalSound();
     return true;
 }

@@ -1244,11 +1244,6 @@ public class MapleMap : IMap
                      }
                      }*/
 
-                    if (monster.getCP() > 0 && chr.getMap().isCPQMap())
-                    {
-                        chr.gainCP(monster.getCP());
-                    }
-
                     int buff = monster.getBuffToGive();
                     if (buff > -1)
                     {

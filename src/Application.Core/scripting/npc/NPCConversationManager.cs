@@ -399,7 +399,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getJobName(int id)
     {
-        return JobFactory.GetById(id).Name;
+        return GetJobName(JobFactory.GetById(id));
     }
 
 

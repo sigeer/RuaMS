@@ -41,7 +41,7 @@ function action(mode, type, selection) {
                 cm.getPlayer().setChallenged(true);
                 var snd = "";
                 for (var i = 0; i < party.size(); i++) {
-                    snd += "#bName: " + party.get(i).getName() + " / (Level: " + party.get(i).getLevel() + ") / " + GameConstants.getJobName(party.get(i).getJobId()) + "#k\r\n\r\n";
+                    snd += "#bName: " + party.get(i).getName() + " / (Level: " + party.get(i).getLevel() + ") / " + cm.GetJobName(party.get(i).getJobId()) + "#k\r\n\r\n";
                 }
                 cm.sendAcceptDecline(snd + "Would you like to fight this party at the Monster Carnival?");
             } else {

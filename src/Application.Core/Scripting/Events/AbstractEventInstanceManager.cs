@@ -32,7 +32,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private Dictionary<IPlayer, int> killCount = new();
     public AbstractInstancedEventManager EventManager { get; }
     private EventScriptScheduler ess;
-    private MapManager mapManager;
+    protected MapManager mapManager;
     private string name;
     private Dictionary<string, object> props = new();
     private Dictionary<string, object> objectProps = new();
@@ -542,8 +542,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             Monitor.Exit(scriptLock);
         }
-
-
     }
     #endregion
 

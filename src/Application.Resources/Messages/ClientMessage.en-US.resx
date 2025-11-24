@@ -1155,4 +1155,220 @@
   <data name="Level" xml:space="preserve">
     <value>Level</value>
   </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Job_0" xml:space="preserve">
+    <value>Beginner</value>
+  </data>
+  <data name="Job_100" xml:space="preserve">
+    <value>Warrior</value>
+  </data>
+  <data name="Job_110" xml:space="preserve">
+    <value>Fighter</value>
+  </data>
+  <data name="Job_111" xml:space="preserve">
+    <value>Crusader</value>
+  </data>
+  <data name="Job_112" xml:space="preserve">
+    <value>Hero</value>
+  </data>
+  <data name="Job_120" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="Job_121" xml:space="preserve">
+    <value>White Knight</value>
+  </data>
+  <data name="Job_122" xml:space="preserve">
+    <value>Paladin</value>
+  </data>
+  <data name="Job_130" xml:space="preserve">
+    <value>Spearman</value>
+  </data>
+  <data name="Job_131" xml:space="preserve">
+    <value>Dragon Knight</value>
+  </data>
+  <data name="Job_132" xml:space="preserve">
+    <value>Dark Knight</value>
+  </data>
+  <data name="Job_200" xml:space="preserve">
+    <value>Magician</value>
+  </data>
+  <data name="Job_210" xml:space="preserve">
+    <value>Wizard (Fire,Poison)</value>
+  </data>
+  <data name="Job_211" xml:space="preserve">
+    <value>Mage (Fire,Poison)</value>
+  </data>
+  <data name="Job_212" xml:space="preserve">
+    <value>Arch Mage (Fire,Poison)</value>
+  </data>
+  <data name="Job_220" xml:space="preserve">
+    <value>Wizard (Ice,Lightning)</value>
+  </data>
+  <data name="Job_221" xml:space="preserve">
+    <value>Mage (Ice,Lightning)</value>
+  </data>
+  <data name="Job_222" xml:space="preserve">
+    <value>Arch Mage (Ice,Lightning)</value>
+  </data>
+  <data name="Job_230" xml:space="preserve">
+    <value>Cleric</value>
+  </data>
+  <data name="Job_231" xml:space="preserve">
+    <value>Priest</value>
+  </data>
+  <data name="Job_232" xml:space="preserve">
+    <value>Bishop</value>
+  </data>
+  <data name="Job_300" xml:space="preserve">
+    <value>Archer</value>
+  </data>
+  <data name="Job_310" xml:space="preserve">
+    <value>Hunter</value>
+  </data>
+  <data name="Job_311" xml:space="preserve">
+    <value>Ranger</value>
+  </data>
+  <data name="Job_312" xml:space="preserve">
+    <value>Bowmaster</value>
+  </data>
+  <data name="Job_320" xml:space="preserve">
+    <value>Crossbowman</value>
+  </data>
+  <data name="Job_321" xml:space="preserve">
+    <value>Sniper</value>
+  </data>
+  <data name="Job_322" xml:space="preserve">
+    <value>Marksman</value>
+  </data>
+  <data name="Job_400" xml:space="preserve">
+    <value>Rogue</value>
+  </data>
+  <data name="Job_410" xml:space="preserve">
+    <value>Assassin</value>
+  </data>
+  <data name="Job_411" xml:space="preserve">
+    <value>Hermit</value>
+  </data>
+  <data name="Job_412" xml:space="preserve">
+    <value>Night Lord</value>
+  </data>
+  <data name="Job_420" xml:space="preserve">
+    <value>Bandit</value>
+  </data>
+  <data name="Job_421" xml:space="preserve">
+    <value>ChiefBandit</value>
+  </data>
+  <data name="Job_422" xml:space="preserve">
+    <value>Shadower</value>
+  </data>
+  <data name="Job_500" xml:space="preserve">
+    <value>Pirate</value>
+  </data>
+  <data name="Job_510" xml:space="preserve">
+    <value>Brawler</value>
+  </data>
+  <data name="Job_511" xml:space="preserve">
+    <value>Marauder</value>
+  </data>
+  <data name="Job_512" xml:space="preserve">
+    <value>Buccaneer</value>
+  </data>
+  <data name="Job_520" xml:space="preserve">
+    <value>Gunslinger</value>
+  </data>
+  <data name="Job_521" xml:space="preserve">
+    <value>Outlaw</value>
+  </data>
+  <data name="Job_522" xml:space="preserve">
+    <value>Corsair</value>
+  </data>
+  <data name="Job_800" xml:space="preserve">
+    <value>UNKNOWN</value>
+  </data>
+  <data name="Job_900" xml:space="preserve">
+    <value>GM</value>
+  </data>
+  <data name="Job_910" xml:space="preserve">
+    <value>Super GM</value>
+  </data>
+  <data name="Job_1000" xml:space="preserve">
+    <value>NOBLESSE</value>
+  </data>
+	<data name="Job_1100" xml:space="preserve">
+    <value>DAWN WARRIOR(1st)</value>
+  </data>
+	<data name="Job_1110" xml:space="preserve">
+    <value>DAWN WARRIOR(2nd)</value>
+  </data>
+	<data name="Job_1111" xml:space="preserve">
+    <value>DAWN WARRIOR(3rd)</value>
+  </data>
+	<data name="Job_1112" xml:space="preserve">
+    <value>DAWN WARRIOR(4th)</value>
+  </data>
+	<data name="Job_1200" xml:space="preserve">
+    <value>BLAZE WIZARD(1st)</value>
+  </data>
+	<data name="Job_1210" xml:space="preserve">
+    <value>BLAZE WIZARD(2nd)</value>
+  </data>
+	<data name="Job_1211" xml:space="preserve">
+    <value>BLAZE WIZARD(3rd)</value>
+  </data>
+	<data name="Job_1212" xml:space="preserve">
+    <value>BLAZE WIZARD(3rd)</value>
+  </data>
+	<data name="Job_1300" xml:space="preserve">
+    <value>WIND ARCHER(1st)</value>
+  </data>
+	<data name="Job_1310" xml:space="preserve">
+    <value>WIND ARCHER(2nd)</value>
+  </data>
+	<data name="Job_1311" xml:space="preserve">
+    <value>WIND ARCHER(3rd)</value>
+  </data>
+	<data name="Job_1312" xml:space="preserve">
+    <value>WIND ARCHER(4th)</value>
+  </data>
+	<data name="Job_1400" xml:space="preserve">
+    <value>NIGHT WALKER(1st)</value>
+  </data>
+	<data name="Job_1410" xml:space="preserve">
+    <value>NIGHT WALKER(2nd)</value>
+  </data>
+	<data name="Job_1411" xml:space="preserve">
+    <value>NIGHT WALKER(3rd)</value>
+  </data>
+	<data name="Job_1412" xml:space="preserve">
+    <value>NIGHT WALKER(4th)</value>
+  </data>
+	<data name="Job_1500" xml:space="preserve">
+    <value>THUNDER BREAKER(1st)</value>
+  </data>
+	<data name="Job_1510" xml:space="preserve">
+    <value>THUNDER BREAKER(2nd)</value>
+  </data>
+	<data name="Job_1511" xml:space="preserve">
+    <value>THUNDER BREAKER(3rd)</value>
+  </data>
+	<data name="Job_1512" xml:space="preserve">
+    <value>THUNDER BREAKER(4th)</value>
+  </data>
+	<data name="Job_2000" xml:space="preserve">
+    <value>LEGEND</value>
+  </data>
+	<data name="Job_2100" xml:space="preserve">
+    <value>ARAN(1st)</value>
+  </data>
+	<data name="Job_2110" xml:space="preserve">
+    <value>ARAN(2nd)</value>
+  </data>
+	<data name="Job_2111" xml:space="preserve">
+    <value>ARAN(3rd)</value>
+  </data>
+	<data name="Job_2112" xml:space="preserve">
+    <value>ARAN(4th)</value>
+  </data>
 </root>

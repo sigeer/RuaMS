@@ -95,6 +95,11 @@ namespace Application.Core.Channel
             return StringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapId)?.StreetName ?? StringConstants.WZ_NoName;
         }
 
+        public string GetJobName(Job job)
+        {
+            return ClientMessage.ResourceManager.GetString($"Job_{job.Id}", CultureInfo) ?? job.ToString();
+        }
+
         public static ClientCulture SystemCulture = new ClientCulture();
     }
 

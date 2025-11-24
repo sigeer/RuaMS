@@ -6,22 +6,18 @@
  **/
 
 function start() {
-    showChallengerInfo();
-}
-function levelDispose() {
-    cm.getEventInstance().AcceptChanllege(false);
-}
-
-function showChallengerInfo() {
     const eim = cm.getEventInstance();
     var teamMembers = eim.Room.Team1.getEligibleMembers();
     var snd = "";
     for (var i = 0; i < teamMembers.Count; i++) {
-        snd += "#b名称：" + teamMembers[i].Name + " / (等级：" + teamMembers[i].Level + ") / " + teamMembers[i].JobModel.Name + "#k\r\n\r\n";
+        snd += `#b${cm.GetClientMessage("Name")}: ${teamMembers[i].Name} / (${cm.GetClientMessage("Level")}: ${teamMembers[i].Level}) / ${cm.GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n`;
     }
     cm.sendAcceptDeclineLevel("Dispose", "Accept", snd + "你想在怪物嘉年华上和这个队伍战斗吗？");
 }
+function levelDispose() {
+    cm.getEventInstance().AcceptChallenge(false);
+}
 
 function levelAccept() {
-    cm.getEventInstance().AcceptChanllege(true);
+    cm.getEventInstance().AcceptChallenge(true);
 }

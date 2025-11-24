@@ -18,11 +18,11 @@ namespace Application.Core.Game.Players
         void changeMapBanish(BanishInfo banishInfo);
 
         /// <summary>
-        /// 和 <see cref="changeMap(IMap, Portal?)"/>什么差异？可以跨事件传送？
+        /// 和<see cref="changeMap(IMap target, Portal? pto)"/>的区别：不会走EventInstance的MapManager
         /// </summary>
         /// <param name="target"></param>
         /// <param name="pto"></param>
-        void forceChangeMap(IMap target, Portal? pto);
+        void forceChangeMap(IMap target, Portal? pto = null);
         void enteredScript(string script, int mapid);
 
         void visitMap(IMap map);
@@ -31,5 +31,6 @@ namespace Application.Core.Game.Players
         void startMapEffect(string msg, int itemId, int duration = 30000);
 
         void showMapOwnershipInfo(IPlayer mapOwner);
+        void ForcedWarpOut();
     }
 }

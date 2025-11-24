@@ -366,7 +366,6 @@ namespace Application.Core.Game.Players
         int getMesosTraded();
         int getMiniGamePoints(MiniGame.MiniGameResult type, bool omok);
         MonsterBook getMonsterBook();
-        MonsterCarnival? getMonsterCarnival();
         void SetMount(IMount? mount);
         IMount? getMount();
         string getName();

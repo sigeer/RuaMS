@@ -9,8 +9,8 @@ var exitMap;                // 玩家未能完成事件时被传送至此地图�
 var recruitMap;             // 玩家必须在此地图上才能开始此事件。
 var clearMap;               // 玩家成功完成事件后被传送至此地图。
 
-var minMapId;               // 事件发生在此地图ID区间内。若玩家超出此范围则立即从事件中移除。
-var maxMapId;
+var minMapId = 980000100;               // 事件发生在此地图ID区间内。若玩家超出此范围则立即从事件中移除。
+var maxMapId = 980000604;
 
 var eventTime = 3;              // 事件的最大允许时间，以分钟计。
 
@@ -42,7 +42,7 @@ function setEventRewards(eim) {
 }
 
 /**
- * 准备室里符合条件的队伍
+ * 符合条件的队伍
  * @param {any} party
  * @param {any} room
  * @returns
@@ -52,11 +52,9 @@ function getEligibleParty(party, room, stage) {      //selects, from the given p
     var hasLeader = false;
 
     var validMap = stage == 0 ? room.RecruitMap : room.Map;
-    if (party.size() > 0) {
-        var partyList = party.toArray();
-
-        for (var i = 0; i < party.size(); i++) {
-            var ch = partyList[i];
+    if (party.Count > 0) {
+        for (var i = 0; i < party.Count; i++) {
+            var ch = party[i];
 
             if (ch.getMapId() == validMap && ch.getLevel() >= minLevel && ch.getLevel() <= maxLevel) {
                 if (ch.isLeader()) {
@@ -80,6 +78,7 @@ function setup(eim, roomIndex) {
     eim.newInstance(room.InstanceName);
 
     setStage(eim, 0);
+    respawnStages(eim);
     return eim;
 }
 
@@ -112,8 +111,7 @@ function afterSetup(eim) {
 function respawnStages(eim) {
     // 定义事件内部允许重生的地图。此函数应在末尾创建一个新的任务，在指定的重生率后再次调用自身。
     eim.EventMap.instanceMapRespawn();
-    const stage = eim.getIntPropery("curStage");
-    if (stage != -1) {
+    if (eim.CurrentStage != -1) {
         respawnStages(eim);
     }
 }
@@ -130,16 +128,15 @@ function playerUnregistered(eim, player) {
 function playerExit(eim, player) {
     // 在解散事件实例前对玩家进行某些操作。
     eim.unregisterPlayer(player);
-    player.changeMap(eim.ExitMap);
-}
-
-function playerLeft(eim, player) {
-    // 在玩家离开队伍前对其进行某些操作。
-    playerExit(eim, player);
+    player.ForcedWarpOut();
 }
 
 function changedMap(eim, player, mapid) {
     // 当玩家更换地图时根据mapid执行的操作。
+    if (mapid < minMapId || mapid > maxMapId) {
+        eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+        end(eim);
+    }
 }
 
 function changedLeader(eim, leader) {
@@ -189,7 +186,6 @@ function allMonstersDead(eim) {
 
 function playerDead(eim, player) {
     // 当玩家死亡时触发。
-    player.gainCP(-eim.EventMap.DeathCP);
 }
 
 function monsterRevive(mob, eim) {
@@ -206,7 +202,8 @@ function playerDisconnected(eim, player) {
     // 返回大于0的值 - 正常注销玩家并在玩家数量等于或低于该值时解散实例。
     // 返回小于0的值 - 正常注销玩家并在玩家数量等于或低于该值时解散实例，如果是队长则踢出所有人。
     eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-    eim.unregisterPlayer(player);
+    end(eim);
+
 }
 
 function end(eim) {
@@ -229,6 +226,8 @@ function clearPQ(eim) {
 
 function leftParty(eim, player) {
     // 当玩家离开队伍时触发。
+    eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+    end(eim);
 }
 
 function disbandParty(eim, player) {

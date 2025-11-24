@@ -7,6 +7,15 @@ namespace Application.Core.Game.Players
     {
         private int FestivalPoints;
         private bool challenged = false;
+        public bool isChallenged()
+        {
+            return challenged;
+        }
+
+        public void setChallenged(bool challenged)
+        {
+            this.challenged = challenged;
+        }
 
         public void gainFestivalPoints(int gain)
         {

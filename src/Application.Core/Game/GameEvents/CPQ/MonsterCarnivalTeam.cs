@@ -1,5 +1,7 @@
 using Application.Core.Game.Relation;
 using Application.Core.Scripting.Events;
+using Application.Resources.Messages;
+using Application.Shared.MapObjects;
 using tools;
 
 namespace Application.Core.Game.GameEvents.CPQ
@@ -14,7 +16,6 @@ namespace Application.Core.Game.GameEvents.CPQ
         public int AvailableCP { get; set; }
         public int TotalCP { get; set; }
         public int SummonedMonster { get; set; }
-        public int SummonedReactor { get; set; }
         public bool IsWinner { get; private set; }
         public Team Team { get; }
         public MonsterCarnivalEventInstanceManager Event { get; }
@@ -30,9 +31,21 @@ namespace Application.Core.Game.GameEvents.CPQ
             TeamFlag = team1;
         }
 
-        public void SetEnemy(MonsterCarnivalTeam party)
+        public void Initialize(MonsterCarnivalTeam enemy)
         {
-            this.Enemy = party;
+            Enemy = enemy;
+            foreach (var mc in EligibleMembers)
+            {
+                if (mc.IsOnlined)
+                {
+                    mc.resetCP();
+                    mc.setTeam(TeamFlag);
+                    mc.setFestivalPoints(0);
+                    mc.changeMap(Event.EventMap, Event.EventMap.GetInitPortal(TeamFlag));
+                    mc.sendPacket(PacketCreator.startMonsterCarnival(mc));
+                    mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
+                }
+            }
         }
 
         public void AddCP(IPlayer player, int amount)
@@ -91,7 +104,7 @@ namespace Application.Core.Game.GameEvents.CPQ
         /// </summary>
         public void MoveToReward()
         {
-            var mapFactory = Event.EventMap.getChannelServer().getMapFactory();
+            var mapFactory = Event.getMapFactory();
             var map = Event.EventMap;
 
             var rewardMap = mapFactory.getMap(IsWinner ? map.RewardMapWin : map.RewardMapLose);
@@ -100,7 +113,6 @@ namespace Application.Core.Game.GameEvents.CPQ
                 if (mc.IsOnlined)
                 {
                     mc.gainFestivalPoints(this.TotalCP);
-                    mc.setMonsterCarnival(null);
                     mc.changeMap(rewardMap);
                     mc.setTeam(-1);
                     mc.dispelDebuffs();
