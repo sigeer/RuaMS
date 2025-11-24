@@ -347,7 +347,7 @@ public class Inventory : IEnumerable<Item>
             item.setQuantity((short)left);
             removed = quantity;
         }
-        if (left == 0 && allowZero)
+        if (left <= 0 && allowZero)
             removeSlot(slot);
         return removed;
 
