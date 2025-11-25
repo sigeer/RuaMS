@@ -37,10 +37,13 @@ function levelExit2() {
 function levelTalk(index) {
     if (index == 0 || index == 1) {
         const targetEm = cm.getEventManager(index == 0 ? "PQ_CPQ1" : "PQ_CPQ2");
-        if (cm.getLevel() < targetEm.GetMinLevel()) {
+        if (cm.getLevel() < targetEm.MinLevel) {
             cm.sendOkLevel(`你必须至少达到${targetEm.MinLevel}级才能参加怪物嘉年华。当你足够强大时，和我交谈。`);
-        } else {
+        } else if (cm.getLevel() > targetEm.MaxLevel) {
             cm.sendOkLevel(`很抱歉，只有等级在${targetEm.MinLevel}到${targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。`);
+        } else {
+            cm.warp(980000000, 0);
+            cm.dispose();
         }
     } else if (index == 2) {
         level2();
@@ -151,16 +154,16 @@ function startInstance(cpqEvent) {
         return;
     }
 
-    const msg = cm.GetClientMessage("CPQ_PickRoom") + "#b";
+    let msg = cm.GetClientMessage("CPQ_PickRoom") + "#b";
     let o = msg.length;
     const roomName = cm.GetClientMessage("CPQ_Room");
     const levelName = cm.GetClientMessage("Level");
     for (var i = 0; i < em.Rooms.Count; i++) {
         var room = em.Rooms[i];
         if (room.Instance == null) {
-            msg += `#L${i}# ${roomName}${i + 1} （${room.MinCount}x${room.MinCount}）#l`;
+            msg += `#L${i}# ${roomName}${i + 1} （${room.MinCount}x${room.MinCount}）#l\r\n`;
         } else if (room.Instance.Team1 == null) {
-            msg += `#L${i}# ${roomName}${i + 1} （${levelName}: ${room.Instance.GetAveLevel()} / ${room.Instance.GetRoomSize()}x${room.Instance.GetRoomSize()}）#l`;
+            msg += `#L${i}# ${roomName}${i + 1} （${levelName}: ${room.Instance.GetAveLevel()} / ${room.Instance.GetRoomSize()}x${room.Instance.GetRoomSize()}）#l\r\n`;
         }
     }
     if (msg.length === o) {
@@ -189,14 +192,14 @@ function levelSelectRoom(roomIndex) {
     }
 
     if (room.Instance == null) {
-        if (!em.StartInstance(cm.getPlayer(), cm.get, roomIndex)) {
+        if (!em.StartInstance(cm.getPlayer(), cm.getMap(), roomIndex)) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
             return;
         } else {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_EntryLobby"));
         }
     } else {
-        const joinResult = em.JoinInstance(cm.getPlayer(), cm.get, roomIndex);
+        const joinResult = em.JoinInstance(cm.getPlayer(), cm.getMap(), roomIndex);
         if (joinResult == 0) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_ChallengeRoomSent"));
             return;

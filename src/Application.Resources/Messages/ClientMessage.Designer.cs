@@ -557,7 +557,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 选择一个房间！\r\n{0} 的本地化字符串。
+        ///   查找类似 选择一个房间！\r\n 的本地化字符串。
         /// </summary>
         public static string CPQ_PickRoom {
             get {

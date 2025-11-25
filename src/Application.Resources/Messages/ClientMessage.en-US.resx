@@ -1108,7 +1108,7 @@
     <value>There was a problem. Please re-create a room.</value>
   </data>
   <data name="CPQ_PickRoom" xml:space="preserve">
-    <value>Sign up for the Monster Festival!\r\n{{0}}</value>
+    <value>Sign up for the Monster Festival!\r\n</value>
   </data>
   <data name="CPQ_ChallengeRoomAnswer" xml:space="preserve">
     <value>The group is currently facing a challenge.</value>
@@ -1296,79 +1296,79 @@
   <data name="Job_1000" xml:space="preserve">
     <value>NOBLESSE</value>
   </data>
-	<data name="Job_1100" xml:space="preserve">
+  <data name="Job_1100" xml:space="preserve">
     <value>DAWN WARRIOR(1st)</value>
   </data>
-	<data name="Job_1110" xml:space="preserve">
+  <data name="Job_1110" xml:space="preserve">
     <value>DAWN WARRIOR(2nd)</value>
   </data>
-	<data name="Job_1111" xml:space="preserve">
+  <data name="Job_1111" xml:space="preserve">
     <value>DAWN WARRIOR(3rd)</value>
   </data>
-	<data name="Job_1112" xml:space="preserve">
+  <data name="Job_1112" xml:space="preserve">
     <value>DAWN WARRIOR(4th)</value>
   </data>
-	<data name="Job_1200" xml:space="preserve">
+  <data name="Job_1200" xml:space="preserve">
     <value>BLAZE WIZARD(1st)</value>
   </data>
-	<data name="Job_1210" xml:space="preserve">
+  <data name="Job_1210" xml:space="preserve">
     <value>BLAZE WIZARD(2nd)</value>
   </data>
-	<data name="Job_1211" xml:space="preserve">
+  <data name="Job_1211" xml:space="preserve">
     <value>BLAZE WIZARD(3rd)</value>
   </data>
-	<data name="Job_1212" xml:space="preserve">
+  <data name="Job_1212" xml:space="preserve">
     <value>BLAZE WIZARD(3rd)</value>
   </data>
-	<data name="Job_1300" xml:space="preserve">
+  <data name="Job_1300" xml:space="preserve">
     <value>WIND ARCHER(1st)</value>
   </data>
-	<data name="Job_1310" xml:space="preserve">
+  <data name="Job_1310" xml:space="preserve">
     <value>WIND ARCHER(2nd)</value>
   </data>
-	<data name="Job_1311" xml:space="preserve">
+  <data name="Job_1311" xml:space="preserve">
     <value>WIND ARCHER(3rd)</value>
   </data>
-	<data name="Job_1312" xml:space="preserve">
+  <data name="Job_1312" xml:space="preserve">
     <value>WIND ARCHER(4th)</value>
   </data>
-	<data name="Job_1400" xml:space="preserve">
+  <data name="Job_1400" xml:space="preserve">
     <value>NIGHT WALKER(1st)</value>
   </data>
-	<data name="Job_1410" xml:space="preserve">
+  <data name="Job_1410" xml:space="preserve">
     <value>NIGHT WALKER(2nd)</value>
   </data>
-	<data name="Job_1411" xml:space="preserve">
+  <data name="Job_1411" xml:space="preserve">
     <value>NIGHT WALKER(3rd)</value>
   </data>
-	<data name="Job_1412" xml:space="preserve">
+  <data name="Job_1412" xml:space="preserve">
     <value>NIGHT WALKER(4th)</value>
   </data>
-	<data name="Job_1500" xml:space="preserve">
+  <data name="Job_1500" xml:space="preserve">
     <value>THUNDER BREAKER(1st)</value>
   </data>
-	<data name="Job_1510" xml:space="preserve">
+  <data name="Job_1510" xml:space="preserve">
     <value>THUNDER BREAKER(2nd)</value>
   </data>
-	<data name="Job_1511" xml:space="preserve">
+  <data name="Job_1511" xml:space="preserve">
     <value>THUNDER BREAKER(3rd)</value>
   </data>
-	<data name="Job_1512" xml:space="preserve">
+  <data name="Job_1512" xml:space="preserve">
     <value>THUNDER BREAKER(4th)</value>
   </data>
-	<data name="Job_2000" xml:space="preserve">
+  <data name="Job_2000" xml:space="preserve">
     <value>LEGEND</value>
   </data>
-	<data name="Job_2100" xml:space="preserve">
+  <data name="Job_2100" xml:space="preserve">
     <value>ARAN(1st)</value>
   </data>
-	<data name="Job_2110" xml:space="preserve">
+  <data name="Job_2110" xml:space="preserve">
     <value>ARAN(2nd)</value>
   </data>
-	<data name="Job_2111" xml:space="preserve">
+  <data name="Job_2111" xml:space="preserve">
     <value>ARAN(3rd)</value>
   </data>
-	<data name="Job_2112" xml:space="preserve">
+  <data name="Job_2112" xml:space="preserve">
     <value>ARAN(4th)</value>
   </data>
 </root>
