@@ -75,7 +75,7 @@ function getEligibleParty(party, room, stage) {      //selects, from the given p
 function setup(roomIndex) {
     // 当调用时设置事件实例，例如：开始PQ。
     const room = em.Rooms[roomIndex];
-    eim.newInstance(room.InstanceName);
+    const eim = em.newInstance(room.InstanceName);
 
     setStage(eim, 0);
     respawnStages(eim);
