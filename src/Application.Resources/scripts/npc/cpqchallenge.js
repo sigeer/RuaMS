@@ -7,7 +7,7 @@
 
 function start() {
     const eim = cm.getEventInstance();
-    var teamMembers = eim.Room.Team1.getEligibleMembers();
+    var teamMembers = eim.Team1.getEligibleMembers();
     var snd = "";
     for (var i = 0; i < teamMembers.Count; i++) {
         snd += `#b${cm.GetClientMessage("Name")}: ${teamMembers[i].Name} / (${cm.GetClientMessage("Level")}: ${teamMembers[i].Level}) / ${cm.GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n`;

@@ -129,7 +129,7 @@ namespace Application.Core.Scripting.Events
                     return 1;
 
                 var room = Rooms[roomIndex];
-                if (room.Instance == null)
+                if (room.Instance == null || room.Instance.getLeader() == null)
                     return 3;
 
                 if (chr.TeamModel == null || chr.TeamModel.getEligibleMembers().Count != room.Instance.Team0.getEligibleMembers().Count)
@@ -140,12 +140,16 @@ namespace Application.Core.Scripting.Events
 
                 room.Instance.Team1 = chr.TeamModel;
                 // send challenge
-                getChannelServer().NPCScriptManager.start(
+                if (getChannelServer().NPCScriptManager.start(
                     room.Instance.getLeader()!.Client,
-                    2042000,
-                    "cqpchallenge",
-                    null);
-                return 0;
+                    2042001,
+                    "cpqchallenge",
+                    null))
+                {
+                    return 0;
+                }
+                room.Instance.Team1 = null;
+                return 4;
             }
         }
     }

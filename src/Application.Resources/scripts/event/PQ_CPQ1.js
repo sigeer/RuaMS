@@ -78,6 +78,7 @@ function setup(roomIndex) {
     const eim = em.newInstance(room.InstanceName);
 
     setStage(eim, 0);
+    setEventRewards(eim);
     return eim;
 }
 
@@ -151,8 +152,8 @@ function scheduledTimeout(eim) {
     if (stage == 0) {
         end(eim);
     } else if (stage == 1) {
-        var t1 = eim.GetRoomEligibleParty(eim, eim.Team1);
-        var t2 = eim.GetRoomEligibleParty(eim, eim.Team2);
+        var t1 = em.GetRoomEligibleParty(eim, eim.Team0);
+        var t2 = em.GetRoomEligibleParty(eim, eim.Team1);
         if (t1.Count == t2.Count && t1.Count >= eim.Room.MinCount) {
             setStage(2);
         } else {
@@ -244,7 +245,6 @@ function disbandParty(eim, player) {
 
 function cancelSchedule() {
     // 结束正在进行的任务调度。
-    end(eim);
 }
 
 function dispose() {

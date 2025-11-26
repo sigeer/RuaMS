@@ -54,7 +54,7 @@ namespace Application.Core.Scripting.Events
             {
                 if (Team1 != null)
                 {
-                    registerParty(Team1, LobbyMap);
+                    registerParty(Team1, getEm().GetMap(Room.RecruitMap));
                     invokeScriptFunction("setStage", this, 1);
                 }
 
