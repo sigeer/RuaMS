@@ -46,7 +46,10 @@ function levelTalk(index) {
         } else if (cm.getLevel() > targetEm.MaxLevel) {
             cm.sendOkLevel(`很抱歉，只有等级在${targetEm.MinLevel}到${targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。`);
         } else {
-            cm.warp(980000000, 0);
+            if (index === 0)
+                levelExit1();
+            else
+                levelExit2();
             cm.dispose();
         }
     } else if (index == 2) {
@@ -122,6 +125,10 @@ function levelAbout200000() {
     cm.sendNextLevel("最后，在怪物嘉年华中，你不能使用随身携带的物品/恢复药水。与此同时，怪物会让这些物品掉落。当你拾取这些物品时，它们会立即激活。因此，知道何时获取这些物品非常重要。");
 }
 
+function levelAbout3() {
+    cm.dispose();
+}
+
 function level3() {
     cm.sendSelectLevel("Exchange", `记住，如果你有#t4001129#，你可以用它来兑换物品。选择你想要兑换的物品！\r\n#b
     #L0# #t1122007#（50 纪念币）#l\r\n
@@ -140,8 +147,8 @@ function levelExchange0() {
 }
 
 function levelExchange1() {
-    if (cm.haveItem(4001129, 40) && cm.canHold(1122007)) {
-        cm.gainItem(1122007, 1);
+    if (cm.haveItem(4001129, 40) && cm.canHold(2041211)) {
+        cm.gainItem(2041211, 1);
         cm.gainItem(4001129, -40);
         cm.dispose();
     } else {
@@ -223,7 +230,8 @@ function levelSelectRoom(roomIndex) {
 
 function talkReward() {
     if (cm.getEventInstance() == null) {
-        cm.sendOkLevel("");
+        cm.sendOkLevel("这就送你离开");
+        cm.WarpOut();
         return;
     }
 
@@ -252,6 +260,10 @@ function talkReward() {
 
 function levelReward(value) {
     let eim = cm.getEventInstance();
+    if (eim == null) {
+        cm.WarpOut();
+        return;
+    }
     eim.giveEventReward(cm.getPlayer(), value);
     eim.unregisterPlayer(cm.getPlayer());
     cm.warp(eim.Room.RecruitMap);

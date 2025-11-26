@@ -78,7 +78,6 @@ function setup(roomIndex) {
     const eim = em.newInstance(room.InstanceName);
 
     setStage(eim, 0);
-    respawnStages(eim);
     return eim;
 }
 
@@ -94,6 +93,7 @@ function setStage(eim, stage) {
         // 战斗中
         eim.restartEventTimer(eim.EventMap.TimeDefault * 1000 - 10000);
         eim.StartEvent();
+        respawnStages(eim);
     } else if (stage > 2) {
         // 平分，加时
         eim.Pink("CPQ_ExtendTime");
@@ -134,8 +134,10 @@ function playerExit(eim, player) {
 function changedMap(eim, player, mapid) {
     // 当玩家更换地图时根据mapid执行的操作。
     if (mapid < minMapId || mapid > maxMapId) {
-        eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-        end(eim);
+        if (!eim.isEventCleared()) {
+            eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+            end(eim);
+        }
     }
 }
 
@@ -201,9 +203,10 @@ function playerDisconnected(eim, player) {
     // 返回0 - 正常注销玩家并在玩家数量为零时解散实例。
     // 返回大于0的值 - 正常注销玩家并在玩家数量等于或低于该值时解散实例。
     // 返回小于0的值 - 正常注销玩家并在玩家数量等于或低于该值时解散实例，如果是队长则踢出所有人。
-    eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-    end(eim);
-
+    if (!eim.isEventCleared()) {
+        eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+        end(eim);
+    }
 }
 
 function end(eim) {
@@ -226,17 +229,22 @@ function clearPQ(eim) {
 
 function leftParty(eim, player) {
     // 当玩家离开队伍时触发。
-    eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-    end(eim);
+    if (!eim.isEventCleared()) {
+        eim.Pink("CPQ_PlayerExit", player.TeamModel.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+        end(eim);
+    }
 }
 
 function disbandParty(eim, player) {
     // 当队伍解散时触发。
-    end(eim);
+    if (!eim.isEventCleared()) {
+        end(eim);
+    }
 }
 
 function cancelSchedule() {
     // 结束正在进行的任务调度。
+    end(eim);
 }
 
 function dispose() {

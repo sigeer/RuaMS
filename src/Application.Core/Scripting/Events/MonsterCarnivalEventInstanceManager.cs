@@ -54,13 +54,8 @@ namespace Application.Core.Scripting.Events
             {
                 if (Team1 != null)
                 {
-                    var requestLeader = Team1.GetChannelLeader(getEm().getChannelServer());
-                    if (requestLeader != null)
-                    {
-                        registerParty(requestLeader);
-                        invokeScriptFunction("setStage", this, 1);
-                        return;
-                    }
+                    registerParty(Team1, LobbyMap);
+                    invokeScriptFunction("setStage", this, 1);
                 }
 
             }
