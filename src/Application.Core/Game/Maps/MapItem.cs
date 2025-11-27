@@ -6,27 +6,26 @@ using tools;
 
 namespace Application.Core.Game.Maps;
 
-public class MapItem : AbstractMapObject, IItemProp
+public class MapItem : AbstractMapObject
 {
     protected IChannelClient ownerClient;
-    protected Item? item;
+
     protected IMapObject dropper;
     protected int character_ownerid, party_ownerid, meso, questid = -1;
     protected DropType type;
     protected bool pickedUp = false, playerDrop;
     protected long dropTime;
+    public Item? Item { get; }
     public long ExpiredTime { get; }
     private object itemLock = new object();
     public bool IsPartyDrop => this.party_ownerid != -1;
 
-    public bool NeedCheckSpace => getMeso() == 0
-        && !ItemId.isNxCard(getItemId())
-        && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
+    public bool NeedCheckSpace => getItem()?.NeedCheckSpace ?? false;
 
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
     {
         setPosition(position);
-        this.item = item;
+        this.Item = item;
         this.dropper = dropper;
         this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
@@ -59,7 +58,7 @@ public class MapItem : AbstractMapObject, IItemProp
     public MapItem(int meso, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
     {
         setPosition(position);
-        this.item = null;
+        this.Item = null;
         this.dropper = dropper;
         this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
@@ -73,9 +72,9 @@ public class MapItem : AbstractMapObject, IItemProp
         ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
     }
 
-    public Item getItem()
+    public Item? getItem()
     {
-        return item;
+        return Item;
     }
 
     public int getQuest()
@@ -85,11 +84,9 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public int getItemId()
     {
-        if (meso > 0)
-        {
+        if (Item == null)
             return meso;
-        }
-        return item.getItemId();
+        return Item.getItemId();
     }
 
     public IMapObject getDropper()

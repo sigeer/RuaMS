@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -245,7 +245,7 @@ function action(mode, type, selection) {
                     job = 520;
                 }
 
-                cm.sendYesNo("所以你想要选择成为" + (job == 510 ? "#b格斗家#k" : "#b神射手#k") + "进行第二次转职吗？你知道在这里做出选择后，第二次转职就无法选择其他职业了，对吧？");
+                cm.sendYesNo("所以你想要选择成为#b" + cm.GetJobName(job) + "#k进行第二次转职吗？你知道在这里做出选择后，第二次转职就无法选择其他职业了，对吧？");
             }
         } else if (status == 3) {
             if (cm.haveItem(4031012)) {
@@ -253,9 +253,9 @@ function action(mode, type, selection) {
             }
 
             if (job == 510) {
-                cm.sendNext("从现在开始，你是一个#b格斗家#k。格斗家用他们的光膀子统治世界……这意味着他们需要比其他人更多地锻炼身体。如果你在训练中遇到任何困难，我会很乐意帮助你。");
+                cm.sendNext("从现在开始，你是一个#b" + cm.GetJobName(job) + "#k。格斗家用他们的光膀子统治世界……这意味着他们需要比其他人更多地锻炼身体。如果你在训练中遇到任何困难，我会很乐意帮助你。");
             } else {
-                cm.sendNext("从现在开始，你是一名#b枪手#k。枪手以其类似狙击手的远程攻击和使用枪支作为主要武器而闻名。你应该继续训练，真正掌握你的技能。如果你在训练中遇到困难，我会在这里帮助你。");
+                cm.sendNext("从现在开始，你是一名#b" + cm.GetJobName(job) + "#k。枪手以其类似狙击手的远程攻击和使用枪支作为主要武器而闻名。你应该继续训练，真正掌握你的技能。如果你在训练中遇到困难，我会在这里帮助你。");
             }
 
             if (cm.getJobId() != job) {
@@ -266,7 +266,7 @@ function action(mode, type, selection) {
         } else if (status == 5) {
             cm.sendNextPrev("我也给了你一点 #bSP#k。打开左下角的 #b技能菜单#k。你可以提升新获得的二级技能。不过要注意，你不能一次性提升它们。有些技能只有在学会其他技能后才能使用。记得要牢记这一点。");
         } else if (status == 6) {
-            cm.sendNextPrev((job == 510 ? "Brawlers" : "Gunslingers") + " need to be strong. But remember that you can't abuse that power and use it on a weakling. Please use your enormous power the right way, because... for you to use that the right way, that is much harden than just getting stronger. Please find me after you have advanced much further. I'll be waiting for you.");
+            cm.sendNextPrev(cm.GetJobName(job) + " need to be strong. But remember that you can't abuse that power and use it on a weakling. Please use your enormous power the right way, because... for you to use that the right way, that is much harden than just getting stronger. Please find me after you have advanced much further. I'll be waiting for you.");
         }
     } else if (actionx["3thJobI"]) {
         if (status == 0) {

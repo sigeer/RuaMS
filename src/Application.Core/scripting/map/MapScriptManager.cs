@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Game.Commands;
+using Application.Core.Game.Maps;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +43,7 @@ public class MapScriptManager : AbstractScriptManager
         _scripts.Clear();
     }
 
-    public bool runMapScript(IChannelClient c, string mapScriptPath, bool firstUser)
+    public bool runMapScript(IChannelClient c, IMap map, string mapScriptPath, bool firstUser)
     {
         if (firstUser)
         {
@@ -63,7 +64,7 @@ public class MapScriptManager : AbstractScriptManager
         {
             try
             {
-                iv.CallFunction("start", new MapScriptMethods(c));
+                iv.CallFunction("start", new MapScriptMethods(c, map));
                 return true;
             }
             catch (Exception ex)
@@ -81,7 +82,7 @@ public class MapScriptManager : AbstractScriptManager
             }
 
             _scripts[mapScriptPath] = iv;
-            iv.CallFunction("start", new MapScriptMethods(c));
+            iv.CallFunction("start", new MapScriptMethods(c, map));
             return true;
         }
         catch (Exception e)

@@ -1620,9 +1620,9 @@ public class PacketCreator
         p.writePos(drop.getPosition());
         p.writeInt(giveOwnership ? 0 : -1);
 
-        if (drop.getMeso() == 0)
+        if (drop.Item != null)
         {
-            addExpirationTime(p, drop.getItem().getExpiration());
+            addExpirationTime(p, drop.Item.getExpiration());
         }
         p.writeBool(!drop.isPlayerDrop());
         return p;
@@ -1666,9 +1666,9 @@ public class PacketCreator
             p.writePos(dropfrom!.Value);
             p.writeShort(delay);//Fh?
         }
-        if (drop.getMeso() == 0)
+        if (drop.Item != null)
         {
-            addExpirationTime(p, drop.getItem().getExpiration());
+            addExpirationTime(p, drop.Item.getExpiration());
         }
         p.writeByte(drop.isPlayerDrop() ? 0 : 1); //pet EQP pickup
         return p;

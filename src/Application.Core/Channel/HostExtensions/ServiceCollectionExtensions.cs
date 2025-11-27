@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.coordinator.matchchecker;
+using Prometheus;
 using server.life;
 using server.maps;
 
@@ -171,6 +172,8 @@ namespace Application.Core.Channel.HostExtensions
             {
                 item.ConfigureHost(app);
             }
+
+            app.UseMetricServer();
         }
     }
 }

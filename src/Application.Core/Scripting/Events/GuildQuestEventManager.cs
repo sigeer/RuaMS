@@ -27,7 +27,7 @@ namespace Application.Core.Scripting.Events
         private void exportMovedQueueToGuild(int guildId, int place)
         {
             string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
-                    + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
+                    + " and is currently on the " + ClientCulture.SystemCulture.Ordinal(place) + " place on the waiting queue.";
 
             cserv.Container.GuildManager.DropGuildMessage(guildId, 6, callout);
         }

@@ -4,6 +4,7 @@ using Application.Templates.Exceptions;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
+using Humanizer;
 using System.Globalization;
 using System.Resources;
 
@@ -95,6 +96,20 @@ namespace Application.Core.Channel
             return StringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapId)?.StreetName ?? StringConstants.WZ_NoName;
         }
 
+        public string GetJobName(Job job)
+        {
+            return ClientMessage.ResourceManager.GetString($"Job_{job.Id}", CultureInfo) ?? job.ToString();
+        }
+
+        public string Ordinal(int i)
+        {
+            return i.Ordinalize(CultureInfo);
+        }
+
+        public string Number(int i)
+        {
+            return i.ToString("N", CultureInfo);
+        }
         public static ClientCulture SystemCulture = new ClientCulture();
     }
 

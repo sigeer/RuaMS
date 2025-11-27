@@ -52,7 +52,6 @@ public class StorageHandler : ChannelHandlerBase
 
     public void storageAction(InPacket p, IChannelClient c)
     {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
         var chr = c.OnlinedCharacter;
 
         if (StorageProcessor.hasGMRestrictions(chr))

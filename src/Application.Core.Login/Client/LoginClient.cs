@@ -109,8 +109,8 @@ namespace Application.Core.Login.Client
 
         public override void Dispose()
         {
+            base.Dispose();
             AccountEntity = null;
-            packetChannel.Writer.TryComplete();
         }
 
         public bool CanBypassPin()

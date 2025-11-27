@@ -1095,4 +1095,295 @@
   <data name="ExtraStorageCommand_Description" xml:space="preserve">
     <value>打开奖品仓库。</value>
   </data>
+  <data name="TeamRed" xml:space="preserve">
+    <value>红队</value>
+  </data>
+  <data name="TeamBlue" xml:space="preserve">
+    <value>蓝队</value>
+  </data>
+  <data name="Event_FatelError" xml:space="preserve">
+    <value>事件遇到错误。</value>
+  </data>
+  <data name="Exchange_Fail" xml:space="preserve">
+    <value>没有足够的#b#t{0}##k，或是{1}栏没有足够的空间。</value>
+  </data>
+  <data name="USE" xml:space="preserve">
+    <value>消耗</value>
+  </data>
+  <data name="ETC" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="EPQ" xml:space="preserve">
+    <value>装备</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>等级</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名字</value>
+  </data>
+  <data name="Job_0" xml:space="preserve">
+    <value>新手</value>
+  </data>
+  <data name="Job_100" xml:space="preserve">
+    <value>战士</value>
+  </data>
+  <data name="Job_110" xml:space="preserve">
+    <value>剑客</value>
+  </data>
+  <data name="Job_111" xml:space="preserve">
+    <value>勇士</value>
+  </data>
+  <data name="Job_112" xml:space="preserve">
+    <value>英雄</value>
+  </data>
+  <data name="Job_120" xml:space="preserve">
+    <value>准骑士</value>
+  </data>
+  <data name="Job_121" xml:space="preserve">
+    <value>骑士</value>
+  </data>
+  <data name="Job_122" xml:space="preserve">
+    <value>圣骑士</value>
+  </data>
+  <data name="Job_130" xml:space="preserve">
+    <value>枪战士</value>
+  </data>
+  <data name="Job_131" xml:space="preserve">
+    <value>龙骑士</value>
+  </data>
+  <data name="Job_132" xml:space="preserve">
+    <value>黑骑士</value>
+  </data>
+  <data name="Job_200" xml:space="preserve">
+    <value>魔法师</value>
+  </data>
+  <data name="Job_210" xml:space="preserve">
+    <value>法师（火毒）</value>
+  </data>
+  <data name="Job_211" xml:space="preserve">
+    <value>巫师（火毒）</value>
+  </data>
+  <data name="Job_212" xml:space="preserve">
+    <value>魔导师（火毒）</value>
+  </data>
+  <data name="Job_220" xml:space="preserve">
+    <value>法师（冰雷）</value>
+  </data>
+  <data name="Job_221" xml:space="preserve">
+    <value>巫师（冰雷）</value>
+  </data>
+  <data name="Job_222" xml:space="preserve">
+    <value>魔导师（冰雷）</value>
+  </data>
+  <data name="Job_230" xml:space="preserve">
+    <value>牧师</value>
+  </data>
+  <data name="Job_231" xml:space="preserve">
+    <value>祭司</value>
+  </data>
+  <data name="Job_232" xml:space="preserve">
+    <value>主教</value>
+  </data>
+  <data name="Job_300" xml:space="preserve">
+    <value>弓箭手</value>
+  </data>
+  <data name="Job_310" xml:space="preserve">
+    <value>猎人</value>
+  </data>
+  <data name="Job_311" xml:space="preserve">
+    <value>射手</value>
+  </data>
+  <data name="Job_312" xml:space="preserve">
+    <value>神射手</value>
+  </data>
+  <data name="Job_320" xml:space="preserve">
+    <value>弩弓手</value>
+  </data>
+  <data name="Job_321" xml:space="preserve">
+    <value>游侠</value>
+  </data>
+  <data name="Job_322" xml:space="preserve">
+    <value>箭神</value>
+  </data>
+  <data name="Job_400" xml:space="preserve">
+    <value>飞侠</value>
+  </data>
+  <data name="Job_410" xml:space="preserve">
+    <value>刺客</value>
+  </data>
+  <data name="Job_411" xml:space="preserve">
+    <value>无影人</value>
+  </data>
+  <data name="Job_412" xml:space="preserve">
+    <value>隐士</value>
+  </data>
+  <data name="Job_420" xml:space="preserve">
+    <value>侠客</value>
+  </data>
+  <data name="Job_421" xml:space="preserve">
+    <value>独行客</value>
+  </data>
+  <data name="Job_422" xml:space="preserve">
+    <value>侠盗</value>
+  </data>
+  <data name="Job_500" xml:space="preserve">
+    <value>海盗</value>
+  </data>
+  <data name="Job_510" xml:space="preserve">
+    <value>拳手</value>
+  </data>
+  <data name="Job_511" xml:space="preserve">
+    <value>斗士</value>
+  </data>
+  <data name="Job_512" xml:space="preserve">
+    <value>冲锋队长</value>
+  </data>
+  <data name="Job_520" xml:space="preserve">
+    <value>火枪手</value>
+  </data>
+  <data name="Job_521" xml:space="preserve">
+    <value>大副</value>
+  </data>
+  <data name="Job_522" xml:space="preserve">
+    <value>船长</value>
+  </data>
+  <data name="Job_800" xml:space="preserve">
+    <value>巡查员</value>
+  </data>
+  <data name="Job_900" xml:space="preserve">
+    <value>管理员</value>
+  </data>
+  <data name="Job_910" xml:space="preserve">
+    <value>超级管理员</value>
+  </data>
+  <data name="Job_1000" xml:space="preserve">
+    <value>初心者</value>
+  </data>
+  <data name="Job_1100" xml:space="preserve">
+    <value>魂骑士(1转)</value>
+  </data>
+  <data name="Job_1110" xml:space="preserve">
+    <value>魂骑士(2转)</value>
+  </data>
+  <data name="Job_1111" xml:space="preserve">
+    <value>魂骑士(3转)</value>
+  </data>
+  <data name="Job_1112" xml:space="preserve">
+    <value>魂骑士(4转)</value>
+  </data>
+  <data name="Job_1200" xml:space="preserve">
+    <value>炎术士(1转)</value>
+  </data>
+  <data name="Job_1210" xml:space="preserve">
+    <value>炎术士(2转)</value>
+  </data>
+  <data name="Job_1211" xml:space="preserve">
+    <value>炎术士(3转)</value>
+  </data>
+  <data name="Job_1212" xml:space="preserve">
+    <value>炎术士(4转)</value>
+  </data>
+  <data name="Job_1300" xml:space="preserve">
+    <value>风灵使者(1转)</value>
+  </data>
+  <data name="Job_1310" xml:space="preserve">
+    <value>风灵使者(2转)</value>
+  </data>
+  <data name="Job_1311" xml:space="preserve">
+    <value>风灵使者(3转)</value>
+  </data>
+  <data name="Job_1312" xml:space="preserve">
+    <value>风灵使者(4转)</value>
+  </data>
+  <data name="Job_1400" xml:space="preserve">
+    <value>夜行者(1转)</value>
+  </data>
+  <data name="Job_1410" xml:space="preserve">
+    <value>夜行者(2转)</value>
+  </data>
+  <data name="Job_1411" xml:space="preserve">
+    <value>夜行者(3转)</value>
+  </data>
+  <data name="Job_1412" xml:space="preserve">
+    <value>夜行者(4转)</value>
+  </data>
+  <data name="Job_1500" xml:space="preserve">
+    <value>奇袭者(1转)</value>
+  </data>
+  <data name="Job_1510" xml:space="preserve">
+    <value>奇袭者(2转)</value>
+  </data>
+  <data name="Job_1511" xml:space="preserve">
+    <value>奇袭者(3转)</value>
+  </data>
+  <data name="Job_1512" xml:space="preserve">
+    <value>奇袭者(4转)</value>
+  </data>
+  <data name="Job_2000" xml:space="preserve">
+    <value>战童</value>
+  </data>
+  <data name="Job_2100" xml:space="preserve">
+    <value>战神(1转)</value>
+  </data>
+  <data name="Job_2110" xml:space="preserve">
+    <value>战神(2转)</value>
+  </data>
+  <data name="Job_2111" xml:space="preserve">
+    <value>战神(3转)</value>
+  </data>
+  <data name="Job_2112" xml:space="preserve">
+    <value>战神(4转)</value>
+  </data>
+  <data name="Boss_Stumpy" xml:space="preserve">
+    <value>伴着沉闷的撞击声现身于石山之间，余音在山谷中回荡‌</value>
+  </data>
+  <data name="Boss_Bamboo" xml:space="preserve">
+    <value>青岚自氤氲雾气笼罩的断垣残壁间，#o6090002#骤然现形！</value>
+  </data>
+  <data name="Boss_Centipede" xml:space="preserve">
+    <value>巨型蜈蚣从药圃生瘴处破雾而出，千足划空如戈戟森然‌</value>
+  </data>
+  <data name="Boss_Dyle" xml:space="preserve">
+    <value>破开沼泽浮出时，腐殖质的气味与沼气在它嶙峋的背甲上凝结成绿色雾霭</value>
+  </data>
+  <data name="Boss_Kimera" xml:space="preserve">
+    <value>吉米拉从地下的黑暗中出现，眼中闪烁着微光。</value>
+  </data>
+  <data name="Boss_KingClang" xml:space="preserve">
+    <value>一个奇怪的海螺出现在了沙滩上。</value>
+  </data>
+  <data name="Boss_Eliza" xml:space="preserve">
+    <value>降临之时，黑色旋风如巨蟒盘绕，将天光绞碎成纷扬的鸦羽‌</value>
+  </data>
+  <data name="Boss_Mano" xml:space="preserve">
+    <value>玛诺的身影伴随着凉风乍起时悄然显现，落叶在她脚边打着旋儿静止</value>
+  </data>
+  <data name="Boss_Zeno" xml:space="preserve">
+    <value>伴随重型机械轰鸣声现世！</value>
+  </data>
+  <data name="Boss_TaeRoon" xml:space="preserve">
+    <value>Tae Roon has appeared with a soft whistling sound.</value>
+  </data>
+  <data name="Boss_KingSageCat" xml:space="preserve">
+    <value>周围的鬼气更加浓重了。传来一阵令人不快的猫叫声。</value>
+  </data>
+  <data name="Boss_NineTailedFox" xml:space="preserve">
+    <value>伴随着一声悠长的狐啸划破夜色，那老狐的气息如雾霭般在林间弥散</value>
+  </data>
+  <data name="Boss_Seruf" xml:space="preserve">
+    <value>一枚泛着诡异磷光的贝壳悄然浮现在幽暗的海藻林中，其螺旋纹路在流动的藻须间若隐若现‌</value>
+  </data>
+  <data name="Boss_Leviathan" xml:space="preserve">
+    <value>昂首而起的刹那，裹挟着冰晶的寒风如远古战吼般撕裂云层</value>
+  </data>
+  <data name="Boss_SnackBar" xml:space="preserve">
+    <value>一个可疑的小吃摊在一个奇怪的偏僻地方慢慢开张了。</value>
+  </data>
+  <data name="Boss_Timer1" xml:space="preserve">
+    <value>嘀嗒...嘀嗒...！时间精灵提莫在轻声提醒。</value>
+  </data>
+  <data name="Password_q21747" xml:space="preserve">
+    <value>道可道非常道</value>
+  </data>
 </root>

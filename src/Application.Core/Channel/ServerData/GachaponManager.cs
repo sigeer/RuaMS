@@ -87,8 +87,6 @@ namespace Application.Core.Channel.ServerData
 
         public string[] GetLootInfo()
         {
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
             var allGachaponType = GetGachaponType();
             string[] strList = new string[allGachaponType.Count + 1];
 
@@ -109,7 +107,7 @@ namespace Application.Core.Channel.ServerData
                         str += "  #rTier " + chance.Level + "#k:\r\n";
                         foreach (var item in gachaItems)
                         {
-                            var itemName = ii.getName(item.ItemId);
+                            var itemName = ClientCulture.SystemCulture.GetItemName(item.ItemId);
                             if (itemName == null)
                             {
                                 itemName = "MISSING NAME #" + item.ItemId;

@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Performance;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -47,6 +48,7 @@ using server.events.gm;
 using server.life;
 using server.maps;
 using System.Collections.Concurrent;
+using System.Threading.Channels;
 using tools;
 using ZLinq;
 
@@ -70,7 +72,7 @@ public class MapleMap : IMap
     private Dictionary<string, int> environment = new();
 
     private Queue<WeakReference<IMapObject>> registeredDrops = new();
-    private ConcurrentQueue<Action> statUpdateRunnables = new();
+    private System.Threading.Channels.Channel<Action> statUpdateRunnables;
 
     private List<Rectangle> areas;
     public FootholdTree Footholds { get; }
@@ -80,6 +82,7 @@ public class MapleMap : IMap
     private int runningOid = 1000000001;
 
     private bool docked = false;
+    bool pirateDocked = false;
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
     public bool IsTrackedByEvent { get; set; }
 
@@ -184,6 +187,18 @@ public class MapleMap : IMap
         }
 
         ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
+
+        statUpdateRunnables = System.Threading.Channels.Channel.CreateUnbounded<Action>();
+        Task.Run(async () =>
+        {
+            while (await statUpdateRunnables.Reader.WaitToReadAsync())
+            {
+                while (statUpdateRunnables.Reader.TryRead(out var action))
+                {
+                    action();
+                }
+            }
+        });
     }
 
     void UpdateMapActualMobRate()
@@ -862,8 +877,6 @@ public class MapleMap : IMap
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
-            characterStatUpdateTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "UpdateMapCharacterStat", UpdateMapCharacterStat), 200, 200);
-
             itemMonitorTimeout = 1;
         }
         finally
@@ -1370,24 +1383,6 @@ public class MapleMap : IMap
                 }
             });
         }
-    }
-
-    public void softKillAllMonsters()
-    {
-        closeMapSpawnPoints();
-
-        ProcessMonster(monster =>
-        {
-            if (monster.getStats().isFriendly())
-            {
-                return;
-            }
-
-            if (removeKilledMonsterObject(monster))
-            {
-                monster.dispatchMonsterKilled(false);
-            }
-        });
     }
 
     public void killAllMonstersNotFriendly()
@@ -2170,7 +2165,7 @@ public class MapleMap : IMap
 
     private void activateItemReactors(MapItem drop, IChannelClient c)
     {
-        Item item = drop.getItem();
+        var item = drop.getItem();
 
         foreach (IMapObject o in getReactors())
         {
@@ -2209,7 +2204,7 @@ public class MapleMap : IMap
                 {
                     if (!drop.isPickedUp())
                     {
-                        Item item = drop.getItem();
+                        var item = drop.getItem();
 
                         if (item != null && reactItem == item.getItemId() && reactQty == item.getQuantity())
                         {
@@ -3562,6 +3557,7 @@ public class MapleMap : IMap
     public void broadcastEnemyShip(bool state)
     {
         broadcastMessage(PacketCreator.crogBoatPacket(state));
+        pirateDocked = state;
         this.setDocked(state);
     }
 
@@ -3817,17 +3813,10 @@ public class MapleMap : IMap
         return false;
     }
 
-    void UpdateMapCharacterStat()
-    {
-        while (statUpdateRunnables.TryDequeue(out var action))
-        {
-            try { action(); } catch (Exception ex) { log.Error(ex, "runCharacterStatUpdate"); }
-        }
-    }
 
     public void registerCharacterStatUpdate(Action r)
     {
-        statUpdateRunnables.Enqueue(r);
+        statUpdateRunnables.Writer.TryWrite(r);
     }
     public int _activeCounter;
     public bool IsActive()
@@ -3857,7 +3846,7 @@ public class MapleMap : IMap
         clearMapObjects();
 
         ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;
-
+        statUpdateRunnables.Writer.Complete();
 
         EventInstanceManager = null;
         portals.Clear();
@@ -3936,7 +3925,13 @@ public class MapleMap : IMap
 
     protected virtual void OnPlayerEnter(IPlayer chr)
     {
+        if (pirateDocked)
+        {
+            chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            chr.sendPacket(PacketCreator.crogBoatPacket(true));
+        }
 
+        ChannelServer.Metrics.MapCountInc(Id);
     }
 
     public void addPlayer(IPlayer chr)
@@ -3983,7 +3978,7 @@ public class MapleMap : IMap
 
             if (onFirstUserEnter.Length != 0)
             {
-                msm.runMapScript(chr.getClient(), "onFirstUserEnter/" + onFirstUserEnter, true);
+                msm.runMapScript(chr.getClient(), this, "onFirstUserEnter/" + onFirstUserEnter, true);
             }
         }
         if (onUserEnter.Length != 0)
@@ -3993,7 +3988,7 @@ public class MapleMap : IMap
                 chr.saveLocation("INTRO");
             }
 
-            msm.runMapScript(chr.getClient(), "onUserEnter/" + onUserEnter, false);
+            msm.runMapScript(chr.getClient(), this, "onUserEnter/" + onUserEnter, false);
         }
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
         {
@@ -4281,6 +4276,8 @@ public class MapleMap : IMap
                 this.broadcastPacket(chr, PacketCreator.removeDragon(chr.getId()));
             }
         }
+
+        ChannelServer.Metrics.MapCountDec(Id);
     }
 
     public Dictionary<int, IPlayer> getMapPlayers()

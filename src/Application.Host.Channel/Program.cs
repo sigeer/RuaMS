@@ -63,6 +63,11 @@ builder.WebHost.ConfigureKestrel(options =>
     {
         listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
     });
+
+    options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.MetricsPort), listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+    });
 });
 
 var app = builder.Build();

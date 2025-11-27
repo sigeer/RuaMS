@@ -533,11 +533,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         c.sendPacket(PacketCreator.getFredrick(store));
     }
 
-    public int partyMembersInMap()
-    {
-        return getPlayer().getMap().getAllPlayers().Count(x => x.getParty() == getPlayer().getParty());
-    }
-
     public server.events.gm.Event? getEvent()
     {
         return c.CurrentServer.getEvent();
@@ -549,11 +544,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             getPlayer().setTeam(getEvent()!.getLimit() % 2); //muhaha :D
         }
-    }
-
-    public IPlayer? getMapleCharacter(string player)
-    {
-        return c.CurrentServer.getPlayerStorage().getCharacterByName(player);
     }
 
     public void logLeaf(string prize)

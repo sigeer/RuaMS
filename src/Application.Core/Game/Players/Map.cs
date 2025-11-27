@@ -49,10 +49,6 @@ namespace Application.Core.Game.Players
             {
                 warpMap = eim.getMapInstance(map);
             }
-            else if (this.getMonsterCarnival() != null && this.getMonsterCarnival()!.getEventMap().getId() == map)
-            {
-                warpMap = this.getMonsterCarnival()!.getEventMap();
-            }
             else
             {
                 warpMap = Client.getChannelServer().getMapFactory().getMap(map);
@@ -293,7 +289,7 @@ namespace Application.Core.Game.Players
         }
 
 
-        public void forceChangeMap(IMap target, Portal? pto)
+        public void forceChangeMap(IMap target, Portal? pto = null)
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 
@@ -426,6 +422,10 @@ namespace Application.Core.Game.Players
 
                 this.sendPacket(PacketCreator.getAvatarMega(mapOwner, medal, this.getClient().getChannel(), ItemId.ROARING_TIGER_MESSENGER, strLines, true));
             }
+        }
+        public void ForcedWarpOut()
+        {
+            forceChangeMap(MapModel.getForcedReturnMap());
         }
     }
 }

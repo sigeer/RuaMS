@@ -62,7 +62,7 @@ public class Equip : Item
     public Ring? Ring { get; private set; }
     public long RingId { get; private set; } = -1;
     public RingSourceModel? RingSource { get; private set; }
-    public EquipTemplate SourceTemplate { get; }
+    public override EquipTemplate SourceTemplate { get; }
 
     public Equip(EquipTemplate template, short position) : this(template, position, 0)
     {

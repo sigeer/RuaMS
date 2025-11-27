@@ -125,7 +125,7 @@ namespace Application.Core.Game.Players
         void announceBattleshipHp();
         void announceDiseases();
         void announceUpdateQuest(DelayedQuestUpdate questUpdateType, params object[] paramsValue);
-        bool applyConsumeOnPickup(int itemId);
+        bool applyConsumeOnPickup(Item item);
         bool applyHpMpChange(int hpCon, int hpchange, int mpchange);
         void applyPartyDoor(Door door, bool partyUpdate);
         void autoban(string reason);

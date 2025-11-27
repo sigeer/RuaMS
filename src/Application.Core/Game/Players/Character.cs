@@ -41,6 +41,7 @@ using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
 using Application.Shared.Team;
+using Application.Templates.Item.Consume;
 using client;
 using client.autoban;
 using client.inventory;
@@ -956,7 +957,7 @@ public partial class Player
             {
                 if (!this.isGM())
                 {
-                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + JobModel.Name + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
+                    broadcastAcquaintances(6, "[" + ClientCulture.SystemCulture.Ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + JobModel.Name + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
                 }
             }
 
@@ -1310,19 +1311,13 @@ public partial class Player
         }
     }
 
-    public bool applyConsumeOnPickup(int itemId)
+    public bool applyConsumeOnPickup(Item item)
     {
-        if (itemId / 1000000 == 2)
+        if (item.SourceTemplate is ConsumeItemTemplate template)
         {
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-            var template = ii.GetConsumeItemTemplate(itemId);
-            if (template == null)
-                return false;
-
             if (template.ConsumeOnPickup || template.ConsumeOnPickupEx)
             {
-                var mse = ii.getItemEffect(itemId);
+                var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId());
                 if (template.Party)
                 {
                     List<IPlayer> partyMembers = getPartyMembersOnSameMap();
@@ -1340,10 +1335,6 @@ public partial class Player
                         mse?.applyTo(this);
                 }
 
-                if (ItemId.isMonsterCard(itemId))
-                {
-                    this.Monsterbook.addCard(itemId);
-                }
                 return true;
             }
         }
@@ -4377,8 +4368,7 @@ public partial class Player
     private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
     {
         short quantity;
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (e == null || (quantity = e.getQuantity()) < 1 || ii.isCash(e.getItemId()) || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
+        if (e == null || (quantity = e.getQuantity()) < 1 || e.SourceTemplate.Cash || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
         {
             return;
         }
@@ -4757,8 +4747,7 @@ public partial class Player
             return fullList;
         }
 
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        return fullList.Where(x => !ii.isCash(x.getItemId())).ToList();
+        return fullList.Where(x => !x.SourceTemplate.Cash).ToList();
     }
 
     public void increaseEquipExp(int expGain)

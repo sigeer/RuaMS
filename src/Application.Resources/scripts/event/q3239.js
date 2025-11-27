@@ -1,13 +1,15 @@
 var name = "q3239";
 var eventType = "Solo";
-var entryMap;
-var exitMap;
+var entryMap = 922000000;
+var exitMap = 922000009;
 var eventLength = 20;
+const maxLobbies = 7;
 
 function init() {
-    em.setProperty("noEntry", "false");
-    entryMap = em.GetMap(922000000);
-    exitMap = em.GetMap(922000009);
+}
+
+function getMaxLobbies() {
+    return maxLobbies;
 }
 
 function setup(level, lobbyid) {
@@ -17,7 +19,7 @@ function setup(level, lobbyid) {
 }
 
 function playerEntry(eim, player) {
-    var im = eim.getInstanceMap(entryMap.getId());
+    var im = eim.getInstanceMap(entryMap);
 
     // Reset instance
     im.clearDrops();
@@ -28,12 +30,11 @@ function playerEntry(eim, player) {
     eim.startEventTimer(eventLength * 60 * 1000);
 
     // Warp player and mark event as occupied
-    player.changeMap(entryMap, 0);
-    em.setProperty("noEntry", "true");
+    player.changeMap(im, 0);
 }
 
 function changedMap(eim, player, mapid) {
-    if (mapid != entryMap.getId())
+    if (mapid != entryMap)
         playerExit(eim, player);
 }
 
@@ -51,14 +52,13 @@ function scheduledTimeout(eim) {
 
 function end(eim) {
     var party = eim.getPlayers(); // should only ever be one player
-    for (var i = 0; i < party.size(); i++) {
-        var player = party.get(i);
+    for (var i = 0; i < party.Count; i++) {
+        var player = party[i];
         eim.unregisterPlayer(player);
         player.changeMap(exitMap);
     }
 
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 // Stub/filler functions

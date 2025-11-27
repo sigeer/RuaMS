@@ -74,7 +74,14 @@ public class StatEffect
     private CardItemupStats? cardStats;
     public int SkillLevel { get; set; }
 
-    public IStatEffectProp Source { get; }
+    /// <summary>
+    /// 对技能而言，来自技能的各等级属性
+    /// </summary>
+    public IStatEffectProp EffectTemplate { get; }
+    /// <summary>
+    /// 对技能而言，来自技能
+    /// </summary>
+    public IStatEffectSource SourceTemplate { get; }
 
     public class CardItemupStats
     {
@@ -191,7 +198,9 @@ public class StatEffect
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
     {
-        Source = template;
+        EffectTemplate = template;
+        SourceTemplate = sourceTemplate;
+
         sourceid = sourceTemplate.SourceId;
 
         bool isSummonProp = false;
@@ -1666,7 +1675,7 @@ public class StatEffect
         }
 
         // 200, 201, 202, 205都被视作药品
-        if (Source is PotionItemTemplate && (applyfrom.hasDisease(Disease.StopPotion) || ((FieldLimit)applyfrom.getMap().getFieldLimit()).HasFlag(FieldLimit.CANNOTUSEPOTION)))
+        if (EffectTemplate is PotionItemTemplate && (applyfrom.hasDisease(Disease.StopPotion) || ((FieldLimit)applyfrom.getMap().getFieldLimit()).HasFlag(FieldLimit.CANNOTUSEPOTION)))
         {
             return false;
         }
@@ -1817,6 +1826,11 @@ public class StatEffect
             {
                 applyMonsterBuff(applyfrom);
             }
+        }
+
+        if (EffectTemplate is MonsterCardItemTemplate monsterCardItem)
+        {
+            applyto.Monsterbook.addCard(monsterCardItem.TemplateId);
         }
 
         if (applyto.MountModel != null && this.getFatigue() != 0)

@@ -1,5 +1,5 @@
-﻿function start(ms) {
-    var map = ms.getClient().getChannelServer().getMapFactory().getMap(926000000);
+function start(ms) {
+    var map = ms.getMap();
     map.resetPQ(1);
 
     if (map.countMonster(9100013) == 0) {

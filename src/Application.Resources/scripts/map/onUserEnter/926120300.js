@@ -1,4 +1,4 @@
-﻿function getInactiveReactors(map) {
+function getInactiveReactors(map) {
     var reactors = [];
 
     for (var mo of map.getReactors()) {
@@ -11,7 +11,7 @@
 }
 
 function start(ms) {
-    var map = ms.getClient().getChannelServer().getMapFactory().getMap(926120300);
+    var map = ms.getMap();
     map.resetReactors(getInactiveReactors(map));
 
     return (true);
