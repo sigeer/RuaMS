@@ -138,6 +138,9 @@ namespace Application.Core.Scripting.Events
                 if (room.Instance.Team1 != null)
                     return 4;
 
+                if (room.Instance.getLeader()!.Client.NPCConversationManager != null)
+                    return 4;
+
                 room.Instance.Team1 = chr.TeamModel;
                 // send challenge
                 if (getChannelServer().NPCScriptManager.start(

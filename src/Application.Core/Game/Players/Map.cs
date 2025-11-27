@@ -235,7 +235,7 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Channel, TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
+                        Client.CurrentServerContainer.TeamManager.UpdateTeam(Client.CurrentServer, TeamModel.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
                         updatePartyMemberHP();
                     }
                 }

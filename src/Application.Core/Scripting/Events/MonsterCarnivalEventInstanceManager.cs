@@ -26,7 +26,6 @@ namespace Application.Core.Scripting.Events
 
         public MonsterCarnivalEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
         {
-            mapManager = getEm().getChannelServer().getMapFactory();
         }
 
         public void Initialize(Team team, MonsterCarnivalPreparationRoom room)
@@ -34,7 +33,7 @@ namespace Application.Core.Scripting.Events
             Team0 = team;
             Room = room;
             LobbyMap = getInstanceMap(Room.Map)!;
-            EventMap = (getInstanceMap(Room.Map + Room.RecruitMap == 980030000 ? 100 : 1) as ICPQMap)!;
+            EventMap = (getInstanceMap(Room.Map + (Room.RecruitMap == 980030000 ? 100 : 1)) as ICPQMap)!;
             CurrentStage = 0;
         }
 

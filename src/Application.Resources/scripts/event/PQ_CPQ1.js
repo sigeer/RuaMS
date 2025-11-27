@@ -155,16 +155,16 @@ function scheduledTimeout(eim) {
         var t1 = em.GetRoomEligibleParty(eim, eim.Team0);
         var t2 = em.GetRoomEligibleParty(eim, eim.Team1);
         if (t1.Count == t2.Count && t1.Count >= eim.Room.MinCount) {
-            setStage(2);
+            setStage(eim, 2);
         } else {
             eim.Pink("CPQ_Error");
             end(eim);
         }
     } else {
         if (!eim.Complete()) {
-            setStage(++stage);
+            setStage(eim, ++stage);
         } else {
-            setStage(-1);
+            setStage(eim, -1);
         }
     }
 }

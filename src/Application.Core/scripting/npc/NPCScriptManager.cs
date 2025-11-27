@@ -114,7 +114,10 @@ public class NPCScriptManager : AbstractScriptManager
         try
         {
             if (c.NPCConversationManager != null)
+            {
                 c.NPCConversationManager.dispose();
+                return false;
+            }
 
             if (c.canClickNPC())
             {

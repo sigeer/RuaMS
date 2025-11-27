@@ -46,6 +46,7 @@ function levelTalk(index) {
         } else if (cm.getLevel() > targetEm.MaxLevel) {
             cm.sendOkLevel(`很抱歉，只有等级在${targetEm.MinLevel}到${targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。`);
         } else {
+            cm.getPlayer().saveLocation("MONSTER_CARNIVAL");
             if (index === 0)
                 levelExit1();
             else
