@@ -263,7 +263,7 @@ function levelReward(value) {
         cm.WarpOut();
         return;
     }
-    eim.giveEventReward(cm.getPlayer(), value);
+    eim.GiveEventClearReward(cm.getPlayer(), value);
     eim.unregisterPlayer(cm.getPlayer());
     cm.warp(eim.Room.RecruitMap);
 

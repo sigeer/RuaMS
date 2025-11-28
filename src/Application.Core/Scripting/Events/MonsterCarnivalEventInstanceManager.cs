@@ -1,3 +1,4 @@
+using Acornima;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -154,6 +155,13 @@ namespace Application.Core.Scripting.Events
             {
                 chr.gainCP(mob.getCP());
             }
+        }
+
+        public override void changedMap(IPlayer chr, int mapId)
+        {
+            base.changedMap(chr, mapId);
+
+            chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
         }
 
         public override void setEventCleared()

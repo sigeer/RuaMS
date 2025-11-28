@@ -1542,6 +1542,24 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             }
         }
     }
+    /// <summary>
+    /// 对单个玩家发放通关奖励
+    /// </summary>
+    /// <param name="mc"></param>
+    /// <param name="thisStage"></param>
+    public void GiveEventClearReward(IPlayer mc, int thisStage)
+    {
+        List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
+
+        var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
+
+        if (CanGiveReward(mc, thisStage))
+        {
+            SetRewardClaimed(mc, thisStage);
+            mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
+            mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+        }
+    }
 
     public void linkToNextStage(int thisStage, string eventFamily, int thisMapId)
     {
