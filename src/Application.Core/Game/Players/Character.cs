@@ -4489,7 +4489,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            Client.CurrentServerContainer.TeamManager.UpdateTeam(Client.CurrentServer, chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            Client.CurrentServerContainer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 

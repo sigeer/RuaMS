@@ -208,7 +208,7 @@ function levelSelectRoom(roomIndex) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
             return;
         } else {
-            cm.sendOkLevel(cm.GetClientMessage("CPQ_EntryLobby"));
+            cm.Pink("CPQ_EntryLobby");
         }
     } else {
         const joinResult = em.JoinInstance(cm.getPlayer(), cm.getMap(), roomIndex);

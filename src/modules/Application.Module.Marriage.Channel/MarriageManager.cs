@@ -1,20 +1,13 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net;
-using Application.Module.Marriage.Common.Models;
-using Application.Scripting.JS;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using AutoMapper;
 using client.inventory;
-using client.inventory.manipulator;
 using MarriageProto;
 using System.Collections.Concurrent;
-using System.Numerics;
-using ZstdSharp.Unsafe;
 
 namespace Application.Module.Marriage.Channel
 {
@@ -103,7 +96,7 @@ namespace Application.Module.Marriage.Channel
                 chr.dropMessage(5, "You don't have a spouse.");
             }
 
-            if(res.Code == 2)
+            if (res.Code == 2)
             {
                 chr.dropMessage(5, "Your spouse is currently offline.");
             }

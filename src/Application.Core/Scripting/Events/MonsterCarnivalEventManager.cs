@@ -146,7 +146,7 @@ namespace Application.Core.Scripting.Events
                 if (getChannelServer().NPCScriptManager.start(
                     room.Instance.getLeader()!.Client,
                     2042001,
-                    "cpqchallenge",
+                    "mc_enter1",
                     null))
                 {
                     return 0;

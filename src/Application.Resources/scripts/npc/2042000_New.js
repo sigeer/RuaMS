@@ -1,3 +1,6 @@
+/**
+ * 完整。包含mc_enter, mc_move
+ */
 function start() {
     const talkMap = cm.getMapId();
     if (talkMap == 980000000) {
@@ -13,9 +16,10 @@ function start() {
         talkReward();
     }
     else {
+        // 暂时移除嘉年华2
+        //             #L1# 前往怪物嘉年华地图 2.#l \r\n
         var talk = `你想做什么呢？ 如果你没有参加过怪物嘉年华, 在参加之前，你需要知道一些事情! \r\n#b
             #L0# 前往怪物嘉年华地图 1.#l \r\n
-            #L1# 前往怪物嘉年华地图 2.#l \r\n
             #L2# 了解怪物嘉年华.#l\r\n
             #L3# 兑换 #t4001129#.#l"`;
 
@@ -35,10 +39,17 @@ function levelExit2() {
 function levelTalk(index) {
     if (index == 0 || index == 1) {
         const targetEm = cm.getEventManager(index == 0 ? "PQ_CPQ1" : "PQ_CPQ2");
-        if (cm.getLevel() < targetEm.GetMinLevel()) {
+        if (cm.getLevel() < targetEm.MinLevel) {
             cm.sendOkLevel(`你必须至少达到${targetEm.MinLevel}级才能参加怪物嘉年华。当你足够强大时，和我交谈。`);
-        } else {
+        } else if (cm.getLevel() > targetEm.MaxLevel) {
             cm.sendOkLevel(`很抱歉，只有等级在${targetEm.MinLevel}到${targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。`);
+        } else {
+            cm.getPlayer().saveLocation("MONSTER_CARNIVAL");
+            if (index === 0)
+                levelExit1();
+            else
+                levelExit2();
+            cm.dispose();
         }
     } else if (index == 2) {
         level2();
@@ -113,6 +124,10 @@ function levelAbout200000() {
     cm.sendNextLevel("最后，在怪物嘉年华中，你不能使用随身携带的物品/恢复药水。与此同时，怪物会让这些物品掉落。当你拾取这些物品时，它们会立即激活。因此，知道何时获取这些物品非常重要。");
 }
 
+function levelAbout3() {
+    cm.dispose();
+}
+
 function level3() {
     cm.sendSelectLevel("Exchange", `记住，如果你有#t4001129#，你可以用它来兑换物品。选择你想要兑换的物品！\r\n#b
     #L0# #t1122007#（50 纪念币）#l\r\n
@@ -131,8 +146,8 @@ function levelExchange0() {
 }
 
 function levelExchange1() {
-    if (cm.haveItem(4001129, 40) && cm.canHold(1122007)) {
-        cm.gainItem(1122007, 1);
+    if (cm.haveItem(4001129, 40) && cm.canHold(2041211)) {
+        cm.gainItem(2041211, 1);
         cm.gainItem(4001129, -40);
         cm.dispose();
     } else {
@@ -149,16 +164,16 @@ function startInstance(cpqEvent) {
         return;
     }
 
-    const msg = cm.GetClientMessage("CPQ_PickRoom") + "#b";
+    let msg = cm.GetClientMessage("CPQ_PickRoom") + "#b";
     let o = msg.length;
     const roomName = cm.GetClientMessage("CPQ_Room");
     const levelName = cm.GetClientMessage("Level");
     for (var i = 0; i < em.Rooms.Count; i++) {
         var room = em.Rooms[i];
         if (room.Instance == null) {
-            msg += `#L${i}# ${roomName}${i + 1} （${room.MinCount}x${room.MinCount}）#l`;
+            msg += `#L${i}# ${roomName}${i + 1} （${room.MinCount}x${room.MinCount}）#l\r\n`;
         } else if (room.Instance.Team1 == null) {
-            msg += `#L${i}# ${roomName}${i + 1} （${levelName}: ${room.Instance.GetAveLevel()} / ${room.Instance.GetRoomSize()}x${room.Instance.GetRoomSize()}）#l`;
+            msg += `#L${i}# ${roomName}${i + 1} （${levelName}: ${room.Instance.GetAveLevel()} / ${room.Instance.GetRoomSize()}x${room.Instance.GetRoomSize()}）#l\r\n`;
         }
     }
     if (msg.length === o) {
@@ -187,14 +202,14 @@ function levelSelectRoom(roomIndex) {
     }
 
     if (room.Instance == null) {
-        if (!em.StartInstance(cm.getPlayer(), cm.get, roomIndex)) {
+        if (!em.StartInstance(cm.getPlayer(), cm.getMap(), roomIndex)) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
             return;
         } else {
-            cm.sendOkLevel(cm.GetClientMessage("CPQ_EntryLobby"));
+            cm.Pink("CPQ_EntryLobby");
         }
     } else {
-        const joinResult = em.JoinInstance(cm.getPlayer(), cm.get, roomIndex);
+        const joinResult = em.JoinInstance(cm.getPlayer(), cm.getMap(), roomIndex);
         if (joinResult == 0) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_ChallengeRoomSent"));
             return;
@@ -214,7 +229,8 @@ function levelSelectRoom(roomIndex) {
 
 function talkReward() {
     if (cm.getEventInstance() == null) {
-        cm.sendOkLevel("");
+        cm.sendOkLevel("这就送你离开");
+        cm.WarpOut();
         return;
     }
 
@@ -243,8 +259,11 @@ function talkReward() {
 
 function levelReward(value) {
     let eim = cm.getEventInstance();
+    if (eim == null) {
+        cm.WarpOut();
+        return;
+    }
     eim.giveEventReward(cm.getPlayer(), value);
     eim.unregisterPlayer(cm.getPlayer());
-    cm.warp(eim.Room.RecruitMap, 0);
-
+    cm.warp(eim.Room.RecruitMap);
 }

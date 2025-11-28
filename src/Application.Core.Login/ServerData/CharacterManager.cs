@@ -162,6 +162,12 @@ namespace Application.Core.Login.Datas
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
+                if (oldCharacterData.Map != origin.Character.Map)
+                {
+                    // 地图切换
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                }
+
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
                 if (origin.Channel != obj.Channel)
                 {

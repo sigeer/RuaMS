@@ -78,7 +78,7 @@ namespace Application.Core.Channel.ServerData
 
         public void LeaveParty(IPlayer player)
         {
-            UpdateTeam(player.getChannelServer(), player.Party, PartyOperation.LEAVE, player, player.Id);
+            UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
             //if (mmce.getMatchConfirmationLeaderid(player.getId()) == player.getId() && mmce.getMatchConfirmationType(player.getId()) == MatchCheckerType.GUILD_CREATION)
             //{
@@ -88,21 +88,21 @@ namespace Application.Core.Channel.ServerData
 
         public void JoinParty(IPlayer player, int partyid, bool silentCheck)
         {
-            UpdateTeam(player.getChannelServer(), partyid, PartyOperation.JOIN, player, player.Id);
+            UpdateTeam(partyid, PartyOperation.JOIN, player, player.Id);
         }
 
         public void ExpelFromParty(Team? party, IChannelClient c, int expelCid)
         {
             if (party != null)
             {
-                UpdateTeam(c.CurrentServer, party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
+                UpdateTeam(party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
             }
             return;
         }
 
         internal void ChangeLeader(IPlayer player, int newLeader)
         {
-            UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
         public void ProcessUpdateResponse(TeamProto.UpdateTeamResponse res)
@@ -255,7 +255,7 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
+        public void UpdateTeam(int teamId, PartyOperation operation, IPlayer? player, int target)
         {
             _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }

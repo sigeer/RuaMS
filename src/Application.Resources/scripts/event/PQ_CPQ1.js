@@ -113,7 +113,7 @@ function respawnStages(eim) {
     // 定义事件内部允许重生的地图。此函数应在末尾创建一个新的任务，在指定的重生率后再次调用自身。
     eim.EventMap.instanceMapRespawn();
     if (eim.CurrentStage != -1) {
-        respawnStages(eim);
+        eim.schedule("respawnStages", 10 * 1000);
     }
 }
 
