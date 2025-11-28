@@ -160,8 +160,14 @@ namespace Application.Core.Scripting.Events
         public override void changedMap(IPlayer chr, int mapId)
         {
             base.changedMap(chr, mapId);
+        }
 
-            chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
+        public override void afterChangedMap(IPlayer chr, int mapId)
+        {
+            base.afterChangedMap(chr, mapId);
+
+            if (chr.MCTeam != null)
+                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
         }
 
         public override void setEventCleared()
