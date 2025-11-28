@@ -18,7 +18,7 @@ namespace Application.Module.PlayerNPC.Channel
         {
             services.AddAutoMapper(typeof(Mapper));
             services.AddSingleton<PlayerNPCChannelModule>();
-            services.AddSingleton<ChannelModule, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());
+            services.AddSingleton<AbstractChannelModule, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());
             services.AddSingleton<IPlayerNPCService, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());
 
             services.AddOptions<Configs>()

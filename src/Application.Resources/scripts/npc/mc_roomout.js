@@ -4,6 +4,6 @@ function start() {
         cm.WarpOut();
     } else {
         eim.Dispose();
-        cm.dispose();
     }
+    cm.dispose();
 }

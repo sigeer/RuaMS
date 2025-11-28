@@ -4668,6 +4668,11 @@ public partial class Player
         {
             equippedPetItemIgnore = true;
         }
+
+        if (equip.getPosition() == EquipSlot.Medal)
+        {
+            saveCharToDB(SyncCharacterTrigger.Unknown);
+        }
     }
 
     public void unequippedItem(Equip equip)

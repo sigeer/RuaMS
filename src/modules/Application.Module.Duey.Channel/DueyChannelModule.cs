@@ -9,10 +9,10 @@ using DueyDto;
 
 namespace Application.Module.Duey.Channel
 {
-    public class DueyChannelModule : ChannelModule, IDueyService
+    public class DueyChannelModule : AbstractChannelModule, IDueyService
     {
         readonly DueyManager _manager;
-        public DueyChannelModule(WorldChannelServer server, Microsoft.Extensions.Logging.ILogger<ChannelModule> logger, DueyManager manager) : base(server, logger)
+        public DueyChannelModule(WorldChannelServer server, Microsoft.Extensions.Logging.ILogger<AbstractChannelModule> logger, DueyManager manager) : base(server, logger)
         {
             _manager = manager;
         }

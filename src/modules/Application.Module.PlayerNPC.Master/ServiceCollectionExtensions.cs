@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Shared;
 using Application.Module.PlayerNPC.Master.Models;
 using Application.Shared.Servers;
@@ -19,7 +19,7 @@ namespace Application.Module.PlayerNPC.Master
             services.AddSingleton<PlayerNPCManager>();
             services.AddSingleton<IStorage, PlayerNPCManager>(sp => sp.GetRequiredService<PlayerNPCManager>());
             services.AddSingleton<MasterTransport>();
-            services.AddSingleton<MasterModule, PlayerNPCMasterModule>();
+            services.AddSingleton<AbstractMasterModule, PlayerNPCMasterModule>();
             return services;
         }
 

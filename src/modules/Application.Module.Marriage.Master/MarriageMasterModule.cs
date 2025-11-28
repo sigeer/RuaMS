@@ -1,12 +1,11 @@
 using Application.Core.Login;
-using Application.Core.Login.Events;
 using Application.Core.Login.Models;
-using Application.EF;
+using Application.Core.Login.Modules;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Marriage.Master
 {
-    internal class MarriageMasterModule : MasterModule
+    internal class MarriageMasterModule : AbstractMasterModule
     {
         readonly MarriageManager _marriageManager;
         public MarriageMasterModule(MasterServer server, ILogger<MasterModule> logger, MarriageManager marriageManager) : base(server, logger)
@@ -14,9 +13,9 @@ namespace Application.Module.Marriage.Master
             _marriageManager = marriageManager;
         }
 
-        public override void OnPlayerLogin(CharacterLiveObject obj)
+        public override void OnPlayerLogin(CharacterLiveObject obj, bool isNewComer)
         {
-            base.OnPlayerLogin(obj);
+            base.OnPlayerLogin(obj, isNewComer);
 
             var info = _marriageManager.GetEffectMarriageModel(obj.Character.Id);
             if (info != null)

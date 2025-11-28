@@ -93,7 +93,7 @@ public class DoorObject : AbstractMapObject
     public void warp(IPlayer chr)
     {
         var party = chr.getParty();
-        if (chr.getId() == Owner.Id || party != null && party.getMemberById(Owner.getChannelServer(), Owner.Id) != null)
+        if (chr.getId() == Owner.Id || party != null && party.containsMembers(Owner.Id))
         {
             chr.sendPacket(PacketCreator.playPortalSound());
 
@@ -123,7 +123,7 @@ public class DoorObject : AbstractMapObject
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
         {
-            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.getMemberById(Owner.getChannelServer(), Owner.Id) != null))
+            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.containsMembers(Owner.Id)))
             {
                 chr.sendPacket(PacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
             }
@@ -142,7 +142,7 @@ public class DoorObject : AbstractMapObject
         if (from.getId() == chr.getMapId())
         {
             var party = chr.getParty();
-            if (party != null && (Owner.Id == chr.getId() || party.getMemberById(Owner.getChannelServer(), Owner.Id) != null))
+            if (party != null && (Owner.Id == chr.getId() || party.containsMembers(Owner.Id)))
             {
                 client.sendPacket(PacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
             }

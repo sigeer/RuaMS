@@ -9,7 +9,7 @@ namespace Application.Module.Fishing.Channel
         public static IServiceCollection AddFishingChannel(this IServiceCollection services)
         {
             services.AddSingleton<IFishingService, FishingChannelModule>();
-            services.AddSingleton<ChannelModule, FishingChannelModule>();
+            services.AddSingleton<AbstractChannelModule, FishingChannelModule>();
             services.AddSingleton<FishingManager>();
 
             return services;

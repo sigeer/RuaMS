@@ -101,29 +101,6 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void UpdateMemberLevel(int memberId, int level)
-        {
-            members[memberId].Level = level;
-        }
-
-        public void UpdateMemberJob(int memberId, int job)
-        {
-            members[memberId].JobId = job;
-        }
-
-        public IPlayer? getMemberById(WorldChannel currentServer, int id)
-        {
-            Monitor.Enter(lockObj);
-            try
-            {
-                return GetChannelMembers(currentServer).FirstOrDefault(x => x.getId() == id);
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
-        }
-
         public int GetMemberCount() => members.Count;
         public List<TeamMember> GetTeamMembers() => members.Values.ToList();
 
@@ -177,11 +154,6 @@ namespace Application.Core.Game.Relation
         public int getId()
         {
             return id;
-        }
-
-        public void setId(int id)
-        {
-            this.id = id;
         }
 
         public int getLeaderId()

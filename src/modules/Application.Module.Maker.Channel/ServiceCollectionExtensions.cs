@@ -20,7 +20,7 @@ namespace Application.Module.Maker.Channel
         {
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<MakerManager>();
-            services.AddSingleton<ChannelModule, MakerChannelModule>();
+            services.AddSingleton<AbstractChannelModule, MakerChannelModule>();
 
             services.AddSingleton<MakerSkillHandler>();
             services.AddSingleton<IServerBootstrap, MakerChannelBootstrap>();

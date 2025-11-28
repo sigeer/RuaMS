@@ -139,6 +139,7 @@ namespace Application.Core.Channel.HostExtensions
             builder.Services.AddChannelHandlers();
 
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
+            builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();
 
             builder.Services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
             builder.Services.AddSingleton<WorldChannelServer>();

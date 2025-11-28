@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Shared;
 using Application.Module.Duey.Master.Models;
 using Application.Shared.Servers;
@@ -20,7 +20,7 @@ namespace Application.Module.Duey.Master
             services.AddSingleton<DueyManager>();
             services.AddSingleton<IStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
             services.AddSingleton<DueyTask>();
-            services.AddSingleton<MasterModule, DueyMasterModule>();
+            services.AddSingleton<AbstractMasterModule, DueyMasterModule>();
             return services;
         }
 

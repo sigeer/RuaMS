@@ -7,21 +7,17 @@ using Application.Shared.Constants;
 using Application.Shared.Events;
 using Application.Shared.Items;
 using Application.Shared.Login;
-using Application.Shared.Team;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Serilog;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -122,7 +118,7 @@ namespace Application.Core.Login.Datas
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.PlayerServerTransition);
                     if (YamlConfig.config.server.USE_IP_VALIDATION)
                     {
-                        var accInfo  =_masterServer.AccountManager.GetAccountDto(obj.Character.AccountId)!;
+                        var accInfo = _masterServer.AccountManager.GetAccountDto(obj.Character.AccountId)!;
                         _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
                     }
                 }
@@ -131,41 +127,29 @@ namespace Application.Core.Login.Datas
                 if (oldCharacterData.Level != origin.Character.Level)
                 {
                     // 等级变化通知
-                    _masterServer.Transport.BroadcastPlayerLevelChanged(new Dto.PlayerLevelJobChange
+                    foreach (var module in _masterServer.Modules)
                     {
-                        Id = origin.Character.Id,
-                        JobId = origin.Character.JobId,
-                        Level = origin.Character.Level,
-                        Name = origin.Character.Name,
-                        GuildId = origin.Character.GuildId,
-                        TeamId = origin.Character.Party,
-                        FamilyId = origin.Character.FamilyId,
-                        MedalItemId = origin.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1
-                    });
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                        module.OnPlayerLevelChanged(origin);
+                    }
                 }
 
                 if (oldCharacterData.JobId != origin.Character.JobId)
                 {
                     // 转职通知
-                    _masterServer.Transport.BroadcastPlayerJobChanged(new Dto.PlayerLevelJobChange
+                    foreach (var module in _masterServer.Modules)
                     {
-                        Id = origin.Character.Id,
-                        JobId = origin.Character.JobId,
-                        Level = origin.Character.Level,
-                        Name = origin.Character.Name,
-                        GuildId = origin.Character.GuildId,
-                        TeamId = origin.Character.Party,
-                        FamilyId = origin.Character.FamilyId,
-                        MedalItemId = origin.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1
-                    });
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                        module.OnPlayerJobChanged(origin);
+                    }
+
                 }
 
                 if (oldCharacterData.Map != origin.Character.Map)
                 {
                     // 地图切换
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                    foreach (var module in _masterServer.Modules)
+                    {
+                        module.OnPlayerMapChanged(origin);
+                    }
                 }
 
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
@@ -177,22 +161,12 @@ namespace Application.Core.Login.Datas
                     {
                         origin.Character.LastLogoutTime = DateTimeOffset.FromUnixTimeMilliseconds(_masterServer.getCurrentTime());
                         origin.ActualChannel = 0;
-                        _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
-                        {
-                            Id = origin.Character.Id,
-                            Name = origin.Character.Name,
-                            GuildId = origin.Character.GuildId,
-                            TeamId = origin.Character.Party,
-                            FamilyId = origin.Character.FamilyId,
-                            Channel = obj.Channel
-                        });
+
 
                         foreach (var module in _masterServer.Modules)
                         {
                             module.OnPlayerLogoff(origin);
                         }
-
-                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                     }
                     else
                     {
@@ -253,32 +227,17 @@ namespace Application.Core.Login.Datas
         {
             if (_idDataSource.TryGetValue(playerId, out var d))
             {
+                accountId = d.Character.AccountId;
+                var isNewComer = d.Channel == 0;
+
                 d.Channel = channel;
                 d.ActualChannel = channel;
-                accountId = d.Character.AccountId;
 
-                // 上线通知
-                _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
-                {
-                    Id = d.Character.Id,
-                    Name = d.Character.Name,
-                    GuildId = d.Character.GuildId,
-                    TeamId = d.Character.Party,
-                    Channel = d.Channel,
-                    FamilyId = d.Character.FamilyId,
-                    IsNewComer = d.Channel == 0
-                });
-
-                _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
-
-                _masterServer.BuddyManager.BroadcastNotify(d);
 
                 foreach (var module in _masterServer.Modules)
                 {
-                    module.OnPlayerLogin(d);
+                    module.OnPlayerLogin(d, isNewComer);
                 }
-
-                _masterServer.NoteManager.SendNote(d);
             }
             else
             {
@@ -315,7 +274,7 @@ namespace Application.Core.Login.Datas
             _charcterViewCache.Clear();
         }
 
-        public CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
+        CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
         {
             if (characterId == null && characterName == null)
                 return null;
@@ -351,7 +310,7 @@ namespace Application.Core.Login.Datas
 
                 var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
-                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage)) 
+                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
                     ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
                 gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
 

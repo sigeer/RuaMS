@@ -1,11 +1,14 @@
+using Acornima;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
+using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.IO;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -105,6 +108,37 @@ namespace Application.Core.Channel.ServerData
             UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
+        public void ProcessTeamUpdate(SyncProto.PlayerFieldChange data)
+        {
+            if (data.TeamId > 0)
+            {
+                var team = SoftGetTeam(data.TeamId);
+                if (team != null)
+                {
+                    team.updateMember(new TeamMember
+                    {
+                        Id = data.Id,
+                        JobId = data.JobId,
+                        Level = data.Level,
+                        MapId = data.MapId,
+                        Name = data.Name,
+                        Channel = data.Channel
+                    });
+
+                    var partyMembers = team.GetActiveMembers(_server);
+
+                    foreach (var partychar in partyMembers)
+                    {
+                        partychar.setParty(team);
+                        if (partychar.IsOnlined)
+                        {
+                            partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, team, PartyOperation.SILENT_UPDATE, data.Id, data.Name));
+                        }
+                    }
+                }
+            }
+        }
+
         public void ProcessUpdateResponse(TeamProto.UpdateTeamResponse res)
         {
             if (res.ErrorCode != 0)
@@ -129,7 +163,7 @@ namespace Application.Core.Channel.ServerData
             }
 
             var partyId = res.TeamId;
-            var party = GetParty(partyId);
+            var party = SoftGetTeam(partyId);
             if (party == null)
             {
                 _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, res.Operation, res.UpdatedMember.Id);
@@ -259,8 +293,19 @@ namespace Application.Core.Channel.ServerData
         {
             _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }
+        /// <summary>
+        /// 当前服务器没有该队伍数据时，不需要获取
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        internal Team? SoftGetTeam(int teamId) => TeamChannelStorage.GetValueOrDefault(teamId);
 
-        internal Team? GetParty(int party)
+        /// <summary>
+        /// 玩家数据绑定使用，意味着当前服务器需要这个队伍数据，不存在时请求master
+        /// </summary>
+        /// <param name="party"></param>
+        /// <returns></returns>
+        internal Team? ForcedGetTeam(int party)
         {
             if (TeamChannelStorage.TryGetValue(party, out var d) && d != null)
                 return d;

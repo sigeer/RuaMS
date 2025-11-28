@@ -1,5 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
 
 namespace Application.Core.tools
 {
@@ -13,13 +12,14 @@ namespace Application.Core.tools
 
         public static string GetPlayerNameWithMedal(string name, int medalItemId)
         {
+            return GetPlayerNameWithMedal(name, ClientCulture.SystemCulture.GetItemName(medalItemId));
+        }
+
+        public static string GetPlayerNameWithMedal(string name, string? medalName)
+        {
             var displayName = name;
-            if (medalItemId > 0)
-            {
-                var medalName = ClientCulture.SystemCulture.GetItemName(medalItemId);
-                if (!string.IsNullOrWhiteSpace(medalName))
-                    displayName = $"<{medalName}> {displayName}";
-            }
+            if (!string.IsNullOrWhiteSpace(medalName))
+                displayName = $"<{medalName}> {displayName}";
             return displayName;
         }
     }
