@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Maker.Channel
 {
-    internal class MakerChannelModule : ChannelModule
+    internal class MakerChannelModule : AbstractChannelModule
     {
-        public MakerChannelModule(WorldChannelServer server, ILogger<ChannelModule> logger) : base(server, logger)
+        public MakerChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger) : base(server, logger)
         {
         }
     }

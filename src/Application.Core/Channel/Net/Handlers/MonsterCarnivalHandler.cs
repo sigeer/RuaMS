@@ -112,9 +112,9 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             int hitChance = rollHitChance((MobSkillType)skill.MobSkillId);
                             if (hitChance <= 80)
                             {
-                                foreach (var mc in enemies.Team.GetChannelMembers(c.CurrentServer))
+                                foreach (var mc in enemies.EligibleMembers)
                                 {
-                                    if (mc != null)
+                                    if (mc.IsOnlined)
                                     {
                                         if (dis == null)
                                         {
@@ -196,7 +196,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         }
                     }
                     c.OnlinedCharacter.gainCP(-neededCP);
-                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.playerSummoned(c.OnlinedCharacter.getName(), tab, num));
+                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.CPQ_PlayerSummoned(c.OnlinedCharacter.getName(), tab, num));
                 }
                 catch (Exception e)
                 {

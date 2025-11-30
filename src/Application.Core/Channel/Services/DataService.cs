@@ -153,7 +153,7 @@ namespace Application.Core.Channel.Services
             }
             player.setPosition(portal.getPosition());
 
-            player.setParty(c.CurrentServerContainer.TeamManager.GetParty(player.Party));
+            player.setParty(c.CurrentServerContainer.TeamManager.ForcedGetTeam(player.Party));
 
 
             foreach (var item in o.PetIgnores)

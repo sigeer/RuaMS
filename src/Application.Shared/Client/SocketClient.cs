@@ -13,7 +13,7 @@ namespace Application.Shared.Client
 {
     public abstract class SocketClient : SimpleChannelInboundHandler<InPacket>, ISocketClient
     {
-        public ISocketServer CurrentServerBase { get; protected set; }
+        public virtual ISocketServer CurrentServerBase { get; protected set; }
         public long SessionId { get; }
 
         public IChannel NettyChannel { get; protected set; }

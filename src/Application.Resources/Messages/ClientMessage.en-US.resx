@@ -1095,10 +1095,43 @@
   <data name="ExtraStorageCommand_Description" xml:space="preserve">
     <value>打开奖品仓库。</value>
   </data>
+  <data name="CPQ_PlayerExit" xml:space="preserve">
+    <value>{0} left the Carnival of Monsters.</value>
+  </data>
+  <data name="CPQ_ExtendTime" xml:space="preserve">
+    <value>The time has been extended.</value>
+  </data>
+  <data name="CPQ_LeaderNotFound" xml:space="preserve">
+    <value>Could not find the Leader.</value>
+  </data>
+  <data name="CPQ_Error" xml:space="preserve">
+    <value>There was a problem. Please re-create a room.</value>
+  </data>
+  <data name="CPQ_PickRoom" xml:space="preserve">
+    <value>Sign up for the Monster Festival!\r\n</value>
+  </data>
+  <data name="CPQ_ChallengeRoomAnswer" xml:space="preserve">
+    <value>The group is currently facing a challenge.</value>
+  </data>
+  <data name="CPQ_ChallengeRoomSent" xml:space="preserve">
+    <value>A challenge has been sent to the group in the room. Please wait a while.</value>
+  </data>
+  <data name="CPQ_ChallengeRoomDenied" xml:space="preserve">
+    <value>The group in the room canceled your challenge.</value>
+  </data>
+  <data name="CPQ_FindError" xml:space="preserve">
+    <value>We could not find a group in this room.\r\nProbably the group was scrapped inside the room!</value>
+  </data>
+  <data name="CPQ_EntryLobby" xml:space="preserve">
+    <value>You will now receive challenges from other groups. If you do not accept a challenge within 3 minutes, you will be taken out.</value>
+  </data>
+  <data name="CPQ_Entry" xml:space="preserve">
+    <value>You can select "Summon Monsters", "Ability", or "Protector" as your tactic during the Monster Carnival. Use Tab and F1 ~ F12 for quick access!</value>
+  </data>
   <data name="TeamRed" xml:space="preserve">
     <value>TeamRed</value>
   </data>
-  <data name="TeamBlue" xml:space="preserve">
+	<data name="TeamBlue" xml:space="preserve">
     <value>TeamBlue</value>
   </data>
   <data name="Event_FatelError" xml:space="preserve">
@@ -1115,6 +1148,12 @@
   </data>
   <data name="EPQ" xml:space="preserve">
     <value>EPQ</value>
+  </data>
+  <data name="CPQ_NoEmptyRoom" xml:space="preserve">
+    <value>All Monster Carnival fields are currently in use! Try again later.</value>
+  </data>
+  <data name="CPQ_Room" xml:space="preserve">
+    <value>Carnival Field</value>
   </data>
   <data name="Level" xml:space="preserve">
     <value>Level</value>
@@ -1335,55 +1374,55 @@
   <data name="Job_2112" xml:space="preserve">
     <value>ARAN(4th)</value>
   </data>
-  <data name="Boss_Stumpy" xml:space="preserve">
+	<data name="Boss_Stumpy" xml:space="preserve">
     <value>Stumpy has appeared with a stumping sound that rings the Stone Mountain.</value>
   </data>
-  <data name="Boss_Bamboo" xml:space="preserve">
+	<data name="Boss_Bamboo" xml:space="preserve">
     <value>From amongst the ruins shrouded by the mists, #o6090002# appears.</value>
   </data>
-  <data name="Boss_Centipede" xml:space="preserve">
+	<data name="Boss_Centipede" xml:space="preserve">
     <value>From the mists surrounding the herb garden, the gargantuous Giant Centipede appears.</value>
   </data>
-  <data name="Boss_Dyle" xml:space="preserve">
+	<data name="Boss_Dyle" xml:space="preserve">
     <value>The huge crocodile Dyle has come out from the swamp.</value>
   </data>
-  <data name="Boss_Kimera" xml:space="preserve">
+	<data name="Boss_Kimera" xml:space="preserve">
     <value>Kimera has appeared out of the darkness of the underground with a glitter in her eyes.</value>
   </data>
-  <data name="Boss_KingClang" xml:space="preserve">
+	<data name="Boss_KingClang" xml:space="preserve">
     <value>A strange turban shell has appeared on the beach.</value>
   </data>
-  <data name="Boss_Eliza" xml:space="preserve">
+	<data name="Boss_Eliza" xml:space="preserve">
     <value>Eliza has appeared with a black whirlwind.</value>
   </data>
-  <data name="Boss_Mano" xml:space="preserve">
+	<data name="Boss_Mano" xml:space="preserve">
     <value>A cool breeze was felt when Mano appeared.</value>
   </data>
-  <data name="Boss_Zeno" xml:space="preserve">
+	<data name="Boss_Zeno" xml:space="preserve">
     <value>Zeno has appeared with a heavy sound of machinery.</value>
   </data>
-  <data name="Boss_TaeRoon" xml:space="preserve">
+	<data name="Boss_TaeRoon" xml:space="preserve">
     <value>Tae Roon has appeared with a soft whistling sound.</value>
   </data>
-  <data name="Boss_KingSageCat" xml:space="preserve">
+	<data name="Boss_KingSageCat" xml:space="preserve">
     <value>The ghostly air around here has become stronger. The unpleasant sound of a cat crying can be heard.</value>
   </data>
-  <data name="Boss_NineTailedFox" xml:space="preserve">
+	<data name="Boss_NineTailedFox" xml:space="preserve">
     <value>As the moon light dims, a long fox cry can be heard and the presence of the old fox can be felt</value>
   </data>
-  <data name="Boss_Seruf" xml:space="preserve">
+	<data name="Boss_Seruf" xml:space="preserve">
     <value>A strange shell has appeared from a grove of seaweed</value>
   </data>
-  <data name="Boss_Leviathan" xml:space="preserve">
+	<data name="Boss_Leviathan" xml:space="preserve">
     <value>Leviathan emerges from the canyon and the cold icy wind blows.</value>
   </data>
-  <data name="Boss_SnackBar" xml:space="preserve">
+	<data name="Boss_SnackBar" xml:space="preserve">
     <value>Slowly, a suspicious food stand opens up on a strangely remote place.</value>
   </data>
-  <data name="Boss_Timer1" xml:space="preserve">
+	<data name="Boss_Timer1" xml:space="preserve">
     <value>Tick-Tock Tick-Tock! Timer makes it's presence known.</value>
   </data>
-  <data name="Password_q21747" xml:space="preserve">
+	<data name="Password_q21747" xml:space="preserve">
     <value>Actions speak louder than words</value>
   </data>
 </root>

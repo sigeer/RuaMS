@@ -1095,6 +1095,39 @@
   <data name="ExtraStorageCommand_Description" xml:space="preserve">
     <value>打开奖品仓库。</value>
   </data>
+  <data name="CPQ_PlayerExit" xml:space="preserve">
+    <value>{0} 离开了怪物嘉年华。</value>
+  </data>
+  <data name="CPQ_ExtendTime" xml:space="preserve">
+    <value>时间已经延长。</value>
+  </data>
+  <data name="CPQ_LeaderNotFound" xml:space="preserve">
+    <value>队长不在这里！</value>
+  </data>
+  <data name="CPQ_Error" xml:space="preserve">
+    <value>发生了一些错误，请重新选择一个房间。</value>
+  </data>
+  <data name="CPQ_PickRoom" xml:space="preserve">
+    <value>选择一个房间！\r\n</value>
+  </data>
+  <data name="CPQ_ChallengeRoomAnswer" xml:space="preserve">
+    <value>该队伍目前正在挑战中</value>
+  </data>
+  <data name="CPQ_ChallengeRoomSent" xml:space="preserve">
+    <value>已经向房间里的队伍发送了一个挑战，请稍等。</value>
+  </data>
+  <data name="CPQ_ChallengeRoomDenied" xml:space="preserve">
+    <value>房间里的队伍拒绝了你的挑战。</value>
+  </data>
+  <data name="CPQ_FindError" xml:space="preserve">
+    <value>该房间没有队伍\r\n也许该队伍已经解散了！</value>
+  </data>
+  <data name="CPQ_EntryLobby" xml:space="preserve">
+    <value>你需要在在3分钟内接受其他队伍的挑战。</value>
+  </data>
+  <data name="CPQ_Entry" xml:space="preserve">
+    <value>在怪物嘉年华期间，你能使用"召唤怪物"，"策略" 或者 "防守"作为您的战术。使用Tab和F1~F12快速访问！</value>
+  </data>
   <data name="TeamRed" xml:space="preserve">
     <value>红队</value>
   </data>
@@ -1115,6 +1148,12 @@
   </data>
   <data name="EPQ" xml:space="preserve">
     <value>装备</value>
+  </data>
+  <data name="CPQ_NoEmptyRoom" xml:space="preserve">
+    <value>所有的怪物嘉年华场地目前都在使用中！请稍后再试。</value>
+  </data>
+  <data name="CPQ_Room" xml:space="preserve">
+    <value>房间</value>
   </data>
   <data name="Level" xml:space="preserve">
     <value>等级</value>
@@ -1335,55 +1374,55 @@
   <data name="Job_2112" xml:space="preserve">
     <value>战神(4转)</value>
   </data>
-  <data name="Boss_Stumpy" xml:space="preserve">
+	<data name="Boss_Stumpy" xml:space="preserve">
     <value>伴着沉闷的撞击声现身于石山之间，余音在山谷中回荡‌</value>
   </data>
-  <data name="Boss_Bamboo" xml:space="preserve">
+	<data name="Boss_Bamboo" xml:space="preserve">
     <value>青岚自氤氲雾气笼罩的断垣残壁间，#o6090002#骤然现形！</value>
   </data>
-  <data name="Boss_Centipede" xml:space="preserve">
+	<data name="Boss_Centipede" xml:space="preserve">
     <value>巨型蜈蚣从药圃生瘴处破雾而出，千足划空如戈戟森然‌</value>
   </data>
-  <data name="Boss_Dyle" xml:space="preserve">
+	<data name="Boss_Dyle" xml:space="preserve">
     <value>破开沼泽浮出时，腐殖质的气味与沼气在它嶙峋的背甲上凝结成绿色雾霭</value>
   </data>
-  <data name="Boss_Kimera" xml:space="preserve">
+	<data name="Boss_Kimera" xml:space="preserve">
     <value>吉米拉从地下的黑暗中出现，眼中闪烁着微光。</value>
   </data>
-  <data name="Boss_KingClang" xml:space="preserve">
+	<data name="Boss_KingClang" xml:space="preserve">
     <value>一个奇怪的海螺出现在了沙滩上。</value>
   </data>
-  <data name="Boss_Eliza" xml:space="preserve">
+	<data name="Boss_Eliza" xml:space="preserve">
     <value>降临之时，黑色旋风如巨蟒盘绕，将天光绞碎成纷扬的鸦羽‌</value>
   </data>
-  <data name="Boss_Mano" xml:space="preserve">
+	<data name="Boss_Mano" xml:space="preserve">
     <value>玛诺的身影伴随着凉风乍起时悄然显现，落叶在她脚边打着旋儿静止</value>
   </data>
-  <data name="Boss_Zeno" xml:space="preserve">
+	<data name="Boss_Zeno" xml:space="preserve">
     <value>伴随重型机械轰鸣声现世！</value>
   </data>
-  <data name="Boss_TaeRoon" xml:space="preserve">
+	<data name="Boss_TaeRoon" xml:space="preserve">
     <value>Tae Roon has appeared with a soft whistling sound.</value>
   </data>
-  <data name="Boss_KingSageCat" xml:space="preserve">
+	<data name="Boss_KingSageCat" xml:space="preserve">
     <value>周围的鬼气更加浓重了。传来一阵令人不快的猫叫声。</value>
   </data>
-  <data name="Boss_NineTailedFox" xml:space="preserve">
+	<data name="Boss_NineTailedFox" xml:space="preserve">
     <value>伴随着一声悠长的狐啸划破夜色，那老狐的气息如雾霭般在林间弥散</value>
   </data>
-  <data name="Boss_Seruf" xml:space="preserve">
+	<data name="Boss_Seruf" xml:space="preserve">
     <value>一枚泛着诡异磷光的贝壳悄然浮现在幽暗的海藻林中，其螺旋纹路在流动的藻须间若隐若现‌</value>
   </data>
-  <data name="Boss_Leviathan" xml:space="preserve">
+	<data name="Boss_Leviathan" xml:space="preserve">
     <value>昂首而起的刹那，裹挟着冰晶的寒风如远古战吼般撕裂云层</value>
   </data>
-  <data name="Boss_SnackBar" xml:space="preserve">
+	<data name="Boss_SnackBar" xml:space="preserve">
     <value>一个可疑的小吃摊在一个奇怪的偏僻地方慢慢开张了。</value>
   </data>
-  <data name="Boss_Timer1" xml:space="preserve">
+	<data name="Boss_Timer1" xml:space="preserve">
     <value>嘀嗒...嘀嗒...！时间精灵提莫在轻声提醒。</value>
   </data>
-  <data name="Password_q21747" xml:space="preserve">
+	<data name="Password_q21747" xml:space="preserve">
     <value>道可道非常道</value>
   </data>
 </root>

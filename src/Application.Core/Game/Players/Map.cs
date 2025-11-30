@@ -230,12 +230,13 @@ namespace Application.Core.Game.Players
                 MapModel.addPlayer(this);
                 visitMap(base.MapModel);
 
+                Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
+
                 Monitor.Enter(prtLock);
                 try
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Channel, TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
                         updatePartyMemberHP();
                     }
                 }
@@ -243,7 +244,6 @@ namespace Application.Core.Game.Players
                 {
                     Monitor.Exit(prtLock);
                 }
-                silentPartyUpdateInternal(getParty());  // EIM script calls inside
             }
             else
             {
@@ -251,9 +251,6 @@ namespace Application.Core.Game.Players
                 Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }
-
-
-            Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
 
             //alas, new map has been specified when a warping was being processed...
             if (newWarpMap != -1)
@@ -276,6 +273,7 @@ namespace Application.Core.Game.Players
                 // if this map has obstacle components moving, make it do so for this Client
                 sendPacket(PacketCreator.environmentMoveList(MapModel.getEnvironment()));
             }
+
         }
 
         public bool isChangingMaps()

@@ -1,5 +1,5 @@
-﻿function enter(pi) {
+function enter(pi) {
     pi.playPortalSound();
-    pi.warp(pi.getMapId() - 100);
+    pi.WarpReturn();
     return true;
 }

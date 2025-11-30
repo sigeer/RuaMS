@@ -241,7 +241,8 @@ namespace Application.Core.Mappers
             CreateMap<CashProto.SpecialCashItemDto, SpecialCashItem>()
                 .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
 
-            CreateMap<TeamProto.TeamMemberDto, TeamMember>();
+            CreateMap<TeamProto.TeamMemberDto, TeamMember>()
+                .ForMember(dest => dest.JobId, src => src.MapFrom(x => x.Job));
 
             CreateMap<GuildProto.GuildMemberDto, GuildMember>();
 

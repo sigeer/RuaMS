@@ -248,7 +248,7 @@ namespace Application.Core.Channel.ServerData
                     mc.sendPacket(GuildPackets.showGuildInfo(null));
                 });
         }
-
+        public Guild? SoftGetGuild(int id) => _localGuilds.GetValueOrDefault(id);
         public Guild? GetGuildById(int id)
         {
             if (_localGuilds.TryGetValue(id, out var d) && d != null)
@@ -537,6 +537,8 @@ namespace Application.Core.Channel.ServerData
         {
             _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
+
+        public Alliance? SoftGetAlliance(int id) => _localAlliance.GetValueOrDefault(id);
         public Alliance? GetAllianceById(int id)
         {
             if (_localAlliance.TryGetValue(id, out var d) && d != null)

@@ -6,6 +6,7 @@ namespace Application.Shared.Events
         PartyQuest,
         Expedition,
         Solo,
-        GuildQuest
+        GuildQuest,
+        CPQ
     }
 }

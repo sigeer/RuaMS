@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Fishing.Channel
 {
-    internal class FishingChannelModule : ChannelModule, IFishingService
+    internal class FishingChannelModule : AbstractChannelModule, IFishingService
     {
         readonly FishingManager _manager;
-        public FishingChannelModule(WorldChannelServer server, ILogger<ChannelModule> logger, FishingManager manager) : base(server, logger)
+        public FishingChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger, FishingManager manager) : base(server, logger)
         {
             _manager = manager;
         }

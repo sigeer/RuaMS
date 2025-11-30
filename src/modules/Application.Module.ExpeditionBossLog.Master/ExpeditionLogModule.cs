@@ -1,15 +1,13 @@
 using Application.Core.Login;
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Services;
-using Application.EF;
 using Application.Utility;
 using Application.Utility.Tasks;
-using Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.ExpeditionBossLog.Master
 {
-    internal class ExpeditionLogModule : MasterModule, IExpeditionService
+    internal class ExpeditionLogModule : AbstractMasterModule, IExpeditionService
     {
         readonly ExpeditionBossLogManager _manager;
 

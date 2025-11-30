@@ -611,6 +611,123 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 该队伍目前正在挑战中 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomAnswer {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomAnswer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 房间里的队伍拒绝了你的挑战。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomDenied {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已经向房间里的队伍发送了一个挑战，请稍等。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomSent {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在怪物嘉年华期间，你能使用&quot;召唤怪物&quot;，&quot;策略&quot; 或者 &quot;防守&quot;作为您的战术。使用Tab和F1~F12快速访问！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Entry {
+            get {
+                return ResourceManager.GetString("CPQ_Entry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你需要在在3分钟内接受其他队伍的挑战。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_EntryLobby {
+            get {
+                return ResourceManager.GetString("CPQ_EntryLobby", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 发生了一些错误，请重新选择一个房间。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Error {
+            get {
+                return ResourceManager.GetString("CPQ_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 时间已经延长。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ExtendTime {
+            get {
+                return ResourceManager.GetString("CPQ_ExtendTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 该房间没有队伍\r\n也许该队伍已经解散了！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_FindError {
+            get {
+                return ResourceManager.GetString("CPQ_FindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 队长不在这里！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_LeaderNotFound {
+            get {
+                return ResourceManager.GetString("CPQ_LeaderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 所有的怪物嘉年华场地目前都在使用中！请稍后再试。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_NoEmptyRoom {
+            get {
+                return ResourceManager.GetString("CPQ_NoEmptyRoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 选择一个房间！\r\n 的本地化字符串。
+        /// </summary>
+        public static string CPQ_PickRoom {
+            get {
+                return ResourceManager.GetString("CPQ_PickRoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 离开了怪物嘉年华。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_PlayerExit {
+            get {
+                return ResourceManager.GetString("CPQ_PlayerExit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 房间 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Room {
+            get {
+                return ResourceManager.GetString("CPQ_Room", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 当前地图：{0} 的本地化字符串。
         /// </summary>
         public static string CurrentMap {

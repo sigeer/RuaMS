@@ -140,9 +140,11 @@ public class MapManager : IDisposable
         {
             if (!map.Value.IsTrackedByEvent && map.Value.EventInstanceManager == null && !map.Value.IsActive())
             {
-                map.Value.Dispose();
-                maps.TryRemove(map.Key, out _);
-                _channelServer.Metrics.ActiveMaps.Dec();
+                if(maps.TryRemove(map.Key, out var v))
+                {
+                    v.Dispose();
+                    _channelServer.Metrics.ActiveMaps.Dec();
+                }
             }
         }
     }

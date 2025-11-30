@@ -25,7 +25,7 @@ namespace Application.Module.Marriage.Channel
 
             services.AddSingleton<MarriageChannelModule>();
             services.AddSingleton<IMarriageService, MarriageChannelModule>(sp => sp.GetRequiredService<MarriageChannelModule>());
-            services.AddSingleton<ChannelModule, MarriageChannelModule>(sp => sp.GetRequiredService<MarriageChannelModule>());
+            services.AddSingleton<AbstractChannelModule, MarriageChannelModule>(sp => sp.GetRequiredService<MarriageChannelModule>());
 
             services.AddSingleton<RingActionHandler>();
             services.AddSingleton<WeddingHandler>();

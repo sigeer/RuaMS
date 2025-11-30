@@ -1,15 +1,13 @@
 using Application.Core.Login;
-using Application.Core.Login.Events;
 using Application.Core.Login.Models;
-using Application.EF;
+using Application.Core.Login.Modules;
 using Application.Utility;
 using Application.Utility.Tasks;
-using DotNetty.Common.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Duey.Master
 {
-    public class DueyMasterModule: MasterModule
+    public class DueyMasterModule : AbstractMasterModule
     {
         readonly DueyManager _manager;
         readonly DueyTask _dueyTask;
@@ -27,9 +25,9 @@ namespace Application.Module.Duey.Master
             timerManager.register(_dueyTask, TimeSpan.FromHours(1), timeLeft);
         }
 
-        public override void OnPlayerLogin(CharacterLiveObject obj)
+        public override void OnPlayerLogin(CharacterLiveObject obj, bool isNewComer)
         {
-            base.OnPlayerLogin(obj);
+            base.OnPlayerLogin(obj, isNewComer);
 
             _manager.SendDueyNotifyOnLogin(obj.Character.Id);
         }

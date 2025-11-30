@@ -1,6 +1,6 @@
 // 事件实例化变量
 var name = "";              // 非必须，事件名，否则使用文件名作为事件名
-var eventType = "";         // 非必须，仅支持 "PartyQuest": 组队任务，"Solo": 单人任务, "GuildQuest": 家族任务，"Expedition": 远征队
+var eventType = "";         // 非必须，仅支持 "PartyQuest": 组队任务，"Solo": 单人任务, "GuildQuest": 家族任务，"Expedition": 远征队， "CPQ": 怪物嘉年华
 var minPlayers, maxPlayers; // 该事件实例允许的队伍成员数量范围。
 var minLevel, maxLevel;     // 合格队伍成员的等级范围。
 var entryMap;               // 事件启动时玩家进入的初始地图。
@@ -61,10 +61,6 @@ function playerUnregistered(eim, player) {
 
 function playerExit(eim, player) {
     // 在解散事件实例前对玩家进行某些操作。
-}
-
-function playerLeft(eim, player) {
-    // 在玩家离开队伍前对其进行某些操作。
 }
 
 function changedMap(eim, player, mapid) {
@@ -144,18 +140,6 @@ function leftParty(eim, player) {
 
 function disbandParty(eim, player) {
     // 当队伍解散时触发。
-}
-
-function removePlayer(eim, player) {
-    // 当NPCConversationManager.removePlayerFromInstance()方法被调用时触发。
-}
-
-function registerCarnivalParty(eim, carnivalparty) {
-    // 当嘉年华PQ开始时触发。目前未使用。
-}
-
-function onMapLoad(eim, player) {
-    // 当玩家更换地图时触发。目前未使用。
 }
 
 function cancelSchedule() {

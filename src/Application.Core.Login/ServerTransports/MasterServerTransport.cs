@@ -174,20 +174,14 @@ namespace Application.Core.Login
             }
         }
 
-        internal void BroadcastPlayerLevelChanged(PlayerLevelJobChange response)
+        internal void BroadcastPlayerLevelChanged(CharacterLiveObject obj)
         {
-            foreach (var server in _server.ChannelServerList.Values)
-            {
-                server.BroadcastMessage(BroadcastType.OnPlayerLevelChanged, response);
-            }
+            BroadcastPlayerFieldChange(BroadcastType.OnPlayerLevelChanged, obj);
         }
 
-        internal void BroadcastPlayerJobChanged(PlayerLevelJobChange response)
+        internal void BroadcastPlayerJobChanged(CharacterLiveObject obj)
         {
-            foreach (var server in _server.ChannelServerList.Values)
-            {
-                server.BroadcastMessage(BroadcastType.OnPlayerJobChanged, response);
-            }
+            BroadcastPlayerFieldChange(BroadcastType.OnPlayerJobChanged, obj);
         }
 
         internal void BroadcastPlayerLoginOff(PlayerOnlineChange response)
@@ -195,6 +189,27 @@ namespace Application.Core.Login
             foreach (var server in _server.ChannelServerList.Values)
             {
                 server.BroadcastMessage(BroadcastType.OnPlayerLoginOff, response);
+            }
+        }
+
+        void BroadcastPlayerFieldChange(string evt, CharacterLiveObject obj)
+        {
+            SyncProto.PlayerFieldChange response = new SyncProto.PlayerFieldChange
+            {
+                Channel = obj.Channel,
+                FamilyId = obj.Character.FamilyId,
+                GuildId = obj.Character.GuildId,
+                TeamId = obj.Character.Party,
+                Id = obj.Character.Id,
+                JobId = obj.Character.JobId,
+                Level = obj.Character.Level,
+                MapId = obj.Character.Map,
+                Name = obj.Character.Name,
+                MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0
+            };
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastMessage(evt, response);
             }
         }
 

@@ -1,45 +1,81 @@
-using Application.Core.Channel.Events;
+using Application.Core.Game.Life;
+using Application.Resources.Messages;
 using Microsoft.Extensions.Logging;
+using net.server.guild;
+using SyncProto;
+using tools;
 
 namespace Application.Core.Channel.Modules
 {
-    public abstract class ChannelModule
+    public sealed class ChannelModule : AbstractChannelModule
     {
-        protected readonly ILogger<ChannelModule> _logger;
-        protected readonly WorldChannelServer _server;
-        protected string _moduleName;
-
-        protected ChannelModule(WorldChannelServer server, ILogger<ChannelModule> logger)
+        public ChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger) : base(server, logger)
         {
-            _logger = logger;
-            _server = server;
-
-            _moduleName = GetType().Assembly.GetName().Name ?? "unknown";
         }
 
-        public virtual void Initialize()
+        public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
         {
-            _logger.LogInformation("模块 {Name}：初始化", _moduleName);
+            if (data.GuildId > 0)
+            {
+                var guild = _server.GuildManager.SoftGetGuild(data.GuildId);
+                if (guild != null)
+                {
+                    guild.SetMemberJob(data.Id, data.JobId);
+                    guild.broadcast(PacketCreator.jobMessage(0, data.JobId, data.Name), data.Id);
+                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
+
+                    if (guild.AllianceId > 0)
+                    {
+                        var alliance = _server.GuildManager.SoftGetAlliance(guild.AllianceId);
+                        if (alliance != null)
+                        {
+                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
+                        }
+                    }
+                }
+            }
+            _server.TeamManager.ProcessTeamUpdate(data);
+
         }
 
-        public virtual void RegisterTask(ITimerManager timerManager)
+        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange data)
         {
-            _logger.LogInformation("模块 {Name}：注册定时任务", _moduleName);
-        }
+            if (data.GuildId > 0)
+            {
+                var guild = _server.GuildManager.SoftGetGuild(data.GuildId);
+                if (guild != null)
+                {
+                    guild.SetMemberLevel(data.Id, data.Level);
+                    guild.broadcast(PacketCreator.levelUpMessage(0, data.Level, data.Name), data.Id);
+                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
 
-        /// <summary>
-        /// 停止Channel服务器时调用
-        /// </summary>
-        /// <returns></returns>
-        public virtual Task UninstallAsync()
-        {
-            _logger.LogInformation("模块 {Name}：卸载", _moduleName);
-            return Task.CompletedTask;
+                    if (guild.AllianceId > 0)
+                    {
+                        var alliance = _server.GuildManager.SoftGetAlliance(guild.AllianceId);
+                        if (alliance != null)
+                        {
+                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
+                        }
+                    }
+
+                }
+            }
+
+            if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
+            {
+                foreach (var ch in _server.Servers.Values)
+                {
+                    ch.LightBlue(e =>
+                        e.GetMessageByKey(
+                            nameof(ClientMessage.Levelup_Congratulation),
+                            CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, e.GetItemName(data.MedalItemId)),
+                            data.Level.ToString(), 
+                            data.Name)
+                        );
+                }
+            }
+
+            _server.TeamManager.ProcessTeamUpdate(data);
         }
-        public virtual void OnPlayerLevelUp(Dto.PlayerLevelJobChange arg) { }
-        public virtual void OnPlayerChangeJob(Dto.PlayerLevelJobChange arg) { }
-        public virtual void OnPlayerLogin(Dto.PlayerOnlineChange data) { }
-        public virtual void OnPlayerEnterGame(IPlayer chr, bool isNewComer) { }
-        public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

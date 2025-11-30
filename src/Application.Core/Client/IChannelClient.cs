@@ -11,7 +11,7 @@ namespace Application.Core.Client
     public interface IChannelClient : IClientBase
     {
         WorldChannel CurrentServer { get; }
-        WorldChannelServer CurrentServerContainer => CurrentServer.Container;
+        WorldChannelServer CurrentServerContainer { get; }
         int Channel { get; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }

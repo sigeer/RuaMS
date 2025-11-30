@@ -75,11 +75,6 @@ namespace Application.Shared.Constants
             330000, 340000, 350000, 360000, 370000, 380000, 390000, 400000, 410000, 420000, 430000, 440000, 450000, 460000, 470000, 480000, 490000, 500000, 510000, 520000,
             530000, 550000, 570000, 590000, 610000, 630000, 650000, 670000, 690000, 710000, 730000, 750000, 770000, 790000, 810000, 830000, 850000, 870000, 890000, 910000};
 
-        public static string getJobName(int jobid)
-        {
-            return JobFactory.GetById(jobid).Name;
-        }
-
         public static int getJobUpgradeLevelRange(int jobbranch)
         {
             return jobUpgradeBlob[jobbranch];

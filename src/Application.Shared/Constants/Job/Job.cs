@@ -6,7 +6,6 @@ namespace Application.Shared.Constants.Job
     public class Job : EnumClass
     {
         public int Id { get; }
-        public string Name { get; }
         /// <summary>
         /// 
         /// </summary>
@@ -134,7 +133,6 @@ namespace Application.Shared.Constants.Job
         private Job(int value, string name)
         {
             Id = value;
-            Name = name;
 
             HasSPTable = IsEvan();
 
@@ -222,7 +220,7 @@ namespace Application.Shared.Constants.Job
 
         public override string ToString()
         {
-            return Name;
+            return name();
         }
 
         public static explicit operator int(Job v)

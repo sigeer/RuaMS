@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package SyncProto;
+
+message PlayerFieldChange {
+  int32 id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 jobId = 4;
+  int32 channel = 5;
+  int32 mapId = 6;
+  int32 guildId = 7;
+  int32 teamId = 8;
+  int32 familyId = 9;
+  int32 medalItemId = 10;
+}

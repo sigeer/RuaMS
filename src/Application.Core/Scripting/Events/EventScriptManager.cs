@@ -112,6 +112,9 @@ public class EventScriptManager : AbstractScriptManager
                 case EventType.GuildQuest:
                     em = new GuildQuestEventManager(_channelServer, engine, scriptFile);
                     break;
+                case EventType.CPQ:
+                    em = new MonsterCarnivalEventManager(_channelServer, engine, scriptFile);
+                    break;
                 default:
                     em = new EventManager(_channelServer, engine, scriptFile);
                     break;

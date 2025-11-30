@@ -12,11 +12,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Marriage.Channel
 {
-    public class MarriageChannelModule : ChannelModule, IMarriageService
+    public class MarriageChannelModule : AbstractChannelModule, IMarriageService
     {
         readonly WeddingManager _weddingManager;
         readonly MarriageManager _marriageManager;
-        public MarriageChannelModule(WorldChannelServer server, ILogger<ChannelModule> logger, WeddingManager weddingManager, MarriageManager marriageManager) : base(server, logger)
+        public MarriageChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger, WeddingManager weddingManager, MarriageManager marriageManager) : base(server, logger)
         {
             _weddingManager = weddingManager;
             _marriageManager = marriageManager;
