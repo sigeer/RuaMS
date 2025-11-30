@@ -1665,12 +1665,6 @@ public class StatEffect
             return true;
         }
 
-        // 200, 201, 202, 205都被视作药品
-        if (Source is PotionItemTemplate && (applyfrom.hasDisease(Disease.StopPotion) || ((FieldLimit)applyfrom.getMap().getFieldLimit()).HasFlag(FieldLimit.CANNOTUSEPOTION)))
-        {
-            return false;
-        }
-
         if (primary && isHeal())
         {
             affectedPlayers = applyBuff(applyfrom, useMaxRange);
