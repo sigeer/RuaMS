@@ -40,12 +40,6 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
         return portal;
     }
 
-    public void runMapScript()
-    {
-        MapScriptManager msm = c.CurrentServer.MapScriptManager;
-        msm.runMapScript(c, "onUserEnter/" + portal.getScriptName(), false);
-    }
-
     public bool hasLevel30Character()
     {
         return c.OnlinedCharacter.getLinkedLevel() >= 30;

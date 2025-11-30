@@ -1,7 +1,5 @@
 using Application.Scripting;
 using Application.Scripting.JS;
-using System.Drawing;
-using System.Text;
 
 namespace ServiceTest.Infrastructure.Scripts
 {
@@ -9,6 +7,14 @@ namespace ServiceTest.Infrastructure.Scripts
     {
         protected IEngine _engine;
         protected string Code;
+
+        public virtual void TestDynamicMethod()
+        {
+            _engine.Evaluate(Code);
+
+            _engine.CallFunction("init");
+            Assert.That(_engine.CallFunction("testA").ToObject<string>(), Is.EqualTo("A"));
+        }
 
         public virtual void GetValueTest()
         {
@@ -140,8 +146,8 @@ namespace ServiceTest.Infrastructure.Scripts
             Assert.That(test1[1], Is.EqualTo(100));
             // Jint ToObject内部为了把object[]转换为对应的int[]，创建了新的数组 ----A
             if (_engine is JintEngine)
-            // NLua中还是原引用
-            Assert.That(arr[1], Is.EqualTo(2));
+                // NLua中还是原引用
+                Assert.That(arr[1], Is.EqualTo(2));
         }
 
         /// <summary>

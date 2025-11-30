@@ -167,6 +167,7 @@ namespace Application.Core.Channel.Net
 
         public override void Dispose()
         {
+            base.Dispose();
             // player hard reference removal thanks to Steve (kaito1410)
             if (this.Character != null)
             {
@@ -177,7 +178,6 @@ namespace Application.Core.Channel.Net
             this.Hwid = null;
             this.Character = null;
             this.ScriptEngines.Dispose();
-            this.packetChannel.Writer.TryComplete();
         }
 
 

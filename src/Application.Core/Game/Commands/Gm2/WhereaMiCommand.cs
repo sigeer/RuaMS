@@ -21,6 +21,15 @@ public class WhereaMiCommand : CommandBase
         sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
         sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
+        var closetPortal = player.getMap().findClosestPortal(player.getPosition());
+        if (closetPortal != null)
+        {
+            sb.Append("离我最近的Portal：").Append("\r\n")
+                .Append("Id: ").Append(closetPortal.getId()).Append("\r\n")
+                .Append("Name: ").Append(closetPortal.getName()).Append("\r\n")
+                .Append("Type: ").Append(closetPortal.getType()).Append("\r\n")
+                .Append("Script: ").Append(closetPortal.getScriptName()).Append("\r\n");
+        }
         sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)
         {
@@ -31,7 +40,6 @@ public class WhereaMiCommand : CommandBase
                 sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId()).Append("\r\n");
             }
         }
-
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

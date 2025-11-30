@@ -1,4 +1,5 @@
 using Application.Core.Channel.Net;
+using Application.Core.Channel.Performance;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
@@ -101,6 +102,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public ChannelConfig ChannelConfig { get; }
     public PlayerShopManager PlayerShopManager { get; }
+    public GameMetrics Metrics { get; private set; } = null!;
 
     public IServiceScope LifeScope { get; }
 
@@ -262,6 +264,8 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
+        Metrics = new GameMetrics(this);
+
         log.Information("[{ServerName}] 初始化事件...", _serverLogName);
         var loadedEventsCount = eventSM.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", _serverLogName, loadedEventsCount);
@@ -378,6 +382,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         Players.AddPlayer(chr);
         Container.PlayerStorage.AddPlayer(chr);
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
+        Metrics.ChannelPlayers.Inc();
     }
 
     public string getServerMessage()
@@ -397,7 +402,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public bool RemovePlayer(int chrId)
     {
-        return Players.RemovePlayer(chrId) != null;
+        if (Players.RemovePlayer(chrId) != null)
+        {
+            Metrics.ChannelPlayers.Dec();
+            return true;
+        }
+
+        return false;
     }
 
     public int getChannelCapacity()

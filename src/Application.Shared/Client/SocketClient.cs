@@ -7,6 +7,7 @@ using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
+using System.Threading.Channels;
 
 namespace Application.Shared.Client
 {
@@ -36,15 +37,25 @@ namespace Application.Shared.Client
 
             _clientInfo = $"{SessionId}_{RemoteAddress}";
 
+            this.log = log;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
             Task.Run(async () =>
             {
-                await foreach (var p in packetChannel.Reader.ReadAllAsync())
+                try
                 {
-                    await NettyChannel.WriteAndFlushAsync(p);
+                    while (await packetChannel.Reader.WaitToReadAsync())
+                    {
+                        while (packetChannel.Reader.TryRead(out var p))
+                        {
+                            await NettyChannel.WriteAndFlushAsync(p);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex.ToString());
                 }
             });
-            this.log = log;
         }
 
         public override string ToString()
@@ -209,7 +220,10 @@ namespace Application.Shared.Client
             NettyChannel.CloseAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public abstract void Dispose();
+        public virtual void Dispose()
+        {
+            this.packetChannel.Writer.TryComplete();
+        }
 
         public void PongReceived()
         {

@@ -224,7 +224,6 @@ namespace Application.Core.Game.Maps
         void setStreetName(string streetName);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
-        void softKillAllMonsters();
         void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
         void spawnDojoMonster(Monster monster);

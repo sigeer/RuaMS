@@ -49,7 +49,7 @@ public class Pet : Item
     public const int MaxTameness = 30000;
     public const int MaxLevel = 30;
 
-    public PetItemTemplate SourceTemplate { get; }
+    public override PetItemTemplate SourceTemplate { get; }
     public Pet(PetItemTemplate template, short position, long uniqueid) : base(template.TemplateId, position, 1)
     {
         SourceTemplate = template;

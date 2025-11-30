@@ -133,7 +133,7 @@ namespace Application.Core.Channel.ServerData
             }
             if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
             {
-                leader.dropMessage(1, "You do not have " + GameConstants.numberWithCommas(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
+                leader.dropMessage(1, "You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
                 failCallback();
                 return null;
             }

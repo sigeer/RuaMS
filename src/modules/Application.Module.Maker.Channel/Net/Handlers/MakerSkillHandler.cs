@@ -161,7 +161,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             break;
 
                         case 2: // no meso
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + GameConstants.numberWithCommas(recipe!.getCost()) + ") to complete this operation."));
+                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + c.CurrentCulture.Number(recipe!.getCost()) + ") to complete this operation."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 

@@ -26,6 +26,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
+using Application.Templates.Item.Cash;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.stat;
@@ -386,11 +387,11 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 512)
         {
-            if (ii.getStateChangeItem(itemId) != 0)
+            if (toUse.SourceTemplate is MapBuffItemTemplate template)
             {
                 foreach (var mChar in player.getMap().getAllPlayers())
                 {
-                    ii.getItemEffect(ii.getStateChangeItem(itemId))?.applyTo(mChar);
+                    ii.getItemEffect(template.StateChangeItem)?.applyTo(mChar);
                 }
             }
             player.getMap().startMapEffect(c.CurrentCulture.GetItemMessage(itemId).replaceFirst("%s", player.getName()).replaceFirst("%s", p.readString()), itemId);
@@ -434,10 +435,8 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 524)
         {
-            var template = ItemInformationProvider.getInstance().GetCashPetFoodTemplate(itemId);
-            if (template == null)
+            if (toUse.SourceTemplate is not CashPetFoodItemTemplate template)
                 return;
-
 
             for (byte i = 0; i < 3; i++)
             {

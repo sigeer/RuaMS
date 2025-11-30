@@ -76,6 +76,11 @@ try
             });
         }
 
+        options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.MetricsPort), listenOptions =>
+        {
+            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+        });
+
         if (builder.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
         {
             options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
