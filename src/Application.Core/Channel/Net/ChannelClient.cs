@@ -144,8 +144,6 @@ namespace Application.Core.Channel.Net
             {
                 player.getEventInstance()?.playerDisconnected(player);
 
-                player.getMonsterCarnival()?.playerDisconnected(player);
-
                 player.getAriantColiseum()?.playerDisconnected(player);
 
                 player.Bag.ClearWhenLogout();

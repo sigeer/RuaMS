@@ -72,7 +72,6 @@
 		</Protobuf>
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
-		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
 		<Protobuf Include="Message\EarnTitleMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
 		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />
@@ -100,6 +99,7 @@
 		<Protobuf Include="Sync\GainCharacterSlot.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Sync\PlayerFieldChange.proto" GrpcServices="None" />
 		<Protobuf Include="Sync\PlayerTimerQuest.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>

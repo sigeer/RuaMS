@@ -5,15 +5,15 @@ using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using scripting;
-using scripting.Event;
 using scripting.npc;
-using System.Globalization;
 
 namespace Application.Core.Game
 {
     public class OfflineClient : IChannelClient
     {
         public WorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
+        public WorldChannelServer CurrentServerContainer => throw new BusinessCharacterOfflineException();
+        public ISocketServer CurrentServerBase => throw new BusinessCharacterOfflineException();
 
         public int Channel => 0;
 
@@ -52,48 +52,13 @@ namespace Application.Core.Game
         public AccountCtrl? AccountEntity { get; set; }
 
 
-        public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
-
-        ISocketServer ISocketClient.CurrentServerBase => throw new NotImplementedException();
-
-        WorldChannel IChannelClient.CurrentServer => throw new NotImplementedException();
-
-        int IChannelClient.Channel => throw new NotImplementedException();
-
-        IPlayer? IChannelClient.Character => throw new NotImplementedException();
-
-        IPlayer IChannelClient.OnlinedCharacter => throw new NotImplementedException();
-
         NPCConversationManager? IChannelClient.NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         EngineStorage IChannelClient.ScriptEngines { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        bool IClientBase.IsOnlined => throw new NotImplementedException();
-
-        bool IClientBase.IsActive => throw new NotImplementedException();
-
-        bool IClientBase.IsServerTransition => throw new NotImplementedException();
-
-        AccountCtrl? IClientBase.AccountEntity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        int IClientBase.AccountId => throw new NotImplementedException();
-
-        string IClientBase.AccountName => throw new NotImplementedException();
-
-        int IClientBase.AccountGMLevel => throw new NotImplementedException();
-
-        int IClientBase.Language { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        CultureInfo CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        ClientCulture IChannelClient.CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        long ISocketClient.SessionId => throw new NotImplementedException();
+        public int Language { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ClientCulture CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         IChannel ISocketClient.NettyChannel => throw new NotImplementedException();
-
-        Hwid? ISocketClient.Hwid { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        string ISocketClient.RemoteAddress => throw new NotImplementedException();
-
-        DateTimeOffset ISocketClient.LastPacket => throw new NotImplementedException();
 
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {

@@ -1,11 +1,14 @@
+using Acornima;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
+using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.IO;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -49,7 +52,7 @@ namespace Application.Core.Channel.ServerData
                     player.dropMessage(5, "创建队伍失败：发生了未知错误");
                     return false;
                 }
-                party = new Team(_server, remoteData.Id, remoteData.LeaderId);
+                party = new Team(remoteData.Id, remoteData.LeaderId);
                 foreach (var member in remoteData.Members)
                 {
                     party.addMember(_mapper.Map<TeamMember>(member));
@@ -78,7 +81,7 @@ namespace Application.Core.Channel.ServerData
 
         public void LeaveParty(IPlayer player)
         {
-            UpdateTeam(player.getChannelServer(), player.Party, PartyOperation.LEAVE, player, player.Id);
+            UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
             //if (mmce.getMatchConfirmationLeaderid(player.getId()) == player.getId() && mmce.getMatchConfirmationType(player.getId()) == MatchCheckerType.GUILD_CREATION)
             //{
@@ -88,21 +91,52 @@ namespace Application.Core.Channel.ServerData
 
         public void JoinParty(IPlayer player, int partyid, bool silentCheck)
         {
-            UpdateTeam(player.getChannelServer(), partyid, PartyOperation.JOIN, player, player.Id);
+            UpdateTeam(partyid, PartyOperation.JOIN, player, player.Id);
         }
 
         public void ExpelFromParty(Team? party, IChannelClient c, int expelCid)
         {
             if (party != null)
             {
-                UpdateTeam(c.CurrentServer, party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
+                UpdateTeam(party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
             }
             return;
         }
 
         internal void ChangeLeader(IPlayer player, int newLeader)
         {
-            UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+        }
+
+        public void ProcessTeamUpdate(SyncProto.PlayerFieldChange data)
+        {
+            if (data.TeamId > 0)
+            {
+                var team = SoftGetTeam(data.TeamId);
+                if (team != null)
+                {
+                    team.updateMember(new TeamMember
+                    {
+                        Id = data.Id,
+                        JobId = data.JobId,
+                        Level = data.Level,
+                        MapId = data.MapId,
+                        Name = data.Name,
+                        Channel = data.Channel
+                    });
+
+                    var partyMembers = team.GetActiveMembers(_server);
+
+                    foreach (var partychar in partyMembers)
+                    {
+                        partychar.setParty(team);
+                        if (partychar.IsOnlined)
+                        {
+                            partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, team, PartyOperation.SILENT_UPDATE, data.Id, data.Name));
+                        }
+                    }
+                }
+            }
         }
 
         public void ProcessUpdateResponse(TeamProto.UpdateTeamResponse res)
@@ -129,7 +163,7 @@ namespace Application.Core.Channel.ServerData
             }
 
             var partyId = res.TeamId;
-            var party = GetParty(partyId);
+            var party = SoftGetTeam(partyId);
             if (party == null)
             {
                 _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, res.Operation, res.UpdatedMember.Id);
@@ -157,7 +191,7 @@ namespace Application.Core.Channel.ServerData
                 default:
                     break;
             }
-            var partyMembers = party.GetActiveMembers();
+            var partyMembers = party.GetActiveMembers(_server);
 
             foreach (var partychar in partyMembers)
             {
@@ -183,12 +217,6 @@ namespace Application.Core.Channel.ServerData
             {
                 if (targetPlayer != null)
                 {
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
-
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
@@ -203,12 +231,6 @@ namespace Application.Core.Channel.ServerData
             {
                 if (targetPlayer != null)
                 {
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
-
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
@@ -221,12 +243,6 @@ namespace Application.Core.Channel.ServerData
                 if (targetPlayer != null)
                 {
                     var preData = targetPlayer.getPartyMembersOnline();
-
-                    var mcpq = targetPlayer.getMonsterCarnival();
-                    if (mcpq != null)
-                    {
-                        mcpq.leftParty(targetPlayer);
-                    }
 
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
@@ -273,12 +289,23 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
+        public void UpdateTeam(int teamId, PartyOperation operation, IPlayer? player, int target)
         {
             _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }
+        /// <summary>
+        /// 当前服务器没有该队伍数据时，不需要获取
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        internal Team? SoftGetTeam(int teamId) => TeamChannelStorage.GetValueOrDefault(teamId);
 
-        internal Team? GetParty(int party)
+        /// <summary>
+        /// 玩家数据绑定使用，意味着当前服务器需要这个队伍数据，不存在时请求master
+        /// </summary>
+        /// <param name="party"></param>
+        /// <returns></returns>
+        internal Team? ForcedGetTeam(int party)
         {
             if (TeamChannelStorage.TryGetValue(party, out var d) && d != null)
                 return d;
@@ -287,7 +314,7 @@ namespace Application.Core.Channel.ServerData
             if (dataRemote == null)
                 return null;
 
-            d = new Team(_server, party, dataRemote.LeaderId);
+            d = new Team(party, dataRemote.LeaderId);
             foreach (var member in dataRemote.Members)
             {
                 d.addMember(_mapper.Map<TeamMember>(member));

@@ -114,7 +114,10 @@ public class NPCScriptManager : AbstractScriptManager
         try
         {
             if (c.NPCConversationManager != null)
+            {
                 c.NPCConversationManager.dispose();
+                return false;
+            }
 
             if (c.canClickNPC())
             {
@@ -191,6 +194,13 @@ public class NPCScriptManager : AbstractScriptManager
                     }
                     else
                     {
+                        try
+                        {
+                            iv.CallFunction("levelDispose");
+                        }
+                        catch (Exception)
+                        {
+                        }
                         c.NPCConversationManager?.dispose();
                     }
                 }

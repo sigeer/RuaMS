@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Shared;
 using Application.Module.Family.Common;
 using Application.Module.Family.Master.Models;
@@ -17,7 +17,7 @@ namespace Application.Module.Family.Master
             services.AddSingleton<FamilyManager>();
             services.AddSingleton<IStorage, FamilyManager>(sp => sp.GetRequiredService<FamilyManager>());
 
-            services.AddSingleton<MasterModule, MasterFamilyModule>();
+            services.AddSingleton<AbstractMasterModule, MasterFamilyModule>();
 
             return services;
         }

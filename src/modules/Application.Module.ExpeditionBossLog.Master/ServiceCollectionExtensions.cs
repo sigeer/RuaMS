@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +13,7 @@ namespace Application.Module.ExpeditionBossLog.Master
             services.AddSingleton<IStorage, ExpeditionBossLogManager>(sp => sp.GetRequiredService<ExpeditionBossLogManager>());
 
             services.AddSingleton<IExpeditionService, ExpeditionLogModule>();
-            services.AddSingleton<MasterModule, ExpeditionLogModule>();
+            services.AddSingleton<AbstractMasterModule, ExpeditionLogModule>();
             return services;
         }
     }

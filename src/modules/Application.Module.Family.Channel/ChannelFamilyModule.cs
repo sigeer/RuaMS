@@ -13,12 +13,12 @@ using tools;
 
 namespace Application.Module.Family.Channel
 {
-    internal class ChannelFamilyModule : ChannelModule
+    internal class ChannelFamilyModule : AbstractChannelModule
     {
         readonly FamilyManager _familyManager;
 
         readonly FamilyConfigs _config;
-        public ChannelFamilyModule(FamilyManager familyManager, ILogger<ChannelModule> logger, WorldChannelServer server, IOptions<FamilyConfigs> options) : base(server, logger)
+        public ChannelFamilyModule(FamilyManager familyManager, ILogger<AbstractChannelModule> logger, WorldChannelServer server, IOptions<FamilyConfigs> options) : base(server, logger)
         {
             _familyManager = familyManager;
             _config = options.Value;
@@ -42,7 +42,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public override void OnPlayerLevelUp(Dto.PlayerLevelJobChange arg)
+        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family == null)
@@ -65,7 +65,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public override void OnPlayerChangeJob(Dto.PlayerLevelJobChange arg)
+        public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family != null)
@@ -73,7 +73,7 @@ namespace Application.Module.Family.Channel
                 family.broadcast(PacketCreator.jobMessage(1, arg.JobId, arg.Name), arg.Id);
 
                 var jobModel = JobFactory.GetById(arg.JobId);
-                family.broadcast(PacketCreator.serverNotice(6, "[" + GameConstants.ordinal(jobModel.Rank) + " Job] " + arg.Name + " has just become a " + jobModel.Name + "."), arg.Id);
+                family.broadcast(PacketCreator.serverNotice(6, "[" + GameConstants.ordinal(jobModel.Rank) + " Job] " + arg.Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(jobModel) + "."), arg.Id);
             }
         }
 

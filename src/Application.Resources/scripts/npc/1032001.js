@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -225,5 +225,5 @@ function action(mode, type, selection) {
 }
 
 function getJobName() {
-    return job == 210 ? "#b法师（火/毒）#k" : (job == 220 ? "#b法师（冰/雷）#k" : "#b牧师#k");
+    return cm.GetJobName(job);
 }

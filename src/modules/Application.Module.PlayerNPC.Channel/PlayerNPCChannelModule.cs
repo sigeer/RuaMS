@@ -6,20 +6,17 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.MapObjects;
-using Application.Utility.Configs;
-using Dto;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Drawing;
 
 namespace Application.Module.PlayerNPC.Channel
 {
-    public class PlayerNPCChannelModule : ChannelModule, IPlayerNPCService
+    public class PlayerNPCChannelModule : AbstractChannelModule, IPlayerNPCService
     {
         readonly PlayerNPCManager _manager;
         readonly Configs _config;
-        public PlayerNPCChannelModule(WorldChannelServer server, ILogger<ChannelModule> logger, PlayerNPCManager manager, IOptions<Configs> options) : base(server, logger)
+        public PlayerNPCChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger, PlayerNPCManager manager, IOptions<Configs> options) : base(server, logger)
         {
             _manager = manager;
             _config = options.Value;
@@ -63,7 +60,7 @@ namespace Application.Module.PlayerNPC.Channel
             _manager.SpawnPlayerNPCHere(mapId, position, chr);
         }
 
-        public override void OnPlayerLevelUp(PlayerLevelJobChange arg)
+        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
         {
             var chr = _server.FindPlayerById(arg.Id);
             if (chr != null)

@@ -106,3 +106,4 @@
 - `ExpeditionEventManager`：远征队
 - `SoloEventManager`：单人副本
 - `PartyQuestEventManager`：组队任务
+- `MonsterCarnivalEventManager`：怪物嘉年华

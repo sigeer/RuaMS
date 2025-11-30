@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Module.Maker.Master.Models;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -14,7 +14,7 @@ namespace Application.Module.Maker.Master
         {
             services.AddAutoMapper(typeof(Mapper));
             services.AddSingleton<MakerManager>();
-            services.AddSingleton<MasterModule, MakerMasterModule>();
+            services.AddSingleton<AbstractMasterModule, MakerMasterModule>();
             services.AddSingleton<IServerBootstrap, MakerMasterBootstrap>();
             return services;
         }

@@ -46,7 +46,7 @@ function action(mode, type, selection) {
             var pnpc = cm.getPlayerNPCByScriptid(cm.getNpc());
 
             if (pnpc != null) {
-                var branchJobName = GameConstants.getJobName(pnpc.job);
+                var branchJobName = cm.GetJobName(pnpc.job);
 
                 var rankStr = "Hi, I am #b" + pnpc.getName() + "#k, #r" + GameConstants.ordinal(pnpc.JobRank) + "#k in the #r" + branchJobName + "#k class to reach the max level.\r\n";
                 rankStr += "\r\n    World rank: #e#b" + GameConstants.ordinal(pnpc.OverallRank) + "#k#n";

@@ -1,5 +1,5 @@
 using Application.Core.Login;
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Module.Family.Master.Tasks;
 using Application.Utility;
 using Application.Utility.Tasks;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Family.Master
 {
-    public class MasterFamilyModule : MasterModule
+    public class MasterFamilyModule : AbstractMasterModule
     {
         readonly FamilyManager _familyManager;
 

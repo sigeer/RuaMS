@@ -1,4 +1,4 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Shared;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Servers;
@@ -19,7 +19,7 @@ namespace Application.Module.Marriage.Master
 
             services.AddSingleton<WeddingManager>();
             services.AddSingleton<MasterTransport>();
-            services.AddSingleton<MasterModule, MarriageMasterModule>();
+            services.AddSingleton<AbstractMasterModule, MarriageMasterModule>();
 
             services.AddSingleton<IServerBootstrap, MarriageMasterBootstrap>();
             return services;

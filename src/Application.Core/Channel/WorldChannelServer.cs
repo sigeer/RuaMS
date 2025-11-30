@@ -5,6 +5,7 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
+using Application.Core.Game;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
@@ -120,7 +121,7 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<ChannelModule> Modules { get; private set; }
+        public List<AbstractChannelModule> Modules { get; private set; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
 
         public ExpeditionService ExpeditionService { get; }
@@ -340,7 +341,7 @@ namespace Application.Core.Channel
 
             DataService.LoadAllPLife();
 
-            Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
+            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
 
             OpcodeConstants.generateOpcodeNames();
 
@@ -666,76 +667,21 @@ namespace Application.Core.Channel
             }
         }
 
-        private void OnPlayerJobChanged(Dto.PlayerLevelJobChange data)
-        {
-            if (data.GuildId > 0)
-            {
-                var guild = GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.SetMemberJob(data.Id, data.JobId);
-                    guild.broadcast(PacketCreator.jobMessage(0, data.JobId, data.Name), data.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
 
-                    if (guild.AllianceId > 0)
-                    {
-                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
-                        if (alliance != null)
-                        {
-                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
-                        }
-                    }
-                }
-            }
+        private void OnPlayerJobChanged(SyncProto.PlayerFieldChange data)
+        {
             foreach (var module in Modules)
             {
                 module.OnPlayerChangeJob(data);
             }
         }
 
-        private void OnPlayerLevelChanged(Dto.PlayerLevelJobChange data)
+        private void OnPlayerLevelChanged(SyncProto.PlayerFieldChange data)
         {
-            if (data.GuildId > 0)
-            {
-                var guild = GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.SetMemberLevel(data.Id, data.Level);
-                    guild.broadcast(PacketCreator.levelUpMessage(0, data.Level, data.Name), data.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
-
-                    if (guild.AllianceId > 0)
-                    {
-                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
-                        if (alliance != null)
-                        {
-                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
-                        }
-                    }
-
-                }
-            }
-
-            if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
-            {
-                foreach (var ch in Servers.Values)
-                {
-                    ch.LightBlue(nameof(ClientMessage.Levelup_Congratulation), CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level.ToString(), data.Name);
-                }
-            }
-
             foreach (var module in Modules)
             {
                 module.OnPlayerLevelUp(data);
             }
-            //if (data.TeamId > 0)
-            //{
-            //    var team = TeamManager.GetParty(data.TeamId);
-            //    if (team != null)
-            //    {
-            //        team.UpdateMemberLevel(data.Id, data.Level);
-            //    }
-            //}
         }
 
         private void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
@@ -843,8 +789,8 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<InvitationProto.CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
             MessageDispatcher.Register<InvitationProto.AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
 
-            MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
-            MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
+            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
+            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
             MessageDispatcher.Register<PlayerOnlineChange>(BroadcastType.OnPlayerLoginOff, OnPlayerLoginOff);
 
             #region Guild

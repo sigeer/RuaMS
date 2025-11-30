@@ -11,7 +11,6 @@ using Application.Core.Login.Shared;
 using Application.Core.Login.Tasks;
 using Application.EF;
 using Application.Protos;
-using Application.Resources;
 using Application.Shared.Servers;
 using Application.Utility;
 using AutoMapper.Extensions.ExpressionMapping;
@@ -19,7 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Yitter.IdGenerator;
 
 namespace Application.Core.Login
 {
@@ -175,6 +173,7 @@ namespace Application.Core.Login
             services.AddSessionManager();
 
             services.AddDataManager();
+            services.AddSingleton<AbstractMasterModule, MasterModule>();
             services.AddServices();
             services.AddStorage();
             services.AddDistributedMemoryCache();

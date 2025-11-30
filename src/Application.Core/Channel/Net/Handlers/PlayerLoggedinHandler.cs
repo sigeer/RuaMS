@@ -140,7 +140,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-                _teamManger.UpdateTeam(c.CurrentServer, player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
+                _teamManger.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
                 player.updatePartyMemberHP();
             }
 

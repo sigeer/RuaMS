@@ -20,7 +20,7 @@ namespace Application.Module.Duey.Channel
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
 
             services.AddSingleton<DueyManager>();
-            services.AddSingleton<ChannelModule, DueyChannelModule>();
+            services.AddSingleton<AbstractChannelModule, DueyChannelModule>();
             services.AddSingleton<IDueyService, DueyChannelModule>();
             services.AddSingleton<IItemDistributeService, DueyDistributeService>();
 

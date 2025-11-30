@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Shared.WzEntity;
 using server.maps;
 
@@ -16,7 +16,13 @@ namespace Application.Core.Game.Players
         void changeMap(IMap target, Portal? pto);
 
         void changeMapBanish(BanishInfo banishInfo);
-        void forceChangeMap(IMap target, Portal? pto);
+
+        /// <summary>
+        /// 和<see cref="changeMap(IMap target, Portal? pto)"/>的区别：不会走EventInstance的MapManager
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="pto"></param>
+        void forceChangeMap(IMap target, Portal? pto = null);
         void enteredScript(string script, int mapid);
 
         void visitMap(IMap map);
@@ -25,5 +31,6 @@ namespace Application.Core.Game.Players
         void startMapEffect(string msg, int itemId, int duration = 30000);
 
         void showMapOwnershipInfo(IPlayer mapOwner);
+        void ForcedWarpOut();
     }
 }

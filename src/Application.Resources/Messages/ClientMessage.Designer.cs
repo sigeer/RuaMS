@@ -467,6 +467,123 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 该队伍目前正在挑战中 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomAnswer {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomAnswer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 房间里的队伍拒绝了你的挑战。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomDenied {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已经向房间里的队伍发送了一个挑战，请稍等。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ChallengeRoomSent {
+            get {
+                return ResourceManager.GetString("CPQ_ChallengeRoomSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在怪物嘉年华期间，你能使用&quot;召唤怪物&quot;，&quot;策略&quot; 或者 &quot;防守&quot;作为您的战术。使用Tab和F1~F12快速访问！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Entry {
+            get {
+                return ResourceManager.GetString("CPQ_Entry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 你需要在在3分钟内接受其他队伍的挑战。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_EntryLobby {
+            get {
+                return ResourceManager.GetString("CPQ_EntryLobby", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 发生了一些错误，请重新选择一个房间。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Error {
+            get {
+                return ResourceManager.GetString("CPQ_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 时间已经延长。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_ExtendTime {
+            get {
+                return ResourceManager.GetString("CPQ_ExtendTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 该房间没有队伍\r\n也许该队伍已经解散了！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_FindError {
+            get {
+                return ResourceManager.GetString("CPQ_FindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 队长不在这里！ 的本地化字符串。
+        /// </summary>
+        public static string CPQ_LeaderNotFound {
+            get {
+                return ResourceManager.GetString("CPQ_LeaderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 所有的怪物嘉年华场地目前都在使用中！请稍后再试。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_NoEmptyRoom {
+            get {
+                return ResourceManager.GetString("CPQ_NoEmptyRoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 选择一个房间！\r\n 的本地化字符串。
+        /// </summary>
+        public static string CPQ_PickRoom {
+            get {
+                return ResourceManager.GetString("CPQ_PickRoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0} 离开了怪物嘉年华。 的本地化字符串。
+        /// </summary>
+        public static string CPQ_PlayerExit {
+            get {
+                return ResourceManager.GetString("CPQ_PlayerExit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 房间 的本地化字符串。
+        /// </summary>
+        public static string CPQ_Room {
+            get {
+                return ResourceManager.GetString("CPQ_Room", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 当前地图：{0} 的本地化字符串。
         /// </summary>
         public static string CurrentMap {
@@ -611,6 +728,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 装备 的本地化字符串。
+        /// </summary>
+        public static string EPQ {
+            get {
+                return ResourceManager.GetString("EPQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示已穿戴装备等级信息。 的本地化字符串。
         /// </summary>
         public static string EquipLvCommand_Description {
@@ -625,6 +751,15 @@ namespace Application.Resources.Messages {
         public static string EquipNotFound {
             get {
                 return ResourceManager.GetString("EquipNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 其他 的本地化字符串。
+        /// </summary>
+        public static string ETC {
+            get {
+                return ResourceManager.GetString("ETC", resourceCulture);
             }
         }
         
@@ -661,6 +796,15 @@ namespace Application.Resources.Messages {
         public static string Event_CWKPQ_DetectedByGuardian {
             get {
                 return ResourceManager.GetString("Event_CWKPQ_DetectedByGuardian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 事件遇到错误。 的本地化字符串。
+        /// </summary>
+        public static string Event_FatelError {
+            get {
+                return ResourceManager.GetString("Event_FatelError", resourceCulture);
             }
         }
         
@@ -742,6 +886,15 @@ namespace Application.Resources.Messages {
         public static string Event_PinkBean_Preparation {
             get {
                 return ResourceManager.GetString("Event_PinkBean_Preparation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 没有足够的#b#t{0}##k，或是{1}栏没有足够的空间。 的本地化字符串。
+        /// </summary>
+        public static string Exchange_Fail {
+            get {
+                return ResourceManager.GetString("Exchange_Fail", resourceCulture);
             }
         }
         
@@ -1394,6 +1547,645 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 新手 的本地化字符串。
+        /// </summary>
+        public static string Job_0 {
+            get {
+                return ResourceManager.GetString("Job_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战士 的本地化字符串。
+        /// </summary>
+        public static string Job_100 {
+            get {
+                return ResourceManager.GetString("Job_100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 初心者 的本地化字符串。
+        /// </summary>
+        public static string Job_1000 {
+            get {
+                return ResourceManager.GetString("Job_1000", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 剑客 的本地化字符串。
+        /// </summary>
+        public static string Job_110 {
+            get {
+                return ResourceManager.GetString("Job_110", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魂骑士(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1100 {
+            get {
+                return ResourceManager.GetString("Job_1100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 勇士 的本地化字符串。
+        /// </summary>
+        public static string Job_111 {
+            get {
+                return ResourceManager.GetString("Job_111", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魂骑士(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1110 {
+            get {
+                return ResourceManager.GetString("Job_1110", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魂骑士(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1111 {
+            get {
+                return ResourceManager.GetString("Job_1111", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魂骑士(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1112 {
+            get {
+                return ResourceManager.GetString("Job_1112", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 英雄 的本地化字符串。
+        /// </summary>
+        public static string Job_112 {
+            get {
+                return ResourceManager.GetString("Job_112", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 准骑士 的本地化字符串。
+        /// </summary>
+        public static string Job_120 {
+            get {
+                return ResourceManager.GetString("Job_120", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 炎术士(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1200 {
+            get {
+                return ResourceManager.GetString("Job_1200", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 骑士 的本地化字符串。
+        /// </summary>
+        public static string Job_121 {
+            get {
+                return ResourceManager.GetString("Job_121", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 炎术士(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1210 {
+            get {
+                return ResourceManager.GetString("Job_1210", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 炎术士(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1211 {
+            get {
+                return ResourceManager.GetString("Job_1211", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 炎术士(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1212 {
+            get {
+                return ResourceManager.GetString("Job_1212", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 圣骑士 的本地化字符串。
+        /// </summary>
+        public static string Job_122 {
+            get {
+                return ResourceManager.GetString("Job_122", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 枪战士 的本地化字符串。
+        /// </summary>
+        public static string Job_130 {
+            get {
+                return ResourceManager.GetString("Job_130", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 风灵使者(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1300 {
+            get {
+                return ResourceManager.GetString("Job_1300", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 龙骑士 的本地化字符串。
+        /// </summary>
+        public static string Job_131 {
+            get {
+                return ResourceManager.GetString("Job_131", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 风灵使者(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1310 {
+            get {
+                return ResourceManager.GetString("Job_1310", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 风灵使者(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1311 {
+            get {
+                return ResourceManager.GetString("Job_1311", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 风灵使者(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1312 {
+            get {
+                return ResourceManager.GetString("Job_1312", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 黑骑士 的本地化字符串。
+        /// </summary>
+        public static string Job_132 {
+            get {
+                return ResourceManager.GetString("Job_132", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 夜行者(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1400 {
+            get {
+                return ResourceManager.GetString("Job_1400", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 夜行者(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1410 {
+            get {
+                return ResourceManager.GetString("Job_1410", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 夜行者(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1411 {
+            get {
+                return ResourceManager.GetString("Job_1411", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 夜行者(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1412 {
+            get {
+                return ResourceManager.GetString("Job_1412", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 奇袭者(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1500 {
+            get {
+                return ResourceManager.GetString("Job_1500", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 奇袭者(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1510 {
+            get {
+                return ResourceManager.GetString("Job_1510", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 奇袭者(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1511 {
+            get {
+                return ResourceManager.GetString("Job_1511", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 奇袭者(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_1512 {
+            get {
+                return ResourceManager.GetString("Job_1512", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魔法师 的本地化字符串。
+        /// </summary>
+        public static string Job_200 {
+            get {
+                return ResourceManager.GetString("Job_200", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战童 的本地化字符串。
+        /// </summary>
+        public static string Job_2000 {
+            get {
+                return ResourceManager.GetString("Job_2000", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 法师（火毒） 的本地化字符串。
+        /// </summary>
+        public static string Job_210 {
+            get {
+                return ResourceManager.GetString("Job_210", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战神(1转) 的本地化字符串。
+        /// </summary>
+        public static string Job_2100 {
+            get {
+                return ResourceManager.GetString("Job_2100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 巫师（火毒） 的本地化字符串。
+        /// </summary>
+        public static string Job_211 {
+            get {
+                return ResourceManager.GetString("Job_211", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战神(2转) 的本地化字符串。
+        /// </summary>
+        public static string Job_2110 {
+            get {
+                return ResourceManager.GetString("Job_2110", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战神(3转) 的本地化字符串。
+        /// </summary>
+        public static string Job_2111 {
+            get {
+                return ResourceManager.GetString("Job_2111", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 战神(4转) 的本地化字符串。
+        /// </summary>
+        public static string Job_2112 {
+            get {
+                return ResourceManager.GetString("Job_2112", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魔导师（火毒） 的本地化字符串。
+        /// </summary>
+        public static string Job_212 {
+            get {
+                return ResourceManager.GetString("Job_212", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 法师（冰雷） 的本地化字符串。
+        /// </summary>
+        public static string Job_220 {
+            get {
+                return ResourceManager.GetString("Job_220", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 巫师（冰雷） 的本地化字符串。
+        /// </summary>
+        public static string Job_221 {
+            get {
+                return ResourceManager.GetString("Job_221", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 魔导师（冰雷） 的本地化字符串。
+        /// </summary>
+        public static string Job_222 {
+            get {
+                return ResourceManager.GetString("Job_222", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 牧师 的本地化字符串。
+        /// </summary>
+        public static string Job_230 {
+            get {
+                return ResourceManager.GetString("Job_230", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 祭司 的本地化字符串。
+        /// </summary>
+        public static string Job_231 {
+            get {
+                return ResourceManager.GetString("Job_231", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 主教 的本地化字符串。
+        /// </summary>
+        public static string Job_232 {
+            get {
+                return ResourceManager.GetString("Job_232", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 弓箭手 的本地化字符串。
+        /// </summary>
+        public static string Job_300 {
+            get {
+                return ResourceManager.GetString("Job_300", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 猎人 的本地化字符串。
+        /// </summary>
+        public static string Job_310 {
+            get {
+                return ResourceManager.GetString("Job_310", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 射手 的本地化字符串。
+        /// </summary>
+        public static string Job_311 {
+            get {
+                return ResourceManager.GetString("Job_311", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 神射手 的本地化字符串。
+        /// </summary>
+        public static string Job_312 {
+            get {
+                return ResourceManager.GetString("Job_312", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 弩弓手 的本地化字符串。
+        /// </summary>
+        public static string Job_320 {
+            get {
+                return ResourceManager.GetString("Job_320", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 游侠 的本地化字符串。
+        /// </summary>
+        public static string Job_321 {
+            get {
+                return ResourceManager.GetString("Job_321", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 箭神 的本地化字符串。
+        /// </summary>
+        public static string Job_322 {
+            get {
+                return ResourceManager.GetString("Job_322", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 飞侠 的本地化字符串。
+        /// </summary>
+        public static string Job_400 {
+            get {
+                return ResourceManager.GetString("Job_400", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 刺客 的本地化字符串。
+        /// </summary>
+        public static string Job_410 {
+            get {
+                return ResourceManager.GetString("Job_410", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 无影人 的本地化字符串。
+        /// </summary>
+        public static string Job_411 {
+            get {
+                return ResourceManager.GetString("Job_411", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 隐士 的本地化字符串。
+        /// </summary>
+        public static string Job_412 {
+            get {
+                return ResourceManager.GetString("Job_412", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 侠客 的本地化字符串。
+        /// </summary>
+        public static string Job_420 {
+            get {
+                return ResourceManager.GetString("Job_420", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 独行客 的本地化字符串。
+        /// </summary>
+        public static string Job_421 {
+            get {
+                return ResourceManager.GetString("Job_421", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 侠盗 的本地化字符串。
+        /// </summary>
+        public static string Job_422 {
+            get {
+                return ResourceManager.GetString("Job_422", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 海盗 的本地化字符串。
+        /// </summary>
+        public static string Job_500 {
+            get {
+                return ResourceManager.GetString("Job_500", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 拳手 的本地化字符串。
+        /// </summary>
+        public static string Job_510 {
+            get {
+                return ResourceManager.GetString("Job_510", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 斗士 的本地化字符串。
+        /// </summary>
+        public static string Job_511 {
+            get {
+                return ResourceManager.GetString("Job_511", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 冲锋队长 的本地化字符串。
+        /// </summary>
+        public static string Job_512 {
+            get {
+                return ResourceManager.GetString("Job_512", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 火枪手 的本地化字符串。
+        /// </summary>
+        public static string Job_520 {
+            get {
+                return ResourceManager.GetString("Job_520", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 大副 的本地化字符串。
+        /// </summary>
+        public static string Job_521 {
+            get {
+                return ResourceManager.GetString("Job_521", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 船长 的本地化字符串。
+        /// </summary>
+        public static string Job_522 {
+            get {
+                return ResourceManager.GetString("Job_522", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 巡查员 的本地化字符串。
+        /// </summary>
+        public static string Job_800 {
+            get {
+                return ResourceManager.GetString("Job_800", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 管理员 的本地化字符串。
+        /// </summary>
+        public static string Job_900 {
+            get {
+                return ResourceManager.GetString("Job_900", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 超级管理员 的本地化字符串。
+        /// </summary>
+        public static string Job_910 {
+            get {
+                return ResourceManager.GetString("Job_910", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 修改职业。 的本地化字符串。
         /// </summary>
         public static string JobCommand_Description {
@@ -1489,6 +2281,15 @@ namespace Application.Resources.Messages {
         public static string LanguageCommand_Syntax {
             get {
                 return ResourceManager.GetString("LanguageCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 等级 的本地化字符串。
+        /// </summary>
+        public static string Level {
+            get {
+                return ResourceManager.GetString("Level", resourceCulture);
             }
         }
         
@@ -1822,6 +2623,15 @@ namespace Application.Resources.Messages {
         public static string MobSkillNotFound {
             get {
                 return ResourceManager.GetString("MobSkillNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 名字 的本地化字符串。
+        /// </summary>
+        public static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
             }
         }
         
@@ -2546,6 +3356,24 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 蓝队 的本地化字符串。
+        /// </summary>
+        public static string TeamBlue {
+            get {
+                return ResourceManager.GetString("TeamBlue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 红队 的本地化字符串。
+        /// </summary>
+        public static string TeamRed {
+            get {
+                return ResourceManager.GetString("TeamRed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示服务器时间。 的本地化字符串。
         /// </summary>
         public static string TimeCommand_Description {
@@ -2866,6 +3694,15 @@ namespace Application.Resources.Messages {
         public static string UptimeCommand_Message1 {
             get {
                 return ResourceManager.GetString("UptimeCommand_Message1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 消耗 的本地化字符串。
+        /// </summary>
+        public static string USE {
+            get {
+                return ResourceManager.GetString("USE", resourceCulture);
             }
         }
         

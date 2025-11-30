@@ -61,7 +61,7 @@ public class EventRecallManager : TaskBase
 
     private bool isRecallableEvent(AbstractEventInstanceManager? eim)
     {
-        return eim != null && !eim.isEventDisposed() && !eim.isEventCleared();
+        return eim != null && !eim.isEventDisposed();
     }
 
     public AbstractEventInstanceManager? recallEventInstance(int characterId)

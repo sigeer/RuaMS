@@ -956,7 +956,7 @@ public partial class Player
             {
                 if (!this.isGM())
                 {
-                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + JobModel.Name + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
+                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(JobModel) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
                 }
             }
 
@@ -3415,18 +3415,6 @@ public partial class Player
     }
     private void playerDead()
     {
-        if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
-        {
-            int losing = cpqMap.DeathCP;
-            if (AvailableCP < losing)
-            {
-                losing = AvailableCP;
-            }
-            MapModel.broadcastMessage(PacketCreator.playerDiedMessage(getName(), losing, MCTeam!.TeamFlag));
-            gainCP(-losing);
-            return;
-        }
-
         cancelAllBuffs(false);
         dispelDebuffs();
         lastDeathtime = Client.CurrentServerContainer.getCurrentTime();
@@ -4501,7 +4489,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            Client.CurrentServerContainer.TeamManager.UpdateTeam(Client.CurrentServer, chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            Client.CurrentServerContainer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 
@@ -4679,6 +4667,11 @@ public partial class Player
         else if (itemid == ItemId.ITEM_IGNORE)
         {
             equippedPetItemIgnore = true;
+        }
+
+        if (equip.getPosition() == EquipSlot.Medal)
+        {
+            saveCharToDB(SyncCharacterTrigger.Unknown);
         }
     }
 
@@ -5005,16 +4998,6 @@ public partial class Player
 
     // MCPQ
 
-
-    public bool isChallenged()
-    {
-        return challenged;
-    }
-
-    public void setChallenged(bool challenged)
-    {
-        this.challenged = challenged;
-    }
 
     public bool isChasing()
     {

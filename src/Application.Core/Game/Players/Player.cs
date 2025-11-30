@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -16,8 +17,11 @@ namespace Application.Core.Game.Players
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
-        public int ActualChannel => Client.CurrentServer.getId();
+        public int ActualChannel => Client.Channel;
         public IChannelClient Client { get; private set; }
+        /// <summary>
+        /// offlineclient or channelclient.player disposed
+        /// </summary>
         public bool IsOnlined => Client.IsOnlined;
 
         public PlayerBag Bag { get; set; }

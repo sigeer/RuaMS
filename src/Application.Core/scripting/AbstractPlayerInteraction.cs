@@ -81,6 +81,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getPlayer().getJob();
     }
 
+    public string GetJobName(Job job)
+    {
+        return getClient().CurrentCulture.GetJobName(job);
+    }
+
     public int getLevel()
     {
         return getPlayer().getLevel();
@@ -104,6 +109,21 @@ public class AbstractPlayerInteraction : IClientMessenger
     private int getMarketPortalId(IMap map)
     {
         return (map.findMarketPortal() != null) ? map.findMarketPortal()!.getId() : map.getRandomPlayerSpawnpoint().getId();
+    }
+
+    public void WarpOut()
+    {
+        warp(getPlayer().getMap().getForcedReturnId());
+    }
+
+    public void WarpReturn()
+    {
+        warp(getPlayer().getMap().getReturnMapId());
+    }
+
+    public void WarpReturn(int portal)
+    {
+        warp(getPlayer().getMap().getReturnMapId(), portal);
     }
 
     public void warp(int mapid)

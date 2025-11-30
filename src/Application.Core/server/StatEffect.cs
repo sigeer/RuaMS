@@ -1665,12 +1665,6 @@ public class StatEffect
             return true;
         }
 
-        // 200, 201, 202, 205都被视作药品
-        if (Source is PotionItemTemplate && (applyfrom.hasDisease(Disease.StopPotion) || ((FieldLimit)applyfrom.getMap().getFieldLimit()).HasFlag(FieldLimit.CANNOTUSEPOTION)))
-        {
-            return false;
-        }
-
         if (primary && isHeal())
         {
             affectedPlayers = applyBuff(applyfrom, useMaxRange);
@@ -1819,6 +1813,11 @@ public class StatEffect
             }
         }
 
+        if (cp != 0)
+        {
+            applyto.gainCP(cp);
+        }
+
         if (applyto.MountModel != null && this.getFatigue() != 0)
         {
             applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + this.getFatigue());
@@ -1883,10 +1882,6 @@ public class StatEffect
         {
             applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
         }
-        else if (cp != 0 && applyto.getMonsterCarnival() != null)
-        {
-            applyto.gainCP(cp);
-        }
         else if (nuffSkill != 0 && applyto.getParty() != null && applyto.getMap().isCPQMap())
         {
             // added by Drago (Dragohe4rt)
@@ -1897,7 +1892,7 @@ public class StatEffect
                 var opposition = applyfrom.MCTeam!.Enemy!;
                 if (skill.targetsAll)
                 {
-                    foreach (var chrApp in opposition.Team.GetChannelMembers(applyto.Client.CurrentServer))
+                    foreach (var chrApp in opposition.EligibleMembers)
                     {
                         if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
                         {

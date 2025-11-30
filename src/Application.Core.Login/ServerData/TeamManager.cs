@@ -49,7 +49,7 @@ namespace Application.Core.Login.ServerData
             _dataSource[newTeam.Id] = newTeam;
             return response;
         }
-        public bool RemoveTeam(int leaderId, int teamId)
+        bool RemoveTeam(int leaderId, int teamId)
         {
             if (_dataSource.TryGetValue(teamId, out var d) && leaderId == d.LeaderId)
                 return _dataSource.TryRemove(teamId, out _);

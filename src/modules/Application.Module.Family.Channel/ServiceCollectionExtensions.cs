@@ -15,7 +15,7 @@ namespace Application.Module.Family.Channel
             services.AddSingleton<FamilyManager>();
             services.AddOptions<FamilyConfigs>();
 
-            services.AddSingleton<ChannelModule, ChannelFamilyModule>();
+            services.AddSingleton<AbstractChannelModule, ChannelFamilyModule>();
 
             services.AddSingleton<OpenFamilyHandler>();
             services.AddSingleton<OpenFamilyPedigreeHandler>();

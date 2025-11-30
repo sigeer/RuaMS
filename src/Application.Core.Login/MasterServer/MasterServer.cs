@@ -1,7 +1,7 @@
 
 using Application.Core.Login.Datas;
-using Application.Core.Login.Events;
 using Application.Core.Login.Models;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Servers;
@@ -15,15 +15,10 @@ using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
-using Config;
-using Grpc.AspNetCore.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using net.server;
 using System.Net;
-using System.Resources;
-using System.Threading.Tasks;
 using SystemProto;
 
 
@@ -147,7 +142,7 @@ namespace Application.Core.Login
         readonly Lazy<InvitationManager> _invitationManager;
         public InvitationManager InvitationManager => _invitationManager.Value;
 
-        public List<MasterModule> Modules { get; private set; }
+        public List<AbstractMasterModule> Modules { get; private set; }
         public ITimerManager TimerManager { get; private set; } = null!;
 
 
@@ -324,7 +319,7 @@ namespace Application.Core.Login
         {
             try
             {
-                Modules = ServiceProvider.GetServices<MasterModule>().ToList();
+                Modules = ServiceProvider.GetServices<AbstractMasterModule>().ToList();
                 _logger.LogInformation("[{ServerName}] 共安装了{PluginCount}个额外模块", ServerName, Modules.Count);
 
                 await ServerManager.Setup();

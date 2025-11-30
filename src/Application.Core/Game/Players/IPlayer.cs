@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.client.Characters;
 using Application.Core.Client.inventory;
+using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -95,7 +96,7 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
 
-        public MonsterCarnivalParty? MCTeam { get; set; }
+        public MonsterCarnivalTeam? MCTeam => TeamModel?.MCTeam;
         public int TotalCP { get; }
         public int AvailableCP { get; }
         Lock ResourceLock { get; }
@@ -365,7 +366,6 @@ namespace Application.Core.Game.Players
         int getMesosTraded();
         int getMiniGamePoints(MiniGame.MiniGameResult type, bool omok);
         MonsterBook getMonsterBook();
-        MonsterCarnival? getMonsterCarnival();
         void SetMount(IMount? mount);
         IMount? getMount();
         string getName();
