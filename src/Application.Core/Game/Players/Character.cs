@@ -3415,28 +3415,30 @@ public partial class Player
         {
             eim.playerKilled(this);
         }
-        int[] charmID = { ItemId.SAFETY_CHARM, ItemId.EASTER_BASKET, ItemId.EASTER_CHARM };
-        int possesed = 0;
-        int i;
-        for (i = 0; i < charmID.Length; i++)
+
+        if (JobModel != Job.BEGINNER 
+            && !MapId.isDojo(getMapId()) 
+            && eim is not MonsterCarnivalEventInstanceManager
+            && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
         {
-            int quantity = getItemQuantity(charmID[i], false);
-            if (possesed == 0 && quantity > 0)
+
+            for (var i = 0; i < ItemId.SafetyCharms.Length; i++)
             {
-                possesed = quantity;
-                break;
-            }
-        }
-        if (possesed > 0 && !MapId.isDojo(getMapId()))
-        {
-            message("You have used a safety charm, so your EXP points have not been decreased.");
-            InventoryManipulator.removeById(Client, ItemConstants.getInventoryType(charmID[i]), charmID[i], 1, true, false);
-            usedSafetyCharm = true;
-        }
-        else if (getJob() != Job.BEGINNER)
-        { //Hmm...
-            if (!FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
-            {  // thanks Conrad for noticing missing FieldLimit check
+                var invType = ItemConstants.getInventoryType(ItemId.SafetyCharms[i]);
+                var inv = Bag[invType];
+                var itemCount = inv.countById(ItemId.SafetyCharms[i]);
+                if (itemCount > 0)
+                {
+                    message("You have used a safety charm, so your EXP points have not been decreased.");
+                    InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
+                    usedSafetyCharm = true;
+                    break;
+                }
+            }            
+
+            if (!usedSafetyCharm)
+            {
+                // thanks Conrad for noticing missing FieldLimit check
                 int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
 
                 if (MapModel.SourceTemplate.Town)
@@ -3465,6 +3467,7 @@ public partial class Player
                     loseExp(curExp, false, false);
                 }
             }
+
         }
 
         cancelEffectFromBuffStat(BuffStat.MORPH);
