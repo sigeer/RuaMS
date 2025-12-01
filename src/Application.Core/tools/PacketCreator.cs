@@ -2417,6 +2417,11 @@ public class PacketCreator
     public static Packet modifyInventory(bool updateTick, List<ModifyInventory> mods)
     {
         OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
+        //  if ( CInPacket::Decode1(a2) )
+        //  {
+        //    this[1044].dwHighDateTime = 0;
+        //    this[1045].dwLowDateTime = get_update_time();
+        //  }
         p.writeBool(updateTick);
         p.writeByte(mods.Count);
         //p.writeByte(0); v104 :)

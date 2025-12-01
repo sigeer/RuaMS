@@ -408,140 +408,6 @@ namespace Application.Core.Game.Players
         }
         #endregion
 
-        /// <summary>
-        /// 移除<paramref name="type"/>栏的<paramref name="position"/>上的物品<paramref name="quantity"/>（默认1）个
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="position"></param>
-        /// <param name="quantity"></param>
-        /// <returns></returns>
-        public bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false)
-        {
-            Inventory cashInv = getInventory(type);
-            cashInv.lockInventory();
-            try
-            {
-                return RemoveItemBySlotCore(type, position, quantity, fromDrop, consume);
-            }
-            finally
-            {
-                cashInv.unlockInventory();
-            }
-        }
-
-        public bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false)
-        {
-            int removeQuantity = quantity;
-            Inventory inv = Bag[type];
-
-            if (inv.countById(itemId) < quantity)
-                return false;
-
-            int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
-
-            for (short i = 0; i <= slotLimit; i++)
-            {
-                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                if (item != null)
-                {
-                    if (item.getItemId() == itemId || item.getCashId() == itemId)
-                    {
-                        if (removeQuantity <= item.getQuantity())
-                        {
-                            RemoveItemBySlotCore(type, item.getPosition(), (short)removeQuantity, fromDrop, consume);
-                            removeQuantity = 0;
-                            break;
-                        }
-                        else
-                        {
-                            removeQuantity -= item.getQuantity();
-                            RemoveItemBySlotCore(type, item.getPosition(), item.getQuantity(), fromDrop, consume);
-                        }
-                    }
-                }
-            }
-            if (removeQuantity > 0 && type != InventoryType.CANHOLD)
-            {
-                throw new BusinessException("[Hack] Not enough items available of Item:" + itemId + ", Quantity (After Quantity/Over Current Quantity): " + (quantity - removeQuantity) + "/" + quantity);
-            }
-            return true;
-        }
-
-        bool RemoveItemBySlotCore(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
-        {
-            Inventory inv = getInventory(type);
-            var item = inv.getItem(slot);
-            if (item == null)
-            {
-                // _logger.LogError("道具不存在, InventoryType={InventoryType}, Slot={Slot}", type, slot);
-                return false;
-            }
-
-            if (item.getQuantity() < quantity)
-            {
-                // _logger.LogError("没有足够的道具, InventoryType={InventoryType}, Slot={Slot}, Quantity={Quantity}, Cost={Cost}", type, slot, item.getQuantity(), quantity);
-                return false;
-            }
-
-            bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-
-            if (type == InventoryType.EQUIPPED)
-            {
-                inv.lockInventory();
-                try
-                {
-                    unequippedItem((Equip)item);
-                    inv.removeItem(slot, quantity, allowZero);
-                }
-                finally
-                {
-                    inv.unlockInventory();
-                }
-
-                AnnounceModifyInventory(item, fromDrop, allowZero);
-            }
-            else
-            {
-                if (item is Pet petObj)
-                {
-                    // thanks Vcoc for finding a d/c issue with equipped pets and pets remaining on DB here
-                    int petIdx = getPetIndex(petObj.PetId);
-                    if (petIdx > -1)
-                    {
-                        unequipPet(petObj, true);
-                    }
-
-                    inv.removeItem(slot, quantity, allowZero);
-                    if (type != InventoryType.CANHOLD)
-                    {
-                        AnnounceModifyInventory(item, fromDrop, allowZero);
-                    }
-
-                    // thanks Robin Schulz for noticing pet issues when moving pets out of inventory
-                }
-                else
-                {
-                    inv.removeItem(slot, quantity, allowZero);
-                    if (type != InventoryType.CANHOLD)
-                    {
-                        AnnounceModifyInventory(item, fromDrop, allowZero);
-                    }
-                }
-            }
-            return true;
-        }
-
-        void AnnounceModifyInventory(Item item, bool fromDrop, bool allowZero)
-        {
-            if (item.getQuantity() == 0 && !allowZero)
-            {
-                sendPacket(PacketCreator.modifyInventory(fromDrop, [new ModifyInventory(3, item)]));
-            }
-            else
-            {
-                sendPacket(PacketCreator.modifyInventory(fromDrop, [new ModifyInventory(1, item)]));
-            }
-        }
 
         public Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
         {
@@ -641,24 +507,6 @@ namespace Application.Core.Game.Players
             return item;
         }
 
-        public void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop)
-        {
-            Inventory inv = Bag[type];
-            int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
-
-            for (short i = 0; i <= slotLimit; i++)
-            {
-                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                if (item != null)
-                {
-                    if (itemIds.Contains(item.getItemId()))
-                    {
-                        RemoveItemBySlotCore(type, item.getPosition(), item.getQuantity(), fromDrop, false);
-                    }
-                }
-            }
-        }
-
         public Ring? GetRingFromTotal(RingSourceModel? ring)
         {
             if (ring == null)
@@ -689,7 +537,7 @@ namespace Application.Core.Game.Players
                 if (!condition.Invoke())
                     return UseItemCheck.NotPass;
 
-                RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-quantity), false);
+                Bag.RemoveFromSlot(item.getInventoryType(), item.getPosition(), quantity, false);
                 return UseItemCheck.Success;
             }
         }
@@ -734,7 +582,7 @@ namespace Application.Core.Game.Players
             if (_itemLocks.TryGetValue(item, out var action))
             {
                 _itemLocks.Remove(item);
-                RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-action.Quantity), false);
+                Bag.RemoveFromSlot(item.getInventoryType(), item.getPosition(), action.Quantity, false);
             }
         }
     }

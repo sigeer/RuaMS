@@ -77,41 +77,67 @@ namespace Application.Core.Game.Players
             Dispose(disposing: true);
         }
 
-        public short RemoveFromSlot(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
+        void UnEquip(Inventory inv, Item invItem)
+        {
+            if (inv.getType() == InventoryType.EQUIPPED)
+            {
+                Owner.unequippedItem((Equip)invItem);
+            }
+            else
+            {
+                var petid = invItem.PetId;
+                if (petid > -1)
+                {
+                    int petIdx = Owner.getPetIndex(petid);
+                    if (petIdx > -1)
+                    {
+                        var pet = Owner.getPet(petIdx)!;
+                        Owner.unequipPet(pet, true);
+                    }
+                }
+            }
+        }
+
+        void RemoveItemInternal(Inventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        {
+            UnEquip(inv, invItem);
+
+            bool allowZero = consume && ItemConstants.isRechargeable(invItem.getItemId());
+            var removedCount = inv.removeItem(invItem.getPosition(), quantity, allowZero);
+            if (inv.getType() != InventoryType.CANHOLD)
+            {
+                InventoryManipulator.AnnounceModifyInventory(Owner.Client, invItem, fromDrop, allowZero);
+            }
+
+            if (showMessage)
+                Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-removedCount, true));
+        }
+
+        /// <summary>
+        /// 移除type栏中slot上的物品quantity个
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="slot"></param>
+        /// <param name="quantity"></param>
+        /// <param name="fromDrop"></param>
+        /// <param name="consume"></param>
+        /// <returns></returns>
+        public bool RemoveFromSlot(InventoryType type, short slot, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             Inventory inv = this[type];
-            var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -slot : slot));
+            var item = inv.getItem(slot);
             if (item == null)
-                return 0;
+                return false;
+
+            if (item.getQuantity() < quantity)
+                return false;
 
             inv.lockInventory();
             try
             {
-                if (type == InventoryType.EQUIPPED)
-                {
-                    Owner.unequippedItem((Equip)item);
-                }
-                else
-                {
-                    var petid = item.PetId;
-                    if (petid > -1)
-                    {
-                        int petIdx = Owner.getPetIndex(petid);
-                        if (petIdx > -1)
-                        {
-                            var pet = Owner.getPet(petIdx)!;
-                            Owner.unequipPet(pet, true);
-                        }
-                    }
-                }
+                RemoveItemInternal(inv, item, quantity, fromDrop, consume, showMessage);
 
-                bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                var removedCount = inv.removeItem(slot, quantity, allowZero);
-                if (type != InventoryType.CANHOLD)
-                {
-                    InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
-                }
-                return removedCount;
+                return true;
             }
             finally
             {
@@ -119,7 +145,88 @@ namespace Application.Core.Game.Players
             }
         }
 
-        void RemoveFromInventory(Inventory inv, Func<Item, bool>? filter = null)
+        /// <summary>
+        /// 移除type栏中的物品
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="invItem">必须来自<see cref="Inventory"/></param>
+        /// <param name="quantity"></param>
+        /// <param name="fromDrop"></param>
+        /// <param name="consume"></param>
+        /// <returns></returns>
+        public bool RemoveFromItem(InventoryType type, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        {
+            Inventory inv = this[type];
+            if (invItem.getQuantity() < quantity)
+                return false;
+
+            if (!inv.Contains(invItem))
+                return false;
+
+            inv.lockInventory();
+            try
+            {
+                RemoveItemInternal(inv, invItem, quantity, fromDrop, consume, showMessage);
+
+                return true;
+            }
+            finally
+            {
+                inv.unlockInventory();
+            }
+        }
+
+        /// <summary>
+        /// 移除type栏中itemid的物品quantity个
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="itemId"></param>
+        /// <param name="quantity"></param>
+        /// <param name="fromDrop"></param>
+        /// <param name="consume"></param>
+        /// <param name="showMessage"></param>
+        /// <returns></returns>
+        public bool RemoveFromId(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        {
+            short removeQuantity = quantity;
+            Inventory inv = this[type];
+
+            inv.lockInventory();
+            try
+            {
+                if (inv.countById(itemId) < quantity)
+                    return false;
+
+                bool allowZero = consume && ItemConstants.isRechargeable(itemId);
+                int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
+
+                List<Item> modifiedItems = [];
+                for (short i = 0; i <= slotLimit; i++)
+                {
+                    var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                    if (item != null && item.getItemId() == itemId && removeQuantity > 0)
+                    {
+                        UnEquip(inv, item);
+
+                        removeQuantity -= inv.removeItem(item.getPosition(), removeQuantity, allowZero);
+                        modifiedItems.Add(item);
+                    }
+                }
+
+                InventoryManipulator.AnnounceModifyInventory(Owner.Client, modifiedItems, fromDrop, allowZero);
+
+                if (showMessage)
+                    Owner.sendPacket(PacketCreator.getShowItemGain(itemId, (short)-removeQuantity, true));
+
+                return true;
+            }
+            finally
+            {
+                inv.unlockInventory();
+            }
+        }
+
+        void RemoveFromInventory(Inventory inv, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             inv.lockInventory();
             try
@@ -134,30 +241,17 @@ namespace Application.Core.Game.Players
                     {
                         if (filter == null || filter(item))
                         {
-                            if (type == InventoryType.EQUIPPED)
-                            {
-                                Owner.unequippedItem((Equip)item);
-                            }
-                            else
-                            {
-                                var petid = item.PetId;
-                                if (petid > -1)
-                                {
-                                    int petIdx = Owner.getPetIndex(petid);
-                                    if (petIdx > -1)
-                                    {
-                                        var pet = Owner.getPet(petIdx)!;
-                                        Owner.unequipPet(pet, true);
-                                    }
-                                }
-                            }
+                            UnEquip(inv, item);
 
+                            bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
                             var removedCount = inv.removeItem(i, item.getQuantity());
                             if (type != InventoryType.CANHOLD)
                             {
-                                InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, true, false);
+                                InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
                             }
-                            Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)-removedCount, true));
+
+                            if (showMessage)
+                                Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)-removedCount, true));
                         }
                     }
                 }
@@ -177,7 +271,9 @@ namespace Application.Core.Game.Players
             InventoryType[] includedInv = [InventoryType.USE, InventoryType.ETC];
             foreach (var type in includedInv)
             {
-                RemoveFromInventory(this[type], item => (ItemInformationProvider.getInstance().GetTemplate(item.getItemId()) as ItemTemplateBase)?.PartyQuest ?? false);
+                RemoveFromInventory(this[type],
+                    item => (item.SourceTemplate as ItemTemplateBase)?.PartyQuest ?? false,
+                    showMessage: true);
             }
         }
 
@@ -189,7 +285,17 @@ namespace Application.Core.Game.Players
             InventoryType[] includedInv = [InventoryType.EQUIP, InventoryType.EQUIPPED, InventoryType.SETUP, InventoryType.ETC];
             foreach (var type in includedInv)
             {
-                RemoveFromInventory(this[type], item => ItemInformationProvider.getInstance().GetTemplate(item.getItemId())?.ExpireOnLogout ?? false);
+                RemoveFromInventory(this[type],
+                    item => item.SourceTemplate.ExpireOnLogout,
+                    showMessage: true);
+            }
+        }
+
+        public void BatchRemoveFromInventory(InventoryType[] inventoryTypes, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false)
+        {
+            foreach (var type in inventoryTypes)
+            {
+                RemoveFromInventory(this[type], filter, fromDrop, consume);
             }
         }
     }

@@ -691,16 +691,7 @@ namespace Application.Core.Game.Players
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
-        bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
-        bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
-        /// <summary>
-        /// 移除背包里的所有 itemIds 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="itemIds"></param>
-        /// <param name="fromDrop"></param>
-        void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop);
         int GetMakerSkillLevel();
         Ring? GetRingFromTotal(RingSourceModel? ring);
         void LeaveVisitingShop();

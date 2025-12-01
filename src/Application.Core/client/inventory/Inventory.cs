@@ -27,6 +27,7 @@ using Application.Core.model;
 using client.inventory.manipulator;
 using server;
 using System.Collections;
+using ZLinq;
 
 namespace client.inventory;
 
@@ -324,7 +325,7 @@ public class Inventory : IEnumerable<Item>
     /// <param name="slot"></param>
     /// <param name="quantity"></param>
     /// <param name="allowZero"></param>
-    /// <returns>移除的数量</returns>
+    /// <returns>实际移除的数量</returns>
     public short removeItem(short slot, short quantity = 1, bool allowZero = false)
     {
         var item = getItem(slot);
