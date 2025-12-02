@@ -1374,4 +1374,55 @@
   <data name="Job_2112" xml:space="preserve">
     <value>战神(4转)</value>
   </data>
+	<data name="Boss_Stumpy" xml:space="preserve">
+    <value>伴着沉闷的撞击声现身于石山之间，余音在山谷中回荡‌</value>
+  </data>
+	<data name="Boss_Bamboo" xml:space="preserve">
+    <value>青岚自氤氲雾气笼罩的断垣残壁间，#o6090002#骤然现形！</value>
+  </data>
+	<data name="Boss_Centipede" xml:space="preserve">
+    <value>巨型蜈蚣从药圃生瘴处破雾而出，千足划空如戈戟森然‌</value>
+  </data>
+	<data name="Boss_Dyle" xml:space="preserve">
+    <value>破开沼泽浮出时，腐殖质的气味与沼气在它嶙峋的背甲上凝结成绿色雾霭</value>
+  </data>
+	<data name="Boss_Kimera" xml:space="preserve">
+    <value>吉米拉从地下的黑暗中出现，眼中闪烁着微光。</value>
+  </data>
+	<data name="Boss_KingClang" xml:space="preserve">
+    <value>一个奇怪的海螺出现在了沙滩上。</value>
+  </data>
+	<data name="Boss_Eliza" xml:space="preserve">
+    <value>降临之时，黑色旋风如巨蟒盘绕，将天光绞碎成纷扬的鸦羽‌</value>
+  </data>
+	<data name="Boss_Mano" xml:space="preserve">
+    <value>玛诺的身影伴随着凉风乍起时悄然显现，落叶在她脚边打着旋儿静止</value>
+  </data>
+	<data name="Boss_Zeno" xml:space="preserve">
+    <value>伴随重型机械轰鸣声现世！</value>
+  </data>
+	<data name="Boss_TaeRoon" xml:space="preserve">
+    <value>Tae Roon has appeared with a soft whistling sound.</value>
+  </data>
+	<data name="Boss_KingSageCat" xml:space="preserve">
+    <value>周围的鬼气更加浓重了。传来一阵令人不快的猫叫声。</value>
+  </data>
+	<data name="Boss_NineTailedFox" xml:space="preserve">
+    <value>伴随着一声悠长的狐啸划破夜色，那老狐的气息如雾霭般在林间弥散</value>
+  </data>
+	<data name="Boss_Seruf" xml:space="preserve">
+    <value>一枚泛着诡异磷光的贝壳悄然浮现在幽暗的海藻林中，其螺旋纹路在流动的藻须间若隐若现‌</value>
+  </data>
+	<data name="Boss_Leviathan" xml:space="preserve">
+    <value>昂首而起的刹那，裹挟着冰晶的寒风如远古战吼般撕裂云层</value>
+  </data>
+	<data name="Boss_SnackBar" xml:space="preserve">
+    <value>一个可疑的小吃摊在一个奇怪的偏僻地方慢慢开张了。</value>
+  </data>
+	<data name="Boss_Timer1" xml:space="preserve">
+    <value>嘀嗒...嘀嗒...！时间精灵提莫在轻声提醒。</value>
+  </data>
+	<data name="Password_q21747" xml:space="preserve">
+    <value>道可道非常道</value>
+  </data>
 </root>

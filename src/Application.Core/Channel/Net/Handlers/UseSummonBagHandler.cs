@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 using server.life;
 using tools;
@@ -46,13 +47,12 @@ public class UseSummonBagHandler : ChannelHandlerBase
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        var itemTemplate = ItemInformationProvider.getInstance().GetSummonMobItemTemplate(itemId);
-        if (itemTemplate == null)
-            return;
-
         var toUse = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);
         if (toUse != null && toUse.getQuantity() > 0 && toUse.getItemId() == itemId)
         {
+            if (toUse.SourceTemplate is not SummonMobItemTemplate itemTemplate)
+                return;
+
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
             foreach (var toSpawnChild in itemTemplate.SummonData)
             {

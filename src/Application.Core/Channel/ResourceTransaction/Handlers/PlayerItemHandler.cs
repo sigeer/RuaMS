@@ -19,7 +19,7 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
         {
             lock (_player.ResourceLock)
             {
-                if (_player.RemoveItemBySlot(_costItems.Item.getInventoryType(), _costItems.Item.getPosition(), (short)_costItems.Quantity))
+                if (_player.Bag.RemoveFromSlot(_costItems.Item.getInventoryType(), _costItems.Item.getPosition(), (short)_costItems.Quantity))
                 {
                     _freezedItem = _costItems.Item.copy();
                     _freezedItem.setQuantity((short)_costItems.Quantity);
@@ -88,7 +88,7 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
             {
                 if (_freezedItem != null)
                 {
-                    _player.RemoveItemBySlot(_freezedItem.getInventoryType(), _freezedItem.getPosition(), _freezedItem.getQuantity());
+                    _player.Bag.RemoveFromSlot(_freezedItem.getInventoryType(), _freezedItem.getPosition(), _freezedItem.getQuantity());
                     _freezedItem = null;
                 }
             }

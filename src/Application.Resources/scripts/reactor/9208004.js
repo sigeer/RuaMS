@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -22,5 +22,5 @@
 // Stage 2 GP for Guild Quest
 
 function act() {
-    rm.getGuild().gainGP(20);
+    rm.GainGuildGP(20);
 }

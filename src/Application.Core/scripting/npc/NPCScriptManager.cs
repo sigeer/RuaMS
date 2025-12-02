@@ -23,11 +23,9 @@
 
 using Application.Core.Channel;
 using Application.Core.Game.Commands;
-using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 using tools;
-using static Application.Core.Channel.DataProviders.ItemInformationProvider;
 
 namespace scripting.npc;
 

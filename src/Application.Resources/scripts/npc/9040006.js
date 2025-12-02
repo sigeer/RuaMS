@@ -1,4 +1,4 @@
-﻿/* @Author Lerk
+/* @Author Lerk
  * @Author Ronan
  *
  * Guardian Statue - Sharenian: Fountain of the Wiseman (990000500)
@@ -40,7 +40,7 @@ function start() {
                     if (combo == guess) {
                         cm.getPlayer().getMap().getReactorByName("watergate").forceHitReactor(1);
                         clearStage(3, eim);
-                        cm.getGuild().gainGP(25);
+                        cm.GainGuildGP(25);
 
                         removeGroundItems();
                         cm.sendOk("干得好。你可以继续进行下一阶段了。");

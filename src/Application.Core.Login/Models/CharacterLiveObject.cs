@@ -1,3 +1,4 @@
+using Application.Core.Login.Servers;
 using Application.Shared.NewYear;
 
 namespace Application.Core.Login.Models
@@ -9,9 +10,10 @@ namespace Application.Core.Login.Models
         /// </summary>
         public int Channel { get; set; }
         /// <summary>
-        /// 不记录-1 （在商城时，记录的仍然是玩家所在的频道服务器），只用作寻找服务器
+        /// 玩家所在的频道服务器节点
         /// </summary>
-        public int ActualChannel { get; set; }
+        public ChannelServerNode? ChannelNode { get; set; }
+        public int ActualChannel => ChannelNode == null ? 0 : Channel;
         public CharacterModel Character { get; set; }
         public ItemModel[] InventoryItems { get; set; } = [];
     }
@@ -39,7 +41,6 @@ namespace Application.Core.Login.Models
         public NewYearCardModel[] NewYearCards { get; set; }
         public FameLogModel[] FameLogs { get; set; }
         public StorageModel GachaponStorage { get; set; }
-
     }
 
 }

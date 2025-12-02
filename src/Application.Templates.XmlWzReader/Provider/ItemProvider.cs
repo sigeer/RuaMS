@@ -190,7 +190,7 @@ namespace Application.Templates.XmlWzReader.Provider
         }
 
         #region Consume
-        public ItemTemplateBase ProcessConsumeItem(int groupId, int itemId, XElement itemNode)
+        public ConsumeItemTemplate ProcessConsumeItem(int groupId, int itemId, XElement itemNode)
         {
             switch (groupId)
             {

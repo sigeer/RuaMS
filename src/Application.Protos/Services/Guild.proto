@@ -13,7 +13,8 @@ service GuildService {
 	rpc GetGuildModel(GuildProto.GetGuildRequest) returns(GuildProto.GetGuildResponse);
 	rpc CreateGuild(GuildProto.CreateGuildRequest) returns(GuildProto.GetGuildResponse);
 	rpc SendGuildChat(GuildProto.GuildChatRequest) returns (google.protobuf.Empty);
-
+	rpc SendGuildPacket(GuildProto.GuildPacketRequest) returns (google.protobuf.Empty);
+	rpc GuildDropMessage(GuildProto.GuildDropMessageRequest) returns (google.protobuf.Empty);
 	rpc UpdateGP(GuildProto.UpdateGuildGPRequest) returns (google.protobuf.Empty);
 	rpc UpdateRankTitle(GuildProto.UpdateGuildRankTitleRequest) returns (google.protobuf.Empty);
 	rpc UpdateNotice(GuildProto.UpdateGuildNoticeRequest) returns (google.protobuf.Empty);

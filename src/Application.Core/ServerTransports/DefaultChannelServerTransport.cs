@@ -73,11 +73,6 @@ namespace Application.Core.ServerTransports
             return (int)_systemClient.GetCurrentTimestamp(new Google.Protobuf.WellKnownTypes.Empty()).Value;
         }
 
-        public void DropMessage(MessageProto.DropMessageRequest request)
-        {
-            _systemClient.DropMessage(request);
-        }
-
         public void BroadcastMessage(MessageProto.PacketRequest p)
         {
             _systemClient.BroadcastMessage(p);
@@ -302,6 +297,7 @@ namespace Application.Core.ServerTransports
 
         public void BroadcastGuildMessage(int guildId, int v, string callout)
         {
+            _guildClient.GuildDropMessage(new GuildDropMessageRequest { GuildId = guildId, Type = v, Message = callout });
         }
 
 
@@ -757,6 +753,11 @@ namespace Application.Core.ServerTransports
         public bool GainCharacterSlot(int accountId)
         {
             return _systemClient.GainCharacterSlot(new GainAccountCharacterSlotRequest { AccId = accountId }).Code == 0;
+        }
+
+        public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
+        {
+            _guildClient.SendGuildPacket(guildPacketRequest);
         }
     }
 }

@@ -1,9 +1,11 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
+using Application.Shared.Team;
 using AutoMapper;
 using constants.game;
 using Dto;
+using Google.Protobuf;
 using GuildProto;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.matchchecker;
@@ -17,7 +19,7 @@ namespace Application.Core.Channel.ServerData
     public class GuildManager
     {
         private ConcurrentDictionary<int, Guild?> _localGuilds { get; set; } = new();
-        ConcurrentDictionary<int, Alliance> _localAlliance;
+        ConcurrentDictionary<int, Guild.Alliance> _localAlliance;
 
         readonly ILogger<GuildManager> _logger;
         readonly IMapper _mapper;
@@ -29,7 +31,7 @@ namespace Application.Core.Channel.ServerData
             _mapper = mapper;
             _transport = transport;
             _serverContainer = serverContainer;
-            _localAlliance = new ConcurrentDictionary<int, Alliance>();
+            _localAlliance = new ();
         }
 
         public bool CheckGuildName(string name)
@@ -133,7 +135,7 @@ namespace Application.Core.Channel.ServerData
             }
             if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
             {
-                leader.dropMessage(1, "You do not have " + GameConstants.numberWithCommas(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
+                leader.dropMessage(1, "You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
                 failCallback();
                 return null;
             }
@@ -168,10 +170,10 @@ namespace Application.Core.Channel.ServerData
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
             leader.GuildId = guild.GuildId;
-            guild.ChangeRank(leader.Id, 1);
+            guild.OnMemberRankChanged(leader.Id, 1);
 
             leader.sendPacket(GuildPackets.showGuildInfo(leader));
-            leader.dropMessage(1, "You have successfully created a Guild.");
+            leader.Popup("You have successfully created a Guild.");
 
             foreach (var chr in members)
             {
@@ -207,12 +209,7 @@ namespace Application.Core.Channel.ServerData
             HandleGuildResponse(data.Code, data.Request.GuildId, data.Request.PlayerId,
                 guild =>
                 {
-                    var result = guild.AddGuildMember(_mapper.Map<GuildMember>(data.Member));
-
-                    if (result)
-                        GetAllianceById(guild.AllianceId)?.updateAlliancePackets();
-
-                    return result;
+                    return guild.AddGuildMember(_mapper.Map<GuildMember>(data.Member));
                 },
                 mc =>
                 {
@@ -235,20 +232,10 @@ namespace Application.Core.Channel.ServerData
             HandleGuildResponse(data.Code, data.GuildId, data.Request.PlayerId,
                 guild =>
                 {
-                    var result = guild.LeaveGuild(data.Request.PlayerId);
-
-                    if (result)
-                        GetAllianceById(guild.AllianceId)?.updateAlliancePackets();
-
-                    return result;
-                },
-                mc =>
-                {
-                    mc.sendPacket(GuildPackets.updateGP(mc.GuildId, 0));
-                    mc.sendPacket(GuildPackets.showGuildInfo(null));
+                    return guild.OnMemberLeftGuild(data.Request.PlayerId);
                 });
         }
-        public Guild? SoftGetGuild(int id) => _localGuilds.GetValueOrDefault(id);
+
         public Guild? GetGuildById(int id)
         {
             if (_localGuilds.TryGetValue(id, out var d) && d != null)
@@ -288,10 +275,7 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                var result = guild.ExpelMember(data.Request.TargetPlayerId);
-                var alliance = GetAllianceById(guild.AllianceId);
-                alliance?.updateAlliancePackets();
-                return result;
+                return guild.OnMemberExpelled(data.Request.TargetPlayerId);
             });
         }
 
@@ -304,7 +288,7 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                return guild.ChangeRank(data.Request.TargetPlayerId, data.Request.NewRank);
+                return guild.OnMemberRankChanged(data.Request.TargetPlayerId, data.Request.NewRank);
             });
         }
 
@@ -363,12 +347,11 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, (guild) =>
             {
-                guild.setGuildEmblem((short)data.Request.LogoBg, (byte)data.Request.LogoBgColor, (short)data.Request.Logo, (byte)data.Request.LogoColor);
-                GetAllianceById(guild.AllianceId)?.BroadcastGuildAlliance();
+                guild.OnEmblemChanged((short)data.Request.LogoBg, (byte)data.Request.LogoBgColor, (short)data.Request.Logo, (byte)data.Request.LogoColor);
                 return true;
             }, master =>
             {
-                master.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
+                master.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
             });
         }
 
@@ -382,7 +365,7 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                guild.changeRankTitle(data.Request.RankTitles.ToArray());
+                guild.OnRankTitleChanged(data.Request.RankTitles.ToArray());
                 return true;
             });
         }
@@ -397,13 +380,14 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                return guild.increaseCapacity();
+                guild.OnCapacityChanged();
+                return true;
             }, master =>
             {
-                master.gainMeso(-data.Request.Cost, true, false, true);
+                master.GainMeso(-data.Request.Cost, true, false, true);
             }, master =>
             {
-                master.dropMessage(1, "Your guild already reached the maximum capacity of players.");
+                master.Popup("Your guild already reached the maximum capacity of players.");
             });
         }
 
@@ -415,7 +399,7 @@ namespace Application.Core.Channel.ServerData
         {
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                guild.setGuildNotice(data.Request.Notice);
+                guild.OnNoticeChanged(data.Request.Notice);
                 return true;
             });
         }
@@ -432,7 +416,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     if (_localGuilds.TryRemove(guild.GuildId, out _))
                     {
-                        guild.disbandGuild();
+                        guild.OnGuildDisband();
 
                         if (guild.AllianceId > 0)
                         {
@@ -466,18 +450,18 @@ namespace Application.Core.Channel.ServerData
                 {
                     if (data.Request.Gp > 0)
                     {
-                        guild.gainGP(data.Request.Gp);
+                        guild.OnGPGained(data.Request.Gp);
                     }
                     else
                     {
-                        guild.removeGP(-data.Request.Gp);
+                        guild.OnGPLosed(-data.Request.Gp);
                     }
                     return true;
                 });
         }
 
         #region alliance
-        public Alliance? CreateAlliance(IPlayer leader, string name)
+        public Guild.Alliance? CreateAlliance(IPlayer leader, string name)
         {
             var guilds = leader.getPartyMembersOnSameMap().OrderBy(x => x.isLeader()).Select(x => x.Id).ToArray();
 
@@ -485,18 +469,16 @@ namespace Application.Core.Channel.ServerData
             if (remoteAlliance.Model == null)
                 return null;
 
-            var alliance = new Alliance(remoteAlliance.Model.AllianceId)
-            {
-                Capacity = guilds.Length,
-                Name = remoteAlliance.Model.Name,
-                RankTitles = remoteAlliance.Model.RankTitles.ToArray(),
-                Notice = remoteAlliance.Model.Notice,
-                Guilds = new ConcurrentDictionary<int, Guild>(remoteAlliance.Model.Guilds.ToDictionary(x => x, x => GetGuildById(x)!))
-            };
+            var alliance = new Guild.Alliance(
+                remoteAlliance.Model.AllianceId,
+                remoteAlliance.Model.Name, guilds.Length,
+                new ConcurrentDictionary<int, Guild>(remoteAlliance.Model.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
+                GameConstants.DefaultAllianceRankTitles,
+                remoteAlliance.Model.Notice
+                );
             _localAlliance[alliance.AllianceId] = alliance;
 
-            alliance.BroadcastAllianceInfo();
-            alliance.BroadcastGuildAlliance();
+            alliance.updateAlliancePackets();
 
             return alliance;
         }
@@ -506,7 +488,7 @@ namespace Application.Core.Channel.ServerData
             if (alliance == null)
                 return;
 
-            if (alliance.getGuilds().Count == alliance.getCapacity())
+            if (alliance.getGuilds().Count == alliance.Capacity)
             {
                 c.OnlinedCharacter.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
             }
@@ -517,7 +499,7 @@ namespace Application.Core.Channel.ServerData
             }
             else
             {
-                if (mg.getAllianceId() > 0)
+                if (mg.AllianceId > 0)
                 {
                     c.OnlinedCharacter.dropMessage(5, "The entered guild is already registered on a guild alliance.");
                 }
@@ -538,8 +520,8 @@ namespace Application.Core.Channel.ServerData
             _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
-        public Alliance? SoftGetAlliance(int id) => _localAlliance.GetValueOrDefault(id);
-        public Alliance? GetAllianceById(int id)
+        public Guild.Alliance? SoftGetAlliance(int id) => _localAlliance.GetValueOrDefault(id);
+        public Guild.Alliance? GetAllianceById(int id)
         {
             if (_localAlliance.TryGetValue(id, out var d) && d != null)
                 return d;
@@ -548,14 +530,14 @@ namespace Application.Core.Channel.ServerData
             if (remoteData == null)
                 return null;
 
-            var localData = new Alliance(id)
-            {
-                Guilds = new ConcurrentDictionary<int, Guild>(remoteData.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
-                Notice = remoteData.Notice,
-                RankTitles = remoteData.RankTitles.ToArray(),
-                Name = remoteData.Name,
-                Capacity = remoteData.Capacity,
-            };
+            var localData = new Guild.Alliance(
+                    remoteData.AllianceId,
+                    remoteData.Name,
+                    remoteData.Capacity,
+                    new ConcurrentDictionary<int, Guild>(remoteData.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
+                    GameConstants.DefaultAllianceRankTitles,
+                    remoteData.Notice
+                    );
             _localAlliance[id] = localData;
             return localData;
         }
@@ -573,7 +555,7 @@ namespace Application.Core.Channel.ServerData
         #endregion
 
         #region Alliance
-        private void HandleAllianceResponse(int code, int allianceId, int masterId, Func<Alliance, bool> onGuildAction, Action<IPlayer, Alliance>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
+        private void HandleAllianceResponse(int code, int allianceId, int masterId, Func<Guild.Alliance, bool> onGuildAction, Action<IPlayer, Guild.Alliance>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
         {
             if (code == 0)
             {
@@ -651,15 +633,7 @@ namespace Application.Core.Channel.ServerData
                 alliance =>
                 {
                     var guild = GetGuildById(data.GuildId);
-                    if (guild == null || !alliance.TryAddGuild(guild))
-                    {
-                        return false;
-                    }
-                    alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, guild));
-                    alliance.BroadcastAllianceInfo();
-                    alliance.BroadcastNotice();
-                    guild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
-
+                    alliance.OnGuildJoinAlliance(guild!);
                     return true;
                 });
         }
@@ -676,23 +650,7 @@ namespace Application.Core.Channel.ServerData
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
                 {
-                    var oldLeader = alliance.GetLeader();
-                    oldLeader.AllianceRank = 2;
-
-                    var oldLeaderObj = _serverContainer.FindPlayerById(oldLeader.Channel, oldLeader.Id);
-                    if (oldLeaderObj != null)
-                        oldLeaderObj.setAllianceRank(2);
-
-                    var newLeader = alliance.GetMemberById(data.Request.PlayerId);
-                    newLeader.AllianceRank = 1;
-                    var newLeaderObj = _serverContainer.FindPlayerById(newLeader.Channel, newLeader.Id);
-                    if (newLeaderObj != null)
-                        newLeaderObj.setAllianceRank(1);
-
-
-                    alliance.BroadcastGuildAlliance();
-                    alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
-
+                    alliance.OnLeaderChanged(data.Request.PlayerId, _serverContainer);
                     return true;
                 });
         }
@@ -705,14 +663,7 @@ namespace Application.Core.Channel.ServerData
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
                 {
-                    var newRank = data.NewRank;
-                    var targetPlayer = alliance.GetMemberById(data.Request.PlayerId);
-                    targetPlayer.AllianceRank = newRank;
-                    var targetPlayerObj = _serverContainer.FindPlayerById(targetPlayer.Channel, targetPlayer.Id);
-                    if (targetPlayerObj != null)
-                        targetPlayerObj.setAllianceRank(newRank);
-
-                    alliance.BroadcastGuildAlliance();
+                    alliance.OnMemberRankChanged(data.Request.PlayerId, data.NewRank, _serverContainer);
 
                     return true;
                 });
@@ -726,9 +677,7 @@ namespace Application.Core.Channel.ServerData
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
                 {
-                    alliance.increaseCapacity(1);
-                    alliance.BroadcastGuildAlliance();
-                    alliance.BroadcastNotice();
+                    alliance.OnCapacityIncreased(1);
 
                     return true;
                 },
@@ -749,8 +698,7 @@ namespace Application.Core.Channel.ServerData
                 alliance =>
                 {
                     var newRanks = data.Request.RankTitles.ToArray();
-                    alliance.setRankTitle(newRanks);
-                    alliance.broadcastMessage(GuildPackets.changeAllianceRankTitle(alliance.getId(), newRanks), -1, -1);
+                    alliance.OnRankTitleChanged(newRanks);
 
                     return true;
                 });
@@ -764,10 +712,7 @@ namespace Application.Core.Channel.ServerData
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
                 {
-                    alliance.setNotice(data.Request.Notice);
-                    alliance.BroadcastNotice();
-
-                    alliance.dropMessage(5, "* Alliance Notice : " + data.Request.Notice);
+                    alliance.OnNoticeChanged(data.Request.Notice);
 
                     return true;
                 });
@@ -782,10 +727,11 @@ namespace Application.Core.Channel.ServerData
             HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
                 alliance =>
                 {
-                    alliance.Disband();
+                    alliance.OnDisband();
                     return _localAlliance.TryRemove(alliance.AllianceId, out _);
                 });
         }
+
 
         internal void ShowRankedGuilds(IChannelClient c, int npc)
         {

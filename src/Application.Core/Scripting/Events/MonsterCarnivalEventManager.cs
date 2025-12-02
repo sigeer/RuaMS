@@ -40,6 +40,7 @@ namespace Application.Core.Scripting.Events
                 return false;
 
             room.Instance = eim as MonsterCarnivalEventInstanceManager;
+            cserv.Metrics.EventInstanceCount.Inc();
             return true;
         }
 
@@ -47,7 +48,10 @@ namespace Application.Core.Scripting.Events
         {
             var room = Rooms.FirstOrDefault(x => x.InstanceName == name);
             if (room != null)
+            {
                 room.Instance = null;
+                cserv.Metrics.EventInstanceCount.Dec();
+            }
         }
 
         public List<IPlayer> GetPreparationParty(int roomIndex, Team party)

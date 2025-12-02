@@ -1,5 +1,6 @@
 using Application.Shared.Message;
 using Dto;
+using System;
 
 namespace Application.Core.Login
 {
@@ -64,6 +65,13 @@ namespace Application.Core.Login
             }
         }
 
+        public void BroadcastPacket(MessageProto.PacketRequest p, IEnumerable<int> chrIds)
+        {
+            var msg = new MessageProto.PacketBroadcast { Data = p.Data };
+            msg.Receivers.AddRange(chrIds);
+            Transport.SendMessage(BroadcastType.Broadcast_Packet, msg, msg.Receivers);
+        }
+
         public void DropYellowTip(string message, bool onlyGM = false)
         {
             var msg = new MessageProto.YellowTipBroadcast { Message = message };
@@ -99,7 +107,7 @@ namespace Application.Core.Login
         public void DisconnectChr(int chrId)
         {
             var data = new SystemProto.DisconnectPlayerByNameBroadcast() { MasterId = chrId };
-            Transport.SendMessage(BroadcastType.SendPlayerDisconnect, data, data.MasterId);
+            Transport.SendMessage(BroadcastType.SendPlayerDisconnect, data, [data.MasterId]);
         }
     }
 }

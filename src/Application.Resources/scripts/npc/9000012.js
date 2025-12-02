@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
                Matthias Butz <matze@odinms.de>
@@ -47,7 +47,7 @@ function action(mode, type, selection) {
         if (selection == 0) {
             cm.sendYesNo("如果你现在离开，接下来的24小时内你将无法参与这个活动。你确定要离开吗？");
         } else if (selection == 1) {
-            if (cm.getMesos < 1 && !cm.canHold(1322005)) {
+            if (cm.getMesos() < 1 && !cm.canHold(1322005)) {
                 cm.sendOk("你的金币不够，或者你的背包没有空间。");
                 cm.dispose();
             } else {

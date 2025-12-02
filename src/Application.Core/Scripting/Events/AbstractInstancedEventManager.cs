@@ -60,13 +60,23 @@ namespace Application.Core.Scripting.Events
 
         protected virtual bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
         {
-            return instances.TryAdd(instanceName, eim);
+            if (instances.TryAdd(instanceName, eim))
+            {
+                cserv.Metrics.EventInstanceCount.Inc();
+                return true;
+            }
+            return false;
         }
 
         protected virtual void DisposeInstanceInternal(string name)
         {
-            if (instances.TryRemove(name, out var eim) && eim != null && eim.LobbyId > -1)
-                UnregisterLobby(eim.LobbyId);
+            if (instances.TryRemove(name, out var eim))
+            {
+                if (eim != null)
+                    UnregisterLobby(eim.LobbyId);
+
+                cserv.Metrics.EventInstanceCount.Dec();
+            }
         }
 
         public void disposeInstance(string name)

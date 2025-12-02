@@ -119,8 +119,7 @@ namespace Application.Module.Marriage.Channel
 
         public void RemoveMarriageItems(IPlayer chr)
         {
-            chr.RemoveById(InventoryType.ETC, ItemId.GetEngagementItems(), false);
-
+            chr.Bag.BatchRemoveFromInventory([InventoryType.ETC], x => ItemId.GetEngagementItems().Contains(x.getItemId()), false);
             var marriageRing = chr.getMarriageRing();
             if (marriageRing != null)
             {

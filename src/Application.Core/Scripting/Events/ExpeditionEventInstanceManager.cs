@@ -8,6 +8,7 @@ namespace Application.Core.Scripting.Events
         private Expedition? expedition = null;
         public ExpeditionEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
         {
+            Type = Shared.Events.EventInstanceType.Expedition;
         }
         protected override void OnMonsterValueChanged(IPlayer chr, Monster mob, int val)
         {

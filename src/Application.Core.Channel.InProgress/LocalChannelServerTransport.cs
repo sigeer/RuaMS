@@ -14,6 +14,7 @@ using CashProto;
 using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
+using GuildProto;
 using ItemProto;
 using LifeProto;
 using MessageProto;
@@ -336,7 +337,7 @@ namespace Application.Core.Channel.InProgress
 
         public void BroadcastGuildMessage(int guildId, int v, string callout)
         {
-            _server.GuildManager.BroadcastGuildMessage(guildId, v, callout);
+            _server.GuildManager.SendGuildMessage(guildId, v, callout);
         }
 
         public void SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request)
@@ -759,6 +760,11 @@ namespace Application.Core.Channel.InProgress
         public bool GainCharacterSlot(int accountId)
         {
             return _server.AccountManager.GainCharacterSlot(accountId);
+        }
+
+        public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
+        {
+            _server.GuildManager.SendGuildPacket(guildPacketRequest);
         }
     }
 }

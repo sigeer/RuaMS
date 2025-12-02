@@ -18,7 +18,7 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
         {
             lock (_player.ResourceLock)
             {
-                if (_player.RemoveItemById(ItemConstants.getInventoryType(_costItems.ItemId), _costItems.ItemId, (short)_costItems.Quantity))
+                if (_player.Bag.RemoveFromId(ItemConstants.getInventoryType(_costItems.ItemId), _costItems.ItemId, (short)_costItems.Quantity))
                 {
                     _freezedItem = _costItems;
                     return true;
@@ -87,7 +87,7 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
             {
                 if (_freezedItem != null)
                 {
-                    _player.RemoveItemById(ItemConstants.getInventoryType(_freezedItem.ItemId), _freezedItem.ItemId, (short)_freezedItem.Quantity);
+                    _player.Bag.RemoveFromId(ItemConstants.getInventoryType(_freezedItem.ItemId), _freezedItem.ItemId, (short)_freezedItem.Quantity);
                     _freezedItem = null;
                 }
             }

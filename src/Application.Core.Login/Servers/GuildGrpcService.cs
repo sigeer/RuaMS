@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GuildProto;
+using MessageProto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,6 +98,17 @@ namespace Application.Core.Login.Servers
         {
             _server.GuildManager.UpdateGuildRankTitle(request);
             return Task.FromResult(new Empty());
+        }
+        public override Task<Empty> GuildDropMessage(GuildDropMessageRequest request, ServerCallContext context)
+        {
+            _server.GuildManager.SendGuildMessage(request.GuildId, request.Type, request.Message);
+            return base.GuildDropMessage(request, context);
+        }
+
+        public override Task<Empty> SendGuildPacket(GuildPacketRequest request, ServerCallContext context)
+        {
+            _server.GuildManager.SendGuildPacket(request);
+            return base.SendGuildPacket(request, context);
         }
     }
 }

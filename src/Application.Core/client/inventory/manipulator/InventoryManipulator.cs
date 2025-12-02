@@ -533,6 +533,14 @@ public class InventoryManipulator
         }
     }
 
+    public static void AnnounceModifyInventory(IChannelClient c, List<Item> items, bool fromDrop, bool allowZero)
+    {
+        c.sendPacket(PacketCreator.modifyInventory(fromDrop,
+            items.Where(x => x.getInventoryType() != InventoryType.CANHOLD)
+            .Select(x => new ModifyInventory(x.getQuantity() == 0 && !allowZero ? 3 : 1, x))
+            .ToList()));
+    }
+
     public static void removeById(IChannelClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
     {
         int removeQuantity = quantity;

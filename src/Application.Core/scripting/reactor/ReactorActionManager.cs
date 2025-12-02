@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using client.inventory;
 using Jint.Native.ShadowRealm;
@@ -49,6 +50,10 @@ public class ReactorActionManager : AbstractPlayerInteraction
         this.iv = iv;
     }
 
+    public override IMap getMap()
+    {
+        return reactor.getMap();
+    }
     public override int getMapId()
     {
         return reactor.getMap().getId();
@@ -183,19 +188,9 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
         else
         {
-            Item drop;
-
-            if (ItemConstants.getInventoryType(d.ItemId) != InventoryType.EQUIP)
-            {
-                drop = Item.CreateVirtualItem(d.ItemId, 1);
-            }
-            else
-            {
-                ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                drop = ii.randomizeStats(ii.getEquipById(d.ItemId));
-            }
-
-            reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
+            var drop = ItemInformationProvider.getInstance().GenerateVirtualItemById(d.ItemId, 1);
+            if (drop != null)
+                reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
         }
     }
 

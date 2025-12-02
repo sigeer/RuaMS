@@ -256,8 +256,10 @@ public class ItemId
     public const int EASTER_BASKET = 4031283;
     public const int EASTER_CHARM = 4140903;
 
-    #region 订婚道具
-    public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
+    public static int[] SafetyCharms = { ItemId.SAFETY_CHARM, ItemId.EASTER_BASKET, ItemId.EASTER_CHARM };
+
+#region 订婚道具
+public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
     public const int ENGAGEMENT_BOX_STAR = 2240001;
     public const int ENGAGEMENT_BOX_GOLDEN = 2240002;
     public const int ENGAGEMENT_BOX_SILVER = 2240003;

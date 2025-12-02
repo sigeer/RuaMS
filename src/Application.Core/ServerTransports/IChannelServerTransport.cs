@@ -7,6 +7,7 @@ using CashProto;
 using Config;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
+using GuildProto;
 using ItemProto;
 using MessageProto;
 using Polly;
@@ -206,5 +207,6 @@ namespace Application.Core.ServerTransports
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
         void SendEarnTitleMessage(EarnTitleMessageRequest earnTitleMessageRequest);
         bool GainCharacterSlot(int accountId);
+        void SendGuildPacket(GuildPacketRequest guildPacketRequest);
     }
 }

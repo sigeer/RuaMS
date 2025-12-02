@@ -51,23 +51,15 @@ namespace Application.Core.Login
         {
             var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
             data.List.AddRange(notes);
-            SendMessage(BroadcastType.OnNoteSend, data, new PlayerChannelPair(channel, id));
-            SendMessage(BroadcastType.OnNoteSend, data, data.ReceiverId);
+            SendMessage(BroadcastType.OnNoteSend, data, [data.ReceiverId]);
         }
 
 
-        public void SendMultiChat(int type, string nameFrom, PlayerChannelPair[] teamMember, string chatText)
+        public void SendMultiChat(int type, string nameFrom, IEnumerable<CharacterLiveObject> teamMember, string chatText)
         {
-            if (teamMember.Length == 0)
-                return;
-
-            var groups = _server.GroupPlayer(teamMember);
-            foreach (var server in groups)
-            {
-                var res = new MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
-                res.Receivers.AddRange(server.Value);
-                server.Key.BroadcastMessage(BroadcastType.OnMultiChat, res);
-            }
+            var res = new MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
+            res.Receivers.AddRange(teamMember.Select(x => x.Character.Id));
+            SendMessage(BroadcastType.OnMultiChat, res, teamMember);
         }
 
         public void SendUpdateCouponRates(Config.CouponConfig config)
@@ -311,12 +303,12 @@ namespace Application.Core.Login
 
         internal void ReturnInvitationCreated(InvitationProto.CreateInviteResponse response)
         {
-            SendMessage(BroadcastType.OnInvitationSend, response, response.SenderPlayerId, response.ReceivePlayerId);
+            SendMessage(BroadcastType.OnInvitationSend, response, [response.SenderPlayerId, response.ReceivePlayerId]);
         }
 
         internal void ReturnInvitationAnswer(InvitationProto.AnswerInviteResponse response)
         {
-            SendMessage(BroadcastType.OnInvitationAnswer, response, response.SenderPlayerId, response.ReceivePlayerId);
+            SendMessage(BroadcastType.OnInvitationAnswer, response, [response.SenderPlayerId, response.ReceivePlayerId]);
         }
 
         internal void BroadcastShutdown()
@@ -335,7 +327,7 @@ namespace Application.Core.Login
 
         internal void SendNewYearCards(SendNewYearCardResponse response)
         {
-            SendMessage(BroadcastType.OnNewYearCardSend, response, response.Request.FromId);
+            SendMessage(BroadcastType.OnNewYearCardSend, response, [response.Request.FromId]);
         }
 
         internal void SendNewYearCardNotify(NewYearCardNotifyDto response)
@@ -364,7 +356,7 @@ namespace Application.Core.Login
 
         internal void ReturnBuyCashItem(BuyCashItemResponse buyCashItemResponse)
         {
-            SendMessage(BroadcastType.OnCashItemPurchased, buyCashItemResponse, buyCashItemResponse.MasterId);
+            SendMessage(BroadcastType.OnCashItemPurchased, buyCashItemResponse, [buyCashItemResponse.MasterId]);
         }
 
         internal void BroadcastReportNotify(SendReportBroadcast data)
@@ -389,12 +381,12 @@ namespace Application.Core.Login
 
         internal void BroadcastGmLevelChanged(SystemProto.SetGmLevelBroadcast data)
         {
-            SendMessage(BroadcastType.OnGmLevelSet, data, data.TargetId);
+            SendMessage(BroadcastType.OnGmLevelSet, data, [data.TargetId]);
         }
 
         internal void SendWrapPlayerByName(SystemProto.SummonPlayerByNameBroadcast data)
         {
-            SendMessage(BroadcastType.SendWrapPlayerByName, data, data.MasterId);
+            SendMessage(BroadcastType.SendWrapPlayerByName, data, [data.MasterId]);
         }
     }
 }

@@ -513,14 +513,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
     }
 
-    public Alliance? createAlliance(string name)
+    public Guild.Alliance? createAlliance(string name)
     {
         return c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name);
     }
 
     public int getAllianceCapacity()
     {
-        return getPlayer().AllianceModel!.getCapacity();
+        return getPlayer().AllianceModel!.Capacity;
     }
 
     public RemoteHiredMerchantData LoadFredrickRegistry()
@@ -531,11 +531,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void ShowFredrick(RemoteHiredMerchantData store)
     {
         c.sendPacket(PacketCreator.getFredrick(store));
-    }
-
-    public int partyMembersInMap()
-    {
-        return getPlayer().getMap().getAllPlayers().Count(x => x.getParty() == getPlayer().getParty());
     }
 
     public server.events.gm.Event? getEvent()
@@ -549,11 +544,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             getPlayer().setTeam(getEvent()!.getLimit() % 2); //muhaha :D
         }
-    }
-
-    public IPlayer? getMapleCharacter(string player)
-    {
-        return c.CurrentServer.getPlayerStorage().getCharacterByName(player);
     }
 
     public void logLeaf(string prize)

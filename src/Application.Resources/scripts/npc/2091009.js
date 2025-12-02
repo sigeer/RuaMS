@@ -1,4 +1,4 @@
-﻿var status;
+var status;
 
 function start() {
     status = -1;
@@ -24,16 +24,17 @@ function action(mode, type, selection) {
             cm.dispose();
             return;
         }
-        if (cm.getText() == "Actions speak louder than words") {
+        if (cm.getText() == cm.GetClientMessage('Password_q21747')) {
             if (cm.isQuestStarted(21747) && cm.getQuestProgressInt(21747, 9300351) == 0) {
                 cm.warp(925040100, 0);
             } else {
-                cm.playerMessage(5, "Although you said the right answer, some mysterious forces are blocking the way in.");
+                cm.Pink("Although you said the right answer, some mysterious forces are blocking the way in.");
             }
 
             cm.dispose();
         } else {
             cm.sendOk("#r错误！");
+            cm.dispose();
         }
     } else if (status == 2) {
         cm.dispose();

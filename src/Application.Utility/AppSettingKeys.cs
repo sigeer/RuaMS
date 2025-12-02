@@ -13,6 +13,7 @@ namespace Application.Utility
         public const string UseExtraChannel = "UseExtraChannel";
         public const string GrpcPort = "GrpcPort";
         public const string OpenApiPort = "OpenApiPort";
+        public const string MetricsPort = "MetricsPort";
 
         public const string Section_Script = "ScriptConfig";
         public const string Section_WZ = "WZConfig";

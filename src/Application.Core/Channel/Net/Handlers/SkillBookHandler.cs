@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Skills;
+using Application.Templates.Item.Consume;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -60,9 +61,7 @@ public class SkillBookHandler : ChannelHandlerBase
                     return;
                 }
 
-                var template = ItemInformationProvider.getInstance().GetMasteryItemTemplate(toUse.getItemId());
-                // var skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
-                if (template == null)
+                if (toUse.SourceTemplate is not MasteryItemTemplate template)
                 {
                     return;
                 }

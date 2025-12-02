@@ -1227,7 +1227,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         lockObj.EnterReadLock();
         try
         {
-            if (!CanGiveReward(player, eventLevel))
+            if (!CanGiveReward(player, -eventLevel))
             {
                 return true;
             }
@@ -1265,7 +1265,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             player.gainExp(rewardExp);
         }
-        SetRewardClaimed(player, eventLevel);
+        SetRewardClaimed(player, -eventLevel);
         return true;
     }
 

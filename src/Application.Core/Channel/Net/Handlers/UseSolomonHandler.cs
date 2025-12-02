@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Templates.Item.Consume;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -42,10 +43,6 @@ public class UseSolomonHandler : ChannelHandlerBase
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        var itemTemplate = ItemInformationProvider.getInstance().GetSolomenItemTemplate(itemId);
-        if (itemTemplate == null)
-            return;
-
         if (c.tryacquireClient())
         {
             try
@@ -60,6 +57,9 @@ public class UseSolomonHandler : ChannelHandlerBase
                     {
                         return;
                     }
+
+                    if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate)
+                        return;
 
                     if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
                     {

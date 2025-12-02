@@ -694,29 +694,7 @@ namespace Application.Core.Channel
                 var guild = GuildManager.GetGuildById(data.GuildId);
                 if (guild != null)
                 {
-                    guild.SetMemberChannel(data.Id, data.Channel);
-                    guild.setOnline(data.Id, data.Channel > 0, data.Channel);
-
-                    var chr = FindPlayerById(data.Channel, data.Id);
-                    if (chr != null)
-                        chr.sendPacket(GuildPackets.showGuildInfo(chr));
-
-                    if (guild.AllianceId > 0)
-                    {
-                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
-                        if (alliance != null)
-                        {
-                            if (chr != null)
-                            {
-                                chr.sendPacket(GuildPackets.updateAllianceInfo(alliance));
-                                chr.sendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.getNotice()));
-                            }
-
-                            if (data.IsNewComer)
-                                alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, data.Id, true), data.Id);
-                        }
-                    }
-
+                    guild.OnMemberChannelChanged(data.Id, data.Channel);
                 }
             }
 

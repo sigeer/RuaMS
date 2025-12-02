@@ -17,12 +17,14 @@ using ExpeditionProto;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using net.server;
+using net.server.guild;
 using server;
 using server.events;
 using server.life;
 using server.quest;
 using System.Collections.Generic;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Channel.Services
 {
@@ -133,7 +135,7 @@ namespace Application.Core.Channel.Services
             }
             player.CheckMarriageData();
 
-            player.Storage = new Storage(player, 
+            player.Storage = new Storage(player,
                 o.AccountGame.Storage.OwnerId, (byte)o.AccountGame.Storage.Slots, o.AccountGame.Storage.Meso,
                 _mapper.Map<Item[]>(o.AccountGame.Storage.Items));
             player.GachaponStorage = new(player, o.GachaponStorage.Meso, _mapper.Map<Item[]>(o.GachaponStorage.Items));
@@ -414,6 +416,17 @@ namespace Application.Core.Channel.Services
                 chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+            if (chr.GuildModel != null)
+            {
+                chr.sendPacket(GuildPackets.showGuildInfo(chr));
+            }
+
+            if (chr.AllianceModel != null)
+            {
+                chr.sendPacket(GuildPackets.updateAllianceInfo(chr.AllianceModel));
+                chr.sendPacket(GuildPackets.allianceNotice(chr.AllianceModel.AllianceId, chr.AllianceModel.Notice));
+            }
+
 
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
         }

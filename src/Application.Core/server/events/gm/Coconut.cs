@@ -33,7 +33,7 @@ namespace server.events.gm;
  * @author kevintjuh93
  */
 //Make them better :)
-public class Coconut : Event
+public class Coconut 
 {
     public ICoconutMap Map { get; }
     private int MapleScore = 0;
@@ -43,7 +43,7 @@ public class Coconut : Event
     private int countStopped = 20;
     private List<Coconuts> coconuts = new();
 
-    public Coconut(IMap map) : base(map.getId(), 50)
+    public Coconut(IMap map)
     {
         this.Map = (map as ICoconutMap)!;
         countBombing = this.Map.CountBombing;

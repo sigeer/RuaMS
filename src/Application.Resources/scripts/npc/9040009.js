@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -80,7 +80,7 @@ function action(mode, type, selection) {
                             if (stage == 3) {
                                 cm.getPlayer().getMap().getReactorByName("statuegate").forceHitReactor(1);
                                 clearStage(1, eim);
-                                cm.getGuild().gainGP(15);
+                                cm.GainGuildGP(15);
 
                                 cm.sendOk("干得好。你可以继续进行下一阶段。");
                             } else {

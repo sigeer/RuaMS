@@ -23,12 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 
 namespace client.inventory;
 
-public class Item : IComparable<Item>, IItemProp
+public class Item : IComparable<Item>
 {
     protected ILogger log;
     protected int id;
@@ -45,6 +46,17 @@ public class Item : IComparable<Item>, IItemProp
 
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
+
+    AbstractItemTemplate? _sourceTemplate;
+    public virtual AbstractItemTemplate SourceTemplate
+    {
+        get
+        {
+            if (_sourceTemplate == null)
+                _sourceTemplate = ItemInformationProvider.getInstance().GetTemplate(id) ?? throw new BusinessResException($"ItemId = {id}");
+            return _sourceTemplate;
+        }
+    }
     public Item(int id, short position, short quantity)
     {
         log = LogFactory.GetLogger(LogType.Item);
@@ -173,8 +185,7 @@ public class Item : IComparable<Item>, IItemProp
 
     public virtual void setFlag(short b)
     {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (ii.isAccountRestricted(id))
+        if (SourceTemplate.AccountSharable)
         {
             b |= ItemConstants.ACCOUNT_SHARING; // thanks Shinigami15 for noticing ACCOUNT_SHARING flag not being applied properly to items server-side
         }
@@ -219,8 +230,7 @@ public class Item : IComparable<Item>, IItemProp
 
     public int GetSortKey()
     {
-        var template = ItemInformationProvider.getInstance().GetTemplate(id);
-        if (template == null || template is not BulletItemTemplate bulletItemTemplate)
+        if (SourceTemplate is not BulletItemTemplate bulletItemTemplate)
             return id;
 
         var typeTag = id / 10000;

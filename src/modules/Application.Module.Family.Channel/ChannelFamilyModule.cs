@@ -73,7 +73,7 @@ namespace Application.Module.Family.Channel
                 family.broadcast(PacketCreator.jobMessage(1, arg.JobId, arg.Name), arg.Id);
 
                 var jobModel = JobFactory.GetById(arg.JobId);
-                family.broadcast(PacketCreator.serverNotice(6, "[" + GameConstants.ordinal(jobModel.Rank) + " Job] " + arg.Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(jobModel) + "."), arg.Id);
+                family.broadcast(PacketCreator.serverNotice(6, "[" + ClientCulture.SystemCulture.Ordinal(jobModel.Rank) + " Job] " + arg.Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(jobModel) + "."), arg.Id);
             }
         }
 

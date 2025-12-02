@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -19,7 +19,7 @@
 */
 
 function start(ms) {
-    var map = ms.getClient().getChannelServer().getMapFactory().getMap(926000010);
+    var map = ms.getMap();
     map.resetPQ(1);
     return (true);
 }
