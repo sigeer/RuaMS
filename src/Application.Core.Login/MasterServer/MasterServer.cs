@@ -422,11 +422,10 @@ namespace Application.Core.Login
             foreach (var cid in cidList)
             {
                 var player = CharacterManager.FindPlayerById(cid);
-                if (player == null || player.ActualChannel == 0)
+                if (player?.ChannelNode == null)
                     continue;
 
-                var serverName = Channels[player.ActualChannel - 1].ServerName;
-                var serverWrapper = ChannelServerList[serverName];
+                var serverWrapper = player.ChannelNode;
                 if (!result.TryGetValue(serverWrapper, out var idList))
                 {
                     idList = new List<int>();

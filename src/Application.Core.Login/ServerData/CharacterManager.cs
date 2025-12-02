@@ -160,7 +160,7 @@ namespace Application.Core.Login.Datas
                     if (obj.Channel == 0)
                     {
                         origin.Character.LastLogoutTime = DateTimeOffset.FromUnixTimeMilliseconds(_masterServer.getCurrentTime());
-                        origin.ActualChannel = 0;
+                        origin.ChannelNode = null;
 
 
                         foreach (var module in _masterServer.Modules)
@@ -231,7 +231,7 @@ namespace Application.Core.Login.Datas
                 var isNewComer = d.Channel == 0;
 
                 d.Channel = channel;
-                d.ActualChannel = channel;
+                d.ChannelNode = _masterServer.GetChannelServer(channel);
 
 
                 foreach (var module in _masterServer.Modules)
