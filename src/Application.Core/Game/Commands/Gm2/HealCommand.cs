@@ -11,6 +11,7 @@ public class HealCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
         player.healHpMp();
+        player.dispelDebuffs();
     }
 
 }

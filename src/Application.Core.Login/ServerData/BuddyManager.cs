@@ -51,7 +51,7 @@ namespace Application.Core.Login.ServerData
                 ReceiverId = targetChr.Character.Id,
                 Buddy = GetChrBuddyDto(targetChr.Character.Id, masterChr)
             };
-            _server.Transport.SendMessage(BroadcastType.Buddy_Added, data, data.ReceiverId);
+            _server.Transport.SendMessage(BroadcastType.Buddy_Added, data, [data.ReceiverId]);
 
             return new Dto.AddBuddyResponse
             {
@@ -117,7 +117,7 @@ namespace Application.Core.Login.ServerData
                 return new DeleteBuddyResponse() { Code = 1 };
 
             masterChr.BuddyList.Remove(request.Buddyid);
-            _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, request.Buddyid);
+            _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, [request.Buddyid]);
             return new DeleteBuddyResponse();
         }
 
@@ -138,7 +138,7 @@ namespace Application.Core.Login.ServerData
                 ReceiverId = receiverChr.Character.Id,
                 Text = request.Text
             };
-            _server.Transport.SendMessage(BroadcastType.Whisper_Chat, data, data.ReceiverId);
+            _server.Transport.SendMessage(BroadcastType.Whisper_Chat, data, [data.ReceiverId]);
             return new SendWhisperMessageResponse();
         }
 

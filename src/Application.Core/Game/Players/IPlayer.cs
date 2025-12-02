@@ -60,7 +60,7 @@ namespace Application.Core.Game.Players
 
         public Team? TeamModel { get; }
         public Guild? GuildModel { get; }
-        public Alliance? AllianceModel { get; }
+        public Guild.Alliance? AllianceModel { get; }
         public ISchool? SchoolModel { get; set; }
         public Dictionary<short, string> AreaInfo { get; set; }
         public MonsterBook Monsterbook { get; set; }
@@ -261,7 +261,7 @@ namespace Application.Core.Game.Players
         List<PlayerBuffValueHolder> getAllBuffs();
         List<PlayerCoolDownValueHolder> getAllCooldowns();
         Dictionary<Disease, DiseaseExpiration> getAllDiseases();
-        Alliance? getAlliance();
+        Guild.Alliance? getAlliance();
         int getAllianceRank();
         string? getAreaInfo(int area);
         Dictionary<short, string> getAreaInfos();

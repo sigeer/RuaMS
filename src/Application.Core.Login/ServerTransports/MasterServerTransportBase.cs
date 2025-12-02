@@ -18,33 +18,30 @@ namespace Application.Core.Login.ServerTransports
         /// <param name="messageType"></param>
         /// <param name="message"></param>
         /// <param name="playerIdArray"></param>
-        public void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : IMessage
+        public void SendMessage<TMessage>(string messageType, TMessage message, IEnumerable<int> playerIdArray) where TMessage : IMessage
         {
-            if (playerIdArray.Length == 0)
+            if (playerIdArray.Count() == 0)
                 return;
 
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
             {
-                group.Key.BroadcastMessage(messageType, message);
+                group.BroadcastMessage(messageType, message);
             }
         }
 
-        /// <summary>
-        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
-        /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="messageType"></param>
-        /// <param name="message"></param>
-        /// <param name="playerIdArray"></param>
-        public void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : IMessage
+        public void SendMessage<TMessage>(string messageType, TMessage message, IEnumerable<CharacterLiveObject> playerIdArray) where TMessage : IMessage
         {
+            if (playerIdArray.Count() == 0)
+                return;
+
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
             {
-                group.Key.BroadcastMessage(messageType, message);
+                group.BroadcastMessage(messageType, message);
             }
         }
+
 
         public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : IMessage
         {

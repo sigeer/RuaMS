@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -35,7 +35,7 @@ function start() {
                         points = 100;
                     }
 
-                    cm.getGuild().gainGP(points);
+                    cm.GainGuildGP(points);
                 }
 
                 eim.clearPQ();

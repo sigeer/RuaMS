@@ -14,12 +14,12 @@ namespace Application.Module.Duey.Master
 
         internal void SendCreatePackage(CreatePackageBroadcast response)
         {
-            SendMessage(BroadcastType.OnDueyPackageCreation, response, response.Package.SenderId, response.Package.ReceiverId);
+            SendMessage(BroadcastType.OnDueyPackageCreation, response, [response.Package.SenderId, response.Package.ReceiverId]);
         }
 
         internal void SendDueyPackageRemoved(RemovePackageResponse response)
         {
-            SendMessage(BroadcastType.OnDueyPackageRemove, response, response.Request.MasterId);
+            SendMessage(BroadcastType.OnDueyPackageRemove, response, [response.Request.MasterId]);
         }
 
         internal void SendTakeDueyPackage(TakeDueyPackageResponse response)
@@ -34,7 +34,7 @@ namespace Application.Module.Duey.Master
 
         internal void SendDueyNotifyOnLogin(int receiverId, DueyNotifyDto response)
         {
-            SendMessage(BroadcastType.OnDueyNotify, response, receiverId);
+            SendMessage(BroadcastType.OnDueyNotify, response, [receiverId]);
         }
     }
 }

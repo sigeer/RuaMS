@@ -385,39 +385,9 @@ namespace Application.Core.Login
             return false;
         }
 
-
-        /// <summary>
-        /// 对玩家按服务器分组
-        /// </summary>
-        /// <param name="dataList">玩家id及其所在频道</param>
-        /// <param name="exceptServer"></param>
-        /// <returns>服务器: 服务器上的玩家</returns>
-        public Dictionary<ChannelServerNode, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
+        public HashSet<ChannelServerNode> GroupPlayer(IEnumerable<int> cidList)
         {
-            var result = new Dictionary<ChannelServerNode, List<int>>();
-
-            foreach (var player in dataList)
-            {
-                if (player.Channel <= 0)
-                    continue;
-
-                var serverName = Channels[player.Channel - 1].ServerName;
-                var serverWrapper = ChannelServerList[serverName];
-                if (!result.TryGetValue(serverWrapper, out var idList))
-                {
-                    idList = new List<int>();
-                    result[serverWrapper] = idList;
-                }
-                idList.Add(player.PlayerId);
-            }
-
-            // 转换 List<int> -> int[]
-            return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
-        }
-
-        public Dictionary<ChannelServerNode, int[]> GroupPlayer(IEnumerable<int> cidList)
-        {
-            var result = new Dictionary<ChannelServerNode, List<int>>();
+            var result = new HashSet<ChannelServerNode>();
 
             foreach (var cid in cidList)
             {
@@ -425,17 +395,23 @@ namespace Application.Core.Login
                 if (player?.ChannelNode == null)
                     continue;
 
-                var serverWrapper = player.ChannelNode;
-                if (!result.TryGetValue(serverWrapper, out var idList))
-                {
-                    idList = new List<int>();
-                    result[serverWrapper] = idList;
-                }
-                idList.Add(player.Character.Id);
+                result.Add(player.ChannelNode);
             }
+            return result;
+        }
 
-            // 转换 List<int> -> int[]
-            return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
+        public HashSet<ChannelServerNode> GroupPlayer(IEnumerable<CharacterLiveObject> cList)
+        {
+            var result = new HashSet<ChannelServerNode>();
+
+            foreach (var player in cList)
+            {
+                if (player?.ChannelNode == null)
+                    continue;
+
+                result.Add(player.ChannelNode);
+            }
+            return result;
         }
 
         public ChannelServerNode GetChannelServer(int channelId)

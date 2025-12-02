@@ -22,7 +22,7 @@ namespace Application.Shared.Constants
         private static int[] jobUpgradeBlob = { 1, 20, 60, 110, 190 };
         private static int[] jobUpgradeSpUp = { 0, 1, 2, 3, 6 };
 
-
+        public static string[] DefaultAllianceRankTitles =  { "Master", "Jr. Master", "Member", "Member", "Member" };
 
         public static int getPlayerBonusDropRate(int slot)
         {

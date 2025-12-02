@@ -513,14 +513,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
     }
 
-    public Alliance? createAlliance(string name)
+    public Guild.Alliance? createAlliance(string name)
     {
         return c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name);
     }
 
     public int getAllianceCapacity()
     {
-        return getPlayer().AllianceModel!.getCapacity();
+        return getPlayer().AllianceModel!.Capacity;
     }
 
     public RemoteHiredMerchantData LoadFredrickRegistry()

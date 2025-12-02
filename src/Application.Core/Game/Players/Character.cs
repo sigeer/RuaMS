@@ -83,7 +83,7 @@ public partial class Player
         }
     }
     public Guild? GuildModel => getGuild();
-    public Alliance? AllianceModel => getAlliance();
+    public Guild.Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
     public RewardStorage GachaponStorage { get; set; } = null!;
     public AbstractStorage? CurrentStorage { get; set; }
@@ -973,11 +973,12 @@ public partial class Player
 
     public void broadcastAcquaintances(Packet packet)
     {
-        var guild = getGuild();
-        if (guild != null)
-        {
-            guild.broadcast(packet, Id);
-        }
+        // guild已经有转职提示
+        //var guild = getGuild();
+        //if (guild != null)
+        //{
+        //    guild.broadcast(packet, Id);
+        //}
 
         /*
         if(partnerid > 0) {
@@ -2237,7 +2238,7 @@ public partial class Player
         }
     }
 
-    public Alliance? getAlliance()
+    public Guild.Alliance? getAlliance()
     {
         var guild = getGuild();
         return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
@@ -2705,7 +2706,7 @@ public partial class Player
         if (guild == null)
             return;
 
-        int cost = GuildManager.getIncreaseGuildCost(guild.getCapacity());
+        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
 
         if (getMeso() < cost)
         {

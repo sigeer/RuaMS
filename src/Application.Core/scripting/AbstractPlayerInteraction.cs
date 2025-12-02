@@ -738,7 +738,8 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void guildMessage(int type, string message)
     {
-        getGuild()?.dropMessage(type, message);
+        if (getPlayer().GuildModel != null)
+            c.CurrentServerContainer.GuildManager.DropGuildMessage(getPlayer().GuildModel!.GuildId, type, message);
     }
 
     public Guild? getGuild()
@@ -1271,6 +1272,13 @@ public class AbstractPlayerInteraction : IClientMessenger
         {
             showInfoText("The One Who's Touched the Sky title in progress. " + status + "/5 Completed");
         }
+    }
+    #endregion
+
+    #region Guild
+    public void GainGuildGP(int value)
+    {
+        c.CurrentServerContainer.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
 }

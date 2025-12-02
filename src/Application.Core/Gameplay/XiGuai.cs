@@ -35,12 +35,15 @@ namespace Application.Core.Game.Gameplay
 
         public void ApplyMonster(Monster monster)
         {
-            if (monster.isBoss())
+            if (monster.isBoss() || monster.getStats().isFriendly())
             {
                 return;
             }
 
-            monster.resetMobPosition(Position);
+            Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith((t) =>
+            {
+                monster.resetMobPosition(Position);
+            });
         }
     }
 }
