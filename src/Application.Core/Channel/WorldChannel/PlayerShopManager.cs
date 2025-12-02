@@ -32,7 +32,7 @@ namespace Application.Core.Channel
             List<SyncPlayerShopRequest> requests = [];
 
             var currentTime = _worldChannel.Container.getCurrentTime();
-            var allShops = GetAllShops().Where(x => x.ExpirationTime >= currentTime).ToArray();
+            var allShops = GetAllShops().Where(x => x.ExpirationTime < currentTime).ToArray();
 
             foreach (var item in allShops)
             {
