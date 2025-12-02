@@ -63,7 +63,7 @@ public class EventManager : IDisposable
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
+            log.Error(ex, "Event 脚本：{ScriptFile}，方法：{Method}", _file.FileName, "cancelSchedule");
         }
 
         props.Clear();

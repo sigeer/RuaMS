@@ -134,3 +134,4 @@ function allMonstersDead(eim) { }
 
 function playerUnregistered(eim, player) { }
 
+function cancelSchedule() { }
