@@ -7,6 +7,7 @@ using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Message;
 using Application.Shared.Models;
+using Application.Shared.Servers;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
@@ -69,12 +70,13 @@ namespace Application.Core.Channel.InProgress
             _resourceService = resourceDataService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels)
+        public Task<Config.RegisterServerResult> RegisterServer(List<ChannelConfig> channels)
         {
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
 
-            var channelId = _server.AddChannel(new InProgressWorldChannel(_server.ServiceProvider.GetRequiredService<WorldChannelServer>(), channels));
+            var channelServerNode = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
+            var channelId = _server.AddChannel(new InProgressWorldChannel(channelServerNode, channels));
             return Task.FromResult(new Config.RegisterServerResult
             {
                 StartChannel = channelId,

@@ -36,9 +36,9 @@ namespace Application.Core.Login.Servers
     public class RemoteWorldChannel : ChannelServerNode
     {
         readonly ServiceProto.Master2ChannelService.Master2ChannelServiceClient _client;
-        public RemoteWorldChannel(string serverName, string serverHost, string grpcHost, int grpcPort, List<ChannelConfig> channelConfigs) : base(serverName, serverHost, channelConfigs)
+        public RemoteWorldChannel(string serverName, string serverHost, string grpcUrl, List<ChannelConfig> channelConfigs) : base(serverName, serverHost, channelConfigs)
         {
-            _client = new ServiceProto.Master2ChannelService.Master2ChannelServiceClient(GrpcChannel.ForAddress($"http://{grpcHost}:{grpcPort}"));
+            _client = new ServiceProto.Master2ChannelService.Master2ChannelServiceClient(GrpcChannel.ForAddress(grpcUrl));
         }
 
         public override void BroadcastMessage<TMessage>(string type, TMessage message)

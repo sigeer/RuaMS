@@ -1,0 +1,64 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    environment:
+      ASPIRE_DASHBOARD_FORWARDEDHEADERS_ENABLED: "true"
+    ports:
+      - "8080:18888"
+    expose:
+      - "18889"
+    networks:
+      - "aspire"
+    restart: "always"
+  ruams-master:
+    image: "ghcr.io/sigeer/ruams-master:latest"
+    command:
+      - "/p:IsStandalone=false"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      Kestrel__Endpoints__Grpc__Url: "http://*:7878"
+      Kestrel__Endpoints__OpenApi__Url: "http://*:8080"
+      RUA_MS_UseExtraChannel: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "ruams-master"
+    expose:
+      - "8484"
+      - "7575-7600"
+    volumes:
+      - target: "/app/logs"
+        source: "./logs"
+    networks:
+      - "aspire"
+  ruams-channel:
+    image: "ghcr.io/sigeer/ruams-channel:latest"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      Kestrel__Endpoints__http__Url: "http://*:7879"
+      RUAMS-MASTER_GRPC: "http://ruams-master:7878"
+      services__ruams-master__Grpc__0: "http://ruams-master:7878"
+      RUAMS-MASTER_OPENAPI: "http://ruams-master:8080"
+      services__ruams-master__OpenApi__0: "http://ruams-master:8080"
+      RUAMS-MASTER_HTTPS: "https://ruams-master:7878"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "ruams-channel"
+    expose:
+      - "7575-7600"
+    volumes:
+      - target: "/app/logs"
+        source: "./logs"
+    depends_on:
+      ruams-master:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"

@@ -27,6 +27,7 @@ using Grpc.Core.Interceptors;
 using Application.Protos;
 using LifeProto;
 using ServerProto;
+using ServiceProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -45,22 +46,32 @@ namespace Application.Core.ServerTransports
         readonly ServiceProto.PlayerShopService.PlayerShopServiceClient _playerShopClient;
 
         readonly ChannelServerConfig _config;
-        public DefaultChannelServerTransport(IOptions<ChannelServerConfig> options)
+        public DefaultChannelServerTransport(
+            IOptions<ChannelServerConfig> options,
+            SystemService.SystemServiceClient systemClient, 
+            GameService.GameServiceClient gameClient, 
+            SyncService.SyncServiceClient syncClient, 
+            GuildService.GuildServiceClient guildClient, 
+            AllianceService.AllianceServiceClient allianceClient, 
+            DataService.DataServiceClient dataClient, 
+            ItemService.ItemServiceClient itemClient, 
+            CashService.CashServiceClient cashClient, 
+            TeamService.TeamServiceClient teamClient, 
+            BuddyService.BuddyServiceClient buddyClient, 
+            PlayerShopService.PlayerShopServiceClient playerShopClient)
         {
             _config = options.Value;
-            var channel = GrpcChannel.ForAddress(_config.MasterServerGrpcAddress);
-            var callInvoker = channel.Intercept(new GlobalHeaderInterceptor("x-server-name", _config.ServerName));
-            _systemClient = new ServiceProto.SystemService.SystemServiceClient(callInvoker);
-            _gameClient = new ServiceProto.GameService.GameServiceClient(channel);
-            _syncClient = new ServiceProto.SyncService.SyncServiceClient(channel);
-            _guildClient = new ServiceProto.GuildService.GuildServiceClient(channel);
-            _allianceClient = new ServiceProto.AllianceService.AllianceServiceClient(channel);
-            _dataClient = new ServiceProto.DataService.DataServiceClient(channel);
-            _itemClient = new ServiceProto.ItemService.ItemServiceClient(channel);
-            _cashClient = new ServiceProto.CashService.CashServiceClient(channel);
-            _buddyClient = new(channel);
-            _teamClient = new(channel);
-            _playerShopClient = new ServiceProto.PlayerShopService.PlayerShopServiceClient(channel);
+            _systemClient = systemClient;
+            _gameClient = gameClient;
+            _syncClient = syncClient;
+            _guildClient = guildClient;
+            _allianceClient = allianceClient;
+            _dataClient = dataClient;
+            _itemClient = itemClient;
+            _cashClient = cashClient;
+            _teamClient = teamClient;
+            _buddyClient = buddyClient;
+            _playerShopClient = playerShopClient;
         }
 
         public long GetCurrentTime()
@@ -104,10 +115,10 @@ namespace Application.Core.ServerTransports
             _systemClient.RemoveTimer(new Google.Protobuf.WellKnownTypes.Empty());
         }
 
-        public async Task<RegisterServerResult> RegisterServer(List<WorldChannel> channels)
+        public async Task<RegisterServerResult> RegisterServer(List<ChannelConfig> channels)
         {
-            var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost, GrpcPort = _config.GrpcPort };
-            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.ChannelConfig.Port, MaxSize = x.ChannelConfig.MaxSize }));
+            var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost, GrpcUrl = _config.GrpcUrl };
+            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.Port, MaxSize = x.MaxSize }));
             return await _systemClient.RegisterServerAsync(req);
         }
 

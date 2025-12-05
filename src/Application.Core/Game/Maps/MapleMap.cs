@@ -148,9 +148,9 @@ public class MapleMap : IMap
         log = LogFactory.GetLogger($"Map/{range}");
 
         if (EventInstanceManager == null)
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
+            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:None_Map:{Id}({GetHashCode()})";
         else
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}_{GetHashCode()}";
+            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}({GetHashCode()})";
 
         #region portals
         portals = new();
@@ -3925,8 +3925,6 @@ public class MapleMap : IMap
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
             chr.sendPacket(PacketCreator.crogBoatPacket(true));
         }
-
-        ChannelServer.Metrics.MapCountInc(Id);
     }
 
     public void addPlayer(IPlayer chr)
@@ -4262,8 +4260,6 @@ public class MapleMap : IMap
                 this.broadcastPacket(chr, PacketCreator.removeDragon(chr.getId()));
             }
         }
-
-        ChannelServer.Metrics.MapCountDec(Id);
     }
 
     public Dictionary<int, IPlayer> getMapPlayers()

@@ -1,11 +1,11 @@
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.BBS.Channel.Net.Handlers;
 using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 
 namespace Application.Module.BBS.Channel
 {
@@ -13,6 +13,11 @@ namespace Application.Module.BBS.Channel
     {
         public static IServiceCollection AddGuildBBSChannel(this IServiceCollection services)
         {
+            var urlString = "http://_grpc.ruams-master";
+            services.AddGrpcClient<BBSService.ChannelService.ChannelServiceClient>((sp, o) =>
+            {
+                o.Address = new(urlString);
+            }).AddInterceptor<WithServerNameInterceptor>();
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<BBSManager>();
 

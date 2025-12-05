@@ -1,6 +1,7 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Duey.Channel.Models;
 using Application.Module.Duey.Channel.Net.Handlers;
 using Application.Shared.Net;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using net.server.services;
 
 namespace Application.Module.Duey.Channel
 {
@@ -16,6 +18,11 @@ namespace Application.Module.Duey.Channel
     {
         public static IServiceCollection AddDueyChannel(this IServiceCollection services)
         {
+            var urlString = "http://_grpc.ruams-master";
+            services.AddGrpcClient<DueyService.ChannelService.ChannelServiceClient>((sp, o) =>
+            {
+                o.Address = new(urlString);
+            }).AddInterceptor<WithServerNameInterceptor>();
             services.AddAutoMapper(typeof(Mapper));
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
 

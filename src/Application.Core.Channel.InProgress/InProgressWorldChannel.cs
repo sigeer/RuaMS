@@ -1,4 +1,5 @@
 using Application.Core.Login.Servers;
+using Application.Shared.Servers;
 using ExpeditionProto;
 using Google.Protobuf.WellKnownTypes;
 using SystemProto;
@@ -7,8 +8,8 @@ namespace Application.Core.Channel.InProgress
 {
     public sealed class InProgressWorldChannel : ChannelServerNode
     {
-        public InProgressWorldChannel(WorldChannelServer worldChannel, List<WorldChannel> channels) 
-            : base(worldChannel.ServerName, worldChannel.ServerConfig.ServerHost, channels.Select(x => x.ChannelConfig).ToList())
+        public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels) 
+            : base(worldChannel.ServerName, worldChannel.ServerConfig.ServerHost, channels)
         {
             ChannelServer = worldChannel;
         }

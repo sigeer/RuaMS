@@ -2,36 +2,30 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
+using Application.Core.Channel.Net;
+using Application.Core.Channel.Performance;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
-using Application.Core.Game;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
-using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
-using Application.Templates.Providers;
 using Config;
-using constants.game;
 using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using net.server.guild;
-using net.server.task;
 using Polly;
-using Serilog;
 using server;
-using server.quest;
 using System.Diagnostics;
 using System.Net;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel
 {
@@ -40,6 +34,7 @@ namespace Application.Core.Channel
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
+        public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
         public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
@@ -147,6 +142,7 @@ namespace Application.Core.Channel
 
             Modules = new();
             Servers = new();
+            ServerConfigMapping = new();
             ServerConfig = serverConfigOptions.Value;
             PlayerStorage = new();
 
@@ -318,8 +314,65 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
-            if (ServerConfig.ChannelConfig.Count == 0)
-                throw new BusinessFatalException("必须包含频道");
+            Dictionary<ChannelConfig, NettyChannelServer> effectChannels = new();
+            foreach (var item in ServerConfig.ChannelConfig)
+            {
+                var nettyServer = new NettyChannelServer(this, item);
+                try
+                {
+                    await nettyServer.Start();
+                    effectChannels[item] = nettyServer;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "频道服务器监听失败，已跳过端口{Port}", item.Port);
+                }
+            }
+
+            if (effectChannels.Count == 0)
+                throw new BusinessFatalException("必须包含有效的频道");
+
+            var registerPolicy = Policy
+                .Handle<Exception>()
+                .OrResult<RegisterServerResult>(x => x.StartChannel <= 0)
+                .WaitAndRetryAsync(10, attempt => TimeSpan.FromMilliseconds(5000),
+                onRetry: (result, timespan, retryCount, context) =>
+                {
+                    if (result.Exception != null)
+                        _logger.LogError(result.Exception, $"第 {retryCount} 次重试");
+                    else
+                        _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
+                });
+            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(effectChannels.Keys.ToList()));
+
+            if (configs.StartChannel <= 0)
+            {
+                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                return;
+            }
+
+            IsRunning = true;
+            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
+            GameMetrics.RegisterChannel(this);
+            InitializeMessage();
+            OpcodeConstants.generateOpcodeNames();
+            ForceUpdateServerTime();
+
+            var channel = configs.StartChannel;
+            foreach (var server in effectChannels)
+            {
+
+                var scope = ServiceProvider.CreateScope();
+                var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
+                worldChannel.Initialize(configs);
+
+                Servers[channel] = worldChannel;
+                ServerConfigMapping[server.Key] = worldChannel;
+
+                channel++;
+            }
+
+            DataService.LoadAllPLife();
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -338,15 +391,6 @@ namespace Application.Core.Channel
                 _logger.LogDebug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
             });
 
-
-            DataService.LoadAllPLife();
-
-            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
-
-            OpcodeConstants.generateOpcodeNames();
-
-
-            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
 
             CharacterDiseaseManager.Register(TimerManager);
             PetHungerManager.Register(TimerManager);
@@ -367,61 +411,13 @@ namespace Application.Core.Channel
 #endif
 
             InviteChannelHandlerRegistry.Register(ServiceProvider.GetServices<InviteChannelHandler>());
-            InitializeMessage();
 
+            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
             foreach (var module in Modules)
             {
                 module.Initialize();
                 module.RegisterTask(TimerManager);
             }
-
-            List<WorldChannel> localServers = [];
-            foreach (var config in ServerConfig.ChannelConfig)
-            {
-                var scope = ServiceProvider.CreateScope();
-                var channel = new WorldChannel(this, scope, ServerConfig.ServerHost, config);
-                await channel.StartServer();
-                if (channel.IsRunning)
-                {
-                    localServers.Add(channel);
-                }
-            }
-
-            var registerPolicy = Policy.HandleResult<RegisterServerResult>(x => x.StartChannel <= 0)
-                .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(2000),
-                onRetry: (result, timespan, retryCount, context) =>
-                {
-                    _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
-                });
-            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(localServers));
-
-            if (configs.StartChannel > 0)
-            {
-                ForceUpdateServerTime();
-
-                foreach (var server in localServers)
-                {
-                    var channel = configs.StartChannel++;
-                    server.Register(channel);
-                    Servers[channel] = server;
-                }
-
-                UpdateWorldConfig(configs.Config);
-                UpdateCouponConfig(configs.Coupon);
-
-                foreach (var server in Servers.Values)
-                {
-                    server.Initialize();
-                }
-
-                IsRunning = true;
-            }
-            else
-            {
-                _logger.LogError("注册服务器失败, {Message}", configs.Message);
-                IsRunning = false;
-            }
-
         }
 
 

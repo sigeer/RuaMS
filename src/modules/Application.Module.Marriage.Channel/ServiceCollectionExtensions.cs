@@ -1,6 +1,7 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net.Handlers;
 using Application.Module.Marriage.Channel.Scripting;
@@ -17,6 +18,12 @@ namespace Application.Module.Marriage.Channel
     {
         public static IServiceCollection AddMarriageChannel(this IServiceCollection services)
         {
+            var urlString = "http://_grpc.ruams-master";
+            services.AddGrpcClient<MarriageServiceProto.ChannelService.ChannelServiceClient>((sp, o) =>
+            {
+                o.Address = new(urlString);
+            }).AddInterceptor<WithServerNameInterceptor>();
+
             services.AddAutoMapper(typeof(Mapper));
             services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
 

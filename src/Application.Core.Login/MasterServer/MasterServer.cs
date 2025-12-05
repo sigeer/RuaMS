@@ -356,7 +356,7 @@ namespace Application.Core.Login
 
         public int AddChannel(ChannelServerNode channel)
         {
-            if (ChannelServerList.TryAdd(channel.ServerName, channel))
+            if (IsRunning && ChannelServerList.TryAdd(channel.ServerName, channel))
             {
                 var started = Channels.Count;
                 foreach (var item in channel.ServerConfigs)

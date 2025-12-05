@@ -1,5 +1,6 @@
 using Application.Core.Login.Shared;
 using Application.Module.BBS.Master.Models;
+using Application.Shared.ServerExtensions;
 using Application.Shared.Servers;
 using Application.Utility;
 using Microsoft.AspNetCore.Builder;
@@ -24,7 +25,7 @@ namespace Application.Module.BBS.Master
     {
         public void ConfigureHost(WebApplication app)
         {
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+            if (app.Configuration.UseExtralChannel())
                 app.MapGrpcService<GrpcService>();
         }
     }

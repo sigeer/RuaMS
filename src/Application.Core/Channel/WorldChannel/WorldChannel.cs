@@ -28,7 +28,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 {
     public int Id => channel;
     public string ServerName { get; }
-    string _serverLogName;
+    public string ServerLogName { get; }
     private ILogger log;
     public bool IsRunning { get; private set; }
 
@@ -41,13 +41,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     public AbstractNettyServer NettyServer { get; }
 
     private MapManager mapManager;
-    private EventScriptManager eventSM;
-    public MapScriptManager MapScriptManager { get; }
-    public ReactorScriptManager ReactorScriptManager { get; }
-    public NPCScriptManager NPCScriptManager { get; }
-    public PortalScriptManager PortalScriptManager { get; }
-    public QuestScriptManager QuestScriptManager { get; }
-    public DevtestScriptManager DevtestScriptManager { get; }
+    private EventScriptManager eventSM = null!;
+    public MapScriptManager MapScriptManager { get; private set; } = null!;
+    public ReactorScriptManager ReactorScriptManager { get; private set; } = null!;
+    public NPCScriptManager NPCScriptManager { get; private set; } = null!;
+    public PortalScriptManager PortalScriptManager { get; private set; } = null!;
+    public QuestScriptManager QuestScriptManager { get; private set; } = null!;
+    public DevtestScriptManager DevtestScriptManager { get; private set; } = null!;
 
 
     private Dictionary<int, int> storedVars = new();
@@ -102,8 +102,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public ChannelConfig ChannelConfig { get; }
     public PlayerShopManager PlayerShopManager { get; }
-    public GameMetrics Metrics { get; private set; } = null!;
-
     public IServiceScope LifeScope { get; }
 
 
@@ -122,12 +120,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public WorldChannelServer Container { get; }
-    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config)
+    public WorldChannel(int channelId, WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config, NettyChannelServer nettyServer)
     {
+        channel = channelId;
         Container = serverContainer;
         LifeScope = scope;
         ServerName = $"{serverContainer.ServerName}_{config.Port}";
-        _serverLogName = $"频道服务器 - {ServerName}";
+        ServerLogName = $"频道{channel}（{ServerName}）";
         ChannelConfig = config;
         WorldServerMessage = "";
 
@@ -142,7 +141,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         this.Port = config.Port;
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(serverHost), Port);
 
-        NettyServer = new NettyChannelServer(this);
+        NettyServer = nettyServer;
         log = LogFactory.GetLogger(ServerName);
 
         MatchChecker = new MatchCheckerCoordinator(this);
@@ -245,30 +244,17 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             eventSM.ReloadEventScript();
         }
     }
-    public void Register(int channel)
+    public void Initialize(Config.RegisterServerResult config)
     {
-        this.channel = channel;
+        log.Information("[{ServerName}] 初始化...", ServerLogName);
 
-        log.Information("[{ServerName}] 注册成功：频道号{Channel}", _serverLogName, channel);
-        _serverLogName = $"频道服务器 - {ServerName} - 频道{channel}";
-    }
-    public void Initialize()
-    {
-        if (this.channel <= 0)
-        {
-            throw new Exception("频道服务器需要先向中心服务器注册才能初始化");
-        }
-
-        log.Information("[{ServerName}] 初始化...", _serverLogName);
-
+        UpdateWorldConfig(config.Config);
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
-            _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+            ServerLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        Metrics = new GameMetrics(this);
-
-        log.Information("[{ServerName}] 初始化事件...", _serverLogName);
+        log.Information("[{ServerName}] 初始化事件...", ServerLogName);
         var loadedEventsCount = eventSM.ReloadEventScript();
-        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", _serverLogName, loadedEventsCount);
+        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", ServerLogName, loadedEventsCount);
 
         _respawnTask = new RespawnTask(this);
         _respawnTask.Register(Container.TimerManager);
@@ -276,10 +262,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(Container.TimerManager);
 
-        log.Information("[{ServerName}] 初始化完成", _serverLogName);
+        log.Information("[{ServerName}] 初始化完成", ServerLogName);
 
         log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-            _serverLogName,
+            ServerLogName,
             DateTimeOffset.FromUnixTimeMilliseconds(Container.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
@@ -289,14 +275,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         try
         {
             IsRunning = false;
-            log.Information("[{ServerName}] 启动中...", _serverLogName);
+            log.Information("[{ServerName}] 启动中...", ServerLogName);
             await NettyServer.Start();
-            log.Information("[{ServerName}] 启动成功：监听端口{Port}", _serverLogName, Port);
+            log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
             IsRunning = true;
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[{ServerName}] 启动失败", _serverLogName);
+            log.Error(ex, "[{ServerName}] 启动失败", ServerLogName);
         }
     }
 
@@ -314,13 +300,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             }
 
             isShuttingDown = true;
-            log.Information("[{ServerName}] 停止中...", _serverLogName);
+            log.Information("[{ServerName}] 停止中...", ServerLogName);
 
-            log.Information("[{ServerName}] 停止定时任务...", _serverLogName);
+            log.Information("[{ServerName}] 停止定时任务...", ServerLogName);
 
             await _respawnTask.StopAsync();
 
-            log.Information("[{ServerName}] 停止定时任务>>>完成", _serverLogName);
+            log.Information("[{ServerName}] 停止定时任务>>>完成", ServerLogName);
 
             disconnectAwayPlayers();
             Players.disconnectAll();
@@ -333,16 +319,16 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             await closeChannelSchedules();
 
             await NettyServer.Stop();
-            log.Information("[{ServerName}] 停止监听", _serverLogName);
+            log.Information("[{ServerName}] 停止监听", ServerLogName);
 
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("[{ServerName}] 已停止", _serverLogName);
+            log.Information("[{ServerName}] 已停止", ServerLogName);
         }
         catch (Exception e)
         {
-            log.Error(e, "[{ServerName}] 停止失败", _serverLogName);
+            log.Error(e, "[{ServerName}] 停止失败", ServerLogName);
         }
         finally
         {
@@ -372,6 +358,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return mapManager;
     }
 
+    public int GetActiveMapCount()
+    {
+        return getMapFactory().getMaps().Count + getEventSM().GetEventMaps();
+    }
+
     public int getWorld()
     {
         return world;
@@ -382,7 +373,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         Players.AddPlayer(chr);
         Container.PlayerStorage.AddPlayer(chr);
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
-        Metrics.ChannelPlayers.Inc();
     }
 
     public string getServerMessage()
@@ -404,7 +394,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     {
         if (Players.RemovePlayer(chrId) != null)
         {
-            Metrics.ChannelPlayers.Dec();
             return true;
         }
 

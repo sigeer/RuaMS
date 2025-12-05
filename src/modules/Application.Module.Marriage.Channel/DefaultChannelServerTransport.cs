@@ -7,9 +7,9 @@ namespace Application.Module.Marriage.Channel
     public class DefaultChannelServerTransport : IChannelServerTransport
     {
         readonly MarriageServiceProto.ChannelService.ChannelServiceClient _grpcClient;
-        public DefaultChannelServerTransport(WorldChannelServer server)
+        public DefaultChannelServerTransport(MarriageServiceProto.ChannelService.ChannelServiceClient client)
         {
-            _grpcClient = new MarriageServiceProto.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
+            _grpcClient = client;
         }
 
         public void BreakMarriage(BreakMarriageRequest breakMarriageRequest)

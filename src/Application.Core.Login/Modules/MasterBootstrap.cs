@@ -1,4 +1,5 @@
 using Application.Core.Login.Servers;
+using Application.Shared.ServerExtensions;
 using Application.Shared.Servers;
 using Application.Utility;
 using Microsoft.AspNetCore.Builder;
@@ -12,7 +13,7 @@ namespace Application.Core.Login.Modules
         public void ConfigureHost(WebApplication app)
         {
             // TODO: 在这里启动grcp server
-            if (app.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
+            if (app.Configuration.UseExtralChannel())
             {
                 app.MapGrpcService<GameGrpcService>();
                 app.MapGrpcService<SystemGrpcService>();

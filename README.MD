@@ -78,7 +78,7 @@
 
 ### 多进程模式
 
-配置`UseExtraChannel=true`
+解除`Kestrel:Endpoints:Grpc`节的注释
 
 - 使用master版：仅登录服务器，必须启动`Application.Host.Channel`
 - 使用master-standalone版：登录服务器+频道服务器，通过启动`Application.Host.Channel`扩展

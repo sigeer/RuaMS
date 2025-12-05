@@ -1,6 +1,7 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
+using Application.Core.ServerTransports;
 using Application.Module.PlayerNPC.Channel.Commands.Gm4;
 using Application.Module.PlayerNPC.Channel.Commands.Gm6;
 using Application.Module.PlayerNPC.Channel.Models;
@@ -16,6 +17,12 @@ namespace Application.Module.PlayerNPC.Channel
     {
         public static IServiceCollection AddPlayerNPCChannel(this IServiceCollection services)
         {
+            var urlString = "http://_grpc.ruams-master";
+            services.AddGrpcClient<PlayerNPCProto.ChannelService.ChannelServiceClient>((sp, o) =>
+            {
+                o.Address = new(urlString);
+            }).AddInterceptor<WithServerNameInterceptor>();
+
             services.AddAutoMapper(typeof(Mapper));
             services.AddSingleton<PlayerNPCChannelModule>();
             services.AddSingleton<AbstractChannelModule, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());

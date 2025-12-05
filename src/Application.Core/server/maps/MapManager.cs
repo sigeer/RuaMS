@@ -44,8 +44,7 @@ public class MapManager : IDisposable
 
     public IMap resetMap(int mapid, out IMap? oldMap)
     {
-        if (maps.TryRemove(mapid, out oldMap))
-            _channelServer.Metrics.ActiveMaps.Dec();
+        maps.TryRemove(mapid, out oldMap);
         return getMap(mapid);
     }
 
@@ -67,7 +66,6 @@ public class MapManager : IDisposable
             }
 
             map = MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
-            _channelServer.Metrics.ActiveMaps.Inc();
             if (cache)
             {
                 maps.AddOrUpdate(mapid, map);
@@ -112,7 +110,7 @@ public class MapManager : IDisposable
             map.mobMpRecovery();
         }
         sw.Stop();
-        _channelServer.Metrics.MapTick(sw.Elapsed.TotalMilliseconds);
+        GameMetrics.MapTick(sw.Elapsed.TotalMilliseconds, _channelServer);
     }
 
     bool disposed = false;
@@ -127,7 +125,6 @@ public class MapManager : IDisposable
             if (maps.TryRemove(kv.Key, out var v))
             {
                 v.Dispose();
-                _channelServer.Metrics.ActiveMaps.Dec();
             }
         }
 
@@ -143,7 +140,6 @@ public class MapManager : IDisposable
                 if(maps.TryRemove(map.Key, out var v))
                 {
                     v.Dispose();
-                    _channelServer.Metrics.ActiveMaps.Dec();
                 }
             }
         }

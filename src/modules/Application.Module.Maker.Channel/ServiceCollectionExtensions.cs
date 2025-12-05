@@ -1,5 +1,6 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Maker.Channel.Net.Handlers;
 using Application.Shared.Net;
 using Application.Shared.Servers;
@@ -18,6 +19,12 @@ namespace Application.Module.Maker.Channel
         /// <returns></returns>
         public static IServiceCollection AddMakerChannel(this IServiceCollection services)
         {
+            var urlString = "http://_grpc.ruams-master";
+            services.AddGrpcClient<MakerService.ChannelService.ChannelServiceClient>((sp, o) =>
+            {
+                o.Address = new(urlString);
+            }).AddInterceptor<WithServerNameInterceptor>();
+
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<MakerManager>();
             services.AddSingleton<AbstractChannelModule, MakerChannelModule>();
