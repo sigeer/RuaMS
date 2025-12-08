@@ -11,7 +11,6 @@ package ServiceProto;
 
 service TeamService {
 	rpc SendTeamUpdate(TeamProto.UpdateTeamRequest) returns (TeamProto.UpdateTeamResponse);
-	rpc SendTeamChat(TeamProto.TeamChatRequest) returns (google.protobuf.Empty);
 	rpc GetTeamModel(TeamProto.GetTeamRequest) returns (TeamProto.GetTeamResponse);
 	rpc CreateTeam(TeamProto.CreateTeamRequest) returns (TeamProto.GetTeamResponse);
 }

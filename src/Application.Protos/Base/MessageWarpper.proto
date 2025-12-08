@@ -8,3 +8,8 @@ message MessageWrapper {
 	string type = 1;
 	bytes content = 2;
 }
+
+message PacketWrapper {
+	int32 eventId = 1;
+	bytes data = 2;
+}

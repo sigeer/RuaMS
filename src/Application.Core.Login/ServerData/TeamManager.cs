@@ -3,6 +3,7 @@ using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -127,7 +128,7 @@ namespace Application.Core.Login.ServerData
             return response;
         }
 
-        public void SendTeamChat(string nameFrom, string chatText)
+        public async Task SendTeamChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
@@ -138,7 +139,7 @@ namespace Application.Core.Login.ServerData
                         .Select(x => _server.CharacterManager.FindPlayerById(x))
                         .Where(x => x != null && x.Channel > 0)
                         .ToArray();
-                    _server.Transport.SendMultiChat(1, nameFrom, teamMember, chatText);
+                    await _server.Transport.SendMultiChatAsync(1, nameFrom, teamMember, chatText);
                 }
             }
         }

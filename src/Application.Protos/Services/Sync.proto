@@ -18,10 +18,6 @@ package ServiceProto;
 
 
 
-message BatchSyncCharacterRequest {
-	repeated SyncProto.PlayerSaveDto list = 1;
-}
-
 message CompleteLoginRequest{
 	int32 characterId = 1;
 	int32 channel = 2;
@@ -32,8 +28,8 @@ service SyncService {
 	rpc SetCharacterTransition(Dto.SetClientCharacterTransitionRequest) returns(google.protobuf.Empty);
 	rpc HasCharacterInTransition(Dto.CheckCharacterInTransitionRequest) returns(BaseProto.BoolWrapper);
 	rpc UpdateAccountState(Dto.UpdateAccountStateRequest) returns(Dto.AccountLoginStateDto);
-	rpc PushCharacter(SyncProto.PlayerSaveDto) returns(google.protobuf.Empty);
-	rpc BatchPushCharacter(BatchSyncCharacterRequest) returns(google.protobuf.Empty);
+	rpc PushCharacter(SyncProto.SyncPlayerRequest) returns(google.protobuf.Empty);
+	rpc BatchPushCharacter(SyncProto.BatchSyncPlayerRequest) returns(google.protobuf.Empty);
 	rpc PushPlayerBuffers(SyncProto.PushPlayerBuffsRequest) returns(google.protobuf.Empty);
 	rpc GetPlayerBuffers(SyncProto.GetPlayerBufferRequest) returns(SyncProto.PlayerBuffDto);
 	rpc CompleteLogin(CompleteLoginRequest) returns(google.protobuf.Empty);

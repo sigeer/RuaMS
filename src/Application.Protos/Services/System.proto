@@ -18,6 +18,7 @@ import "Config/Shutdown.proto";
 import "Config/ServerState.proto";
 import "Server/MonitorData.proto";
 import "Sync/GainCharacterSlot.proto";
+import "Base/MessageWarpper.proto";
 
 package ServiceProto;
 
@@ -25,8 +26,6 @@ service SystemService {
 	rpc GetCurrentTime(google.protobuf.Empty) returns(BaseProto.TimeWrapper);
 	rpc GetCurrentTimestamp(google.protobuf.Empty) returns(BaseProto.TimeWrapper);
 	rpc GetChannelEndPoint(BaseProto.GetChannelEndPointRequest) returns(BaseProto.IPEndPointDto);
-
-	rpc RegisterServer(Config.RegisterServerRequest) returns(Config.RegisterServerResult);
 
 	rpc DropMessage(MessageProto.DropMessageRequest) returns(google.protobuf.Empty);
 	rpc BroadcastMessage(MessageProto.PacketRequest) returns(google.protobuf.Empty);
@@ -52,10 +51,9 @@ service SystemService {
 	rpc GetOnlinedClients(google.protobuf.Empty) returns(Dto.GetAllClientInfo);
 	rpc GainCharacterSlot(SyncProto.GainAccountCharacterSlotRequest) returns(SyncProto.GainAccountCharacterSlotResponse);
 
-	rpc CompleteChannelShutdown(SystemProto.ChannelShutdownCallback) returns(google.protobuf.Empty);
 	rpc ShutdownMaster(SystemProto.ShutdownMasterRequest) returns(google.protobuf.Empty);
 	rpc SaveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
 	rpc GetServerState(google.protobuf.Empty) returns(SystemProto.ServerStateDto);
 	rpc HealthCheck(ServerProto.MonitorData) returns(google.protobuf.Empty);
-
+	rpc Connect(stream BaseProto.PacketWrapper) returns(stream BaseProto.PacketWrapper);
 }

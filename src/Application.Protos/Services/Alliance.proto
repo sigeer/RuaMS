@@ -14,9 +14,6 @@ service AllianceService {
 	rpc CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest) returns(AllianceProto.CreateAllianceCheckResponse);
 	rpc CreateAlliance(AllianceProto.CreateAllianceRequest) returns(AllianceProto.GetAllianceResponse);
 
-	rpc SendAllianceChat(AllianceProto.AllianceChatRequest) returns (google.protobuf.Empty);
-
-
 	rpc AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest) returns (google.protobuf.Empty);
 	rpc ChangeLeader(AllianceProto.AllianceChangeLeaderRequest) returns (google.protobuf.Empty);
 	rpc JoinAlliance(AllianceProto.GuildJoinAllianceRequest) returns (google.protobuf.Empty);

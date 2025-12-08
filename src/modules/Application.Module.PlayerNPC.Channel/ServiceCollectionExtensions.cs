@@ -7,6 +7,7 @@ using Application.Module.PlayerNPC.Channel.Commands.Gm6;
 using Application.Module.PlayerNPC.Channel.Models;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,10 +18,9 @@ namespace Application.Module.PlayerNPC.Channel
     {
         public static IServiceCollection AddPlayerNPCChannel(this IServiceCollection services)
         {
-            var urlString = "http://_grpc.ruams-master";
-            services.AddGrpcClient<PlayerNPCProto.ChannelService.ChannelServiceClient>((sp, o) =>
+            services.AddGrpcClient<PlayerNPCProto.ChannelService.ChannelServiceClient>("PlayerNpcGrpcClient", (sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
 
             services.AddAutoMapper(typeof(Mapper));

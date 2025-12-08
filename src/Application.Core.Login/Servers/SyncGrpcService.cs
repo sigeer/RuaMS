@@ -1,4 +1,5 @@
 using Application.Core.Login.Services;
+using Application.Shared.Events;
 using BaseProto;
 using CreatorProto;
 using Dto;
@@ -25,10 +26,20 @@ namespace Application.Core.Login.Servers
             _loginService = loginService;
         }
 
-        public override Task<Empty> BatchPushCharacter(BatchSyncCharacterRequest request, ServerCallContext context)
+        public override async Task<Empty> BatchPushCharacter(SyncProto.BatchSyncPlayerRequest request, ServerCallContext context)
         {
             _server.CharacterManager.BatchUpdate(request.List.ToList());
-            return Task.FromResult(new Empty());
+            if (request.SaveDb)
+                await _server.ServerManager.CommitAllImmediately();
+            return new();
+        }
+
+        public override async Task<Empty> PushCharacter(SyncPlayerRequest request, ServerCallContext context)
+        {
+            _server.CharacterManager.Update(request.Data, (SyncCharacterTrigger)request.Trigger);
+            if (request.SaveDb)
+                await _server.ServerManager.CommitAllImmediately();
+            return new();
         }
 
         public override Task<Empty> BatchSyncMap(MapBatchSyncDto request, ServerCallContext context)

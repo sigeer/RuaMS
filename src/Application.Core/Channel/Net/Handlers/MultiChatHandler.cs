@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Shared.Message;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 
@@ -65,29 +66,18 @@ public class MultiChatHandler : ChannelHandlerBase
             c.Disconnect(true, false);
             return;
         }
-        if (type == 0)
-        {
-            _buddyManager.BuddyChat(player, recipients, chattext);
-            // ChatLogger.log(c, "Buddy", chattext);
-        }
-        else if (type == 1 && player.getParty() != null)
-        {
-            c.CurrentServer.Service.SendTeamChat(player.Name, chattext);
-            // ChatLogger.log(c, "Party", chattext);
-        }
-        else if (type == 2 && player.GuildModel != null)
-        {
-            _guildManager.SendGuildChat(c.OnlinedCharacter, chattext);
-            // ChatLogger.log(c, "Guild", chattext);
-        }
-        else if (type == 3 && player.getGuild() != null)
-        {
-            if (player.AllianceModel != null)
-            {
-                _guildManager.SendAllianceChat(c.OnlinedCharacter, chattext);
-                // ChatLogger.log(c, "Ally", chattext);
-            }
-        }
+
+        if (type == 1 && player.TeamModel == null)
+            return;
+
+        if (type == 2 && player.GuildModel == null)
+            return;
+
+        if (type == 3 && player.AllianceModel == null)
+            return;
+
+
+        c.CurrentServerContainer.InternalSession.SendMultiChat(type, player.Name, chattext, recipients);
         player.getAutobanManager().spam(7);
     }
 }

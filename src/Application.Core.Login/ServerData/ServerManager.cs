@@ -41,23 +41,23 @@ namespace Application.Core.Login.Datas
             });
         }
 
-        public async Task Setup()
+        public async Task Setup(CancellationToken cancellationToken)
         {
-            await SetupDataBase();
+            await SetupDataBase(cancellationToken);
 
             _masterServer.ServiceProvider.GetRequiredService<InvitationService>().Initialize();
         }
 
-        private async Task SetupDataBase()
+        private async Task SetupDataBase(CancellationToken cancellationToken)
         {
             _logger.LogInformation("初始化数据库...");
             try
             {
-                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-                await InitializeDataBase(dbContext);
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await InitializeDataBase(dbContext, cancellationToken);
 
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-                await CleanNxcodeCoupons(dbContext);
+                await CleanNxcodeCoupons(dbContext, cancellationToken);
                 await _masterServer.CouponManager.Initialize(dbContext);
 
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
@@ -66,7 +66,7 @@ namespace Application.Core.Login.Datas
                 {
                     await item.InitializeAsync(dbContext);
                 }
-                await dbTrans.CommitAsync();
+                await dbTrans.CommitAsync(cancellationToken);
                 _logger.LogInformation("初始化数据库>>>成功");
             }
             catch (Exception ex)
@@ -76,14 +76,14 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        private async Task InitializeDataBase(DBContext dbContext)
+        private async Task InitializeDataBase(DBContext dbContext, CancellationToken cancellationToken)
         {
             try
             {
                 _logger.LogInformation("数据库迁移...");
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                await dbContext.Database.MigrateAsync();
+                await dbContext.Database.MigrateAsync(cancellationToken);
                 sw.Stop();
                 _logger.LogInformation("数据库迁移>>>成功，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
             }
@@ -94,7 +94,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        private async Task CleanNxcodeCoupons(DBContext dbContext)
+        private async Task CleanNxcodeCoupons(DBContext dbContext, CancellationToken cancellationToken)
         {
             if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS)
             {
@@ -105,9 +105,9 @@ namespace Application.Core.Login.Datas
 
             var codeList = dbContext.CdkCodes.Where(x => x.Expiration <= timeClear).ToList();
             var codeIdList = codeList.Select(x => x.Id).ToList();
-            await dbContext.CdkItems.Where(x => codeIdList.Contains(x.CodeId)).ExecuteDeleteAsync();
+            await dbContext.CdkItems.Where(x => codeIdList.Contains(x.CodeId)).ExecuteDeleteAsync(cancellationToken);
             dbContext.CdkCodes.RemoveRange(codeList);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         // 后期会尽量避免直接存放玩家名称，改名直接修改character.name

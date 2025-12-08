@@ -1,4 +1,6 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Internal;
+using Application.Core.Channel.Internal.Handlers;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
@@ -26,6 +28,17 @@ namespace Application.Core.Channel.HostExtensions
 {
     public static class ServiceCollectionExtensions
     {
+        static IServiceCollection AddInternalSessionHandlers(this IServiceCollection services)
+        {
+            services.AddSingleton<IInternalSessionHandler, RegisterChannelServerHandler>();
+            services.AddSingleton<IInternalSessionHandler, UnregisterChannelServerHandler>();
+            services.AddSingleton<IInternalSessionHandler, DisconnectAllHandler>();
+            services.AddSingleton<IInternalSessionHandler, SaveAllHandler>();
+            services.AddSingleton<IInternalSessionHandler, MultiChatHandler>();
+            // services.AddSingleton<IInternalSessionHandler, DropTextMessageHandler>();
+            return services;
+        }
+
         static IServiceCollection AddInvitationService(this IServiceCollection services)
         {
             services.AddSingleton<InviteChannelHandlerRegistry>();
@@ -130,6 +143,7 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
 
             services.AddInvitationService();
+            services.AddInternalSessionHandlers();
 
             services.AddMemoryCache();
             return services;
@@ -138,50 +152,49 @@ namespace Application.Core.Channel.HostExtensions
         static IServiceCollection AddChannelGrpcClient(this IServiceCollection services)
         {
             services.AddSingleton<WithServerNameInterceptor>();
-            var urlString = "http://_grpc.ruams-master";
             services.AddGrpcClient<ServiceProto.SystemService.SystemServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.GameService.GameServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.SyncService.SyncServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.GuildService.GuildServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.AllianceService.AllianceServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.DataService.DataServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.ItemService.ItemServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.CashService.CashServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.TeamService.TeamServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.BuddyService.BuddyServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.PlayerShopService.PlayerShopServiceClient>((sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             return services;
         }

@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Google.Protobuf;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerTransports
 {
@@ -48,6 +49,13 @@ namespace Application.Core.Login.ServerTransports
             foreach (var server in _server.ChannelServerList.Values)
             {
                 server.BroadcastMessage(messageType, message);
+            }
+        }
+        public async Task BroadcastMessageN<TMessage>(int messageType, TMessage message) where TMessage : IMessage
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                await server.BroadcastMessageN(messageType, message);
             }
         }
 

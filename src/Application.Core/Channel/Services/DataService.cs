@@ -48,11 +48,20 @@ namespace Application.Core.Channel.Services
             {
                 dto.Channel = 0;
             }
-            dto.Trigger = (int)trigger;
             if (trigger == SyncCharacterTrigger.ChangeServer)
                 _transport.SyncPlayer(dto); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
             else
                 _server.BatchSyncPlayerManager.Enqueue(dto);
+        }
+
+        public void BatchSyncChar(List<IPlayer> playerList, bool saveDB = false)
+        {
+            List<SyncProto.PlayerSaveDto> list = [];
+            foreach (var player in playerList)
+            {
+                list.Add(Deserialize(player));
+            }
+            _transport.BatchSyncPlayer(list, saveDB);
         }
 
         public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)

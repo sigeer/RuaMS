@@ -5,6 +5,7 @@ using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.Languages;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
@@ -240,23 +241,11 @@ namespace Application.Core.Channel.Services
 
         public void DisconnectAll(IPlayer chr)
         {
-            _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
+            _server.InternalSession.Send(ChannelSendCode.DisconnectAll);
+            // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
             chr.message("All players successfully disconnected.");
         }
 
-        public void OnDisconnectAll(Empty data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                foreach (var chr in ch.Players.getAllCharacters())
-                {
-                    if (!chr.isGM())
-                    {
-                        chr.Client.Disconnect(false);
-                    }
-                }
-            }
-        }
 
         public List<Dto.ClientInfo> GetOnliendClientInfo()
         {
@@ -276,17 +265,9 @@ namespace Application.Core.Channel.Services
 
         internal void SavelAll()
         {
-            _transport.SaveAll(new Empty());
+            _server.InternalSession.Send(ChannelSendCode.SaveAll);
         }
 
-        internal void OnSaveAll(Empty empty)
-        {
-            foreach (var chr in _server.PlayerStorage.getAllCharacters())
-            {
-                chr.saveCharToDB(trigger: SyncCharacterTrigger.System);
-            }
-            _server.SendDropGMMessage(5, "玩家数据已同步");
-        }
 
         internal string QueryExpeditionInfo(IPlayer onlinedCharacter)
         {

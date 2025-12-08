@@ -73,12 +73,12 @@
 
 ### 单进程模式（master-standalone）
 
-配置`UseExtraChannel=false`，直接运行`Application.Host.exe`
+直接运行`Application.Host.exe`
 
 
 ### 多进程模式
 
-解除`Kestrel:Endpoints:Grpc`节的注释
+解除`Kestrel:Endpoints:grpc`节的注释
 
 - 使用master版：仅登录服务器，必须启动`Application.Host.Channel`
 - 使用master-standalone版：登录服务器+频道服务器，通过启动`Application.Host.Channel`扩展

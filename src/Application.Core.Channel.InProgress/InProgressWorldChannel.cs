@@ -1,6 +1,7 @@
 using Application.Core.Login.Servers;
 using Application.Shared.Servers;
 using ExpeditionProto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using SystemProto;
 
@@ -9,8 +10,10 @@ namespace Application.Core.Channel.InProgress
     public sealed class InProgressWorldChannel : ChannelServerNode
     {
         public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels) 
-            : base(worldChannel.ServerName, worldChannel.ServerConfig.ServerHost, channels)
         {
+            ServerName = worldChannel.ServerName;
+            ServerHost = worldChannel.ServerConfig.ServerHost;
+            ServerConfigs = channels;
             ChannelServer = worldChannel;
         }
 
@@ -29,6 +32,11 @@ namespace Application.Core.Channel.InProgress
         public override QueryChannelExpedtionResponse GetExpeditionInfo()
         {
             return ChannelServer.DataService.GetExpeditionInfo();
+        }
+
+        public override async Task BroadcastMessageN<TMessage>(int type, TMessage message)
+        {
+            await ChannelServer.InternalSession.Handle(type, message.ToByteString());
         }
     }
 }

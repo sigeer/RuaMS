@@ -542,16 +542,6 @@ namespace Application.Core.Channel.ServerData
             return localData;
         }
 
-        public void SendGuildChat(IPlayer chr, string text)
-        {
-            _transport.SendGuildChat(chr.Name, text);
-        }
-        public void SendAllianceChat(IPlayer chr, string text)
-        {
-            _transport.SendAllianceChat(chr.Name, text);
-        }
-
-
         #endregion
 
         #region Alliance

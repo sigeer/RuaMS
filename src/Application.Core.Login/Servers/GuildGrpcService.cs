@@ -58,12 +58,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> SendGuildChat(GuildChatRequest request, ServerCallContext context)
-        {
-            _server.GuildManager.SendGuildChat(request.Name, request.Text);
-            return Task.FromResult(new Empty());
-        }
-
         public override Task<Empty> UpdateCapacity(UpdateGuildCapacityRequest request, ServerCallContext context)
         {
             _server.GuildManager.IncreseGuildCapacity(request);

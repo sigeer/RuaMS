@@ -8,6 +8,7 @@ using Application.Module.Marriage.Channel.Scripting;
 using Application.Scripting;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,10 +19,9 @@ namespace Application.Module.Marriage.Channel
     {
         public static IServiceCollection AddMarriageChannel(this IServiceCollection services)
         {
-            var urlString = "http://_grpc.ruams-master";
-            services.AddGrpcClient<MarriageServiceProto.ChannelService.ChannelServiceClient>((sp, o) =>
+            services.AddGrpcClient<MarriageServiceProto.ChannelService.ChannelServiceClient>("MarriageGrpcClient", (sp, o) =>
             {
-                o.Address = new(urlString);
+                o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
 
             services.AddAutoMapper(typeof(Mapper));

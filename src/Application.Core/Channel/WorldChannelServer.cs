@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Internal;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
@@ -25,6 +26,8 @@ using Polly;
 using server;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel
@@ -35,6 +38,8 @@ namespace Application.Core.Channel
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
+        Lazy<InternalSession> _internalSession;
+        public InternalSession InternalSession => _internalSession.Value;
         public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
@@ -182,6 +187,8 @@ namespace Application.Core.Channel
 
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
+
+            _internalSession = new (() => new InternalSession(this));
         }
 
         #region 时间
@@ -279,13 +286,15 @@ namespace Application.Core.Channel
                 {
                     await channel.ShutdownServer();
                 }
-                // 有些玩家在CashShop
-                PlayerStorage.disconnectAll();
 
                 await TimerManager.Stop();
                 ThreadManager.getInstance().stop();
                 _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
-                Transport.CompleteChannelShutdown(ServerName);
+
+                // 有些玩家在CashShop
+                PlayerStorage.disconnectAll();
+
+                await Transport.CompleteChannelShutdown();
                 IsRunning = false;
             }
             catch (Exception ex)
@@ -298,15 +307,8 @@ namespace Application.Core.Channel
             }
         }
 
-        public async Task StartServer()
-        {
-            await Start();
-            StartupTime = DateTimeOffset.UtcNow;
-            ForceUpdateServerTime();
-        }
-
-
-        private async Task Start()
+        Dictionary<ChannelConfig, NettyChannelServer> effectChannels = new();
+        public async Task StartServer(CancellationToken cancellationToken)
         {
             if (IsRunning)
                 return;
@@ -314,7 +316,6 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
-            Dictionary<ChannelConfig, NettyChannelServer> effectChannels = new();
             foreach (var item in ServerConfig.ChannelConfig)
             {
                 var nettyServer = new NettyChannelServer(this, item);
@@ -332,23 +333,15 @@ namespace Application.Core.Channel
             if (effectChannels.Count == 0)
                 throw new BusinessFatalException("必须包含有效的频道");
 
-            var registerPolicy = Policy
-                .Handle<Exception>()
-                .OrResult<RegisterServerResult>(x => x.StartChannel <= 0)
-                .WaitAndRetryAsync(10, attempt => TimeSpan.FromMilliseconds(5000),
-                onRetry: (result, timespan, retryCount, context) =>
-                {
-                    if (result.Exception != null)
-                        _logger.LogError(result.Exception, $"第 {retryCount} 次重试");
-                    else
-                        _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
-                });
-            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(effectChannels.Keys.ToList()));
+            await Transport.RegisterServer(effectChannels.Keys.ToList());
+        }
 
+        public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
+        {
             if (configs.StartChannel <= 0)
             {
                 _logger.LogError("注册服务器失败, {Message}", configs.Message);
-                return;
+                return false;
             }
 
             IsRunning = true;
@@ -361,7 +354,6 @@ namespace Application.Core.Channel
             var channel = configs.StartChannel;
             foreach (var server in effectChannels)
             {
-
                 var scope = ServiceProvider.CreateScope();
                 var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
                 worldChannel.Initialize(configs);
@@ -379,7 +371,7 @@ namespace Application.Core.Channel
                 _ = Task.Run(() =>
                 {
                     item.LoadData();
-                });
+                }, cancellationToken);
             }
 
             _ = Task.Run(() =>
@@ -389,7 +381,7 @@ namespace Application.Core.Channel
                 SkillFactory.LoadAllSkills();
                 sw.Stop();
                 _logger.LogDebug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
-            });
+            }, cancellationToken);
 
 
             CharacterDiseaseManager.Register(TimerManager);
@@ -418,9 +410,9 @@ namespace Application.Core.Channel
                 module.Initialize();
                 module.RegisterTask(TimerManager);
             }
+
+            return true;
         }
-
-
         public void RemovePlayer(int chrId)
         {
             if (chrId <= 0)
@@ -729,16 +721,11 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
 
             MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_Added, BuddyManager.OnAddBuddyBroadcast);
-            MessageDispatcher.Register<Dto.BuddyChatBroadcast>(BroadcastType.Buddy_Chat, BuddyManager.OnBuddyChatReceived);
             MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);
             MessageDispatcher.Register<Dto.SendBuddyNoticeMessageDto>(BroadcastType.Buddy_NoticeMessage, BuddyManager.OnBuddyNoticeMessageReceived);
             MessageDispatcher.Register<Dto.DeleteBuddyBroadcast>(BroadcastType.Buddy_Delete, BuddyManager.OnBuddyDeleted);
 
-            MessageDispatcher.Register<Dto.MultiChatMessage>(BroadcastType.OnMultiChat, OnMulitiChat);
-
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
-            MessageDispatcher.Register<Empty>(BroadcastType.SaveAll, adminSrv.OnSaveAll);
-            MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
             MessageDispatcher.Register<SystemProto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
             MessageDispatcher.Register<SystemProto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
             MessageDispatcher.Register<SystemProto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
@@ -752,7 +739,6 @@ namespace Application.Core.Channel
 
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
 
-            MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<ItemProto.UseItemMegaphoneBroadcast>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
             MessageDispatcher.Register<ItemProto.CreateTVMessageBroadcast>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
             MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
@@ -839,18 +825,6 @@ namespace Application.Core.Channel
                 {
                     sender = ch.Players.getCharacterById(data.Request.MasterId);
                     sender?.dropMessage(5, "Reloaded Events");
-                }
-            }
-        }
-
-        void OnMulitiChat(MultiChatMessage data)
-        {
-            foreach (var cid in data.Receivers)
-            {
-                var chr = FindPlayerById(cid);
-                if (chr != null && !chr.isAwayFromWorld())
-                {
-                    chr.sendPacket(PacketCreator.multiChat(data.FromName, data.Text, data.Type));
                 }
             }
         }

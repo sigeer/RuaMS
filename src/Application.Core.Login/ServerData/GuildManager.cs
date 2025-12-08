@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -157,7 +158,7 @@ namespace Application.Core.Login.ServerData
             return total.ToHashSet().ToList();
         }
 
-        public void SendGuildChat(string nameFrom, string chatText)
+        public async Task SendGuildChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
@@ -166,7 +167,7 @@ namespace Application.Core.Login.ServerData
                 {
                     var onlinedGuildMembers = guild.Members.Where(x => x != sender.Character.Id).Select(_server.CharacterManager.FindPlayerById)
                         .Where(x => x != null && x.Channel > 0);
-                    _server.Transport.SendMultiChat(2, nameFrom, onlinedGuildMembers, chatText);
+                    await _server.Transport.SendMultiChatAsync(2, nameFrom, onlinedGuildMembers, chatText);
                 }
 
             }
@@ -254,7 +255,7 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public void SendAllianceChat(string nameFrom, string chatText)
+        public async Task SendAllianceChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
@@ -265,7 +266,7 @@ namespace Application.Core.Login.ServerData
                     {
                         var allianceMembers = alliance.Guilds.Select(GetLocalGuild)
                             .SelectMany(x => GetGuildMembers(x).Where(y => y.Character.Id != sender.Character.Id && y.Channel > 0));
-                        _server.Transport.SendMultiChat(3, nameFrom, allianceMembers, chatText);
+                        await _server.Transport.SendMultiChatAsync(3, nameFrom, allianceMembers, chatText);
                     }
                 }
 

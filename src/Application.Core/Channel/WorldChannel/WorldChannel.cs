@@ -270,7 +270,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
-    public async Task StartServer()
+    public async Task StartServer(CancellationToken cancellationToken)
     {
         try
         {

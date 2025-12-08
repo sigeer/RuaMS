@@ -65,6 +65,6 @@ app.UseChannelServer();
 
 app.MapGrpcService<WorldChannelGrpcServer>();
 
-var p1 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://ruams-master", CancellationToken.None);
-var p2 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://_grpc.ruams-master", CancellationToken.None);
+//var p1 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://ruams-master", CancellationToken.None);
+//var p2 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://_grpc.ruams-master", CancellationToken.None);
 app.Run();

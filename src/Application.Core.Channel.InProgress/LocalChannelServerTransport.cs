@@ -3,6 +3,7 @@ using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Resources;
+using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Message;
@@ -23,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServerProto;
 using SyncProto;
 using System.Net;
+using System.Threading.Tasks;
 using SystemProto;
 
 namespace Application.Core.Channel.InProgress
@@ -43,8 +45,9 @@ namespace Application.Core.Channel.InProgress
         readonly IExpeditionService _expeditionService;
         readonly ResourceDataManager _resourceService;
         readonly IMapper _mapper;
-
+        readonly IServiceProvider _sp;
         public LocalChannelServerTransport(
+            IServiceProvider sp,
             MasterServer server,
             LoginService loginService,
             ItemService itemService,
@@ -57,6 +60,7 @@ namespace Application.Core.Channel.InProgress
             ResourceDataManager resourceDataService,
             IMapper mapper)
         {
+            _sp = sp;
             _server = server;
             _loginService = loginService;
             _itemService = itemService;
@@ -70,19 +74,27 @@ namespace Application.Core.Channel.InProgress
             _resourceService = resourceDataService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(List<ChannelConfig> channels)
+        public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default)
         {
-            if (!_server.IsRunning)
-                return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
-
             var channelServerNode = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
-            var channelId = _server.AddChannel(new InProgressWorldChannel(channelServerNode, channels));
-            return Task.FromResult(new Config.RegisterServerResult
+
+            if (!_server.IsRunning)
+                await channelServerNode.HandleServerRegistered(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" }, cancellationToken);
+            else
             {
-                StartChannel = channelId,
-                Coupon = _server.CouponManager.GetConfig(),
-                Config = _server.GetWorldConfig()
-            });
+                var channelId = _server.AddChannel(new InProgressWorldChannel(channelServerNode, channels));
+                await channelServerNode.HandleServerRegistered(new Config.RegisterServerResult() { 
+                    StartChannel = channelId,
+                    Coupon = _server.CouponManager.GetConfig(),
+                    Config = _server.GetWorldConfig()
+                }, cancellationToken);
+            }
+        }
+
+        public Task CompleteChannelShutdown()
+        {
+            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerName);
+            return Task.CompletedTask;
         }
 
         public void DropWorldMessage(MessageProto.DropMessageRequest request)
@@ -286,18 +298,10 @@ namespace Application.Core.Channel.InProgress
             return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
         }
 
-        public void SendTeamChat(string name, string chattext)
-        {
-            _server.TeamManager.SendTeamChat(name, chattext);
-        }
-
         public TeamProto.GetTeamResponse GetTeam(int party)
         {
             return new TeamProto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
-
-
-
 
         #endregion
 
@@ -325,16 +329,6 @@ namespace Application.Core.Channel.InProgress
         public AllianceProto.GetAllianceResponse GetAlliance(int id)
         {
             return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
-        }
-
-        public void SendGuildChat(string name, string text)
-        {
-            _server.GuildManager.SendGuildChat(name, text);
-        }
-
-        public void SendAllianceChat(string name, string text)
-        {
-            _server.GuildManager.SendAllianceChat(name, text);
         }
 
         public void BroadcastGuildMessage(int guildId, int v, string callout)
@@ -672,14 +666,18 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
 
-        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data)
+        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data, bool saveDB = false)
         {
             _server.CharacterManager.BatchUpdate(data);
+            if (saveDB)
+                _ = _server.ServerManager.CommitAllImmediately();
         }
 
-        public void SyncPlayer(PlayerSaveDto data)
+        public void SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
         {
-            _server.CharacterManager.Update(data);
+            _server.CharacterManager.Update(data,  trigger);
+            if (saveDB)
+                _ = _server.ServerManager.CommitAllImmediately();
         }
 
         public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
@@ -692,10 +690,6 @@ namespace Application.Core.Channel.InProgress
             return _server.BuddyManager.AddBuddyById(request);
         }
 
-        public void SendBuddyChat(BuddyChatRequest request)
-        {
-            _server.BuddyManager.BuddyChat(request);
-        }
 
         public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
         {
@@ -724,10 +718,7 @@ namespace Application.Core.Channel.InProgress
             _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
         }
 
-        public void CompleteChannelShutdown(string serverName)
-        {
-            _server.CompleteChannelShutdown(serverName);
-        }
+
 
         public void SaveAll(Empty empty)
         {

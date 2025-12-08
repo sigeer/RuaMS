@@ -75,12 +75,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> SendAllianceChat(AllianceChatRequest request, ServerCallContext context)
-        {
-            _server.GuildManager.SendAllianceChat(request.Name, request.Text);
-            return Task.FromResult(new Empty());
-        }
-
         public override Task<Empty> UpdateNotice(UpdateAllianceNoticeRequest request, ServerCallContext context)
         {
             _server.GuildManager.UpdateAllianceNotice(request);

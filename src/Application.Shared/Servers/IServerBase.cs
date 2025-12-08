@@ -8,7 +8,7 @@ namespace Application.Shared.Servers
     {
         string ServerName { get; }
         TServerTransport Transport { get; }
-        Task StartServer();
+        Task StartServer(CancellationToken cancellationToken);
         Task Shutdown(int delaySeconds = -1);
         bool IsRunning { get; }
 

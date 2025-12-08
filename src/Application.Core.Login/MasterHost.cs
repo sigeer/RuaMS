@@ -19,7 +19,7 @@ namespace Application.Core.Login
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _server.StartServer();
+            await _server.StartServer(cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

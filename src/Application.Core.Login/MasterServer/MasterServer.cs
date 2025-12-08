@@ -15,10 +15,12 @@ using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Xml.Linq;
 using SystemProto;
 
 
@@ -245,7 +247,8 @@ namespace Application.Core.Login
                 if (delaySeconds <= 0)
                     await ShutdownServer();
                 else
-                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token).ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token)
+                        .ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
             }
             finally
             {
@@ -276,19 +279,37 @@ namespace Application.Core.Login
             _logger.LogInformation(SystemMessage.Server_StopListenComplete, ServerName);
 
             _shutdownTcs = new TaskCompletionSource();
-            Transport.BroadcastShutdown();
+
+            await Transport.BroadcastShutdown();
             if (ChannelServerList.Count == 0)
                 _shutdownTcs.SetResult();
 
             await CompleteMasterShutdown();
         }
         TaskCompletionSource _shutdownTcs = new TaskCompletionSource();
-        public void CompleteChannelShutdown(string serverName)
+        public void OnChannelShutdown(string serverName, bool safe = true)
         {
-            RemoveChannel(serverName);
+            _logger.LogInformation("[{ServerName}]关闭连接", serverName);
 
-            if (ChannelServerList.Count == 0)
-                _shutdownTcs.SetResult();
+            if (serverName != null)
+            {
+                RemoveChannel(serverName);
+
+                if (ChannelServerList.Count == 0 && isShuttingdown)
+                    _shutdownTcs.SetResult();
+
+                if (!safe)
+                    _logger.LogWarning("[{ServerName}]没有安全的关闭，可能丢失数据", serverName);
+            }
+        }
+
+        public void RemoveChanelServerNode(ChannelServerNode? node, bool safe = true)
+        {
+            var serverName = node?.ServerName;
+            if (serverName != null)
+            {
+                OnChannelShutdown(serverName, safe);
+            }
         }
 
         async Task CompleteMasterShutdown()
@@ -315,17 +336,16 @@ namespace Application.Core.Login
             _logger.LogInformation(SystemMessage.Server_ShutdownComplete, ServerName);
         }
 
-        public async Task StartServer()
+        public async Task StartServer(CancellationToken cancellationToken)
         {
             try
             {
                 Modules = ServiceProvider.GetServices<AbstractMasterModule>().ToList();
                 _logger.LogInformation("[{ServerName}] 共安装了{PluginCount}个额外模块", ServerName, Modules.Count);
 
-                await ServerManager.Setup();
-
                 OpcodeConstants.generateOpcodeNames();
 
+                await ServerManager.Setup(cancellationToken);
                 foreach (var module in Modules)
                 {
                     await module.InitializeAsync();
@@ -375,7 +395,7 @@ namespace Application.Core.Login
             return -1;
         }
 
-        private bool RemoveChannel(string instanceId)
+        bool RemoveChannel(string instanceId)
         {
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {

@@ -23,29 +23,6 @@ namespace Application.Core.Channel.ServerData
             _server = server;
         }
 
-        public void BuddyChat(IPlayer chr, int[] recipientCharacterIds, string chattext)
-        {
-            var request = new Dto.BuddyChatRequest { FromId = chr.Id, Text = chattext };
-            request.ToIds.AddRange(recipientCharacterIds);
-            _transport.SendBuddyChat(request);
-        }
-
-        public void OnBuddyChatReceived(Dto.BuddyChatBroadcast data)
-        {
-            foreach (var item in data.ToIds)
-            {
-                var chr = _server.FindPlayerById(item);
-                if (chr != null && !chr.isAwayFromWorld())
-                {
-                    if (chr.BuddyList.Contains(data.FromId))
-                    {
-                        chr.sendPacket(PacketCreator.multiChat(data.FromName, data.Text, 0));
-                    }
-                }
-            }
-
-        }
-
         public void OnBuddyNotifyChannel(Dto.NotifyBuddyWhenLoginoffBroadcast data)
         {
             foreach (int buddy in data.BuddyId)
