@@ -74,7 +74,7 @@ namespace Application.Core.Game.Commands.Gm2
                 {
                     for (int i = 0; i < item.Value; i++)
                     {
-                        client.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(item.Value), client.OnlinedCharacter.getPosition());
+                        client.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(item.Key), client.OnlinedCharacter.getPosition());
                     }
                 }
             }
