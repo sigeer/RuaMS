@@ -60,7 +60,7 @@ namespace Application.Core.Game.Players
 
         public Team? TeamModel { get; }
         public Guild? GuildModel { get; }
-        public Alliance? AllianceModel { get; }
+        public Guild.Alliance? AllianceModel { get; }
         public ISchool? SchoolModel { get; set; }
         public Dictionary<short, string> AreaInfo { get; set; }
         public MonsterBook Monsterbook { get; set; }
@@ -126,7 +126,7 @@ namespace Application.Core.Game.Players
         void announceBattleshipHp();
         void announceDiseases();
         void announceUpdateQuest(DelayedQuestUpdate questUpdateType, params object[] paramsValue);
-        bool applyConsumeOnPickup(int itemId);
+        bool applyConsumeOnPickup(Item item);
         bool applyHpMpChange(int hpCon, int hpchange, int mpchange);
         void applyPartyDoor(Door door, bool partyUpdate);
         void autoban(string reason);
@@ -261,7 +261,7 @@ namespace Application.Core.Game.Players
         List<PlayerBuffValueHolder> getAllBuffs();
         List<PlayerCoolDownValueHolder> getAllCooldowns();
         Dictionary<Disease, DiseaseExpiration> getAllDiseases();
-        Alliance? getAlliance();
+        Guild.Alliance? getAlliance();
         int getAllianceRank();
         string? getAreaInfo(int area);
         Dictionary<short, string> getAreaInfos();
@@ -691,16 +691,7 @@ namespace Application.Core.Game.Players
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
-        bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
-        bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
-        /// <summary>
-        /// 移除背包里的所有 itemIds 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="itemIds"></param>
-        /// <param name="fromDrop"></param>
-        void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop);
         int GetMakerSkillLevel();
         Ring? GetRingFromTotal(RingSourceModel? ring);
         void LeaveVisitingShop();

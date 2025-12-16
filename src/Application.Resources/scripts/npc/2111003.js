@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -36,7 +36,7 @@ function start() {
         cm.warp(926120300, "out00");
         cm.dispose();
     } else {
-        cm.sendOk("我感受到的情感是真实的吗？还是只是机械错误带来的幻觉？");
+        cm.sendDefault();
         cm.dispose();
     }
 }

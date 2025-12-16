@@ -41,6 +41,7 @@ using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
 using Application.Shared.Team;
+using Application.Templates.Item.Consume;
 using client;
 using client.autoban;
 using client.inventory;
@@ -82,7 +83,7 @@ public partial class Player
         }
     }
     public Guild? GuildModel => getGuild();
-    public Alliance? AllianceModel => getAlliance();
+    public Guild.Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
     public RewardStorage GachaponStorage { get; set; } = null!;
     public AbstractStorage? CurrentStorage { get; set; }
@@ -956,7 +957,7 @@ public partial class Player
             {
                 if (!this.isGM())
                 {
-                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(JobModel) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
+                    broadcastAcquaintances(6, "[" + ClientCulture.SystemCulture.Ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(JobModel) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
                 }
             }
 
@@ -972,11 +973,12 @@ public partial class Player
 
     public void broadcastAcquaintances(Packet packet)
     {
-        var guild = getGuild();
-        if (guild != null)
-        {
-            guild.broadcast(packet, Id);
-        }
+        // guild已经有转职提示
+        //var guild = getGuild();
+        //if (guild != null)
+        //{
+        //    guild.broadcast(packet, Id);
+        //}
 
         /*
         if(partnerid > 0) {
@@ -1310,19 +1312,13 @@ public partial class Player
         }
     }
 
-    public bool applyConsumeOnPickup(int itemId)
+    public bool applyConsumeOnPickup(Item item)
     {
-        if (itemId / 1000000 == 2)
+        if (item.SourceTemplate is ConsumeItemTemplate template)
         {
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-            var template = ii.GetConsumeItemTemplate(itemId);
-            if (template == null)
-                return false;
-
             if (template.ConsumeOnPickup || template.ConsumeOnPickupEx)
             {
-                var mse = ii.getItemEffect(itemId);
+                var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId());
                 if (template.Party)
                 {
                     List<IPlayer> partyMembers = getPartyMembersOnSameMap();
@@ -1340,10 +1336,6 @@ public partial class Player
                         mse?.applyTo(this);
                 }
 
-                if (ItemId.isMonsterCard(itemId))
-                {
-                    this.Monsterbook.addCard(itemId);
-                }
                 return true;
             }
         }
@@ -2246,7 +2238,7 @@ public partial class Player
         }
     }
 
-    public Alliance? getAlliance()
+    public Guild.Alliance? getAlliance()
     {
         var guild = getGuild();
         return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
@@ -2714,7 +2706,7 @@ public partial class Player
         if (guild == null)
             return;
 
-        int cost = GuildManager.getIncreaseGuildCost(guild.getCapacity());
+        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
 
         if (getMeso() < cost)
         {
@@ -3424,28 +3416,30 @@ public partial class Player
         {
             eim.playerKilled(this);
         }
-        int[] charmID = { ItemId.SAFETY_CHARM, ItemId.EASTER_BASKET, ItemId.EASTER_CHARM };
-        int possesed = 0;
-        int i;
-        for (i = 0; i < charmID.Length; i++)
+
+        if (JobModel != Job.BEGINNER 
+            && !MapId.isDojo(getMapId()) 
+            && eim is not MonsterCarnivalEventInstanceManager
+            && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
         {
-            int quantity = getItemQuantity(charmID[i], false);
-            if (possesed == 0 && quantity > 0)
+
+            for (var i = 0; i < ItemId.SafetyCharms.Length; i++)
             {
-                possesed = quantity;
-                break;
-            }
-        }
-        if (possesed > 0 && !MapId.isDojo(getMapId()))
-        {
-            message("You have used a safety charm, so your EXP points have not been decreased.");
-            InventoryManipulator.removeById(Client, ItemConstants.getInventoryType(charmID[i]), charmID[i], 1, true, false);
-            usedSafetyCharm = true;
-        }
-        else if (getJob() != Job.BEGINNER)
-        { //Hmm...
-            if (!FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
-            {  // thanks Conrad for noticing missing FieldLimit check
+                var invType = ItemConstants.getInventoryType(ItemId.SafetyCharms[i]);
+                var inv = Bag[invType];
+                var itemCount = inv.countById(ItemId.SafetyCharms[i]);
+                if (itemCount > 0)
+                {
+                    message("You have used a safety charm, so your EXP points have not been decreased.");
+                    InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
+                    usedSafetyCharm = true;
+                    break;
+                }
+            }            
+
+            if (!usedSafetyCharm)
+            {
+                // thanks Conrad for noticing missing FieldLimit check
                 int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
 
                 if (MapModel.SourceTemplate.Town)
@@ -3474,6 +3468,7 @@ public partial class Player
                     loseExp(curExp, false, false);
                 }
             }
+
         }
 
         cancelEffectFromBuffStat(BuffStat.MORPH);
@@ -4365,8 +4360,7 @@ public partial class Player
     private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
     {
         short quantity;
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (e == null || (quantity = e.getQuantity()) < 1 || ii.isCash(e.getItemId()) || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
+        if (e == null || (quantity = e.getQuantity()) < 1 || e.SourceTemplate.Cash || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
         {
             return;
         }
@@ -4750,8 +4744,7 @@ public partial class Player
             return fullList;
         }
 
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        return fullList.Where(x => !ii.isCash(x.getItemId())).ToList();
+        return fullList.Where(x => !x.SourceTemplate.Cash).ToList();
     }
 
     public void increaseEquipExp(int expGain)

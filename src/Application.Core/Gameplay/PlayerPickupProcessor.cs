@@ -1,5 +1,8 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
+using Application.Templates.Item.Consume;
+using Application.Templates.Item.Pet;
+using client.inventory;
 using client.inventory.manipulator;
 using scripting.item;
 using server;
@@ -24,10 +27,21 @@ namespace Application.Core.Gameplay
 
         protected override void Process(MapItem mapItem)
         {
-            if (PickupMeso(mapItem) || PickupSpecialItem(mapItem) || PickupItem(mapItem))
+            if (mapItem.Item == null)
             {
-                _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
+                if (PickupMeso(mapItem))
+                {
+                    _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
+                }
             }
+            else
+            {
+                if (PickupSpecialItem(mapItem.Item) || PickupItem(mapItem.Item))
+                {
+                    _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
+                }
+            }
+
             _player.sendPacket(PacketCreator.enableActions());
         }
 
@@ -35,7 +49,7 @@ namespace Application.Core.Gameplay
         {
             if (IsPetPickup)
             {
-                if (mapItem.getMeso() > 0)
+                if (mapItem.Item == null)
                 {
                     if (!_player.isEquippedMesoMagnet())
                     {
@@ -96,7 +110,7 @@ namespace Application.Core.Gameplay
             }
 
             // 道具需要空间但是空间不足
-            if (mapItem.NeedCheckSpace && !InventoryManipulator.checkSpace(_player.Client, mapItem.getItemId(), mapItem.getItem().getQuantity(), mapItem.getItem().getOwner()))
+            if (mapItem.NeedCheckSpace && !InventoryManipulator.checkSpace(_player.Client, mapItem.getItemId(), mapItem.Item!.getQuantity(), mapItem.Item!.getOwner()))
             {
                 _player.sendPacket(PacketCreator.getInventoryFull());
                 _player.sendPacket(PacketCreator.getShowInventoryFull());
@@ -160,14 +174,14 @@ namespace Application.Core.Gameplay
                 if (mpcs.Count > 0)
                 {
                     int mesosamm = mapItem.getMeso() / mpcs.Count;
-                    foreach (IPlayer partymem in mpcs)
+                    foreach (var partymem in mpcs)
                     {
-                        partymem.gainMeso(mesosamm, true, true, false);
+                        partymem.GainMeso(mesosamm, true, true, false);
                     }
                 }
                 else
                 {
-                    _player.gainMeso(meso, true, true, false);
+                    _player.GainMeso(meso, true, true, false);
                 }
                 return true;
             }
@@ -179,7 +193,7 @@ namespace Application.Core.Gameplay
         /// </summary>
         /// <param name="mapItem"></param>
         /// <returns></returns>
-        private bool PickupSpecialItem(MapItem mapItem)
+        private bool PickupSpecialItem(Item mapItem)
         {
             if (ItemId.isNxCard(mapItem.getItemId()))
             {
@@ -195,30 +209,29 @@ namespace Application.Core.Gameplay
                 return true;
             }
 
-            else if (ItemId.HasScript(mapItem.getItemId()))
+            else if (mapItem.SourceTemplate is ScriptItemTemplate scriptItemTemplate)
             {
-                var info = ItemInformationProvider.getInstance().GetScriptItemTemplate(mapItem.getItemId());
-                if (info != null && info.RunOnPickup)
+                if (scriptItemTemplate.RunOnPickup)
                 {
-                    ItemScriptManager.getInstance().runItemScript(_player.Client, info);
+                    ItemScriptManager.getInstance().runItemScript(_player.Client, scriptItemTemplate);
                     return true;
                 }
                 else
                     return false;
             }
 
-            else if (ItemId.isPet(mapItem.getItemId()))
+            else if (mapItem.SourceTemplate is PetItemTemplate petItemTemplate)
             {
-                return InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null);
+                return InventoryManipulator.addById(_player.Client, mapItem.getItemId(), mapItem.getQuantity(), null);
             }
 
             else
-                return _player.applyConsumeOnPickup(mapItem.getItemId());
+                return _player.applyConsumeOnPickup(mapItem);
         }
 
-        private bool PickupItem(MapItem mapItem)
+        private bool PickupItem(Item mapItem)
         {
-            if (InventoryManipulator.addFromDrop(_player.Client, mapItem.getItem(), true))
+            if (InventoryManipulator.addFromDrop(_player.Client, mapItem, true))
             {
                 if (mapItem.getItemId() == ItemId.ARPQ_SPIRIT_JEWEL)
                 {

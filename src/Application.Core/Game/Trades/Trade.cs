@@ -81,11 +81,11 @@ public class Trade
             chr.gainMeso(actualGainMeso, show, true, show);
             if (fee > 0)
             {
-                chr.dropMessage(1, "Transaction completed. You received " + GameConstants.numberWithCommas(actualGainMeso) + " mesos due to trade fees.");
+                chr.dropMessage(1, "Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos due to trade fees.");
             }
             else
             {
-                chr.dropMessage(1, "Transaction completed. You received " + GameConstants.numberWithCommas(actualGainMeso) + " mesos.");
+                chr.dropMessage(1, "Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos.");
             }
 
             result = (byte)TradeResult.NO_RESPONSE;

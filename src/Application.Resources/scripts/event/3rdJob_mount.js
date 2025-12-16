@@ -41,7 +41,7 @@ function getMaxLobbies() {
 }
 
 function init() {
-    em.setProperty("noEntry", "false");
+
 }
 
 function checkHogHealth(eim) {
@@ -84,8 +84,6 @@ function playerEntry(eim, player) {
     respawnStages(eim);
 
     player.changeMap(entryMap, 0);
-    em.setProperty("noEntry", "true");
-    player.sendPacket(PacketCreator.getClock(eventTime * 60));
     eim.startEventTimer(eventTime * 60000);
 }
 
@@ -98,7 +96,6 @@ function playerExit(eim, player) {
 
     eim.unregisterPlayer(player);
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function scheduledTimeout(eim) {
@@ -126,7 +123,6 @@ function clearPQ(eim) {
     player.changeMap(exitMap);
 
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function monsterKilled(mob, eim) {}

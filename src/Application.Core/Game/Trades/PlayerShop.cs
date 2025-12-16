@@ -33,6 +33,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     public List<PlayerShopItem> Commodity { get; }
 
     public int SourceItemId { get; }
+    public Item SourceItem { get; }
 
     public string OwnerName { get; }
 
@@ -48,6 +49,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         StartTime = ChannelServer.Container.getCurrentTime();
         ExpirationTime = item.getExpiration();
         this.Title = description;
+        SourceItem = item;
         SourceItemId = item.getItemId();
         OwnerId = owner.Id;
         OwnerName = owner.Name;

@@ -1,4 +1,4 @@
-﻿var quantities = Array(10, 8, 6, 5, 4, 3, 2, 1, 1, 1);
+var quantities = Array(10, 8, 6, 5, 4, 3, 2, 1, 1, 1);
 var prize1 = Array(1442047, 2000000, 2000001, 2000002, 2000003, 2000004, 2000005, 2430036, 2430037, 2430038, 2430039, 2430040); //1 day
 var prize2 = Array(1442047, 4080100, 4080001, 4080002, 4080003, 4080004, 4080005, 4080006, 4080007, 4080008, 4080009, 4080010, 4080011);
 var prize3 = Array(1442047, 1442048, 2022070);
@@ -49,11 +49,11 @@ function action(mode, type, selection) {
                     cm.sendNext("你在过去的一个小时内已经参加了这个活动。");
                 } else if (!cm.canHold(4031019)) {
                     cm.sendNext("在你的背包里留点空间。");
-                } else if (cm.getChannelServer().getEvent() > -1 && !cm.haveItem(4031019)) {
+                } else if (cm.getEvent() != null && !cm.haveItem(4031019)) {
                     cm.getPlayer().saveLocation("EVENT");
                     cm.getPlayer().setChalkboard(null);
                     marr.setCustomData("" + cm.getCurrentTime());
-                    cm.warp(cm.getChannelServer().getEvent(), cm.getChannelServer().getEvent() == 109080000 || cm.getChannelServer().getEvent() == 109080010 ? 0 : "join00");
+                    cm.warp(cm.getEvent().getMapId(), cm.getEvent().getMapId() == 109080000 || cm.getEvent().getMapId() == 109080010 ? 0 : "join00");
                 } else {
                     cm.sendNext("要么活动还没有开始，你已经拥有了#b秘密卷轴#k，或者你在过去24小时内已经参与了这个活动。请稍后再试！");
                 }

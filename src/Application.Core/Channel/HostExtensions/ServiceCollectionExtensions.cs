@@ -12,9 +12,11 @@ using Application.Core.ServerTransports;
 using Application.Resources;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.coordinator.matchchecker;
+using Prometheus;
 using server.life;
 using server.maps;
 
@@ -172,6 +174,8 @@ namespace Application.Core.Channel.HostExtensions
             {
                 item.ConfigureHost(app);
             }
+
+            app.UseMetricServer();
         }
     }
 }

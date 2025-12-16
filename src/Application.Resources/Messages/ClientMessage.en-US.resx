@@ -1131,6 +1131,9 @@
   <data name="TeamRed" xml:space="preserve">
     <value>TeamRed</value>
   </data>
+	<data name="TeamBlue" xml:space="preserve">
+    <value>TeamBlue</value>
+  </data>
   <data name="Event_FatelError" xml:space="preserve">
     <value>事件遇到错误。</value>
   </data>
@@ -1370,5 +1373,56 @@
   </data>
   <data name="Job_2112" xml:space="preserve">
     <value>ARAN(4th)</value>
+  </data>
+	<data name="Boss_Stumpy" xml:space="preserve">
+    <value>Stumpy has appeared with a stumping sound that rings the Stone Mountain.</value>
+  </data>
+	<data name="Boss_Bamboo" xml:space="preserve">
+    <value>From amongst the ruins shrouded by the mists, #o6090002# appears.</value>
+  </data>
+	<data name="Boss_Centipede" xml:space="preserve">
+    <value>From the mists surrounding the herb garden, the gargantuous Giant Centipede appears.</value>
+  </data>
+	<data name="Boss_Dyle" xml:space="preserve">
+    <value>The huge crocodile Dyle has come out from the swamp.</value>
+  </data>
+	<data name="Boss_Kimera" xml:space="preserve">
+    <value>Kimera has appeared out of the darkness of the underground with a glitter in her eyes.</value>
+  </data>
+	<data name="Boss_KingClang" xml:space="preserve">
+    <value>A strange turban shell has appeared on the beach.</value>
+  </data>
+	<data name="Boss_Eliza" xml:space="preserve">
+    <value>Eliza has appeared with a black whirlwind.</value>
+  </data>
+	<data name="Boss_Mano" xml:space="preserve">
+    <value>A cool breeze was felt when Mano appeared.</value>
+  </data>
+	<data name="Boss_Zeno" xml:space="preserve">
+    <value>Zeno has appeared with a heavy sound of machinery.</value>
+  </data>
+	<data name="Boss_TaeRoon" xml:space="preserve">
+    <value>Tae Roon has appeared with a soft whistling sound.</value>
+  </data>
+	<data name="Boss_KingSageCat" xml:space="preserve">
+    <value>The ghostly air around here has become stronger. The unpleasant sound of a cat crying can be heard.</value>
+  </data>
+	<data name="Boss_NineTailedFox" xml:space="preserve">
+    <value>As the moon light dims, a long fox cry can be heard and the presence of the old fox can be felt</value>
+  </data>
+	<data name="Boss_Seruf" xml:space="preserve">
+    <value>A strange shell has appeared from a grove of seaweed</value>
+  </data>
+	<data name="Boss_Leviathan" xml:space="preserve">
+    <value>Leviathan emerges from the canyon and the cold icy wind blows.</value>
+  </data>
+	<data name="Boss_SnackBar" xml:space="preserve">
+    <value>Slowly, a suspicious food stand opens up on a strangely remote place.</value>
+  </data>
+	<data name="Boss_Timer1" xml:space="preserve">
+    <value>Tick-Tock Tick-Tock! Timer makes it's presence known.</value>
+  </data>
+	<data name="Password_q21747" xml:space="preserve">
+    <value>Actions speak louder than words</value>
   </data>
 </root>

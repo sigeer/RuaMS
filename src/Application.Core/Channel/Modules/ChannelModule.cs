@@ -17,21 +17,10 @@ namespace Application.Core.Channel.Modules
         {
             if (data.GuildId > 0)
             {
-                var guild = _server.GuildManager.SoftGetGuild(data.GuildId);
+                var guild = _server.GuildManager.GetGuildById(data.GuildId);
                 if (guild != null)
                 {
-                    guild.SetMemberJob(data.Id, data.JobId);
-                    guild.broadcast(PacketCreator.jobMessage(0, data.JobId, data.Name), data.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
-
-                    if (guild.AllianceId > 0)
-                    {
-                        var alliance = _server.GuildManager.SoftGetAlliance(guild.AllianceId);
-                        if (alliance != null)
-                        {
-                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
-                        }
-                    }
+                    guild.OnMemberJobChanged(data.Id, data.JobId);
                 }
             }
             _server.TeamManager.ProcessTeamUpdate(data);
@@ -42,22 +31,10 @@ namespace Application.Core.Channel.Modules
         {
             if (data.GuildId > 0)
             {
-                var guild = _server.GuildManager.SoftGetGuild(data.GuildId);
+                var guild = _server.GuildManager.GetGuildById(data.GuildId);
                 if (guild != null)
                 {
-                    guild.SetMemberLevel(data.Id, data.Level);
-                    guild.broadcast(PacketCreator.levelUpMessage(0, data.Level, data.Name), data.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
-
-                    if (guild.AllianceId > 0)
-                    {
-                        var alliance = _server.GuildManager.SoftGetAlliance(guild.AllianceId);
-                        if (alliance != null)
-                        {
-                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
-                        }
-                    }
-
+                    guild.OnMemberLevelChanged(data.Id, data.Level);
                 }
             }
 

@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Maps;
 using client;
 using server.quest;
 using System.Text;
@@ -32,11 +33,22 @@ namespace scripting.map;
 
 public class MapScriptMethods : AbstractPlayerInteraction
 {
-
+    public IMap Map { get; }
     private string rewardstring = " title has been rewarded. Please see NPC Dalair to receive your Medal.";
 
-    public MapScriptMethods(IChannelClient c) : base(c)
+    public MapScriptMethods(IChannelClient c, IMap map) : base(c)
     {
+        this.Map = map;
+    }
+
+    public override IMap getMap()
+    {
+        return Map;
+    }
+
+    public override int getMapId()
+    {
+        return Map.Id;
     }
 
     public void displayCygnusIntro()
@@ -166,35 +178,5 @@ public class MapScriptMethods : AbstractPlayerInteraction
         }
         getPlayer().sendPacket(PacketCreator.earnTitleMessage(etm.ToString()));
         showInfoText(smp.ToString());
-    }
-
-    public void touchTheSky()
-    { //29004
-        Quest quest = Quest.getInstance(29004);
-        if (!isQuestStarted(29004))
-        {
-            if (!quest.forceStart(getPlayer(), 9000066))
-            {
-                return;
-            }
-        }
-        QuestStatus qs = getPlayer().getQuest(quest);
-        if (!qs.addMedalMap(getPlayer().getMapId()))
-        {
-            return;
-        }
-        string status = qs.getMedalProgress().ToString();
-        getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 Completed"));
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage("The One Who's Touched the Sky title in progress."));
-        if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
-        {
-            showInfoText("The One Who's Touched the Sky" + rewardstring);
-            getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
-        }
-        else
-        {
-            showInfoText("The One Who's Touched the Sky title in progress. " + status + "/5 Completed");
-        }
     }
 }

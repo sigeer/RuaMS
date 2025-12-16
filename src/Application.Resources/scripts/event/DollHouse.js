@@ -28,9 +28,13 @@ var eventType = "Solo";
 var entryMap = 922000010;
 var exitMap = 221024400;
 var eventTime = 10;     //10 minutes
+const maxLobbies = 7;
 
 function init() {
-    em.setProperty("noEntry", "false");
+
+}
+function getMaxLobbies() {
+    return maxLobbies;
 }
 
 function setup(level, lobbyid) {
@@ -46,8 +50,6 @@ function playerEntry(eim, player) {
     eim.setExclusiveItems([4031094]);
 
     player.changeMap(entryMap, 0);
-    em.setProperty("noEntry", "true");
-    player.sendPacket(PacketCreator.getClock(eventTime * 60));
     eim.startEventTimer(eventTime * 60000);
 }
 
@@ -56,7 +58,6 @@ function playerUnregistered(eim, player) {}
 function playerExit(eim, player) {
     eim.unregisterPlayer(player);
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function scheduledTimeout(eim) {
@@ -67,15 +68,6 @@ function scheduledTimeout(eim) {
 
 function playerDisconnected(eim, player) {
     playerExit(eim, player);
-}
-
-function clear(eim) {
-    var player = eim.getPlayers().get(0);
-    eim.unregisterPlayer(player);
-    player.changeMap(exitMap, 4);
-
-    eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function changedMap(eim, chr, mapid) {

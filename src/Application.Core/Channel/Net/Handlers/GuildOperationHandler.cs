@@ -58,7 +58,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
                 if (mc.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
                 {
-                    mc.dropMessage(1, "You do not have " + GameConstants.numberWithCommas(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
+                    mc.dropMessage(1, "You do not have " + mc.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
                     return;
                 }
                 string guildName = p.readString();
@@ -173,7 +173,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
                 if (mc.getMeso() < YamlConfig.config.server.CHANGE_EMBLEM_COST)
                 {
-                    mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), GameConstants.numberWithCommas(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
+                    mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), mc.Client.CurrentCulture.Number(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
                     return;
                 }
                 short bg = p.readShort();

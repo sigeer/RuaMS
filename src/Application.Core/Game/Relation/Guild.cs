@@ -1,10 +1,18 @@
 using Application.Core.Channel;
 using Application.Shared.Guild;
+using Application.Shared.Net;
+using AutoMapper.Execution;
+using Microsoft.AspNetCore.Hosting.Server;
 using net.server.guild;
+using System;
 using System.Collections.Concurrent;
+using System.Net.Sockets;
 using tools;
+using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Game.Relation;
+
 
 public class Guild
 {
@@ -31,19 +39,13 @@ public class Guild
     public long Signature { get; set; }
 
     public int AllianceId { get; set; }
-
-
-    private static ILogger log = LogFactory.GetLogger(LogType.Guild);
-
+    // 1 = master, 2 = jr, 5 = lowest member
+    public string[] RankTitles { get; set; } = new string[5];
 
     public ConcurrentDictionary<int, GuildMember> Members { get; init; }
     private object membersLock = new object();
 
-    // 1 = master, 2 = jr, 5 = lowest member
-    public string[] RankTitles { get; set; } = new string[5];
-
-    private Dictionary<int, List<int>> notifications = new();
-    private Dictionary<int, bool> channelDirty;
+    private bool channelDirty;
 
     WorldChannelServer _serverContainer;
     public Guild(WorldChannelServer serverContainer, int guildId)
@@ -58,52 +60,85 @@ public class Guild
     /// 相当于原先的 notifications
     /// </summary>
     List<IPlayer?>? channelMembersCache;
-    public List<IPlayer?> GetCurrentChannelMembers(WorldChannel server)
+    List<IPlayer?> GetCurrentChannelMembers()
     {
-        if (!channelDirty.GetValueOrDefault(server.getId()))
+        if (!channelDirty && channelMembersCache != null)
         {
-            return channelMembersCache!;
+            return channelMembersCache;
         }
 
         // 人员发生变动、或者上下线时重算
-        channelDirty[server.getId()] = true;
-        return channelMembersCache = Members.Keys.Select(x => server.Players.getCharacterById(x)).ToList();
+        channelDirty = true;
+        return channelMembersCache = Members.Keys.Select(x => _serverContainer.FindPlayerById(x)).ToList();
     }
 
-    private void SendChannelMember(Action<IPlayer> action)
+    public void HandleCurrentServerMembers(Action<IPlayer> action)
     {
-        foreach (var server in _serverContainer.Servers.Values)
+        foreach (var m in GetCurrentChannelMembers())
         {
-            foreach (var m in GetCurrentChannelMembers(server))
+            if (m != null && m.isLoggedinWorld())
             {
-                if (m != null)
+                action(m);
+            }
+        }
+    }
+
+    public void OnMemberChannelChanged(int cid, int channel)
+    {
+        if (Members.TryGetValue(cid, out var member))
+        {
+            member.Channel = channel;
+
+            broadcast(GuildPackets.guildMemberOnline(GuildId, cid, channel > 0), cid);
+            channelDirty = true;
+
+            if (AllianceId > 0)
+            {
+                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                if (alliance != null)
                 {
-                    action(m);
+                    alliance.broadcastMessage(GuildPackets.allianceMemberOnline(this, cid, channel > 0), cid);
+                }
+            }
+        }
+    }
+    public void OnMemberLevelChanged(int cid, int level)
+    {
+        if (Members.TryGetValue(cid, out var member))
+        {
+            member.Level = level;
+
+            broadcast(PacketCreator.levelUpMessage(2, level, member.Name), member.Id);
+            broadcast(GuildPackets.guildMemberLevelJobUpdate(GuildId, member.Id, member.Level, member.JobId));
+
+            if (AllianceId > 0)
+            {
+                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                if (alliance != null)
+                {
+                    alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(this, member.Id, member.Level, member.JobId), member.Id, -1);
                 }
             }
         }
     }
 
-    public void SetMemberChannel(int cid, int channel)
-    {
-        if (Members.TryGetValue(cid, out var member))
-        {
-            member.Channel = channel;
-        }
-    }
-    public void SetMemberLevel(int cid, int level)
-    {
-        if (Members.TryGetValue(cid, out var member))
-        {
-            member.Level = level;
-        }
-    }
-
-    public void SetMemberJob(int cid, int jobId)
+    public void OnMemberJobChanged(int cid, int jobId)
     {
         if (Members.TryGetValue(cid, out var member))
         {
             member.JobId = jobId;
+
+            broadcast(PacketCreator.jobMessage(0, jobId, member.Name), member.Id);
+            broadcast(GuildPackets.guildMemberLevelJobUpdate(GuildId, member.Id, member.Level, member.JobId));
+
+            if (AllianceId > 0)
+            {
+                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                if (alliance != null)
+                {
+                    alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(this, member.Id, member.Level, member.JobId), member.Id, -1);
+                }
+            }
         }
     }
 
@@ -114,84 +149,12 @@ public class Guild
             return;
         }
         Members[member.Id] = member;
-        var chr = _serverContainer.Servers[member.Channel].Players.getCharacterById(member.Id);
+        var chr = _serverContainer.FindPlayerById(member.Id);
         if (chr != null)
         {
             chr.GuildRank = member.GuildRank;
             chr.AllianceRank = member.AllianceRank;
         }
-    }
-
-    public int getId()
-    {
-        return GuildId;
-    }
-
-    public int getLeaderId()
-    {
-        return Leader;
-    }
-
-
-    public int setLeaderId(int charId)
-    {
-        // 家族不能更换族长？
-        return Leader = charId;
-    }
-
-    public int getGP()
-    {
-        return GP;
-    }
-
-    public int getLogo()
-    {
-        return Logo;
-    }
-
-    public void setLogo(int l)
-    {
-        Logo = l;
-    }
-
-    public int getLogoColor()
-    {
-        return LogoColor;
-    }
-
-    public void setLogoColor(int c)
-    {
-        LogoColor = (short)c;
-    }
-
-    public int getLogoBG()
-    {
-        return LogoBg;
-    }
-
-    public void setLogoBG(int bg)
-    {
-        LogoBg = bg;
-    }
-
-    public int getLogoBGColor()
-    {
-        return LogoBgColor;
-    }
-
-    public void setLogoBGColor(int c)
-    {
-        LogoBgColor = (short)c;
-    }
-
-    public string getNotice()
-    {
-        return Notice ?? "";
-    }
-
-    public string getName()
-    {
-        return Name;
     }
 
     public List<GuildMember> getMembers()
@@ -207,123 +170,7 @@ public class Guild
         }
     }
 
-    public int getCapacity()
-    {
-        return Capacity;
-    }
 
-    public long getSignature()
-    {
-        return Signature;
-    }
-
-    public void BroadcastDisplay()
-    {
-        SendChannelMember(chr =>
-        {
-            chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.getId(), this.getName()));
-            chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.getId(), this));
-        });
-    }
-
-    public void broadcastNameChanged()
-    {
-        SendChannelMember(chr =>
-        {
-            Packet packet = GuildPackets.guildNameChanged(chr.getId(), this.getName());
-            chr.getMap().broadcastPacket(chr, packet);
-        });
-    }
-
-    public void broadcastEmblemChanged()
-    {
-        SendChannelMember(chr =>
-        {
-            Packet packet = GuildPackets.guildMarkChanged(chr.getId(), this);
-            chr.getMap().broadcastPacket(chr, packet);
-        });
-    }
-
-    public void broadcastInfoChanged()
-    {
-        SendChannelMember(chr =>
-        {
-            chr.sendPacket(GuildPackets.showGuildInfo(chr));
-        });
-    }
-
-    public void broadcast(Packet? packet, int exceptionId = -1, BCOp bcop = BCOp.NONE)
-    {
-        Monitor.Enter(membersLock); // membersLock awareness thanks to ProjectNano dev team
-        try
-        {
-            try
-            {
-                SendChannelMember(member =>
-                {
-                    if (member != null && member.Id != exceptionId && member.isLoggedinWorld())
-                    {
-                        if (bcop == BCOp.DISBAND)
-                        {
-                            SetOnlinedPlayerGuildInfo(member, 0, 5);
-                        }
-                        else if (bcop == BCOp.EMBLEMCHANGE)
-                        {
-                            member.sendPacket(GuildPackets.guildEmblemChange(GuildId, (short)LogoBg, (byte)LogoBgColor, (short)Logo, (byte)LogoColor));
-                            SetOnlinedPlayerGuildInfo(member, -1, -1);    //respawn player
-                        }
-                        else
-                        {
-                            member.sendPacket(packet!);
-                        }
-                    }
-                });
-            }
-            catch (Exception re)
-            {
-                log.Error(re, "Failed to contact channel(s) for broadcast.");
-            }
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-    }
-
-    public void guildMessage(Packet serverNotice)
-    {
-        broadcast(serverNotice);
-    }
-
-    public void dropMessage(string message)
-    {
-        dropMessage(5, message);
-    }
-
-    /// <summary>
-    /// 如果直接调用，只会修改本机上的数据。所有操作应该由GuildManager调用
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="message"></param>
-    public void dropMessage(int type, string message)
-    {
-        guildMessage(PacketCreator.serverNotice(type, message));
-    }
-
-    public void setOnline(int cid, bool online, int channel)
-    {
-        Monitor.Enter(membersLock);
-        try
-        {
-            this.broadcast(GuildPackets.guildMemberOnline(GuildId, cid, online), cid);
-
-            channelDirty[channel] = true;
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-    }
 
     public string getRankTitle(int rank)
     {
@@ -342,7 +189,7 @@ public class Guild
 
             if (Members.TryAdd(member.Id, member))
             {
-                SendChannelMember(m =>
+                HandleCurrentServerMembers(m =>
                 {
                     if (m.Id == member.Id)
                     {
@@ -350,36 +197,15 @@ public class Guild
                     }
                     m.sendPacket(GuildPackets.newGuildMember(GuildId, member));
                 });
-                channelDirty[member.Channel] = true;
-                return true;
-            }
+                channelDirty = true;
 
-            return false;
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-    }
-
-    public bool LeaveGuild(int cid)
-    {
-        Monitor.Enter(membersLock);
-        try
-        {
-            if (Members.TryRemove(cid, out var member))
-            {
-                SendChannelMember(m =>
+                if (AllianceId > 0)
                 {
-                    if (m.Id == cid)
-                    {
-                        SetOnlinedPlayerGuildInfo(m, 0, 5);
-                    }
-                    m.sendPacket(GuildPackets.memberLeft(m, false));
-                });
-                channelDirty[member.Channel] = true;
+                    _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
+                }
                 return true;
             }
+
             return false;
         }
         finally
@@ -388,33 +214,56 @@ public class Guild
         }
     }
 
-    public bool ExpelMember(int cid)
+    public bool OnMemberLeftGuild(int cid)
     {
-        Monitor.Enter(membersLock);
-        try
+        if (Members.TryRemove(cid, out var member))
         {
-            if (Members.TryRemove(cid, out var member))
+            HandleCurrentServerMembers(m =>
             {
-                SendChannelMember(m =>
+                if (m.Id == cid)
                 {
-                    if (m.Id == cid)
-                    {
-                        SetOnlinedPlayerGuildInfo(m, 0, 5);
-                    }
-                    m.sendPacket(GuildPackets.memberLeft(m, true));
-                });
-                channelDirty[member.Channel] = true;
-                log.Warning("Unable to find member with id {CharacterId}", cid);
-                return true;
+                    m.sendPacket(GuildPackets.updateGP(m.GuildId, 0));
+                    m.sendPacket(GuildPackets.showGuildInfo(null));
+
+                    SetOnlinedPlayerGuildInfo(m, 0, 5);
+                }
+                m.sendPacket(GuildPackets.memberLeft(m, false));
+            });
+            channelDirty = true;
+
+            if (AllianceId > 0)
+            {
+                _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
             }
-            return false;
+            return true;
         }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
+        return false;
     }
-    public bool ChangeRank(int cid, int newRank)
+
+    public bool OnMemberExpelled(int cid)
+    {
+        if (Members.TryRemove(cid, out var member))
+        {
+            HandleCurrentServerMembers(m =>
+            {
+                if (m.Id == cid)
+                {
+                    SetOnlinedPlayerGuildInfo(m, 0, 5);
+                }
+                m.sendPacket(GuildPackets.memberLeft(m, true));
+            });
+
+            if (AllianceId > 0)
+            {
+                _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
+            }
+
+            channelDirty = true;
+            return true;
+        }
+        return false;
+    }
+    internal bool OnMemberRankChanged(int cid, int newRank)
     {
         Monitor.Enter(membersLock);
         try
@@ -423,13 +272,13 @@ public class Guild
             {
                 member.GuildRank = newRank;
 
-                SendChannelMember(m =>
+                HandleCurrentServerMembers(m =>
                 {
                     if (m.Id == cid)
                     {
                         SetOnlinedPlayerGuildInfo(m, GuildId, newRank);
                     }
-                    m.sendPacket(GuildPackets.changeRank(GuildId, m.Id, newRank));
+                    m.sendPacket(GuildPackets.changeRank(GuildId, m.Id, m.Rank));
                 });
                 return true;
             }
@@ -441,26 +290,18 @@ public class Guild
         }
     }
 
-    public void setGuildNotice(string notice)
+    public void OnNoticeChanged(string notice)
     {
         this.Notice = notice;
 
-        Monitor.Enter(membersLock);
-        try
-        {
-            this.broadcast(GuildPackets.guildNotice(GuildId, notice));
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
+        this.broadcast(GuildPackets.guildNotice(GuildId, notice));
     }
 
     public override bool Equals(object? other)
     {
         if (other is Guild o)
         {
-            return (o.getId() == GuildId && o.getName().Equals(Name));
+            return (o.GuildId == GuildId);
         }
         return false;
     }
@@ -473,94 +314,63 @@ public class Guild
         return hash;
     }
 
-    public void changeRankTitle(string[] ranks)
+    public void OnRankTitleChanged(string[] ranks)
     {
         Array.ConstrainedCopy(ranks, 0, RankTitles, 0, 5);
 
-        Monitor.Enter(membersLock);
-        try
-        {
-            this.broadcast(GuildPackets.rankTitleChange(GuildId, ranks));
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
+        this.broadcast(GuildPackets.rankTitleChange(GuildId, ranks));
     }
 
-    public void disbandGuild()
+    public void OnGuildDisband()
     {
-        Monitor.Enter(membersLock);
-        try
+        Members.Clear();
+
+        HandleCurrentServerMembers(member =>
         {
-            Members.Clear();
-            this.broadcast(null, -1, BCOp.DISBAND);
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
+            SetOnlinedPlayerGuildInfo(member, 0, 5);
+        });
+        channelDirty = true;
     }
 
-    public void setGuildEmblem(short bg, byte bgcolor, short logo, byte logocolor)
+    public void OnEmblemChanged(short bg, byte bgcolor, short logo, byte logocolor)
     {
         this.LogoBg = bg;
         this.LogoBgColor = bgcolor;
         this.Logo = logo;
         this.LogoColor = logocolor;
 
-        Monitor.Enter(membersLock);
-        try
+        HandleCurrentServerMembers(member =>
         {
-            this.broadcast(null, -1, BCOp.EMBLEMCHANGE);
+            member.sendPacket(GuildPackets.guildEmblemChange(GuildId, (short)LogoBg, (byte)LogoBgColor, (short)Logo, (byte)LogoColor));
+            SetOnlinedPlayerGuildInfo(member, -1, -1);
+        });
 
-            BroadcastDisplay();
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
+        _serverContainer.GuildManager.GetAllianceById(AllianceId)?.BroadcastGuildAlliance();
     }
 
 
-    public bool increaseCapacity()
+    public void OnCapacityChanged()
     {
-        if (Capacity > 99)
-        {
-            return false;
-        }
         Capacity += 5;
 
-        Monitor.Enter(membersLock);
-        try
-        {
-            this.broadcast(GuildPackets.guildCapacityChange(GuildId, this.Capacity));
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-
-        return true;
+        this.broadcast(GuildPackets.guildCapacityChange(GuildId, this.Capacity));
     }
 
-    public void gainGP(int amount)
+    public void OnGPGained(int amount)
     {
         GP += amount;
-        this.guildMessage(GuildPackets.updateGP(GuildId, GP));
-        this.guildMessage(PacketCreator.getGPMessage(amount));
+
+        this.broadcast(GuildPackets.updateGP(GuildId, GP));
+        this.broadcast(PacketCreator.getGPMessage(amount));
     }
 
-    public void removeGP(int amount)
+    public void OnGPLosed(int amount)
     {
         GP -= amount;
-        this.guildMessage(GuildPackets.updateGP(GuildId, GP));
+
+        this.broadcast(GuildPackets.updateGP(GuildId, GP));
     }
 
-    public int getAllianceId()
-    {
-        return AllianceId;
-    }
 
     public void JoinAlliance()
     {
@@ -574,8 +384,51 @@ public class Guild
             mgc.Value.AllianceRank = 5;
             if (mgc.Value.GuildRank == 1)
                 mgc.Value.AllianceRank = 2;
+
         }
     }
+
+    public void BroadcastDisplay()
+    {
+        HandleCurrentServerMembers(chr =>
+        {
+            chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.getId(), this.Name));
+            chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.getId(), this));
+        });
+    }
+
+    #region  Guild Broadcast
+    void broadcast(Packet packet, int except = -1)
+    {
+        HandleCurrentServerMembers(member =>
+        {
+            if (member.Id == except)
+                return;
+
+            member.sendPacket(packet);
+        });
+    }
+
+
+    void dropMessage(string message)
+    {
+        dropMessage(5, message);
+    }
+
+    /// <summary>
+    /// 如果直接调用，只会修改本机上的数据。所有操作应该由GuildManager调用
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="message"></param>
+    void dropMessage(int type, string message)
+    {
+        HandleCurrentServerMembers(m =>
+        {
+            m.TypedMessage(type, message);
+        });
+    }
+
+    #endregion
 
     /// <summary>
     /// 
@@ -586,7 +439,7 @@ public class Guild
     private void SetOnlinedPlayerGuildInfo(IPlayer mc, int guildid, int rank)
     {
         bool bDifferentGuild;
-        if (guildid == -1 && rank == -1)
+        if (guildid == -1)
         {
             bDifferentGuild = true;
         }
@@ -617,4 +470,238 @@ public class Guild
             }
         }
     }
+
+    #region Alliance
+    public class Alliance
+    {
+        ILogger log;
+        public ConcurrentDictionary<int, Guild> Guilds { get; init; }
+
+        public int AllianceId { get; }
+        public int Capacity { get; private set; }
+        public string Name { get; private set; }
+        public string Notice { get; private set; }
+        public string[] RankTitles { get; private set; }
+
+        public Alliance(int id, string name, int capacity, ConcurrentDictionary<int, Guild> guilds, string[] rankTitles, string notice)
+        {
+            AllianceId = id;
+            Name = name;
+            Capacity = capacity;
+            Notice = notice;
+
+            Guilds = guilds;
+            RankTitles = rankTitles;
+            log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}");
+        }
+
+
+        public bool RemoveGuildFromAlliance(int guildId, int method)
+        {
+            if (method == 1 && GetLeaderGuildId() == guildId)
+            {
+                return false;
+            }
+
+            if (Guilds.TryRemove(guildId, out var guild))
+            {
+                guild.AllianceId = 0;
+
+                broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
+
+                BroadcastGuildAlliance();
+                BroadcastNotice();
+                guild.broadcast(GuildPackets.disbandAlliance(AllianceId));
+
+                if (method == 1)
+                    dropMessage("[" + guild.Name + "] guild has left the union.");
+                else if (method == 2)
+                    dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
+                return true;
+            }
+            return false;
+            //throw new BusinessException($"GuildId {guildId} not found or not in alliance");
+        }
+
+        public void updateAlliancePackets()
+        {
+            if (AllianceId > 0)
+            {
+                BroadcastAllianceInfo();
+                BroadcastNotice();
+            }
+        }
+
+        public void OnGuildJoinAlliance(Guild guild)
+        {
+            var r = Guilds.TryAdd(guild.GuildId, guild);
+            if (r)
+            {
+                guild.AllianceId = AllianceId;
+                guild.JoinAlliance();
+
+                broadcastMessage(GuildPackets.addGuildToAlliance(this, guild));
+                updateAlliancePackets();
+
+                guild.dropMessage("Your guild has joined the [" + Name + "] union.");
+            }
+        }
+
+
+        public void OnDisband()
+        {
+            Guilds.Clear();
+
+            broadcastMessage(GuildPackets.disbandAlliance(AllianceId), -1, -1);
+        }
+
+        public void OnRankTitleChanged(string[] ranks)
+        {
+            RankTitles = ranks;
+
+            broadcastMessage(GuildPackets.changeAllianceRankTitle(AllianceId, ranks), -1, -1);
+        }
+
+        public void OnLeaderChanged(int newLeaderId, WorldChannelServer serverContainer)
+        {
+            var oldLeader = GetLeader();
+            oldLeader.AllianceRank = 2;
+
+            var oldLeaderObj = serverContainer.FindPlayerById(oldLeader.Id);
+            if (oldLeaderObj != null)
+                oldLeaderObj.setAllianceRank(2);
+
+            var newLeader = GetMemberById(newLeaderId);
+            newLeader.AllianceRank = 1;
+            var newLeaderObj = serverContainer.FindPlayerById(newLeader.Id);
+            if (newLeaderObj != null)
+                newLeaderObj.setAllianceRank(1);
+
+            BroadcastGuildAlliance();
+            dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
+        }
+        public void OnMemberRankChanged(int cid, int newRank, WorldChannelServer serverContainer)
+        {
+            var targetPlayer = GetMemberById(cid);
+            targetPlayer.AllianceRank = newRank;
+            var targetPlayerObj = serverContainer.FindPlayerById(targetPlayer.Id);
+            if (targetPlayerObj != null)
+                targetPlayerObj.setAllianceRank(newRank);
+
+            BroadcastGuildAlliance();
+        }
+
+        public string getRankTitle(int rank)
+        {
+            return RankTitles[rank - 1];
+        }
+
+        public List<int> getGuilds()
+        {
+            return Guilds.Keys.ToList();
+        }
+
+        public void OnNoticeChanged(string notice)
+        {
+            this.Notice = notice;
+
+            BroadcastNotice();
+
+            dropMessage(5, "* Alliance Notice : " + notice);
+        }
+
+        public void OnCapacityIncreased(int inc)
+        {
+            this.Capacity += inc;
+
+            BroadcastGuildAlliance();
+            BroadcastNotice();
+        }
+
+        public int GetLeaderGuildId()
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                if (guild.getMembers().Any(x => x.AllianceRank == 1))
+                    return guild.GuildId;
+            }
+            throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+        }
+
+        public int GetLeaderId()
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+                if (leader != null)
+                    return leader.Id;
+            }
+            throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+        }
+
+        public GuildMember GetLeader()
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+                if (leader != null)
+                    return leader;
+            }
+            throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+        }
+
+        public GuildMember GetMemberById(int cid)
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                var leader = guild.getMembers().FirstOrDefault(x => x.Id == cid);
+                if (leader != null)
+                    return leader;
+            }
+            throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+        }
+
+        internal void dropMessage(string message)
+        {
+            dropMessage(5, message);
+        }
+
+        internal void dropMessage(int type, string message)
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                guild.dropMessage(type, message);
+            }
+        }
+
+        internal void broadcastMessage(Packet packet, int exception = -1, int exceptedGuildId = -1)
+        {
+            foreach (var guild in Guilds.Values)
+            {
+                if (guild.GuildId != exceptedGuildId)
+                    guild.broadcast(packet, exception);
+            }
+        }
+
+        internal void BroadcastPlayerInfo(int chrId)
+        {
+            broadcastMessage(GuildPackets.sendShowInfo(AllianceId, chrId), -1, -1);
+        }
+
+        internal void BroadcastGuildAlliance()
+        {
+            broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
+        }
+
+        void BroadcastNotice()
+        {
+            broadcastMessage(GuildPackets.allianceNotice(AllianceId, Notice), -1, -1);
+        }
+
+        void BroadcastAllianceInfo()
+        {
+            broadcastMessage(GuildPackets.updateAllianceInfo(this), -1, -1);
+        }
+    }
+    #endregion
 }

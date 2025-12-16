@@ -86,14 +86,28 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getClient().CurrentCulture.GetJobName(job);
     }
 
+    public string GetJobName(int job)
+    {
+        return getClient().CurrentCulture.GetJobName(JobFactory.GetById(job));
+    }
+
+    public string Ordinal(int i)
+    {
+        return getClient().CurrentCulture.Ordinal(i);
+    }
+
     public int getLevel()
     {
         return getPlayer().getLevel();
     }
 
-    public IMap getMap()
+    public virtual IMap getMap()
     {
         return c.OnlinedCharacter.getMap();
+    }
+    public virtual int getMapId()
+    {
+        return c.OnlinedCharacter.getMap().getId();
     }
 
     public int getHourOfDay()
@@ -724,7 +738,8 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void guildMessage(int type, string message)
     {
-        getGuild()?.dropMessage(type, message);
+        if (getPlayer().GuildModel != null)
+            c.CurrentServerContainer.GuildManager.DropGuildMessage(getPlayer().GuildModel!.GuildId, type, message);
     }
 
     public Guild? getGuild()
@@ -800,10 +815,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public virtual int getMapId()
-    {
-        return c.OnlinedCharacter.getMap().getId();
-    }
 
     public int getPlayerCount(int mapid)
     {
@@ -1022,7 +1033,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public string numberWithCommas(int number)
     {
-        return GameConstants.numberWithCommas(number);
+        return getClient().CurrentCulture.Number(number);
     }
 
     public Pyramid? getPyramid()
@@ -1232,4 +1243,42 @@ public class AbstractPlayerInteraction : IClientMessenger
         getPlayer().TopScrolling(key, param);
     }
 
+    #region Quest
+    public void touchTheSky()
+    { //29004
+        Quest quest = Quest.getInstance(29004);
+        if (!isQuestStarted(29004))
+        {
+            if (!quest.forceStart(getPlayer(), 9000066))
+            {
+                return;
+            }
+        }
+        QuestStatus qs = getPlayer().getQuest(quest);
+        if (!qs.addMedalMap(getPlayer().getMapId()))
+        {
+            return;
+        }
+        string status = qs.getMedalProgress().ToString();
+        getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 Completed"));
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage("The One Who's Touched the Sky title in progress."));
+        if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
+        {
+            showInfoText("The One Who's Touched the Sky title has been rewarded. Please see NPC Dalair to receive your Medal.");
+            getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
+        }
+        else
+        {
+            showInfoText("The One Who's Touched the Sky title in progress. " + status + "/5 Completed");
+        }
+    }
+    #endregion
+
+    #region Guild
+    public void GainGuildGP(int value)
+    {
+        c.CurrentServerContainer.GuildManager.GainGP(getPlayer(), value);
+    }
+    #endregion
 }

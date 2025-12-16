@@ -180,9 +180,12 @@ public class TakeDamageHandler : ChannelHandlerBase
                     {
                         int id = jobid * 10000 + 1002;
                         var manaReflectSkill = SkillFactory.GetSkillTrust(id);
-                        if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill) && chr.getSkillLevel(manaReflectSkill) > 0 && manaReflectSkill.getEffect(chr.getSkillLevel(manaReflectSkill)).makeChanceResult())
+                        var chrSkillLevel = chr.getSkillLevel(manaReflectSkill);
+                        if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill) 
+                            && chrSkillLevel > 0 
+                            && manaReflectSkill.getEffect(chrSkillLevel).makeChanceResult())
                         {
-                            int bouncedamage = (damage * manaReflectSkill.getEffect(chr.getSkillLevel(manaReflectSkill)).getX() / 100);
+                            int bouncedamage = (damage * manaReflectSkill.getEffect(chrSkillLevel).getX() / 100);
                             if (bouncedamage > attacker.getMaxHp() / 5)
                             {
                                 bouncedamage = attacker.getMaxHp() / 5;

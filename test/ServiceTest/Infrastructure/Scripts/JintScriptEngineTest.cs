@@ -17,6 +17,19 @@ namespace ServiceTest.Infrastructure.Scripts
         }
 
         [Test]
+        public override void TestDynamicMethod()
+        {
+            Code = """
+                function init() {
+                    globalThis["testA"] = () => {
+                        return "A";
+                    }
+                }
+                """;
+            base.TestDynamicMethod();
+        }
+
+        [Test]
         public override void GetValueTest()
         {
             Code = """

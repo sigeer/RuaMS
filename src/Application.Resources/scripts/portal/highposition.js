@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -23,6 +23,6 @@
 // Author: Ronan
 function enter(ms) {
     // thanks kvmba for noticing some issues running this script
-    ms.runMapScript();
+    ms.touchTheSky();
     return false;
 }

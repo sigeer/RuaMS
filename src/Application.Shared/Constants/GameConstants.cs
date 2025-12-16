@@ -22,7 +22,7 @@ namespace Application.Shared.Constants
         private static int[] jobUpgradeBlob = { 1, 20, 60, 110, 190 };
         private static int[] jobUpgradeSpUp = { 0, 1, 2, 3, 6 };
 
-
+        public static string[] DefaultAllianceRankTitles =  { "Master", "Jr. Master", "Member", "Member", "Member" };
 
         public static int getPlayerBonusDropRate(int slot)
         {
@@ -377,25 +377,6 @@ namespace Application.Shared.Constants
                 return int.MaxValue;
             }
             return mobHpVal[level];
-        }
-
-        public static string ordinal(int i)
-        {
-            string[] sufixes = new string[] { "th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th" };
-            switch (i % 100)
-            {
-                case 11:
-                case 12:
-                case 13:
-                    return i + "th";
-
-                default:
-                    return i + sufixes[i % 10];
-            }
-        }
-        public static string numberWithCommas(int i)
-        {
-            return i.ToString("N", CultureInfo.CurrentCulture);
         }
         public const string LevelCongratulations = "[Congrats] {0} has reached Level {1}! Congratulate {2} on such an amazing achievement!";
     }

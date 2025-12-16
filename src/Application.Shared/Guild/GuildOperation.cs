@@ -6,6 +6,7 @@ namespace Application.Shared.Team
         PlayerNotExisted,
         PlayerNotOnlined,
         GuildNotExisted ,
+        GuildFull,
 
         MasterRankFail,
 

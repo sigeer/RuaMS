@@ -90,12 +90,14 @@ namespace Application.Core.Game.Players
 
         public void broadcastMarriageMessage()
         {
-            var guild = this.getGuild();
-            if (guild != null)
-            {
-                guild.broadcast(PacketCreator.marriageMessage(0, Name));
-            }
             // TODO: 结婚系统重构后处理
+
+            //var guild = this.getGuild();
+            //if (guild != null)
+            //{
+            //    guild.broadcast(PacketCreator.marriageMessage(0, Name));
+            //}
+
             //var family = this.getFamily();
             //if (family != null)
             //{

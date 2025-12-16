@@ -48,3 +48,15 @@ message GetGuildResponse {
 message QueryRankedGuildsResponse {
 	repeated GuildDto guilds = 1;
 }
+
+message GuildDropMessageRequest {
+	int32 guildId = 1;
+	int32 type = 2;
+	string message = 3;
+}
+
+message GuildPacketRequest {
+	bytes data = 1;
+	int32 guildId = 2;
+	int32 exceptChrId = 3;
+}

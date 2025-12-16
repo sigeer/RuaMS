@@ -1620,9 +1620,9 @@ public class PacketCreator
         p.writePos(drop.getPosition());
         p.writeInt(giveOwnership ? 0 : -1);
 
-        if (drop.getMeso() == 0)
+        if (drop.Item != null)
         {
-            addExpirationTime(p, drop.getItem().getExpiration());
+            addExpirationTime(p, drop.Item.getExpiration());
         }
         p.writeBool(!drop.isPlayerDrop());
         return p;
@@ -1666,9 +1666,9 @@ public class PacketCreator
             p.writePos(dropfrom!.Value);
             p.writeShort(delay);//Fh?
         }
-        if (drop.getMeso() == 0)
+        if (drop.Item != null)
         {
-            addExpirationTime(p, drop.getItem().getExpiration());
+            addExpirationTime(p, drop.Item.getExpiration());
         }
         p.writeByte(drop.isPlayerDrop() ? 0 : 1); //pet EQP pickup
         return p;
@@ -2417,6 +2417,11 @@ public class PacketCreator
     public static Packet modifyInventory(bool updateTick, List<ModifyInventory> mods)
     {
         OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
+        //  if ( CInPacket::Decode1(a2) )
+        //  {
+        //    this[1044].dwHighDateTime = 0;
+        //    this[1045].dwLowDateTime = get_update_time();
+        //  }
         p.writeBool(updateTick);
         p.writeByte(mods.Count);
         //p.writeByte(0); v104 :)
@@ -2692,7 +2697,7 @@ public class PacketCreator
 
             if (chr.AllianceModel != null)
             {
-                allianceName = chr.AllianceModel.getName();
+                allianceName = chr.AllianceModel.Name;
             }
         }
         p.writeString(guildName);
@@ -6371,16 +6376,19 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends a "levelup" packet to the guild or family.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: <Family> ? has reached Lv.
-     * ?.<br> - The Reps you have received from ? will be reduced in half. 1:
-     * <Family> ? has reached Lv. ?.<br> 2: <Guild> ? has reached Lv. ?.<br>
-     *
-     * @param type The type
-     * @return The "levelup" packet.
-     */
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="type">
+    /// <para>0: Family. ? has reached Lv.</para>
+    /// <para>1: Family. The Reps you have received from ? will be reduced in half.</para>
+    /// <para>2: Guild. ? has reached Lv. ?</para>
+    /// </param>
+    /// <param name="level"></param>
+    /// <param name="charname"></param>
+    /// <returns></returns>
     public static Packet levelUpMessage(int type, int level, string charname)
     {
         OutPacket p = OutPacket.create(SendOpcode.NOTIFY_LEVELUP);
@@ -6391,30 +6399,11 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends a "married" packet to the guild or family.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: <Guild ? is now married.
-     * Please congratulate them.<br> 1: <Family ? is now married. Please
-     * congratulate them.<br>
-     *
-     * @param type The type
-     * @return The "married" packet.
-     */
-    public static Packet marriageMessage(int type, string charname)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.NOTIFY_MARRIAGE);
-        p.writeByte(type);  // 0: guild, 1: family
-        p.writeString("> " + charname); //To fix the stupid packet lol
-
-        return p;
-    }
-
 
     /// <summary>
-    /// Sends a "job advance" packet to the guild or family.
+    /// 
     /// </summary>
-    /// <param name="type">0. guild 1. family</param>
+    /// <param name="type">0. guild, 1. family</param>
     /// <param name="job"></param>
     /// <param name="charname"></param>
     /// <returns></returns>

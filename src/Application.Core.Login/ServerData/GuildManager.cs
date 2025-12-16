@@ -165,8 +165,7 @@ namespace Application.Core.Login.ServerData
                 if (_idGuildDataSource.TryGetValue(sender.Character.GuildId, out var guild))
                 {
                     var onlinedGuildMembers = guild.Members.Where(x => x != sender.Character.Id).Select(_server.CharacterManager.FindPlayerById)
-                        .Where(x => x != null && x.Channel > 0)
-                        .Select(x => new PlayerChannelPair(x.Channel, x.Character.Id)).ToArray();
+                        .Where(x => x != null && x.Channel > 0);
                     _server.Transport.SendMultiChat(2, nameFrom, onlinedGuildMembers, chatText);
                 }
 
@@ -265,8 +264,7 @@ namespace Application.Core.Login.ServerData
                     if (_idAllianceDataSource.TryGetValue(guild.AllianceId, out var alliance))
                     {
                         var allianceMembers = alliance.Guilds.Select(GetLocalGuild)
-                            .SelectMany(x => GetGuildMembers(x).Where(y => y.Character.Id != sender.Character.Id && y.Channel > 0))
-                            .Select(x => new PlayerChannelPair(x.Channel, x.Character.Id)).ToArray();
+                            .SelectMany(x => GetGuildMembers(x).Where(y => y.Character.Id != sender.Character.Id && y.Channel > 0));
                         _server.Transport.SendMultiChat(3, nameFrom, allianceMembers, chatText);
                     }
                 }
@@ -274,7 +272,7 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public void BroadcastGuildMessage(int guildId, int v, string callout)
+        public void SendGuildMessage(int guildId, int v, string callout)
         {
             if (_idGuildDataSource.TryGetValue(guildId, out var guild))
             {
@@ -282,7 +280,15 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        private int HandleGuildRequest(int masterId, Action<GuildModel> guildAction, out GuildUpdateResult code)
+        public void SendGuildPacket(GuildProto.GuildPacketRequest data)
+        {
+            if (_idGuildDataSource.TryGetValue(data.GuildId, out var guild))
+            {
+                _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Except([data.ExceptChrId]));
+            }
+        }
+
+        private int HandleGuildRequest(int masterId, Func<GuildModel, GuildUpdateResult> guildAction, out GuildUpdateResult code)
         {
             var master = _server.CharacterManager.FindPlayerById(masterId);
             if (master == null)
@@ -299,8 +305,7 @@ namespace Application.Core.Login.ServerData
                 else
                 {
                     SetGuildUpdate(guild!);
-                    guildAction(guild);
-                    code = GuildUpdateResult.Success;
+                    code = guildAction(guild);
                     return guild.GuildId;
                 }
             }
@@ -335,6 +340,7 @@ namespace Application.Core.Login.ServerData
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
                 guild.GP += request.Gp;
+                return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildGPUpdate(response);
@@ -349,6 +355,8 @@ namespace Application.Core.Login.ServerData
                 guild.Rank3Title = request.RankTitles[2];
                 guild.Rank4Title = request.RankTitles[3];
                 guild.Rank5Title = request.RankTitles[4];
+
+                return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildRankTitleResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildRankTitleUpdate(response);
@@ -359,6 +367,7 @@ namespace Application.Core.Login.ServerData
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
                 guild.Notice = request.Notice;
+                return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildNoticeResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildNoticeUpdate(response);
@@ -368,7 +377,11 @@ namespace Application.Core.Login.ServerData
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
+                if (guild.Capacity > 99)
+                    return GuildUpdateResult.GuildFull;
+
                 guild.Capacity += 5;
+                return GuildUpdateResult.Success;
             }, out var code);
 
             var response = new UpdateGuildCapacityResponse { Code = (int)code, Request = request, GuildId = guildId };
@@ -383,6 +396,8 @@ namespace Application.Core.Login.ServerData
                 guild.LogoBg = request.LogoBg;
                 guild.LogoColor = (short)request.LogoColor;
                 guild.LogoBgColor = (short)request.LogoBgColor;
+
+                return GuildUpdateResult.Success;
             }, out var code);
 
             var response = new UpdateGuildEmblemResponse { Code = (int)code, Request = request, GuildId = guildId };
@@ -411,6 +426,8 @@ namespace Application.Core.Login.ServerData
                 _idGuildDataSource.Remove(guild.GuildId, out _);
                 _nameGuildDataSource.Remove(guild.Name, out _);
                 SetGuildRemoved(guild!);
+
+                return GuildUpdateResult.Success;
             }, out var code);
 
             var response = new GuildDisbandResponse { Code = (int)code, Request = request, GuildId = guildId };
@@ -506,6 +523,10 @@ namespace Application.Core.Login.ServerData
                     if (guild == null)
                     {
                         code = GuildUpdateResult.GuildNotExisted;
+                    }
+                    else if (guild.Members.Count >= guild.Members.Capacity)
+                    {
+                        code = GuildUpdateResult.GuildFull;
                     }
                     else
                     {

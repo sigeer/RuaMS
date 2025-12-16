@@ -39,7 +39,6 @@ function getMaxLobbies() {
 }
 
 function init() {
-    em.setProperty("noEntry", "false");
 }
 
 function setup(level, lobbyid) {
@@ -84,7 +83,6 @@ function playerUnregistered(eim, player) {}
 function playerExit(eim, player) {
     eim.unregisterPlayer(player);
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function playerLeft(eim, player) {}
@@ -114,7 +112,6 @@ function clearPQ(eim) {
     player.changeMap(exitMap);
 
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function monsterKilled(mob, eim) {}

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -66,7 +66,7 @@ function action(mode, type, selection) {
                 cm.sendNext("“在我以为会是永恒的沉睡之后，我终于找到了一个能够拯救夏雷尼安的人。这位老人现在将为你铺平道路，让你完成这项任务。”");
 
                 clearStage(4, eim);
-                cm.getGuild().gainGP(30);
+                cm.GainGuildGP(30);
                 cm.getPlayer().getMap().getReactorByName("ghostgate").forceHitReactor(1);
 
                 cm.dispose();

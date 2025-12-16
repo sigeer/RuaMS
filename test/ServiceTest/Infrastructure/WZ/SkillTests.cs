@@ -16,7 +16,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver("Source"),
+                ContractResolver = new PrivateContractResolver("SourceTemplate", "EffectTemplate"),
                 Formatting = Formatting.Indented
             };
         }

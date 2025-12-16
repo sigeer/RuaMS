@@ -265,10 +265,10 @@ public class GuildPackets
         return p;
     }
 
-    public static void getGuildInfo(OutPacket p, Guild guild)
+    static void getGuildInfo(OutPacket p, Guild guild)
     {
-        p.writeInt(guild.getId());
-        p.writeString(guild.getName());
+        p.writeInt(guild.GuildId);
+        p.writeString(guild.Name);
         for (int i = 1; i <= 5; i++)
         {
             p.writeString(guild.getRankTitle(i));
@@ -286,46 +286,46 @@ public class GuildPackets
             p.writeInt(mgc.Level);
             p.writeInt(mgc.GuildRank);
             p.writeInt(mgc.Channel > 0 ? 1 : 0);
-            p.writeInt((int)guild.getSignature());
+            p.writeInt((int)guild.Signature);
             p.writeInt(mgc.AllianceRank);
         }
-        p.writeInt(guild.getCapacity());
-        p.writeShort(guild.getLogoBG());
-        p.writeByte(guild.getLogoBGColor());
-        p.writeShort(guild.getLogo());
-        p.writeByte(guild.getLogoColor());
-        p.writeString(guild.getNotice());
-        p.writeInt(guild.getGP());
-        p.writeInt(guild.getAllianceId());
+        p.writeInt(guild.Capacity);
+        p.writeShort(guild.LogoBg);
+        p.writeByte(guild.LogoBgColor);
+        p.writeShort(guild.Logo);
+        p.writeByte(guild.LogoColor);
+        p.writeString(guild.Notice);
+        p.writeInt(guild.GP);
+        p.writeInt(guild.AllianceId);
     }
 
-    public static Packet getAllianceInfo(Alliance alliance)
+    public static Packet getAllianceInfo(Guild.Alliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0C);
         p.writeByte(1);
-        p.writeInt(alliance.getId());
-        p.writeString(alliance.getName());
+        p.writeInt(alliance.AllianceId);
+        p.writeString(alliance.Name);
         for (int i = 1; i <= 5; i++)
         {
             p.writeString(alliance.getRankTitle(i));
         }
         p.writeByte(alliance.getGuilds().Count);
-        p.writeInt(alliance.getCapacity()); // probably capacity
+        p.writeInt(alliance.Capacity); // probably capacity
         foreach (int guild in alliance.getGuilds())
         {
             p.writeInt(guild);
         }
-        p.writeString(alliance.getNotice());
+        p.writeString(alliance.Notice);
         return p;
     }
 
-    public static Packet updateAllianceInfo(Alliance alliance)
+    public static Packet updateAllianceInfo(Guild.Alliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0F);
-        p.writeInt(alliance.getId());
-        p.writeString(alliance.getName());
+        p.writeInt(alliance.AllianceId);
+        p.writeString(alliance.Name);
         for (int i = 1; i <= 5; i++)
         {
             p.writeString(alliance.getRankTitle(i));
@@ -335,7 +335,7 @@ public class GuildPackets
         {
             p.writeInt(guild);
         }
-        p.writeInt(alliance.getCapacity()); // probably capacity
+        p.writeInt(alliance.Capacity); // probably capacity
         p.writeShort(0);
 
         var allianceGuilds = alliance.Guilds;
@@ -346,7 +346,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet getGuildAlliances(Alliance alliance)
+    public static Packet getGuildAlliances(Guild.Alliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0D);
@@ -360,12 +360,12 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet addGuildToAlliance(Alliance alliance, Guild newGuild)
+    public static Packet addGuildToAlliance(Guild.Alliance alliance, Guild newGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x12);
-        p.writeInt(alliance.getId());
-        p.writeString(alliance.getName());
+        p.writeInt(alliance.AllianceId);
+        p.writeString(alliance.Name);
         for (int i = 1; i <= 5; i++)
         {
             p.writeString(alliance.getRankTitle(i));
@@ -375,8 +375,8 @@ public class GuildPackets
         {
             p.writeInt(guild);
         }
-        p.writeInt(alliance.getCapacity());
-        p.writeString(alliance.getNotice());
+        p.writeInt(alliance.Capacity);
+        p.writeString(alliance.Notice);
         p.writeInt(newGuild.GuildId);
         getGuildInfo(p, newGuild);
         return p;
@@ -427,12 +427,12 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet removeGuildFromAlliance(Alliance alliance, Guild expelledGuild)
+    public static Packet removeGuildFromAlliance(Guild.Alliance alliance, Guild expelledGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x10);
-        p.writeInt(alliance.getId());
-        p.writeString(alliance.getName());
+        p.writeInt(alliance.AllianceId);
+        p.writeString(alliance.Name);
         for (int i = 1; i <= 5; i++)
         {
             p.writeString(alliance.getRankTitle(i));
@@ -443,8 +443,8 @@ public class GuildPackets
         {
             p.writeInt(guild);
         }
-        p.writeInt(alliance.getCapacity());
-        p.writeString(alliance.getNotice());
+        p.writeInt(alliance.Capacity);
+        p.writeString(alliance.Notice);
         p.writeInt(expelledGuild.GuildId);
         getGuildInfo(p, expelledGuild);
         p.writeByte(0x01);
@@ -464,7 +464,7 @@ public class GuildPackets
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x03);
         p.writeInt(allianceid);
-        p.writeString(chr.getName());
+        p.writeString(chr.Name);
         p.writeShort(0);
         return p;
     }
@@ -496,7 +496,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet guildMarkChanged(int chrId, Guild guild) => guildMarkChanged(chrId, guild.getLogoBG(), guild.getLogoBGColor(), guild.getLogo(), guild.getLogoColor());
+    public static Packet guildMarkChanged(int chrId, Guild guild) => guildMarkChanged(chrId, guild.LogoBg, guild.LogoBgColor, guild.Logo, guild.LogoColor);
 
     public static Packet guildMarkChanged(int chrId, int logoBg, int logoBgColor, int logo, int logoColor)
     {

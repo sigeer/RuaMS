@@ -39,7 +39,6 @@ function getMaxLobbies() {
 }
 
 function init() {
-    em.setProperty("noEntry", "false");
 }
 
 function setup(level, lobbyid) {
@@ -61,8 +60,6 @@ function playerEntry(eim, player) {
     respawnStages(eim);
 
     player.changeMap(entryMap, 1);
-    em.setProperty("noEntry", "true");
-    player.sendPacket(PacketCreator.getClock(eventTime * 60));
     eim.startEventTimer(eventTime * 60000);
 }
 
@@ -71,7 +68,6 @@ function playerUnregistered(eim, player) {}
 function playerExit(eim, player) {
     eim.unregisterPlayer(player);
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function scheduledTimeout(eim) {
@@ -99,7 +95,6 @@ function clearPQ(eim) {
     player.changeMap(exitMap);
 
     eim.dispose();
-    em.setProperty("noEntry", "false");
 }
 
 function monsterKilled(mob, eim) {

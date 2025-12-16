@@ -143,6 +143,150 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 青岚自氤氲雾气笼罩的断垣残壁间，#o6090002#骤然现形！ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Bamboo {
+            get {
+                return ResourceManager.GetString("Boss_Bamboo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 巨型蜈蚣从药圃生瘴处破雾而出，千足划空如戈戟森然‌ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Centipede {
+            get {
+                return ResourceManager.GetString("Boss_Centipede", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 破开沼泽浮出时，腐殖质的气味与沼气在它嶙峋的背甲上凝结成绿色雾霭 的本地化字符串。
+        /// </summary>
+        public static string Boss_Dyle {
+            get {
+                return ResourceManager.GetString("Boss_Dyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 降临之时，黑色旋风如巨蟒盘绕，将天光绞碎成纷扬的鸦羽‌ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Eliza {
+            get {
+                return ResourceManager.GetString("Boss_Eliza", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 吉米拉从地下的黑暗中出现，眼中闪烁着微光。 的本地化字符串。
+        /// </summary>
+        public static string Boss_Kimera {
+            get {
+                return ResourceManager.GetString("Boss_Kimera", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 一个奇怪的海螺出现在了沙滩上。 的本地化字符串。
+        /// </summary>
+        public static string Boss_KingClang {
+            get {
+                return ResourceManager.GetString("Boss_KingClang", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 周围的鬼气更加浓重了。传来一阵令人不快的猫叫声。 的本地化字符串。
+        /// </summary>
+        public static string Boss_KingSageCat {
+            get {
+                return ResourceManager.GetString("Boss_KingSageCat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 昂首而起的刹那，裹挟着冰晶的寒风如远古战吼般撕裂云层 的本地化字符串。
+        /// </summary>
+        public static string Boss_Leviathan {
+            get {
+                return ResourceManager.GetString("Boss_Leviathan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 玛诺的身影伴随着凉风乍起时悄然显现，落叶在她脚边打着旋儿静止 的本地化字符串。
+        /// </summary>
+        public static string Boss_Mano {
+            get {
+                return ResourceManager.GetString("Boss_Mano", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 伴随着一声悠长的狐啸划破夜色，那老狐的气息如雾霭般在林间弥散 的本地化字符串。
+        /// </summary>
+        public static string Boss_NineTailedFox {
+            get {
+                return ResourceManager.GetString("Boss_NineTailedFox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 一枚泛着诡异磷光的贝壳悄然浮现在幽暗的海藻林中，其螺旋纹路在流动的藻须间若隐若现‌ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Seruf {
+            get {
+                return ResourceManager.GetString("Boss_Seruf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 一个可疑的小吃摊在一个奇怪的偏僻地方慢慢开张了。 的本地化字符串。
+        /// </summary>
+        public static string Boss_SnackBar {
+            get {
+                return ResourceManager.GetString("Boss_SnackBar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 伴着沉闷的撞击声现身于石山之间，余音在山谷中回荡‌ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Stumpy {
+            get {
+                return ResourceManager.GetString("Boss_Stumpy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Tae Roon has appeared with a soft whistling sound. 的本地化字符串。
+        /// </summary>
+        public static string Boss_TaeRoon {
+            get {
+                return ResourceManager.GetString("Boss_TaeRoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 嘀嗒...嘀嗒...！时间精灵提莫在轻声提醒。 的本地化字符串。
+        /// </summary>
+        public static string Boss_Timer1 {
+            get {
+                return ResourceManager.GetString("Boss_Timer1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 伴随重型机械轰鸣声现世！ 的本地化字符串。
+        /// </summary>
+        public static string Boss_Zeno {
+            get {
+                return ResourceManager.GetString("Boss_Zeno", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置boss掉率。 的本地化字符串。
         /// </summary>
         public static string BossDropRateCommand_Description {
@@ -2695,6 +2839,15 @@ namespace Application.Resources.Messages {
         public static string OnlineCommand_Description {
             get {
                 return ResourceManager.GetString("OnlineCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 道可道非常道 的本地化字符串。
+        /// </summary>
+        public static string Password_q21747 {
+            get {
+                return ResourceManager.GetString("Password_q21747", resourceCulture);
             }
         }
         
