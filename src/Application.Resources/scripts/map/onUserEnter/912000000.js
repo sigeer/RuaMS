@@ -1,4 +1,4 @@
-﻿function start(ms) {
+function start(ms) {
 
     if (ms.getQuestStatus(2175) == 1) {
         var mobId = 9300156;
@@ -8,6 +8,6 @@
         if (map.getMonsterById(mobId) != null) {
             return;
         }
-        map.spawnMonsterOnGroundBelow(LifeFactory.getMonster(mobId), new Point(-1027, 216));
+        map.spawnMonsterOnGroundBelow(LifeFactory.getMonster(mobId), new Point(624, 180));
     }
 }
