@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
+using Application.Core.Scripting.Events;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net;
 using Application.Module.Marriage.Common.ErrorCodes;
@@ -272,9 +273,9 @@ namespace Application.Module.Marriage.Channel
         /// <param name="em"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public MarriageInstance CreateMarriageInstance(EventManager em, string name)
+        public MarriageInstance CreateMarriageInstance(MarriageEventManager em, string name)
         {
-            return GetWeddingManager(em.getChannelServer()).CreateMarriageInstance(em, name);
+            return em.newInstance(name) as MarriageInstance;
         }
 
         private void StoreGifts(int id, List<Item> items)

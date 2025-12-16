@@ -23,10 +23,7 @@
 
 using Application.Core.Channel.Net;
 using Application.Core.Client;
-using Application.Core.Managers;
-using Application.EF;
 using Application.Shared.Net;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Module.BBS.Channel.Net.Handlers;
 
@@ -103,7 +100,7 @@ public class BBSOperationHandler : ChannelHandlerBase
                 _manager.PostReply(c.OnlinedCharacter, localthreadid, text);
                 break;
             case 5: // delete reply
-                int unknown1 =  p.readInt(); // we don't use this
+                int unknown1 = p.readInt(); // we don't use this
                 int replyid = p.readInt();
                 _manager.deleteBBSReply(c.OnlinedCharacter, replyid);
                 break;

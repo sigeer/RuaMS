@@ -3,6 +3,7 @@ using Application.Core.Login.Models.Invitations;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Dto;
+using InvitationProto;
 
 namespace Application.Module.Family.Master
 {
