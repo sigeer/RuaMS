@@ -70,11 +70,11 @@ namespace Application.Core.Game.Players
             if (infoNumber > 0 && qs.getInfoNumber() == infoNumber)
             {
                 QuestStatus iqs = GetOrAddQuest(infoNumber);
-                iqs.setProgress(infoNumber, progress);
+                iqs.setProgress(0, progress);
             }
             else
             {
-                qs.setProgress(0, progress);   // quest progress is thoroughly a string match, infoNumber is actually another questid
+                qs.setProgress(infoNumber, progress);   // quest progress is thoroughly a string match, infoNumber is actually another questid
             }
 
             announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
