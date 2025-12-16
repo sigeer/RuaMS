@@ -41,13 +41,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     public AbstractNettyServer NettyServer { get; }
 
     private MapManager mapManager;
-    private EventScriptManager eventSM = null!;
-    public MapScriptManager MapScriptManager { get; private set; } = null!;
-    public ReactorScriptManager ReactorScriptManager { get; private set; } = null!;
-    public NPCScriptManager NPCScriptManager { get; private set; } = null!;
-    public PortalScriptManager PortalScriptManager { get; private set; } = null!;
-    public QuestScriptManager QuestScriptManager { get; private set; } = null!;
-    public DevtestScriptManager DevtestScriptManager { get; private set; } = null!;
+    private EventScriptManager eventSM;
+    public MapScriptManager MapScriptManager { get; }
+    public ReactorScriptManager ReactorScriptManager { get; }
+    public NPCScriptManager NPCScriptManager { get; }
+    public PortalScriptManager PortalScriptManager { get; }
+    public QuestScriptManager QuestScriptManager { get; }
+    public DevtestScriptManager DevtestScriptManager { get; }
 
 
     private Dictionary<int, int> storedVars = new();

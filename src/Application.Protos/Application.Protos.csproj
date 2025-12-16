@@ -72,9 +72,7 @@
 		</Protobuf>
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
-		<Protobuf Include="Message\MultiChat.proto">
-		  <GrpcServices>None</GrpcServices>
-		</Protobuf>
+		<Protobuf Include="Message\MultiChat.proto" GrpcServices="None" />
 		<Protobuf Include="Message\EarnTitleMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
 		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />

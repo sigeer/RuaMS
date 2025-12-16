@@ -28,6 +28,7 @@ using SyncProto;
 using System.Net;
 using SystemProto;
 using TeamProto;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Core.ServerTransports
 {
@@ -44,6 +45,9 @@ namespace Application.Core.ServerTransports
         readonly ServiceProto.TeamService.TeamServiceClient _teamClient;
         readonly ServiceProto.BuddyService.BuddyServiceClient _buddyClient;
         readonly ServiceProto.PlayerShopService.PlayerShopServiceClient _playerShopClient;
+
+        Lazy<InternalSession> _internalSession;
+        public InternalSession InternalSession => _internalSession.Value;
 
         readonly ChannelServerConfig _config;
         IServiceProvider _sp;
@@ -75,6 +79,8 @@ namespace Application.Core.ServerTransports
             _teamClient = teamClient;
             _buddyClient = buddyClient;
             _playerShopClient = playerShopClient;
+
+            _internalSession = new Lazy<InternalSession>(new InternalSession(_sp.GetRequiredService<WorldChannelServer>()));
         }
 
         public long GetCurrentTime()
@@ -119,20 +125,18 @@ namespace Application.Core.ServerTransports
 
         public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken)
         {
-            var server = _sp.GetRequiredService<WorldChannelServer>();
             var streamingCall = _systemClient.Connect();
-            server.InternalSession.Connect(streamingCall);
+            InternalSession.Connect(streamingCall);
 
             var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost, GrpcUrl = _config.GrpcUrl };
             req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.Port, MaxSize = x.MaxSize }));
 
-            await server.InternalSession.SendAsync(ChannelSendCode.RegisterChannel, req, cancellationToken);
+            await InternalSession.SendAsync(ChannelSendCode.RegisterChannel, req, cancellationToken);
         }
 
         public async Task CompleteChannelShutdown()
         {
-            var server = _sp.GetRequiredService<WorldChannelServer>();
-            await server.InternalSession.DisconnectAsync();
+            await InternalSession.DisconnectAsync();
         }
 
         public void DropWorldMessage(DropMessageRequest request)
@@ -582,7 +586,7 @@ namespace Application.Core.ServerTransports
         {
             var req = new MapBatchSyncDto();
             req.List.AddRange(data);
-            _syncClient.BatchSyncMap(req);
+            InternalSession.Send(ChannelSendCode.SyncMap, req);
         }
 
         public SendReportResponse SendReport(SendReportRequest sendReportRequest)
@@ -645,11 +649,6 @@ namespace Application.Core.ServerTransports
             return _systemClient.DisconnectPlayer(disconnectPlayerByNameRequest);
         }
 
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            _systemClient.DisconnectAll(disconnectAllRequest);
-        }
-
         public GetAllClientInfo GetOnliendClientInfo()
         {
             return _systemClient.GetOnlinedClients(new Empty());
@@ -658,13 +657,6 @@ namespace Application.Core.ServerTransports
         public void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest)
         {
             _systemClient.ShutdownMaster(shutdownMasterRequest);
-        }
-
-
-
-        public void SaveAll(Empty empty)
-        {
-            _systemClient.SaveAll(new Empty());
         }
 
         public ServerStateDto GetServerState()
@@ -752,6 +744,23 @@ namespace Application.Core.ServerTransports
         public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
             _guildClient.SendGuildPacket(guildPacketRequest);
+        }
+
+        public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)
+        {
+            var data = new MessageProto.MultiChatMessage { Type = type, FromName = fromName, Text = msg };
+            data.Receivers.AddRange(receivers);
+            await InternalSession.SendAsync(ChannelSendCode.MultiChat, data);
+        }
+
+        public async Task SaveAllNotifyAsync()
+        {
+            await InternalSession.SendAsync(ChannelSendCode.SaveAll);
+        }
+
+        public async Task DisconnectAllNotifyAsync()
+        {
+            await InternalSession.SendAsync(ChannelSendCode.DisconnectAll);
         }
     }
 }

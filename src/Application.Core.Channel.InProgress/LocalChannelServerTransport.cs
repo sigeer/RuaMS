@@ -76,18 +76,25 @@ namespace Application.Core.Channel.InProgress
 
         public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default)
         {
-            var channelServerNode = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
-
+            var channelServer = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
+            var serverNode = new InProgressWorldChannel(channelServer, channels);
             if (!_server.IsRunning)
-                await channelServerNode.HandleServerRegistered(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" }, cancellationToken);
+            {
+                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                {
+                    StartChannel = -1,
+                    Message = "中心服务器未启动"
+                }, cancellationToken);
+            }
             else
             {
-                var channelId = _server.AddChannel(new InProgressWorldChannel(channelServerNode, channels));
-                await channelServerNode.HandleServerRegistered(new Config.RegisterServerResult() { 
+                var channelId = _server.AddChannel(serverNode);
+                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                {
                     StartChannel = channelId,
                     Coupon = _server.CouponManager.GetConfig(),
                     Config = _server.GetWorldConfig()
-                }, cancellationToken);
+                });
             }
         }
 
@@ -646,11 +653,6 @@ namespace Application.Core.Channel.InProgress
             return _server.CrossServerService.DisconnectPlayerByName(request);
         }
 
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            _server.DisconnectAll(disconnectAllRequest);
-        }
-
         public GetAllClientInfo GetOnliendClientInfo()
         {
             return _server.AccountManager.GetOnliendClientInfo();
@@ -720,11 +722,6 @@ namespace Application.Core.Channel.InProgress
 
 
 
-        public void SaveAll(Empty empty)
-        {
-            _server.Transport.BroadcastMessage(BroadcastType.SaveAll, new Empty());
-        }
-
         public void SendYellowTip(YellowTipRequest yellowTipRequest)
         {
             _server.DropYellowTip(yellowTipRequest.Message, yellowTipRequest.OnlyGM);
@@ -758,6 +755,28 @@ namespace Application.Core.Channel.InProgress
         public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
             _server.GuildManager.SendGuildPacket(guildPacketRequest);
+        }
+
+        public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)
+        {
+            if (type == 0)
+                await _server.BuddyManager.SendBuddyChatAsync(fromName, msg, receivers);
+            else if (type == 1)
+                await _server.TeamManager.SendTeamChatAsync(fromName, msg);
+            else if (type == 2)
+                await _server.GuildManager.SendGuildChatAsync(fromName, msg);
+            else if (type == 3)
+                await _server.GuildManager.SendAllianceChatAsync(fromName, msg);
+        }
+
+        public async Task SaveAllNotifyAsync()
+        {
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.SaveAll);
+        }
+
+        public async Task DisconnectAllNotifyAsync()
+        {
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
         }
     }
 }

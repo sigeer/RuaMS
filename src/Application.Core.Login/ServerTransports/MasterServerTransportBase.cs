@@ -55,9 +55,15 @@ namespace Application.Core.Login.ServerTransports
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                await server.BroadcastMessageN(messageType, message);
+                await server.SendMessage(messageType, message);
             }
         }
-
+        public async Task BroadcastMessageN(int messageType)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                await server.SendMessage(messageType);
+            }
+        }
     }
 }

@@ -39,8 +39,7 @@ namespace Application.Core.Channel
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
-        Lazy<InternalSession> _internalSession;
-        public InternalSession InternalSession => _internalSession.Value;
+
         public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
@@ -127,6 +126,9 @@ namespace Application.Core.Channel
 
         public ExpeditionService ExpeditionService { get; }
         public ChannelPlayerStorage PlayerStorage { get; }
+        Lazy<MessageDispatcherNew> _messageDispatcher;
+        public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
+
 
         ScheduledFuture? invitationTask;
         ScheduledFuture? playerShopTask;
@@ -189,7 +191,7 @@ namespace Application.Core.Channel
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
 
-            _internalSession = new (() => new InternalSession(this));
+            _messageDispatcher = new(() => new(this));
         }
 
         #region 时间

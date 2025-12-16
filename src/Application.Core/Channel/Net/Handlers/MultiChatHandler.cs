@@ -22,7 +22,6 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Shared.Message;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 
@@ -76,8 +75,7 @@ public class MultiChatHandler : ChannelHandlerBase
         if (type == 3 && player.AllianceModel == null)
             return;
 
-
-        c.CurrentServerContainer.InternalSession.SendMultiChat(type, player.Name, chattext, recipients);
         player.getAutobanManager().spam(7);
+        c.CurrentServerContainer.Transport.SendMultiChatAsync(type, player.Name, chattext, recipients);
     }
 }

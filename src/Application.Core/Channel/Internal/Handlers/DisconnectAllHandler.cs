@@ -1,14 +1,10 @@
 using Application.Shared.Message;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using System;
-using System.Collections.Generic;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class DisconnectAllHandler : InternalSessionHandler<Empty>
+    internal class DisconnectAllHandler : InternalSessionEmptyHandler
     {
         public DisconnectAllHandler(WorldChannelServer server) : base(server)
         {
@@ -27,7 +23,5 @@ namespace Application.Core.Channel.Internal.Handlers
             }
             return Task.CompletedTask;
         }
-
-        protected override Empty Parse(ByteString content) => Empty.Parser.ParseFrom(content);
     }
 }

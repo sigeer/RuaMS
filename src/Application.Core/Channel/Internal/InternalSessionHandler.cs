@@ -28,11 +28,12 @@ namespace Application.Core.Channel.Internal
 
     public abstract class InternalSessionEmptyHandler : InternalSessionHandler<Empty>
     {
+        static Empty Empty = new Empty();
         protected InternalSessionEmptyHandler(WorldChannelServer server) : base(server)
         {
         }
 
-        protected override Empty Parse(ByteString content) => new Empty();
+        protected override Empty Parse(ByteString content) => Empty;
     }
 
 }

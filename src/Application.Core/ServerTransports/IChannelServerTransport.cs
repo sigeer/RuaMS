@@ -178,11 +178,9 @@ namespace Application.Core.ServerTransports
         WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest);
         SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
         DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
-        void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
         GetAllClientInfo GetOnliendClientInfo();
         void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
         Task CompleteChannelShutdown();
-        void SaveAll(Empty empty);
         ServerStateDto GetServerState();
 
         ItemProto.GacheponDataDto GetGachaponData();
@@ -205,5 +203,8 @@ namespace Application.Core.ServerTransports
         void SendEarnTitleMessage(EarnTitleMessageRequest earnTitleMessageRequest);
         bool GainCharacterSlot(int accountId);
         void SendGuildPacket(GuildPacketRequest guildPacketRequest);
+        Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers);
+        Task SaveAllNotifyAsync();
+        Task DisconnectAllNotifyAsync();
     }
 }

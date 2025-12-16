@@ -59,7 +59,7 @@ namespace Application.Core.Login.Servers
                         var channelId = _server.AddChannel(serverNode);
                         if (channelId > 0)
                         {
-                            await serverNode.SendAsync(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                            await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
                             {
                                 StartChannel = channelId,
                                 Coupon = _server.CouponManager.GetConfig(),
@@ -68,7 +68,7 @@ namespace Application.Core.Login.Servers
                         }
                         else
                         {
-                            await serverNode.SendAsync(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                            await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
                             {
                                 StartChannel = channelId,
                             });
@@ -77,7 +77,7 @@ namespace Application.Core.Login.Servers
                     }
                     else if (serverNode != null)
                     {
-                        await serverNode.Handle(msg);
+                        await serverNode.HandleAsync(msg);
                     }
                 }
                 _server.RemoveChanelServerNode(serverNode);
@@ -114,12 +114,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-
-        public override Task<Empty> DisconnectAll(DisconnectAllRequest request, ServerCallContext context)
-        {
-            _server.DisconnectAll(request);
-            return Task.FromResult(new Empty());
-        }
 
         public override Task<DisconnectPlayerByNameResponse> DisconnectPlayer(DisconnectPlayerByNameRequest request, ServerCallContext context)
         {
@@ -172,12 +166,6 @@ namespace Application.Core.Login.Servers
         public override Task<Empty> RemoveTimer(Empty request, ServerCallContext context)
         {
             _server.Transport.BroadcastMessage(BroadcastType.Broadcast_RemoveTimer, new MessageProto.RemoveTimer());
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SaveAll(Empty request, ServerCallContext context)
-        {
-            _server.Transport.BroadcastMessage(BroadcastType.SaveAll, new Empty());
             return Task.FromResult(new Empty());
         }
 

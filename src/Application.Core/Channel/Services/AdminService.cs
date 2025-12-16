@@ -241,9 +241,9 @@ namespace Application.Core.Channel.Services
 
         public void DisconnectAll(IPlayer chr)
         {
-            _server.InternalSession.Send(ChannelSendCode.DisconnectAll);
+            _server.Transport.DisconnectAllNotifyAsync();
             // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
-            chr.message("All players successfully disconnected.");
+            chr.Pink(ClientMessage.Command_Done, "dcall");
         }
 
 
@@ -265,7 +265,7 @@ namespace Application.Core.Channel.Services
 
         internal void SavelAll()
         {
-            _server.InternalSession.Send(ChannelSendCode.SaveAll);
+            _server.Transport.SaveAllNotifyAsync();
         }
 
 

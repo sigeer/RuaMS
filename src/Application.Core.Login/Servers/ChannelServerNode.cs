@@ -10,6 +10,7 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using MessageProto;
 using Microsoft.AspNetCore.Hosting.Server;
+using SyncProto;
 using System.Threading.Tasks;
 using SystemProto;
 
@@ -35,7 +36,8 @@ namespace Application.Core.Login.Servers
         public abstract CreatorProto.CreateCharResponseDto CreateCharacterFromChannel(CreatorProto.CreateCharRequestDto request);
         public abstract ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo();
 
-        public abstract Task BroadcastMessageN<TMessage>(int type, TMessage message) where TMessage : IMessage;
+        public abstract Task SendMessage<TMessage>(int type, TMessage message, CancellationToken cancellationToken = default) where TMessage : IMessage;
+        public abstract Task SendMessage(int type, CancellationToken cancellationToken = default);
     }
 
 
@@ -59,14 +61,22 @@ namespace Application.Core.Login.Servers
         }
 
 
-        public async Task Handle(PacketWrapper packet)
+        public async Task HandleAsync(PacketWrapper packet)
         {
             if (packet.EventId == ChannelSendCode.DisconnectAll)
-                await SendAsync(ChannelRecvCode.DisconnectAll);
+            {
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
+            }
 
             if (packet.EventId == ChannelSendCode.SaveAll)
-                await SendAsync(ChannelRecvCode.SaveAll);
+            {
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.SaveAll);
+            }
 
+            if (packet.EventId == ChannelSendCode.SyncMap)
+            {
+                _server.CharacterManager.BatchUpdateMap(MapBatchSyncDto.Parser.ParseFrom(packet.Data).List.ToList());
+            }
 
             if (packet.EventId == ChannelSendCode.MultiChat)
             {
@@ -82,21 +92,21 @@ namespace Application.Core.Login.Servers
             }
         }
 
-        public async Task SendAsync(int type, IMessage realMessage)
+        async Task SendAsync(int type, IMessage realMessage, CancellationToken cancellationToken = default)
         {
             await _writer.WriteAsync(new PacketWrapper
             {
                 EventId = type,
                 Data = realMessage.ToByteString()
-            });
+            }, cancellationToken);
         }
 
-        public async Task SendAsync(int type)
+        async Task SendAsync(int type, CancellationToken cancellationToken = default)
         {
             await _writer.WriteAsync(new PacketWrapper
             {
                 EventId = type
-            });
+            }, cancellationToken);
         }
 
         public override void BroadcastMessage<TMessage>(string type, TMessage message)
@@ -104,9 +114,14 @@ namespace Application.Core.Login.Servers
             _client.BroadcastMesssage(new BaseProto.MessageWrapper { Type = type, Content = message.ToByteString() });
         }
 
-        public override async Task BroadcastMessageN<TMessage>(int type, TMessage message)
+        public override async Task SendMessage<TMessage>(int type, TMessage message, CancellationToken cancellationToken = default)
         {
-            await SendAsync(type, message);
+            await SendAsync(type, message, cancellationToken);
+        }
+
+        public override async Task SendMessage(int type, CancellationToken cancellationToken = default)
+        {
+            await SendAsync(type, cancellationToken);
         }
 
         public override CreateCharResponseDto CreateCharacterFromChannel(CreateCharRequestDto request)

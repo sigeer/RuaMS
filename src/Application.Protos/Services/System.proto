@@ -47,12 +47,10 @@ service SystemService {
 	rpc WrapPlayer(SystemProto.WrapPlayerByNameRequest) returns(SystemProto.WrapPlayerByNameResponse);
 	rpc SummonPlayer(SystemProto.SummonPlayerByNameRequest) returns(SystemProto.SummonPlayerByNameResponse);
 	rpc DisconnectPlayer(SystemProto.DisconnectPlayerByNameRequest) returns(SystemProto.DisconnectPlayerByNameResponse);
-	rpc DisconnectAll(SystemProto.DisconnectAllRequest) returns(google.protobuf.Empty);
 	rpc GetOnlinedClients(google.protobuf.Empty) returns(Dto.GetAllClientInfo);
 	rpc GainCharacterSlot(SyncProto.GainAccountCharacterSlotRequest) returns(SyncProto.GainAccountCharacterSlotResponse);
 
 	rpc ShutdownMaster(SystemProto.ShutdownMasterRequest) returns(google.protobuf.Empty);
-	rpc SaveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
 	rpc GetServerState(google.protobuf.Empty) returns(SystemProto.ServerStateDto);
 	rpc HealthCheck(ServerProto.MonitorData) returns(google.protobuf.Empty);
 	rpc Connect(stream BaseProto.PacketWrapper) returns(stream BaseProto.PacketWrapper);

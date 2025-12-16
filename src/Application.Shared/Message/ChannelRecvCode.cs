@@ -11,7 +11,6 @@ namespace Application.Shared.Message
         public const int DisconnectAll = 3;
 
         public const int SaveAll = 4;
-        public const int SyncMap = 5;
 
         public const int DropTextMessage = 7;
         public const int MultiChat = 8;

@@ -4,7 +4,7 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class UnregisterChannelServerHandler : InternalSessionHandler<Empty>
+    internal class UnregisterChannelServerHandler : InternalSessionEmptyHandler
     {
         public UnregisterChannelServerHandler(WorldChannelServer server) : base(server)
         {
@@ -16,8 +16,6 @@ namespace Application.Core.Channel.Internal.Handlers
         {
             await _server.Shutdown();
         }
-
-        protected override Empty Parse(ByteString content) => Empty.Parser.ParseFrom(content);
 
     }
 }

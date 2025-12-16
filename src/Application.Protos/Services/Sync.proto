@@ -33,7 +33,6 @@ service SyncService {
 	rpc PushPlayerBuffers(SyncProto.PushPlayerBuffsRequest) returns(google.protobuf.Empty);
 	rpc GetPlayerBuffers(SyncProto.GetPlayerBufferRequest) returns(SyncProto.PlayerBuffDto);
 	rpc CompleteLogin(CompleteLoginRequest) returns(google.protobuf.Empty);
-	rpc BatchSyncMap(SyncProto.MapBatchSyncDto) returns(google.protobuf.Empty);
 
 	rpc CreateCharacterCheck(CreatorProto.CreateCharCheckRequest) returns (CreatorProto.CreateCharCheckResponse);
 	rpc CreateCharacter(CreatorProto.NewPlayerSaveDto) returns (CreatorProto.CreateCharResponseDto);

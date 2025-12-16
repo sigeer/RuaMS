@@ -3,13 +3,12 @@ using Application.Shared.Servers;
 using ExpeditionProto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using SystemProto;
 
 namespace Application.Core.Channel.InProgress
 {
     public sealed class InProgressWorldChannel : ChannelServerNode
     {
-        public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels) 
+        public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels)
         {
             ServerName = worldChannel.ServerName;
             ServerHost = worldChannel.ServerConfig.ServerHost;
@@ -34,9 +33,14 @@ namespace Application.Core.Channel.InProgress
             return ChannelServer.DataService.GetExpeditionInfo();
         }
 
-        public override async Task BroadcastMessageN<TMessage>(int type, TMessage message)
+        public override async Task SendMessage<TMessage>(int type, TMessage message, CancellationToken cancellationToken = default)
         {
-            await ChannelServer.InternalSession.Handle(type, message.ToByteString());
+            await ChannelServer.MessageDispatcherV.DispatchAsync(type, message.ToByteString(), cancellationToken);
+        }
+
+        public override async Task SendMessage(int type, CancellationToken cancellationToken = default)
+        {
+            await ChannelServer.MessageDispatcherV.DispatchAsync(type, new Empty().ToByteString(), cancellationToken);
         }
     }
 }

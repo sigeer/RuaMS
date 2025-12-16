@@ -42,12 +42,6 @@ namespace Application.Core.Login.Servers
             return new();
         }
 
-        public override Task<Empty> BatchSyncMap(MapBatchSyncDto request, ServerCallContext context)
-        {
-            _server.CharacterManager.BatchUpdateMap(request.List.ToList());
-            return Task.FromResult(new Empty());
-        }
-
         public override Task<Empty> BatchSyncPlayerShop(BatchSyncPlayerShopRequest request, ServerCallContext context)
         {
             foreach (var item in request.List)
