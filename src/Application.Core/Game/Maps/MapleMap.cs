@@ -30,11 +30,9 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
-using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
-using Application.Shared.Constants.Mob;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using client.autoban;
@@ -47,8 +45,6 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using System.Diagnostics;
-using System.Xml.Linq;
 using tools;
 using ZLinq;
 
@@ -1778,7 +1774,7 @@ public class MapleMap : IMap
             var x = Convert.ToInt32(dict.TryGetValue("x", out var d3) ? d3 : 0);
             var y = Convert.ToInt32(dict.TryGetValue("y", out var d4) ? d4 : 0);
 
-            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y});
+            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
         }
 
         var sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval);
@@ -3108,7 +3104,7 @@ public class MapleMap : IMap
     {
         foreach (SpawnPoint spawnPoint in getMonsterSpawn())
         {
-            if (spawnPoint.CanInitialSpawn)
+            if (spawnPoint.shouldSpawn() || spawnPoint.CanInitialSpawn)
             {
                 //just those allowed to be spawned only once
                 spawnPoint.SpawnMonster();
@@ -3600,7 +3596,7 @@ public class MapleMap : IMap
 
             m.OnHealed += (sender, args) =>
             {
-                m.addHp(args);
+                ht.addHp(args);
             };
             spawnMonsterOnGroundBelow(m, targetPoint);
         }
