@@ -23,7 +23,6 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Performance;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -31,9 +30,11 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
+using Application.Shared.Constants.Mob;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using client.autoban;
@@ -41,14 +42,13 @@ using client.inventory;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
-using scripting.Event;
 using scripting.map;
 using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using System.Collections.Concurrent;
-using System.Threading.Channels;
+using System.Diagnostics;
+using System.Xml.Linq;
 using tools;
 using ZLinq;
 
@@ -65,7 +65,6 @@ public class MapleMap : IMap
     private Dictionary<int, IMapObject> mapobjects = new();
     private HashSet<int> selfDestructives = new();
     protected List<SpawnPoint> monsterSpawn = new();
-    private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
     private Dictionary<int, Portal> portals;
@@ -1757,6 +1756,37 @@ public class MapleMap : IMap
         }
 
     }
+    /// <summary>
+    /// 生成地图boss
+    /// </summary>
+    /// <param name="bossId"></param>
+    /// <param name="mobTime"></param>
+    /// <param name="posX"></param>
+    /// <param name="posY"></param>
+    /// <param name="spawnMessage"></param>
+    public void GenerateAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
+    {
+        monsterSpawn.RemoveAll(x => x is AreaBossSpawnPoint areaBoss && areaBoss.Name == name);
+
+        var points = new List<RandomPoint>();
+        foreach (var item in rawList)
+        {
+            var dict = (IDictionary<string, object>)item;
+
+            var minX = Convert.ToInt32(dict.TryGetValue("minX", out var d1) ? d1 : 0);
+            var maxX = Convert.ToInt32(dict.TryGetValue("maxX", out var d2) ? d2 : 0);
+            var x = Convert.ToInt32(dict.TryGetValue("x", out var d3) ? d3 : 0);
+            var y = Convert.ToInt32(dict.TryGetValue("y", out var d4) ? d4 : 0);
+
+            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y});
+        }
+
+        var sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval);
+        monsterSpawn.Add(sp);
+        sp.SpawnMonster();
+
+        _hasLongLifeMob = true;
+    }
 
     private void monsterItemDrop(Monster m, long delay)
     {
@@ -1787,7 +1817,7 @@ public class MapleMap : IMap
         return calcPointBelow(pos);
     }
 
-    public void spawnRevives(Monster monster)
+    void spawnRevives(Monster monster)
     {
         monster.setMap(this);
         if (getEventInstance() != null)
@@ -1800,7 +1830,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        spawnedMonstersOnMap.incrementAndGet();
+        DispatchMonsterSpawned(monster);
         addSelfDestructive(monster);
         applyRemoveAfter(monster);
     }
@@ -1853,17 +1883,9 @@ public class MapleMap : IMap
         }
     }
 
-    private List<SpawnPoint> getAllMonsterSpawn()
-    {
-        lock (allMonsterSpawn)
-        {
-            return new(allMonsterSpawn);
-        }
-    }
-
     public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
     {
-        foreach (SpawnPoint sp in getAllMonsterSpawn())
+        foreach (SpawnPoint sp in getMonsterSpawn())
         {
             if (sp.getMonsterId() == id && sp.shouldForceSpawn())
             {
@@ -1875,7 +1897,7 @@ public class MapleMap : IMap
 
     public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
     {
-        foreach (SpawnPoint sp in getAllMonsterSpawn())
+        foreach (SpawnPoint sp in getMonsterSpawn())
         {
             sp.SpawnMonster(difficulty, isPq);
         }
@@ -1926,10 +1948,17 @@ public class MapleMap : IMap
             }
         }
 
-        spawnedMonstersOnMap.incrementAndGet();
+        DispatchMonsterSpawned(monster);
         XiGuai?.ApplyMonster(monster);
+
         addSelfDestructive(monster);
         applyRemoveAfter(monster);  // thanks LightRyuzaki for pointing issues with spawned CWKPQ mobs not applying this
+    }
+
+    void DispatchMonsterSpawned(Monster monster)
+    {
+        spawnedMonstersOnMap.incrementAndGet();
+        monster.DispatchMonsterSpawned();
     }
 
     public void spawnDojoMonster(Monster monster)
@@ -1963,7 +1992,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        spawnedMonstersOnMap.incrementAndGet();
+        DispatchMonsterSpawned(monster);
         XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
         applyRemoveAfter(monster);
@@ -1975,7 +2004,7 @@ public class MapleMap : IMap
         monster.setFake(true);
         spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
 
-        spawnedMonstersOnMap.incrementAndGet();
+        DispatchMonsterSpawned(monster);
         XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
     }
@@ -2660,33 +2689,32 @@ public class MapleMap : IMap
      * @param monster
      * @param mobTime
      */
-    public void addMonsterSpawn(Monster monster, int mobTime, int team)
+    public void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed)
     {
-        Point newpos = calcPointBelow(monster.getPosition())!.Value;
+        Point newpos = calcPointBelow(pos)!.Value;
         newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, SourceTemplate.CreateMobInterval, team);
+        SpawnPoint sp = new SpawnPoint(this, mobId, pos, cy, f, fh, rx0, rx1, hide, mobTime, SourceTemplate.CreateMobInterval, team);
         monsterSpawn.Add(sp);
-        if (sp.shouldSpawn() || mobTime == -1)
+
+        if (sp.shouldSpawn() || sp.CanInitialSpawn)
         {
             // -1 does not respawn and should not either but force ONE spawn
             sp.SpawnMonster();
         }
+
+        if (!_hasLongLifeMob && mobTime > 0)
+            _hasLongLifeMob = true;
+    }
+
+    public void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed)
+    {
+        addMonsterSpawn(mobId, pos, 0, 0, 0, 0, 0, mobTime, false, team);
     }
 
     /// <summary>
     /// 有mobTime > 0的野怪
     /// </summary>
     bool _hasLongLifeMob;
-    public void addAllMonsterSpawn(Monster monster, int mobTime, int team)
-    {
-        Point newpos = calcPointBelow(monster.getPosition())!.Value;
-        newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, SourceTemplate.CreateMobInterval, team);
-        allMonsterSpawn.Add(sp);
-
-        if (!_hasLongLifeMob && mobTime > 0)
-            _hasLongLifeMob = true;
-    }
 
     public void removeMonsterSpawn(int mobId, int x, int y)
     {
@@ -2717,39 +2745,10 @@ public class MapleMap : IMap
         }
     }
 
-    public void removeAllMonsterSpawn(int mobId, int x, int y)
-    {
-        // assumption: spawn points identifies by tuple (lifeid, x, y)
-
-        Point checkpos = calcPointBelow(new Point(x, y))!.Value;
-        checkpos.Y -= 1;
-
-        List<SpawnPoint> toRemove = new();
-        foreach (SpawnPoint sp in getAllMonsterSpawn())
-        {
-            Point pos = sp.getPosition();
-            if (sp.getMonsterId() == mobId && checkpos.Equals(pos))
-            {
-                toRemove.Add(sp);
-            }
-        }
-
-        if (toRemove.Count > 0)
-        {
-            lock (allMonsterSpawn)
-            {
-                foreach (SpawnPoint sp in toRemove)
-                {
-                    allMonsterSpawn.Remove(sp);
-                }
-            }
-        }
-    }
-
     public void reportMonsterSpawnPoints(IPlayer chr)
     {
         chr.dropMessage(6, "Mob spawnpoints on map " + getId() + ", with available Mob SPs " + monsterSpawn.Count() + ", used " + spawnedMonstersOnMap.get() + ":");
-        foreach (SpawnPoint sp in getAllMonsterSpawn())
+        foreach (SpawnPoint sp in getMonsterSpawn())
         {
             chr.dropMessage(6, "  id: " + sp.getMonsterId() + " canSpawn: " + !sp.getDenySpawn() + " numSpawned: " + sp.getSpawned() + " x: " + sp.getPosition().X + " y: " + sp.getPosition().Y + " time: " + sp.getMobTime() + " team: " + sp.getTeam());
         }
@@ -3107,9 +3106,9 @@ public class MapleMap : IMap
 
     private void instanceMapFirstSpawn()
     {
-        foreach (SpawnPoint spawnPoint in getAllMonsterSpawn())
+        foreach (SpawnPoint spawnPoint in getMonsterSpawn())
         {
-            if (spawnPoint.shouldSpawn() || spawnPoint.getMobTime() == -1)
+            if (spawnPoint.CanInitialSpawn)
             {
                 //just those allowed to be spawned only once
                 spawnPoint.SpawnMonster();
@@ -3117,6 +3116,9 @@ public class MapleMap : IMap
         }
     }
 
+    /// <summary>
+    /// EventInstance的map不会参与MapRespawn，通过该方法刷怪
+    /// </summary>
     public void instanceMapRespawn()
     {
         if (!_allowSummons)
@@ -3576,18 +3578,14 @@ public class MapleMap : IMap
 
         var ht = LifeFactory.Instance.getMonster(MobId.HORNTAIL)!;
         ht.setParentMobOid(htIntro.getObjectId());
-        ht.addListener(new ActualMonsterListener()
+        ht.OnDamaged += (sender, args) =>
         {
-            monsterDamaged = (IPlayer from, int trueDmg) =>
-            {
-                ht.addHp(trueDmg);
-            },
-
-            monsterHealed = (int trueHeal) =>
-            {
-                ht.addHp(-trueHeal);
-            }
-        });
+            ht.addHp(args.Damage);
+        };
+        ht.OnHealed += (sender, args) =>
+        {
+            ht.addHp(-args);
+        };
         spawnMonsterOnGroundBelow(ht, targetPoint);
 
         for (int mobId = MobId.HORNTAIL_HEAD_A; mobId <= MobId.HORNTAIL_TAIL; mobId++)
@@ -3595,20 +3593,15 @@ public class MapleMap : IMap
             Monster m = LifeFactory.Instance.getMonster(mobId)!;
             m.setParentMobOid(htIntro.getObjectId());
 
-            m.addListener(new ActualMonsterListener()
+            m.OnDamaged += (sender, args) =>
             {
-                monsterDamaged = (IPlayer from, int trueDmg) =>
-                {
-                    // thanks Halcyon for noticing HT not dropping loots due to propagated damage not registering attacker
-                    ht.applyFakeDamage(from, trueDmg, true);
-                },
+                ht.applyFakeDamage(args.Player, args.Damage, true);
+            };
 
-                monsterHealed = (int trueHeal) =>
-                {
-                    ht.addHp(trueHeal);
-                }
-            });
-
+            m.OnHealed += (sender, args) =>
+            {
+                m.addHp(args);
+            };
             spawnMonsterOnGroundBelow(m, targetPoint);
         }
     }
@@ -3848,7 +3841,6 @@ public class MapleMap : IMap
         mapEffect = null;
 
         monsterSpawn.Clear();
-        allMonsterSpawn.Clear();
 
         chrLock.EnterWriteLock();
         try
@@ -3992,7 +3984,7 @@ public class MapleMap : IMap
         }
 
         if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
-        { 
+        {
             // To Ereve (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
@@ -4005,7 +3997,7 @@ public class MapleMap : IMap
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
-        { 
+        {
             // To Victoria Island (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
@@ -4031,7 +4023,7 @@ public class MapleMap : IMap
             }, travelTime);
         }
         else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
-        { 
+        {
             // To Ereve From Orbis (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));

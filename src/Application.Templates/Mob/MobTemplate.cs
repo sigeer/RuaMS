@@ -46,6 +46,8 @@ namespace Application.Templates.Mob
         public string? ElementStr { get; set; }
         public MobBanTemplate? Ban { get; set; }
 
+        public int AnimateDie1 { get; set; }
+
         public MobTemplate(int templateId)
             : base(templateId)
         {
@@ -119,6 +121,8 @@ namespace Application.Templates.Mob
             sourceTemplate.SelfDestructActionType = SelfDestructActionType;
             sourceTemplate.SelfDestructHp = SelfDestructHp;
             sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
+
+            sourceTemplate.AnimateDie1 = AnimateDie1;
         }
     }
 }

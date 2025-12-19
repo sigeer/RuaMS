@@ -34,6 +34,8 @@ using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
 using server.loot;
+using System.Diagnostics.Eventing.Reader;
+using System.Threading;
 using tools;
 
 namespace Application.Core.Game.Life;
@@ -49,7 +51,7 @@ public class Monster : AbstractLifeObject
     private int mp;
     private WeakReference<IPlayer?> controller = new(null);
     private bool controllerHasAggro, controllerKnowsAboutAggro, controllerHasPuppet;
-    private List<MonsterListener> listeners = new();
+
     private Dictionary<MonsterStatus, MonsterStatusEffect> stati = new();
     private List<MonsterStatus> alreadyBuffed = new();
 
@@ -79,6 +81,33 @@ public class Monster : AbstractLifeObject
     private object animationLock = new object();
     private object aggroUpdateLock = new object();
 
+    /// <summary>
+    /// 地图上生成
+    /// </summary>
+    public event EventHandler? OnSpawned;
+    /// <summary>
+    /// 被击杀。死亡动画延迟
+    /// </summary>
+    public event EventHandler<int>? OnKilled;
+    public event EventHandler<MonsterDamagedEventArgs>? OnDamaged;
+    public event EventHandler<int>? OnHealed;
+    /// <summary>
+    /// 被击杀后，衍生物生成时触发。生成的衍生物
+    /// </summary>
+    public event EventHandler<Monster>? OnRevive;
+    /// <summary>
+    /// 被击杀时无衍生物，或者所有衍生物被击杀后触发
+    /// </summary>
+    public event EventHandler? OnLifeCleared;
+    /// <summary>
+    /// X死亡时生成
+    /// </summary>
+    public Monster? RevivedFrom { get; set; }
+    /// <summary>
+    /// 死亡时生成
+    /// </summary>
+    public List<Monster> RevivingMonsters { get; set; } = [];
+
     public Monster(int id, MonsterStats stats) : base(id)
     {
         setStance(5);
@@ -89,6 +118,8 @@ public class Monster : AbstractLifeObject
         maxHpPlusHeal.set(hp.get());
 
         log = LogFactory.GetLogger(LogType.Monster);
+
+        RevivingMonsters.AddRange(stats.getRevives().Select(x => LifeFactory.Instance.getMonster(x)).Where(x => x != null).Select(x => x!));
     }
 
     public Monster(Monster monster) : this(monster.getId(), monster.getStats())
@@ -290,10 +321,6 @@ public class Monster : AbstractLifeObject
         return stats.getAnimationTime(name);
     }
 
-    private List<int> getRevives()
-    {
-        return stats.getRevives();
-    }
 
     private byte getTagColor()
     {
@@ -496,7 +523,7 @@ public class Monster : AbstractLifeObject
 
         if (!fake)
         {
-            dispatchMonsterDamaged(from, trueDamage.Value);
+            OnDamaged?.Invoke(this, new MonsterDamagedEventArgs(from, trueDamage.Value));
         }
 
         if (!takenDamage.ContainsKey(from.getId()))
@@ -538,7 +565,8 @@ public class Monster : AbstractLifeObject
         }
 
         maxHpPlusHeal.addAndGet(hpHealed.Value);
-        dispatchMonsterHealed(hpHealed.Value);
+
+        OnHealed?.Invoke(this, hpHealed.Value);
     }
 
     public bool isAttackedBy(IPlayer chr)
@@ -900,91 +928,91 @@ public class Monster : AbstractLifeObject
         distributeExperience(killer != null ? killer.getId() : 0);
 
         var lastController = aggroRemoveController();
-        List<int> toSpawn = this.getRevives();
-        if (toSpawn != null)
+
+        var curMob = this;
+
+        var reviveMap = MapModel;
+
+        // TODO: 文本大致意思是显示，不太可能用于被击杀时触发
+        //var timeMob = reviveMap.TimeMob;
+        //if (timeMob != null)
+        //{
+        //    if (RevivingMonsters.Any(x => x.getId() == timeMob.MobId))
+        //    {
+        //        reviveMap.dropMessage(6, timeMob.Message);
+        //    }
+        //}
+
+        if (RevivingMonsters.Count > 0)
         {
-            var reviveMap = MapModel;
-            if (toSpawn.Contains(MobId.TRANSPARENT_ITEM) && reviveMap.getId() > 925000000 && reviveMap.getId() < 926000000)
+            if (RevivingMonsters.Any(x => x.getId() == (MobId.TRANSPARENT_ITEM)) && reviveMap.getId() > 925000000 && reviveMap.getId() < 926000000)
             {
                 reviveMap.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
                 reviveMap.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
-            var timeMob = reviveMap.TimeMob;
-            if (timeMob != null)
+
+            var eim = this.getMap().getEventInstance();
+
+            MapModel.ChannelServer.Container.TimerManager.schedule(() =>
             {
-                if (toSpawn.Contains(timeMob.MobId))
+                var controller = lastController.Key;
+                bool aggro = lastController.Value;
+
+                foreach (var mob in RevivingMonsters)
                 {
-                    reviveMap.dropMessage(6, timeMob.Message);
-                }
-            }
+                    mob.setPosition(curMob.getPosition());
+                    mob.setFh(curMob.getFh());
+                    mob.setParentMobOid(curMob.getObjectId());
 
-            if (toSpawn.Count > 0)
-            {
-                var eim = this.getMap().getEventInstance();
-
-                MapModel.ChannelServer.Container.TimerManager.schedule(() =>
-                {
-                    var controller = lastController.Key;
-                    bool aggro = lastController.Value;
-
-                    foreach (int mid in toSpawn)
+                    if (dropsDisabled())
                     {
-                        var mob = LifeFactory.Instance.GetMonsterTrust(mid);
-                        mob.setPosition(getPosition());
-                        mob.setFh(getFh());
-                        mob.setParentMobOid(getObjectId());
+                        mob.disableDrops();
+                    }
+                    reviveMap.spawnMonster(mob);
+                    OnRevive?.Invoke(curMob, mob);
+                    mob.RevivedFrom = curMob;
+                    curMob.RevivingMonsters.Add(mob);
 
-                        if (dropsDisabled())
+                    if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
+                    {
+                        bool htKilled = false;
+                        var ht = reviveMap.getMonsterById(MobId.HORNTAIL);
+
+                        if (ht != null)
                         {
-                            mob.disableDrops();
-                        }
-                        reviveMap.spawnMonster(mob);
-
-                        if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
-                        {
-                            bool htKilled = false;
-                            var ht = reviveMap.getMonsterById(MobId.HORNTAIL);
-
-                            if (ht != null)
+                            ht.lockMonster();
+                            try
                             {
-                                ht.lockMonster();
-                                try
-                                {
-                                    htKilled = ht.isAlive();
-                                    ht.setHpZero();
-                                }
-                                finally
-                                {
-                                    ht.unlockMonster();
-                                }
-
-                                if (htKilled)
-                                {
-                                    reviveMap.killMonster(ht, killer, true);
-                                }
+                                htKilled = ht.isAlive();
+                                ht.setHpZero();
+                            }
+                            finally
+                            {
+                                ht.unlockMonster();
                             }
 
-                            for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
+                            if (htKilled)
                             {
-                                reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
+                                reviveMap.killMonster(ht, killer, true);
                             }
                         }
-                        else if (controller != null)
-                        {
-                            mob.aggroSwitchController(controller, aggro);
-                        }
 
-                        if (eim != null)
+                        for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
                         {
-                            eim.reviveMonster(mob);
+                            reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
                         }
                     }
-                }, getAnimationTime("die1"));
-            }
-        }
-        else
-        {  // is this even necessary?
-            log.Warning("[CRITICAL LOSS] toSpawn is null for {MonsterName}", getName());
+                    else if (controller != null)
+                    {
+                        mob.aggroSwitchController(controller, aggro);
+                    }
+
+                    if (eim != null)
+                    {
+                        eim.reviveMonster(mob);
+                    }
+                }
+            }, getAnimationTime("die1"));
         }
 
         return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
@@ -1049,6 +1077,16 @@ public class Monster : AbstractLifeObject
     {
         processMonsterKilled(hasKiller);
 
+        if (RevivingMonsters.Count == 0)
+        {
+            DispatchMonsterAllKilled();
+        }
+
+        if (RevivedFrom != null && RevivedFrom.RevivingMonsters.All(x => !x.isAlive()))
+        {
+            RevivedFrom.DispatchMonsterAllKilled();
+        }
+
         var eim = getMap().getEventInstance();
         if (eim != null)
         {
@@ -1078,28 +1116,13 @@ public class Monster : AbstractLifeObject
             this.aggroClearDamages();
             this.dispatchClearSummons();
 
-            MonsterListener[] listenersList;
-            Monitor.Enter(statiLock);
-            try
-            {
-                listenersList = listeners.ToArray();
-            }
-            finally
-            {
-                Monitor.Exit(statiLock);
-            }
-
-            foreach (MonsterListener listener in listenersList)
-            {
-                listener.monsterKilled?.Invoke(getAnimationTime("die1"));
-            }
+            OnKilled?.Invoke(this, getAnimationTime("die1"));
 
             Monitor.Enter(statiLock);
             try
             {
                 stati.Clear();
                 alreadyBuffed.Clear();
-                listeners.Clear();
             }
             finally
             {
@@ -1109,43 +1132,6 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private void dispatchMonsterDamaged(IPlayer from, int trueDmg)
-    {
-        MonsterListener[] listenersList;
-        Monitor.Enter(statiLock);
-        try
-        {
-            listenersList = listeners.ToArray();
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
-
-        foreach (MonsterListener listener in listenersList)
-        {
-            listener.monsterDamaged?.Invoke(from, trueDmg);
-        }
-    }
-
-    private void dispatchMonsterHealed(int trueHeal)
-    {
-        MonsterListener[] listenersList;
-        Monitor.Enter(statiLock);
-        try
-        {
-            listenersList = listeners.ToArray();
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
-
-        foreach (MonsterListener listener in listenersList)
-        {
-            listener.monsterHealed?.Invoke(trueHeal);
-        }
-    }
 
 
     public int getHighestDamagerId()
@@ -1167,18 +1153,6 @@ public class Monster : AbstractLifeObject
         return this.hp.get() > 0;
     }
 
-    public void addListener(MonsterListener listener)
-    {
-        Monitor.Enter(statiLock);
-        try
-        {
-            listeners.Add(listener);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
-    }
 
     public IPlayer? getController()
     {
@@ -2727,5 +2701,15 @@ public class Monster : AbstractLifeObject
     public override int GetSourceId()
     {
         return getId();
+    }
+
+    public void DispatchMonsterSpawned()
+    {
+        OnSpawned?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void DispatchMonsterAllKilled()
+    {
+        OnLifeCleared?.Invoke(this, EventArgs.Empty);
     }
 }

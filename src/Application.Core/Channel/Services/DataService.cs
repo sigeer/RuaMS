@@ -649,19 +649,11 @@ namespace Application.Core.Channel.Services
                     }
                     else if (data.Data.Type == LifeType.Monster)
                     {
-                        var mob = LifeFactory.Instance.getMonster(data.Data.LifeId);
-                        if (mob != null && !mob.getName().Equals("MISSINGNO"))
+                        var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
+                        if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
                         {
-                            mob.setPosition(new Point(data.Data.X, data.Data.Y));
-                            mob.setCy(data.Data.Cy);
-                            mob.setRx0(data.Data.Rx0);
-                            mob.setRx1(data.Data.Rx1);
-                            mob.setFh(data.Data.Fh);
-
-                            map.addMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
-                            map.addAllMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
-
-
+                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y), 
+                                data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);
                         }
                     }
                 }
@@ -706,7 +698,6 @@ namespace Application.Core.Channel.Services
                         else if (data.Type == LifeType.Monster)
                         {
                             map.removeMonsterSpawn(data.LifeId, data.X, data.Y);
-                            map.removeAllMonsterSpawn(data.LifeId, data.X, data.Y);
                         }
                     }
                 }

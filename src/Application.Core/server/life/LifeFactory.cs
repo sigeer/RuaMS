@@ -33,6 +33,7 @@ using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using tools;
 
 namespace server.life;
@@ -112,7 +113,7 @@ public class LifeFactory : IStaticService
         }
     }
 
-    private MonsterCore? getMonsterStats(int mid)
+    public MonsterCore? getMonsterStats(int mid)
     {
         var monsterData = data.getData(StringUtil.getLeftPaddedStr(mid + ".img", '0', 11));
         if (monsterData == null)
@@ -318,6 +319,7 @@ public class LifeFactory : IStaticService
             return null;
         }
     }
+
 
     public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
 

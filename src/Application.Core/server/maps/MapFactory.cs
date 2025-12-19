@@ -67,6 +67,19 @@ public class MapFactory : IStaticService
         mapSource = ProviderSource.Instance.GetProvider<MapProvider>();
     }
 
+    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
+    {
+        AbstractLifeObject myLife = LifeFactory.Instance.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
+        myLife.setCy(cy);
+        myLife.setF(f);
+        myLife.setFh(fh);
+        myLife.setRx0(rx0);
+        myLife.setRx1(rx1);
+        myLife.setPosition(new Point(x, y));
+        myLife.setHide(hide);
+        return myLife;
+    }
+
     private void loadLifeFromWz(IMap map, MapTemplate mapData)
     {
         foreach (var life in mapData.Life)
@@ -100,24 +113,14 @@ public class MapFactory : IStaticService
 
     private void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide, int mobTime, int team)
     {
-        AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
-        if (myLife is Monster monster)
+        if (type == LifeType.Monster)
         {
-            if (mobTime == -1)
-            { //does not respawn, force spawn once
-                map.spawnMonster(monster);
-            }
-            else
-            {
-                map.addMonsterSpawn(monster, mobTime, team);
-            }
-
-            //should the map be reseted, use allMonsterSpawn list of monsters to spawn them again
-            map.addAllMonsterSpawn(monster, mobTime, team);
+            map.addMonsterSpawn(id, new Point(x, y), cy, f, fh, rx0, rx1, mobTime, hide, team);
         }
         else
         {
-            map.addMapObject(myLife);
+            map.addMapObject(loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide));
+
         }
     }
 
@@ -229,19 +232,6 @@ public class MapFactory : IStaticService
         map.generateMapDropRangeCache();
 
         return map;
-    }
-
-    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
-    {
-        AbstractLifeObject myLife = LifeFactory.Instance.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
-        myLife.setCy(cy);
-        myLife.setF(f);
-        myLife.setFh(fh);
-        myLife.setRx0(rx0);
-        myLife.setRx1(rx1);
-        myLife.setPosition(new Point(x, y));
-        myLife.setHide(hide);
-        return myLife;
     }
 
     private Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)

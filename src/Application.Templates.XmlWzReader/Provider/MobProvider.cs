@@ -212,6 +212,18 @@ namespace Application.Templates.XmlWzReader.Provider
                             }
                         }
                     }
+                    else if (itemName == "die1")
+                    {
+                        int delay = 0;
+                        foreach (var subItem in rootItem.Elements())
+                        {
+                            if (subItem.GetName() == "delay")
+                            {
+                                delay += subItem.GetIntValue();
+                            }
+                        }
+                        pEntry.AnimateDie1 = delay;
+                    }
                 }
                 InsertItem(pEntry);
                 return [pEntry];

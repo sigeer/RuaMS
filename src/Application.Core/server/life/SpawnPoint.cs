@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 
 namespace server.life;
@@ -33,29 +34,45 @@ public class SpawnPoint
     private int team;
     private int fh;
     private int f;
+    private int cy;
+    private int rx0;
+    private int rx1;
+    private bool hide;
     private Point pos;
     private long nextPossibleSpawn;
     private int mobInterval = 5000;
     private AtomicInteger spawnedMonsters = new AtomicInteger(0);
-    private bool immobile;
     private bool denySpawn = false;
-    readonly Monster _monsterMeta;
+    readonly MonsterCore _monsterMeta;
     readonly IMap _map;
 
-    public SpawnPoint(IMap map, Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
+    SpawnPointTrigger act;
+    public bool CanInitialSpawn => mobTime == -1;
+
+    public SpawnPoint(
+        IMap map,
+        int mobId,
+        Point pos, int cy, int f, int fh, int rx0, int rx1, bool hide,
+        int team,
+        int mobTime, int mobInterval,
+        SpawnPointTrigger act = SpawnPointTrigger.Killed)
     {
         _map = map;
-        _monsterMeta = monster;
+        _monsterMeta = LifeFactory.Instance.getMonsterStats(mobId)!;
 
-        this.monster = monster.getId();
+        this.monster = mobId;
         this.pos = pos;
         this.mobTime = mobTime;
         this.team = team;
-        this.fh = monster.getFh();
-        this.f = monster.getF();
-        this.immobile = immobile;
+        this.cy = cy;
+        this.rx0 = rx0;
+        this.rx1 = rx1;
+        this.fh = fh;
+        this.f = f;
+        this.hide = hide;
         this.mobInterval = mobInterval;
         this.nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
+        this.act = act;
     }
 
     public int getSpawned()
@@ -73,6 +90,7 @@ public class SpawnPoint
         return denySpawn;
     }
 
+
     public bool shouldSpawn()
     {
         if (denySpawn || mobTime < 0 || spawnedMonsters.get() >= GetMaxMobCount())
@@ -82,22 +100,37 @@ public class SpawnPoint
         return nextPossibleSpawn <= _map.ChannelServer.Container.getCurrentTime();
     }
 
+    /// <summary>
+    /// 跳过CD，禁用情况 生成
+    /// </summary>
+    /// <returns></returns>
     public bool shouldForceSpawn()
     {
-        return mobTime >= 0 && spawnedMonsters.get() <= 0;
+        return mobTime >= 0 && spawnedMonsters.get() < GetMaxMobCount();
+    }
+
+    protected virtual void SetMonsterPosition(Monster mob)
+    {
+        mob.setPosition(pos);
     }
 
     public Monster GenrateMonster()
     {
+        // Check. 原代码中，只在初始化(loadLife)的Monster中传入了fh, f, rx...等属性，这里额外加上不知道有没有问题
         var mob = LifeFactory.Instance.GetMonsterTrust(monster);
-        mob.setPosition(pos);
+        SetMonsterPosition(mob);
         mob.setTeam(team);
         mob.setFh(fh);
         mob.setF(f);
+        mob.setCy(cy);
+        mob.setRx0(rx0);
+        mob.setRx1(rx1);
+        mob.setHide(hide);
         spawnedMonsters.incrementAndGet();
-        mob.addListener(new ActualMonsterListener()
+
+        if (this.act == SpawnPointTrigger.Killed)
         {
-            monsterKilled = (int aniTime) =>
+            mob.OnKilled += (sender, aniTime) =>
             {
                 nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
                 if (mobTime > 0)
@@ -109,14 +142,33 @@ public class SpawnPoint
                     nextPossibleSpawn += aniTime;
                 }
                 spawnedMonsters.decrementAndGet();
-            }
-        });
+            };
+        }
+
+        else if (this.act == SpawnPointTrigger.Cleared)
+        {
+            mob.OnLifeCleared += (self, revivedMob) =>
+            {
+                nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
+                if (mobTime > 0)
+                {
+                    nextPossibleSpawn += mobTime * 1000;
+                }
+                else
+                {
+                    nextPossibleSpawn += mobInterval;
+                }
+            };
+        }
+
         if (mobTime == 0)
         {
             nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime() + mobInterval;
         }
         return mob;
     }
+
+
 
     public int getMonsterId()
     {
@@ -151,7 +203,7 @@ public class SpawnPoint
     private int GetMaxMobCount()
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
             rate = 1;
 
         // 比如2.5倍，那么就算已有2只也算作满怪
@@ -161,7 +213,7 @@ public class SpawnPoint
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
             rate = 1;
 
         while (rate > Randomizer.NextFloat())
