@@ -44,7 +44,7 @@ public class SpawnPoint
     private AtomicInteger spawnedMonsters = new AtomicInteger(0);
     private bool denySpawn = false;
     readonly MonsterCore _monsterMeta;
-    readonly IMap _map;
+    protected readonly IMap _map;
 
     SpawnPointTrigger act;
     public bool CanInitialSpawn => mobTime == -1;
@@ -114,6 +114,11 @@ public class SpawnPoint
         mob.setPosition(pos);
     }
 
+    protected virtual void SubscribeMonster(Monster mob)
+    {
+
+    }
+
     public Monster GenrateMonster()
     {
         // Check. 原代码中，只在初始化(loadLife)的Monster中传入了fh, f, rx...等属性，这里额外加上不知道有没有问题
@@ -126,6 +131,7 @@ public class SpawnPoint
         mob.setRx0(rx0);
         mob.setRx1(rx1);
         mob.setHide(hide);
+        SubscribeMonster(mob);
         spawnedMonsters.incrementAndGet();
 
         if (this.act == SpawnPointTrigger.Killed)
@@ -158,6 +164,7 @@ public class SpawnPoint
                 {
                     nextPossibleSpawn += mobInterval;
                 }
+                spawnedMonsters.decrementAndGet();
             };
         }
 

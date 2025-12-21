@@ -971,7 +971,6 @@ public class Monster : AbstractLifeObject
                     reviveMap.spawnMonster(mob);
                     OnRevive?.Invoke(curMob, mob);
                     mob.RevivedFrom = curMob;
-                    curMob.RevivingMonsters.Add(mob);
 
                     if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
                     {
