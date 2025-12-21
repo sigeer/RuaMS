@@ -58,44 +58,12 @@ const dataSource = [
 function init() {
     for (const item of dataSource) {
         spawn(item);
-        globalThis["spawn" + item.name] = () => {
-            spawn(item);
-        }
     }
 }
 
 function spawn(item) {
     const map = em.GetMap(item.mapId);
-
-    const functionName = "spawn" + item.name;
-    if (item.checkMobs) {
-        for (const checkMob of item.checkMobs) {
-            if (map.getMonsterById(checkMob) != null) {
-                item.task = em.schedule(functionName, item.interval);
-            }
-        }
-    }
-    else {
-        if (map.getMonsterById(item.mobId) != null) {
-            item.task = em.schedule(functionName, item.interval);
-        }
-    }
-
-    var index = parseInt(Math.random() * item.pos.length);
-    var rndPos = item.pos[index];
-
-    var posX = 0;
-    if (rndPos.x)
-        posX = rndPos.x;
-    else
-        posX = Math.floor(randInt(rndPos.minX, rndPos.maxX));
-
-    var spawnpoint = new Point(posX, rndPos.y);
-
-    var monster = LifeFactory.getMonster(item.mobId);
-    map.spawnMonsterOnGroundBelow(monster, spawnpoint);
-    map.LightBlue("Boss_" + item.name);
-    item.task = em.schedule(functionName, item.interval);
+    map.GenerateAreaBoss(item.name, item.mobId, item.interval, item.pos, "Boss_" + item.name);
 }
 
 function randInt(a, b) {
