@@ -1230,7 +1230,7 @@ public class MapleMap : IMap
         {
             if (removeKilledMonsterObject(monster))
             {
-                monster.dispatchMonsterKilled(false);
+                monster.dispatchMonsterKilled(chr);
                 broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
                 monster.aggroSwitchController(null, false);
             }
@@ -1332,7 +1332,7 @@ public class MapleMap : IMap
                 }
                 finally
                 {     // thanks resinate for pointing out a memory leak possibly from an exception thrown
-                    monster.dispatchMonsterKilled(true);
+                    monster.dispatchMonsterKilled(chr);
                     broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
                 }
             }
@@ -1827,7 +1827,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        DispatchMonsterSpawned(monster);
+        spawnedMonstersOnMap.incrementAndGet();
         addSelfDestructive(monster);
         applyRemoveAfter(monster);
     }
@@ -1945,17 +1945,11 @@ public class MapleMap : IMap
             }
         }
 
-        DispatchMonsterSpawned(monster);
+        spawnedMonstersOnMap.incrementAndGet();
         XiGuai?.ApplyMonster(monster);
 
         addSelfDestructive(monster);
         applyRemoveAfter(monster);  // thanks LightRyuzaki for pointing issues with spawned CWKPQ mobs not applying this
-    }
-
-    void DispatchMonsterSpawned(Monster monster)
-    {
-        spawnedMonstersOnMap.incrementAndGet();
-        monster.DispatchMonsterSpawned();
     }
 
     public void spawnDojoMonster(Monster monster)
@@ -1989,7 +1983,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        DispatchMonsterSpawned(monster);
+        spawnedMonstersOnMap.incrementAndGet();
         XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
         applyRemoveAfter(monster);
@@ -2001,7 +1995,7 @@ public class MapleMap : IMap
         monster.setFake(true);
         spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
 
-        DispatchMonsterSpawned(monster);
+        spawnedMonstersOnMap.incrementAndGet();
         XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
     }
