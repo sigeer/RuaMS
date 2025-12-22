@@ -1763,7 +1763,7 @@ public class MapleMap : IMap
     /// <param name="spawnMessage"></param>
     public void GenerateAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
     {
-        monsterSpawn.RemoveAll(x => x is AreaBossSpawnPoint areaBoss && areaBoss.Name == name);
+        _bossSp.RemoveAll(x => x.Name == name);
 
         var points = new List<RandomPoint>();
         foreach (var item in rawList)
