@@ -1785,7 +1785,7 @@ public class MapleMap : IMap
             points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
         }
 
-        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime / 1000, SourceTemplate.CreateMobInterval, spawnMessage);
+        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
         _bossSp[name] = sp;
         sp.SpawnMonster();
 
