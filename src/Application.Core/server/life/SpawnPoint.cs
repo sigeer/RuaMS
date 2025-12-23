@@ -136,7 +136,7 @@ public class SpawnPoint
 
         if (this.act == SpawnPointTrigger.Killed)
         {
-            mob.OnKilled += (sender, aniTime) =>
+            mob.OnKilled += (sender, args) =>
             {
                 nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
                 if (mobTime > 0)
@@ -145,7 +145,7 @@ public class SpawnPoint
                 }
                 else
                 {
-                    nextPossibleSpawn += aniTime;
+                    nextPossibleSpawn += args.DieAni;
                 }
                 spawnedMonsters.decrementAndGet();
             };

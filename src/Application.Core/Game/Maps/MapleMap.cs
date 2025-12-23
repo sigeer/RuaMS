@@ -61,7 +61,7 @@ public class MapleMap : IMap
     private Dictionary<int, IMapObject> mapobjects = new();
     private HashSet<int> selfDestructives = new();
     protected List<SpawnPoint> monsterSpawn = new();
-    protected List<AreaBossSpawnPoint> _bossSp = [];
+    protected Dictionary<string, AreaBossSpawnPoint> _bossSp = [];
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
     private Dictionary<int, Portal> portals;
@@ -1761,9 +1761,16 @@ public class MapleMap : IMap
     /// <param name="posX"></param>
     /// <param name="posY"></param>
     /// <param name="spawnMessage"></param>
-    public void GenerateAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
+    public void SetupAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
     {
-        _bossSp.RemoveAll(x => x.Name == name);
+        if (_bossSp.TryGetValue(name, out var sp))
+        {
+            if (sp.shouldForceSpawn())
+            {
+                sp.SpawnMonster();
+            }
+            return;
+        }
 
         var points = new List<RandomPoint>();
         foreach (var item in rawList)
@@ -1778,8 +1785,8 @@ public class MapleMap : IMap
             points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
         }
 
-        var sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime / 1000, SourceTemplate.CreateMobInterval, spawnMessage);
-        _bossSp.Add(sp);
+        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime / 1000, SourceTemplate.CreateMobInterval, spawnMessage);
+        _bossSp[name] = sp;
         sp.SpawnMonster();
 
         _hasLongLifeMob = true;
@@ -3287,7 +3294,7 @@ public class MapleMap : IMap
             }
         }
 
-        foreach (var sp in _bossSp)
+        foreach (var sp in _bossSp.Values)
         {
             if (sp.shouldSpawn())
                 sp.SpawnMonster();

@@ -34,8 +34,6 @@ using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
 using server.loot;
-using System.Diagnostics.Eventing.Reader;
-using System.Threading;
 using tools;
 
 namespace Application.Core.Game.Life;

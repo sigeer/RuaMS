@@ -57,17 +57,9 @@ const dataSource = [
 
 function init() {
     for (const item of dataSource) {
-        spawn(item);
+        const map = em.GetMap(item.mapId);
+        map.SetupAreaBoss(item.name, item.mobId, item.interval, item.pos, "Boss_" + item.name);
     }
-}
-
-function spawn(item) {
-    const map = em.GetMap(item.mapId);
-    map.GenerateAreaBoss(item.name, item.mobId, item.interval, item.pos, "Boss_" + item.name);
-}
-
-function randInt(a, b) {
-    return Math.floor(Math.random() * (b - a + 1)) + a;
 }
 
 // ////////// FILLER FUNCTIONS //////////
