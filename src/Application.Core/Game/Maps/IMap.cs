@@ -256,6 +256,6 @@ namespace Application.Core.Game.Maps
 
         bool IsActive();
         void BroadcastAll(Action<IPlayer> effectPlayer);
-        void GenerateAreaBoss(string name, int bossId, int mobTime, List<object> points, string spawnMessage);
+        void SetupAreaBoss(string name, int bossId, int mobTime, List<object> points, string spawnMessage);
     }
 }

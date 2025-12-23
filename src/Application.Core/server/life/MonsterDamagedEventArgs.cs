@@ -11,3 +11,16 @@ public sealed class MonsterDamagedEventArgs : EventArgs
         Damage = damage;
     }
 }
+
+
+public sealed class MonsterKilledEventArgs : EventArgs
+{
+    public IPlayer? Killer { get; }
+    public int DieAni { get; }
+
+    public MonsterKilledEventArgs(IPlayer? player, int dieAni)
+    {
+        Killer = player;
+        DieAni = dieAni;
+    }
+}

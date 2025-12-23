@@ -34,8 +34,6 @@ using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
 using server.loot;
-using System.Diagnostics.Eventing.Reader;
-using System.Threading;
 using tools;
 
 namespace Application.Core.Game.Life;
@@ -88,7 +86,7 @@ public class Monster : AbstractLifeObject
     /// <summary>
     /// 被击杀。死亡动画延迟
     /// </summary>
-    public event EventHandler<int>? OnKilled;
+    public event EventHandler<MonsterKilledEventArgs>? OnKilled;
     public event EventHandler<MonsterDamagedEventArgs>? OnDamaged;
     public event EventHandler<int>? OnHealed;
     /// <summary>
@@ -124,6 +122,12 @@ public class Monster : AbstractLifeObject
 
     public Monster(Monster monster) : this(monster.getId(), monster.getStats())
     {
+    }
+
+    public override void setMap(IMap map)
+    {
+        base.setMap(map);
+        DispatchMonsterSpawned();
     }
 
     public void lockMonster()
@@ -996,6 +1000,7 @@ public class Monster : AbstractLifeObject
                             }
                         }
 
+                        // reviveMap.isHorntailDefeated()表示已经击杀，这里重复击杀目的是为了解决什么问题？
                         for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
                         {
                             reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
@@ -1072,9 +1077,9 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void dispatchMonsterKilled(bool hasKiller)
+    public void dispatchMonsterKilled(IPlayer? killer)
     {
-        processMonsterKilled(hasKiller);
+        processMonsterKilled(killer);
 
         if (RevivingMonsters.Count == 0)
         {
@@ -1091,23 +1096,23 @@ public class Monster : AbstractLifeObject
         {
             if (!this.getStats().isFriendly())
             {
-                eim.monsterKilled(this, hasKiller);
+                eim.monsterKilled(this, killer != null);
             }
             else
             {
-                eim.friendlyKilled(this, hasKiller);
+                eim.friendlyKilled(this, killer != null);
             }
         }
         getMap().dismissRemoveAfter(this);
     }
 
     object monsterKilledLock = new object();
-    private void processMonsterKilled(bool hasKiller)
+    private void processMonsterKilled(IPlayer? killer)
     {
         lock (monsterKilledLock)
         {
 
-            if (!hasKiller)
+            if (killer == null)
             {    // players won't gain EXP from a mob that has no killer, but a quest count they should
                 dispatchRaiseQuestMobCount();
             }
@@ -1115,7 +1120,7 @@ public class Monster : AbstractLifeObject
             this.aggroClearDamages();
             this.dispatchClearSummons();
 
-            OnKilled?.Invoke(this, getAnimationTime("die1"));
+            OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
 
             Monitor.Enter(statiLock);
             try
@@ -2702,12 +2707,12 @@ public class Monster : AbstractLifeObject
         return getId();
     }
 
-    public void DispatchMonsterSpawned()
+    void DispatchMonsterSpawned()
     {
         OnSpawned?.Invoke(this, EventArgs.Empty);
     }
 
-    public void DispatchMonsterAllKilled()
+    void DispatchMonsterAllKilled()
     {
         OnLifeCleared?.Invoke(this, EventArgs.Empty);
     }
