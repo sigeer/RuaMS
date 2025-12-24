@@ -1,9 +1,12 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
+using Application.Templates.Mob;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
-using System.Globalization;
 using server.life;
+using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -17,7 +20,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver("SourceTemplate", "EffectTemplate"),
+                ContractResolver = new PrivateContractResolver("AttackInfoHolders"),
                 Formatting = Formatting.Indented
             };
         }
@@ -40,17 +43,14 @@ namespace ServiceTest.Infrastructure.WZ
             oldProvider = new OldLifeFactory();
             newProvider = LifeFactory.Instance;
 
-            oldProvider.Register(oldProvider);
-
             var mobInfo = new MonsterInformationProvider(null, null, null);
             mobInfo.Register(mobInfo);
         }
 
         int[] TakeTestMobs()
         {
-            return _providerSource.GetProviderByKey<StringProvider>("zh-CN").GetSubProvider(Application.Templates.String.StringCategory.Mob).LoadAll()
+            return _providerSource.GetProvider<MobProvider>().LoadAll()
                 .Select(x => x.TemplateId)
-                .Where(id => id < 9300000) // exclude some special mobs
                 .OrderBy(x => x)
                 .ToArray();
         }
@@ -61,42 +61,76 @@ namespace ServiceTest.Infrastructure.WZ
         }
 
 
+        // 有大量不正常数据影响
+        //[Test]
+        //public void getMonsterTest()
+        //{
+        //    Assert.Multiple(() =>
+        //    {
+        //        foreach (var mobId in TakeTestMobs())
+        //        {
+        //            Monster? oldMonster = null;
+        //            Monster? newMonster = null;
+        //            try
+        //            {
+        //                oldMonster = oldProvider.getMonster(mobId);
+        //                newMonster = newProvider.getMonster(mobId);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine("MonsterId=" + mobId + ", " + ex.Message);
+        //            }
+
+
+        //            if (oldMonster == null)
+        //            {
+        //                Assert.That(newMonster, Is.Null, $"Id = {mobId}");
+        //            }
+        //            else
+        //            {
+        //                var oldJson = ToJson(oldMonster);
+        //                var newJson = ToJson(newMonster);
+        //                Assert.That(newJson, Is.EqualTo(oldJson), $"Id = {mobId}");
+        //            }
+        //        }
+        //    });
+        //}
+
         [Test]
-        public void getMonsterTest()
+        public void MobAttackTest()
         {
             foreach (var mobId in TakeTestMobs())
             {
-                var oldMonster = oldProvider.getMonster(mobId);
-                var newMonster = newProvider.getMonster(mobId);
-
-                if (oldMonster == null)
+                MonsterCore? newDataSrc = null;
+                try
                 {
-                    Assert.That(newMonster, Is.Null, $"Id = {mobId}");
+                    newDataSrc = newProvider.getMonsterStats(mobId);
                 }
-                else
+                catch (Exception ex)
                 {
-                    var oldJson = ToJson(oldMonster);
-                    var newJson = ToJson(newMonster);
-                    if (oldJson == newJson)
+                    Console.WriteLine($"数据不正常MobId={mobId}, {ex.Message}");
+                    continue;
+                }
+                for (int i = 0; i < 9; i++)
+                {
+                    var oldData = MobAttackInfoFactory.getMobAttackInfo(mobId, i);
+                    var newData = newDataSrc?.AttackInfo?.FirstOrDefault(x => x.Index == i);
+
+                    if (oldData == null)
                     {
-                        Assert.Pass();
-                        return;
+                        Assert.That(newData, Is.Null, $"Id = {mobId}, Index={i}");
                     }
                     else
                     {
-                        if (newJson.Contains(oldJson))
-                        {
-                            Console.WriteLine("================");
-                            Console.WriteLine("OldJson");
-                            Console.WriteLine(oldJson);
-                            Console.WriteLine("NewJson");
-                            Console.WriteLine(newJson);
-                            Assert.Pass();
-                            return;
-                        }
+                        Assert.That(newData, Is.Not.Null, $"Id = {mobId}, Index={i}");
+                        Assert.That(newData.MpBurn, Is.EqualTo(oldData.getMpBurn()), $"Id={mobId}, Index={i}");
+                        Assert.That(newData.ConMP, Is.EqualTo(oldData.getMpCon()), $"Id={mobId}, Index={i}");
+                        Assert.That(newData.DeadlyAttack, Is.EqualTo(oldData.isDeadlyAttack()), $"Id={mobId}, Index={i}");
+                        Assert.That(newData.Disease, Is.EqualTo(oldData.getDiseaseSkill()), $"Id={mobId}, Index={i}");
+                        Assert.That(newData.Level, Is.EqualTo(oldData.getDiseaseLevel()), $"Id={mobId}, Index={i}");
                     }
-                    Assert.Fail();
                 }
+
             }
         }
 

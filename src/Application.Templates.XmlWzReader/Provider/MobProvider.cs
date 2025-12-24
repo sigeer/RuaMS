@@ -13,7 +13,12 @@ namespace Application.Templates.XmlWzReader.Provider
         public override string ProviderName => ProviderNames.Mob;
 
         public MobProvider(ProviderOption options)
-            : base(options) { }
+            : base(options)
+        {
+            _files = Directory.GetFiles(Path.Combine(GetBaseDir(), ProviderName), "*.xml")
+                .Select(x => Path.GetRelativePath(GetBaseDir(), x))
+                .ToArray();
+        }
 
         protected override string? GetImgPathByTemplateId(int mobId)
         {
@@ -33,6 +38,7 @@ namespace Application.Templates.XmlWzReader.Provider
                     throw new TemplateFormatException(ProviderName, imgPath);
 
                 var pEntry = new MobTemplate(mobId);
+                var attackList = new List<MobAttackTemplate>();
                 foreach (var rootItem in xDoc.Elements())
                 {
                     var itemName = rootItem.GetName();
@@ -126,7 +132,10 @@ namespace Application.Templates.XmlWzReader.Provider
                             }
 
                             else if (infoPropName == "link")
-                                GetItem(infoProp.GetIntValue())?.CloneLink(pEntry);
+                            {
+                                pEntry.Link = infoProp.GetIntValue();
+                                GetItem(pEntry.Link)?.CloneLink(pEntry);
+                            }
 
                             else if (infoPropName == "selfDestruction")
                             {
@@ -214,9 +223,9 @@ namespace Application.Templates.XmlWzReader.Provider
                         if (itemName.StartsWith("attack"))
                         {
                             var attack = ProcessAttackInfo(rootItem, itemName);
-                            if (attack != null) 
+                            if (attack != null)
                             {
-                                pEntry.AttackInfos.Add(attack);
+                                attackList.Add(attack);
                             }
                         }
                         else if (itemName == "stand")
@@ -234,7 +243,7 @@ namespace Application.Templates.XmlWzReader.Provider
                         int delay = 0;
                         foreach (var subItem in rootItem.Elements())
                         {
-                            foreach(var subItemProp in subItem.Elements()) 
+                            foreach (var subItemProp in subItem.Elements())
                             {
                                 if (subItemProp.GetName() == "delay")
                                 {
@@ -246,6 +255,7 @@ namespace Application.Templates.XmlWzReader.Provider
                         pEntry.AnimateDelay[itemName] = delay;
                     }
                 }
+                pEntry.AttackInfos = attackList.OrderBy(x => x.Index).ToArray();
                 InsertItem(pEntry);
                 return [pEntry];
             }
@@ -258,9 +268,9 @@ namespace Application.Templates.XmlWzReader.Provider
 
         private static MobAttackTemplate? ProcessAttackInfo(XElement infoProp, string infoPropName)
         {
-            if (int.TryParse(infoPropName.Substring(6), out var idx))
+            if (int.TryParse(infoPropName.AsSpan(6), out var idx))
             {
-                var model = new MobAttackTemplate(idx);
+                var model = new MobAttackTemplate(idx - 1);
                 var mobAniList = new List<MobAttackAnimationTemplate>();
                 foreach (var attackItem in infoProp.Elements())
                 {

@@ -28,13 +28,15 @@ public class LifeFactory : IStaticService
         log = sp.GetRequiredService<ILogger<LifeFactory>>();
     }
 
-    MobProvider _mobProvider = ProviderSource.Instance.GetProvider<MobProvider>();
-    NpcProvider _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
-    ConcurrentDictionary<int, MonsterStats> monsterStats = new();
+    MobProvider _mobProvider;
+    NpcProvider _npcProvider;
+    ConcurrentDictionary<int, MonsterCore> monsterStats = new();
     private HashSet<int> hpbarBosses;
-    LifeFactory()
+    public LifeFactory()
     {
         hpbarBosses = ProviderSource.Instance.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).ToHashSet();
+        _mobProvider = ProviderSource.Instance.GetProvider<MobProvider>();
+        _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
     }
 
     public AbstractLifeObject? getLife(int id, string type)
@@ -54,29 +56,20 @@ public class LifeFactory : IStaticService
         }
     }
 
-    private void setMonsterAttackInfo(int mid, List<MobAttackInfoHolder> attackInfos)
-    {
-        if (attackInfos.Count > 0)
-        {
-            MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-
-            foreach (MobAttackInfoHolder attackInfo in attackInfos)
-            {
-                mi.setMobAttackInfo(mid, attackInfo.attackPos, attackInfo.mpCon, attackInfo.coolTime);
-                mi.setMobAttackAnimationTime(mid, attackInfo.attackPos, attackInfo.animationTime);
-            }
-        }
-    }
-
     public MonsterCore? getMonsterStats(int mid)
     {
+        if (monsterStats.TryGetValue(mid, out var data))
+        {
+            return data;
+        }
+
         var mobTemplate = _mobProvider.GetItem(mid);
         if (mobTemplate == null)
         {
             return null;
         }
 
-        List<MobAttackInfoHolder> attackInfos = new();
+
         MonsterStats stats = new MonsterStats();
 
         stats.setHp(mobTemplate.MaxHP);
@@ -93,7 +86,7 @@ public class LifeFactory : IStaticService
         stats.setExplosiveReward(mobTemplate.ExplosiveReward);
         stats.setFfaLoot(mobTemplate.PublicReward > 0);
         stats.setUndead(mobTemplate.UnDead);
-        stats.setName(ClientCulture.SystemCulture.GetMobName(mid));
+        stats.setName(ClientCulture.SystemCulture.GetMobName(mobTemplate.TemplateId));
         stats.setBuffToGive(mobTemplate.Buff);
         stats.setCP(mobTemplate.GetCP);
         stats.setRemoveOnMiss(mobTemplate.RemoveOnMiss);
@@ -120,7 +113,7 @@ public class LifeFactory : IStaticService
         stats.setDropPeriod(mobTemplate.DropItemPeriod * 10000);
 
         // thanks yuxaij, Riizade, Z1peR, Anesthetic for noticing some bosses crashing players due to missing requirements
-        bool hpbarBoss = mobTemplate.Boss && hpbarBosses.Contains(mid);
+        bool hpbarBoss = mobTemplate.Boss && hpbarBosses.Contains(mobTemplate.TemplateId);
         stats.setTagColor(hpbarBoss ? mobTemplate.HpTagColor : 0);
         stats.setTagBgColor(hpbarBoss ? mobTemplate.HpTagBgColor : 0);
 
@@ -151,12 +144,6 @@ public class LifeFactory : IStaticService
             stats.setSkills(skills);
         }
 
-        foreach (var attack in mobTemplate.AttackInfos)
-        {
-            int animationTime = attack.Animations.Sum(x => x.Delay);
-            attackInfos.Add(new MobAttackInfoHolder(attack.Index, attack.ConMP, attack.AttackAfter, animationTime));
-        }
-
         if (mobTemplate.Ban != null)
         {
             stats.setBanishInfo(new BanishInfo(mobTemplate.Ban.Map, mobTemplate.Ban.PortalName ?? "sp", mobTemplate.Ban.Message));
@@ -171,62 +158,31 @@ public class LifeFactory : IStaticService
             }
         }
 
-        return new(stats, attackInfos);
+        monsterStats[mid] =data = new(stats, mobTemplate.AttackInfos);
+        return data;
+
     }
 
     public Monster? getMonster(int mid)
     {
-        try
+        var s = getMonsterStats(mid);
+        if (s == null)
         {
-            var stats = monsterStats.GetValueOrDefault(mid);
-            if (stats == null)
-            {
-                var mobStats = getMonsterStats(mid);
-                if (mobStats == null)
-                    return null;
-
-                stats = mobStats.Stats;
-                setMonsterAttackInfo(mid, mobStats.AttackInfo);
-
-                monsterStats.AddOrUpdate(mid, stats);
-            }
-            return new Monster(mid, stats);
-        }
-        catch (NullReferenceException npe)
-        {
-            log.LogError(npe, "[SEVERE] MOB {MobId} failed to load.", mid);
             return null;
         }
+        return new Monster(mid, s.Stats, s.AttackInfo);
     }
-
 
     public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
 
     public int getMonsterLevel(int mid)
     {
-        try
+        var s = getMonsterStats(mid);
+        if (s == null)
         {
-            var stats = monsterStats.GetValueOrDefault(mid);
-            if (stats == null)
-            {
-                var mobTemplate = _mobProvider.GetItem(mid);
-                if (mobTemplate == null)
-                {
-                    return -1;
-                }
-                return mobTemplate.Level;
-            }
-            else
-            {
-                return stats.getLevel();
-            }
+            return -1;
         }
-        catch (NullReferenceException npe)
-        {
-            log.LogError(npe, "[SEVERE] MOB {MobId} failed to load.", mid);
-        }
-
-        return -1;
+        return s.Stats.getLevel();
     }
 
     private static void decodeElementalString(MonsterStats stats, string elemAttr)

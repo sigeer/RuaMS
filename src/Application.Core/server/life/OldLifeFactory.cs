@@ -28,6 +28,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Resources;
 using Application.Shared.Constants.Npc;
 using Application.Shared.WzEntity;
+using Application.Templates.Mob;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
@@ -39,25 +40,9 @@ using tools;
 namespace server.life;
 
 
-public class OldLifeFactory : IStaticService
+[Obsolete("用于测试")]
+public class OldLifeFactory 
 {
-    private static OldLifeFactory? _instance;
-
-    public static OldLifeFactory Instance => _instance ?? throw new BusinessFatalException("OldLifeFactory 未注册");
-    public void Register(IServiceProvider sp)
-    {
-        if (_instance != null)
-            return;
-
-        _instance = sp.GetService<OldLifeFactory>() ?? throw new BusinessFatalException("LifeFactory 未注册");
-    }
-
-    public void Register(OldLifeFactory instance)
-    {
-        _instance = instance;
-    }
-
-
     private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
     NpcProvider _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
@@ -65,12 +50,7 @@ public class OldLifeFactory : IStaticService
     private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
 
 
-    private HashSet<int> hpbarBosses;
-
-    public OldLifeFactory()
-    {
-        hpbarBosses = ProviderSource.Instance.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).ToHashSet();
-    }
+    private HashSet<int> hpbarBosses = getHpBarBosses();
 
     [Obsolete]
     public static HashSet<int> getHpBarBosses()
@@ -139,7 +119,7 @@ public class OldLifeFactory : IStaticService
             }
 
             // thanks resinate for noticing non-propagable infos such as revives getting retrieved
-            attackInfos.AddRange(linkStats.AttackInfo);
+            attackInfos.AddRange(linkStats.AttackInfo.Select(x => new MobAttackInfoHolder(x.Index, x.ConMP, x.AttackAfter, x.Animations.Sum(y => y.Delay))));
         }
 
         stats.setHp(DataTool.getIntConvert("maxHP", monsterInfoData));
@@ -296,7 +276,7 @@ public class OldLifeFactory : IStaticService
             }
         }
 
-        return new(stats, attackInfos);
+        return new(stats, []);
     }
 
     public Monster? getMonster(int mid)
@@ -311,11 +291,11 @@ public class OldLifeFactory : IStaticService
                     return null;
 
                 stats = mobStats.Stats;
-                setMonsterAttackInfo(mid, mobStats.AttackInfo);
+                setMonsterAttackInfo(mid, []);
 
                 monsterStats.AddOrUpdate(mid, stats);
             }
-            return new Monster(mid, stats);
+            return new Monster(mid, stats, []);
         }
         catch (NullReferenceException npe)
         {

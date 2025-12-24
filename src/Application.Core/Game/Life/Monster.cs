@@ -29,12 +29,14 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
+using Application.Templates.Mob;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
 using server.loot;
 using tools;
+using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Life;
 
@@ -105,8 +107,9 @@ public class Monster : AbstractLifeObject
     /// 死亡时生成
     /// </summary>
     public List<Monster> RevivingMonsters { get; set; } = [];
+    public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
 
-    public Monster(int id, MonsterStats stats) : base(id)
+    public Monster(int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id)
     {
         setStance(5);
         this.stats = stats.copy();
@@ -118,10 +121,7 @@ public class Monster : AbstractLifeObject
         log = LogFactory.GetLogger(LogType.Monster);
 
         RevivingMonsters.AddRange(stats.getRevives().Select(x => LifeFactory.Instance.getMonster(x)).Where(x => x != null).Select(x => x!));
-    }
-
-    public Monster(Monster monster) : this(monster.getId(), monster.getStats())
-    {
+        AttackInfoHolders = attackInfo.ToDictionary(x => x.Index);
     }
 
     public override void setMap(IMap map)
@@ -342,41 +342,41 @@ public class Monster : AbstractLifeObject
         applyAndGetHpDamage(int.MaxValue, false);
     }
 
-    private bool applyAnimationIfRoaming(int attackPos, MobSkill skill)
-    {   // roam: not casting attack or skill animations
-        if (!Monitor.TryEnter(animationLock))
-        {
-            return false;
-        }
+    //private bool applyAnimationIfRoaming(int attackPos, MobSkill skill)
+    //{   // roam: not casting attack or skill animations
+    //    if (!Monitor.TryEnter(animationLock))
+    //    {
+    //        return false;
+    //    }
 
-        try
-        {
-            long animationTime;
+    //    try
+    //    {
+    //        long animationTime;
 
-            if (skill == null)
-            {
-                animationTime = MonsterInformationProvider.getInstance().getMobAttackAnimationTime(this.getId(), attackPos);
-            }
-            else
-            {
-                animationTime = MonsterInformationProvider.getInstance().getMobSkillAnimationTime(skill);
-            }
+    //        if (skill == null)
+    //        {
+    //            animationTime = MonsterInformationProvider.getInstance().getMobAttackAnimationTime(this.getId(), attackPos);
+    //        }
+    //        else
+    //        {
+    //            animationTime = MonsterInformationProvider.getInstance().getMobSkillAnimationTime(skill);
+    //        }
 
-            if (animationTime > 0)
-            {
-                MobAnimationService service = MapModel.getChannelServer().MobAnimationService;
-                return service.registerMobOnAnimationEffect(MapModel.getId(), this.GetHashCode(), animationTime);
-            }
-            else
-            {
-                return true;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(animationLock);
-        }
-    }
+    //        if (animationTime > 0)
+    //        {
+    //            MobAnimationService service = MapModel.getChannelServer().MobAnimationService;
+    //            return service.registerMobOnAnimationEffect(MapModel.getId(), this.GetHashCode(), animationTime);
+    //        }
+    //        else
+    //        {
+    //            return true;
+    //        }
+    //    }
+    //    finally
+    //    {
+    //        Monitor.Exit(animationLock);
+    //    }
+    //}
 
     object applyHpDamageLock = new object();
     public int? applyAndGetHpDamage(int delta, bool stayAlive)
@@ -1849,14 +1849,13 @@ public class Monster : AbstractLifeObject
             }
             */
 
-            var attackInfo = MonsterInformationProvider.getInstance().getMobAttackInfo(this.getId(), attackPos);
+            var attackInfo = AttackInfoHolders.GetValueOrDefault(attackPos);
             if (attackInfo == null)
             {
                 return -1;
             }
 
-            int mpCon = attackInfo.Value.Key;
-            if (mp < mpCon)
+            if (mp < attackInfo.ConMP)
             {
                 return -1;
             }
@@ -1867,7 +1866,7 @@ public class Monster : AbstractLifeObject
             }
             */
 
-            usedAttack(attackPos, mpCon, attackInfo.Value.Value);
+            usedAttack(attackPos, attackInfo.ConMP, attackInfo.AttackAfter);
             return 1;
         }
         finally

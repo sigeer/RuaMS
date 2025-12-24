@@ -37,7 +37,7 @@ namespace Application.Templates.Mob
 
 
         public int SelfDestructActionType { get; set; }
-        public int SelfDestructRemoveAfter { get; set; }
+        public int SelfDestructRemoveAfter { get; set; } = -1;
         public int SelfDestructHp { get; set; }
         public int CoolDamage { get; set; }
         public int CoolDamageProb { get; set; }
@@ -48,7 +48,8 @@ namespace Application.Templates.Mob
 
         public Dictionary<string, int> AnimateDelay { get; set; } = [];
         public int? Stand0OriginX { get; set; }
-        public List<MobAttackTemplate> AttackInfos { get; set; } = new();
+        public MobAttackTemplate[] AttackInfos { get; set; } = [];
+        public int Link { get; set; }
 
         public MobTemplate(int templateId)
             : base(templateId)
@@ -115,17 +116,17 @@ namespace Application.Templates.Mob
 
         public void CloneLink(MobTemplate sourceTemplate)
         {
-            sourceTemplate.Ban = Ban;
-            sourceTemplate.LosedItems = LosedItems;
-            sourceTemplate.Skill = Skill;
-            sourceTemplate.Revive = Revive;
+            //sourceTemplate.Ban = Ban;
+            //sourceTemplate.LosedItems = LosedItems;
+            // sourceTemplate.Skill = Skill;
+            //sourceTemplate.Revive = Revive;
             sourceTemplate.AttackInfos = AttackInfos;
 
-            sourceTemplate.SelfDestructActionType = SelfDestructActionType;
-            sourceTemplate.SelfDestructHp = SelfDestructHp;
-            sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
+            //sourceTemplate.SelfDestructActionType = SelfDestructActionType;
+            //sourceTemplate.SelfDestructHp = SelfDestructHp;
+            //sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
 
-            sourceTemplate.AnimateDelay = AnimateDelay;
+            // sourceTemplate.AnimateDelay = AnimateDelay;
         }
     }
 }
