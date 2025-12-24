@@ -13,7 +13,12 @@ namespace Application.Templates.XmlWzReader.Provider
         public override string ProviderName => ProviderNames.Mob;
 
         public MobProvider(ProviderOption options)
-            : base(options) { }
+            : base(options)
+        {
+            _files = Directory.GetFiles(Path.Combine(GetBaseDir(), ProviderName), "*.xml")
+                .Select(x => Path.GetRelativePath(GetBaseDir(), x))
+                .ToArray();
+        }
 
         protected override string? GetImgPathByTemplateId(int mobId)
         {
@@ -33,6 +38,7 @@ namespace Application.Templates.XmlWzReader.Provider
                     throw new TemplateFormatException(ProviderName, imgPath);
 
                 var pEntry = new MobTemplate(mobId);
+                var attackList = new List<MobAttackTemplate>();
                 foreach (var rootItem in xDoc.Elements())
                 {
                     var itemName = rootItem.GetName();
@@ -125,10 +131,10 @@ namespace Application.Templates.XmlWzReader.Provider
                                 pEntry.Ban = model;
                             }
 
-                            else if (infoPropName != null && infoPropName.StartsWith("attack"))
+                            else if (infoPropName == "link")
                             {
-                                ProcessAttackInfo(infoProp, infoPropName);
-
+                                pEntry.Link = infoProp.GetIntValue();
+                                GetItem(pEntry.Link)?.CloneLink(pEntry);
                             }
 
                             else if (infoPropName == "selfDestruction")
@@ -183,7 +189,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 var list = new List<int>();
                                 foreach (var reviveItem in infoProp.Elements())
                                 {
-                                    list.Add(infoProp.GetIntValue());
+                                    list.Add(reviveItem.GetIntValue());
                                 }
                                 pEntry.Revive = list.ToArray();
                             }
@@ -212,19 +218,44 @@ namespace Application.Templates.XmlWzReader.Provider
                             }
                         }
                     }
-                    else if (itemName == "die1")
+                    else if (itemName != null)
                     {
+                        if (itemName.StartsWith("attack"))
+                        {
+                            var attack = ProcessAttackInfo(rootItem, itemName);
+                            if (attack != null)
+                            {
+                                attackList.Add(attack);
+                            }
+                        }
+                        else if (itemName == "stand")
+                        {
+                            var item0 = rootItem.Elements().FirstOrDefault(x => x.GetName() == "0");
+                            if (item0 != null)
+                            {
+                                var originItem = item0.Elements().FirstOrDefault(x => x.GetName() == "origin");
+                                if (originItem != null)
+                                {
+                                    pEntry.Stand0OriginX = originItem.GetIntValue("x");
+                                }
+                            }
+                        }
                         int delay = 0;
                         foreach (var subItem in rootItem.Elements())
                         {
-                            if (subItem.GetName() == "delay")
+                            foreach (var subItemProp in subItem.Elements())
                             {
-                                delay += subItem.GetIntValue();
+                                if (subItemProp.GetName() == "delay")
+                                {
+                                    delay += subItemProp.GetIntValue();
+                                    break;
+                                }
                             }
                         }
-                        pEntry.AnimateDie1 = delay;
+                        pEntry.AnimateDelay[itemName] = delay;
                     }
                 }
+                pEntry.AttackInfos = attackList.OrderBy(x => x.Index).ToArray();
                 InsertItem(pEntry);
                 return [pEntry];
             }
@@ -235,11 +266,11 @@ namespace Application.Templates.XmlWzReader.Provider
             }
         }
 
-        private static void ProcessAttackInfo(XElement infoProp, string infoPropName)
+        private static MobAttackTemplate? ProcessAttackInfo(XElement infoProp, string infoPropName)
         {
-            if (int.TryParse(infoPropName.Substring(6), out var idx))
+            if (int.TryParse(infoPropName.AsSpan(6), out var idx))
             {
-                var model = new MobAttackTemplate(idx);
+                var model = new MobAttackTemplate(idx - 1);
                 var mobAniList = new List<MobAttackAnimationTemplate>();
                 foreach (var attackItem in infoProp.Elements())
                 {
@@ -249,19 +280,19 @@ namespace Application.Templates.XmlWzReader.Provider
                         {
                             var attackInfoPropName = attackInfoProp.GetName();
                             if (attackInfoPropName == "conMP")
-                                model.ConMP = infoProp.GetIntValue();
+                                model.ConMP = attackInfoProp.GetIntValue();
                             else if (attackInfoPropName == "attackAfter")
-                                model.AttackAfter = infoProp.GetIntValue();
+                                model.AttackAfter = attackInfoProp.GetIntValue();
                             else if (attackInfoPropName == "PADamage")
-                                model.PADamage = infoProp.GetIntValue();
+                                model.PADamage = attackInfoProp.GetIntValue();
                             else if (attackInfoPropName == "deadlyAttack")
-                                model.DeadlyAttack = infoProp.GetBoolValue();
+                                model.DeadlyAttack = attackInfoProp.GetBoolValue();
                             else if (attackInfoPropName == "mpBurn")
-                                model.MpBurn = infoProp.GetIntValue();
+                                model.MpBurn = attackInfoProp.GetIntValue();
                             else if (attackInfoPropName == "disease")
-                                model.Disease = infoProp.GetIntValue();
+                                model.Disease = attackInfoProp.GetIntValue();
                             else if (attackInfoPropName == "level")
-                                model.Level = infoProp.GetIntValue();
+                                model.Level = attackInfoProp.GetIntValue();
                         }
                     }
                     else if (int.TryParse(attackItem.GetName(), out var innerIdx))
@@ -276,7 +307,9 @@ namespace Application.Templates.XmlWzReader.Provider
                     }
                 }
                 model.Animations = mobAniList.ToArray();
+                return model;
             }
+            return null;
         }
     }
 }

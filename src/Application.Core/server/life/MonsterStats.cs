@@ -37,7 +37,7 @@ public class MonsterStats
     public string name;
     public Dictionary<string, int> animationTimes = new();
     public Dictionary<Element, ElementalEffectiveness> resistance = new();
-    public List<int> revives = new List<int>();
+    public int[] revives = new int[0];
     public byte tagColor, tagBgColor;
     public HashSet<MobSkillId> skills = new();
     public KeyValuePair<int, int>? cool = null;
@@ -46,7 +46,6 @@ public class MonsterStats
     public SelfDestruction? _selfDestruction = null;
     public int fixedStance = 0;
     public bool friendly;
-
     public void setChange(bool change)
     {
         this.changeable = change;
@@ -152,12 +151,12 @@ public class MonsterStats
         return animationTimes.ContainsKey("move") || animationTimes.ContainsKey("fly");
     }
 
-    public List<int> getRevives()
+    public int[] getRevives()
     {
         return revives;
     }
 
-    public void setRevives(List<int> revives)
+    public void setRevives(int[] revives)
     {
         this.revives = revives;
     }

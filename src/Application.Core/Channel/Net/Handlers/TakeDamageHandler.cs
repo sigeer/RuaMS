@@ -156,23 +156,23 @@ public class TakeDamageHandler : ChannelHandlerBase
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {
-            var attackInfo = MobAttackInfoFactory.getMobAttackInfo(attacker, damagefrom);
+            var attackInfo = attacker.AttackInfoHolders.GetValueOrDefault(damagefrom);
             if (attackInfo != null)
             {
-                if (attackInfo.isDeadlyAttack())
+                if (attackInfo.DeadlyAttack)
                 {
                     mpattack = chr.MP - 1;
                     is_deadly = true;
                 }
-                mpattack += attackInfo.getMpBurn();
+                mpattack += attackInfo.MpBurn;
 
-                var possibleMobSkill = MobSkillFactory.GetMobSkill(attackInfo.getDiseaseSkill(), attackInfo.getDiseaseLevel());
+                var possibleMobSkill = MobSkillFactory.GetMobSkill(attackInfo.Disease, attackInfo.Level);
                 if (possibleMobSkill != null && damage > 0)
                 {
                     possibleMobSkill.applyEffect(chr, attacker, false, banishPlayers);
                 }
 
-                attacker.setMp(attacker.getMp() - attackInfo.getMpCon());
+                attacker.setMp(attacker.getMp() - attackInfo.ConMP);
                 if (chr.getBuffedValue(BuffStat.MANA_REFLECTION) != null && damage > 0 && !attacker.isBoss())
                 {
                     int jobid = chr.getJob().getId();
