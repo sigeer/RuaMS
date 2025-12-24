@@ -189,7 +189,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 var list = new List<int>();
                                 foreach (var reviveItem in infoProp.Elements())
                                 {
-                                    list.Add(infoProp.GetIntValue());
+                                    list.Add(reviveItem.GetIntValue());
                                 }
                                 pEntry.Revive = list.ToArray();
                             }
