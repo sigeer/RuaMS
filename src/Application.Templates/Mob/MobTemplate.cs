@@ -26,7 +26,7 @@ namespace Application.Templates.Mob
         public bool UnDead { get; set; }
         public bool IsFirstAttack { get; set; }
         public MobDataSkillTemplate[] Skill { get; set; }
-        public int Buff { get; set; }
+        public int Buff { get; set; } = -1;
         public int GetCP { get; set; }
         public bool RemoveOnMiss { get; set; }
         public int DropItemPeriod { get; set; }
@@ -46,7 +46,9 @@ namespace Application.Templates.Mob
         public string? ElementStr { get; set; }
         public MobBanTemplate? Ban { get; set; }
 
-        public int AnimateDie1 { get; set; }
+        public Dictionary<string, int> AnimateDelay { get; set; } = [];
+        public int? Stand0OriginX { get; set; }
+        public List<MobAttackTemplate> AttackInfos { get; set; } = new();
 
         public MobTemplate(int templateId)
             : base(templateId)
@@ -117,12 +119,13 @@ namespace Application.Templates.Mob
             sourceTemplate.LosedItems = LosedItems;
             sourceTemplate.Skill = Skill;
             sourceTemplate.Revive = Revive;
+            sourceTemplate.AttackInfos = AttackInfos;
 
             sourceTemplate.SelfDestructActionType = SelfDestructActionType;
             sourceTemplate.SelfDestructHp = SelfDestructHp;
             sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
 
-            sourceTemplate.AnimateDie1 = AnimateDie1;
+            sourceTemplate.AnimateDelay = AnimateDelay;
         }
     }
 }
