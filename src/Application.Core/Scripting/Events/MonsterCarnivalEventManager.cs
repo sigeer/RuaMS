@@ -32,25 +32,28 @@ namespace Application.Core.Scripting.Events
 
         protected override bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
         {
-            var room = Rooms.FirstOrDefault(x => x.InstanceName == instanceName);
-            if (room == null)
-                return false;
+            if (base.RegisterInstanceInternal(instanceName, eim))
+            {
+                var room = Rooms.FirstOrDefault(x => x.InstanceName == instanceName);
+                if (room == null)
+                    return false;
 
-            if (room.Instance != null)
-                return false;
+                if (room.Instance != null)
+                    return false;
 
-            room.Instance = eim as MonsterCarnivalEventInstanceManager;
-            cserv.Metrics.EventInstanceCount.Inc();
+                room.Instance = eim as MonsterCarnivalEventInstanceManager;
+                return true;
+            }
             return true;
         }
 
         protected override void DisposeInstanceInternal(string name)
         {
+            base.DisposeInstanceInternal(name);
             var room = Rooms.FirstOrDefault(x => x.InstanceName == name);
             if (room != null)
             {
                 room.Instance = null;
-                cserv.Metrics.EventInstanceCount.Dec();
             }
         }
 

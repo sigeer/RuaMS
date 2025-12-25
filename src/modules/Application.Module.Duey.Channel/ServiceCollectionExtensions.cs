@@ -1,14 +1,17 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Duey.Channel.Models;
 using Application.Module.Duey.Channel.Net.Handlers;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using net.server.services;
 
 namespace Application.Module.Duey.Channel
 {
@@ -16,6 +19,10 @@ namespace Application.Module.Duey.Channel
     {
         public static IServiceCollection AddDueyChannel(this IServiceCollection services)
         {
+            services.AddGrpcClient<DueyService.ChannelService.ChannelServiceClient>("DueyGrpcClient", (sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
             services.AddAutoMapper(typeof(Mapper));
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
 

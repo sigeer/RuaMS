@@ -28,6 +28,7 @@
     <ProjectReference Condition="'$(IsStandalone)'=='true'" Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
+    <ProjectReference Include="..\app\RuaMS.ServiceDefaults\RuaMS.ServiceDefaults.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />
     <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Maker.Master\Application.Module.Maker.Master.csproj" />

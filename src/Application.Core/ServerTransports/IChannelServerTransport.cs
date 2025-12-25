@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
@@ -25,7 +26,7 @@ namespace Application.Core.ServerTransports
         public long GetCurrentTime();
         public int GetCurrentTimestamp();
 
-        Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels);
+        Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default);
         void HealthCheck(ServerProto.MonitorData data);
         void DropWorldMessage(MessageProto.DropMessageRequest request);
         /// <summary>
@@ -96,12 +97,10 @@ namespace Application.Core.ServerTransports
         ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
         ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
         TeamProto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
-        void SendTeamChat(string name, string chattext);
         TeamProto.GetTeamResponse GetTeam(int party);
 
         GuildProto.GetGuildResponse GetGuild(int id);
         GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
-        void SendGuildChat(string name, string text);
         void BroadcastGuildMessage(int guildId, int v, string callout);
         void SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request);
         void SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request);
@@ -116,7 +115,6 @@ namespace Application.Core.ServerTransports
 
 
         AllianceProto.GetAllianceResponse GetAlliance(int id);
-        void SendAllianceChat(string name, string text);
         AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request);
         AllianceProto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
         void SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest guildJoinAllianceRequest);
@@ -180,21 +178,18 @@ namespace Application.Core.ServerTransports
         WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest);
         SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
         DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
-        void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
         GetAllClientInfo GetOnliendClientInfo();
         void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
-        void CompleteChannelShutdown(string serverName);
-        void SaveAll(Empty empty);
+        Task CompleteChannelShutdown();
         ServerStateDto GetServerState();
 
         ItemProto.GacheponDataDto GetGachaponData();
         NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
-        void SyncPlayer(PlayerSaveDto data);
-        void BatchSyncPlayer(List<PlayerSaveDto> data);
+        void SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false);
+        void BatchSyncPlayer(List<PlayerSaveDto> data, bool saveDB = false);
         #region Buddy
         AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request);
         AddBuddyResponse SendAddBuddyRequest(AddBuddyByIdRequest request);
-        void SendBuddyChat(BuddyChatRequest request);
         void SendBuddyMessage(SendBuddyNoticeMessageDto request);
         DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest);
         #endregion
@@ -208,5 +203,8 @@ namespace Application.Core.ServerTransports
         void SendEarnTitleMessage(EarnTitleMessageRequest earnTitleMessageRequest);
         bool GainCharacterSlot(int accountId);
         void SendGuildPacket(GuildPacketRequest guildPacketRequest);
+        Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers);
+        Task SaveAllNotifyAsync();
+        Task DisconnectAllNotifyAsync();
     }
 }

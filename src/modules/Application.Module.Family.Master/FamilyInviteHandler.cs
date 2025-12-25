@@ -4,6 +4,7 @@ using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Application.Utility.Configs;
 using Dto;
+using InvitationProto;
 
 namespace Application.Module.Family.Master
 {

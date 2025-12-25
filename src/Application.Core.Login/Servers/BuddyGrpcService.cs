@@ -44,12 +44,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> SendBuddyChat(BuddyChatRequest request, ServerCallContext context)
-        {
-            _server.BuddyManager.BuddyChat(request);
-            return Task.FromResult(new Empty());
-        }
-
         public override Task<SendWhisperMessageResponse> SendWhisper(SendWhisperMessageRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.BuddyManager.SendWhisper(request));

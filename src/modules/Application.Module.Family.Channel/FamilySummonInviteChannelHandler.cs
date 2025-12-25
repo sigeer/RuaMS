@@ -4,6 +4,7 @@ using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Dto;
+using InvitationProto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Family.Channel

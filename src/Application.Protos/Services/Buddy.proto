@@ -11,7 +11,6 @@ package ServiceProto;
 service BuddyService {
 	rpc AddBuddyByName(Dto.AddBuddyRequest) returns(Dto.AddBuddyResponse);
 	rpc AddBuddyById(Dto.AddBuddyByIdRequest) returns(Dto.AddBuddyResponse);
-	rpc SendBuddyChat(Dto.BuddyChatRequest) returns(google.protobuf.Empty);
 	rpc SendBuddfyNotice(Dto.SendBuddyNoticeMessageDto) returns(google.protobuf.Empty);
 	rpc DeleteBuddy(Dto.DeleteBuddyRequest) returns(Dto.DeleteBuddyResponse);
 

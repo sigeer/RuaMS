@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="prometheus-net.AspNetCore" />
+	  <PackageReference Include="OpenTelemetry" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,7 +1,7 @@
 using Application.Core.Channel;
+using Application.Core.Scripting.Events;
 using Application.Module.Marriage.Channel.Models;
 using Microsoft.Extensions.Logging;
-using scripting.Event;
 using tools.exceptions;
 
 namespace Application.Module.Marriage.Channel
@@ -20,15 +20,6 @@ namespace Application.Module.Marriage.Channel
             _logger = logger;
             ChannelServer = worldChannel;
             _transport = transport;
-        }
-
-        public MarriageInstance CreateMarriageInstance(EventManager em, string name)
-        {
-            MarriageInstance ret = new MarriageInstance(em, name, _transport);
-
-            if (!em.RegisterInstance(name, ret))
-                throw new EventInstanceInProgressException(name, em.getName());
-            return ret;
         }
     }
 }

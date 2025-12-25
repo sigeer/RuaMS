@@ -67,7 +67,7 @@ namespace Application.Core.Game.TheWorld
             }
         }
 
-        public ICollection<IPlayer> getAllCharacters()
+        public List<IPlayer> getAllCharacters()
         {
             locks.EnterReadLock();
             try

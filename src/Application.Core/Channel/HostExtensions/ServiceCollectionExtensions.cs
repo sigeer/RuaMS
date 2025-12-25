@@ -1,4 +1,6 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Internal;
+using Application.Core.Channel.Internal.Handlers;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
@@ -9,21 +11,34 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
-using Application.Resources;
+using Application.Protos;
 using Application.Shared.Servers;
+using Grpc.Core;
+using Grpc.Net.ClientFactory;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using net.server.coordinator.matchchecker;
-using Prometheus;
 using server.life;
 using server.maps;
+using System.Net;
 
 namespace Application.Core.Channel.HostExtensions
 {
     public static class ServiceCollectionExtensions
     {
+        static IServiceCollection AddInternalSessionHandlers(this IServiceCollection services)
+        {
+            services.AddSingleton<IInternalSessionHandler, RegisterChannelServerHandler>();
+            services.AddSingleton<IInternalSessionHandler, UnregisterChannelServerHandler>();
+            services.AddSingleton<IInternalSessionHandler, DisconnectAllHandler>();
+            services.AddSingleton<IInternalSessionHandler, SaveAllHandler>();
+            services.AddSingleton<IInternalSessionHandler, MultiChatHandler>();
+            // services.AddSingleton<IInternalSessionHandler, DropTextMessageHandler>();
+            return services;
+        }
+
         static IServiceCollection AddInvitationService(this IServiceCollection services)
         {
             services.AddSingleton<InviteChannelHandlerRegistry>();
@@ -128,8 +143,59 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
 
             services.AddInvitationService();
+            services.AddInternalSessionHandlers();
 
             services.AddMemoryCache();
+            return services;
+        }
+
+        static IServiceCollection AddChannelGrpcClient(this IServiceCollection services)
+        {
+            services.AddSingleton<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.SystemService.SystemServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.GameService.GameServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.SyncService.SyncServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.GuildService.GuildServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.AllianceService.AllianceServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.DataService.DataServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.ItemService.ItemServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.CashService.CashServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.TeamService.TeamServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.BuddyService.BuddyServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.PlayerShopService.PlayerShopServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
             return services;
         }
 
@@ -140,6 +206,7 @@ namespace Application.Core.Channel.HostExtensions
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();
 
+            builder.Services.AddChannelGrpcClient();
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();
 
@@ -174,8 +241,6 @@ namespace Application.Core.Channel.HostExtensions
             {
                 item.ConfigureHost(app);
             }
-
-            app.UseMetricServer();
         }
     }
 }

@@ -171,10 +171,5 @@ namespace Application.Core.Login
                 }
             }
         }
-
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            Transport.BroadcastMessage(BroadcastType.SendPlayerDisconnectAll, new Google.Protobuf.WellKnownTypes.Empty());
-        }
     }
 }

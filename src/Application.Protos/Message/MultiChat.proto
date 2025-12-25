@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package MessageProto;
+
+message MultiChatMessage {
+	int32 type = 1;
+	string fromName = 2;
+	string text = 3;
+	repeated int32 receivers = 4;
+}

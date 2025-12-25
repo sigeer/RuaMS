@@ -62,7 +62,6 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryAdd(instanceName, eim))
             {
-                cserv.Metrics.EventInstanceCount.Inc();
                 return true;
             }
             return false;
@@ -74,8 +73,6 @@ namespace Application.Core.Scripting.Events
             {
                 if (eim != null)
                     UnregisterLobby(eim.LobbyId);
-
-                cserv.Metrics.EventInstanceCount.Dec();
             }
         }
 

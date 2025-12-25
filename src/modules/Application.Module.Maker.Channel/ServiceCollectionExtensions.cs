@@ -1,8 +1,10 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Maker.Channel.Net.Handlers;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,6 +20,11 @@ namespace Application.Module.Maker.Channel
         /// <returns></returns>
         public static IServiceCollection AddMakerChannel(this IServiceCollection services)
         {
+            services.AddGrpcClient<MakerService.ChannelService.ChannelServiceClient>("MakerGrpcClient", (sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<MakerManager>();
             services.AddSingleton<AbstractChannelModule, MakerChannelModule>();

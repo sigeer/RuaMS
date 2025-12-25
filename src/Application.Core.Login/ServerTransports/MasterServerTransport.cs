@@ -6,8 +6,10 @@ using BaseProto;
 using CashProto;
 using Config;
 using Dto;
+using MessageProto;
 using net.server;
 using System.Resources;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login
 {
@@ -55,11 +57,12 @@ namespace Application.Core.Login
         }
 
 
-        public void SendMultiChat(int type, string nameFrom, IEnumerable<CharacterLiveObject> teamMember, string chatText)
+        public async Task SendMultiChatAsync(int type, string nameFrom, IEnumerable<CharacterLiveObject> teamMember, string chatText)
         {
             var res = new MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
             res.Receivers.AddRange(teamMember.Select(x => x.Character.Id));
-            SendMessage(BroadcastType.OnMultiChat, res, teamMember);
+
+            await BroadcastMessageN(ChannelRecvCode.MultiChat, res);
         }
 
         public void SendUpdateCouponRates(Config.CouponConfig config)
@@ -311,12 +314,9 @@ namespace Application.Core.Login
             SendMessage(BroadcastType.OnInvitationAnswer, response, [response.SenderPlayerId, response.ReceivePlayerId]);
         }
 
-        internal void BroadcastShutdown()
+        internal async Task BroadcastShutdown()
         {
-            foreach (var server in _server.ChannelServerList.Values)
-            {
-                BroadcastMessage(BroadcastType.OnShutdown, new Google.Protobuf.WellKnownTypes.Empty());
-            }
+            await BroadcastMessageN(ChannelRecvCode.UnregisterChannel, new Google.Protobuf.WellKnownTypes.Empty());
         }
 
         internal void SendNewYearCardReceived(ReceiveNewYearCardResponse response)

@@ -82,7 +82,7 @@ namespace Application.Core.Login.Datas
             return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
-        public void Update(SyncProto.PlayerSaveDto obj)
+        public void Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
@@ -106,7 +106,6 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
-                var trigger = (SyncCharacterTrigger)obj.Trigger;
                 _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}",
                     obj.Character.Name, GetTriggerDetail(trigger, origin.Channel, obj.Channel));
                 if (trigger == SyncCharacterTrigger.Logoff)
@@ -219,7 +218,7 @@ namespace Application.Core.Login.Datas
         {
             foreach (var item in list)
             {
-                Update(item);
+                Update(item, SyncCharacterTrigger.System);
             }
         }
 

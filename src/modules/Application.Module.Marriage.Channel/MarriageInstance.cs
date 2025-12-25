@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Scripting.Events;
 using client.inventory;
 using scripting.Event;
 
@@ -11,7 +12,7 @@ namespace Application.Module.Marriage.Channel
         public List<Item> BrideGiftList { get; set; } = new();
 
         readonly IChannelServerTransport _transport;
-        public MarriageInstance(EventManager em, string name, IChannelServerTransport transport) : base(em, name)
+        public MarriageInstance(MarriageEventManager em, string name, IChannelServerTransport transport) : base(em, name)
         {
             _transport = transport;
         }
@@ -127,9 +128,9 @@ namespace Application.Module.Marriage.Channel
         //    }
         //}
 
-        public override void dispose(bool shutdown = false)
+        public override void Dispose()
         {
-            base.dispose(shutdown);
+            base.Dispose();
             _transport.CloseWedding(new MarriageProto.CloseWeddingRequest { MarriageId = getIntProperty("weddingId") });
         }
     }

@@ -13,9 +13,9 @@ namespace Application.Module.PlayerNPC.Channel
     public class DefaultChannelTransport : IChannelTransport
     {
         readonly PlayerNPCProto.ChannelService.ChannelServiceClient _grpcClient;
-        public DefaultChannelTransport(WorldChannelServer server)
+        public DefaultChannelTransport(PlayerNPCProto.ChannelService.ChannelServiceClient client)
         {
-            _grpcClient = new PlayerNPCProto.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
+            _grpcClient = client;
         }
 
         public void CreatePlayerNPC(CreatePlayerNPCRequest request)

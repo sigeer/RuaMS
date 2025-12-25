@@ -3,10 +3,12 @@ using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Resources;
+using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Message;
 using Application.Shared.Models;
+using Application.Shared.Servers;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
@@ -22,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServerProto;
 using SyncProto;
 using System.Net;
+using System.Threading.Tasks;
 using SystemProto;
 
 namespace Application.Core.Channel.InProgress
@@ -42,8 +45,9 @@ namespace Application.Core.Channel.InProgress
         readonly IExpeditionService _expeditionService;
         readonly ResourceDataManager _resourceService;
         readonly IMapper _mapper;
-
+        readonly IServiceProvider _sp;
         public LocalChannelServerTransport(
+            IServiceProvider sp,
             MasterServer server,
             LoginService loginService,
             ItemService itemService,
@@ -56,6 +60,7 @@ namespace Application.Core.Channel.InProgress
             ResourceDataManager resourceDataService,
             IMapper mapper)
         {
+            _sp = sp;
             _server = server;
             _loginService = loginService;
             _itemService = itemService;
@@ -69,18 +74,34 @@ namespace Application.Core.Channel.InProgress
             _resourceService = resourceDataService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(List<WorldChannel> channels)
+        public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default)
         {
+            var channelServer = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
+            var serverNode = new InProgressWorldChannel(channelServer, channels);
             if (!_server.IsRunning)
-                return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
-
-            var channelId = _server.AddChannel(new InProgressWorldChannel(_server.ServiceProvider.GetRequiredService<WorldChannelServer>(), channels));
-            return Task.FromResult(new Config.RegisterServerResult
             {
-                StartChannel = channelId,
-                Coupon = _server.CouponManager.GetConfig(),
-                Config = _server.GetWorldConfig()
-            });
+                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                {
+                    StartChannel = -1,
+                    Message = "中心服务器未启动"
+                }, cancellationToken);
+            }
+            else
+            {
+                var channelId = _server.AddChannel(serverNode);
+                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                {
+                    StartChannel = channelId,
+                    Coupon = _server.CouponManager.GetConfig(),
+                    Config = _server.GetWorldConfig()
+                });
+            }
+        }
+
+        public Task CompleteChannelShutdown()
+        {
+            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerName);
+            return Task.CompletedTask;
         }
 
         public void DropWorldMessage(MessageProto.DropMessageRequest request)
@@ -284,18 +305,10 @@ namespace Application.Core.Channel.InProgress
             return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
         }
 
-        public void SendTeamChat(string name, string chattext)
-        {
-            _server.TeamManager.SendTeamChat(name, chattext);
-        }
-
         public TeamProto.GetTeamResponse GetTeam(int party)
         {
             return new TeamProto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
-
-
-
 
         #endregion
 
@@ -323,16 +336,6 @@ namespace Application.Core.Channel.InProgress
         public AllianceProto.GetAllianceResponse GetAlliance(int id)
         {
             return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
-        }
-
-        public void SendGuildChat(string name, string text)
-        {
-            _server.GuildManager.SendGuildChat(name, text);
-        }
-
-        public void SendAllianceChat(string name, string text)
-        {
-            _server.GuildManager.SendAllianceChat(name, text);
         }
 
         public void BroadcastGuildMessage(int guildId, int v, string callout)
@@ -650,11 +653,6 @@ namespace Application.Core.Channel.InProgress
             return _server.CrossServerService.DisconnectPlayerByName(request);
         }
 
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            _server.DisconnectAll(disconnectAllRequest);
-        }
-
         public GetAllClientInfo GetOnliendClientInfo()
         {
             return _server.AccountManager.GetOnliendClientInfo();
@@ -670,14 +668,18 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
 
-        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data)
+        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data, bool saveDB = false)
         {
             _server.CharacterManager.BatchUpdate(data);
+            if (saveDB)
+                _ = _server.ServerManager.CommitAllImmediately();
         }
 
-        public void SyncPlayer(PlayerSaveDto data)
+        public void SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
         {
-            _server.CharacterManager.Update(data);
+            _server.CharacterManager.Update(data,  trigger);
+            if (saveDB)
+                _ = _server.ServerManager.CommitAllImmediately();
         }
 
         public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
@@ -690,10 +692,6 @@ namespace Application.Core.Channel.InProgress
             return _server.BuddyManager.AddBuddyById(request);
         }
 
-        public void SendBuddyChat(BuddyChatRequest request)
-        {
-            _server.BuddyManager.BuddyChat(request);
-        }
 
         public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
         {
@@ -722,15 +720,7 @@ namespace Application.Core.Channel.InProgress
             _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
         }
 
-        public void CompleteChannelShutdown(string serverName)
-        {
-            _server.CompleteChannelShutdown(serverName);
-        }
 
-        public void SaveAll(Empty empty)
-        {
-            _server.Transport.BroadcastMessage(BroadcastType.SaveAll, new Empty());
-        }
 
         public void SendYellowTip(YellowTipRequest yellowTipRequest)
         {
@@ -765,6 +755,28 @@ namespace Application.Core.Channel.InProgress
         public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
             _server.GuildManager.SendGuildPacket(guildPacketRequest);
+        }
+
+        public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)
+        {
+            if (type == 0)
+                await _server.BuddyManager.SendBuddyChatAsync(fromName, msg, receivers);
+            else if (type == 1)
+                await _server.TeamManager.SendTeamChatAsync(fromName, msg);
+            else if (type == 2)
+                await _server.GuildManager.SendGuildChatAsync(fromName, msg);
+            else if (type == 3)
+                await _server.GuildManager.SendAllianceChatAsync(fromName, msg);
+        }
+
+        public async Task SaveAllNotifyAsync()
+        {
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.SaveAll);
+        }
+
+        public async Task DisconnectAllNotifyAsync()
+        {
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
         }
     }
 }

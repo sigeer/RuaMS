@@ -8,6 +8,8 @@ using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -85,14 +87,15 @@ namespace Application.Core.Login.ServerData
             return AddBuddy(masterChr, targetChr);
         }
 
-        public void BuddyChat(BuddyChatRequest request)
+        public async Task SendBuddyChatAsync(string fromName, string text, int[] to)
         {
-            var data = new Dto.BuddyChatBroadcast();
-            data.ToIds.AddRange(request.ToIds);
-            data.FromName = _server.CharacterManager.GetPlayerName(request.FromId);
-            data.FromId = request.FromId;
-            data.Text = request.Text;
-            _server.Transport.SendMessage(BroadcastType.Buddy_Chat, data, data.ToIds.ToArray());
+            var targetChr = _server.CharacterManager.FindPlayerByName(fromName);
+            if (targetChr == null)
+                return;
+
+            var tos = to.Select(x => _server.CharacterManager.FindPlayerById(x))
+                .Where(y => y != null && y.Channel > 0).ToList();
+            await _server.Transport.SendMultiChatAsync(3, fromName, tos, text);
         }
 
         public void BroadcastNotify(CharacterLiveObject obj)

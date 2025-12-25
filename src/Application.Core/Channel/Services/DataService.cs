@@ -5,26 +5,20 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Map;
 using Application.Shared.Events;
 using AutoMapper;
-using BaseProto;
 using client;
 using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using net.server.guild;
 using server;
 using server.events;
 using server.life;
 using server.quest;
-using System.Collections.Generic;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel.Services
 {
@@ -54,11 +48,20 @@ namespace Application.Core.Channel.Services
             {
                 dto.Channel = 0;
             }
-            dto.Trigger = (int)trigger;
             if (trigger == SyncCharacterTrigger.ChangeServer)
                 _transport.SyncPlayer(dto); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
             else
                 _server.BatchSyncPlayerManager.Enqueue(dto);
+        }
+
+        public void BatchSyncChar(List<IPlayer> playerList, bool saveDB = false)
+        {
+            List<SyncProto.PlayerSaveDto> list = [];
+            foreach (var player in playerList)
+            {
+                list.Add(Deserialize(player));
+            }
+            _transport.BatchSyncPlayer(list, saveDB);
         }
 
         public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)

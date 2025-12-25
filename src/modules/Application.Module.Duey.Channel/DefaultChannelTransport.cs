@@ -8,9 +8,9 @@ namespace Application.Module.Duey.Channel
     {
         readonly DueyService.ChannelService.ChannelServiceClient _grpcClient;
 
-        public DefaultChannelTransport(WorldChannelServer server)
+        public DefaultChannelTransport(DueyService.ChannelService.ChannelServiceClient client)
         {
-            _grpcClient = new DueyService.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
+            _grpcClient = client;
         }
 
         public CreatePackageResponse CreateDueyPackage(CreatePackageRequest request)
