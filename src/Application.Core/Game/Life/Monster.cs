@@ -106,7 +106,8 @@ public class Monster : AbstractLifeObject
     /// <summary>
     /// 死亡时生成
     /// </summary>
-    public List<Monster> RevivingMonsters { get; set; } = [];
+    public List<Monster> RevivingMonsters => _revivingMonsters.Value;
+    Lazy<List<Monster>> _revivingMonsters;
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
 
     public Monster(int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id)
@@ -120,7 +121,7 @@ public class Monster : AbstractLifeObject
 
         log = LogFactory.GetLogger(LogType.Monster);
 
-        RevivingMonsters.AddRange(stats.getRevives().Select(x => LifeFactory.Instance.getMonster(x)).Where(x => x != null).Select(x => x!));
+        _revivingMonsters = new Lazy<List<Monster>>(() => stats.getRevives().Select(x => LifeFactory.Instance.getMonster(x)).Where(x => x != null).Select(x => x!).ToList());
         AttackInfoHolders = attackInfo.ToDictionary(x => x.Index);
     }
 
