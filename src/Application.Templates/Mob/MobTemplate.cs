@@ -36,9 +36,7 @@ namespace Application.Templates.Mob
         public bool NoFlip { get; set; }
 
 
-        public int SelfDestructActionType { get; set; }
-        public int SelfDestructRemoveAfter { get; set; } = -1;
-        public int SelfDestructHp { get; set; }
+        public MobSelfDestruction? SelfDestruction { get; set; }
         public int CoolDamage { get; set; }
         public int CoolDamageProb { get; set; }
 
@@ -61,6 +59,12 @@ namespace Application.Templates.Mob
 
         public sealed class MobDataSkillTemplate
         {
+            public MobDataSkillTemplate(int index)
+            {
+                Index = index;
+            }
+
+            public int Index { get; set; }
             public int Action { get; set; }
             public int EffectAfter { get; set; }
             public int Level { get; set; }
@@ -70,7 +74,7 @@ namespace Application.Templates.Mob
         public sealed class MobLosedItem
         {
             public int Id { get; set; }
-            public int Prob { get; set; }
+            public int Prop { get; set; }
             public int X { get; set; }
         }
 

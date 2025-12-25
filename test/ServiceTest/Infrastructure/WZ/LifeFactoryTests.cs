@@ -6,6 +6,7 @@ using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Newtonsoft.Json;
 using server.life;
+using ServiceTest.TestUtilities;
 using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
@@ -62,39 +63,50 @@ namespace ServiceTest.Infrastructure.WZ
 
 
         // 有大量不正常数据影响
-        //[Test]
-        //public void getMonsterTest()
-        //{
-        //    Assert.Multiple(() =>
-        //    {
-        //        foreach (var mobId in TakeTestMobs())
-        //        {
-        //            Monster? oldMonster = null;
-        //            Monster? newMonster = null;
-        //            try
-        //            {
-        //                oldMonster = oldProvider.getMonster(mobId);
-        //                newMonster = newProvider.getMonster(mobId);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                Console.WriteLine("MonsterId=" + mobId + ", " + ex.Message);
-        //            }
+        [Test]
+        public void getMonsterTest()
+        {
+            Assert.Multiple(() =>
+            {
+                foreach (var mobId in TakeTestMobs())
+                {
+                    Monster? oldMonster = null;
+                    Monster? newMonster = null;
+                    try
+                    {
+                        oldMonster = oldProvider.getMonster(mobId);
+                        newMonster = newProvider.getMonster(mobId);
 
 
-        //            if (oldMonster == null)
-        //            {
-        //                Assert.That(newMonster, Is.Null, $"Id = {mobId}");
-        //            }
-        //            else
-        //            {
-        //                var oldJson = ToJson(oldMonster);
-        //                var newJson = ToJson(newMonster);
-        //                Assert.That(newJson, Is.EqualTo(oldJson), $"Id = {mobId}");
-        //            }
-        //        }
-        //    });
-        //}
+                        if (oldMonster == null)
+                        {
+                            Assert.That(newMonster, Is.Null, $"Id = {mobId}");
+                        }
+                        else
+                        {
+                            Assert.That(newMonster, Is.Not.Null, $"Id = {mobId}");
+
+                            if (oldMonster.getSkills().Count < newMonster.getSkills().Count)
+                            {
+                                Assert.Pass("wz里的skill不是连续的，旧的写法没有获取到");
+                            }
+                            else
+                            {
+                                var oldJson = ToJson(oldMonster);
+                                var newJson = ToJson(newMonster);
+                                Assert.That(newJson, Is.EqualTo(oldJson), $"Id = {mobId}");
+                            }
+
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("MonsterId=" + mobId + ", " + ex.Message);
+                    }
+                }
+            });
+        }
 
         [Test]
         public void MobAttackTest()
@@ -130,7 +142,6 @@ namespace ServiceTest.Infrastructure.WZ
                         Assert.That(newData.Level, Is.EqualTo(oldData.getDiseaseLevel()), $"Id={mobId}, Index={i}");
                     }
                 }
-
             }
         }
 
