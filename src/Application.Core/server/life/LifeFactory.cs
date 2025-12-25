@@ -100,13 +100,13 @@ public class LifeFactory : IStaticService
         {
             foreach (var li in mobTemplate.LosedItems)
             {
-                stats.addLoseItem(new LoseItem(li.Id, (byte)li.Prob, (byte)li.X));
+                stats.addLoseItem(new LoseItem(li.Id, (byte)li.Prop, (byte)li.X));
             }
         }
 
-        if (mobTemplate.SelfDestructHp > 0)
+        if (mobTemplate.SelfDestruction != null)
         {
-            stats.setSelfDestruction(new SelfDestruction((byte)mobTemplate.SelfDestructActionType, mobTemplate.SelfDestructRemoveAfter, mobTemplate.SelfDestructHp));
+            stats.setSelfDestruction(new SelfDestruction((byte)mobTemplate.SelfDestruction.ActionType, mobTemplate.SelfDestruction.RemoveAfter, mobTemplate.SelfDestruction.Hp));
         }
 
         stats.setFirstAttack(mobTemplate.IsFirstAttack);

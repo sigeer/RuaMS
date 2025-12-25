@@ -139,16 +139,18 @@ namespace Application.Templates.XmlWzReader.Provider
 
                             else if (infoPropName == "selfDestruction")
                             {
+                                var model = new MobSelfDestructionBuilder();
                                 foreach (var sdProp in infoProp.Elements())
                                 {
                                     var sdPropName = sdProp.GetName();
                                     if (sdPropName == "action")
-                                        pEntry.SelfDestructActionType = sdProp.GetIntValue();
+                                        model.ActionType = sdProp.GetIntValue();
                                     else if (sdPropName == "removeAfter")
-                                        pEntry.SelfDestructRemoveAfter = sdProp.GetIntValue();
+                                        model.RemoveAfter = sdProp.GetIntValue();
                                     else if (sdPropName == "hp")
-                                        pEntry.SelfDestructHp = sdProp.GetIntValue();
+                                        model.Hp = sdProp.GetIntValue();
                                 }
+                                pEntry.SelfDestruction = model.Build();
                             }
 
                             else if (infoPropName == "coolDamage")
@@ -174,8 +176,8 @@ namespace Application.Templates.XmlWzReader.Provider
                                         var n = loseProp.GetName();
                                         if (n == "id")
                                             model.Id = loseProp.GetIntValue();
-                                        if (n == "prob")
-                                            model.Prob = loseProp.GetIntValue();
+                                        if (n == "prop")
+                                            model.Prop = loseProp.GetIntValue();
                                         if (n == "x")
                                             model.X = loseProp.GetIntValue();
                                     }
@@ -199,7 +201,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 var list = new List<MobDataSkillTemplate>();
                                 foreach (var skillItem in infoProp.Elements())
                                 {
-                                    var model = new MobDataSkillTemplate();
+                                    var model = new MobDataSkillTemplate(skillItem.GetIntName());
                                     foreach (var skillProp in skillItem.Elements())
                                     {
                                         var n = skillProp.GetName();
@@ -214,7 +216,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                     }
                                     list.Add(model);
                                 }
-                                pEntry.Skill = list.ToArray();
+                                pEntry.Skill = list.OrderBy(x => x.Index).ToArray();
                             }
                         }
                     }
