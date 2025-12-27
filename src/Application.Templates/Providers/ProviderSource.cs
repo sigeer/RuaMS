@@ -72,9 +72,14 @@ namespace Application.Templates.Providers
             return this;
         }
 
-        public bool TryRegisterKeydProvider(string key, Func<IKeyedProvider> func)
+        public bool TryRegisterKeydProvider(string key, Func<ProviderOption, IKeyedProvider> func)
         {
-            return _keyedProviders.TryAdd(key, new Lazy<IKeyedProvider>(func));
+            return _keyedProviders.TryAdd(key, new Lazy<IKeyedProvider>(() =>
+            {
+                var o = new ProviderOption();
+                o.DataDir ??= BaseDir;
+                return func(o);
+            }));
         }
         public TProvider GetProviderByKey<TProvider>(string key) where TProvider : IKeyedProvider
         {

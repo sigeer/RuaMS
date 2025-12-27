@@ -1,84 +1,42 @@
-/*
-This file is part of the OdinMS Maple Story Server
-Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-Matthias Butz <matze@odinms.de>
-Jan Christian Meyer <vimes@odinms.de>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation version 3 as published by
-the Free Software Foundation. You may not use, modify or distribute
-this program under any other version of the GNU Affero General Public
-License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
-using Application.Resources;
-using Application.Shared.Constants.Npc;
 using Application.Shared.WzEntity;
 using Application.Templates.Providers;
-using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Concurrent;
-using tools;
 
 namespace server.life;
 
 
 public class LifeFactory : IStaticService
 {
-    private static LifeFactory? _instance;
+    private static Lazy<LifeFactory> _instance = new Lazy<LifeFactory>(new LifeFactory());
 
-    public static LifeFactory Instance => _instance ?? throw new BusinessFatalException("LifeFactory 未注册");
+    public static LifeFactory Instance => _instance.Value ?? throw new BusinessFatalException("LifeFactory 未注册");
 
+    Microsoft.Extensions.Logging.ILogger log = NullLogger.Instance;
     public void Register(IServiceProvider sp)
     {
         if (_instance != null)
             return;
 
-        _instance = sp.GetService<LifeFactory>() ?? throw new BusinessFatalException("LifeFactory 未注册");
+        log = sp.GetRequiredService<ILogger<LifeFactory>>();
     }
 
-
-    private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
-    private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
-    NpcProvider _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
-
-    private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
-
-
+    MobProvider _mobProvider;
+    NpcProvider _npcProvider;
+    ConcurrentDictionary<int, MonsterCore> monsterStats = new();
     private HashSet<int> hpbarBosses;
-
     public LifeFactory()
     {
         hpbarBosses = ProviderSource.Instance.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).ToHashSet();
-    }
-
-    [Obsolete]
-    public static HashSet<int> getHpBarBosses()
-    {
-        HashSet<int> ret = new();
-        Data uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI).getData("UIWindow.img");
-        foreach (var bossData in uiDataWZ.getChildByPath("MobGage/Mob").getChildren())
-        {
-            if (int.TryParse(bossData.getName(), out var d))
-                ret.Add(d);
-        }
-
-        return ret;
+        _mobProvider = ProviderSource.Instance.GetProvider<MobProvider>();
+        _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
     }
 
     public AbstractLifeObject? getLife(int id, string type)
@@ -93,260 +51,138 @@ public class LifeFactory : IStaticService
         }
         else
         {
-            log.Warning("Unknown Life type: {LifeType}", type);
+            log.LogWarning("Unknown Life type: {LifeType}", type);
             return null;
         }
     }
 
-    private void setMonsterAttackInfo(int mid, List<MobAttackInfoHolder> attackInfos)
+    public MonsterCore? getMonsterStats(int mid)
     {
-        if (attackInfos.Count > 0)
+        if (monsterStats.TryGetValue(mid, out var data))
         {
-            MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-
-            foreach (MobAttackInfoHolder attackInfo in attackInfos)
-            {
-                mi.setMobAttackInfo(mid, attackInfo.attackPos, attackInfo.mpCon, attackInfo.coolTime);
-                mi.setMobAttackAnimationTime(mid, attackInfo.attackPos, attackInfo.animationTime);
-            }
+            return data;
         }
-    }
 
-    private MonsterCore? getMonsterStats(int mid)
-    {
-        var monsterData = data.getData(StringUtil.getLeftPaddedStr(mid + ".img", '0', 11));
-        if (monsterData == null)
+        var mobTemplate = _mobProvider.GetItem(mid);
+        if (mobTemplate == null)
         {
             return null;
         }
-        var monsterInfoData = monsterData.getChildByPath("info");
 
-        List<MobAttackInfoHolder> attackInfos = new();
+
         MonsterStats stats = new MonsterStats();
 
-        int linkMid = DataTool.getIntConvert("link", monsterInfoData, 0);
-        if (linkMid != 0)
-        {
-            var linkStats = getMonsterStats(linkMid);
-            if (linkStats == null)
-            {
-                return null;
-            }
+        stats.setHp(mobTemplate.MaxHP);
+        stats.setFriendly(mobTemplate.DamagedByMob);
+        stats.setPADamage(mobTemplate.PAD);
+        stats.setPDDamage(mobTemplate.PDD);
+        stats.setMADamage(mobTemplate.MAD);
+        stats.setMDDamage(mobTemplate.MDD);
+        stats.setMp(mobTemplate.MaxMP);
+        stats.setExp(mobTemplate.Exp);
+        stats.setLevel(mobTemplate.Level);
+        stats.setRemoveAfter(mobTemplate.RemoveAfter);
+        stats.setBoss(mobTemplate.Boss);
+        stats.setExplosiveReward(mobTemplate.ExplosiveReward);
+        stats.setFfaLoot(mobTemplate.PublicReward > 0);
+        stats.setUndead(mobTemplate.UnDead);
+        stats.setName(ClientCulture.SystemCulture.GetMobName(mobTemplate.TemplateId));
+        stats.setBuffToGive(mobTemplate.Buff);
+        stats.setCP(mobTemplate.GetCP);
+        stats.setRemoveOnMiss(mobTemplate.RemoveOnMiss);
 
-            // thanks resinate for noticing non-propagable infos such as revives getting retrieved
-            attackInfos.AddRange(linkStats.AttackInfo);
+        if (mobTemplate.CoolDamage > 0)
+        {
+            stats.setCool(new(mobTemplate.CoolDamage, mobTemplate.CoolDamageProb));
         }
 
-        stats.setHp(DataTool.getIntConvert("maxHP", monsterInfoData));
-        stats.setFriendly(DataTool.getIntConvert("damagedByMob", monsterInfoData, stats.isFriendly() ? 1 : 0) == 1);
-        stats.setPADamage(DataTool.getIntConvert("PADamage", monsterInfoData));
-        stats.setPDDamage(DataTool.getIntConvert("PDDamage", monsterInfoData));
-        stats.setMADamage(DataTool.getIntConvert("MADamage", monsterInfoData));
-        stats.setMDDamage(DataTool.getIntConvert("MDDamage", monsterInfoData));
-        stats.setMp(DataTool.getIntConvert("maxMP", monsterInfoData, stats.getMp()));
-        stats.setExp(DataTool.getIntConvert("exp", monsterInfoData, stats.getExp()));
-        stats.setLevel(DataTool.getIntConvert("level", monsterInfoData));
-        stats.setRemoveAfter(DataTool.getIntConvert("removeAfter", monsterInfoData, stats.removeAfter()));
-        stats.setBoss(DataTool.getIntConvert("boss", monsterInfoData, stats.isBoss() ? 1 : 0) > 0);
-        stats.setExplosiveReward(DataTool.getIntConvert("explosiveReward", monsterInfoData, stats.isExplosiveReward() ? 1 : 0) > 0);
-        stats.setFfaLoot(DataTool.getIntConvert("publicReward", monsterInfoData, stats.isFfaLoot() ? 1 : 0) > 0);
-        stats.setUndead(DataTool.getIntConvert("undead", monsterInfoData, stats.isUndead() ? 1 : 0) > 0);
-        stats.setName(ClientCulture.SystemCulture.GetMobName(mid));
-        stats.setBuffToGive(DataTool.getIntConvert("buff", monsterInfoData, stats.getBuffToGive()));
-        stats.setCP(DataTool.getIntConvert("getCP", monsterInfoData, stats.getCP()));
-        stats.setRemoveOnMiss(DataTool.getIntConvert("removeOnMiss", monsterInfoData, stats.removeOnMiss() ? 1 : 0) > 0);
-
-        var special = monsterInfoData?.getChildByPath("coolDamage");
-        if (special != null)
+        if (mobTemplate.LosedItems.Length > 0)
         {
-            int coolDmg = DataTool.getIntConvert("coolDamage", monsterInfoData);
-            int coolProb = DataTool.getIntConvert("coolDamageProb", monsterInfoData, 0);
-            stats.setCool(new(coolDmg, coolProb));
-        }
-
-        special = monsterInfoData?.getChildByPath("loseItem");
-        if (special != null)
-        {
-            foreach (Data liData in special.getChildren())
+            foreach (var li in mobTemplate.LosedItems)
             {
-                stats.addLoseItem(new LoseItem(DataTool.getInt(liData.getChildByPath("id")), (byte)DataTool.getInt(liData.getChildByPath("prop")), (byte)DataTool.getInt(liData.getChildByPath("x"))));
+                stats.addLoseItem(new LoseItem(li.Id, (byte)li.Prop, (byte)li.X));
             }
         }
 
-        special = monsterInfoData?.getChildByPath("selfDestruction");
-        if (special != null)
+        if (mobTemplate.SelfDestruction != null)
         {
-            stats.setSelfDestruction(new SelfDestruction((byte)DataTool.getInt(special.getChildByPath("action")), DataTool.getIntConvert("removeAfter", special, -1), DataTool.getIntConvert("hp", special, -1)));
+            stats.setSelfDestruction(new SelfDestruction((byte)mobTemplate.SelfDestruction.ActionType, mobTemplate.SelfDestruction.RemoveAfter, mobTemplate.SelfDestruction.Hp));
         }
 
-        var firstAttackData = monsterInfoData?.getChildByPath("firstAttack");
-        int firstAttack = 0;
-        if (firstAttackData != null)
-        {
-            if (firstAttackData.DataType == DataType.FLOAT)
-            {
-                firstAttack = (int)Math.Round(DataTool.getFloat(firstAttackData));
-            }
-            else
-            {
-                firstAttack = DataTool.getInt(firstAttackData);
-            }
-        }
-        stats.setFirstAttack(firstAttack > 0);
-        stats.setDropPeriod(DataTool.getIntConvert("dropItemPeriod", monsterInfoData, stats.getDropPeriod() / 10000) * 10000);
+        stats.setFirstAttack(mobTemplate.IsFirstAttack);
+        stats.setDropPeriod(mobTemplate.DropItemPeriod * 10000);
 
         // thanks yuxaij, Riizade, Z1peR, Anesthetic for noticing some bosses crashing players due to missing requirements
-        bool hpbarBoss = stats.isBoss() && hpbarBosses.Contains(mid);
-        stats.setTagColor(hpbarBoss ? DataTool.getIntConvert("hpTagColor", monsterInfoData, 0) : 0);
-        stats.setTagBgColor(hpbarBoss ? DataTool.getIntConvert("hpTagBgcolor", monsterInfoData, 0) : 0);
+        bool hpbarBoss = mobTemplate.Boss && hpbarBosses.Contains(mobTemplate.TemplateId);
+        stats.setTagColor(hpbarBoss ? mobTemplate.HpTagColor : 0);
+        stats.setTagBgColor(hpbarBoss ? mobTemplate.HpTagBgColor : 0);
 
-        foreach (Data idata in monsterData)
+        foreach (var ani in mobTemplate.AnimateDelay)
         {
-            var idataName = idata.getName();
-            if (idataName != "info")
-            {
-                int delay = 0;
-                foreach (Data pic in idata.getChildren())
-                {
-                    delay += DataTool.getIntConvert("delay", pic, 0);
-                }
-                stats.setAnimationTime(idataName, delay);
-            }
+            stats.setAnimationTime(ani.Key, ani.Value);
         }
-        var reviveInfo = monsterInfoData?.getChildByPath("revive");
-        if (reviveInfo != null)
+
+        if (mobTemplate.Revive.Length > 0)
         {
-            List<int> revives = new();
-            foreach (Data data_ in reviveInfo)
-            {
-                revives.Add(DataTool.getInt(data_));
-            }
-            stats.setRevives(revives);
+            stats.setRevives(mobTemplate.Revive);
         }
-        decodeElementalString(stats, DataTool.getString("elemAttr", monsterInfoData) ?? "");
+        decodeElementalString(stats, mobTemplate.ElementStr ?? "");
 
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-        var monsterSkillInfoData = monsterInfoData?.getChildByPath("skill");
-        if (monsterSkillInfoData != null)
+        if (mobTemplate.Skill.Length > 0)
         {
-            int localI = 0;
             HashSet<MobSkillId> skills = new();
-            while (monsterSkillInfoData.getChildByPath(localI.ToString()) != null)
+            foreach (var skill in mobTemplate.Skill)
             {
-                int skillId = DataTool.getInt(localI + "/skill", monsterSkillInfoData, 0);
-                int skillLv = DataTool.getInt(localI + "/level", monsterSkillInfoData, 0);
-                MobSkillType type = MobSkillTypeUtils.from(skillId);
-                skills.Add(new MobSkillId(type, skillLv));
+                MobSkillType type = MobSkillTypeUtils.from(skill.Skill);
+                skills.Add(new MobSkillId(type, skill.Level));
 
-                var monsterSkillData = monsterData.getChildByPath("skill" + (localI + 1));
-                if (monsterSkillData != null)
-                {
-                    int animationTime = 0;
-                    foreach (Data effectEntry in monsterSkillData.getChildren())
-                    {
-                        animationTime += DataTool.getIntConvert("delay", effectEntry, 0);
-                    }
-
-                    MobSkill skill = MobSkillFactory.getMobSkillOrThrow(type, skillLv);
-                    mi.setMobSkillAnimationTime(skill, animationTime);
-                }
-
-                localI++;
+                // Note: animation time handling might need adjustment
+                MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(type, skill.Level);
+                mi.setMobSkillAnimationTime(mobSkill, skill.EffectAfter);
             }
             stats.setSkills(skills);
         }
 
-        int i = 0;
-        Data? monsterAttackData;
-        while ((monsterAttackData = monsterData.getChildByPath("attack" + (i + 1))) != null)
+        if (mobTemplate.Ban != null)
         {
-            int animationTime = 0;
-            foreach (Data effectEntry in monsterAttackData.getChildren())
-            {
-                animationTime += DataTool.getIntConvert("delay", effectEntry, 0);
-            }
-
-            int mpCon = DataTool.getIntConvert("info/conMP", monsterAttackData, 0);
-            int coolTime = DataTool.getIntConvert("info/attackAfter", monsterAttackData, 0);
-            attackInfos.Add(new MobAttackInfoHolder(i, mpCon, coolTime, animationTime));
-            i++;
+            stats.setBanishInfo(new BanishInfo(mobTemplate.Ban.Map, mobTemplate.Ban.PortalName ?? "sp", mobTemplate.Ban.Message));
         }
 
-        var banishData = monsterInfoData?.getChildByPath("ban");
-        if (banishData != null)
+        if (mobTemplate.NoFlip)
         {
-            int map = DataTool.getInt("banMap/0/field", banishData, -1);
-            string portal = DataTool.getString("banMap/0/portal", banishData) ?? "sp";
-            string? msg = DataTool.getString("banMsg", banishData);
-            stats.setBanishInfo(new BanishInfo(map, portal, msg));
-        }
-
-        int noFlip = DataTool.getInt("noFlip", monsterInfoData, 0);
-        if (noFlip > 0)
-        {
-            var origin = DataTool.getPoint("stand/0/origin", monsterData);
-            if (origin != null)
+            // Note: NoFlip handling might need origin data, assuming default
+            if (mobTemplate.Stand0OriginX.HasValue)
             {
-                stats.setFixedStance(origin.Value.X < 1 ? 5 : 4);    // fixed left/right
+                stats.setFixedStance(mobTemplate.Stand0OriginX < 1 ? 5 : 4); // or 5 based on some logic, but simplified
             }
         }
 
-        return new(stats, attackInfos);
+        monsterStats[mid] =data = new(stats, mobTemplate.AttackInfos);
+        return data;
+
     }
 
     public Monster? getMonster(int mid)
     {
-        try
+        var s = getMonsterStats(mid);
+        if (s == null)
         {
-            var stats = monsterStats.GetValueOrDefault(mid);
-            if (stats == null)
-            {
-                var mobStats = getMonsterStats(mid);
-                if (mobStats == null)
-                    return null;
-
-                stats = mobStats.Stats;
-                setMonsterAttackInfo(mid, mobStats.AttackInfo);
-
-                monsterStats.AddOrUpdate(mid, stats);
-            }
-            return new Monster(mid, stats);
-        }
-        catch (NullReferenceException npe)
-        {
-            log.Error(npe, "[SEVERE] MOB {MobId} failed to load.", mid);
             return null;
         }
+        return new Monster(mid, s.Stats, s.AttackInfo);
     }
 
     public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
 
     public int getMonsterLevel(int mid)
     {
-        try
+        var s = getMonsterStats(mid);
+        if (s == null)
         {
-            var stats = monsterStats.GetValueOrDefault(mid);
-            if (stats == null)
-            {
-                Data monsterData = data.getData(StringUtil.getLeftPaddedStr(mid + ".img", '0', 11));
-                if (monsterData == null)
-                {
-                    return -1;
-                }
-                var monsterInfoData = monsterData.getChildByPath("info");
-                return DataTool.getIntConvert("level", monsterInfoData);
-            }
-            else
-            {
-                return stats.getLevel();
-            }
+            return -1;
         }
-        catch (NullReferenceException npe)
-        {
-            log.Error(npe, "[SEVERE] MOB {MobId} failed to load.", mid);
-        }
-
-        return -1;
+        return s.Stats.getLevel();
     }
 
     private static void decodeElementalString(MonsterStats stats, string elemAttr)

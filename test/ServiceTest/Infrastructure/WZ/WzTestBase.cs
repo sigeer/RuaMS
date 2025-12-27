@@ -1,6 +1,7 @@
 using Application.Templates.Providers;
 using Microsoft.Extensions.Configuration;
 using ServiceTest.TestUtilities;
+using XmlWzReader.wz;
 
 namespace ServiceTest.Infrastructure.WZ
 {
@@ -15,6 +16,7 @@ namespace ServiceTest.Infrastructure.WZ
             {
                 ["BaseDir"] = TestVariable.WzPath
             });
+            WZFiles.DIRECTORY = TestVariable.WzPath;
             var configuration = configurationBuilder.Build();
             _providerSource = new ProviderSource(configuration);
             OnProviderRegistering();
