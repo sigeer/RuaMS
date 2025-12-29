@@ -84,8 +84,6 @@
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Server\MonitorData.proto" GrpcServices="None" />
-		<Protobuf Include="Services\Buddy.proto" GrpcServices="Both" />
-		<Protobuf Include="Services\Master2Channel.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\PlayerShop.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\Data.proto">
 		  <GrpcServices>Both</GrpcServices>
@@ -144,7 +142,7 @@
 		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Buddy.proto" GrpcServices="None" />
+		<Protobuf Include="Buddy\Buddy.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Character.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\CoolDown.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Event.proto" GrpcServices="None" />

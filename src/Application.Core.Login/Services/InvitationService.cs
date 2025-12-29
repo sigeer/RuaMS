@@ -2,6 +2,7 @@ using Application.Core.Login.Models.Invitations;
 using Application.Core.Login.ServerData;
 using Application.Utility.Exceptions;
 using Dto;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -23,22 +24,22 @@ namespace Application.Core.Login.Services
             _inviteRegistry.Register(_allHandlers);
         }
 
-        public void AddInvitation(InvitationProto.CreateInviteRequest request)
+        public async Task AddInvitation(InvitationProto.CreateInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)
                 throw new BusinessException($"不支持的邀请类型：{request.Type}");
 
-            handler.HandleInvitationCreated(request);
+            await handler.HandleInvitationCreated(request);
         }
 
-        public void AnswerInvitation(InvitationProto.AnswerInviteRequest request)
+        public async Task AnswerInvitation(InvitationProto.AnswerInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)
                 throw new BusinessException($"不支持的邀请类型：{request.Type}");
 
-            handler.HandleInvitationAnswered(request);
+            await handler.HandleInvitationAnswered(request);
         }
 
         public void RemovePlayerInvitation(int cid)

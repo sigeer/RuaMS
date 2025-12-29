@@ -1,9 +1,10 @@
+using Application.Shared.Internal;
 using Application.Shared.Message;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class SaveAllHandler : InternalSessionEmptyHandler
+    internal class SaveAllHandler : InternalSessionChannelEmptyHandler
     {
         public SaveAllHandler(WorldChannelServer server) : base(server)
         {

@@ -31,12 +31,7 @@ public class BuddyList
         return buddies.Values.FirstOrDefault(x => x.Name.Equals(characterName, StringComparison.OrdinalIgnoreCase));
     }
 
-    public void Update(BuddyCharacter entry)
-    {
-        buddies[entry.Id] = entry;
-    }
-
-    public void Add(BuddyCharacter entry)
+    public void Set(BuddyCharacter entry)
     {
         buddies[entry.Id] = entry;
     }

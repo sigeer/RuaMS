@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
@@ -93,6 +94,9 @@ namespace Application.Core.Channel
 
         readonly Lazy<GachaponManager> _gachaponManager;
         public GachaponManager GachaponManager => _gachaponManager.Value;
+
+        readonly Lazy<DueyManager> _dueyManager;
+        public DueyManager DueyManager => _dueyManager.Value;
         #endregion
 
         #region Task
@@ -176,6 +180,7 @@ namespace Application.Core.Channel
             _monitorManager = new(() => ServiceProvider.GetRequiredService<MonitorManager>());
             _autoBanManager = new(() => ServiceProvider.GetRequiredService<AutoBanDataManager>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
+            _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
 
             _adminService = new(() => ServiceProvider.GetRequiredService<AdminService>());
             _marriageService = new(() => ServiceProvider.GetRequiredService<IMarriageService>());
@@ -350,7 +355,6 @@ namespace Application.Core.Channel
             IsRunning = true;
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
             GameMetrics.RegisterChannel(this);
-            InitializeMessage();
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
 
@@ -469,7 +473,7 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        void BroadcastPacket(Packet p)
+        public void BroadcastPacket(Packet p)
         {
             foreach (var ch in Servers.Values)
             {
@@ -478,66 +482,33 @@ namespace Application.Core.Channel
         }
 
 
-        void BroadcastSetTimer(MessageProto.SetTimer data)
-        {
-            BroadcastPacket(PacketCreator.getClock(data.Seconds));
-        }
-
-        void BroadcastRemoveTimer(MessageProto.RemoveTimer data)
-        {
-            BroadcastPacket(PacketCreator.removeClock());
-        }
-
         public void SendBroadcastWorldPacket(Packet p)
         {
-            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
-        }
-
-        void OnReceivedPacket(MessageProto.PacketBroadcast data)
-        {
-            var packet = new ByteBufOutPacket(data.Data.ToByteArray());
-            foreach (var ch in Servers.Values)
-            {
-                if (data.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.sendPacket(packet);
-                    }
-                }
-                else
-                {
-                    foreach (var id in data.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.sendPacket(packet);
-                    }
-
-                }
-            }
+            _ = Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
         }
 
 
-        public void SendDropMessage(int type, string message)
+        public void SendDropMessage(int type, string message, bool onlyGM = false)
         {
-            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message });
+            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
         }
 
         public void SendDropGMMessage(int type, string message)
         {
-            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = true });
+            SendDropMessage(type, message, true);
         }
 
         public void SendYellowTip(string message, bool onlyGM)
         {
-            Transport.SendYellowTip(new MessageProto.YellowTipRequest { Message = message, OnlyGM = onlyGM });
+            SendDropMessage(-1, message, onlyGM);
         }
 
         public void EarnTitleMessage(string message, bool onlyGM)
         {
-            Transport.SendEarnTitleMessage(new MessageProto.EarnTitleMessageRequest { Message = message, OnlyGM = onlyGM });
+            SendDropMessage(-2, message, onlyGM);
         }
 
-        private void UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             if (updatePatch.MobRate.HasValue)
             {
@@ -592,216 +563,6 @@ namespace Application.Core.Channel
             return Transport.CheckCharacterName(name);
         }
 
-        void OnDropMessage(DropMessageBroadcast msg)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.dropMessage(msg.Type, msg.Message);
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.dropMessage(msg.Type, msg.Message);
-                    }
-
-                }
-            }
-        }
-
-        void OnYellowTip(YellowTipBroadcast msg)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.yellowMessage(msg.Message);
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.yellowMessage(msg.Message);
-                    }
-
-                }
-            }
-        }
-
-        void OnEarnTitleMessage(EarnTitleMessageBroadcast msg)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
-                    }
-
-                }
-            }
-        }
-
-
-        private void OnPlayerJobChanged(SyncProto.PlayerFieldChange data)
-        {
-            foreach (var module in Modules)
-            {
-                module.OnPlayerChangeJob(data);
-            }
-        }
-
-        private void OnPlayerLevelChanged(SyncProto.PlayerFieldChange data)
-        {
-            foreach (var module in Modules)
-            {
-                module.OnPlayerLevelUp(data);
-            }
-        }
-
-        private void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
-        {
-            // 切换频道也会被调用
-            bool isLogin = data.IsNewComer;
-            bool isLogoff = data.Channel == 0;
-            if (data.GuildId > 0)
-            {
-                var guild = GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.OnMemberChannelChanged(data.Id, data.Channel);
-                }
-            }
-
-            foreach (var module in Modules)
-            {
-                if (isLogin)
-                    module.OnPlayerLogin(data);
-            }
-        }
-
-        /// <summary>
-        /// 成功：向受邀者发送请求，失败：向邀请者发送失败原因
-        /// </summary>
-        /// <param name="data"></param>
-        private void OnSendInvitation(InvitationProto.CreateInviteResponse data)
-        {
-            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
-        }
-
-
-        private void OnAnswerInvitation(InvitationProto.AnswerInviteResponse data)
-        {
-            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
-        }
-
-
-        private void InitializeMessage()
-        {
-            MessageDispatcher.Register<MessageProto.SetTimer>(BroadcastType.Broadcast_SetTimer, BroadcastSetTimer);
-            MessageDispatcher.Register<MessageProto.RemoveTimer>(BroadcastType.Broadcast_RemoveTimer, BroadcastRemoveTimer);
-            MessageDispatcher.Register<MessageProto.DropMessageBroadcast>(BroadcastType.Broadcast_DropMessage, OnDropMessage);
-            MessageDispatcher.Register<MessageProto.PacketBroadcast>(BroadcastType.Broadcast_Packet, OnReceivedPacket);
-            MessageDispatcher.Register<MessageProto.YellowTipBroadcast>(BroadcastType.Broadcast_YellowTip, OnYellowTip);
-            MessageDispatcher.Register<MessageProto.EarnTitleMessageBroadcast>(BroadcastType.Broadcast_EarnTitleMessage, OnEarnTitleMessage);
-
-            MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
-
-            MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_Added, BuddyManager.OnAddBuddyBroadcast);
-            MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);
-            MessageDispatcher.Register<Dto.SendBuddyNoticeMessageDto>(BroadcastType.Buddy_NoticeMessage, BuddyManager.OnBuddyNoticeMessageReceived);
-            MessageDispatcher.Register<Dto.DeleteBuddyBroadcast>(BroadcastType.Buddy_Delete, BuddyManager.OnBuddyDeleted);
-
-            var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
-            MessageDispatcher.Register<SystemProto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
-            MessageDispatcher.Register<SystemProto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
-            MessageDispatcher.Register<SystemProto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
-            MessageDispatcher.Register<SystemProto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
-
-            MessageDispatcher.Register<Config.AutoBanIgnoredChangedNotifyDto>(BroadcastType.OnAutoBanIgnoreChangedNotify, AutoBanManager.OnIgoreDataChanged);
-            MessageDispatcher.Register<Config.MonitorDataChangedNotifyDto>(BroadcastType.OnMonitorChangedNotify, MonitorManager.OnMonitorDataChanged);
-
-            var reportSrv = ServiceProvider.GetRequiredService<ReportService>();
-            MessageDispatcher.Register<Dto.SendReportBroadcast>(BroadcastType.OnReportReceived, reportSrv.OnGMReceivedReport);
-
-            var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
-
-            MessageDispatcher.Register<ItemProto.UseItemMegaphoneBroadcast>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
-            MessageDispatcher.Register<ItemProto.CreateTVMessageBroadcast>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
-            MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
-            MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
-            MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);
-            MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
-
-            MessageDispatcher.Register<InvitationProto.CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
-            MessageDispatcher.Register<InvitationProto.AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
-
-            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
-            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
-            MessageDispatcher.Register<PlayerOnlineChange>(BroadcastType.OnPlayerLoginOff, OnPlayerLoginOff);
-
-            #region Guild
-            MessageDispatcher.Register<GuildProto.UpdateGuildNoticeResponse>(BroadcastType.OnGuildNoticeUpdate, GuildManager.OnGuildNoticeUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildGPResponse>(BroadcastType.OnGuildGpUpdate, GuildManager.OnGuildGPUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildCapacityResponse>(BroadcastType.OnGuildCapacityUpdate, GuildManager.OnGuildCapacityIncreased);
-            MessageDispatcher.Register<GuildProto.UpdateGuildEmblemResponse>(BroadcastType.OnGuildEmblemUpdate, GuildManager.OnGuildEmblemUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildRankTitleResponse>(BroadcastType.OnGuildRankTitleUpdate, GuildManager.OnGuildRankTitleUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildMemberRankResponse>(BroadcastType.OnGuildRankChanged, GuildManager.OnChangePlayerGuildRank);
-            MessageDispatcher.Register<GuildProto.JoinGuildResponse>(BroadcastType.OnPlayerJoinGuild, GuildManager.OnPlayerJoinGuild);
-            MessageDispatcher.Register<GuildProto.LeaveGuildResponse>(BroadcastType.OnPlayerLeaveGuild, GuildManager.OnPlayerLeaveGuild);
-            MessageDispatcher.Register<GuildProto.ExpelFromGuildResponse>(BroadcastType.OnGuildExpelMember, GuildManager.OnGuildExpelMember);
-            MessageDispatcher.Register<GuildProto.GuildDisbandResponse>(BroadcastType.OnGuildDisband, GuildManager.OnGuildDisband);
-            #endregion
-
-            #region Alliance
-            MessageDispatcher.Register<AllianceProto.GuildJoinAllianceResponse>(BroadcastType.OnGuildJoinAlliance, GuildManager.OnGuildJoinAlliance);
-            MessageDispatcher.Register<AllianceProto.GuildLeaveAllianceResponse>(BroadcastType.OnGuildLeaveAlliance, GuildManager.OnGuildLeaveAlliance);
-            MessageDispatcher.Register<AllianceProto.AllianceExpelGuildResponse>(BroadcastType.OnAllianceExpelGuild, GuildManager.OnAllianceExpelGuild);
-            MessageDispatcher.Register<AllianceProto.IncreaseAllianceCapacityResponse>(BroadcastType.OnAllianceCapacityUpdate, GuildManager.OnAllianceCapacityIncreased);
-            MessageDispatcher.Register<AllianceProto.DisbandAllianceResponse>(BroadcastType.OnAllianceDisband, GuildManager.OnAllianceDisband);
-            MessageDispatcher.Register<AllianceProto.UpdateAllianceNoticeResponse>(BroadcastType.OnAllianceNoticeUpdate, GuildManager.OnAllianceNoticeChanged);
-            MessageDispatcher.Register<AllianceProto.ChangePlayerAllianceRankResponse>(BroadcastType.OnAllianceRankChange, GuildManager.OnPlayerAllianceRankChanged);
-            MessageDispatcher.Register<AllianceProto.UpdateAllianceRankTitleResponse>(BroadcastType.OnAllianceRankTitleUpdate, GuildManager.OnAllianceRankTitleChanged);
-            MessageDispatcher.Register<AllianceProto.AllianceChangeLeaderResponse>(BroadcastType.OnAllianceChangeLeader, GuildManager.OnAllianceLeaderChanged);
-            #endregion
-
-            #region ChatRoom
-            MessageDispatcher.Register<SendChatRoomMessageResponse>(BroadcastType.OnChatRoomMessageSend, ChatRoomService.OnReceiveMessage);
-            MessageDispatcher.Register<JoinChatRoomResponse>(BroadcastType.OnJoinChatRoom, ChatRoomService.OnPlayerJoinChatRoom);
-            MessageDispatcher.Register<LeaveChatRoomResponse>(BroadcastType.OnLeaveChatRoom, ChatRoomService.OnPlayerLeaveChatRoom);
-            #endregion
-
-            #region NewYearCard
-            MessageDispatcher.Register<Dto.SendNewYearCardResponse>(BroadcastType.OnNewYearCardSend, NewYearCardService.OnNewYearCardSend);
-            MessageDispatcher.Register<Dto.ReceiveNewYearCardResponse>(BroadcastType.OnNewYearCardReceived, NewYearCardService.OnNewYearCardReceived);
-            MessageDispatcher.Register<Dto.NewYearCardNotifyDto>(BroadcastType.OnNewYearCardNotify, NewYearCardService.OnNewYearCardNotify);
-            MessageDispatcher.Register<Dto.DiscardNewYearCardResponse>(BroadcastType.OnNewYearCardDiscard, NewYearCardService.OnNewYearCardDiscard);
-            #endregion
-
-            MessageDispatcher.Register<TeamProto.UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
-
-            MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
-
-            MessageDispatcher.Register<LifeProto.CreatePLifeRequest>(BroadcastType.OnPLifeCreated, DataService.OnPLifeCreated);
-            MessageDispatcher.Register<LifeProto.RemovePLifeResponse>(BroadcastType.OnPLifeRemoved, DataService.OnPLifeRemoved);
-        }
-
         public void OnMessageReceived(BaseProto.MessageWrapper message)
         {
             MessageDispatcher.Dispatch(message);
@@ -815,21 +576,6 @@ namespace Application.Core.Channel
         internal void SendReloadEvents(IPlayer chr)
         {
             Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
-        }
-
-        private void OnEventsReloaded(Dto.ReloadEventsResponse data)
-        {
-            IPlayer? sender = null;
-            foreach (var ch in Servers.Values)
-            {
-                ch.reloadEventScriptManager();
-
-                if (sender == null)
-                {
-                    sender = ch.Players.getCharacterById(data.Request.MasterId);
-                    sender?.dropMessage(5, "Reloaded Events");
-                }
-            }
         }
     }
 }

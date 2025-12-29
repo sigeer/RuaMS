@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Net;
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -39,6 +40,8 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnLevelUp;
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
+
+        public ResourceConsumeRequest? TscRequest { get; set; }
 
         public Player(int world, int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
         {

@@ -2,30 +2,30 @@ using Application.Core.Login;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
-using Application.Resources;
 using Application.Shared.Events;
 using Application.Shared.Login;
-using Application.Shared.MapObjects;
 using Application.Shared.Message;
-using Application.Shared.Models;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
 using CashProto;
 using Config;
+using CreatorProto;
 using Dto;
-using Google.Protobuf.WellKnownTypes;
+using DueyDto;
 using GuildProto;
 using ItemProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
+using server.quest;
 using ServerProto;
 using SyncProto;
 using System.Net;
 using System.Threading.Tasks;
 using SystemProto;
+using XmlWzReader;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -80,7 +80,7 @@ namespace Application.Core.Channel.InProgress
             var serverNode = new InProgressWorldChannel(channelServer, channels);
             if (!_server.IsRunning)
             {
-                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                await channelServer.HandleServerRegistered(new RegisterServerResult
                 {
                     StartChannel = -1,
                     Message = "中心服务器未启动"
@@ -89,13 +89,18 @@ namespace Application.Core.Channel.InProgress
             else
             {
                 var channelId = _server.AddChannel(serverNode);
-                await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                await channelServer.HandleServerRegistered(new RegisterServerResult
                 {
                     StartChannel = channelId,
                     Coupon = _server.CouponManager.GetConfig(),
                     Config = _server.GetWorldConfig()
-                });
+                }, cancellationToken);
             }
+        }
+
+        public async Task CreatePlayerResponseAsync(CreateCharResponseDto res, CancellationToken cancellationToken)
+        {
+            _server.HandleCreateCharacterResponse(res);
         }
 
         public Task CompleteChannelShutdown()
@@ -104,9 +109,9 @@ namespace Application.Core.Channel.InProgress
             return Task.CompletedTask;
         }
 
-        public void DropWorldMessage(MessageProto.DropMessageRequest request)
+        public async Task DropWorldMessage(MessageProto.DropMessageRequest request)
         {
-            _server.DropWorldMessage(request.Type, request.Message, request.OnlyGM);
+            await _server.DropWorldMessage(request.Type, request.Message, request.OnlyGM);
         }
 
         public long GetCurrentTime()
@@ -133,24 +138,24 @@ namespace Application.Core.Channel.InProgress
             _server.RemoveGuildQueued(guildId);
         }
 
-        public void SendWorldConfig(Config.WorldConfig updatePatch)
+        public async Task SendWorldConfig(Config.WorldConfig updatePatch)
         {
-            _server.UpdateWorldConfig(updatePatch);
+            await _server.UpdateWorldConfig(updatePatch);
         }
 
-        public void BroadcastMessage(MessageProto.PacketRequest p)
+        public async Task BroadcastMessage(MessageProto.PacketRequest p)
         {
-            _server.BroadcastPacket(p);
+            await _server.BroadcastPacket(p);
         }
 
-        public void SendTimer(int seconds)
+        public async Task SendTimer(int seconds)
         {
-            _server.Transport.BroadcastMessage(BroadcastType.Broadcast_SetTimer, new MessageProto.SetTimer { Seconds = seconds });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleSetTimer, new MessageProto.SetTimer { Seconds = seconds });
         }
 
-        public void RemoveTimer()
+        public async Task RemoveTimer()
         {
-            _server.Transport.BroadcastMessage(BroadcastType.Broadcast_RemoveTimer, new MessageProto.RemoveTimer());
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleRemoveTimer);
         }
 
 
@@ -189,10 +194,6 @@ namespace Application.Core.Channel.InProgress
             return _server.HasCharacteridInTransition(clientSession);
         }
 
-        public ExpeditionProto.QueryChannelExpedtionResponse GetExpeditionInfo()
-        {
-            return _server.Transport.QueryExpeditionInfo(new ExpeditionProto.QueryChannelExpedtionRequest());
-        }
         public SyncProto.PlayerGetterDto? GetPlayerData(string clientSession, int cid)
         {
             return _loginService.PlayerLogin(clientSession, cid);
@@ -212,9 +213,9 @@ namespace Application.Core.Channel.InProgress
             return _server.BuffManager.Get(id);
         }
 
-        public void SetPlayerOnlined(int id, int v)
+        public async Task SetPlayerOnlined(int id, int v)
         {
-            _loginService.SetPlayerLogedIn(id, v);
+           await _loginService.SetPlayerLogedIn(id, v);
         }
 
         public Dto.DropAllDto RequestAllReactorDrops()
@@ -244,7 +245,7 @@ namespace Application.Core.Channel.InProgress
 
         public bool SendNormalNoteMessage(int senderId, string toName, string noteMessage)
         {
-            return _noteService.SendNormal(noteMessage, senderId, toName);
+            return _noteService.SendNormal(noteMessage, senderId, toName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public Dto.NoteDto? DeleteNoteMessage(int id)
@@ -257,9 +258,9 @@ namespace Application.Core.Channel.InProgress
             return _shopManager.LoadFromDB(id, isShopId);
         }
 
-        public SendReportResponse SendReport(SendReportRequest request)
+        public async Task SendReport(SendReportRequest request)
         {
-            return _msgService.AddReport(request);
+            await _msgService.AddReport(request);
         }
 
         public RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount)
@@ -267,9 +268,9 @@ namespace Application.Core.Channel.InProgress
             return _rankService.LoadPlayerRanking(topCount);
         }
 
-        public void SendToggleCoupon(int v)
+        public async Task SendToggleCoupon(int v)
         {
-            _server.CouponManager.ToggleCoupon(v);
+            await _server.CouponManager.ToggleCoupon(v);
         }
         public CreatorProto.CreateCharResponseDto SendNewPlayer(CreatorProto.NewPlayerSaveDto data)
         {
@@ -300,9 +301,9 @@ namespace Application.Core.Channel.InProgress
             return _server.TeamManager.CreateTeam(playerId);
         }
 
-        public TeamProto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
+        public async Task SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
         {
-            return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
+            await _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
         }
 
         public TeamProto.GetTeamResponse GetTeam(int party)
@@ -343,132 +344,132 @@ namespace Application.Core.Channel.InProgress
             _server.GuildManager.SendGuildMessage(guildId, v, callout);
         }
 
-        public void SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request)
+        public async Task SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request)
         {
-            _server.GuildManager.UpdateGuildGP(request);
+            await _server.GuildManager.UpdateGuildGPAsync(request);
         }
 
-        public void SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request)
+        public async Task SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request)
         {
-            _server.GuildManager.UpdateGuildRankTitle(request);
+            await _server.GuildManager.UpdateGuildRankTitle(request);
         }
 
-        public void SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request)
+        public async Task SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request)
         {
-            _server.GuildManager.UpdateGuildNotice(request);
+            await _server.GuildManager.UpdateGuildNotice(request);
         }
 
-        public void SendUpdateGuildCapacity(GuildProto.UpdateGuildCapacityRequest request)
+        public async Task SendUpdateGuildCapacity(GuildProto.UpdateGuildCapacityRequest request)
         {
-            _server.GuildManager.IncreseGuildCapacity(request);
+            await _server.GuildManager.IncreseGuildCapacity(request);
         }
 
-        public void SendUpdateGuildEmblem(GuildProto.UpdateGuildEmblemRequest request)
+        public async Task SendUpdateGuildEmblem(GuildProto.UpdateGuildEmblemRequest request)
         {
-            _server.GuildManager.UpdateGuildEmblem(request);
+            await _server.GuildManager.UpdateGuildEmblem(request);
         }
 
-        public void SendGuildDisband(GuildProto.GuildDisbandRequest request)
+        public async Task SendGuildDisband(GuildProto.GuildDisbandRequest request)
         {
-            _server.GuildManager.DisbandGuild(request);
+            await _server.GuildManager.DisbandGuild(request);
         }
 
-        public void SendChangePlayerGuildRank(GuildProto.UpdateGuildMemberRankRequest request)
+        public async Task SendChangePlayerGuildRank(GuildProto.UpdateGuildMemberRankRequest request)
         {
-            _server.GuildManager.ChangePlayerGuildRank(request);
+            await _server.GuildManager.ChangePlayerGuildRank(request);
         }
 
-        public void SendGuildExpelMember(GuildProto.ExpelFromGuildRequest request)
+        public async Task SendGuildExpelMember(GuildProto.ExpelFromGuildRequest request)
         {
-            _server.GuildManager.GuildExpelMember(request);
+            await _server.GuildManager.GuildExpelMember(request);
         }
 
-        public void SendPlayerLeaveGuild(GuildProto.LeaveGuildRequest request)
+        public async Task SendPlayerLeaveGuild(GuildProto.LeaveGuildRequest request)
         {
-            _server.GuildManager.PlayerLeaveGuild(request);
+            await _server.GuildManager.PlayerLeaveGuild(request);
         }
 
-        public void SendPlayerJoinGuild(GuildProto.JoinGuildRequest request)
+        public async Task SendPlayerJoinGuild(GuildProto.JoinGuildRequest request)
         {
-            _server.GuildManager.PlayerJoinGuild(request);
+            await _server.GuildManager.PlayerJoinGuild(request);
         }
 
-        public void SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
+        public async Task SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
         {
-            _server.GuildManager.GuildJoinAlliance(request);
+            await _server.GuildManager.GuildJoinAlliance(request);
         }
 
-        public void SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
+        public async Task SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
         {
-            _server.GuildManager.GuildLeaveAlliance(request);
+            await _server.GuildManager.GuildLeaveAlliance(request);
         }
 
-        public void SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
+        public async Task SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
         {
-            _server.GuildManager.AllianceExpelGuild(request);
+            await _server.GuildManager.AllianceExpelGuild(request);
         }
 
-        public void SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
+        public async Task SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
         {
-            _server.GuildManager.ChangeAllianceLeader(request);
+            await _server.GuildManager.ChangeAllianceLeader(request);
         }
 
-        public void SendChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
+        public async Task SendChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
         {
-            _server.GuildManager.ChangePlayerAllianceRank(request);
+            await _server.GuildManager.ChangePlayerAllianceRank(request);
         }
 
-        public void SendIncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
+        public async Task SendIncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
         {
-            _server.GuildManager.IncreaseAllianceCapacity(request);
+            await _server.GuildManager.IncreaseAllianceCapacity(request);
         }
 
-        public void SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
+        public async Task SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
         {
-            _server.GuildManager.UpdateAllianceRankTitle(request);
+            await _server.GuildManager.UpdateAllianceRankTitle(request);
         }
 
-        public void SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
+        public async Task SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
         {
-            _server.GuildManager.UpdateAllianceNotice(request);
+            await _server.GuildManager.UpdateAllianceNotice(request);
         }
 
-        public void SendAllianceDisband(AllianceProto.DisbandAllianceRequest request)
+        public async Task SendAllianceDisband(AllianceProto.DisbandAllianceRequest request)
         {
-            _server.GuildManager.DisbandAlliance(request);
+            await _server.GuildManager.DisbandAlliance(request);
         }
         #endregion
 
         #region ChatRoom
-        public void SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest request)
+        public async Task SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest request)
         {
-            _server.ChatRoomManager.JoinChatRoom(request);
+            await _server.ChatRoomManager.JoinChatRoom(request);
         }
 
-        public void SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst request)
+        public async Task SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst request)
         {
-            _server.ChatRoomManager.LeaveChatRoom(request);
+            await _server.ChatRoomManager.LeaveChatRoom(request);
         }
 
-        public void SendChatRoomMesage(Dto.SendChatRoomMessageRequest request)
+        public async Task SendChatRoomMesage(Dto.SendChatRoomMessageRequest request)
         {
-            _server.ChatRoomManager.SendMessage(request);
+            await _server.ChatRoomManager.SendMessage(request);
         }
 
-        public void SendCreateChatRoom(Dto.CreateChatRoomRequest request)
+        public async Task SendCreateChatRoom(Dto.CreateChatRoomRequest request)
         {
-            _server.ChatRoomManager.CreateChatRoom(request);
+            await _server.ChatRoomManager.CreateChatRoom(request);
         }
         #endregion
 
-        public void SendInvitation(InvitationProto.CreateInviteRequest request)
+        public async Task SendInvitation(InvitationProto.CreateInviteRequest request)
         {
-            _invitationService.AddInvitation(request);
+            await _invitationService.AddInvitation(request);
         }
 
-        public void AnswerInvitation(InvitationProto.AnswerInviteRequest request)
+        public async Task AnswerInvitation(InvitationProto.AnswerInviteRequest request)
         {
-            _invitationService.AnswerInvitation(request);
+            await _invitationService.AnswerInvitation(request);
         }
 
         public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
@@ -482,19 +483,19 @@ namespace Application.Core.Channel.InProgress
         }
 
 
-        public void ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
+        public async Task ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
         {
-            _server.NewYearCardManager.ReceiveNewYearCard(request);
+            await _server.NewYearCardManager.ReceiveNewYearCard(request);
         }
 
-        public void SendNewYearCard(Dto.SendNewYearCardRequest request)
+        public async Task SendNewYearCard(Dto.SendNewYearCardRequest request)
         {
-            _server.NewYearCardManager.SendNewYearCard(request);
+            await _server.NewYearCardManager.SendNewYearCard(request);
         }
 
-        public void SendDiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
+        public async Task SendDiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
         {
-            _server.NewYearCardManager.DiscardNewYearCard(request);
+            await _server.NewYearCardManager.DiscardNewYearCard(request);
         }
 
         public ConfigProto.SetFlyResponse SendSetFly(ConfigProto.SetFlyRequest setFlyRequest)
@@ -502,19 +503,19 @@ namespace Application.Core.Channel.InProgress
             return _server.AccountManager.SetFly(setFlyRequest);
         }
 
-        public void SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
+        public async Task SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
         {
-            _server.Transport.BroadcastMessage(BroadcastType.OnEventsReloaded, new ReloadEventsResponse { Code = 0, Request = reloadEventsRequest });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, reloadEventsRequest);
         }
 
-        public ItemProto.CreateTVMessageResponse BroadcastTV(ItemProto.CreateTVMessageRequest request)
+        public async Task BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
-            return _itemService.BroadcastTV(request);
+            await _itemService.BroadcastTV(request);
         }
 
-        public ItemProto.UseItemMegaphoneResponse SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
+        public async Task SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
-            return _itemService.BroadcastItemMegaphone(request);
+            await _itemService.BroadcastItemMegaphone(request);
         }
 
         public DropAllDto RequestDropData()
@@ -542,14 +543,14 @@ namespace Application.Core.Channel.InProgress
             return _resourceService.GetAllPLife();
         }
 
-        public void SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest)
+        public async Task SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest)
         {
-            _resourceService.CreatePLife(createPLifeRequest);
+            await _resourceService.CreatePLife(createPLifeRequest);
         }
 
-        public void SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest)
+        public async Task SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest)
         {
-            _resourceService.RemovePLife(removePLifeRequest);
+            await _resourceService.RemovePLife(removePLifeRequest);
         }
 
         public BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
@@ -598,9 +599,9 @@ namespace Application.Core.Channel.InProgress
             return _server.ItemFactoryManager.LoadItems(request);
         }
 
-        public ToggleMonitorPlayerResponse SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest)
+        public async Task SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest)
         {
-            return _server.SystemManager.ToggleMonitor(toggleMonitorPlayerRequest);
+            await _server.SystemManager.ToggleMonitor(toggleMonitorPlayerRequest);
         }
 
         public MonitorDataWrapper LoadMonitor()
@@ -608,9 +609,9 @@ namespace Application.Core.Channel.InProgress
             return _server.SystemManager.LoadMonitorData();
         }
 
-        public ToggleAutoBanIgnoreResponse SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest)
+        public async Task SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest)
         {
-            return _server.SystemManager.ToggleAutoBanIgnored(toggleAutoBanIgnoreRequest);
+            await _server.SystemManager.ToggleAutoBanIgnored(toggleAutoBanIgnoreRequest);
         }
 
         public AutoBanIgnoredWrapper LoadAutobanIgnoreData()
@@ -618,19 +619,19 @@ namespace Application.Core.Channel.InProgress
             return _server.SystemManager.LoadAutobanIgnoreData();
         }
 
-        public BanResponse Ban(BanRequest banRequest)
+        public async Task Ban(BanRequest banRequest)
         {
-            return _server.AccountBanManager.Ban(banRequest);
+            await _server.AccountBanManager.Ban(banRequest);
         }
 
-        public UnbanResponse Unban(UnbanRequest unbanRequest)
+        public async Task Unban(UnbanRequest unbanRequest)
         {
-            return _server.AccountBanManager.Unban(unbanRequest);
+            await _server.AccountBanManager.Unban(unbanRequest);
         }
 
-        public SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest)
+        public async Task SetGmLevel(SetGmLevelRequest setGmLevelRequest)
         {
-            return _server.AccountManager.SetGmLevel(setGmLevelRequest);
+            await _server.AccountManager.SetGmLevel(setGmLevelRequest);
         }
 
         public ShowOnlinePlayerResponse GetOnlinedPlayers()
@@ -638,19 +639,19 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.GetOnlinedPlayers();
         }
 
-        public WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest)
+        public async Task WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest)
         {
-            return _server.CrossServerService.WarpPlayerByName(wrapPlayerByNameRequest);
+            await _server.CrossServerService.WarpPlayerByName(wrapPlayerByNameRequest);
         }
 
-        public SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest)
+        public async Task SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest)
         {
-            return _server.CrossServerService.SummonPlayerByName(summonPlayerByNameRequest);
+            await _server.CrossServerService.SummonPlayerByName(summonPlayerByNameRequest);
         }
 
-        public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
+        public async Task DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
         {
-            return _server.CrossServerService.DisconnectPlayerByName(request);
+            await _server.CrossServerService.DisconnectPlayerByName(request);
         }
 
         public GetAllClientInfo GetOnliendClientInfo()
@@ -668,49 +669,49 @@ namespace Application.Core.Channel.InProgress
             return _server.CharacterManager.ChangeName(nameChangeRequest);
         }
 
-        public void BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data, bool saveDB = false)
+        public async Task BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data, bool saveDB = false)
         {
-            _server.CharacterManager.BatchUpdate(data);
+            await _server.CharacterManager.BatchUpdate(data);
             if (saveDB)
-                _ = _server.ServerManager.CommitAllImmediately();
+                await _server.ServerManager.CommitAllImmediately();
         }
 
-        public void SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
+        public async Task SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
         {
-            _server.CharacterManager.Update(data,  trigger);
+            await _server.CharacterManager.Update(data, trigger);
             if (saveDB)
-                _ = _server.ServerManager.CommitAllImmediately();
+                await _server.ServerManager.CommitAllImmediately();
         }
 
-        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
+        public async Task SendAddBuddyRequest(BuddyProto.AddBuddyRequest request)
         {
-            return _server.BuddyManager.AddBuddyByName(request);
+            await _server.BuddyManager.AddBuddyByName(request);
         }
 
-        public AddBuddyResponse SendAddBuddyRequest(AddBuddyByIdRequest request)
+        public async Task SendAddBuddyRequest(BuddyProto.AddBuddyByIdRequest request)
         {
-            return _server.BuddyManager.AddBuddyById(request);
+            await _server.BuddyManager.AddBuddyById(request);
         }
 
 
-        public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
+        public async Task SendBuddyMessage(BuddyProto.SendBuddyNoticeMessageDto request)
         {
-            _server.BuddyManager.BroadcastNoticeMessage(request);
+            await _server.BuddyManager.BroadcastNoticeMessage(request);
         }
 
-        public DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest request)
+        public async Task SendDeleteBuddy(BuddyProto.DeleteBuddyRequest request)
         {
-            return _server.BuddyManager.DeleteBuddy(request);
+            await _server.BuddyManager.DeleteBuddy(request);
         }
 
-        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
+        public async Task SendWhisper(SendWhisperMessageRequest request)
         {
-            return _server.BuddyManager.SendWhisper(request);
+            await _server.BuddyManager.SendWhisper(request);
         }
 
-        public GetLocationResponse GetLocation(GetLocationRequest request)
+        public async Task GetLocation(BuddyProto.GetLocationRequest request)
         {
-            return _server.BuddyManager.GetLocation(request);
+            await _server.BuddyManager.GetLocation(request);
         }
 
 
@@ -720,12 +721,6 @@ namespace Application.Core.Channel.InProgress
             _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
         }
 
-
-
-        public void SendYellowTip(YellowTipRequest yellowTipRequest)
-        {
-            _server.DropYellowTip(yellowTipRequest.Message, yellowTipRequest.OnlyGM);
-        }
 
         public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
         {
@@ -739,12 +734,7 @@ namespace Application.Core.Channel.InProgress
 
         public void HealthCheck(MonitorData data)
         {
-             _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().ServerName].HealthCheck(data);
-        }
-
-        public void SendEarnTitleMessage(EarnTitleMessageRequest data)
-        {
-            _server.DropEarnTitleMessage(data.Message, data.OnlyGM);
+            _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().ServerName].HealthCheck(data);
         }
 
         public bool GainCharacterSlot(int accountId)
@@ -777,6 +767,31 @@ namespace Application.Core.Channel.InProgress
         public async Task DisconnectAllNotifyAsync()
         {
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
+        }
+
+        public async Task CreateDueyPackage(CreatePackageRequest request)
+        {
+            await _server.DueyManager.CreateDueyPackage(request);
+        }
+
+        public async Task TakeDueyPackage(TakeDueyPackageRequest request)
+        {
+            await _server.DueyManager.TakeDueyPackage(request);
+        }
+
+        public async Task RequestRemovePackage(RemovePackageRequest request)
+        {
+            await _server.DueyManager.RemovePackage(request);
+        }
+
+        public async Task GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)
+        {
+            await _server.DueyManager.GetPlayerDueyPackages(request);
+        }
+
+        public async Task TakeDueyPackageCommit(TakeDueyPackageCommit request)
+        {
+            await _server.DueyManager.TakeDueyPackageCommit(request);
         }
     }
 }

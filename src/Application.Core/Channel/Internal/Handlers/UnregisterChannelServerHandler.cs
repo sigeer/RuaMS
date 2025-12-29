@@ -1,10 +1,9 @@
 using Application.Shared.Message;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class UnregisterChannelServerHandler : InternalSessionEmptyHandler
+    internal class UnregisterChannelServerHandler : InternalSessionChannelEmptyHandler
     {
         public UnregisterChannelServerHandler(WorldChannelServer server) : base(server)
         {

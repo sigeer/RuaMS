@@ -2,10 +2,12 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
+using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
+using pplication.Core.Login.Mappers;
 
 namespace Application.Core.Login.Mappers
 {
@@ -66,10 +68,10 @@ namespace Application.Core.Login.Mappers
             CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
 
             CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
-            CreateMap<BuddyModel, Dto.BuddyDto>()
+            CreateMap<BuddyModel, BuddyProto.BuddyDto>()
                 .ConvertUsing<BuddyConverter>();
 
-            CreateMap<Dto.BuddyDto, BuddyModel>();
+            CreateMap<BuddyProto.BuddyDto, BuddyModel>();
 
             CreateMap<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().ReverseMap();
             CreateMap<BuffModel, Dto.BuffDto>().ReverseMap();
@@ -133,6 +135,13 @@ namespace Application.Core.Login.Mappers
             CreateMap<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
 
             CreateMap<CdkItemModel, ItemProto.CdkRewordPackageDto>();
+
+            CreateMap<DueyPackageEntity, DueyPackageModel>()
+                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.PackageId));
+
+            CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()
+                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
+                .ForMember(dest => dest.SenderName, src => src.MapFrom<DueyPackageValueResolver>());
         }
     }
 }

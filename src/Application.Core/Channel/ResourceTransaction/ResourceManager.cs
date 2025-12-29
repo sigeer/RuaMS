@@ -21,6 +21,35 @@ namespace Application.Core.Channel.ResourceTransaction
         public int GainMaplePoint { get; set; }
         public int CostNxCredit { get; set; }
         public int GainNxCredit { get; set; }
+
+        public bool Execute(IPlayer player, Func<CancellationToken, bool> businessLogic, bool showMessage = false, bool showMessageInChat = false)
+        {
+            var res = ResourceManager.ConsumeResources(player, this, businessLogic);
+
+            if (res && showMessage)
+            {
+                if (CostMeso != 0)
+                {
+                    player.sendPacket(PacketCreator.getShowMesoGain(CostMeso, showMessageInChat));
+                }
+
+                if (GainMeso != 0)
+                {
+                    player.sendPacket(PacketCreator.getShowMesoGain(GainMeso, showMessageInChat));
+                }
+
+                foreach (var item in CostItems)
+                {
+                    player.sendPacket(PacketCreator.getShowItemGain(item.Item.getItemId(), (short)-item.Quantity, showMessageInChat));
+                }
+
+                foreach (var item in GainItems)
+                {
+                    player.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)item.getQuantity(), showMessageInChat));
+                }
+            }
+            return res;
+        }
     }
 
     public class ResourceConsumeBuilder
@@ -85,34 +114,11 @@ namespace Application.Core.Channel.ResourceTransaction
             return this;
         }
 
-        public bool Execute(IPlayer player, Func<CancellationToken, bool> businessLogic, bool showMessage = false, bool showMessageInChat = false)
+        public ResourceConsumeRequest Build()
         {
-            var res = ResourceManager.ConsumeResources(player, _request, businessLogic);
-
-            if (res && showMessage)
-            {
-                if (_request.CostMeso != 0)
-                {
-                    player.sendPacket(PacketCreator.getShowMesoGain(_request.CostMeso, showMessageInChat));
-                }
-
-                if (_request.GainMeso != 0)
-                {
-                    player.sendPacket(PacketCreator.getShowMesoGain(_request.GainMeso, showMessageInChat));
-                }
-
-                foreach (var item in _request.CostItems)
-                {
-                    player.sendPacket(PacketCreator.getShowItemGain(item.Item.getItemId(), (short)-item.Quantity, showMessageInChat));
-                }
-
-                foreach (var item in _request.GainItems)
-                {
-                    player.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)item.getQuantity(), showMessageInChat));
-                }
-            }
-            return res;
+            return _request;
         }
+
     }
 
     public class ResourceManager

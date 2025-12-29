@@ -16,23 +16,7 @@ namespace Application.Core.Channel.Services
 
         public void SendReport(IPlayer chr, string victim, string text, int reason, string chatLog)
         {
-            var res = _transport.SendReport(new SendReportRequest { MasterId = chr.Id, Victim = victim, Text = text, Reason = reason, ChatLog = chatLog });
-            if (!res.IsSuccess)
-            {
-                chr.dropMessage($"玩家 {victim} 不存在");
-            }
-        }
-
-        public void OnGMReceivedReport(SendReportBroadcast data)
-        {
-            foreach (var gmId in data.GmId)
-            {
-                var gmChr = _server.FindPlayerById(gmId);
-                if (gmChr != null)
-                {
-                    gmChr.dropMessage(6, data.Text);
-                }
-            }
+            _ = _transport.SendReport(new SendReportRequest { MasterId = chr.Id, Victim = victim, Text = text, Reason = reason, ChatLog = chatLog });
         }
     }
 }

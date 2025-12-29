@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package BuddyProto;
+
+message BuddyDto {
+  int32 id = 1;
+  string name = 2;
+  int32 channel = 3;
+  int32 actualChannel =4;
+  string group = 5;
+  int32 mapId = 6;
+}
+
+message BuddyChatRequest {
+	int32 fromId = 1;
+	repeated int32 toIds = 2;
+	string text = 3;
+}
+
+message BuddyChatBroadcast {
+	int32 fromId = 1;
+	string fromName = 2;
+	repeated int32 toIds = 3;
+	string text = 4;
+}
+
+message AddBuddyRequest {
+	int32 masterId = 1;
+	string targetName = 2;
+	string groupName = 3;
+}
+
+message AddBuddyByIdRequest {
+	int32 masterId = 1;
+	int32 targetId = 2;
+}
+
+message AddBuddyResponse {
+	int32 code = 1;
+	int32 targetId = 2;
+	BuddyDto buddy = 3;
+	int32 masterId = 4;
+	string targetName = 5;
+}
+
+
+message NotifyBuddyWhenLoginoffBroadcast {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	int32 channel = 4;
+	int32 actualChannel = 5;
+}
+
+message SendBuddyNoticeMessageDto {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	int32 type = 3;
+	string message = 4;
+}
+
+message DeleteBuddyRequest {
+	int32 masterId = 1;
+	int32 buddyid = 2;
+}
+
+message DeleteBuddyResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	int32 buddyid = 3;
+}
+
+message GetLocationRequest {
+	int32 masterId = 1;
+	string targetName = 2;
+}
+
+message GetLocationResponse {
+	int32 code = 1;
+	int32 field = 2;
+	int32 masterId = 3;
+	string targetName = 4;
+}

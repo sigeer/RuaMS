@@ -10,18 +10,12 @@ message ToggleAutoBanIgnoreRequest {
 }
 
 message ToggleAutoBanIgnoreResponse {
-	bool isSuccess = 1;
-	bool isIgnored = 2;
+	int32 code = 1;
+	ToggleAutoBanIgnoreRequest request = 2;
+	bool isIgnored = 3;
+	repeated int32 gmId = 4;
 }
 
 message AutoBanIgnoredWrapper {
 	repeated Config.PlayerBaseDto list = 1;
-}
-
-
-message AutoBanIgnoredChangedNotifyDto {
-	string operatorName = 1;
-	string targetName = 2;
-	bool isIgnored = 3;
-	repeated int32 gmId = 4;
 }

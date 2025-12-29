@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
@@ -42,15 +43,13 @@ public class UseCashItemHandler : ChannelHandlerBase
 {
 
     readonly ILogger<UseCashItemHandler> _logger;
-    readonly IDueyService _dueyService;
     readonly ItemService _itemService;
     readonly ShopManager _shopManager;
     readonly PlayerShopService _playerShopService;
 
-    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService, ShopManager shopManager, PlayerShopService playerShopService)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, ItemService itemService, ShopManager shopManager, PlayerShopService playerShopService)
     {
         _logger = logger;
-        _dueyService = dueyService;
         _itemService = itemService;
         _shopManager = shopManager;
         _playerShopService = playerShopService;
@@ -464,7 +463,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 533)
         {
-            _dueyService.DueyTalk(c, true);
+            c.sendPacket(DueyPacketCreator.SendQuickly());
         }
         else if (itemType == 537)
         {

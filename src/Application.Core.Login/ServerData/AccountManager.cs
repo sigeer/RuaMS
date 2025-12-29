@@ -5,6 +5,7 @@ using Application.EF.Entities;
 using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
@@ -13,6 +14,7 @@ using Dto;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
@@ -219,24 +221,23 @@ namespace Application.Core.Login.Datas
             return _accDataSource.Values.Where(x => x.GMLevel > 1).Select(x => x.Id).ToArray();
         }
 
-        public SystemProto.SetGmLevelResponse SetGmLevel(SystemProto.SetGmLevelRequest request)
+        public async Task SetGmLevel(SystemProto.SetGmLevelRequest request)
         {
+            var res = new SystemProto.SetGmLevelResponse { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
-                return new SystemProto.SetGmLevelResponse { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeSetGmLevel, res, [request.OperatorId]);
+                return;
+            }    
 
             var accountDto = GetAccount(targetChr.Character.AccountId)!;
             accountDto.GMLevel = (sbyte)request.Level;
             UpdateAccount(accountDto);
 
-            _server.Transport.BroadcastGmLevelChanged(new SystemProto.SetGmLevelBroadcast
-            {
-                TargetId = targetChr.Character.Id,
-                OperatorName = _server.CharacterManager.GetPlayerName(request.OperatorId),
-                TargetName = request.TargetName,
-                Level = request.Level
-            });
-            return new SystemProto.SetGmLevelResponse();
+            res.TargetId = targetChr.Character.Id;
+            await _server.Transport.SendMessageN(ChannelRecvCode.InvokeSetGmLevel, res, [request.OperatorId, res.TargetId]);
         }
 
         public bool GainCharacterSlot(int accId)

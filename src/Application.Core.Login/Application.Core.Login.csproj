@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="CharacterCreator\" />
-    <Folder Include="Internal\Handlers\" />
     <Folder Include="Properties\" />
     <Folder Include="ServerData\Items\" />
 

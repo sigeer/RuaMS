@@ -17,7 +17,7 @@ import "Dto/SkillMacro.proto";
 import "Dto/CoolDown.proto";
 import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
-import "Dto/Buddy.proto";
+import "Buddy/Buddy.proto";
 import "Dto/AccountGame.proto";
 import "Dto/NewYearCard.proto";
 import "Dto/ServerCrossCallback.proto";
@@ -53,7 +53,7 @@ message PlayerGetterDto {
   repeated Dto.CoolDownDto coolDowns = 13; // CHECK TYPE
   repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
   repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
-  repeated Dto.BuddyDto buddyList = 16; // CHECK TYPE
+  repeated BuddyProto.BuddyDto buddyList = 16; // CHECK TYPE
   LoginInfo loginInfo = 17;
   CharacterLinkDto link = 18;
   repeated Dto.FameLogRecordDto fameLogs = 19;

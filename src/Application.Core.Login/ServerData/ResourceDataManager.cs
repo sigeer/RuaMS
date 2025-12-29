@@ -10,6 +10,7 @@ using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using ZLinq;
 
 namespace Application.Core.Login.ServerData
@@ -60,16 +61,16 @@ namespace Application.Core.Login.ServerData
             return res;
         }
 
-        public void CreatePLife(LifeProto.CreatePLifeRequest request)
+        public async Task CreatePLife(LifeProto.CreatePLifeRequest request)
         {
             var newKey = Interlocked.Increment(ref _localPLifeId);
             var newModel = _mapper.Map<PLifeModel>(request.Data);
             SetDirty(newKey, new StoreUnit<PLifeModel>(StoreFlag.AddOrUpdate, newModel));
 
-            _server.Transport.BroadcastPLifeCreated(request);
+            await _server.Transport.BroadcastPLifeCreated(request);
         }
 
-        public void RemovePLife(LifeProto.RemovePLifeRequest request)
+        public async Task RemovePLife(LifeProto.RemovePLifeRequest request)
         {
             List<PLifeModel> toRemove = [];
             if (request.LifeId > 0)
@@ -90,7 +91,7 @@ namespace Application.Core.Login.ServerData
 
             var res = new LifeProto.RemovePLifeResponse { MasterId = request.MasterId };
             res.RemovedItems.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(toRemove));
-            _server.Transport.BroadcastPLifeRemoved(res);
+            await _server.Transport.BroadcastPLifeRemoved(res);
         }
 
         protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<PLifeModel>> updateData)

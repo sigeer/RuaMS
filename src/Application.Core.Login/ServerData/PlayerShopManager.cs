@@ -198,7 +198,7 @@ namespace Application.Core.Login.ServerData
         {
             var allData = Query(x => true);
             List<int> expiredCids = [];
-            allData.ForEach(x =>
+            allData.ForEach(async x =>
             {
                 int daynotes = Math.Min(dailyReminders.Length - 1, x.Daynotes);
 
@@ -229,7 +229,7 @@ namespace Application.Core.Login.ServerData
                             SetDirty(x.Id, new StoreUnit<FredrickStoreModel>(StoreFlag.AddOrUpdate, x));
 
                             string msg = fredrickReminderMessage(x.Daynotes - 1);
-                            _server.NoteManager.SendNormal(msg, -NpcId.FREDRICK, x.Id);
+                            await _server.NoteManager.SendNormal(msg, -NpcId.FREDRICK, x.Id);
                         }
                     }
                 }

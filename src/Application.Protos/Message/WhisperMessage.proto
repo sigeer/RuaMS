@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Dto;
+package MessageProto;
 
 message SendWhisperMessageRequest {
 	int32 fromId = 1;
@@ -8,14 +8,11 @@ message SendWhisperMessageRequest {
 	string text = 3;
 }
 
-message SendWhisperMessageBroadcast {
-	string fromName = 1;
-	int32 fromChannel  = 2;
-	bool isFromGM = 3;
-	int32 receiverId = 4;
-	string text = 5;
-}
-
 message SendWhisperMessageResponse {
 	int32 code = 1;
+	SendWhisperMessageRequest request = 2;
+	string fromName = 3;
+	int32 fromChannel  = 4;
+	bool isFromGM = 5;
+	int32 receiverId = 6;
 }

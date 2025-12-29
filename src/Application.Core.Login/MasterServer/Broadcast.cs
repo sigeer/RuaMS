@@ -1,6 +1,7 @@
 using Application.Shared.Message;
 using Dto;
 using System;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login
 {
@@ -22,92 +23,67 @@ namespace Application.Core.Login
             };
         }
 
-        public void DropWorldMessage(int type, string message, bool onlyGM)
+        public async Task DropWorldMessage(int type, string message, bool onlyGM = false)
         {
+            var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
             if (onlyGM)
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
-                DropWorldMessage(type, message, gmids);
+                msg.Receivers.AddRange(gmids);
+                await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
             }
             else
             {
-                DropWorldMessage(type, message);
+                msg.Receivers.Add(-1);
+                await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
             }
         }
 
-        public void DropWorldMessage(int type, string message)
-        {
-            var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
-            msg.Receivers.Add(-1);
-            Transport.BroadcastMessage(BroadcastType.Broadcast_DropMessage, msg);
-        }
-
-        public void DropWorldMessage(int type, string message, int[] targets)
+        public async Task DropWorldMessage(int type, string message, int[] targets)
         {
             var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
             msg.Receivers.AddRange(targets);
-            Transport.SendMessage(BroadcastType.Broadcast_DropMessage, msg, targets);
+
+            await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
         }
 
-        public void BroadcastPacket(MessageProto.PacketRequest p)
+        public async Task BroadcastPacket(MessageProto.PacketRequest p)
         {
             var msg = new MessageProto.PacketBroadcast { Data = p.Data };
             if (p.OnlyGM)
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
                 msg.Receivers.AddRange(gmids);
-                Transport.SendMessage(BroadcastType.Broadcast_Packet, msg, gmids);
+                await Transport.SendMessageN(ChannelRecvCode.HandleFullPacket, msg, msg.Receivers);
             }
             else
             {
                 msg.Receivers.Add(-1);
-                Transport.BroadcastMessage(BroadcastType.Broadcast_Packet, msg);
+                await Transport.BroadcastMessageN(ChannelRecvCode.HandleFullPacket, msg);
             }
         }
 
-        public void BroadcastPacket(MessageProto.PacketRequest p, IEnumerable<int> chrIds)
+        public async Task BroadcastPacket(MessageProto.PacketRequest p, IEnumerable<int> chrIds)
         {
             var msg = new MessageProto.PacketBroadcast { Data = p.Data };
             msg.Receivers.AddRange(chrIds);
-            Transport.SendMessage(BroadcastType.Broadcast_Packet, msg, msg.Receivers);
+            await Transport.SendMessageN(ChannelRecvCode.HandleFullPacket, msg, msg.Receivers);
         }
 
-        public void DropYellowTip(string message, bool onlyGM = false)
+        public async Task DropYellowTip(string message, bool onlyGM = false)
         {
-            var msg = new MessageProto.YellowTipBroadcast { Message = message };
-            if (onlyGM)
-            {
-                var gmids = CharacterManager.GetOnlinedGMs();
-                msg.Receivers.AddRange(gmids);
-                Transport.SendMessage(BroadcastType.Broadcast_YellowTip, msg, gmids);
-            }
-            else
-            {
-                msg.Receivers.Add(-1);
-                Transport.BroadcastMessage(BroadcastType.Broadcast_YellowTip, msg);
-            }
+            await DropWorldMessage(-1, message, onlyGM);
         }
 
-        public void DropEarnTitleMessage(string message, bool onlyGM = false)
+        public async Task DropEarnTitleMessage(string message, bool onlyGM = false)
         {
-            var msg = new MessageProto.EarnTitleMessageBroadcast { Message = message };
-            if (onlyGM)
-            {
-                var gmids = CharacterManager.GetOnlinedGMs();
-                msg.Receivers.AddRange(gmids);
-                Transport.SendMessage(BroadcastType.Broadcast_EarnTitleMessage, msg, gmids);
-            }
-            else
-            {
-                msg.Receivers.Add(-1);
-                Transport.BroadcastMessage(BroadcastType.Broadcast_EarnTitleMessage, msg);
-            }
+            await DropWorldMessage(-2, message, onlyGM);
         }
 
-        public void DisconnectChr(int chrId)
+        public async Task DisconnectChr(int chrId)
         {
-            var data = new SystemProto.DisconnectPlayerByNameBroadcast() { MasterId = chrId };
-            Transport.SendMessage(BroadcastType.SendPlayerDisconnect, data, [data.MasterId]);
+            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new () };
+            await Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, data, [chrId]);
         }
     }
 }

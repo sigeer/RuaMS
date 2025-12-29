@@ -34,10 +34,14 @@ namespace Application.Module.Marriage.Channel
             MessageDispatcher.Register<MarriageProto.OnSpouseChatCallback>(MessageType.SpouseChat, _marriageManager.OnReceivedSpouseChat);
         }
 
-        public override void OnPlayerEnterGame(IPlayer chr, bool isNewComer)
+        public override void OnPlayerLogin(SyncProto.PlayerFieldChange data)
         {
-            base.OnPlayerEnterGame(chr, isNewComer);
-            _marriageManager.CheckMarriageData(chr);
+            base.OnPlayerLogin(data);
+            var chr = _server.FindPlayerById(data.Id);
+            if (chr != null)
+            {
+                _marriageManager.CheckMarriageData(chr);
+            }
         }
 
         public void WriteMarriageRing(OutPacket p, IPlayer chr)

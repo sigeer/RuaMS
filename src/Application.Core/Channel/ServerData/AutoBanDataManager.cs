@@ -55,27 +55,7 @@ namespace Application.Core.Channel.ServerData
 
         public void ToggleIgnore(IPlayer chr, string name)
         {
-            Config.ToggleAutoBanIgnoreResponse res = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
-            if (res.IsSuccess)
-            {
-                chr.yellowMessage(name + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored."));
-            }
-            else
-            {
-                chr.dropMessage($"未找到玩家：{name}");
-            }
-        }
-
-        public void OnIgoreDataChanged(Config.AutoBanIgnoredChangedNotifyDto data)
-        {
-            foreach (var gmId in data.GmId)
-            {
-                var gmChr = _server.FindPlayerById(gmId);
-                if (gmChr != null)
-                {
-                    gmChr.dropMessage(5, data.OperatorName + (data.IsIgnored ? " has started ignoring " : " has stopped ignoring ") + data.TargetName + ".");
-                }
-            }
+            _ = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
         public void AddPoint(AutobanFactory type, IPlayer chr, string reason)

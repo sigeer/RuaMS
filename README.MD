@@ -66,19 +66,55 @@
 - **Sqlite （默认）**
 - Mysql 8
 
-### 步骤
+### 部分功能需要修改的配置
 
-1. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
-2. 检查wz路径：放在当前应用根目录，或者设置环境变量`RUA_MS_WZConfig__BaseDir`/`WZConfig__BaseDir`
+#### 公网运行
+
+修改`appsettings.json`中的`ChannelServerConfig.ServerHost`
+
+#### 使用其他数据库
+
+修改`Application.Host`.`appsettings.json`中的`ConnectionStrings`
+
+#### 接入其他频道服务器
+
+1. `Application.Host`的设置：解除`Kestrel:Endpoints:grpc`节的注释
+2. `Application.Host.Channel`的设置`Services:ruams-master:grpc`
+
 
 ### 单进程模式（master-standalone）
 
-直接运行`Application.Host.exe`
-
+1. 运行`Application.Host.exe`
 
 ### 多进程模式
 
 解除`Kestrel:Endpoints:grpc`节的注释
 
-- 使用master版：仅登录服务器，必须启动`Application.Host.Channel`
-- 使用master-standalone版：登录服务器+频道服务器，通过启动`Application.Host.Channel`扩展
+1. 运行`Application.Host.exe`
+2. 运行`Application.Host.Channel.exe`
+
+## docker 运行
+
+```bash
+docker run -itd \
+-p 8080:8080 \
+-p 8484:8484 \
+-p 7575-7600:7575-7600 \
+-v ./logs:/app/logs \
+--name ruams-standalone \
+sigeer/ruams-standalone
+
+# 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
+
+# 使用Mysql需要设置数据库类型及连接字符串
+-e "RUA_MS_Database=MySql" \
+-e "RUA_MS_ConnectionStrings__MySql=" \
+
+# 公网运行运行需要修改`ChannelServerConfig.ServerHost`
+-e "RUA_MS_ChannelServerConfig__ServerHost=" \
+
+# 允许接入其他频道服务器
+-p 7878:7878 \
+-e "RUA_MS_Kestrel__Endpoints__grpc__Url=http://0.0.0.0:7878" \
+-e "RUA_MS_Kestrel__Endpoints__grpc__Protocols=Http2" \
+```

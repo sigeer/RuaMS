@@ -1,8 +1,14 @@
 using Application.Core.Login.Models;
 using Application.Shared.Constants;
+using Application.Shared.Message;
+using Application.Shared.Models;
+using Application.Shared.Servers;
 using AutoMapper;
 using Dto;
 using System.Collections.Concurrent;
+using System.Security.Cryptography.Xml;
+using System.Threading.Tasks;
+using XmlWzReader;
 
 namespace Application.Core.Login.Services
 {
@@ -19,11 +25,16 @@ namespace Application.Core.Login.Services
             _mapper = mapper;
         }
 
-        public SystemProto.WrapPlayerByNameResponse WarpPlayerByName(SystemProto.WrapPlayerByNameRequest request)
+        public async Task WarpPlayerByName(SystemProto.WrapPlayerByNameRequest request)
         {
+            var res = new SystemProto.WrapPlayerByNameResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel <= 0)
-                return new SystemProto.WrapPlayerByNameResponse { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.WarpPlayer, res, [request.MasterId]);
+                return;
+            }
 
             if (!_callbacks.TryGetValue(request.MasterId, out var list))
             {
@@ -37,27 +48,44 @@ namespace Application.Core.Login.Services
                 Params = [new CallbackParamModel() { Index = 0, Schema = typeof(string).Name, Value = request.Victim }]
             });
 
-            return new SystemProto.WrapPlayerByNameResponse { TargetChannel = targetChr.Channel };
+            res.TargetChannel = targetChr.Channel;
+            await _server.Transport.SendMessageN(ChannelRecvCode.WarpPlayer, res, [request.MasterId]);
         }
 
-        public SystemProto.SummonPlayerByNameResponse SummonPlayerByName(SystemProto.SummonPlayerByNameRequest request)
+        public async Task SummonPlayerByName(SystemProto.SummonPlayerByNameRequest request)
         {
-            return SummonPlayer(request.MasterId, _server.CharacterManager.FindPlayerByName(request.Victim));
-        }
-
-        public SystemProto.SummonPlayerByNameResponse SummonPlayerById(int operatorId, int targetId)
-        {
-            return SummonPlayer(operatorId, _server.CharacterManager.FindPlayerById(targetId));
-        }
-
-        private SystemProto.SummonPlayerByNameResponse SummonPlayer(int operatorId, CharacterLiveObject? targetChr)
-        {
+            var res = new SystemProto.SummonPlayerByNameResponse() { Request = request };
+            var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel <= 0)
-                return new SystemProto.SummonPlayerByNameResponse { Code = 1 };
+            {
+                await _server.Transport.SendMessageN(ChannelRecvCode.SummonPlayer, res, [request.MasterId]);
+                return;
+            }
 
-            _server.Transport.SendWrapPlayerByName(new SystemProto.SummonPlayerByNameBroadcast { WarpToName = _server.CharacterManager.GetPlayerName(operatorId), MasterId = targetChr.Character.Id });
+            res.WarpToChannel = targetChr.Channel;
+            res.WarpToName = _server.CharacterManager.GetPlayerName(request.MasterId);
+            res.VictimId = targetChr.Character.Id;
+            await _server.Transport.SendMessageN(ChannelRecvCode.SummonPlayer, res, [request.MasterId, res.VictimId]);
+        }
 
-            return new SystemProto.SummonPlayerByNameResponse();
+        public async Task SummonPlayerById(int operatorId, int targetId)
+        {
+            await SummonPlayer(operatorId, _server.CharacterManager.FindPlayerById(targetId));
+        }
+
+        private async Task SummonPlayer(int operatorId, CharacterLiveObject? targetChr)
+        {
+            var res = new SystemProto.SummonPlayerByNameResponse() { Request = new SystemProto.SummonPlayerByNameRequest() };
+            if (targetChr == null || targetChr.Channel <= 0)
+            {
+                await _server.Transport.SendMessageN(ChannelRecvCode.SummonPlayer, res, [operatorId]);
+                return;
+            }
+
+            res.WarpToChannel = targetChr.Channel;
+            res.WarpToName = _server.CharacterManager.GetPlayerName(operatorId);
+            res.VictimId = targetChr.Character.Id;
+            await _server.Transport.SendMessageN(ChannelRecvCode.SummonPlayer, res, [operatorId, res.VictimId]);
         }
 
 
@@ -68,15 +96,20 @@ namespace Application.Core.Login.Services
             return [];
         }
 
-        public SystemProto.DisconnectPlayerByNameResponse DisconnectPlayerByName(SystemProto.DisconnectPlayerByNameRequest request)
+        public async Task DisconnectPlayerByName(SystemProto.DisconnectPlayerByNameRequest request)
         {
+            var res = new SystemProto.DisconnectPlayerByNameResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel == 0)
-                return new SystemProto.DisconnectPlayerByNameResponse { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, res, [request.MasterId]);
+                return;
+            }
 
-            _server.DisconnectChr(targetChr.Character.Id);
+            res.TargetId = targetChr.Character.Id;
+            await _server.Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, res, [res.Request.MasterId, res.TargetId]);
 
-            return new SystemProto.DisconnectPlayerByNameResponse();
         }
     }
 }

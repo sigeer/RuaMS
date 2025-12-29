@@ -38,8 +38,22 @@ namespace Application.Core.Channel.Modules
         }
         public virtual void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg) { }
         public virtual void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg) { }
-        public virtual void OnPlayerLogin(Dto.PlayerOnlineChange data) { }
-        public virtual void OnPlayerEnterGame(IPlayer chr, bool isNewComer) { }
+        public virtual void OnPlayerServerChanged(SyncProto.PlayerFieldChange arg) 
+        {
+            if (arg.FromChannel == 0 && arg.Channel > 0)
+            {
+                OnPlayerLogin(arg);
+            }
+            //if (arg.FromChannel != 0 && arg.Channel == 0)
+            //{
+            //    await OnPlayerLogoff(obj);
+            //}
+            //if (arg.Channel == -1)
+            //{
+            //    await OnPlayerEnterCashShop(obj);
+            //}
+        }
+        public virtual void OnPlayerLogin(SyncProto.PlayerFieldChange data) { }
         public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

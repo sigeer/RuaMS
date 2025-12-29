@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using net.server.guild;
 using SyncProto;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Channel.Modules
 {
@@ -11,6 +12,20 @@ namespace Application.Core.Channel.Modules
     {
         public ChannelModule(WorldChannelServer server, ILogger<AbstractChannelModule> logger) : base(server, logger)
         {
+        }
+
+        public override void OnPlayerServerChanged(PlayerFieldChange data)
+        {
+            base.OnPlayerServerChanged(data);
+
+            if (data.GuildId > 0)
+            {
+                var guild = _server.GuildManager.GetGuildById(data.GuildId);
+                if (guild != null)
+                {
+                    guild.OnMemberChannelChanged(data.Id, data.Channel);
+                }
+            }
         }
 
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
@@ -46,7 +61,7 @@ namespace Application.Core.Channel.Modules
                         e.GetMessageByKey(
                             nameof(ClientMessage.Levelup_Congratulation),
                             CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, e.GetItemName(data.MedalItemId)),
-                            data.Level.ToString(), 
+                            data.Level.ToString(),
                             data.Name)
                         );
                 }

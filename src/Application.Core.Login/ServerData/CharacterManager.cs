@@ -19,6 +19,7 @@ using MySqlConnector;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Application.Core.Login.Datas
@@ -82,7 +83,7 @@ namespace Application.Core.Login.Datas
             return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
-        public void Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
+        public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
@@ -128,7 +129,7 @@ namespace Application.Core.Login.Datas
                     // 等级变化通知
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerLevelChanged(origin);
+                       await module.OnPlayerLevelChanged(origin);
                     }
                 }
 
@@ -137,7 +138,7 @@ namespace Application.Core.Login.Datas
                     // 转职通知
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerJobChanged(origin);
+                       await module.OnPlayerJobChanged(origin);
                     }
 
                 }
@@ -147,37 +148,20 @@ namespace Application.Core.Login.Datas
                     // 地图切换
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerMapChanged(origin);
+                       await module.OnPlayerMapChanged(origin);
                     }
                 }
 
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
                 if (origin.Channel != obj.Channel)
                 {
+                    var lastChannel = origin.Channel;
                     origin.Channel = obj.Channel;
-                    // 离线通知
-                    if (obj.Channel == 0)
+                    foreach (var module in _masterServer.Modules)
                     {
-                        origin.Character.LastLogoutTime = DateTimeOffset.FromUnixTimeMilliseconds(_masterServer.getCurrentTime());
-                        origin.ChannelNode = null;
-
-
-                        foreach (var module in _masterServer.Modules)
-                        {
-                            module.OnPlayerLogoff(origin);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var module in _masterServer.Modules)
-                        {
-                            module.OnPlayerEnterCashShop(origin);
-                        }
+                        await module.OnPlayerServerChanged(origin, lastChannel);
                     }
 
-                    _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
-
-                    _masterServer.BuddyManager.BroadcastNotify(origin);
                     _masterServer.InvitationManager.RemovePlayerInvitation(origin.Character.Id);
                 }
             }
@@ -214,29 +198,28 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void BatchUpdate(List<SyncProto.PlayerSaveDto> list)
+        public async Task BatchUpdate(List<SyncProto.PlayerSaveDto> list)
         {
             foreach (var item in list)
             {
-                Update(item, SyncCharacterTrigger.System);
+                await Update(item, SyncCharacterTrigger.System);
             }
         }
 
-        internal void CompleteLogin(int playerId, int channel, out int accountId)
+        internal async Task<int> CompleteLogin(int playerId, int channel)
         {
             if (_idDataSource.TryGetValue(playerId, out var d))
             {
-                accountId = d.Character.AccountId;
-                var isNewComer = d.Channel == 0;
-
+                var lastChannel = d.Channel;
                 d.Channel = channel;
                 d.ChannelNode = _masterServer.GetChannelServer(channel);
 
-
                 foreach (var module in _masterServer.Modules)
                 {
-                    module.OnPlayerLogin(d, isNewComer);
+                    await module.OnPlayerServerChanged(d, lastChannel);
                 }
+
+                return d.Character.AccountId;
             }
             else
             {
@@ -568,7 +551,7 @@ namespace Application.Core.Login.Datas
                 Shoes = shoes,
                 Weapon = weapon,
                 Gender = gender
-            }).Code;
+            }).ConfigureAwait(false).GetAwaiter().GetResult().Code;
         }
 
         public int CreatePlayerDB(CreatorProto.NewPlayerSaveDto data)

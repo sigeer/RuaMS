@@ -1,10 +1,8 @@
 using Application.Core.Login;
 using Application.Host.Middlewares;
 using Application.Host.Services;
-using Application.Module.Duey.Master;
 using Application.Module.ExpeditionBossLog.Master;
 using Application.Module.Maker.Master;
-using Application.Module.PlayerNPC.Master;
 using Application.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -59,10 +57,8 @@ try
     builder.Logging.AddSerilog();
 
     builder.Services.AddLoginServer(builder.Configuration);
-    builder.Services.AddDueyMaster();
     builder.Services.AddExpeditionBossLogMaster();
     builder.Services.AddMakerMaster();
-    builder.Services.AddPlayerNPCMaster();
 
 #if IsStandalone
     builder.AddChannelServerInProgress();

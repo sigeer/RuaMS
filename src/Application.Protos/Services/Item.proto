@@ -12,8 +12,6 @@ import "Item/ItemStorage.proto";
 package ServiceProto;
 
 service ItemService {
-	rpc UseItemMegaphone(ItemProto.UseItemMegaphoneRequest) returns(ItemProto.UseItemMegaphoneResponse);
-	rpc UseTV(ItemProto.CreateTVMessageRequest) returns(ItemProto.CreateTVMessageResponse);
 	rpc LoadOwlSearchRecords(google.protobuf.Empty) returns(ItemProto.OwlSearchRecordResponse);
 	rpc UseOwlSearch(ItemProto.OwlSearchRequest) returns(ItemProto.OwlSearchResponse);
 

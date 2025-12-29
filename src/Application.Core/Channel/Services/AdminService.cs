@@ -42,7 +42,7 @@ namespace Application.Core.Channel.Services
 
         public void Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
-            var res = _transport.Ban(new SystemProto.BanRequest
+            _ = _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
@@ -51,71 +51,22 @@ namespace Application.Core.Channel.Services
                 BanLevel = (int)level,
                 Days = days
             });
-            if (res.Code != 0)
-            {
-                chr.sendPacket(PacketCreator.getGMEffect(6, 1));
-            }
-            else
-            {
-                chr.sendPacket(PacketCreator.getGMEffect(4, 0));
-            }
-        }
-
-        public void OnBannedNotify(SystemProto.BanBroadcast data)
-        {
-            var chr = _server.FindPlayerById(data.TargetId);
-            if (chr != null)
-            {
-                chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
-                chr.yellowMessage(chr.GetMessageByKey(ClientMessage.BanReason) + data.ReasonDesc);
-
-                Timer? timer = null;
-                timer = new System.Threading.Timer(_ =>
-                {
-                    chr.Client.CloseSession();
-
-                    timer?.Dispose();
-                }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
-            }
-
-            _server.SendDropGMMessage(6, string.Format(SystemMessage.Ban_NoticeGM, data.TargetName));
         }
 
         public void Unban(IPlayer chr, string victim)
         {
-            var res = _transport.Unban(new SystemProto.UnbanRequest
+            _ = _transport.Unban(new SystemProto.UnbanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
             });
-            if (res.Code == 0)
-            {
-                chr.message("Unbanned " + victim);
-            }
         }
 
         internal void SetGmLevel(IPlayer chr, string victim, int newLevel)
         {
-            var res = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
-            if (res.Code == 0)
-            {
-                chr.Yellow(nameof(ClientMessage.SetGmLevelCommand_Result), victim, newLevel.ToString());
-            }
-            else
-            {
-                chr.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), victim);
-            }
+            _ = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
         }
 
-        public void OnSetGmLevelNotify(SystemProto.SetGmLevelBroadcast data)
-        {
-            var chr = _server.FindPlayerById(data.TargetId);
-            if (chr != null)
-            {
-                chr.Client.AccountEntity!.GMLevel = (sbyte)data.Level;
-                chr.Notice(nameof(ClientMessage.Notice_GmLevelChanged), data.Level.ToString());
-            }
-        }
 
         public void SetFly(IPlayer chr, bool v)
         {
@@ -164,15 +115,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
-                if (res.Code == 0)
-                {
-                    chr.Client.ChangeChannel(res.TargetChannel);
-                }
-                else
-                {
-                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
-                }
+                _ = _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
@@ -193,23 +136,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
-                if (res.Code != 0)
-                {
-                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
-                }
-            }
-        }
-
-        public void OnPlayerSummoned(SystemProto.SummonPlayerByNameBroadcast data)
-        {
-            var summoned = _server.FindPlayerById(data.MasterId);
-            if (summoned != null)
-            {
-                if (summoned.getEventInstance() == null)
-                {
-                    WarpPlayerByName(summoned, data.WarpToName);
-                }
+                _ = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
@@ -222,30 +149,17 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                var res = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
-                if (res.Code != 0)
-                {
-                    chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), victim);
-                }
+                _ = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
-        public void OnReceivedDisconnectCommand(SystemProto.DisconnectPlayerByNameBroadcast data)
-        {
-            var chr = _server.FindPlayerById(data.MasterId);
-            if (chr != null)
-            {
-                chr.Client.Disconnect(false);
-            }
-        }
 
         public void DisconnectAll(IPlayer chr)
         {
-            _server.Transport.DisconnectAllNotifyAsync();
+            _ = _server.Transport.DisconnectAllNotifyAsync();
             // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
             chr.Pink(ClientMessage.Command_Done, "dcall");
         }
-
 
         public List<Dto.ClientInfo> GetOnliendClientInfo()
         {
@@ -271,48 +185,49 @@ namespace Application.Core.Channel.Services
 
         internal string QueryExpeditionInfo(IPlayer onlinedCharacter)
         {
-            var dataSource = _transport.GetExpeditionInfo().List;
-            StringBuilder sb = new StringBuilder();
-            foreach (var ch in dataSource)
-            {
-                sb.Append("==== 频道");
-                sb.Append(ch.Channel);
-                sb.Append(" ====");
-                sb.Append("\r\n\r\n");
-                var expeds = ch.Expeditions;
-                if (expeds.Count == 0)
-                {
-                    sb.Append("无");
-                    continue;
-                }
+            return "";
+            //var dataSource = _transport.GetExpeditionInfo().List;
+            //StringBuilder sb = new StringBuilder();
+            //foreach (var ch in dataSource)
+            //{
+            //    sb.Append("==== 频道");
+            //    sb.Append(ch.Channel);
+            //    sb.Append(" ====");
+            //    sb.Append("\r\n\r\n");
+            //    var expeds = ch.Expeditions;
+            //    if (expeds.Count == 0)
+            //    {
+            //        sb.Append("无");
+            //        continue;
+            //    }
 
-                int id = 0;
-                foreach (var exped in expeds)
-                {
-                    id++;
-                    sb.Append("> Expedition " + id);
+            //    int id = 0;
+            //    foreach (var exped in expeds)
+            //    {
+            //        id++;
+            //        sb.Append("> Expedition " + id);
 
-                    sb.Append(">> Type: " + EnumClassCache<ExpeditionType>.Values[exped.Type].name());
-                    sb.Append(">> Status: " + (exped.Status == 1 ? "REGISTERING" : "UNDERWAY"));
-                    sb.Append(">> Size: " + exped.Members.Count);
-                    int memId = 1;
-                    foreach (var e in exped.Members)
-                    {
-                        if (e.Id == exped.LeaderId)
-                        {
-                            sb.Append(">>> Leader: " + e.Name);
-                        }
-                        else
-                        {
-                            sb.Append(">>> Member " + memId + ": " + e.Name);
-                            memId++;
-                        }
+            //        sb.Append(">> Type: " + EnumClassCache<ExpeditionType>.Values[exped.Type].name());
+            //        sb.Append(">> Status: " + (exped.Status == 1 ? "REGISTERING" : "UNDERWAY"));
+            //        sb.Append(">> Size: " + exped.Members.Count);
+            //        int memId = 1;
+            //        foreach (var e in exped.Members)
+            //        {
+            //            if (e.Id == exped.LeaderId)
+            //            {
+            //                sb.Append(">>> Leader: " + e.Name);
+            //            }
+            //            else
+            //            {
+            //                sb.Append(">>> Member " + memId + ": " + e.Name);
+            //                memId++;
+            //            }
 
-                    }
-                    sb.Append("\r\n\r\n");
-                }
-            }
-            return sb.ToString();
+            //        }
+            //        sb.Append("\r\n\r\n");
+            //    }
+            //}
+            //return sb.ToString();
         }
 
         internal ServerState GetServerStats()

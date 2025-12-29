@@ -28,7 +28,7 @@ namespace Application.Core.Login.Servers
 
         public override async Task<Empty> BatchPushCharacter(SyncProto.BatchSyncPlayerRequest request, ServerCallContext context)
         {
-            _server.CharacterManager.BatchUpdate(request.List.ToList());
+            await _server.CharacterManager.BatchUpdate(request.List.ToList());
             if (request.SaveDb)
                 await _server.ServerManager.CommitAllImmediately();
             return new();
@@ -36,7 +36,7 @@ namespace Application.Core.Login.Servers
 
         public override async Task<Empty> PushCharacter(SyncPlayerRequest request, ServerCallContext context)
         {
-            _server.CharacterManager.Update(request.Data, (SyncCharacterTrigger)request.Trigger);
+            await _server.CharacterManager.Update(request.Data, (SyncCharacterTrigger)request.Trigger);
             if (request.SaveDb)
                 await _server.ServerManager.CommitAllImmediately();
             return new();
@@ -47,14 +47,14 @@ namespace Application.Core.Login.Servers
             foreach (var item in request.List)
             {
                 _server.PlayerShopManager.SyncPlayerStorage(item);
-            }            
+            }
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> CompleteLogin(CompleteLoginRequest request, ServerCallContext context)
+        public override async Task<Empty> CompleteLogin(CompleteLoginRequest request, ServerCallContext context)
         {
-            _loginService.SetPlayerLogedIn(request.CharacterId, request.Channel);
-            return Task.FromResult(new Empty());
+            await _loginService.SetPlayerLogedIn(request.CharacterId, request.Channel);
+            return new Empty();
         }
 
         public override Task<CreateCharResponseDto> CreateCharacter(NewPlayerSaveDto request, ServerCallContext context)
@@ -79,7 +79,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<BoolWrapper> HasCharacterInTransition(CheckCharacterInTransitionRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new BoolWrapper { Value = _server.HasCharacteridInTransition(request.ClientSession)});
+            return Task.FromResult(new BoolWrapper { Value = _server.HasCharacteridInTransition(request.ClientSession) });
         }
 
         public override Task<Empty> PushPlayerBuffers(PushPlayerBuffsRequest request, ServerCallContext context)
@@ -103,7 +103,7 @@ namespace Application.Core.Login.Servers
         public override Task<AccountLoginStateDto> UpdateAccountState(UpdateAccountStateRequest request, ServerCallContext context)
         {
             var data = _server.AccountManager.UpdateAccountState(request.AccId, (sbyte)request.State);
-            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId =request.AccId, Time = Timestamp.FromDateTimeOffset(data.DateTime) });
+            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.DateTime) });
         }
     }
 }
