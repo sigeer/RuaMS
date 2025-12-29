@@ -135,6 +135,7 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("YamlConfig", typeof(YamlConfig));
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
         engine.AddHostedType("Point", typeof(Point));
+        engine.AddHostedType("RandomPoint", typeof(RandomPoint));
         engine.AddHostedObject("Server", _channelServer.Container);
 
         foreach (var item in _addtionalRegistries)

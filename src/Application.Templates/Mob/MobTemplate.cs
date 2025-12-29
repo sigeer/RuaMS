@@ -26,7 +26,7 @@ namespace Application.Templates.Mob
         public bool UnDead { get; set; }
         public bool IsFirstAttack { get; set; }
         public MobDataSkillTemplate[] Skill { get; set; }
-        public int Buff { get; set; }
+        public int Buff { get; set; } = -1;
         public int GetCP { get; set; }
         public bool RemoveOnMiss { get; set; }
         public int DropItemPeriod { get; set; }
@@ -36,15 +36,18 @@ namespace Application.Templates.Mob
         public bool NoFlip { get; set; }
 
 
-        public int SelfDestructActionType { get; set; }
-        public int SelfDestructRemoveAfter { get; set; }
-        public int SelfDestructHp { get; set; }
+        public MobSelfDestruction? SelfDestruction { get; set; }
         public int CoolDamage { get; set; }
         public int CoolDamageProb { get; set; }
 
         public MobLosedItem[] LosedItems { get; set; }
         public string? ElementStr { get; set; }
         public MobBanTemplate? Ban { get; set; }
+
+        public Dictionary<string, int> AnimateDelay { get; set; } = [];
+        public int? Stand0OriginX { get; set; }
+        public MobAttackTemplate[] AttackInfos { get; set; } = [];
+        public int Link { get; set; }
 
         public MobTemplate(int templateId)
             : base(templateId)
@@ -56,6 +59,12 @@ namespace Application.Templates.Mob
 
         public sealed class MobDataSkillTemplate
         {
+            public MobDataSkillTemplate(int index)
+            {
+                Index = index;
+            }
+
+            public int Index { get; set; }
             public int Action { get; set; }
             public int EffectAfter { get; set; }
             public int Level { get; set; }
@@ -65,7 +74,7 @@ namespace Application.Templates.Mob
         public sealed class MobLosedItem
         {
             public int Id { get; set; }
-            public int Prob { get; set; }
+            public int Prop { get; set; }
             public int X { get; set; }
         }
 
@@ -111,14 +120,17 @@ namespace Application.Templates.Mob
 
         public void CloneLink(MobTemplate sourceTemplate)
         {
-            sourceTemplate.Ban = Ban;
-            sourceTemplate.LosedItems = LosedItems;
-            sourceTemplate.Skill = Skill;
-            sourceTemplate.Revive = Revive;
+            //sourceTemplate.Ban = Ban;
+            //sourceTemplate.LosedItems = LosedItems;
+            // sourceTemplate.Skill = Skill;
+            //sourceTemplate.Revive = Revive;
+            sourceTemplate.AttackInfos = AttackInfos;
 
-            sourceTemplate.SelfDestructActionType = SelfDestructActionType;
-            sourceTemplate.SelfDestructHp = SelfDestructHp;
-            sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
+            //sourceTemplate.SelfDestructActionType = SelfDestructActionType;
+            //sourceTemplate.SelfDestructHp = SelfDestructHp;
+            //sourceTemplate.SelfDestructRemoveAfter = SelfDestructRemoveAfter;
+
+            // sourceTemplate.AnimateDelay = AnimateDelay;
         }
     }
 }

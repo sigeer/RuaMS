@@ -37,19 +37,19 @@ public class MobAttackInfoFactory
     private static Dictionary<string, MobAttackInfo?> mobAttacks = new();
     private static DataProvider dataSource = DataProviderFactory.getDataProvider(WZFiles.MOB);
 
-    public static MobAttackInfo? getMobAttackInfo(Monster mob, int attack)
+    public static MobAttackInfo? getMobAttackInfo(int mobId, int attack)
     {
-        var ret = mobAttacks.GetValueOrDefault(mob.getId() + "" + attack);
+        var ret = mobAttacks.GetValueOrDefault(mobId + "" + attack);
         if (ret != null)
         {
             return ret;
         }
         lock (mobAttacks)
         {
-            ret = mobAttacks.GetValueOrDefault(mob.getId() + "" + attack);
+            ret = mobAttacks.GetValueOrDefault(mobId + "" + attack);
             if (ret == null)
             {
-                var mobData = dataSource.getData(StringUtil.getLeftPaddedStr(mob.getId() + ".img", '0', 11));
+                var mobData = dataSource.getData(StringUtil.getLeftPaddedStr(mobId + ".img", '0', 11));
                 if (mobData != null)
                 {
                     //					MapleData infoData = mobData.getChildByPath("info");
@@ -70,14 +70,14 @@ public class MobAttackInfoFactory
                     int disease = DataTool.getInt("disease", attackData, 0);
                     int level = DataTool.getInt("level", attackData, 0);
                     int mpCon = DataTool.getInt("conMP", attackData, 0);
-                    ret = new MobAttackInfo(mob.getId(), attack);
+                    ret = new MobAttackInfo(mobId, attack);
                     ret.setDeadlyAttack(deadlyAttack != null);
                     ret.setMpBurn(mpBurn);
                     ret.setDiseaseSkill(disease);
                     ret.setDiseaseLevel(level);
                     ret.setMpCon(mpCon);
                 }
-                mobAttacks.AddOrUpdate(mob.getId() + "" + attack, ret);
+                mobAttacks.AddOrUpdate(mobId + "" + attack, ret);
             }
             return ret;
         }

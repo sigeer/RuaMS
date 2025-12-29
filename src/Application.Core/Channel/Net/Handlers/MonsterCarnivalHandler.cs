@@ -65,7 +65,6 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             return;
                         }
 
-                        var mob = LifeFactory.Instance.GetMonsterTrust(mobs[num].Key);
                         if (c.OnlinedCharacter.MCTeam != null)
                         {
                             if (!c.OnlinedCharacter.MCTeam.CanSummon())
@@ -78,10 +77,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             c.OnlinedCharacter.MCTeam.Summon();
 
                             var spawnPos = map.getRandomSP(c.OnlinedCharacter.MCTeam.TeamFlag);
-                            mob.setPosition(spawnPos);
-
-                            c.OnlinedCharacter.getMap().addMonsterSpawn(mob, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
-                            c.OnlinedCharacter.getMap().addAllMonsterSpawn(mob, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
+                            c.OnlinedCharacter.getMap().addMonsterSpawn(mobs[num].Key, spawnPos, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
                             c.sendPacket(PacketCreator.enableActions());
                         }
 

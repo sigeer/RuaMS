@@ -39,10 +39,10 @@ namespace Application.Core.Game.Maps
         public TimeMob? TimeMob { get; set; }
         bool IsTrackedByEvent { get; set; }
         AbstractEventInstanceManager? EventInstanceManager { get; }
-        void addAllMonsterSpawn(Monster monster, int mobTime, int team);
         void addMapObject(IMapObject mapobject);
 
-        void addMonsterSpawn(Monster monster, int mobTime, int team);
+        void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
+        void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addPlayer(IPlayer chr);
         void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(IPlayer player);
@@ -196,7 +196,6 @@ namespace Application.Core.Game.Maps
         void movePlayer(IPlayer player, Point newPosition);
         void pickItemDrop(Packet pickupPacket, MapItem mdrop);
         void registerCharacterStatUpdate(Action r);
-        void removeAllMonsterSpawn(int mobId, int x, int y);
         void removeMapObject(int num);
         void removeMapObject(IMapObject obj);
         void removeMonsterSpawn(int mobId, int x, int y);
@@ -241,7 +240,6 @@ namespace Application.Core.Game.Maps
         void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
         void spawnMonsterWithEffect(Monster monster, int effect, Point pos);
         void spawnReactor(Reactor reactor);
-        void spawnRevives(Monster monster);
         void spawnSummon(Summon summon);
         void startEvent();
         void startEvent(IPlayer chr);
@@ -258,5 +256,6 @@ namespace Application.Core.Game.Maps
 
         bool IsActive();
         void BroadcastAll(Action<IPlayer> effectPlayer);
+        void SetupAreaBoss(string name, int bossId, int mobTime, List<object> points, string spawnMessage);
     }
 }

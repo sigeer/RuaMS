@@ -66,6 +66,12 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         _instance = sp.GetService<MonsterInformationProvider>() ?? throw new BusinessFatalException("MonsterInformationProvider 未注册");
     }
 
+    public void Register(MonsterInformationProvider instance)
+    {
+
+        _instance = instance;
+    }
+
     protected override void LoadDataInternal()
     {
         retrieveGlobal();
