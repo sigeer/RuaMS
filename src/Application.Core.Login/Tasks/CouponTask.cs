@@ -29,7 +29,7 @@ namespace Application.Core.Login.Tasks;
 ///  @info Thread responsible for maintaining coupons EXP & DROP effects active
 ///  整点开始，每小时执行
 /// </summary>
-public class CouponTask : AbstractRunnable
+public class CouponTask : AsyncAbstractRunnable
 {
     readonly MasterServer _server;
 
@@ -38,13 +38,13 @@ public class CouponTask : AbstractRunnable
         _server = server;
     }
 
-    public override void HandleRun()
+    public override async Task RunAsync()
     {
         try
         {
             _server.CouponManager.UpdateActiveCoupons();
 
-            _server.CouponManager.CommitActiveCoupons();
+            await _server.CouponManager.CommitActiveCoupons();
         }
         catch (Exception sqle)
         {

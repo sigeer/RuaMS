@@ -98,7 +98,7 @@ namespace Application.Core.Channel.ServerData
 
         public void SendMessage(IPlayer chr, string text)
         {
-            _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
+            _ = _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
 
         public void OnReceiveMessage(Dto.SendChatRoomMessageResponse data)

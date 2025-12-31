@@ -27,26 +27,10 @@ service SystemService {
 	rpc GetCurrentTimestamp(google.protobuf.Empty) returns(BaseProto.TimeWrapper);
 	rpc GetChannelEndPoint(BaseProto.GetChannelEndPointRequest) returns(BaseProto.IPEndPointDto);
 
-	rpc DropMessage(MessageProto.DropMessageRequest) returns(google.protobuf.Empty);
-	rpc BroadcastMessage(MessageProto.PacketRequest) returns(google.protobuf.Empty);
-
-	rpc SendWorldConfig(Config.WorldConfig) returns(google.protobuf.Empty);
-
-	rpc SendTimer(MessageProto.SetTimer) returns(google.protobuf.Empty);
-	rpc RemoveTimer(google.protobuf.Empty) returns(google.protobuf.Empty);
-
-	rpc SendReport(Dto.SendReportRequest) returns(Dto.SendReportResponse);
-	rpc SetAutobanIgnore(Config.ToggleAutoBanIgnoreRequest) returns(Config.ToggleAutoBanIgnoreResponse);
 	rpc GetAutobanIgnores(google.protobuf.Empty) returns(Config.AutoBanIgnoredWrapper);
 
-	rpc Ban(SystemProto.BanRequest) returns(SystemProto.BanResponse);
-	rpc Unban(SystemProto.UnbanRequest) returns(SystemProto.UnbanResponse);
-	rpc SetGmLevel(SystemProto.SetGmLevelRequest) returns(SystemProto.SetGmLevelResponse);
 	rpc SetAccountFly(ConfigProto.SetFlyRequest) returns (ConfigProto.SetFlyResponse);
 	rpc GetOnlinedPlayers(google.protobuf.Empty) returns(SystemProto.ShowOnlinePlayerResponse);
-	rpc WrapPlayer(SystemProto.WrapPlayerByNameRequest) returns(SystemProto.WrapPlayerByNameResponse);
-	rpc SummonPlayer(SystemProto.SummonPlayerByNameRequest) returns(SystemProto.SummonPlayerByNameResponse);
-	rpc DisconnectPlayer(SystemProto.DisconnectPlayerByNameRequest) returns(SystemProto.DisconnectPlayerByNameResponse);
 	rpc GetOnlinedClients(google.protobuf.Empty) returns(Dto.GetAllClientInfo);
 	rpc GainCharacterSlot(SyncProto.GainAccountCharacterSlotRequest) returns(SyncProto.GainAccountCharacterSlotResponse);
 

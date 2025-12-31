@@ -31,12 +31,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class NPCTalkHandler : ChannelHandlerBase
 {
     readonly ILogger<NPCTalkHandler> _logger;
-    readonly IDueyService _dueyService;
 
-    public NPCTalkHandler(ILogger<NPCTalkHandler> logger, IDueyService dueyService)
+    public NPCTalkHandler(ILogger<NPCTalkHandler> logger)
     {
         _logger = logger;
-        _dueyService = dueyService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -70,7 +68,7 @@ public class NPCTalkHandler : ChannelHandlerBase
 
             if (npc.getId() == NpcId.DUEY)
             {
-                _dueyService.DueyTalk(c, false);
+                c.CurrentServerContainer.DueyManager.SendTalk(c);
             }
             else
             {

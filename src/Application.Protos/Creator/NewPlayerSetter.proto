@@ -18,7 +18,6 @@ import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
 import "Dto/QuickSlot.proto";
 import "Dto/Storage.proto";
-import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
 
 package CreatorProto;

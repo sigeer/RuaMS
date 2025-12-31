@@ -1,5 +1,7 @@
 using Application.Shared.Invitations;
+using Application.Shared.Message;
 using Dto;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Models.Invitations
 {
@@ -49,8 +51,8 @@ namespace Application.Core.Login.Models.Invitations
             Type = type;
         }
 
-        public abstract void HandleInvitationCreated(InvitationProto.CreateInviteRequest request);
-        public void HandleInvitationAnswered(InvitationProto.AnswerInviteRequest request)
+        public abstract Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request);
+        public async Task HandleInvitationAnswered(InvitationProto.AnswerInviteRequest request)
         {
             var result = _server.InvitationManager.AnswerInvite(Type, request.MasterId, request.CheckKey, request.Ok);
             var response = new InvitationProto.AnswerInviteResponse
@@ -64,11 +66,11 @@ namespace Application.Core.Login.Models.Invitations
             {
                 if (result.Result == InviteResultType.ACCEPTED)
                 {
-                    OnInvitationAccepted(result.Request);
+                    await OnInvitationAccepted(result.Request);
                 }
                 else
                 {
-                    OnInvitationDeclined(result.Request);
+                    await OnInvitationDeclined(result.Request);
                 }
 
                 response.Code = (int)result.Result;
@@ -81,26 +83,27 @@ namespace Application.Core.Login.Models.Invitations
                 response.SenderPlayerName = result.Request.FromPlayerName;
                 response.TargetName = result.Request.TargetName;
             }
-            _server.Transport.ReturnInvitationAnswer(response);
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnInvitationAnswered, response, [response.SenderPlayerId, response.ReceivePlayerId]);
         }
 
-        protected virtual void OnInvitationAccepted(InviteRequest request)
+        protected virtual Task OnInvitationAccepted(InviteRequest request)
         {
-
+            return Task.CompletedTask;
         }
-        protected virtual void OnInvitationDeclined(InviteRequest request)
+        protected virtual Task OnInvitationDeclined(InviteRequest request)
         {
-
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 邀请过期时触发
         /// </summary>
         /// <param name="request"></param>
-        public virtual void OnInvitationExpired(InviteRequest request)
+        public virtual Task OnInvitationExpired(InviteRequest request)
         {
+            return Task.CompletedTask;
         }
 
-        protected virtual void BroadcastResult(InviteResponseCode responseCode, int key, CharacterLiveObject fromPlayer, CharacterLiveObject? toPlayer, string targetName)
+        protected virtual async Task BroadcastResult(InviteResponseCode responseCode, int key, CharacterLiveObject fromPlayer, CharacterLiveObject? toPlayer, string targetName)
         {
             if (responseCode == InviteResponseCode.Success)
             {
@@ -129,8 +132,7 @@ namespace Application.Core.Login.Models.Invitations
                 response.ReceivePlayerId = toPlayer!.Character.Id;
                 response.ReceivePlayerName = toPlayer.Character.Name;
             }
-
-            _server.Transport.ReturnInvitationCreated(response);
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnInvitationSent, response, [response.SenderPlayerId, response.ReceivePlayerId]);
         }
 
 

@@ -201,42 +201,21 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
         {
+            if (player.TscRequest != null)
+            {
+                return;
+            }
             var request = new ItemProto.CreateTVMessageRequest
             {
                 MasterId = player.Id,
-                ToName = victim,
+                PartnerName = victim,
                 Type = tvType,
                 ShowEar = showEar,
             };
             request.MessageList.AddRange(messages);
 
-            new ResourceConsumeBuilder().ConsumeItem(item, 1).Execute(player, ct =>
-            {
-                var res = _transport.BroadcastTV(request);
-                if (res.Code == 0)
-                    return true;
-
-                player.Popup("MapleTV is already in use.");
-                return false;
-            });
-        }
-
-        public void OnBroadcastTV(ItemProto.CreateTVMessageBroadcast data)
-        {
-            var noticeMsg = string.Join(" ", data.MessageList);
-            foreach (var ch in _server.Servers.Values)
-            {
-                foreach (var chr in ch.Players.getAllCharacters())
-                {
-                    chr.sendPacket(PacketCreator.enableTV());
-                    chr.sendPacket(PacketCreator.sendTV(data.Master, data.MessageList.ToArray(), data.Type <= 2 ? data.Type : data.Type - 3, data.MasterPartner));
-
-                    if (data.Type >= 3)
-                    {
-                        chr.sendPacket(PacketCreator.serverNotice(3, data.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Master) + " : " + noticeMsg, data.ShowEar));
-                    }
-                }
-            }
+            player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(item, 1).Build();
+            _ = _transport.BroadcastTV(request);
         }
 
         public void OnBroadcastTVFinished(Empty data)
@@ -249,6 +228,10 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
         {
+            if (player.TscRequest != null)
+            {
+                return;
+            }
             var request = new ItemProto.UseItemMegaphoneRequest
             {
                 MasterId = player.Id,
@@ -257,19 +240,7 @@ namespace Application.Core.Channel.Services
                 IsWishper = isWishper,
             };
 
-            new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Execute(player, ct =>
-            {
-                var res = _transport.SendItemMegaphone(request);
-                return res.Code == 0;
-            });
-        }
-
-        public void OnItemMegaphon(ItemProto.UseItemMegaphoneBroadcast data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                ch.broadcastPacket(PacketCreator.itemMegaphone(data.Message, data.IsWishper, data.SenderChannel, _mapper.Map<Item>(data.Item)));
-            }
+            player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Build();
         }
 
         public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)

@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
 using Application.Core.Channel.Internal.Handlers;
 using Application.Core.Channel.Invitation;
@@ -12,6 +13,7 @@ using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Protos;
+using Application.Shared.Internal;
 using Application.Shared.Servers;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
@@ -28,17 +30,6 @@ namespace Application.Core.Channel.HostExtensions
 {
     public static class ServiceCollectionExtensions
     {
-        static IServiceCollection AddInternalSessionHandlers(this IServiceCollection services)
-        {
-            services.AddSingleton<IInternalSessionHandler, RegisterChannelServerHandler>();
-            services.AddSingleton<IInternalSessionHandler, UnregisterChannelServerHandler>();
-            services.AddSingleton<IInternalSessionHandler, DisconnectAllHandler>();
-            services.AddSingleton<IInternalSessionHandler, SaveAllHandler>();
-            services.AddSingleton<IInternalSessionHandler, MultiChatHandler>();
-            // services.AddSingleton<IInternalSessionHandler, DropTextMessageHandler>();
-            return services;
-        }
-
         static IServiceCollection AddInvitationService(this IServiceCollection services)
         {
             services.AddSingleton<InviteChannelHandlerRegistry>();
@@ -118,6 +109,8 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<DataBootstrap, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
             services.AddSingleton<GachaponManager>();
 
+            services.AddSingleton<DueyManager>();
+
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();
             services.AddSingleton<ReportService>();
@@ -134,7 +127,6 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<NoteService>();
             services.AddSingleton<PlayerShopService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
-            services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
             services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
             services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
@@ -185,10 +177,6 @@ namespace Application.Core.Channel.HostExtensions
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ServiceProto.TeamService.TeamServiceClient>((sp, o) =>
-            {
-                o.Address = new(AppSettingKeys.Grpc_Master);
-            }).AddInterceptor<WithServerNameInterceptor>();
-            services.AddGrpcClient<ServiceProto.BuddyService.BuddyServiceClient>((sp, o) =>
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();

@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ResourceTransaction;
 using Application.Core.client.Characters;
 using Application.Core.Client.inventory;
 using Application.Core.Game.GameEvents.CPQ;
@@ -95,6 +96,8 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnLevelUp;
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
+
+        ResourceConsumeRequest? TscRequest { get; set; }
 
         public MonsterCarnivalTeam? MCTeam => TeamModel?.MCTeam;
         public int TotalCP { get; }

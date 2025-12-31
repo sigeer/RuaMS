@@ -85,27 +85,7 @@ namespace Application.Core.Channel.ServerData
 
         public void ToggleMonitor(IPlayer chr, string name)
         {
-            Config.ToggleMonitorPlayerResponse res = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
-            if (res.IsSuccess)
-            {
-                chr.yellowMessage(name + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored."));
-            }
-            else
-            {
-                chr.dropMessage($"未找到玩家：{name}");
-            }
-        }
-
-        public void OnMonitorDataChanged(Config.MonitorDataChangedNotifyDto data)
-        {
-            foreach (var gmId in data.GmId)
-            {
-                var gmChr = _server.FindPlayerById(gmId);
-                if (gmChr != null)
-                {
-                    gmChr.dropMessage(5, data.OperatorName + (data.IsMonitored ? " has started monitoring " : " has stopped monitoring ") + data.TargetName + ".");
-                }
-            }
+            _ = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
         }
     }
 }

@@ -1,5 +1,6 @@
 
 using Application.Core.Channel.Internal;
+using Application.Shared.Internal;
 using Google.Protobuf;
 using Microsoft.Extensions.DependencyInjection;
 

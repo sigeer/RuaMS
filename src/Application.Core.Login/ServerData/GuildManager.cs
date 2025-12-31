@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
 using System.Threading.Tasks;
+using Application.Shared.Message;
 
 namespace Application.Core.Login.ServerData
 {
@@ -128,6 +129,7 @@ namespace Application.Core.Login.ServerData
             response.Members.AddRange(_mapper.Map<GuildProto.GuildMemberDto[]>(GetGuildMembers(data)));
             return response;
         }
+
 
         List<CharacterLiveObject> GetGuildMembers(GuildModel guild)
         {
@@ -336,7 +338,7 @@ namespace Application.Core.Login.ServerData
             return 0;
         }
 
-        public void UpdateGuildGP(UpdateGuildGPRequest request)
+        public async Task UpdateGuildGPAsync(UpdateGuildGPRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -344,10 +346,10 @@ namespace Application.Core.Login.ServerData
                 return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildGPUpdate(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildGpUpdate, response);
         }
 
-        public void UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
+        public async Task UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -360,10 +362,10 @@ namespace Application.Core.Login.ServerData
                 return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildRankTitleResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildRankTitleUpdate(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildRankTitleUpdate, response);
         }
 
-        public void UpdateGuildNotice(UpdateGuildNoticeRequest request)
+        public async Task UpdateGuildNotice(UpdateGuildNoticeRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -371,10 +373,10 @@ namespace Application.Core.Login.ServerData
                 return GuildUpdateResult.Success;
             }, out var code);
             var response = new UpdateGuildNoticeResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildNoticeUpdate(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildNoticeUpdate, response);
         }
 
-        public void IncreseGuildCapacity(UpdateGuildCapacityRequest request)
+        public async Task IncreseGuildCapacity(UpdateGuildCapacityRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -386,10 +388,10 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new UpdateGuildCapacityResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildCapacityUpdate(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response);
         }
 
-        public void UpdateGuildEmblem(UpdateGuildEmblemRequest request)
+        public async Task UpdateGuildEmblem(UpdateGuildEmblemRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -402,10 +404,10 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new UpdateGuildEmblemResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildEmblemUpdate(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildEmblemUpdate,  response);
         }
 
-        public void DisbandGuild(GuildDisbandRequest request)
+        public async Task DisbandGuild(GuildDisbandRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
@@ -432,10 +434,10 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new GuildDisbandResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildDisband(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildDisband, response);
         }
 
-        public void ChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
+        public async Task ChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, (guild, master) =>
             {
@@ -452,10 +454,10 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new UpdateGuildMemberRankResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildRankChanged(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildRankChanged, response);
         }
 
-        public void GuildExpelMember(ExpelFromGuildRequest request)
+        public async Task GuildExpelMember(ExpelFromGuildRequest request)
         {
             var guildId = HandleGuildRequest(request.MasterId, (guild, master) =>
             {
@@ -473,7 +475,7 @@ namespace Application.Core.Login.ServerData
                 {
                     if (chrTo.Channel == 0)
                     {
-                        _server.NoteManager
+                        _ = _server.NoteManager
                             .SendNormal("You have been expelled from the guild.", master.Character.Id, chrTo.Character.Name);
                     }
 
@@ -486,17 +488,17 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new ExpelFromGuildResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildExpelMember(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildExpelMember, response);
         }
 
-        public void PlayerLeaveGuild(LeaveGuildRequest request)
+        public async Task PlayerLeaveGuild(LeaveGuildRequest request)
         {
             var guildId = HandleGuildRequest(request.PlayerId, (guild, master) =>
             {
                 if (master.Character.Id == guild.Leader)
                 {
                     // disband
-                    DisbandGuild(new GuildDisbandRequest { MasterId = request.PlayerId });
+                    _ = DisbandGuild(new GuildDisbandRequest { MasterId = request.PlayerId });
                 }
                 else
                 {
@@ -507,10 +509,10 @@ namespace Application.Core.Login.ServerData
             }, out var code);
 
             var response = new LeaveGuildResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastPlayerLeaveGuild(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response);
         }
 
-        public void PlayerJoinGuild(JoinGuildRequest request)
+        public async Task PlayerJoinGuild(JoinGuildRequest request)
         {
             GuildUpdateResult code = GuildUpdateResult.Success;
             var master = _server.CharacterManager.FindPlayerById(request.PlayerId);
@@ -539,7 +541,7 @@ namespace Application.Core.Login.ServerData
             }
 
             var response = new JoinGuildResponse { Code = (int)code, Request = request };
-            _server.Transport.BroadcastPlayerJoinGuild(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnPlayerJoinGuild, response);
         }
 
         #endregion
@@ -576,7 +578,7 @@ namespace Application.Core.Login.ServerData
             }
             return (0, 0);
         }
-        public void GuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
+        public async Task GuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
         {
             var response = new AllianceProto.GuildJoinAllianceResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
@@ -629,10 +631,10 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
-            _server.Transport.BroadcastGuildJoinAlliance(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildJoinAlliance, response);
         }
 
-        public void GuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
+        public async Task GuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -655,10 +657,10 @@ namespace Application.Core.Login.ServerData
                 return code;
             }, out var code);
 
-            _server.Transport.BroadcastGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
+           await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnGuildLeaveAlliance, new AllianceProto.GuildLeaveAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
         }
 
-        public void AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
+        public async Task AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -679,10 +681,10 @@ namespace Application.Core.Login.ServerData
                 return code;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceExpelGuild(new AllianceProto.AllianceExpelGuildResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceExpelGuild, new AllianceProto.AllianceExpelGuildResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
         }
 
-        public void IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
+        public async Task IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
         {
             var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -691,10 +693,10 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceCapacityIncreased(new AllianceProto.IncreaseAllianceCapacityResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN (ChannelRecvCode.OnAllianceCapacityUpdate, new AllianceProto.IncreaseAllianceCapacityResponse { Code = (int)code, Request = request, AllianceId = allianceId });
         }
 
-        public void UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
+        public async Task UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
         {
             var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -707,10 +709,10 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceRankTitleChanged(new AllianceProto.UpdateAllianceRankTitleResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, new AllianceProto.UpdateAllianceRankTitleResponse { Code = (int)code, Request = request, AllianceId = allianceId });
         }
 
-        public void UpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
+        public async Task UpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
         {
             var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -719,10 +721,10 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceNoticeChanged(new AllianceProto.UpdateAllianceNoticeResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, new AllianceProto.UpdateAllianceNoticeResponse { Code = (int)code, Request = request, AllianceId = allianceId });
         }
 
-        public void ChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
+        public async Task ChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -752,10 +754,10 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceLeaderChanged(new AllianceProto.AllianceChangeLeaderResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceLeaderChanged, new AllianceProto.AllianceChangeLeaderResponse { Code = (int)code, Request = request, AllianceId = allianceId });
         }
 
-        public void ChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
+        public async Task ChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
         {
             int newRank = 0;
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
@@ -774,10 +776,10 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceMemberRankChanged(new AllianceProto.ChangePlayerAllianceRankResponse { Code = (int)code, NewRank = newRank, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, new AllianceProto.ChangePlayerAllianceRankResponse { Code = (int)code, NewRank = newRank, Request = request, AllianceId = allianceId });
         }
 
-        public void DisbandAlliance(AllianceProto.DisbandAllianceRequest request)
+        public async Task DisbandAlliance(AllianceProto.DisbandAllianceRequest request)
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
@@ -800,7 +802,7 @@ namespace Application.Core.Login.ServerData
                 return 0;
             }, out var code);
 
-            _server.Transport.BroadcastAllianceDisband(new AllianceProto.DisbandAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnAllianceDisband, new AllianceProto.DisbandAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId });
 
         }
 

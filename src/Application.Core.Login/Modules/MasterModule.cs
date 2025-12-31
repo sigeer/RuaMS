@@ -1,4 +1,5 @@
 using Application.Core.Login.Models;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using Microsoft.Extensions.Logging;
 
@@ -10,57 +11,60 @@ namespace Application.Core.Login.Modules
         {
         }
 
+        public override async Task OnPlayerServerChanged(CharacterLiveObject obj, int lastChannel)
+        {
+            await base.OnPlayerServerChanged(obj, lastChannel);
 
+            await _server.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = obj.Character.Id });
+
+            var data = new SyncProto.PlayerFieldChange
+            {
+                Channel = obj.Channel,
+                FamilyId = obj.Character.FamilyId,
+                GuildId = obj.Character.GuildId,
+                TeamId = obj.Character.Party,
+                Id = obj.Character.Id,
+                JobId = obj.Character.JobId,
+                Level = obj.Character.Level,
+                MapId = obj.Character.Map,
+                Name = obj.Character.Name,
+                MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0,
+                FromChannel = lastChannel,
+            };
+            data.Buddies.AddRange(obj.BuddyList.Keys);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnPlayerServerChanged, data);
+        }
         /// <summary>
         /// 进入频道
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="isNewComer"></param>
-        public override void OnPlayerLogin(CharacterLiveObject obj, bool isNewComer)
+        public override async Task OnPlayerLogin(CharacterLiveObject obj)
         {
-            _server.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
-            {
-                Id = obj.Character.Id,
-                Name = obj.Character.Name,
-                GuildId = obj.Character.GuildId,
-                TeamId = obj.Character.Party,
-                FamilyId = obj.Character.FamilyId,
-                Channel = obj.Channel,
-                IsNewComer = isNewComer
-            });
-            _server.BuddyManager.BroadcastNotify(obj);
-            _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.LOG_ONOFF, obj.Character.Id, obj.Character.Id);
-            _server.NoteManager.SendNote(obj);
+            await _server.NoteManager.SendNote(obj);
+
+            await _server.DueyManager.SendDueyNotifyOnLogin(obj.Character.Id);
         }
 
-        public override void OnPlayerLogoff(CharacterLiveObject obj)
+        public override async Task OnPlayerLogoff(CharacterLiveObject obj)
         {
-            _server.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
-            {
-                Id = obj.Character.Id,
-                Name = obj.Character.Name,
-                GuildId = obj.Character.GuildId,
-                TeamId = obj.Character.Party,
-                FamilyId = obj.Character.FamilyId,
-                Channel = obj.Channel,
-            });
-
-            _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.LOG_ONOFF, obj.Character.Id, obj.Character.Id);
+            obj.Character.LastLogoutTime = _server.GetCurrentTimeDateTimeOffset();
+            obj.ChannelNode = null;
         }
 
-        public override void OnPlayerMapChanged(CharacterLiveObject obj)
+        public override async Task OnPlayerMapChanged(CharacterLiveObject obj)
         {
-            _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.SILENT_UPDATE, obj.Character.Id, obj.Character.Id);
+            await _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.SILENT_UPDATE, obj.Character.Id, obj.Character.Id);
         }
 
-        public override void OnPlayerJobChanged(CharacterLiveObject origin)
+        public override async Task OnPlayerJobChanged(CharacterLiveObject origin)
         {
-            _server.Transport.BroadcastPlayerJobChanged(origin);
+            await _server.Transport.BroadcastPlayerJobChanged(origin);
         }
 
-        public override void OnPlayerLevelChanged(CharacterLiveObject origin)
+        public override async Task OnPlayerLevelChanged(CharacterLiveObject origin)
         {
-            _server.Transport.BroadcastPlayerLevelChanged(origin);
+            await _server.Transport.BroadcastPlayerLevelChanged(origin);
         }
     }
 }

@@ -1,10 +1,12 @@
 using Application.Core.Login.Models.ChatRoom;
 using Application.Shared.Constants;
 using Application.Shared.Invitations;
+using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -43,7 +45,7 @@ namespace Application.Core.Login.ServerData
 
         public ChatRoomModel? GetPlayerRoom(int playerId) => _playerMapper.GetValueOrDefault(playerId);
 
-        public int CreateChatRoom(Dto.CreateChatRoomRequest request)
+        public async Task<int> CreateChatRoom(Dto.CreateChatRoomRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null)
@@ -55,32 +57,32 @@ namespace Application.Core.Login.ServerData
             var newRoom = new ChatRoomModel(Interlocked.Increment(ref _currentId));
             _dataSource[newRoom.Id] = newRoom;
 
-            JoinChatRoom(new JoinChatRoomRequest { RoomId = newRoom.Id, MasterId = request.MasterId });
+            await JoinChatRoom(new JoinChatRoomRequest { RoomId = newRoom.Id, MasterId = request.MasterId });
             return newRoom.Id;
         }
 
-        public void JoinChatRoom(Dto.JoinChatRoomRequest request)
+        public async Task JoinChatRoom(Dto.JoinChatRoomRequest request)
         {
             var response = new Dto.JoinChatRoomResponse { Request = request };
 
             if (_playerMapper.ContainsKey(request.MasterId))
             {
                 response.Code = (int)JoinChatRoomResult.AlreadyInChatRoom;
-                _server.Transport.BroadcastJoinChatRoom(response);
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
                 return;
             }
 
             if (!_dataSource.TryGetValue(request.RoomId, out var room))
             {
                 response.Code = (int)JoinChatRoomResult.NotFound;
-                _server.Transport.BroadcastJoinChatRoom(response);
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
                 return;
             }
 
             if (!room.TryAddMember(request.MasterId, out var position))
             {
                 response.Code = (int)JoinChatRoomResult.CapacityFull;
-                _server.Transport.BroadcastJoinChatRoom(response);
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
                 return;
             }
 
@@ -93,17 +95,17 @@ namespace Application.Core.Login.ServerData
             response.Code = (int)JoinChatRoomResult.Success;
             // 加入聊天室后，删除其他聊天邀请
             _server.InvitationManager.RemovePlayerInvitation(request.MasterId, InviteTypes.Messenger);
-            _server.Transport.BroadcastJoinChatRoom(response);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
         }
 
-        public void LeaveChatRoom(Dto.LeaveChatRoomRequst request)
+        public async Task LeaveChatRoom(Dto.LeaveChatRoomRequst request)
         {
             if (_playerMapper.TryRemove(request.MasterId, out var room))
             {
                 if (room.TryRemoveMember(request.MasterId, out var position))
                 {
                     var roomDto = MapDto(room);
-                    _server.Transport.BroadcastLeaveChatRoom(new Dto.LeaveChatRoomResponse 
+                    await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnLeaveChatRoom, new Dto.LeaveChatRoomResponse 
                     { 
                         Code = 0, 
                         Room = roomDto, 
@@ -118,14 +120,14 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public void SendMessage(SendChatRoomMessageRequest request)
+        public async Task SendMessage(SendChatRoomMessageRequest request)
         {
             if (_playerMapper.TryGetValue(request.MasterId, out var room))
             {
                 // /invite name
                 var res = new Dto.SendChatRoomMessageResponse { Code = 0, Text = request.Text };
                 res.Members.AddRange(room.Members.Where(x => x != request.MasterId));
-                _server.Transport.BroadcastChatRoomMessage(res);
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnChatRoomMessageReceived, res);
             }
         }
         public void Dispose()

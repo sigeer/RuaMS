@@ -1,5 +1,6 @@
 
 using Application.Core.Login.Datas;
+using Application.Core.Login.Internal;
 using Application.Core.Login.Models;
 using Application.Core.Login.Modules;
 using Application.Core.Login.Net;
@@ -10,6 +11,7 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
+using Application.Shared.Message;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Compatible.Atomics;
@@ -20,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using SystemProto;
 
@@ -133,6 +136,9 @@ namespace Application.Core.Login
         public DataStorage DataStorage => _dataStorage.Value;
         readonly Lazy<CDKManager> _cdkManager;
         public CDKManager CDKManager => _cdkManager.Value;
+
+        readonly Lazy<DueyManager> _dueyManager;
+        public DueyManager DueyManager => _dueyManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -146,7 +152,8 @@ namespace Application.Core.Login
 
         public List<AbstractMasterModule> Modules { get; private set; }
         public ITimerManager TimerManager { get; private set; } = null!;
-
+        Lazy<MessageDispatcherNew> _messageDispatcher;
+        public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
 
         public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
@@ -205,6 +212,9 @@ namespace Application.Core.Login
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
             _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
+            _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
+
+            _messageDispatcher = new(() => new(this));
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -434,9 +444,9 @@ namespace Application.Core.Login
             return result;
         }
 
-        public ChannelServerNode GetChannelServer(int channelId)
+        public ChannelServerNode? GetChannelServer(int channelId)
         {
-            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName)!;
+            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName);
         }
 
         public ChannelConfig? GetChannel(int channelId)
@@ -470,7 +480,7 @@ namespace Application.Core.Login
             queuedGuilds.Remove(guildId);
         }
 
-        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public async Task UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             // 修改值
             if (updatePatch.MobRate.HasValue)
@@ -507,7 +517,7 @@ namespace Application.Core.Login
                 ServerMessage = updatePatch.ServerMessage;
             }
             // 通知频道服务器更新
-            Transport.SendWorldConfig(updatePatch);
+            await Transport.BroadcastMessageN(ChannelRecvCode.OnWorldConfigUpdate, updatePatch);
         }
 
         private async Task RegisterTask()
@@ -526,13 +536,13 @@ namespace Application.Core.Login
             TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            await TimerManager.RegisterAsync(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationManager.Register(TimerManager);
             ServerManager.Register(TimerManager);
 
-            TimerManager.register(() =>
+            TimerManager.register(async () =>
             {
-                NewYearCardManager.NotifyNewYearCard();
+               await  NewYearCardManager.NotifyNewYearCard();
             }, TimeSpan.FromHours(1), timeLeft);
             foreach (var module in Modules)
             {

@@ -19,17 +19,17 @@ namespace Application.Core.Channel.Services
 
         public void LoadPlayerNpc(IMap map)
         {
-            throw new BusinessNotsupportException();
+            
         }
 
         public void SpawnPlayerNPCByHonor(IPlayer chr)
         {
-            throw new BusinessNotsupportException();
+
         }
 
         public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
         {
-            throw new BusinessNotsupportException();
+
         }
     }
 }

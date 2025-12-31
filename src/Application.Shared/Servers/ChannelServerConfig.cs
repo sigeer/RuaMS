@@ -9,7 +9,6 @@ namespace Application.Shared.Servers
 
     public class ChannelServerConfig
     {
-        public string GrpcUrl { get; set; } = "http://127.0.0.1:7879";
         public string ServerName { get; set; } = "Channel_Local";
         /// <summary>
         /// 供客户端使用的Host

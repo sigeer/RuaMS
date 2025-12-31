@@ -291,7 +291,7 @@ namespace Application.Core.Channel.ServerData
 
         public void UpdateTeam(int teamId, PartyOperation operation, IPlayer? player, int target)
         {
-            _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
+            _ = _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }
         /// <summary>
         /// 当前服务器没有该队伍数据时，不需要获取

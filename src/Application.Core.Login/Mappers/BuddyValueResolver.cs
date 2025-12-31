@@ -6,7 +6,7 @@ using Dto;
 
 namespace Application.Core.Login.Mappers
 {
-    public class BuddyConverter : ITypeConverter<BuddyModel, BuddyDto>
+    public class BuddyConverter : ITypeConverter<BuddyModel, BuddyProto.BuddyDto>
     {
         private readonly MasterServer _server;
 
@@ -15,11 +15,11 @@ namespace Application.Core.Login.Mappers
             _server = server;
         }
 
-        public BuddyDto Convert(BuddyModel source, BuddyDto destination, ResolutionContext context)
+        public BuddyProto.BuddyDto Convert(BuddyModel source, BuddyProto.BuddyDto destination, ResolutionContext context)
         {
             var player = _server.CharacterManager.FindPlayerById(source.Id);
             if (player == null)
-                return new BuddyDto { Id = 0, Channel = -1, Group = source.Group, MapId = 0, Name = StringConstants.CharacterUnknown };
+                return new BuddyProto.BuddyDto { Id = 0, Channel = -1, Group = source.Group, MapId = 0, Name = StringConstants.CharacterUnknown };
 
             return BuddyManager.GetChrBuddyDto(source.CharacterId, player, source.Group);
         }

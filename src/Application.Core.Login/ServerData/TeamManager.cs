@@ -1,4 +1,5 @@
 using Application.Core.Login.Models;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -56,7 +57,7 @@ namespace Application.Core.Login.ServerData
                 return _dataSource.TryRemove(teamId, out _);
             return false;
         }
-        public TeamProto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
+        public async Task UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
         {
             var response = new TeamProto.UpdateTeamResponse();
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
@@ -124,8 +125,7 @@ namespace Application.Core.Login.ServerData
             response.OperatorId = fromId;
 
             if (errorCode == UpdateTeamCheckResult.Success)
-                _server.Transport.BroadcastTeamUpdate(response);
-            return response;
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnTeamUpdate, response);
         }
 
         public async Task SendTeamChatAsync(string nameFrom, string chatText)

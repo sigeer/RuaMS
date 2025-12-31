@@ -22,10 +22,5 @@ namespace Application.Core.Login.Servers
         {
             return Task.FromResult(new GetTeamResponse { Model = _server.TeamManager.GetTeamFull(request.Id) });
         }
-
-        public override Task<UpdateTeamResponse> SendTeamUpdate(UpdateTeamRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.TeamManager.UpdateParty(request.TeamId, (PartyOperation)request.Operation, request.FromId, request.TargetId));
-        }
     }
 }

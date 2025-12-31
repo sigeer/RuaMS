@@ -1,3 +1,4 @@
+using Application.Shared.Internal;
 using Application.Shared.Message;
 using Google.Protobuf;
 using MessageProto;
@@ -5,7 +6,7 @@ using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class MultiChatHandler : InternalSessionHandler<MultiChatMessage>
+    internal class MultiChatHandler : InternalSessionChannelHandler<MultiChatMessage>
     {
         public MultiChatHandler(WorldChannelServer server) : base(server)
         {

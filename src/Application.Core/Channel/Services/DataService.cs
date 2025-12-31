@@ -418,7 +418,7 @@ namespace Application.Core.Channel.Services
             {
                 chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
-            _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+            _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel).ConfigureAwait(false).GetAwaiter().GetResult();
             if (chr.GuildModel != null)
             {
                 chr.sendPacket(GuildPackets.showGuildInfo(chr));

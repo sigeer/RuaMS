@@ -36,19 +36,9 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(_server.ItemFactoryManager.Store(request));
         }
 
-        public override Task<UseItemMegaphoneResponse> UseItemMegaphone(UseItemMegaphoneRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_itemService.BroadcastItemMegaphone(request));
-        }
-
         public override Task<OwlSearchResponse> UseOwlSearch(OwlSearchRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerShopManager.OwlSearch(request));
-        }
-
-        public override Task<CreateTVMessageResponse> UseTV(CreateTVMessageRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_itemService.BroadcastTV(request));
         }
     }
 }

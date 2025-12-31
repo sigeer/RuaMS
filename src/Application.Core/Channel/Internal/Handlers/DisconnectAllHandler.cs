@@ -1,10 +1,11 @@
+using Application.Shared.Internal;
 using Application.Shared.Message;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class DisconnectAllHandler : InternalSessionEmptyHandler
+    internal class DisconnectAllHandler : InternalSessionChannelEmptyHandler
     {
         public DisconnectAllHandler(WorldChannelServer server) : base(server)
         {

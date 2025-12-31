@@ -10,6 +10,7 @@ using AutoMapper.Extensions.ExpressionMapping;
 using SystemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Application.Shared.Message;
 
 namespace Application.Core.Login.ServerData
 {
@@ -191,27 +192,33 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public UnbanResponse Unban(UnbanRequest request)
+        public async Task Unban(UnbanRequest request)
         {
+            var res = new UnbanResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null)
-                return new UnbanResponse { Code = 1 };
-
-            if (!UnbanAccount(targetChr.Character.AccountId))
             {
-                // 已经处于封禁状态了
-                return new UnbanResponse { Code = 2 };
+                res.Code = 1;
             }
 
+            else if (!UnbanAccount(targetChr.Character.AccountId))
+            {
+                res.Code = 2;
+            }
 
-            return new UnbanResponse();
+            await _server.Transport.SendMessageN(ChannelRecvCode.Unban, res, [request.OperatorId]);
         }
 
-        public BanResponse Ban(BanRequest request)
+        public async Task Ban(BanRequest request)
         {
+            var res = new BanResponse { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null)
-                return new BanResponse { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.BanPlayer, res, [request.OperatorId]);
+                return;
+            }
 
             if (!BanAccount(targetChr.Character.AccountId,
                 request.Days < 0 ? DateTimeOffset.MaxValue : _server.GetCurrentTimeDateTimeOffset().AddDays(request.Days),
@@ -219,21 +226,13 @@ namespace Application.Core.Login.ServerData
                 request.Reason,
                 request.ReasonDesc))
             {
-                // 已经处于封禁状态了
-                return new BanResponse { Code = 2 };
+                res.Code = 2;
+                await _server.Transport.SendMessageN(ChannelRecvCode.BanPlayer, res, [request.OperatorId]);
+                return;
             }
 
-            var data = new BanBroadcast
-            {
-                TargetId = targetChr.Character.Id,
-                TargetName = targetChr.Character.Name,
-                OperatorName = _server.CharacterManager.GetPlayerName(request.OperatorId),
-                Reason = request.Reason,
-                ReasonDesc = request.ReasonDesc
-            };
-            _server.Transport.BroadcastBanned(data);
-
-            return new BanResponse();
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.BanPlayer, res);
+            await _server.DropWorldMessage(6, "Ban_NoticeGM", true);
         }
 
         public List<int> GetBannedAccounts()

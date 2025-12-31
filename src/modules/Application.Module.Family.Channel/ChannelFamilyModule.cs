@@ -78,7 +78,7 @@ namespace Application.Module.Family.Channel
         }
 
 
-        public override void OnPlayerLogin(Dto.PlayerOnlineChange data)
+        public override void OnPlayerLogin(SyncProto.PlayerFieldChange data)
         {
             FamilyEntry? familyEntry = null;
 

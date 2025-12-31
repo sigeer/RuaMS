@@ -12,6 +12,7 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using ZLinq;
 
 namespace Application.Core.Login.Services
@@ -67,27 +68,25 @@ namespace Application.Core.Login.Services
 
 
         AtomicBoolean isLocked = new AtomicBoolean();
-        public ItemProto.CreateTVMessageResponse BroadcastTV(ItemProto.CreateTVMessageRequest request)
+        public async Task BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
+            var res = new CreateTVMessageResponse() { Request = request };
             if (isLocked)
             {
-                return new CreateTVMessageResponse { Code = 1 };
+                res.Code = 1;
+
+                await _server.Transport.SendMessageN(ChannelRecvCode.HandleTVMessageStart, res, [request.MasterId]);
+                return;
             }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
-            var response = new ItemProto.CreateTVMessageBroadcast()
-            {
-                Master = _mapper.Map<Dto.PlayerViewDto>(master),
-                ShowEar = request.ShowEar,
-                Type = request.Type,
-            };
-            response.MessageList.AddRange(request.MessageList);
-            var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
+            var masterPartner = _server.CharacterManager.FindPlayerByName(request.PartnerName);
             if (masterPartner != null)
-                response.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
+                res.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
 
-            _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
             isLocked.Set(true);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleTVMessageStart, res);
+
 
             int delay = 15;
             if (request.Type == 4)
@@ -99,30 +98,27 @@ namespace Application.Core.Login.Services
                 delay = 60;
             }
             _server.TimerManager.schedule(BroadcastTVFinish, TimeSpan.FromSeconds(delay));
-            return new CreateTVMessageResponse();
         }
 
         void BroadcastTVFinish()
         {
             isLocked.Set(false);
-            _server.Transport.BroadcastMessage(BroadcastType.OnTVMessageFinish, new Empty());
+            _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleTVMessageFinish);
         }
 
-        public ItemProto.UseItemMegaphoneResponse BroadcastItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
+        public async Task BroadcastItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
+            var res = new UseItemMegaphoneResponse() { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null || master.Channel <= 0)
-                return new UseItemMegaphoneResponse { Code = 1 };
-
-            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemProto.UseItemMegaphoneBroadcast
             {
-                IsWishper = request.IsWishper,
-                Item = request.Item,
-                Message = request.Message,
-                SenderChannel = master.Channel,
-                SenderId = master.Character.Id,
-            });
-            return new UseItemMegaphoneResponse();
+                res.Code = 1;
+
+                await _server.Transport.SendMessageN(ChannelRecvCode.HandleItemMegaphone, res, [request.MasterId]);
+                return;
+            }
+            res.MasterChannel = master.Channel;
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleItemMegaphone, res);
         }
 
         public QueryDropperByItemResponse LoadWhoDrops(QueryDropperByItemRequest request)

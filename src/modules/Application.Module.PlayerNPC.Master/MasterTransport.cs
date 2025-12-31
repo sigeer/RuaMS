@@ -12,17 +12,17 @@ namespace Application.Module.PlayerNPC.Master
 
         internal void BroadcastRemoveAllPlayerNpc(RemoveAllPlayerNPCResponse res)
         {
-            BroadcastMessage(Common.BroadcastMessage.OnClearPlayerNpc, res);
+            // BroadcastMessage(Common.BroadcastMessage.OnClearPlayerNpc, res);
         }
 
         internal void BroadcastRemovePlayerNpc(RemovePlayerNPCResponse res)
         {
-            BroadcastMessage(Common.BroadcastMessage.OnRemovePlayerNpc, res);
+            // BroadcastMessage(Common.BroadcastMessage.OnRemovePlayerNpc, res);
         }
 
         internal void BroadcastRefreshMapData(UpdateMapPlayerNPCResponse res)
         {
-            BroadcastMessage(Common.BroadcastMessage.OnMapPlayerNpcUpdate, res);
+            // BroadcastMessage(Common.BroadcastMessage.OnMapPlayerNpcUpdate, res);
         }
     }
 }

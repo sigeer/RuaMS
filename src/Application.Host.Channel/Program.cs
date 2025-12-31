@@ -1,11 +1,6 @@
 using Application.Core.Channel.HostExtensions;
-using Application.Host.Channel;
-using Application.Module.Duey.Channel;
 using Application.Module.Maker.Channel;
-using Application.Module.PlayerNPC.Channel;
-using Application.Protos;
 using Application.Utility;
-using Microsoft.Extensions.ServiceDiscovery;
 using Serilog;
 using Serilog.Events;
 using System.Text;
@@ -50,20 +45,12 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
 builder.AddChannelServer();
-builder.Services.AddGrpc(options =>
-{
-    options.Interceptors.Add<LoggingInterceptor>();
-});
-
-builder.Services.AddDueyChannel();
 builder.Services.AddMakerChannel();
-builder.Services.AddPlayerNPCChannel();
 
 var app = builder.Build();
 
 app.UseChannelServer();
 
-app.MapGrpcService<WorldChannelGrpcServer>();
 
 //var p1 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://ruams-master", CancellationToken.None);
 //var p2 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://_grpc.ruams-master", CancellationToken.None);

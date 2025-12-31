@@ -14,10 +14,7 @@ message SendReportRequest {
 }
 
 message SendReportResponse {
-	bool isSuccess = 1;
-}
-
-message SendReportBroadcast {
-	repeated int32 gmId = 1;
-	string text = 2;
+	int32 code = 1;
+	int32 masterId = 2;
+	string victime = 3;
 }

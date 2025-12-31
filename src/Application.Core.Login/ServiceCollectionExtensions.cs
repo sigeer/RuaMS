@@ -1,5 +1,6 @@
 using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Internal;
 using Application.Core.Login.Mappers;
 using Application.Core.Login.Models.Invitations;
 using Application.Core.Login.Modules;
@@ -110,6 +111,9 @@ namespace Application.Core.Login
             services.AddSingleton<CDKManager>();
             services.AddSingleton<IStorage, CDKManager>(sp => sp.GetRequiredService<CDKManager>());
 
+            services.AddSingleton<DueyManager>();
+            services.AddSingleton<IStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
+
             services.AddSingleton<BuddyManager>();
 
             services.AddSingleton<InventoryManager>();
@@ -141,6 +145,8 @@ namespace Application.Core.Login
             services.TryAddSingleton<IExpeditionService, DefaultExpeditionService>();
             services.AddInvitationService();
             services.AddSingleton<CrossServerService>();
+
+            services.AddInternalSessionHandlers();
             return services;
         }
 

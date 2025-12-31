@@ -1,5 +1,6 @@
 using Application.EF;
 using Application.Shared.Constants.Item;
+using Application.Shared.Message;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -43,33 +44,29 @@ namespace Application.Core.Login.Datas
         #region coupon
         private async Task loadCouponRates(DBContext dbContext)
         {
-            couponRates =( await dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToListAsync()).ToDictionary(x => x.CouponId, x => x.Rate);
+            couponRates = (await dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToListAsync()).ToDictionary(x => x.CouponId, x => x.Rate);
         }
 
 
-        public void CommitActiveCoupons()
+        public async Task CommitActiveCoupons()
         {
-            _server.Transport.SendUpdateCouponRates(GetConfig());
-
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnCouponConfigUpdate, GetConfig());
         }
 
-        public void ToggleCoupon(int couponId)
+        public async Task ToggleCoupon(int couponId)
         {
             if (ItemConstants.isRateCoupon(couponId))
             {
-                lock (activeCoupons)
+                if (activeCoupons.Contains(couponId))
                 {
-                    if (activeCoupons.Contains(couponId))
-                    {
-                        activeCoupons.Remove(couponId);
-                    }
-                    else
-                    {
-                        activeCoupons.Add(couponId);
-                    }
-
-                    CommitActiveCoupons();
+                    activeCoupons.Remove(couponId);
                 }
+                else
+                {
+                    activeCoupons.Add(couponId);
+                }
+
+                await CommitActiveCoupons();
             }
         }
 

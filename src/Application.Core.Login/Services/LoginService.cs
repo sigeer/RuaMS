@@ -3,6 +3,7 @@ using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -64,9 +65,9 @@ namespace Application.Core.Login.Services
             return data;
         }
 
-        public void SetPlayerLogedIn(int playerId, int channel)
+        public async Task SetPlayerLogedIn(int playerId, int channel)
         {
-            _masterServer.CharacterManager.CompleteLogin(playerId, channel, out var accId);
+            var accId = await _masterServer.CharacterManager.CompleteLogin(playerId, channel);
             _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
     }
