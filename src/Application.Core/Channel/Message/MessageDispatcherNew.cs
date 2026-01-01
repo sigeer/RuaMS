@@ -9,12 +9,12 @@ namespace Application.Core.Channel.Message
     public class MessageDispatcherNew
     {
         WorldChannelServer _server;
-        Dictionary<int, IInternalSessionHandler> _handlers = new();
+        Dictionary<int, IInternalSessionChannelHandler> _handlers = new();
         public MessageDispatcherNew(WorldChannelServer server)
         {
             _server = server;
 
-            _handlers = _server.ServiceProvider.GetServices<IInternalSessionHandler>().ToDictionary(x => x.MessageId);
+            _handlers = _server.ServiceProvider.GetServices<IInternalSessionChannelHandler>().ToDictionary(x => x.MessageId);
         }
 
 

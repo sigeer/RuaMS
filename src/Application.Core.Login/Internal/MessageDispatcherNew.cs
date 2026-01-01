@@ -7,12 +7,12 @@ namespace Application.Core.Login.Internal
     public class MessageDispatcherNew
     {
         MasterServer _server;
-        Dictionary<int, IInternalSessionHandler> _handlers = new();
+        Dictionary<int, IInternalSessionMasterHandler> _handlers = new();
         public MessageDispatcherNew(MasterServer server)
         {
             _server = server;
 
-            _handlers = _server.ServiceProvider.GetServices<IInternalSessionHandler>().ToDictionary(x => x.MessageId);
+            _handlers = _server.ServiceProvider.GetServices<IInternalSessionMasterHandler>().ToDictionary(x => x.MessageId);
         }
 
 

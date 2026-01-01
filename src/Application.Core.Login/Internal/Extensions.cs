@@ -7,12 +7,13 @@ namespace Application.Core.Login.Internal
     {
         public static IServiceCollection AddInternalSessionHandlers(this IServiceCollection services)
         {
+            var interfaceType = typeof(IInternalSessionMasterHandler);
             var assemblyTypes = Assembly.GetExecutingAssembly().GetTypes();
             foreach (var type in assemblyTypes)
             {
                 if (type.IsClass && !type.IsAbstract && typeof(IInternalSessionMasterHandler).IsAssignableFrom(type))
                 {
-                    services.AddSingleton(type);
+                    services.AddSingleton(interfaceType, type);
                 }
             }
             return services;
