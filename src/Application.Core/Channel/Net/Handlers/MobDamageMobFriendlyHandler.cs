@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int attacker = p.readInt();
         p.readInt();
@@ -43,7 +43,7 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 
         if (monster == null || map.getMonsterByOid(attacker) == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         int damage = Randomizer.nextInt(((monster.getMaxHp() / 13 + monster.getPADamage() * 10)) * 2 + 500) / 10; // Formula planned by Beng.
@@ -98,5 +98,6 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 
         map.broadcastMessage(PacketCreator.MobDamageMobFriendly(monster, damage, remainingHp), monster.getPosition());
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

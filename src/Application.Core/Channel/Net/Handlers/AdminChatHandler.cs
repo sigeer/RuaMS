@@ -6,7 +6,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AdminChatHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isGM())
         {//if ( (signed int)CWvsContext::GetAdminLevel((void *)v294) > 2 )
@@ -21,7 +21,7 @@ public class AdminChatHandler : ChannelHandlerBase
             case 0:
                 {
                     // /alertall, /noticeall, /slideall
-                    c.CurrentServerContainer.SendDropMessage(type, message);
+                    await c.CurrentServerContainer.SendDropMessage(type, message);
                     // ChatLogger.log(c, "Alert All", message);
                     break;
                 }

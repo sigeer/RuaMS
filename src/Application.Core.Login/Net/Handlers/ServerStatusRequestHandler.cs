@@ -36,9 +36,10 @@ public class ServerStatusRequestHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override Task HandlePacket(InPacket p, ILoginClient c)
     {
         byte world = (byte)p.readShort();
         c.sendPacket(LoginPacketCreator.getServerStatus(_server.GetWorldCapacityStatus()));
+        return Task.CompletedTask;
     }
 }

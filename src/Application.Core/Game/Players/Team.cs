@@ -1,4 +1,5 @@
 using Application.Core.Game.Relation;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -140,7 +141,7 @@ namespace Application.Core.Game.Players
             return false;
         }
 
-        public bool leaveParty()
+        public async Task<bool> leaveParty()
         {
             Team? party;
             bool partyLeader;
@@ -158,7 +159,7 @@ namespace Application.Core.Game.Players
 
             if (party != null)
             {
-                Client.CurrentServerContainer.TeamManager.LeaveParty(this);
+                await Client.CurrentServerContainer.TeamManager.LeaveParty(this);
 
                 return true;
             }

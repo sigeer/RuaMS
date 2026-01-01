@@ -24,7 +24,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class FaceExpressionHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int emote = p.readInt();
@@ -34,12 +34,12 @@ public class FaceExpressionHandler : ChannelHandlerBase
             int itemid = 5159992 + emote;   // thanks RajanGrewal (Darter) for reporting unchecked emote itemid
             if (!ItemId.isFaceExpression(itemid) || chr.getInventory(ItemConstants.getInventoryType(itemid)).findById(itemid) == null)
             {
-                return;
+                return Task.CompletedTask;
             }
         }
         else if (emote < 1)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.tryacquireClient())
@@ -56,5 +56,6 @@ public class FaceExpressionHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

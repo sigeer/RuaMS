@@ -10,9 +10,9 @@ public class DCAllCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        _adminService.DisconnectAll(c.OnlinedCharacter);
+        await _adminService.DisconnectAll(c.OnlinedCharacter);
 
     }
 }

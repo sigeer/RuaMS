@@ -8,7 +8,7 @@ public class CheckDmgCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
@@ -32,5 +32,6 @@ public class CheckDmgCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 }

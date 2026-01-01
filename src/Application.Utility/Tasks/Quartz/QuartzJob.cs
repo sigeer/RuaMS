@@ -13,6 +13,8 @@ namespace Application.Utility.Tasks
                 r.run();
             else if (type is AsyncAbstractRunnable asyncR)
                 await asyncR.RunAsync();
+            else if (type is Func<Task> t)
+                await t();
             else
                 Log.Logger.Error($"TaskJob Invalid, {(type == null ? "null" : type.GetType().Name)}");
         }

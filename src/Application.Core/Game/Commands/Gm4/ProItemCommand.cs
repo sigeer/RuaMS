@@ -13,20 +13,20 @@ public class ProItemCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
             player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -34,13 +34,13 @@ public class ProItemCommand : CommandBase
         if (abTemplate is not EquipTemplate equipTemplate)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
-            return;
+            return Task.CompletedTask;
         }
 
         if (!short.TryParse(paramsValue[1], out short stat))
         {
             player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         stat = Math.Max((short)0, stat);
@@ -53,11 +53,12 @@ public class ProItemCommand : CommandBase
         if (it == null)
         {
             player.YellowMessageI18N(nameof(ClientMessage.EquipNotFound));
-            return;
+            return Task.CompletedTask;
         }
         it.setOwner(player.getName());
 
         ItemManager.SetEquipStat((Equip)it, stat, spdjmp);
         InventoryManipulator.addFromDrop(c, it);
+        return Task.CompletedTask;
     }
 }

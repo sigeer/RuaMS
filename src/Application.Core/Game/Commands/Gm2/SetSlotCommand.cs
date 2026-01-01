@@ -7,13 +7,13 @@ public class SetSlotCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.SetSlotCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         int slots = (int.Parse(paramsValue[0]) / 4) * 4;
@@ -29,5 +29,6 @@ public class SetSlotCommand : CommandBase
         }
 
         player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+        return Task.CompletedTask;
     }
 }

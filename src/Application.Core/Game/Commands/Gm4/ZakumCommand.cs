@@ -9,7 +9,7 @@ public class ZakumCommand : CommandBase
         Description = "Spawn Zakum on your location.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ZAKUM_1), player.getPosition());
@@ -17,5 +17,6 @@ public class ZakumCommand : CommandBase
         {
             player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), player.getPosition());
         }
+        return Task.CompletedTask;
     }
 }

@@ -34,7 +34,7 @@ public class SkillEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int skillId = p.readInt();
         int level = p.ReadSByte();
@@ -62,10 +62,10 @@ public class SkillEffectHandler : ChannelHandlerBase
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
                 c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.skillEffect(c.OnlinedCharacter, skillId, level, flags, speed, aids), false);
-                return;
+                return Task.CompletedTask;
             default:
                 _logger.LogWarning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.OnlinedCharacter, skillId);
-                return;
+                return Task.CompletedTask;
         }
     }
 }

@@ -10,7 +10,7 @@ public class MonitorsCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var data = _adminService.GetMonitor();
@@ -18,5 +18,6 @@ public class MonitorsCommand : CommandBase
         {
             player.yellowMessage(item.Value + " is being monitored.");
         }
+        return Task.CompletedTask;
     }
 }

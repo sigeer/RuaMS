@@ -10,13 +10,13 @@ public class NpcCommand : CommandBase
         Description = "Spawn an NPC on your location.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !npc <npcid>");
-            return;
+            return Task.CompletedTask;
         }
         var npc = LifeFactory.Instance.getNPC(int.Parse(paramsValue[0]));
         if (npc != null)
@@ -29,5 +29,6 @@ public class NpcCommand : CommandBase
             player.getMap().addMapObject(npc);
             player.getMap().broadcastMessage(PacketCreator.spawnNPC(npc));
         }
+        return Task.CompletedTask;
     }
 }

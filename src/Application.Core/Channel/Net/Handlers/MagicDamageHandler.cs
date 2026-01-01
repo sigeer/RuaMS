@@ -34,7 +34,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -44,14 +44,14 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 		}
 		chr.getAutobanManager().spam(8);*/
 
-        var attack = parseDamage(p, chr, false, true);
+        var attack = await parseDamage(p, chr, false, true);
 
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().Disconnect(false, false);
+                await chr.getClient().Disconnect(false, false);
                 return;
             }
         }
@@ -86,7 +86,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
                 chr.addCooldown(attack.skill, c.CurrentServerContainer.getCurrentTime(), 1000 * (effect_.getCooldown()));
             }
         }
-        applyAttack(attack, chr, effect.getAttackCount());
+        await applyAttack(attack, chr, effect.getAttackCount());
         var eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
         int eaterLevel = chr.getSkillLevel(eaterSkill);
         if (eaterLevel > 0)

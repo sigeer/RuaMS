@@ -63,15 +63,15 @@ namespace Application.Shared.Client
             return _clientInfo;
         }
 
-        object lockObj = new object();
+        Lock lockObj = new ();
         private Semaphore actionsSemaphore = new Semaphore(7, 7);
         public void lockClient()
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
         }
         public void unlockClient()
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         public bool tryacquireClient()
@@ -114,7 +114,7 @@ namespace Application.Shared.Client
 
         public override void ChannelInactive(IChannelHandlerContext ctx)
         {
-            CloseSession();
+            _ = CloseSession();
             IsActive = false;
         }
 
@@ -139,7 +139,7 @@ namespace Application.Shared.Client
         {
             var pingedAt = DateTimeOffset.UtcNow;
             sendPacket(PacketCommon.getPing());
-            Task.Delay(15000).ContinueWith(_ =>
+            Task.Delay(15000).ContinueWith(async _ =>
             {
                 try
                 {
@@ -149,7 +149,7 @@ namespace Application.Shared.Client
                         {
                             log.LogInformation("Disconnected {IP} due to idling. Reason: {State}", RemoteAddress, evt.State);
 
-                            CloseSession();
+                            await CloseSession();
                         }
                     }
                 }
@@ -167,29 +167,28 @@ namespace Application.Shared.Client
 
             if (cause is InvalidPacketHeaderException)
             {
-                CloseSession();
+                _ = CloseSession();
             }
             else if (cause is IOException)
             {
-                CloseSession();
+                _ = CloseSession();
             }
             else if (cause is BusinessException)
             {
                 if (cause is BusinessFatalException)
-                    CloseSession();
+                    _ = CloseSession();
                 else
                     sendPacket(PacketCommon.serverNotice(5, cause.Message));
             }
         }
 
-        protected abstract void CloseSessionInternal();
+        protected abstract Task CloseSessionInternal();
 
-        public void CloseSession()
+        public async Task CloseSession()
         {
-
             try
             {
-                CloseSessionInternal();
+                await CloseSessionInternal();
             }
             catch (Exception t)
             {
@@ -197,11 +196,11 @@ namespace Application.Shared.Client
             }
             finally
             {
-                CloseSocket();
+                await CloseSocket();
             }
         }
 
-        public abstract void ForceDisconnect();
+        public abstract Task ForceDisconnect();
 
         public string GetSessionRemoteHost()
         {
@@ -215,9 +214,9 @@ namespace Application.Shared.Client
             }
         }
 
-        public void CloseSocket()
+        public async Task CloseSocket()
         {
-            NettyChannel.CloseAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            await NettyChannel.CloseAsync();
         }
 
         public virtual void Dispose()

@@ -15,7 +15,7 @@ public class FamilyPreceptsHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var family = _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id);
         if (family == null)

@@ -11,10 +11,11 @@ namespace Application.Core.Channel.Net.Handlers
         {
         }
 
-        public override void HandlePacket(InPacket p, ILoginClient c)
+        public override Task HandlePacket(InPacket p, ILoginClient c)
         {
             var lang = p.readByte();
             c.Language = lang;
+            return Task.CompletedTask;
         }
     }
 }

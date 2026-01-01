@@ -47,7 +47,7 @@ public class FamilyUseHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         FamilyEntitlement type = FamilyEntitlement.Parse(p.readInt());
         int cost = type.getRepCost();

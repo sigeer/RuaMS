@@ -47,7 +47,7 @@ public class CashOperationHandler : ChannelHandlerBase
         _cashItemProvider = cashItemProvider;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         CashShop cs = chr.getCashShop();
@@ -306,7 +306,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     sbyte invType = p.ReadSByte();
                     if (invType < 1 || invType > 5)
                     {
-                        c.Disconnect(false, false);
+                        await c.Disconnect(false, false);
                         return;
                     }
 

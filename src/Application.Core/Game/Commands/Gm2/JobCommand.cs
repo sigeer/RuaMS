@@ -8,7 +8,7 @@ public class JobCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length == 1)
@@ -17,7 +17,7 @@ public class JobCommand : CommandBase
             if (jobid < 0 || jobid >= 2200)
             {
                 player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
-                return;
+                return Task.CompletedTask;
             }
 
             player.changeJob(JobFactory.GetById(jobid));
@@ -33,7 +33,7 @@ public class JobCommand : CommandBase
                 if (jobid < 0 || jobid >= 2200)
                 {
                     player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 victim.changeJob(JobFactory.GetById(jobid));
@@ -48,5 +48,6 @@ public class JobCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.JobCommand_Syntax));
         }
+        return Task.CompletedTask;
     }
 }

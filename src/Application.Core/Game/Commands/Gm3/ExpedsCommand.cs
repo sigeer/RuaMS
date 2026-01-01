@@ -12,12 +12,13 @@ public class ExpedsCommand : CommandBase
         Description = "Show all ongoing boss expeditions.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (TempConversation.TryCreate(c, out var p))
         {
             p.RegisterTalk(_adminService.QueryExpeditionInfo(c.OnlinedCharacter));
         }
+        return Task.CompletedTask;
     }
 }

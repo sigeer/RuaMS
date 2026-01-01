@@ -33,7 +33,7 @@ namespace Application.Module.Marriage.Channel.Net.Handlers;
 public class WeddingTalkMoreHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var eim = c.OnlinedCharacter.getEventInstance();
         if (eim != null && !(c.OnlinedCharacter.getId() == eim.getIntProperty("groomId") || c.OnlinedCharacter.getId() == eim.getIntProperty("brideId")))

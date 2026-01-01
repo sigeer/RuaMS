@@ -35,13 +35,13 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseSummonBagHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         //[4A 00][6C 4C F2 02][02 00][63 0B 20 00]
         if (!c.OnlinedCharacter.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         p.readInt();
         short slot = p.readShort();
@@ -51,7 +51,7 @@ public class UseSummonBagHandler : ChannelHandlerBase
         if (toUse != null && toUse.getQuantity() > 0 && toUse.getItemId() == itemId)
         {
             if (toUse.SourceTemplate is not SummonMobItemTemplate itemTemplate)
-                return;
+                return Task.CompletedTask;
 
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
             foreach (var toSpawnChild in itemTemplate.SummonData)
@@ -63,5 +63,6 @@ public class UseSummonBagHandler : ChannelHandlerBase
             }
         }
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

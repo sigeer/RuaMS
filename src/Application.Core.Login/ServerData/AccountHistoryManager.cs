@@ -231,7 +231,7 @@ namespace Application.Core.Login.ServerData
                 return;
             }
 
-            await _server.Transport.BroadcastMessageN(ChannelRecvCode.BanPlayer, res);
+            await _server.Transport.SendMessageN(ChannelRecvCode.BanPlayer, res, [request.OperatorId, targetChr.Character.Id]);
             await _server.DropWorldMessage(6, "Ban_NoticeGM", true);
         }
 

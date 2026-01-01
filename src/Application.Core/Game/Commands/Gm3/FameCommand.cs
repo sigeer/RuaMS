@@ -8,19 +8,19 @@ public class FameCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[1], out var fame))
         {
             player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
@@ -34,5 +34,6 @@ public class FameCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
+        return Task.CompletedTask;
     }
 }

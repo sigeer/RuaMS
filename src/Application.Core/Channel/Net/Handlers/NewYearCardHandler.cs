@@ -39,7 +39,7 @@ public class NewYearCardHandler : ChannelHandlerBase
         _manager = manager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         byte reqMode = p.readByte();                 //[00] -> NewYearReq (0 = Send)
@@ -62,7 +62,7 @@ public class NewYearCardHandler : ChannelHandlerBase
                         string receiver = p.readString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to)
                         string message = p.readString();
 
-                        _manager.SendNewYearCard(player, receiver, message);
+                        await _manager.SendNewYearCard(player, receiver, message);
                     }
                     else
                     {
@@ -86,7 +86,7 @@ public class NewYearCardHandler : ChannelHandlerBase
 
             if (player.canHold(ItemId.NEW_YEARS_CARD_RECEIVED, 1))
             {
-                _manager.AcceptNewYearCard(player, cardid);
+                await _manager.AcceptNewYearCard(player, cardid);
             }
             else
             {

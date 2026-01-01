@@ -41,8 +41,9 @@ public class RelogRequestHandler : LoginHandlerBase
         return !c.isLoggedIn();
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override Task HandlePacket(InPacket p, ILoginClient c)
     {
         c.sendPacket(LoginPacketCreator.getRelogResponse());
+        return Task.CompletedTask;
     }
 }

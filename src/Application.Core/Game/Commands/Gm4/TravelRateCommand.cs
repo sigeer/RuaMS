@@ -8,7 +8,7 @@ public class TravelRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -24,6 +24,6 @@ public class TravelRateCommand : CommandBase
         }
 
         int travelrate = Math.Max(d, 1);
-        c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { TravelRate = travelrate });
+        await c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { TravelRate = travelrate });
     }
 }

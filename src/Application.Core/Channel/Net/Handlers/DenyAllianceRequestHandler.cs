@@ -37,12 +37,12 @@ public class DenyAllianceRequestHandler : ChannelHandlerBase
         _guildManager = guildManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readByte();
         string inviterName = p.readString();
         string guildName = p.readString();
 
-        _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter, -1, false);
+        await _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter, -1, false);
     }
 }

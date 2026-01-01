@@ -9,7 +9,7 @@ namespace Application.Core.Game.Commands.Gm2
             Description = "强制开启团队任务，完成当前关卡。";
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             PlayerPartyQuestBase? pq = null;
             if (values[0] == "kpq")
@@ -30,7 +30,7 @@ namespace Application.Core.Game.Commands.Gm2
             if (pq == null)
             {
                 client.OnlinedCharacter.yellowMessage($"暂不支持<{values[0]}>对应的团队任务。");
-                return;
+                return Task.CompletedTask;
             }
 
             if (values[1] == "start")
@@ -44,7 +44,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 pq.CompleteStage();
             }
-
+            return Task.CompletedTask;
         }
 
     }

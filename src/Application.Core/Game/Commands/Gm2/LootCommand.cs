@@ -8,7 +8,7 @@ public class LootCommand : CommandBase
         Description = "Loots all items that belong to you.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().ProcessMapObject(x => x.getType() == MapObjectType.ITEM, o =>
         {
@@ -20,5 +20,6 @@ public class LootCommand : CommandBase
                 }
             }
         });
+        return Task.CompletedTask;
     }
 }

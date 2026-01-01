@@ -41,12 +41,12 @@ public class RegisterPinHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         byte c2 = p.readByte();
         if (c2 == 0)
         {
-            _sessionCoordinator.closeSession(c);
+            await _sessionCoordinator.closeSession(c);
             c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
         else
@@ -61,7 +61,7 @@ public class RegisterPinHandler : LoginHandlerBase
                     c.sendPacket(LoginPacketCreator.pinRegistered());
                 }
 
-                _sessionCoordinator.closeSession(c);
+                await _sessionCoordinator.closeSession(c);
                 c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }

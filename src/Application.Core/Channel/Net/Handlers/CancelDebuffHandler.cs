@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelDebuffHandler : ChannelHandlerBase
 {//TIP: BAD STUFF LOL!
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         /*List<Disease> diseases = c.OnlinedCharacter.getDiseases();
          List<Disease> diseases_ = new <Disease>();
@@ -39,5 +39,6 @@ public class CancelDebuffHandler : ChannelHandlerBase
          foreach(Disease disease in diseases_) {
          c.OnlinedCharacter.removeDisease(disease);
          }*/
+        return Task.CompletedTask;
     }
 }

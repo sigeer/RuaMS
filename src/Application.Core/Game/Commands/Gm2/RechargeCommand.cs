@@ -10,7 +10,7 @@ public class RechargeCommand : CommandBase
         Description = "Recharge and refill all USE items.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -38,5 +38,6 @@ public class RechargeCommand : CommandBase
             }
         }
         player.dropMessage(5, "USE Recharged.");
+        return Task.CompletedTask;
     }
 }

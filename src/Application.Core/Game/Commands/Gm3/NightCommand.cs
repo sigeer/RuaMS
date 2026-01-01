@@ -7,10 +7,11 @@ public class NightCommand : CommandBase
         Description = "Set sky background to black.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.getMap().broadcastNightEffect();
         player.yellowMessage("Done.");
+        return Task.CompletedTask;
     }
 }

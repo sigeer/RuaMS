@@ -39,10 +39,10 @@ public class GuestLoginHandler : LoginHandlerBase
         _loginHandler = loginPasswordHandler;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         c.sendPacket(LoginPacketCreator.sendGuestTOS());
         //Console.WriteLine(slea.ToString());
-        _loginHandler.HandlePacket(p, c);
+        await _loginHandler.HandlePacket(p, c);
     }
 }

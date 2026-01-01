@@ -9,12 +9,13 @@ public class InMapCommand : CommandBase
         Description = "Show all players in the map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         string st = string.Join("\r\n", player.getMap().getAllPlayers());
         TempConversation.Create(c)?.RegisterTalk(st);
+        return Task.CompletedTask;
 
     }
 }

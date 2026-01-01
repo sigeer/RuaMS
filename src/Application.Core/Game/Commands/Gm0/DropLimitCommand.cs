@@ -9,7 +9,7 @@ public class DropLimitCommand : CommandBase
     {
 
     }
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override Task Execute(IChannelClient c, string[] paramValues)
     {
         int dropCount = c.OnlinedCharacter.getMap().countItems();
         if (((float)dropCount) / YamlConfig.config.server.ITEM_LIMIT_ON_MAP < 0.75f)
@@ -22,6 +22,6 @@ public class DropLimitCommand : CommandBase
             c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.DropLimitCommand_Message1)) 
                 + " #r" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
-
+        return Task.CompletedTask;
     }
 }

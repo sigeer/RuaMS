@@ -11,15 +11,16 @@ public class ReachCommand : CommandBase
         Description = "Warp to a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !reach <playername>");
-            return;
+            return ;
         }
 
-        _adminService.WarpPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        await _adminService.WarpPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        return;
     }
 }

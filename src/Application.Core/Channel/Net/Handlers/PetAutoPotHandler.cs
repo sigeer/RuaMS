@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PetAutoPotHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readByte();
         p.readLong();
@@ -52,6 +52,7 @@ public class PetAutoPotHandler : ChannelHandlerBase
         }
 
         PetAutopotProcessor.runAutopotAction(c, slot, itemId);
+        return Task.CompletedTask;
     }
 
 }

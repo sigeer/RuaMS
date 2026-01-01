@@ -3,6 +3,7 @@ using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -22,15 +23,15 @@ namespace Application.Core.Channel.ServerData
             _server = server;
         }
 
-        public void CreateChatRoom(IPlayer chr)
+        public async Task CreateChatRoom(IPlayer chr)
         {
-            _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
+            await _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
         }
 
 
-        public void JoinChatRoom(IPlayer chr, int roomId)
+        public async Task JoinChatRoom(IPlayer chr, int roomId)
         {
-            _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
+            await _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
         }
 
         public void OnPlayerJoinChatRoom(Dto.JoinChatRoomResponse data)
@@ -71,9 +72,9 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void LeftChatRoom(IPlayer chr)
+        public async Task LeftChatRoom(IPlayer chr)
         {
-            _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
+            await _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
         }
 
         public void OnPlayerLeaveChatRoom(Dto.LeaveChatRoomResponse data)
@@ -96,9 +97,9 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void SendMessage(IPlayer chr, string text)
+        public async Task SendMessage(IPlayer chr, string text)
         {
-            _ = _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
+            await _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
 
         public void OnReceiveMessage(Dto.SendChatRoomMessageResponse data)
@@ -113,14 +114,14 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        internal void CreateInvite(IPlayer player, string input)
+        internal async Task CreateInvite(IPlayer player, string input)
         {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
+           await  _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
-        internal void AnswerInvite(IPlayer player, int roomId, bool v)
+        internal async Task AnswerInvite(IPlayer player, int roomId, bool v)
         {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

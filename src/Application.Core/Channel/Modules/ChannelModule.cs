@@ -26,6 +26,15 @@ namespace Application.Core.Channel.Modules
                     guild.OnMemberChannelChanged(data.Id, data.Channel);
                 }
             }
+
+            if (data.TeamId > 0)
+            {
+                var team = _server.TeamManager.ForcedGetTeam(data.TeamId);
+                if (team != null)
+                {
+                    _server.TeamManager.ProcessTeamUpdate(data);
+                }
+            }
         }
 
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)

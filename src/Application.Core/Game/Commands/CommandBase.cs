@@ -46,7 +46,7 @@ namespace Application.Core.Game.Commands
             set => _currentCommand = value;
         }
 
-        public virtual void Run(IChannelClient client, string[] values)
+        public virtual async Task RunAsync(IChannelClient client, string[] values)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Application.Core.Game.Commands
                     return;
                 }
 
-                Execute(client, values);
+                await Execute(client, values);
             }
             catch (CommandArgumentException ex)
             {
@@ -68,7 +68,7 @@ namespace Application.Core.Game.Commands
         {
             return true;
         }
-        public abstract void Execute(IChannelClient client, string[] values);
+        public abstract Task Execute(IChannelClient client, string[] values);
         protected string joinStringFrom(string[] arr, int start)
         {
             return string.Join(' ', arr, start, arr.Length - start);

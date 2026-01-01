@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterBookCoverHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int id = p.readInt();
         if (id == 0 || ItemId.isMonsterCard(id))
@@ -35,5 +35,6 @@ public class MonsterBookCoverHandler : ChannelHandlerBase
             c.OnlinedCharacter.setMonsterBookCover(id);
             c.sendPacket(PacketCreator.changeCover(id));
         }
+        return Task.CompletedTask;
     }
 }

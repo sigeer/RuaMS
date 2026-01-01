@@ -10,6 +10,7 @@ using client.inventory.manipulator;
 using DueyDto;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.DueyService
@@ -30,7 +31,7 @@ namespace Application.Core.Channel.DueyService
             _distributeService = distributeService;
         }
 
-        private void CreateDueyPackage(IPlayer chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
+        private async Task CreateDueyPackage(IPlayer chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
             if (chr.TscRequest != null)
             {
@@ -48,7 +49,7 @@ namespace Application.Core.Channel.DueyService
                 builder.ConsumeItem(ItemId.QUICK_DELIVERY_TICKET, 1);
 
             chr.TscRequest = builder.Build();
-            _ = _server.Transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+            await _server.Transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
             {
                 SenderId = chr.Id,
                 SendMeso = sendMesos,
@@ -115,7 +116,7 @@ namespace Application.Core.Channel.DueyService
             return (0, null);
         }
 
-        public void DueySendItemFromInventory(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
+        public async Task DueySendItemFromInventory(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
         {
             if (c.tryacquireClient())
             {
@@ -131,9 +132,9 @@ namespace Application.Core.Channel.DueyService
 
                     if (sendMessage != null && sendMessage.Length > 100)
                     {
-                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                        await _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
@@ -144,18 +145,18 @@ namespace Application.Core.Channel.DueyService
                     }
                     else if (!c.OnlinedCharacter.haveItem(ItemId.QUICK_DELIVERY_TICKET))
                     {
-                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                       await  _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
                     long finalcost = (long)sendMesos + fee;
                     if (sendMesos < 0 || finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
                     {
-                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
+                       await  _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
@@ -168,7 +169,7 @@ namespace Application.Core.Channel.DueyService
                     var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
-                        CreateDueyPackage(c.OnlinedCharacter, (int)finalcost, sendMesos, item, sendMessage, recipient, quick);
+                        await CreateDueyPackage(c.OnlinedCharacter, (int)finalcost, sendMesos, item, sendMessage, recipient, quick);
                     }
                     else if (res > 0)
                     {
@@ -186,17 +187,17 @@ namespace Application.Core.Channel.DueyService
             }
         }
 
-        public void RemoveDueyPackage(IPlayer chr, int packageId)
+        public async Task RemoveDueyPackage(IPlayer chr, int packageId)
         {
-            _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
+            await _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
         }
 
-        public void TakePackage(IPlayer chr, int packageId)
+        public async Task TakePackage(IPlayer chr, int packageId)
         {
-            _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
+            await _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
         }
 
-        public void SendTalk(IChannelClient c)
+        public async Task SendTalk(IChannelClient c)
         {
             if (c.tryacquireClient())
             {
@@ -210,7 +211,7 @@ namespace Application.Core.Channel.DueyService
                     }
                     c.OnlinedCharacter.setNpcCooldown(timeNow);
 
-                    _ = _server.Transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
+                    await _server.Transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
                 }
                 finally
                 {

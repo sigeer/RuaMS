@@ -8,7 +8,7 @@ namespace Application.Core.Login.Client
         AccountCtrl? AccountEntity { get; protected set; }
         MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
-        void Disconnect();
+        Task Disconnect();
 
         void updateLoginState(sbyte newState);
         bool CanBypassPin();
@@ -17,7 +17,7 @@ namespace Application.Core.Login.Client
         bool CheckPic(string other);
 
         bool isLoggedIn();
-        LoginResultCode Login(string login, string pwd, Hwid nibbleHwid);
+        Task<LoginResultCode> Login(string login, string pwd, Hwid nibbleHwid);
         LoginResultCode FinishLogin();
         bool CheckChar(int accid);
         void SendCharList();

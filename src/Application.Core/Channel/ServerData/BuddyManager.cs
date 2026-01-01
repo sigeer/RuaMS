@@ -6,6 +6,7 @@ using Application.Shared.Constants.Buddy;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Numerics;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using tools;
 
@@ -45,14 +46,14 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void SendBuddyNoticeMessage(IPlayer chr, int type, string message)
+        public async Task SendBuddyNoticeMessage(IPlayer chr, int type, string message)
         {
             var request = new BuddyProto.SendBuddyNoticeMessageDto { MasterId = chr.Id, Message = message, Type = type };
             request.BuddyId.AddRange(chr.BuddyList.getBuddyIds());
-            _transport.SendBuddyMessage(request);
+            await _transport.SendBuddyMessage(request);
         }
 
-        public void AddBuddy(IPlayer player, string addName, string addGroup)
+        public async Task AddBuddy(IPlayer player, string addName, string addGroup)
         {
             if (player.BuddyList.isFull())
             {
@@ -67,11 +68,11 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            _ = _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
+            await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
 
         }
 
-        internal void AnswerInvite(IPlayer chr, int fromId)
+        internal async Task AnswerInvite(IPlayer chr, int fromId)
         {
             if (chr.BuddyList.isFull())
             {
@@ -85,20 +86,20 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            _ = _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
+            await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
         }
 
-        public void DeleteBuddy(IPlayer chr, int targetId)
+        public async Task DeleteBuddy(IPlayer chr, int targetId)
         {
-            _ = _transport.SendDeleteBuddy(new BuddyProto.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
+            await _transport.SendDeleteBuddy(new BuddyProto.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
         }
 
-        internal void SendWhisper(IPlayer chr, string targetName, string message)
+        internal async Task SendWhisper(IPlayer chr, string targetName, string message)
         {
-            _ = _transport.SendWhisper(new MessageProto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
+            await _transport.SendWhisper(new MessageProto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
         }
 
-        internal void GetLocation(IPlayer chr, string name)
+        internal async Task GetLocation(IPlayer chr, string name)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(name);
             if (sameChannelSearch != null)
@@ -107,7 +108,7 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            _ = _transport.GetLocation(new BuddyProto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
+            await _transport.GetLocation(new BuddyProto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
 
         }
     }

@@ -160,22 +160,23 @@ namespace Application.Core.Game.Players
         //    }
         //}
 
-        object saveCharLock = new object();
         /// <summary>
         /// 同步数据到MasterServer，并没有立即保存数据库
         /// </summary>
         /// <param name="trigger">同步原因</param>
         public void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
-            lock (saveCharLock)
-            {
-                if (!IsOnlined)
-                {
-                    return;
-                }
+            _ = SyncCharAsync(trigger);
+        }
 
-                Client.CurrentServer.Container.DataService.SaveChar(this, trigger);
+        public async Task SyncCharAsync(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
+        {
+            if (!IsOnlined)
+            {
+                return;
             }
+
+            await Client.CurrentServer.Container.DataService.SaveChar(this, trigger);
         }
     }
 }

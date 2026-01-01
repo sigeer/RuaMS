@@ -20,7 +20,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
             _logger = logger;
         }
 
-        public override void HandlePacket(InPacket p, IChannelClient c)
+        public override Task HandlePacket(InPacket p, IChannelClient c)
         {
             if (c.tryacquireClient())
             {
@@ -44,7 +44,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                         {
                             c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(fromLeftover) + " is unavailable for Monster Crystal conversion."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
 
                         recipe = _service.generateLeftoverCrystalEntry(fromLeftover, toCreate);
@@ -68,14 +68,14 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(toCreate) + " is unavailable for Monster Crystal disassembly."));
                                 c.sendPacket(MakerPacketCreator.makerEnableActions());
-                                return;
+                                return Task.CompletedTask;
                             }
                         }
                         else
                         {
                             c.sendPacket(PacketCreator.serverNotice(1, "An unknown error occurred when trying to apply that item for disassembly."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
                     }
                     else
@@ -137,7 +137,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                                 {
                                     c.sendPacket(PacketCreator.serverNotice(1, "You can only use WATK and MATK Strengthening Gems on weapon items."));
                                     c.sendPacket(MakerPacketCreator.makerEnableActions());
-                                    return;
+                                    return Task.CompletedTask;
                                 }
                             }
                         }
@@ -268,6 +268,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                     c.releaseClient();
                 }
             }
+            return Task.CompletedTask;
         }
     }
 }

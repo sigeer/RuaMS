@@ -13,10 +13,9 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => ChannelSendCode.SyncMap;
 
-        protected override Task HandleAsync(MapBatchSyncDto message, CancellationToken cancellationToken = default)
+        protected override async Task HandleAsync(MapBatchSyncDto message, CancellationToken cancellationToken = default)
         {
-            _server.CharacterManager.BatchUpdateMap(message.List.ToList());
-            return Task.CompletedTask;
+            await _server.CharacterManager.BatchUpdateMap(message.List.ToList());
         }
 
         protected override MapBatchSyncDto Parse(ByteString content) => MapBatchSyncDto.Parser.ParseFrom(content);

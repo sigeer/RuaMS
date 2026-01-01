@@ -31,7 +31,7 @@ namespace ServiceTest.Games.Gameplay
             Assert.That(!testCommand.CheckArguments(["A", "3"]));
             testCommand.CurrentCommand = "demo";
             Assert.That(testCommand.ValidSytax, Is.EqualTo("!demo [a|b|c] <id>"));
-            testCommand.Run(GameTestGlobal.TestServer.GetPlayer().Client, ["a", "123"]);
+            testCommand.RunAsync(GameTestGlobal.TestServer.GetPlayer().Client, ["a", "123"]);
         }
     }
 
@@ -41,7 +41,7 @@ namespace ServiceTest.Games.Gameplay
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             throw new NotImplementedException();
         }
@@ -53,7 +53,7 @@ namespace ServiceTest.Games.Gameplay
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             var id = GetIntParam("id");
             Assert.That(id, Is.EqualTo(123));

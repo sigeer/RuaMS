@@ -9,7 +9,7 @@ namespace Application.Core.Game.Players
 
         protected Dictionary<Stat, int> statUpdates = new();
 
-        protected object effLock = new object();
+        protected Lock effLock = new();
         protected ReaderWriterLockSlim statLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 

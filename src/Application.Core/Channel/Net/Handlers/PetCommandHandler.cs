@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PetCommandHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int petId = p.readInt();
@@ -38,14 +38,14 @@ public class PetCommandHandler : ChannelHandlerBase
         Pet? pet;
         if (petIndex == -1)
         {
-            return;
+            return Task.CompletedTask;
         }
         else
         {
             pet = chr.getPet(petIndex);
         }
         if (pet == null)
-            return;
+            return Task.CompletedTask;
 
         p.readInt();
         p.readByte();
@@ -53,7 +53,7 @@ public class PetCommandHandler : ChannelHandlerBase
         var petCommand = pet.SourceTemplate.InterActsDict.GetValueOrDefault(command);
         if (petCommand == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (Randomizer.nextInt(100) < petCommand.Prob)
@@ -65,5 +65,6 @@ public class PetCommandHandler : ChannelHandlerBase
         {
             chr.getMap().broadcastMessage(PacketCreator.commandResponse(chr.getId(), petIndex, true, command, false));
         }
+        return Task.CompletedTask;
     }
 }

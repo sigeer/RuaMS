@@ -9,7 +9,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
         {
             return matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
         }
-        public override void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
+        public override Task onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
         {
             var cm = leader.getClient().NPCConversationManager;
             int npcid = cm.getNpc();
@@ -37,9 +37,10 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
 
             cm.sendOk(LanguageConstants.getMessage(chr, LanguageConstants.CPQChallengeRoomSent));
+            return Task.CompletedTask;
         }
 
-        public override void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override Task onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             var chr = getChallenger(leaderid, matchPlayers)!;
 
@@ -55,14 +56,18 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
 
             chr.setChallenged(false);
+            return Task.CompletedTask;
         }
 
-        public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override Task onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             var chr = getChallenger(leaderid, matchPlayers);
             chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQChallengeRoomDenied));
+            return Task.CompletedTask;
         }
 
-        public override void onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message) { }
+        public override Task onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message) {
+            return Task.CompletedTask;
+        }
     }
 }

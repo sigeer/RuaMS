@@ -37,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseSolomonHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         short slot = p.readShort();
@@ -55,19 +55,19 @@ public class UseSolomonHandler : ChannelHandlerBase
                     var slotItem = inv.getItem(slot);
                     if (slotItem == null)
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate)
-                        return;
+                        return Task.CompletedTask;
 
                     if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     if (itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     chr.addGachaExp(itemTemplate.Exp);
                     InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
@@ -84,5 +84,6 @@ public class UseSolomonHandler : ChannelHandlerBase
         }
 
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

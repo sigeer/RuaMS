@@ -10,7 +10,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RaiseUIStateHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int infoNumber = p.readShort();
 
@@ -39,5 +39,6 @@ public class RaiseUIStateHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

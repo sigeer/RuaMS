@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class DoorHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int ownerid = p.readInt();
         p.readByte(); // specifies if backwarp or not, 1 town to target, 0 target to town
@@ -40,7 +40,7 @@ public class DoorHandler : ChannelHandlerBase
         if (chr.isChangingMaps() || chr.isBanned())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         foreach (var obj in chr.getMap().getMapObjects())
@@ -50,12 +50,13 @@ public class DoorHandler : ChannelHandlerBase
                 if (door.Owner.Id == ownerid)
                 {
                     door.warp(chr);
-                    return;
+                    return Task.CompletedTask;
                 }
             }
         }
 
         c.sendPacket(PacketCreator.BlockMapMessage(6));
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

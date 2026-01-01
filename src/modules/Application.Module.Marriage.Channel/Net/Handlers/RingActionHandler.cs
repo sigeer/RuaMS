@@ -174,7 +174,7 @@ public class RingActionHandler : ChannelHandlerBase
     }
 
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte mode = p.readByte();
         string name;

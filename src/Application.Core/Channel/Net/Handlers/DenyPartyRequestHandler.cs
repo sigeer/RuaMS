@@ -34,11 +34,11 @@ public class DenyPartyRequestHandler : ChannelHandlerBase
         _teamManager = teamManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var value = p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        _teamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
+       await  _teamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
     }
 }

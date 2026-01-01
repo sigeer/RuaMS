@@ -49,7 +49,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int from = p.readInt();
         p.readInt();
@@ -68,7 +68,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
 
             if (dmg > maxDmg)
             {
-                _autoBanManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
+                await _autoBanManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
                 string attackerName = ClientCulture.SystemCulture.GetMobName(attacker.getId());
                 string damagedName = ClientCulture.SystemCulture.GetMobName(damaged.getId());
                 _logger.LogWarning("Chr {CharacterName} had hypnotized {Attacker} to attack {Damaged} with damage {Damage} (max: {MaxDamage})", c.OnlinedCharacter.getName(),
@@ -79,6 +79,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
             map.damageMonster(chr, damaged, dmg);
             map.broadcastMessage(chr, PacketCreator.damageMonster(to, dmg), false);
         }
+        return;
     }
 
     private static int calcMaxDamage(Monster attacker, Monster damaged, bool magic)

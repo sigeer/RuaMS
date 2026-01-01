@@ -6,8 +6,9 @@ public class HelpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient client, string[] paramsValue)
+    public override Task Execute(IChannelClient client, string[] paramsValue)
     {
         client.OpenNpc(NpcId.STEWARD, "commands");
+        return Task.CompletedTask;
     }
 }

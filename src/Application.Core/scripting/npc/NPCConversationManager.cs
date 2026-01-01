@@ -493,19 +493,19 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (reward.Level > 1)
         {
             //Uncommon and Rare
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
+            _ = c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
         return reward;
     }
 
     public void upgradeAlliance()
     {
-        c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
+        _ = c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
     }
 
     public void disbandAlliance(IChannelClient c, int allianceId)
     {
-        c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
+        _ = c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
     }
 
     public bool canBeUsedAllianceName(string name)

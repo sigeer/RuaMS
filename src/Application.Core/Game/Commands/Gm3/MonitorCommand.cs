@@ -11,7 +11,7 @@ public class MonitorCommand : CommandBase
         _monitorManager = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -20,6 +20,6 @@ public class MonitorCommand : CommandBase
             return;
         }
 
-        _monitorManager.ToggleMonitor(c.OnlinedCharacter, paramsValue[0]);
+       await  _monitorManager.ToggleMonitor(c.OnlinedCharacter, paramsValue[0]);
     }
 }

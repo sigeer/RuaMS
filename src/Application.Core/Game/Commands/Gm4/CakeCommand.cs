@@ -9,7 +9,7 @@ public class CakeCommand : CommandBase
         Description = "Spawn Cake boss with specified HP.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var monster = LifeFactory.Instance.getMonster(MobId.GIANT_CAKE)!;
@@ -21,5 +21,6 @@ public class CakeCommand : CommandBase
         }
 
         player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
+        return Task.CompletedTask;
     }
 }

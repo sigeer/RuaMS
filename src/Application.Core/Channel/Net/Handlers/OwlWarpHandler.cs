@@ -38,7 +38,7 @@ public class OwlWarpHandler : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mapObjectId = p.readInt();
         int mapid = p.readInt();
@@ -51,13 +51,13 @@ public class OwlWarpHandler : ChannelHandlerBase
         if (shop == null)
         {
             c.sendPacket(PacketCreator.getOwlMessage(1));
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.OnlinedCharacter.Id == shop.OwnerId)
         {
             c.OnlinedCharacter.Popup(nameof(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself));
-            return;
+            return Task.CompletedTask;
         }
 
         c.OnlinedCharacter.changeMap(mapid);
@@ -65,19 +65,20 @@ public class OwlWarpHandler : ChannelHandlerBase
         if (shop.Status.Is(PlayerShopStatus.Maintenance))
         {
             c.sendPacket(PacketCreator.getOwlMessage(18));
-            return;
+            return Task.CompletedTask;
         }
 
         if (shop.BlackList.Contains(c.OnlinedCharacter.Name))
         {
             c.sendPacket(PacketCreator.getOwlMessage(17));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!shop.VisitShop(c.OnlinedCharacter))
         {
             c.sendPacket(PacketCreator.getOwlMessage(2));
-            return;
+            return Task.CompletedTask;
         }
+        return Task.CompletedTask;
     }
 }

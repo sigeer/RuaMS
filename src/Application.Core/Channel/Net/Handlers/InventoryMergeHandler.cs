@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class InventoryMergeHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
@@ -46,7 +46,7 @@ public class InventoryMergeHandler : ChannelHandlerBase
         sbyte invType = p.ReadSByte();
         if (invType < 1 || invType > 5)
         {
-            c.Disconnect(false);
+            await c.Disconnect(false);
             return;
         }
 

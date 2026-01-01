@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemRewardHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var slot = p.readShort();
         var itemId = p.readInt(); // will load from xml I don't care.
@@ -81,7 +81,7 @@ public class ItemRewardHandler : ChannelHandlerBase
                     string msg = reward.worldmsg;
                     msg = msg.Replace("/name", c.OnlinedCharacter.getName());
                     msg = msg.Replace("/item", c.CurrentCulture.GetItemName(reward.itemid));
-                    c.CurrentServerContainer.SendDropMessage(6, msg);
+                    await c.CurrentServerContainer.SendDropMessage(6, msg);
                 }
                 break;
             }

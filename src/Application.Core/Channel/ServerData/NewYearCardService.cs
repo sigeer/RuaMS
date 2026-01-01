@@ -2,6 +2,7 @@ using Application.Core.Models;
 using Application.Core.ServerTransports;
 using AutoMapper;
 using Dto;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -19,9 +20,9 @@ namespace Application.Core.Channel.ServerData
             _mapper = mapper;
         }
 
-        public void SendNewYearCard(IPlayer from, string toName, string message)
+        public async Task SendNewYearCard(IPlayer from, string toName, string message)
         {
-            _transport.SendNewYearCard(new Dto.SendNewYearCardRequest { FromId = from.Id, ToName = toName, Message = message });
+            await _transport.SendNewYearCard(new Dto.SendNewYearCardRequest { FromId = from.Id, ToName = toName, Message = message });
         }
 
         public void OnNewYearCardSend(Dto.SendNewYearCardResponse data)
@@ -49,9 +50,9 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void AcceptNewYearCard(IPlayer receiver, int cardId)
+        public async Task AcceptNewYearCard(IPlayer receiver, int cardId)
         {
-            _transport.ReceiveNewYearCard(new Dto.ReceiveNewYearCardRequest { MasterId = receiver.Id, CardId = cardId });
+            await _transport.ReceiveNewYearCard(new Dto.ReceiveNewYearCardRequest { MasterId = receiver.Id, CardId = cardId });
         }
 
         public void OnNewYearCardReceived(Dto.ReceiveNewYearCardResponse data)
@@ -110,9 +111,9 @@ namespace Application.Core.Channel.ServerData
 
         }
 
-        public void DiscardNewYearCard(IPlayer chr, bool isSender)
+        public async Task DiscardNewYearCard(IPlayer chr, bool isSender)
         {
-            _transport.SendDiscardNewYearCard(new Dto.DiscardNewYearCardRequest { MasterId = chr.Id, IsSender = isSender });
+            await _transport.SendDiscardNewYearCard(new Dto.DiscardNewYearCardRequest { MasterId = chr.Id, IsSender = isSender });
         }
 
         public void OnNewYearCardDiscard(Dto.DiscardNewYearCardResponse data)

@@ -10,16 +10,17 @@ public class ClearQuestCommand : CommandBase
         Description = "Clear cache of a quest.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.dropMessage(5, "Please include a quest ID.");
-            return;
+            return Task.CompletedTask;
         }
         QuestFactory.Instance.clearCache(int.Parse(paramsValue[0]));
         player.dropMessage(5, "Quest Cache for quest " + paramsValue[0] + " cleared.");
+        return Task.CompletedTask;
 
     }
 }

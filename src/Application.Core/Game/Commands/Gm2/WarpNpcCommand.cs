@@ -13,7 +13,7 @@ namespace Application.Core.Game.Commands.Gm2
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             var input = GetParam("npc");
             if (!int.TryParse(input, out var npcId))
@@ -22,7 +22,7 @@ namespace Application.Core.Game.Commands.Gm2
                 if (searched.Length == 0)
                 {
                     client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), input);
-                    return;
+                    return Task.CompletedTask;
                 }
                 else if (searched.Length > 1)
                 {
@@ -47,7 +47,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 HandleNpcId(client, npcId, client.CurrentCulture.GetNpcName(npcId));
             }
-
+            return Task.CompletedTask;
         }
 
         void HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)

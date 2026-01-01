@@ -10,6 +10,7 @@ using AutoMapper;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using System.Text;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -40,9 +41,9 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
+        public async Task Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
-            _ = _transport.Ban(new SystemProto.BanRequest
+            await _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
@@ -53,18 +54,18 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void Unban(IPlayer chr, string victim)
+        public async Task Unban(IPlayer chr, string victim)
         {
-            _ = _transport.Unban(new SystemProto.UnbanRequest
+            await _transport.Unban(new SystemProto.UnbanRequest
             {
                 OperatorId = chr.Id,
                 Victim = victim,
             });
         }
 
-        internal void SetGmLevel(IPlayer chr, string victim, int newLevel)
+        internal async Task SetGmLevel(IPlayer chr, string victim, int newLevel)
         {
-            _ = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
+            await _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
         }
 
 
@@ -105,7 +106,7 @@ namespace Application.Core.Channel.Services
         /// </summary>
         /// <param name="targetId"></param>
         [SupportRemoteCall(RemoteCallMethods.WarpPlayerByName)]
-        public void WarpPlayerByName(IPlayer chr, string victim)
+        public async Task WarpPlayerByName(IPlayer chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -115,11 +116,11 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                _ = _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
-        public void SummonPlayerByName(IPlayer chr, string victim)
+        public async Task SummonPlayerByName(IPlayer chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -136,27 +137,27 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                _ = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
-        public void DisconnectPlayerByName(IPlayer chr, string victim)
+        public async Task DisconnectPlayerByName(IPlayer chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
             {
-                sameChannelSearch.Client.Disconnect(false);
+                await sameChannelSearch.Client.Disconnect(false);
             }
             else
             {
-                _ = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
 
-        public void DisconnectAll(IPlayer chr)
+        public async Task DisconnectAll(IPlayer chr)
         {
-            _ = _server.Transport.DisconnectAllNotifyAsync();
+            await _server.Transport.DisconnectAllNotifyAsync();
             // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
             chr.Pink(ClientMessage.Command_Done, "dcall");
         }
@@ -171,15 +172,15 @@ namespace Application.Core.Channel.Services
         /// 停机
         /// </summary>
         /// <param name="delay">单位：秒。-1：立即</param>
-        public void ShutdownMaster(IPlayer chr, int delay = -1)
+        public async Task ShutdownMaster(IPlayer chr, int delay = -1)
         {
             chr.dropMessage("服务器正在停止中...");
-            _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
+            await _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
         }
 
-        internal void SavelAll()
+        internal async Task SavelAll()
         {
-            _server.Transport.SaveAllNotifyAsync();
+            await _server.Transport.SaveAllNotifyAsync();
         }
 
 

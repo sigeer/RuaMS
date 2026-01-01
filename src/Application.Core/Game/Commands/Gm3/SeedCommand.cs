@@ -9,13 +9,13 @@ public class SeedCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (player.getMapId() != MapId.HENESYS_PQ)
         {
             player.YellowMessageI18N(nameof(ClientMessage.SeedCommand_LimitMessage));
-            return;
+            return Task.CompletedTask;
         }
         Point[] pos = {
             new Point(7, -207),
@@ -44,5 +44,6 @@ public class SeedCommand : CommandBase
                 log.Error(e.ToString());
             }
         }
+        return Task.CompletedTask;
     }
 }

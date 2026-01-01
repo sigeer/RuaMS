@@ -36,7 +36,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -46,13 +46,13 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         chr.getAutobanManager().spam(8);*/
 
-        var attack = parseDamage(p, chr, false, false);
+        var attack = await parseDamage(p, chr, false, false);
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().Disconnect(false, false);
+                await chr.getClient().Disconnect(false, false);
                 return;
             }
         }
@@ -221,6 +221,6 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             chr.cancelBuffStats(BuffStat.WIND_WALK);
         }
 
-        applyAttack(attack, chr, attackCount);
+        await applyAttack(attack, chr, attackCount);
     }
 }

@@ -7,7 +7,7 @@ public class HpMpCommand : CommandBase
         Description = "Set HP/MP of a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var victim = player;
@@ -39,5 +39,6 @@ public class HpMpCommand : CommandBase
         {
             player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
+        return Task.CompletedTask;
     }
 }

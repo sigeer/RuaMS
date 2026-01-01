@@ -32,7 +32,7 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var startPos = p.readPos();
@@ -60,5 +60,6 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
                 _logger.LogError(e.ToString());
             }
         }
+        return Task.CompletedTask;
     }
 }

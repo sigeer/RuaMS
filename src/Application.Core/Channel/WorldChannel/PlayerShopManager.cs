@@ -8,6 +8,7 @@ using client.inventory.manipulator;
 using ItemProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel
@@ -108,7 +109,7 @@ namespace Application.Core.Channel
             return null;
         }
 
-        public bool RemoveCommodity(IPlayer chr, int slotIndex)
+        public async Task<bool> RemoveCommodity(IPlayer chr, int slotIndex)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -125,13 +126,13 @@ namespace Application.Core.Channel
 
             if (slotIndex >= shop.Commodity.Count || slotIndex < 0)
             {
-                _worldChannel.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
+                await _worldChannel.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
                 _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slotIndex);
-                chr.Client.Disconnect(true, false);
+                await chr.Client.Disconnect(true, false);
                 return false;
             }
 
-            shop.takeItemBack(slotIndex, chr);
+            await shop.takeItemBack(slotIndex, chr);
             return true;
         }
 

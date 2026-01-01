@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelBuffHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int sourceid = p.readInt();
 
@@ -51,5 +51,6 @@ public class CancelBuffHandler : ChannelHandlerBase
                 c.OnlinedCharacter.cancelEffect(SkillFactory.GetSkillTrust(sourceid).getEffect(1), false, -1);
                 break;
         }
+        return Task.CompletedTask;
     }
 }

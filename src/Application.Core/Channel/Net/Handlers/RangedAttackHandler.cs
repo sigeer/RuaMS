@@ -39,7 +39,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -49,14 +49,14 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         }
         chr.getAutobanManager().spam(8);*/
 
-        var attack = parseDamage(p, chr, true, false);
+        var attack = await parseDamage(p, chr, true, false);
 
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().Disconnect(false, false);
+                await chr.getClient().Disconnect(false, false);
                 return;
             }
         }
@@ -70,12 +70,12 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         if (attack.skill == Buccaneer.ENERGY_ORB || attack.skill == ThunderBreaker.SPARK || attack.skill == Shadower.TAUNT || attack.skill == NightLord.TAUNT)
         {
             chr.getMap().broadcastMessage(chr, PacketCreator.rangedAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, 0, attack.targets, attack.speed, attack.direction, attack.display), false);
-            applyAttack(attack, chr, 1);
+            await applyAttack(attack, chr, 1);
         }
         else if (attack.skill == ThunderBreaker.SHARK_WAVE && chr.getSkillLevel(ThunderBreaker.SHARK_WAVE) > 0)
         {
             chr.getMap().broadcastMessage(chr, PacketCreator.rangedAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, 0, attack.targets, attack.speed, attack.direction, attack.display), false);
-            applyAttack(attack, chr, 1);
+            await applyAttack(attack, chr, 1);
 
             for (int i = 0; i < attack.numAttacked; i++)
             {
@@ -88,17 +88,17 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             if (attack.skill == Aran.COMBO_SMASH && chr.getCombo() >= 30)
             {
                 chr.setCombo(0);
-                applyAttack(attack, chr, 1);
+                await applyAttack(attack, chr, 1);
             }
             else if (attack.skill == Aran.COMBO_FENRIR && chr.getCombo() >= 100)
             {
                 chr.setCombo(0);
-                applyAttack(attack, chr, 2);
+                await applyAttack(attack, chr, 2);
             }
             else if (attack.skill == Aran.COMBO_TEMPEST && chr.getCombo() >= 200)
             {
                 chr.setCombo(0);
-                applyAttack(attack, chr, 4);
+                await applyAttack(attack, chr, 4);
             }
         }
         else
@@ -302,7 +302,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     chr.cancelBuffStats(BuffStat.WIND_WALK);
                 }
 
-                applyAttack(attack, chr, bulletCount);
+                await applyAttack(attack, chr, bulletCount);
             }
         }
     }

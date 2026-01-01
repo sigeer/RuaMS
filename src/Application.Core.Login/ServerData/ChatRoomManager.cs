@@ -94,7 +94,7 @@ namespace Application.Core.Login.ServerData
             response.NewComerPosition = position;
             response.Code = (int)JoinChatRoomResult.Success;
             // 加入聊天室后，删除其他聊天邀请
-            _server.InvitationManager.RemovePlayerInvitation(request.MasterId, InviteTypes.Messenger);
+            await _server.InvitationManager.RemovePlayerInvitation(request.MasterId, InviteTypes.Messenger);
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
         }
 

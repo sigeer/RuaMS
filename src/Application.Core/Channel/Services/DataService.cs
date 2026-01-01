@@ -18,6 +18,7 @@ using server;
 using server.events;
 using server.life;
 using server.quest;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -41,15 +42,15 @@ namespace Application.Core.Channel.Services
             return _transport.GetPlayerData(clientSession, cid);
         }
 
-        public void SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
+        public async Task SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var dto = Deserialize(player);
             if (trigger == SyncCharacterTrigger.Logoff)
             {
                 dto.Channel = 0;
             }
-            if (trigger == SyncCharacterTrigger.ChangeServer)
-                _transport.SyncPlayer(dto); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
+            if (trigger == SyncCharacterTrigger.PreEnterChannel || trigger == SyncCharacterTrigger.EnterCashShop)
+                await _transport.SyncPlayer(dto, trigger); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
             else
                 _server.BatchSyncPlayerManager.Enqueue(dto);
         }
@@ -412,13 +413,13 @@ namespace Application.Core.Channel.Services
             return data;
         }
 
-        public void CompleteLogin(IPlayer chr, SyncProto.PlayerGetterDto o)
+        public async Task CompleteLogin(IPlayer chr, SyncProto.PlayerGetterDto o)
         {
             if (o.LoginInfo.IsNewCommer)
             {
                 chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
-            _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel).ConfigureAwait(false).GetAwaiter().GetResult();
+            await _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
             if (chr.GuildModel != null)
             {
                 chr.sendPacket(GuildPackets.showGuildInfo(chr));
@@ -577,7 +578,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void CreatePLife(IPlayer chr, int lifeId, string lifeType, int mobTime = -1)
+        public async Task CreatePLife(IPlayer chr, int lifeId, string lifeType, int mobTime = -1)
         {
             if (lifeType == LifeType.Monster)
             {
@@ -605,7 +606,7 @@ namespace Application.Core.Channel.Services
             int ypos = checkpos.Y;
             int fh = chr.getMap().Footholds.FindBelowFoothold(checkpos)!.getId();
 
-            _transport.SendCreatePLife(new LifeProto.CreatePLifeRequest
+            await _transport.SendCreatePLife(new LifeProto.CreatePLifeRequest
             {
                 MasterId = chr.Id,
                 Data = new LifeProto.PLifeDto
@@ -677,10 +678,10 @@ namespace Application.Core.Channel.Services
             LoadAllPLife();
         }
 
-        public void RemovePLife(IPlayer chr, string lifeType, int lifeId = -1)
+        public async Task RemovePLife(IPlayer chr, string lifeType, int lifeId = -1)
         {
             var pos = chr.getPosition();
-            _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
+            await _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
         }
 
         public void OnPLifeRemoved(LifeProto.RemovePLifeResponse res)

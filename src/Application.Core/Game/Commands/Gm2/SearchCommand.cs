@@ -17,13 +17,13 @@ public class SearchCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.YellowMessageI18N(nameof(ClientMessage.SearchCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
         StringBuilder sb = new StringBuilder();
 
@@ -76,5 +76,6 @@ public class SearchCommand : CommandBase
 
 
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        return Task.CompletedTask;
     }
 }

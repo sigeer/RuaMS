@@ -28,11 +28,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class DistributeAPHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         int num = p.readInt();
 
         AssignAPProcessor.APAssignAction(c, num);
+        return Task.CompletedTask;
     }
 }

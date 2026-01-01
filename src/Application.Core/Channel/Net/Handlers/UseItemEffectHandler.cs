@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class UseItemEffectHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         Item? toUse;
         int itemId = p.readInt();
@@ -44,10 +44,11 @@ public class UseItemEffectHandler : ChannelHandlerBase
         {
             if (itemId != 0)
             {
-                return;
+                return Task.CompletedTask;
             }
         }
         c.OnlinedCharacter.setItemEffect(itemId);
         c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.itemEffect(c.OnlinedCharacter.getId(), itemId), false);
+        return Task.CompletedTask;
     }
 }

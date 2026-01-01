@@ -9,14 +9,14 @@ public class QuestResetCommand : CommandBase
         Description = "Reset a completed quest.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !resetquest <questid>");
-            return;
+            return Task.CompletedTask;
         }
 
         int questid_ = int.Parse(paramsValue[0]);
@@ -34,5 +34,6 @@ public class QuestResetCommand : CommandBase
                 player.dropMessage(5, "QUESTID " + questid_ + " is invalid.");
             }
         }
+        return Task.CompletedTask;
     }
 }

@@ -42,7 +42,7 @@ public class MultiChatHandler : ChannelHandlerBase
         _buddyManager = buddyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
@@ -60,9 +60,9 @@ public class MultiChatHandler : ChannelHandlerBase
         string chattext = p.readString();
         if (chattext.Length > sbyte.MaxValue && !player.isGM())
         {
-            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
+            await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {ChatContent}", c.OnlinedCharacter.getName(), chattext.Length);
-            c.Disconnect(true, false);
+            await c.Disconnect(true, false);
             return;
         }
 
@@ -76,6 +76,6 @@ public class MultiChatHandler : ChannelHandlerBase
             return;
 
         player.getAutobanManager().spam(7);
-        c.CurrentServerContainer.Transport.SendMultiChatAsync(type, player.Name, chattext, recipients);
+        await c.CurrentServerContainer.Transport.SendMultiChatAsync(type, player.Name, chattext, recipients);
     }
 }

@@ -166,7 +166,7 @@ namespace Application.Core.ServerTransports
 
         StoreItemsResponse SaveItems(StoreItemsRequest request);
         LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
-        void BatchSyncMap(List<MapSyncDto> data);
+        Task BatchSyncMap(List<MapSyncDto> data);
         Task SendReport(SendReportRequest sendReportRequest);
         Task SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest);
         MonitorDataWrapper LoadMonitor();
@@ -180,7 +180,7 @@ namespace Application.Core.ServerTransports
         Task SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
         Task DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
         GetAllClientInfo GetOnliendClientInfo();
-        void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
+        Task ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
         Task CompleteChannelShutdown();
         ServerStateDto GetServerState();
 

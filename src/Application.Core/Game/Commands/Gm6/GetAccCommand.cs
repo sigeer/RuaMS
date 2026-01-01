@@ -7,13 +7,13 @@ public class GetAccCommand : CommandBase
         Description = "Show account name of an online player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !getacc <playername>");
-            return;
+            return Task.CompletedTask;
         }
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
@@ -24,5 +24,6 @@ public class GetAccCommand : CommandBase
         {
             player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
         }
+        return Task.CompletedTask;
     }
 }

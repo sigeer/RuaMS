@@ -62,6 +62,7 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using tools;
 using static client.inventory.Equip;
 
@@ -903,7 +904,7 @@ public partial class Player
             }
             */
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -927,7 +928,7 @@ public partial class Player
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
@@ -968,7 +969,7 @@ public partial class Player
     public void broadcastAcquaintances(int type, string message)
     {
         broadcastAcquaintances(PacketCreator.serverNotice(type, message));
-        Client.CurrentServerContainer.BuddyManager.SendBuddyNoticeMessage(this, type, message);
+        _ = Client.CurrentServerContainer.BuddyManager.SendBuddyNoticeMessage(this, type, message);
     }
 
     public void broadcastAcquaintances(Packet packet)
@@ -1021,7 +1022,7 @@ public partial class Player
         int thisMapid = getMapId();
         int returnMapid = Client.CurrentServer.getMapFactory().getMap(thisMapid).getReturnMapId();
 
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         try
         {
@@ -1045,7 +1046,7 @@ public partial class Player
         finally
         {
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
 
         foreach (Item it in this.getInventory(InventoryType.EQUIPPED).list())
@@ -1465,7 +1466,7 @@ public partial class Player
         }
         try
         {
-            Client.CurrentServerContainer.GuildManager.Disband(this);
+            _ = Client.CurrentServerContainer.GuildManager.Disband(this);
         }
         catch (Exception e)
         {
@@ -1676,7 +1677,7 @@ public partial class Player
 
     //public List<KeyValuePair<BuffStat, int>> getAllActiveStatups()
     //{
-    //    Monitor.Enter(effLock);
+    //    effLock.Enter();
     //    chLock.EnterReadLock();
     //    try
     //    {
@@ -1685,13 +1686,13 @@ public partial class Player
     //    finally
     //    {
     //        chLock.ExitReadLock();
-    //        Monitor.Exit(effLock);
+    //        effLock.Exit();
     //    }
     //}
 
     public bool hasBuffFromSourceid(int sourceid)
     {
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         try
         {
@@ -1700,7 +1701,7 @@ public partial class Player
         finally
         {
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
     }
 
@@ -2564,7 +2565,7 @@ public partial class Player
 
     public StatEffect? getStatForBuff(BuffStat effect)
     {
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         try
         {
@@ -2574,7 +2575,7 @@ public partial class Player
         finally
         {
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
     }
 
@@ -2714,13 +2715,13 @@ public partial class Player
             return;
         }
 
-        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
+        _ = Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
 
     }
 
     public bool isBuffFrom(BuffStat stat, Skill skill)
     {
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         try
         {
@@ -2734,7 +2735,7 @@ public partial class Player
         finally
         {
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
     }
 
@@ -2861,7 +2862,7 @@ public partial class Player
         }
     }
 
-    object levelUpLock = new object();
+    Lock levelUpLock = new ();
     public void levelUp(bool takeexp)
     {
         lock (levelUpLock)
@@ -2874,7 +2875,7 @@ public partial class Player
             bool isBeginner = isBeginnerJob();
             if (YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP && isBeginner && Level < 11)
             {
-                Monitor.Enter(effLock);
+                effLock.Enter();
                 statLock.EnterWriteLock();
                 try
                 {
@@ -2896,7 +2897,7 @@ public partial class Player
                 finally
                 {
                     statLock.ExitWriteLock();
-                    Monitor.Exit(effLock);
+                    effLock.Exit();
                 }
             }
             else
@@ -3019,7 +3020,7 @@ public partial class Player
 
             levelUpGainSp();
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -3042,7 +3043,7 @@ public partial class Player
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
@@ -3080,9 +3081,9 @@ public partial class Player
             }
             else if (Level == 10)
             {
-                Action r = () =>
+                Action r = async () =>
                 {
-                    if (leaveParty())
+                    if (await leaveParty())
                     {
                         showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
 
@@ -3165,7 +3166,7 @@ public partial class Player
             return;
         }
 
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         cashInv.lockInventory();
         try
@@ -3177,7 +3178,7 @@ public partial class Player
         {
             cashInv.unlockInventory();
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
     }
 
@@ -3559,7 +3560,7 @@ public partial class Player
     /// </summary>
     private void reapplyLocalStats()
     {
-        Monitor.Enter(effLock);
+        effLock.Enter();
         chLock.EnterReadLock();
         statLock.EnterWriteLock();
         try
@@ -3693,14 +3694,14 @@ public partial class Player
         {
             statLock.ExitWriteLock();
             chLock.ExitReadLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
     }
 
     public void UpdateLocalStats(bool isInitial = false)
     {
         Monitor.Enter(prtLock);
-        Monitor.Enter(effLock);
+        effLock.Enter();
         statLock.EnterWriteLock();
         try
         {
@@ -3721,7 +3722,7 @@ public partial class Player
         finally
         {
             statLock.ExitWriteLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
             Monitor.Exit(prtLock);
         }
     }
@@ -3743,7 +3744,7 @@ public partial class Player
                 return;
             }
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -3794,7 +3795,7 @@ public partial class Player
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
     }
@@ -3855,7 +3856,7 @@ public partial class Player
         }, duration);
     }
 
-    public void sendPolice(string text)
+    public async Task sendPolice(string text)
     {
         string message = getName() + " received this - " + text;
         //if (Server.getInstance().isGmOnline(this.getWorld()))
@@ -3868,8 +3869,8 @@ public partial class Player
         //    //Auto DC and log if no GM is online
         //    Client.Disconnect(false, false);
         //}
-        Client.CurrentServerContainer.SendYellowTip(message, true);
-        Client.Disconnect(false);
+        await Client.CurrentServerContainer.SendYellowTip(message, true);
+        await Client.Disconnect(false);
         Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
@@ -3989,7 +3990,7 @@ public partial class Player
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);
 
-        Monitor.Enter(effLock);
+        effLock.Enter();
         statLock.EnterWriteLock();
         try
         {
@@ -4019,7 +4020,7 @@ public partial class Player
         finally
         {
             statLock.ExitWriteLock();
-            Monitor.Exit(effLock);
+            effLock.Exit();
         }
 
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
@@ -4483,7 +4484,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            Client.CurrentServerContainer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            _ = Client.CurrentServerContainer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 
@@ -4663,10 +4664,10 @@ public partial class Player
             equippedPetItemIgnore = true;
         }
 
-        if (equip.getPosition() == EquipSlot.Medal)
-        {
-            saveCharToDB(SyncCharacterTrigger.Unknown);
-        }
+        //if (equip.getPosition() == EquipSlot.Medal)
+        //{
+        //    saveCharToDB(SyncCharacterTrigger.Unknown);
+        //}
     }
 
     public void unequippedItem(Equip equip)
@@ -4872,10 +4873,10 @@ public partial class Player
         Bag.Dispose();
     }
 
-    public void logOff()
+    public async Task logOff()
     {
         // 切换频道/退出商城的保存不能放在断开连接时处理
-        saveCharToDB(SyncCharacterTrigger.Logoff);
+        await SyncCharAsync(SyncCharacterTrigger.Logoff);
         RemoveWorldWatcher();
         setClient(new OfflineClient());
     }
@@ -5005,21 +5006,6 @@ public partial class Player
     public WorldChannel getChannelServer()
     {
         return Client.CurrentServer;
-    }
-
-    public void LeaveGuild()
-    {
-        if (GuildModel == null)
-            return;
-
-        if (GuildRank > 1)
-        {
-            Client.CurrentServerContainer.GuildManager.LeaveMember(this);
-        }
-        else
-        {
-            Client.CurrentServerContainer.GuildManager.Disband(this);
-        }
     }
 
     /// <summary>

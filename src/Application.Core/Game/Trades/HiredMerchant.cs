@@ -262,36 +262,33 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void takeItemBack(int slot, IPlayer chr)
+    public async Task takeItemBack(int slot, IPlayer chr)
     {
-        lock (Commodity)
+        var shopItem = Commodity[slot];
+        if (shopItem.isExist())
         {
-            var shopItem = Commodity[slot];
-            if (shopItem.isExist())
+            if (shopItem.getBundles() > 0)
             {
-                if (shopItem.getBundles() > 0)
+                Item iitem = shopItem.getItem().copy();
+                iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
+
+                if (!Inventory.checkSpot(chr, iitem))
                 {
-                    Item iitem = shopItem.getItem().copy();
-                    iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
-
-                    if (!Inventory.checkSpot(chr, iitem))
-                    {
-                        chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
-                        chr.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    InventoryManipulator.addFromDrop(chr.Client, iitem, true);
+                    chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    chr.sendPacket(PacketCreator.enableActions());
+                    return;
                 }
 
-                removeFromSlot(slot);
-                chr.sendPacket(PacketCreator.updateHiredMerchant(this, chr));
+                InventoryManipulator.addFromDrop(chr.Client, iitem, true);
             }
 
-            if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
-            {
-                chr.saveCharToDB();
-            }
+            removeFromSlot(slot);
+            chr.sendPacket(PacketCreator.updateHiredMerchant(this, chr));
+        }
+
+        if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
+        {
+            await chr.SyncCharAsync();
         }
     }
 

@@ -35,7 +35,7 @@ namespace Application.Core.Game.Players
 
         private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -48,7 +48,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
         public long? getBuffedStarttime(BuffStat effect)
@@ -58,7 +58,7 @@ namespace Application.Core.Game.Players
 
         public void setBuffedValue(BuffStat effect, int value)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -70,7 +70,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -91,7 +91,7 @@ namespace Application.Core.Game.Players
 
         public bool HasBuff(BuffStat stat)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -100,13 +100,13 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         private List<BuffStatValueHolder> getAllStatups()
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -115,14 +115,14 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         public List<PlayerBuffValueHolder> getAllBuffs()
         {
             // buff values will be stored in an arbitrary order
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -145,7 +145,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -164,7 +164,7 @@ namespace Application.Core.Game.Players
 
         public void debugListAllBuffs()
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -186,13 +186,13 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         public void debugListAllBuffsCount()
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -202,7 +202,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -215,7 +215,7 @@ namespace Application.Core.Game.Players
                     HashSet<KeyValuePair<int, long>> es;
                     List<BuffStatValueHolder> toCancel = new();
 
-                    Monitor.Enter(effLock);
+                    effLock.Enter();
                     chLock.EnterReadLock();
                     try
                     {
@@ -233,7 +233,7 @@ namespace Application.Core.Game.Players
                     finally
                     {
                         chLock.ExitReadLock();
-                        Monitor.Exit(effLock);
+                        effLock.Exit();
                     }
 
                     foreach (BuffStatValueHolder mbsvh in toCancel)
@@ -259,7 +259,7 @@ namespace Application.Core.Game.Players
         {
             if (softcancel)
             {
-                Monitor.Enter(effLock);
+                effLock.Enter();
                 chLock.EnterReadLock();
                 try
                 {
@@ -277,14 +277,14 @@ namespace Application.Core.Game.Players
                 finally
                 {
                     chLock.ExitReadLock();
-                    Monitor.Exit(effLock);
+                    effLock.Exit();
                 }
             }
             else
             {
                 Dictionary<StatEffect, long> mseBuffs = new();
 
-                Monitor.Enter(effLock);
+                effLock.Enter();
                 chLock.EnterReadLock();
                 try
                 {
@@ -299,7 +299,7 @@ namespace Application.Core.Game.Players
                 finally
                 {
                     chLock.ExitReadLock();
-                    Monitor.Exit(effLock);
+                    effLock.Exit();
                 }
 
                 foreach (var mse in mseBuffs)
@@ -452,21 +452,21 @@ namespace Application.Core.Game.Players
             bool ret;
 
             Monitor.Enter(prtLock);
-            Monitor.Enter(effLock);
+            effLock.Enter();
             try
             {
                 ret = cancelEffect(effect, overwrite, true);
             }
             finally
             {
-                Monitor.Exit(effLock);
+                effLock.Exit();
                 Monitor.Exit(prtLock);
             }
 
             if (effect.isMagicDoor() && ret)
             {
                 Monitor.Enter(prtLock);
-                Monitor.Enter(effLock);
+                effLock.Enter();
                 try
                 {
                     if (!hasBuffFromSourceid(Priest.MYSTIC_DOOR))
@@ -476,7 +476,7 @@ namespace Application.Core.Game.Players
                 }
                 finally
                 {
-                    Monitor.Exit(effLock);
+                    effLock.Exit();
                     Monitor.Exit(prtLock);
                 }
             }
@@ -517,7 +517,7 @@ namespace Application.Core.Game.Players
 
         public void updateActiveEffects()
         {
-            Monitor.Enter(effLock);     // thanks davidlafriniere, maple006, RedHat for pointing a deadlock occurring here
+            effLock.Enter();     // thanks davidlafriniere, maple006, RedHat for pointing a deadlock occurring here
             try
             {
                 HashSet<BuffStat> updatedBuffs = new();
@@ -549,13 +549,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         private void updateEffects(HashSet<BuffStat> removedStats)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -580,7 +580,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -640,7 +640,7 @@ namespace Application.Core.Game.Players
         {
             BuffStatValueHolder? effect;
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -649,7 +649,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
             if (effect != null)
             {
@@ -659,7 +659,7 @@ namespace Application.Core.Game.Players
 
         public void cancelBuffStats(BuffStat stat)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             try
             {
                 List<KeyValuePair<int, BuffStatValueHolder>> cancelList = new();
@@ -691,7 +691,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             cancelPlayerBuffs(Arrays.asList(stat));
@@ -1406,7 +1406,7 @@ namespace Application.Core.Game.Players
             }
 
             Monitor.Enter(prtLock);
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -1502,7 +1502,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
                 Monitor.Exit(prtLock);
             }
 
@@ -1544,7 +1544,7 @@ namespace Application.Core.Game.Players
         {
             LinkedList<BuffStatValueHolder> allBuffs;
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -1553,7 +1553,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             foreach (BuffStatValueHolder mbsvh in allBuffs)

@@ -15,7 +15,7 @@ public class WarpCommand : ParamsCommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var mapFactory = c.CurrentServer.getMapFactory();
@@ -50,12 +50,12 @@ public class WarpCommand : ParamsCommandBase
                                 ctx.dispose();
                             });
                         });
-                    return;
+                    return Task.CompletedTask;
                 }
                 else
                 {
                     player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
-                    return;
+                    return Task.CompletedTask;
                 }
             }
 
@@ -82,6 +82,7 @@ public class WarpCommand : ParamsCommandBase
             log.Warning(ex.ToString());
             player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 
     bool TryGetMapModel(IPlayer admin, MapManager mapManager, int mapId, out IMap target)

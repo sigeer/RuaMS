@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseCatchItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
@@ -44,20 +44,20 @@ public class UseCatchItemHandler : ChannelHandlerBase
         var invType = ItemConstants.getInventoryType(itemId);
         if (chr.getInventory(invType).countById(itemId) <= 0)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         int objectId = p.readInt();
         var mob = chr.getMap().getMonsterByOid(objectId);
         if (mob == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var itemTemplate = ItemInformationProvider.getInstance().GetCatchMobItemTemplate(itemId);
         if (itemTemplate == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (itemTemplate.UseDelay > 0 && abm.getLastSpam(10) > 0)
@@ -72,7 +72,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                 {
                     c.sendPacket(PacketCreator.catchMessage(1));
                 }
-                return;
+                return Task.CompletedTask;
             }
         }
 
@@ -81,13 +81,13 @@ public class UseCatchItemHandler : ChannelHandlerBase
         if (itemTemplate.MobHP > 0 && mob.getHp() < ((mob.getMaxHp() / 100.0) * itemTemplate.MobHP))
         {
             c.sendPacket(PacketCreator.catchMessage(0));
-            return;
+            return Task.CompletedTask;
         }
 
         if (itemTemplate.Create > 0 && !chr.canHold(itemTemplate.Create, 1))
         {
             chr.Pink("Make a ETC slot available before using this item.");
-            return;
+            return Task.CompletedTask;
         }
 
         if (itemTemplate.BridleProp == 0 || Random.Shared.Next(100) < itemTemplate.BridleProp)
@@ -110,5 +110,6 @@ public class UseCatchItemHandler : ChannelHandlerBase
         }
 
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

@@ -369,6 +369,7 @@ namespace Application.Core.Channel
                 ServerConfigMapping[server.Key] = worldChannel;
 
                 channel++;
+                await worldChannel.StartServer(cancellationToken);
             }
 
             DataService.LoadAllPLife();
@@ -482,30 +483,30 @@ namespace Application.Core.Channel
         }
 
 
-        public void SendBroadcastWorldPacket(Packet p)
+        public async Task SendBroadcastWorldPacket(Packet p)
         {
-            _ = Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
+            await Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
         }
 
 
-        public void SendDropMessage(int type, string message, bool onlyGM = false)
+        public async Task SendDropMessage(int type, string message, bool onlyGM = false)
         {
-            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
+            await Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
         }
 
-        public void SendDropGMMessage(int type, string message)
+        public async Task SendDropGMMessage(int type, string message)
         {
-            SendDropMessage(type, message, true);
+            await SendDropMessage(type, message, true);
         }
 
-        public void SendYellowTip(string message, bool onlyGM)
+        public async Task SendYellowTip(string message, bool onlyGM)
         {
-            SendDropMessage(-1, message, onlyGM);
+            await SendDropMessage(-1, message, onlyGM);
         }
 
-        public void EarnTitleMessage(string message, bool onlyGM)
+        public async Task EarnTitleMessage(string message, bool onlyGM)
         {
-            SendDropMessage(-2, message, onlyGM);
+            await SendDropMessage(-2, message, onlyGM);
         }
 
         public void UpdateWorldConfig(Config.WorldConfig updatePatch)
@@ -573,9 +574,9 @@ namespace Application.Core.Channel
             MessageDispatcher.Dispatch(type, message);
         }
 
-        internal void SendReloadEvents(IPlayer chr)
+        internal async Task SendReloadEvents(IPlayer chr)
         {
-            Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
+            await Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
         }
     }
 }

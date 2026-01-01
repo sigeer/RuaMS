@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ReactorHitHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         //Console.WriteLine(slea); //To see if there are any differences with packets
         //[CD 00] [6B 00 00 00] [01 00 00 00] [03 00] [00 00 20 03] [F7 03 00 00]
@@ -43,5 +43,6 @@ public class ReactorHitHandler : ChannelHandlerBase
         {
             reactor.hitReactor(true, charPos, stance, skillid, c);
         }
+        return Task.CompletedTask;
     }
 }

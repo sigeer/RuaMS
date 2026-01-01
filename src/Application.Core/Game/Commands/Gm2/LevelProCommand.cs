@@ -7,7 +7,7 @@ public class LevelProCommand : ParamsCommandBase
         Description = "Set your level, one by one.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -17,5 +17,6 @@ public class LevelProCommand : ParamsCommandBase
         {
             player.levelUp(false);
         }
+        return Task.CompletedTask;
     }
 }

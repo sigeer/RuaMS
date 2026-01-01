@@ -13,6 +13,7 @@ using client.inventory.manipulator;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using server;
+using System.Threading.Tasks;
 using System.Transactions;
 using tools;
 using static server.CashShop;
@@ -199,7 +200,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        internal void UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
+        internal async Task UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
         {
             if (player.TscRequest != null)
             {
@@ -215,7 +216,7 @@ namespace Application.Core.Channel.Services
             request.MessageList.AddRange(messages);
 
             player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(item, 1).Build();
-            _ = _transport.BroadcastTV(request);
+            await _transport.BroadcastTV(request);
         }
 
         public void OnBroadcastTVFinished(Empty data)
@@ -226,7 +227,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        internal void UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
+        internal async Task UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
         {
             if (player.TscRequest != null)
             {
@@ -241,6 +242,7 @@ namespace Application.Core.Channel.Services
             };
 
             player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Build();
+            await _transport.SendItemMegaphone(request);
         }
 
         public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)

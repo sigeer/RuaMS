@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DamageSummonHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         p.skip(1);   // -1
@@ -47,5 +47,6 @@ public class DamageSummonHandler : ChannelHandlerBase
             }
             player.getMap().broadcastMessage(player, PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), summon.getPosition());
         }
+        return Task.CompletedTask;
     }
 }

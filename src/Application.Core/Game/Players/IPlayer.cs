@@ -104,7 +104,6 @@ namespace Application.Core.Game.Players
         public int AvailableCP { get; }
         Lock ResourceLock { get; }
         public ILogger Log { get; }
-        void LeaveGuild();
         void StartPlayerTask();
         void StopPlayerTask();
         void addCooldown(int skillId, long startTime, long length);
@@ -514,9 +513,8 @@ namespace Application.Core.Game.Players
         bool isRidingBattleship();
         bool isSummonsEmpty();
         void leaveMap();
-        bool leaveParty();
         void levelUp(bool takeexp);
-        void logOff();
+        Task logOff();
         void loseExp(int loss, bool show, bool inChat);
         void loseExp(int loss, bool show, bool inChat, bool white);
         bool mergeAllItemsFromName(string name);
@@ -567,6 +565,7 @@ namespace Application.Core.Game.Players
         bool runTirednessSchedule();
         //void saveCharToDB();
         void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown);
+        Task SyncCharAsync(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown);
         void saveLocation(string type);
         void saveLocationOnWarp();
         int sellAllItemsFromName(sbyte invTypeId, string name);
@@ -575,7 +574,7 @@ namespace Application.Core.Game.Players
         void sendMacros();
         void sendPacket(Packet packet);
         void sendPolice(int greason, string reason, int duration);
-        void sendPolice(string text);
+        Task sendPolice(string text);
         void sendQuickmap();
 
         void setAllianceRank(int _rank);

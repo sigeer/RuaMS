@@ -31,8 +31,8 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AutoAssignHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        AssignAPProcessor.APAutoAssignAction(p, c);
+        await AssignAPProcessor.APAutoAssignAction(p, c);
     }
 }

@@ -27,10 +27,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class UseDeathItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int itemId = p.readInt();
         c.OnlinedCharacter.setItemEffect(itemId);
         c.sendPacket(PacketCreator.itemEffect(c.OnlinedCharacter.getId(), itemId));
+        return Task.CompletedTask;
     }
 }

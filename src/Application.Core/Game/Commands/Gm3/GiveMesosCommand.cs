@@ -9,13 +9,13 @@ public class GiveMesosCommand : CommandBase
         Description = "Give mesos to a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.GiveMesosCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         string recv_, value_;
@@ -66,5 +66,6 @@ public class GiveMesosCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
+        return Task.CompletedTask;
     }
 }

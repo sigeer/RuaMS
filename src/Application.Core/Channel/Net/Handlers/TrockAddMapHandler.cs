@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TrockAddMapHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         byte type = p.readByte();
@@ -69,5 +69,6 @@ public class TrockAddMapHandler : ChannelHandlerBase
                 chr.message("You may not save this map.");
             }
         }
+        return Task.CompletedTask;
     }
 }

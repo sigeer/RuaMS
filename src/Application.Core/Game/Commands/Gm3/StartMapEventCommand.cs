@@ -7,8 +7,9 @@ public class StartMapEventCommand : CommandBase
         Description = "Start a \"classic\" event on current map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().startEvent(c.OnlinedCharacter);
+        return Task.CompletedTask;
     }
 }

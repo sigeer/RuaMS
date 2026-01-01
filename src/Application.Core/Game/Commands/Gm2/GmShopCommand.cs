@@ -11,8 +11,9 @@ public class GmShopCommand : CommandBase
         _shopManager = shopManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         _shopManager.getShop(1337)!.sendShop(c);
+        return Task.CompletedTask;
     }
 }

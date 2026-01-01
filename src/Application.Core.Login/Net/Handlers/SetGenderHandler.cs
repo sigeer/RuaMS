@@ -42,7 +42,7 @@ public class SetGenderHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         if (c.AccountEntity?.Gender == 10)
         {
@@ -58,7 +58,7 @@ public class SetGenderHandler : LoginHandlerBase
             }
             else
             {
-                _sessionCoordinator.closeSession(c);
+                await _sessionCoordinator.closeSession(c);
                 c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }

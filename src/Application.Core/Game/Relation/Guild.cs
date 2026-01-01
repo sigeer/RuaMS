@@ -94,7 +94,7 @@ public class Guild
 
             if (AllianceId > 0)
             {
-                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                var alliance = _serverContainer.GuildManager.GetAllianceById(AllianceId);
                 if (alliance != null)
                 {
                     alliance.broadcastMessage(GuildPackets.allianceMemberOnline(this, cid, channel > 0), cid);
@@ -113,7 +113,7 @@ public class Guild
 
             if (AllianceId > 0)
             {
-                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                var alliance = _serverContainer.GuildManager.GetAllianceById(AllianceId);
                 if (alliance != null)
                 {
                     alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(this, member.Id, member.Level, member.JobId), member.Id, -1);
@@ -133,7 +133,7 @@ public class Guild
 
             if (AllianceId > 0)
             {
-                var alliance = _serverContainer.GuildManager.SoftGetAlliance(AllianceId);
+                var alliance = _serverContainer.GuildManager.GetAllianceById(AllianceId);
                 if (alliance != null)
                 {
                     alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(this, member.Id, member.Level, member.JobId), member.Id, -1);
@@ -201,7 +201,7 @@ public class Guild
 
                 if (AllianceId > 0)
                 {
-                    _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
+                    _serverContainer.GuildManager.GetAllianceById(AllianceId)?.updateAlliancePackets();
                 }
                 return true;
             }
@@ -233,7 +233,7 @@ public class Guild
 
             if (AllianceId > 0)
             {
-                _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
+                _serverContainer.GuildManager.GetAllianceById(AllianceId)?.updateAlliancePackets();
             }
             return true;
         }
@@ -255,7 +255,7 @@ public class Guild
 
             if (AllianceId > 0)
             {
-                _serverContainer.GuildManager.SoftGetAlliance(AllianceId)?.updateAlliancePackets();
+                _serverContainer.GuildManager.GetAllianceById(AllianceId)?.updateAlliancePackets();
             }
 
             channelDirty = true;

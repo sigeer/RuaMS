@@ -35,6 +35,7 @@ using Microsoft.Extensions.Logging;
 using scripting;
 using server;
 using server.life;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -52,7 +53,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    protected void applyAttack(AttackInfo attack, IPlayer player, int attackCount)
+    protected async Task applyAttack(AttackInfo attack, IPlayer player, int attackCount)
     {
         var map = player.getMap();
         if (map.isOwnershipRestricted(player))
@@ -203,7 +204,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                     if (distance > distanceToDetect)
                     {
-                        autoBanDataManager.Alert(AutobanFactory.DISTANCE_HACK, player, "Distance Sq to monster: " + distance + " SID: " + attack.skill + " MID: " + monster.getId());
+                        await autoBanDataManager.Alert(AutobanFactory.DISTANCE_HACK, player, "Distance Sq to monster: " + distance + " SID: " + attack.skill + " MID: " + monster.getId());
                         monster.refreshMobPosition();
                     }
 
@@ -633,7 +634,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         }
     }
 
-    protected AttackInfo parseDamage(InPacket p, IPlayer chr, bool ranged, bool magic)
+    protected async Task<AttackInfo> parseDamage(InPacket p, IPlayer chr, bool ranged, bool magic)
     {
         //2C 00 00 01 91 A1 12 00 A5 57 62 FC E2 75 99 10 00 47 80 01 04 01 C6 CC 02 DD FF 5F 00
         AttackInfo ret = new AttackInfo();
@@ -1048,7 +1049,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 // Warn if the damage is over 1.5x what we calculated above.
                 if (damage > maxWithCrit * 1.5)
                 {
-                    autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, chr,
+                    await autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, chr,
                         $"DMG: {damage} MaxDMG: {maxWithCrit} SID: {ret.skill} MobID: " + (monster != null ? monster.getId() : "null") + $" Map: {chr.getMap().getMapName()} ({chr.getMapId()})");
                 }
 

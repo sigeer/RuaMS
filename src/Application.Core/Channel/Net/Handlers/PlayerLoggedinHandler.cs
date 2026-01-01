@@ -51,7 +51,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int cid = p.readInt(); // TODO: investigate if this is the "client id" supplied in PacketCreator#getServerIP()
 
@@ -66,14 +66,14 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             var cserv = c.CurrentServer;
             if (cserv == null || !cserv.IsRunning)
             {
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
 
             var playerObject = _dataService.GetPlayerData(cserv.getId(), c.GetSessionRemoteHost(), cid);
             if (playerObject == null)
             {
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
 
@@ -83,7 +83,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             if (player == null)
             {
                 // 1. 玩家不存在 2. 玩家并不处于切换服务器状态
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
             c.Language = playerObject.LoginInfo.Language;
@@ -140,7 +140,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-                _teamManger.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
+                await _teamManger.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
                 player.updatePartyMemberHP();
             }
 
@@ -193,7 +193,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServerContainer.EarnTitleMessage(string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
+                    await c.CurrentServerContainer.EarnTitleMessage(string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
                 }
             }
             else
@@ -233,7 +233,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.setNPCScriptable(npcsIds));
             }
 
-            _dataService.CompleteLogin(player, playerObject);
+            await _dataService.CompleteLogin(player, playerObject);
         }
         catch (Exception e)
         {

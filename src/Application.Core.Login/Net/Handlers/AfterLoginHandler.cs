@@ -40,7 +40,7 @@ public class AfterLoginHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         byte c2 = p.readByte();
         byte c3 = 5;
@@ -85,7 +85,7 @@ public class AfterLoginHandler : LoginHandlerBase
         }
         else if (c2 == 0 && c3 == 5)
         {
-            _sessionCoordinator.closeSession(c);
+            await _sessionCoordinator.closeSession(c);
             c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
     }

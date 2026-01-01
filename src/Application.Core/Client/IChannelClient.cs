@@ -20,7 +20,7 @@ namespace Application.Core.Client
         NPCConversationManager? NPCConversationManager { get; set; }
         EngineStorage ScriptEngines { get; set; }
 
-        void Disconnect(bool isShutdown, bool fromCashShop = false);
+        Task Disconnect(bool isShutdown, bool fromCashShop = false);
 
         void enableCSActions();
         AbstractPlayerInteraction getAbstractPlayerInteraction();
@@ -33,7 +33,7 @@ namespace Application.Core.Client
         void closePlayerScriptInteractions();
         void announceHint(string msg, int length);
         bool GainCharacterSlot();
-        void ChangeChannel(int channel);
+
         bool attemptCsCoupon();
         void resetCsCoupon();
         void SetPlayer(IPlayer? player);
@@ -47,6 +47,7 @@ namespace Application.Core.Client
 
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
-        void LeaveCashShop();
+        Task LeaveCashShop();
+        Task ChangeChannel(int channel);
     }
 }

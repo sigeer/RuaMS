@@ -18,7 +18,7 @@ public class GmCommand : CommandBase
                 "Do not ask if you can receive help, just state your issue.",
                 "Do not say 'I have a bug to report', just state it.",
         };
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override async Task Execute(IChannelClient c, string[] paramValues)
     {
         var player = c.OnlinedCharacter;
         if (paramValues.Length < 1 || paramValues[0].Length < 3)
@@ -27,8 +27,8 @@ public class GmCommand : CommandBase
             return;
         }
         string message = player.getLastCommandMessage();
-        c.CurrentServerContainer.SendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message, true);
-        c.CurrentServerContainer.SendDropGMMessage(1, message);
+        await c.CurrentServerContainer.SendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message, true);
+        await c.CurrentServerContainer.SendDropGMMessage(1, message);
         log.Information("{CharacterName}: {Message}", CharacterManager.makeMapleReadable(player.getName()), message);
         player.dropMessage(5, "Your message '" + message + "' was sent to GMs.");
         player.dropMessage(5, tips[Randomizer.nextInt(tips.Length)]);

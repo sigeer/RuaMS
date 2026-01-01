@@ -13,6 +13,7 @@ using net.server.guild;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -77,9 +78,9 @@ namespace Application.Core.Channel.ServerData
             return guildMembers;
         }
 
-        public void SendInvitation(IChannelClient c, string targetName)
+        public async Task SendInvitation(IChannelClient c, string targetName)
         {
-            _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            await _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
                 Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
@@ -89,9 +90,9 @@ namespace Application.Core.Channel.ServerData
 
 
 
-        public void AnswerInvitation(IPlayer answer, int guildId, bool operation)
+        public async Task AnswerInvitation(IPlayer answer, int guildId, bool operation)
         {
-            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public Guild? CreateGuild(string guildName, int playerId, HashSet<IPlayer> members, Action failCallback)
@@ -222,9 +223,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void LeaveMember(IPlayer fromChr)
+        public async Task LeaveMember(IPlayer fromChr)
         {
-            _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
+            await _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
         }
 
         public void OnPlayerLeaveGuild(LeaveGuildResponse data)
@@ -266,9 +267,9 @@ namespace Application.Core.Channel.ServerData
             return localData;
         }
 
-        public void ExpelMember(IPlayer fromChr, int toId)
+        public async Task ExpelMember(IPlayer fromChr, int toId)
         {
-            _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
+            await _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
         }
 
         public void OnGuildExpelMember(ExpelFromGuildResponse data)
@@ -279,9 +280,9 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void ChangeRank(IPlayer fromChr, int toId, int toRank)
+        public async Task ChangeRank(IPlayer fromChr, int toId, int toRank)
         {
-            _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
+            await _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
         }
 
         public void OnChangePlayerGuildRank(UpdateGuildMemberRankResponse data)
@@ -332,9 +333,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
+        public async Task SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
         {
-            _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
+            await _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -355,11 +356,11 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void SetGuildRankTitle(IPlayer chr, string[] titles)
+        public async Task SetGuildRankTitle(IPlayer chr, string[] titles)
         {
             var request = new GuildProto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
             request.RankTitles.AddRange(titles);
-            _transport.SendUpdateGuildRankTitle(request);
+            await _transport.SendUpdateGuildRankTitle(request);
         }
         public void OnGuildRankTitleUpdate(UpdateGuildRankTitleResponse data)
         {
@@ -371,9 +372,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void IncreaseGuildCapacity(IPlayer chr, int cost)
+        public async Task IncreaseGuildCapacity(IPlayer chr, int cost)
         {
-            _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
+            await _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
         public void OnGuildCapacityIncreased(UpdateGuildCapacityResponse data)
@@ -391,9 +392,9 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void SetGuildNotice(IPlayer chr, string notice)
+        public async Task SetGuildNotice(IPlayer chr, string notice)
         {
-            _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
+            await _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
         public void OnGuildNoticeUpdate(UpdateGuildNoticeResponse data)
         {
@@ -404,9 +405,9 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void Disband(IPlayer chr)
+        public async Task Disband(IPlayer chr)
         {
-            _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
+            await _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
         }
 
         public void OnGuildDisband(GuildProto.GuildDisbandResponse data)
@@ -438,9 +439,9 @@ namespace Application.Core.Channel.ServerData
             _transport.BroadcastGuildMessage(guildId, v, callout);
         }
 
-        public void GainGP(IPlayer chr, int gp)
+        public async Task GainGP(IPlayer chr, int gp)
         {
-            _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
+            await _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
         }
 
         internal void OnGuildGPUpdate(GuildProto.UpdateGuildGPResponse data)
@@ -482,7 +483,7 @@ namespace Application.Core.Channel.ServerData
 
             return alliance;
         }
-        public void SendAllianceInvitation(IChannelClient c, string targetGuildName)
+        public async Task SendAllianceInvitation(IChannelClient c, string targetGuildName)
         {
             var alliance = c.OnlinedCharacter.AllianceModel;
             if (alliance == null)
@@ -505,7 +506,7 @@ namespace Application.Core.Channel.ServerData
                 }
                 else
                 {
-                    _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+                    await _transport.SendInvitation(new InvitationProto.CreateInviteRequest
                     {
                         Type = InviteTypes.Alliance,
                         FromId = c.OnlinedCharacter.Id,
@@ -515,12 +516,11 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void AnswerAllianceInvitation(IPlayer chr, int allianceId, bool answer)
+        public async Task AnswerAllianceInvitation(IPlayer chr, int allianceId, bool answer)
         {
-            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
+            await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
-        public Guild.Alliance? SoftGetAlliance(int id) => _localAlliance.GetValueOrDefault(id);
         public Guild.Alliance? GetAllianceById(int id)
         {
             if (_localAlliance.TryGetValue(id, out var d) && d != null)
@@ -583,13 +583,13 @@ namespace Application.Core.Channel.ServerData
                 }
             }
         }
-        public void GuildLeaveAlliance(IPlayer player, int guildId)
+        public async Task GuildLeaveAlliance(IPlayer player, int guildId)
         {
             if (player.AllianceModel == null || player.GuildRank != 1)
             {
                 return;
             }
-            _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
+            await _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
         }
 
         public void OnGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceResponse data)
@@ -600,14 +600,14 @@ namespace Application.Core.Channel.ServerData
                     return alliance.RemoveGuildFromAlliance(data.GuildId, 1);
                 });
         }
-        public void AllianceExpelGuild(IPlayer player, int allianceId, int guildId)
+        public async Task AllianceExpelGuild(IPlayer player, int allianceId, int guildId)
         {
             if (player.AllianceModel?.AllianceId != allianceId)
             {
                 return;
             }
 
-            _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
+            await _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
         }
         public void OnAllianceExpelGuild(AllianceProto.AllianceExpelGuildResponse data)
         {
@@ -627,13 +627,13 @@ namespace Application.Core.Channel.ServerData
                     return true;
                 });
         }
-        public void ChageLeaderAllianceRank(IPlayer player, int targetPlayerId)
+        public async Task ChageLeaderAllianceRank(IPlayer player, int targetPlayerId)
         {
             if (player.GuildRank != 1)
             {
                 return;
             }
-            _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+            await _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
         }
         public void OnAllianceLeaderChanged(AllianceProto.AllianceChangeLeaderResponse data)
         {
@@ -644,9 +644,9 @@ namespace Application.Core.Channel.ServerData
                     return true;
                 });
         }
-        public void ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
+        public async Task ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
         {
-            _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+            await _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
         }
         public void OnPlayerAllianceRankChanged(AllianceProto.ChangePlayerAllianceRankResponse data)
         {
@@ -658,9 +658,9 @@ namespace Application.Core.Channel.ServerData
                     return true;
                 });
         }
-        public void HandleIncreaseAllianceCapacity(IPlayer chr)
+        public async Task HandleIncreaseAllianceCapacity(IPlayer chr)
         {
-            _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+            await _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
         }
         public void OnAllianceCapacityIncreased(AllianceProto.IncreaseAllianceCapacityResponse data)
         {
@@ -676,11 +676,11 @@ namespace Application.Core.Channel.ServerData
                     mc.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
                 });
         }
-        internal void UpdateAllianceRank(IPlayer chr, string[] ranks)
+        internal async Task UpdateAllianceRank(IPlayer chr, string[] ranks)
         {
             var request = new AllianceProto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
             request.RankTitles.AddRange(ranks);
-            _transport.SendUpdateAllianceRankTitle(request);
+            await _transport.SendUpdateAllianceRankTitle(request);
         }
         public void OnAllianceRankTitleChanged(AllianceProto.UpdateAllianceRankTitleResponse data)
         {
@@ -693,9 +693,9 @@ namespace Application.Core.Channel.ServerData
                     return true;
                 });
         }
-        internal void UpdateAllianceNotice(IPlayer chr, string notice)
+        internal async Task UpdateAllianceNotice(IPlayer chr, string notice)
         {
-            _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+           await  _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
         public void OnAllianceNoticeChanged(AllianceProto.UpdateAllianceNoticeResponse data)
         {
@@ -708,9 +708,9 @@ namespace Application.Core.Channel.ServerData
                 });
         }
 
-        internal void DisbandAlliance(IPlayer player, int allianceId)
+        internal async Task DisbandAlliance(IPlayer player, int allianceId)
         {
-            _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
+            await _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
         }
         public void OnAllianceDisband(AllianceProto.DisbandAllianceResponse data)
         {

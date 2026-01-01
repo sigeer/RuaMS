@@ -24,14 +24,14 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class UseChairHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int itemId = p.readInt();
 
         // thanks Darter (YungMoozi) for reporting unchecked chair item
         if (!ItemId.isChair(itemId) || c.OnlinedCharacter.getInventory(InventoryType.SETUP).findById(itemId) == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.tryacquireClient())
@@ -45,5 +45,6 @@ public class UseChairHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

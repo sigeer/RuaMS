@@ -25,14 +25,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelChairHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int id = p.readShort();
         var mc = c.OnlinedCharacter;
 
         if (id >= mc.getMap().getSeats())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.tryacquireClient())
@@ -46,5 +46,6 @@ public class CancelChairHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

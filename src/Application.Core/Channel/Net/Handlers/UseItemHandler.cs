@@ -32,14 +32,14 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
         if (!chr.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         p.readInt();
@@ -65,6 +65,7 @@ public class UseItemHandler : ChannelHandlerBase
                 remove(c, slot);
             }
         }
+        return Task.CompletedTask;
     }
 
     private void remove(IChannelClient c, short slot)

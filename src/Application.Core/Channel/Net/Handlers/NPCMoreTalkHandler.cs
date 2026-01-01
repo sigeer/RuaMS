@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class NPCMoreTalkHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         sbyte lastMsg = p.ReadSByte(); // 00 (last msg type I think)
         sbyte action = p.ReadSByte(); // 00 = end chat, 01 == follow
@@ -100,5 +100,6 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                 c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, selection);
             }
         }
+        return Task.CompletedTask;
     }
 }

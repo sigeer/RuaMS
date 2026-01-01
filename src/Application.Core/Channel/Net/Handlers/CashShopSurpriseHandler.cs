@@ -42,7 +42,7 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
         _itemService = itemService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -51,7 +51,7 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
                 CashShop cs = c.OnlinedCharacter.getCashShop();
                 if (!cs.isOpened())
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 long cashId = p.readLong();
@@ -59,7 +59,7 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
                 if (result == null)
                 {
                     c.sendPacket(PacketCreator.onCashItemGachaponOpenFailed());
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 Item usedCashShopSurprise = result.usedCashShopSurprise;
@@ -72,5 +72,6 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

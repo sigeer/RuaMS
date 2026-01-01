@@ -2,6 +2,7 @@ using Application.Core.Managers;
 using Application.Core.ServerTransports;
 using client.autoban;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -53,9 +54,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void ToggleIgnore(IPlayer chr, string name)
+        public async Task ToggleIgnore(IPlayer chr, string name)
         {
-            _ = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
+             await _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
         public void AddPoint(AutobanFactory type, IPlayer chr, string reason)
@@ -73,7 +74,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void Alert(AutobanFactory type, IPlayer chr, string reason)
+        public async Task Alert(AutobanFactory type, IPlayer chr, string reason)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
@@ -81,7 +82,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     return;
                 }
-                chr.Client.CurrentServerContainer.SendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason, true);
+                await chr.Client.CurrentServerContainer.SendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason, true);
             }
             if (YamlConfig.config.server.USE_AUTOBAN_LOG)
             {

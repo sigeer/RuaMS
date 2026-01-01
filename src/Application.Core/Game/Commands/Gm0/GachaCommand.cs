@@ -14,7 +14,7 @@ public class GachaCommand : CommandBase
         _gachaponManager = gachaponManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override Task Execute(IChannelClient c, string[] paramValues)
     {
         GachaponDataObject? gacha = null;
         string search = c.OnlinedCharacter.getLastCommandMessage();
@@ -64,7 +64,7 @@ public class GachaCommand : CommandBase
             {
                 c.OnlinedCharacter.yellowMessage(name);
             }
-            return;
+            return Task.CompletedTask;
         }
         StringBuilder sb = new StringBuilder();
         sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message1), gachaName));
@@ -78,5 +78,6 @@ public class GachaCommand : CommandBase
         sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message2)));
 
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        return Task.CompletedTask;
     }
 }

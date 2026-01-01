@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ScriptedItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); // trash stamp, thanks RMZero213
         short itemSlot = p.readShort(); // item slot, thanks RMZero213
@@ -40,15 +40,16 @@ public class ScriptedItemHandler : ChannelHandlerBase
         var info = ItemInformationProvider.getInstance().GetScriptItemTemplate(itemId);
         if (info == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var item = c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(itemId)).getItem(itemSlot);
         if (item == null || item.getItemId() != itemId || item.getQuantity() < 1)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         ItemScriptManager.getInstance().runItemScript(c, info);
+        return Task.CompletedTask;
     }
 }

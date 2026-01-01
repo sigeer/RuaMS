@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PartyOperationHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;
@@ -45,7 +45,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     {
                         var partymembers = player.getPartyMembersOnline();
 
-                        c.CurrentServerContainer.TeamManager.LeaveParty(player);
+                        await c.CurrentServerContainer.TeamManager.LeaveParty(player);
                         player.partyOperationUpdate(party, partymembers);
                     }
                     break;
@@ -54,21 +54,21 @@ public class PartyOperationHandler : ChannelHandlerBase
                 { // join
                     int partyid = p.readInt();
 
-                    c.CurrentServerContainer.TeamManager.AnswerInvite(player, partyid, true);
+                    await c.CurrentServerContainer.TeamManager.AnswerInvite(player, partyid, true);
                     break;
                 }
             case 4:
                 {
                     // invite
                     string name = p.readString();
-                    c.CurrentServerContainer.TeamManager.CreateInvite(player, name);
+                    await c.CurrentServerContainer.TeamManager.CreateInvite(player, name);
                     break;
                 }
             case 5:
                 {
                     // expel
                     int cid = p.readInt();
-                    c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
+                    await c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
                     break;
                 }
             case 6:
@@ -79,7 +79,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                         return;
                     }
                     int newLeader = p.readInt();
-                    c.CurrentServerContainer.TeamManager.ChangeLeader(player, newLeader);
+                    await c.CurrentServerContainer.TeamManager.ChangeLeader(player, newLeader);
                     break;
                 }
         }

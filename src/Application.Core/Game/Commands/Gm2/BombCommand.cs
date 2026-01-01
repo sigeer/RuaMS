@@ -10,7 +10,7 @@ public class BombCommand : CommandBase
         Description = "Bomb a player, dealing damage.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length > 0)
@@ -19,7 +19,7 @@ public class BombCommand : CommandBase
             if (victim != null && victim.IsOnlined)
             {
                 victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
-                c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !bomb on " + victim.getName());
+                await c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !bomb on " + victim.getName());
             }
             else
             {

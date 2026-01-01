@@ -8,13 +8,13 @@ public class UnJailCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.UnJailCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
@@ -23,7 +23,7 @@ public class UnJailCommand : CommandBase
             if (victim.getJailExpirationTimeLeft() <= 0)
             {
                 player.YellowMessageI18N(nameof(ClientMessage.UnjailCommand_AlreadyFree));
-                return;
+                return Task.CompletedTask;
             }
             victim.removeJailExpirationTime();
             victim.MessageI18N(nameof(ClientMessage.Unjail_Notify));
@@ -33,5 +33,6 @@ public class UnJailCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 }

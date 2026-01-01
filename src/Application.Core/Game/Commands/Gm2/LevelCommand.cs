@@ -8,24 +8,25 @@ public class LevelCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.LevelCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[0], out var newlevel))
         {
             player.YellowMessageI18N(nameof(ClientMessage.LevelCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         player.loseExp(player.getExp(), false, false);
         player.setLevel(Math.Min(newlevel, player.getMaxClassLevel()) - 1);
 
         player.levelUp(false);
+        return Task.CompletedTask;
     }
 }

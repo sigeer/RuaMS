@@ -42,7 +42,7 @@ public class LoginPasswordHandler : LoginHandlerBase
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string remoteHost = c.RemoteAddress;
         if (string.IsNullOrEmpty(remoteHost) || remoteHost == "null")
@@ -59,7 +59,7 @@ public class LoginPasswordHandler : LoginHandlerBase
         Hwid hwid = new Hwid(hwidNibbles.ToHexString());
 
 
-        var loginok = c.Login(login, pwd, hwid);
+        var loginok = await c.Login(login, pwd, hwid);
 
 
         if (YamlConfig.config.server.AUTOMATIC_REGISTER && loginok == LoginResultCode.Fail_AccountNotExsited)
@@ -68,7 +68,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             {
                 //Jayd: Added birthday, tempban
                 _server.AccountManager.CreateAccount(login, pwd);
-                loginok = c.Login(login, pwd, hwid);
+                loginok = await c.Login(login, pwd, hwid);
             }
             catch (Exception e)
             {

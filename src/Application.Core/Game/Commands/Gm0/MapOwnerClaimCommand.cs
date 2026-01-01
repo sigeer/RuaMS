@@ -8,7 +8,7 @@ public class MapOwnerClaimCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         if (c.tryacquireClient())
         {
@@ -32,7 +32,7 @@ public class MapOwnerClaimCommand : CommandBase
                                 if (map == ownedMap)
                                 {
                                     chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message1)));
-                                    return;
+                                    return Task.CompletedTask;
                                 }
                             }
 
@@ -65,5 +65,6 @@ public class MapOwnerClaimCommand : CommandBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

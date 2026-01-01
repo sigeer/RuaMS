@@ -40,7 +40,7 @@ public class ItemPickupHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); //Timestamp
         p.readByte();
@@ -50,7 +50,7 @@ public class ItemPickupHandler : ChannelHandlerBase
         var ob = chr.getMap().getMapObject(oid);
         if (ob == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         Point charPos = chr.getPosition();
@@ -59,9 +59,10 @@ public class ItemPickupHandler : ChannelHandlerBase
         {
             _logger.LogWarning("Chr {CharacterName} tried to pick up an item too far away. Mapid: {MapId}, player pos: {PlayerPosition}, object pos: {ObjectPosition}",
                     c.OnlinedCharacter.getName(), chr.getMapId(), charPos, obPos);
-            return;
+            return Task.CompletedTask;
         }
 
         chr.pickupItem(ob);
+        return Task.CompletedTask;
     }
 }

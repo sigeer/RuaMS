@@ -32,35 +32,35 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PartySearchStartHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int min = p.readInt();
         int max = p.readInt();
 
         c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
         c.sendPacket(PacketCreator.enableActions());
-        return;
+        return Task.CompletedTask;
 
         var chr = c.OnlinedCharacter;
         if (min > max)
         {
             chr.dropMessage(1, "The min. value is higher than the max!");
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         if (max - min > 30)
         {
             chr.dropMessage(1, "You can only search for party members within a range of 30 levels.");
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         if (chr.getLevel() < min || chr.getLevel() > max)
         {
             chr.dropMessage(1, "The range of level for search has to include your own level.");
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         p.readInt(); // members
@@ -69,9 +69,9 @@ public class PartySearchStartHandler : ChannelHandlerBase
         var party = c.OnlinedCharacter.getParty();
         if (party == null || !c.OnlinedCharacter.isPartyLeader())
         {
-            return;
+            return Task.CompletedTask;
         }
-
+        return Task.CompletedTask;
         // var world = c.getWorldServer();
         // world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
     }

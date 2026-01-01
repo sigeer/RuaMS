@@ -7,8 +7,9 @@ public class ShowPacketsCommand : CommandBase
         Description = "Toggle show received packets in console.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET = !YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET;
+        return Task.CompletedTask;
     }
 }

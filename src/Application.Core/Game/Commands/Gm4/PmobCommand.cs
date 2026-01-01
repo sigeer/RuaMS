@@ -11,7 +11,7 @@ public class PmobCommand : CommandBase
         _dataService = dataService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -25,6 +25,6 @@ public class PmobCommand : CommandBase
         int mobId = int.Parse(paramsValue[0]);
         int mobTime = (paramsValue.Length > 1) ? int.Parse(paramsValue[1]) : -1;
 
-        _dataService.CreatePLife(player, mobId, LifeType.Monster, mobTime);
+        await _dataService.CreatePLife(player, mobId, LifeType.Monster, mobTime);
     }
 }

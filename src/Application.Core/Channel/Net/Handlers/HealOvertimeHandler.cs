@@ -36,12 +36,12 @@ public class HealOvertimeHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (!chr.isLoggedinWorld())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         AutobanManager abm = chr.getAutobanManager();
@@ -62,7 +62,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
             if (healHP > abHeal)
             {
                 autoBanDataManager.Autoban(AutobanFactory.HIGH_HP_HEALING, chr, "Healing: " + healHP + "; Max is " + abHeal + ".");
-                return;
+                return Task.CompletedTask;
             }
 
             chr.UpdateStatsChunk(() =>
@@ -79,7 +79,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
             if ((abm.getLastSpam(1) + 1500) > timestamp)
             {
                 autoBanDataManager.AddPoint(AutobanFactory.FAST_MP_HEALING, chr, "Fast mp healing");
-                return;     // thanks resinate for noticing mp being gained even after detection
+                return Task.CompletedTask;
             }
             chr.UpdateStatsChunk(() =>
             {
@@ -87,5 +87,6 @@ public class HealOvertimeHandler : ChannelHandlerBase
             });
             abm.spam(1, timestamp);
         }
+        return Task.CompletedTask;
     }
 }

@@ -11,7 +11,7 @@ public class DevtestCommand : CommandBase
         Description = "Runs devtest.js. Developer utility - test stuff without restarting the server.";
     }
 
-    public override void Execute(IChannelClient client, string[] paramsValue)
+    public override Task Execute(IChannelClient client, string[] paramsValue)
     {
         var scriptEngine = client.CurrentServer.DevtestScriptManager.GetScriptEngine("devtest");
         try
@@ -22,6 +22,7 @@ public class DevtestCommand : CommandBase
         {
             log.Information(e, "devtest.js run() threw an exception");
         }
+        return Task.CompletedTask;
     }
 }
 

@@ -8,8 +8,9 @@ public class EquipLvCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override Task Execute(IChannelClient c, string[] paramValues)
     {
         CharacterManager.ShowAllEquipFeatures(c.OnlinedCharacter);
+        return Task.CompletedTask;
     }
 }

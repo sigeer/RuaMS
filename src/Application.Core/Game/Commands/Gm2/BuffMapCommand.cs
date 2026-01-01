@@ -9,7 +9,7 @@ public class BuffMapCommand : CommandBase
         Description = "Give GM buffs to the whole map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         SkillFactory.GetSkillTrust(9101001).getEffect(SkillFactory.GetSkillTrust(9101001).getMaxLevel()).applyTo(player, true);
@@ -17,6 +17,6 @@ public class BuffMapCommand : CommandBase
         SkillFactory.GetSkillTrust(9101003).getEffect(SkillFactory.GetSkillTrust(9101003).getMaxLevel()).applyTo(player, true);
         SkillFactory.GetSkillTrust(9101008).getEffect(SkillFactory.GetSkillTrust(9101008).getMaxLevel()).applyTo(player, true);
         SkillFactory.GetSkillTrust(1005).getEffect(SkillFactory.GetSkillTrust(1005).getMaxLevel()).applyTo(player, true);
-
+        return Task.CompletedTask;
     }
 }

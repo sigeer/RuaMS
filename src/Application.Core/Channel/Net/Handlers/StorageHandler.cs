@@ -27,6 +27,7 @@ using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.Logging;
 using server;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -45,12 +46,12 @@ public class StorageHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        storageAction(p, c);
+        await storageAction(p, c);
     }
 
-    public void storageAction(InPacket p, IChannelClient c)
+    public async Task storageAction(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -90,9 +91,9 @@ public class StorageHandler : ChannelHandlerBase
                             if (storageSlot < 0 || storageSlot > storage.Slots)
                             {
                                 // removal starts at zero
-                                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
+                                await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
                                 _logger.LogWarning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), storageSlot);
-                                c.Disconnect(true, false);
+                                await c.Disconnect(true, false);
                                 return;
                             }
 
@@ -113,9 +114,9 @@ public class StorageHandler : ChannelHandlerBase
                             if (invSlot < 1 || invSlot > inv.getSlotLimit())
                             {
                                 // player inv starts at one
-                                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
+                                await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
                                 _logger.LogWarning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), invSlot);
-                                c.Disconnect(true, false);
+                                await c.Disconnect(true, false);
                                 return;
                             }
 

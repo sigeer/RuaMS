@@ -6,11 +6,12 @@ namespace Application.Core.Game.Commands.Gm6
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             var result = YamlConfig.SetValue(GetParam("name"), GetParam("value"));
             if (!string.IsNullOrEmpty(result))
                 client.OnlinedCharacter.dropMessage(result);
+            return Task.CompletedTask;
         }
     }
 }

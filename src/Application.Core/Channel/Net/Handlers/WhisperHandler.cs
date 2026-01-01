@@ -25,6 +25,7 @@ using Application.Core.Channel.ServerData;
 using Application.Shared.Constants.Buddy;
 using client.autoban;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -45,7 +46,7 @@ public class WhisperHandler : ChannelHandlerBase
         _buddyManager = buddyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte request = p.readByte();
         string name = p.readString();
@@ -54,11 +55,11 @@ public class WhisperHandler : ChannelHandlerBase
         {
             case WhisperFlag.LOCATION | WhisperFlag.REQUEST:
                 _logger.LogDebug("何时触发");
-                _buddyManager.GetLocation(c.OnlinedCharacter, name);
+                await _buddyManager.GetLocation(c.OnlinedCharacter, name);
                 break;
             case WhisperFlag.WHISPER | WhisperFlag.REQUEST:
                 string message = p.readString();
-                HandleSendWhisper(c, name, message);
+                await HandleSendWhisper(c, name, message);
                 break;
             case WhisperFlag.LOCATION_FRIEND | WhisperFlag.REQUEST:
                 HandleFriendLocation(c, name);
@@ -95,7 +96,7 @@ public class WhisperHandler : ChannelHandlerBase
         c.sendPacket(PacketCreator.GetFindResult(targetName, type, ble.ActualChannel - 1, WhisperFlag.LOCATION_FRIEND));
     }
 
-    void HandleSendWhisper(IChannelClient c, string targetName, string message)
+    async Task HandleSendWhisper(IChannelClient c, string targetName, string message)
     {
         var user = c.OnlinedCharacter;
         if (user.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
@@ -105,12 +106,12 @@ public class WhisperHandler : ChannelHandlerBase
 
         if (message.Length > sbyte.MaxValue)
         {
-            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, user, user.getName() + " tried to packet edit with whispers.");
+             await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, user, user.getName() + " tried to packet edit with whispers.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {MessageLength}", user.getName(), message.Length);
-            user.getClient().Disconnect(true, false);
+            await user.getClient().Disconnect(true, false);
             return;
         }
 
-        _buddyManager.SendWhisper(user, targetName, message);
+        await _buddyManager.SendWhisper(user, targetName, message);
     }
 }

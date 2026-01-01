@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PetLootHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -42,7 +42,7 @@ public class PetLootHandler : ChannelHandlerBase
         if (pet == null || !pet.isSummoned())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         p.skip(13);
@@ -56,5 +56,6 @@ public class PetLootHandler : ChannelHandlerBase
         {
             c.sendPacket(PacketCreator.enableActions());
         }
+        return Task.CompletedTask;
     }
 }

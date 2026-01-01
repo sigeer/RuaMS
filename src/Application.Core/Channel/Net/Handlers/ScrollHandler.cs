@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ScrollHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -65,7 +65,7 @@ public class ScrollHandler : ChannelHandlerBase
                 if (toScroll == null)
                 {
                     announceCannotScroll(c, legendarySpirit);
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var oldLevel = toScroll.getLevel();
@@ -76,7 +76,7 @@ public class ScrollHandler : ChannelHandlerBase
                 if (scroll == null)
                 {
                     announceCannotScroll(c, legendarySpirit);
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 Item? wscroll = null;
@@ -84,19 +84,19 @@ public class ScrollHandler : ChannelHandlerBase
                 if (ItemConstants.isCleanSlate(scroll.getItemId()) && !ii.canUseCleanSlate(toScroll))
                 {
                     announceCannotScroll(c, legendarySpirit);
-                    return;
+                    return Task.CompletedTask;
                 }
                 else if (!ItemConstants.isModifierScroll(scroll.getItemId()) && toScroll.getUpgradeSlots() < 1)
                 {
                     announceCannotScroll(c, legendarySpirit);   // thanks onechord for noticing zero upgrade slots freezing Legendary Scroll UI
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var scrollReqs = ii.getScrollReqs(scroll.getItemId());
                 if (scrollReqs.Length > 0 && !scrollReqs.Contains(toScroll.getItemId()))
                 {
                     announceCannotScroll(c, legendarySpirit);
-                    return;
+                    return Task.CompletedTask;
                 }
                 if (whiteScroll)
                 {
@@ -112,7 +112,7 @@ public class ScrollHandler : ChannelHandlerBase
                     if (!canScroll(scroll.getItemId(), toScroll.getItemId()))
                     {
                         announceCannotScroll(c, legendarySpirit);
-                        return;
+                        return Task.CompletedTask;
                     }
                 }
 
@@ -135,7 +135,7 @@ public class ScrollHandler : ChannelHandlerBase
                     if (scroll.getQuantity() < 1)
                     {
                         announceCannotScroll(c, legendarySpirit);
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     if (whiteScroll && !ItemConstants.isCleanSlate(scroll.getItemId()))
@@ -143,7 +143,7 @@ public class ScrollHandler : ChannelHandlerBase
                         if (wscroll!.getQuantity() < 1)
                         {
                             announceCannotScroll(c, legendarySpirit);
-                            return;
+                            return Task.CompletedTask;
                         }
 
                         c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
@@ -218,6 +218,7 @@ public class ScrollHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 
     private static void announceCannotScroll(IChannelClient c, bool legendarySpirit)

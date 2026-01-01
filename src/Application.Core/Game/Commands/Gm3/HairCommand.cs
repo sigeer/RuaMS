@@ -9,13 +9,13 @@ public class HairCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.HairCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         IPlayer? targetPlayer = c.OnlinedCharacter;
@@ -33,23 +33,24 @@ public class HairCommand : CommandBase
         if (!int.TryParse(hairStr, out var hairId))
         {
             player.YellowMessageI18N(nameof(ClientMessage.HairCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!ItemInformationProvider.getInstance().IsHair(hairId))
         {
             player.YellowMessageI18N(nameof(ClientMessage.HairNotFound));
-            return;
+            return Task.CompletedTask;
         }
 
         if (targetPlayer == null)
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
-            return;
+            return Task.CompletedTask;
         }
 
         targetPlayer.setHair(hairId);
         targetPlayer.updateSingleStat(Stat.HAIR, hairId);
         targetPlayer.equipChanged();
+        return Task.CompletedTask;
     }
 }

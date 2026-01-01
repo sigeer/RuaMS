@@ -36,7 +36,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int petId = p.readInt();
         p.readLong();
@@ -50,15 +50,16 @@ public class MovePetHandler : AbstractMovementPacketHandler
         catch (EmptyMovementException e)
         {
             _logger.LogError(e.ToString());
-            return;
+            return Task.CompletedTask;
         }
         var player = c.OnlinedCharacter;
         sbyte slot = player.getPetIndex(petId);
         if (slot == -1)
         {
-            return;
+            return Task.CompletedTask;
         }
         player.getPet(slot)?.updatePosition(res);
         player.getMap().broadcastMessage(player, PacketCreator.movePet(player.getId(), petId, slot, res), false);
+        return Task.CompletedTask;
     }
 }

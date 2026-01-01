@@ -11,12 +11,12 @@ public class PnpcRemoveCommand : CommandBase
         _dataService = dataService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         int npcId = paramsValue.Length > 0 ? int.Parse(paramsValue[0]) : -1;
 
-        _dataService.RemovePLife(player, LifeType.NPC);
+       await  _dataService.RemovePLife(player, LifeType.NPC);
     }
 }

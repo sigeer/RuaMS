@@ -28,14 +28,4 @@ namespace Application.Shared.Internal
             return HandleAsync(Parse(message));
         }
     }
-
-    public abstract class InternalSessionEmptyHandler<TServer> : InternalSessionHandler<TServer, Empty> where TServer : IServerBase<IServerTransport>
-    {
-        static Empty Empty = new Empty();
-        protected InternalSessionEmptyHandler(TServer server) : base(server)
-        {
-        }
-
-        protected override Empty Parse(ByteString content) => Empty;
-    }
 }

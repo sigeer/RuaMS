@@ -81,7 +81,7 @@ namespace Application.Core.Game.Players
             }
 
             int healInterval;
-            Monitor.Enter(effLock);
+            effLock.Enter();
             try
             {
                 updateChairHealStats();
@@ -89,7 +89,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             chLock.EnterReadLock();
@@ -203,7 +203,7 @@ namespace Application.Core.Game.Players
                 statLock.ExitReadLock();
             }
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -216,7 +216,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 

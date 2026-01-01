@@ -11,7 +11,7 @@ public class SetGmLevelCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
@@ -25,6 +25,6 @@ public class SetGmLevelCommand : CommandBase
             player.YellowMessageI18N(nameof(ClientMessage.SetGmLevelCommand_Syntax));
             return;
         }
-        _adminService.SetGmLevel(c.OnlinedCharacter, paramsValue[0], newLevel);
+        await _adminService.SetGmLevel(c.OnlinedCharacter, paramsValue[0], newLevel);
     }
 }

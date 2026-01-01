@@ -41,7 +41,7 @@ public class GiveFameHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as IPlayer;
         int mode = p.readByte();
@@ -58,9 +58,9 @@ public class GiveFameHandler : ChannelHandlerBase
         }
         else if (famechange != 1 && famechange != -1)
         {
-            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
+            await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
             _logger.LogWarning("Chr {CharacterName} tried to fame hack with famechange {FameChange}", c.OnlinedCharacter.getName(), famechange);
-            c.Disconnect(true);
+            await c.Disconnect(true);
             return;
         }
 

@@ -7,10 +7,11 @@ public class EndEventCommand : CommandBase
         Description = "Close entry for ongoing event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         c.getChannelServer().setEvent(null);
         player.dropMessage(5, "You have ended the event. No more players may join.");
+        return Task.CompletedTask;
     }
 }

@@ -25,23 +25,6 @@ namespace Application.Core.Login.Servers
             _server = server;
             _loginService = loginService;
         }
-
-        public override async Task<Empty> BatchPushCharacter(SyncProto.BatchSyncPlayerRequest request, ServerCallContext context)
-        {
-            await _server.CharacterManager.BatchUpdate(request.List.ToList());
-            if (request.SaveDb)
-                await _server.ServerManager.CommitAllImmediately();
-            return new();
-        }
-
-        public override async Task<Empty> PushCharacter(SyncPlayerRequest request, ServerCallContext context)
-        {
-            await _server.CharacterManager.Update(request.Data, (SyncCharacterTrigger)request.Trigger);
-            if (request.SaveDb)
-                await _server.ServerManager.CommitAllImmediately();
-            return new();
-        }
-
         public override Task<Empty> BatchSyncPlayerShop(BatchSyncPlayerShopRequest request, ServerCallContext context)
         {
             foreach (var item in request.List)
@@ -49,12 +32,6 @@ namespace Application.Core.Login.Servers
                 _server.PlayerShopManager.SyncPlayerStorage(item);
             }
             return Task.FromResult(new Empty());
-        }
-
-        public override async Task<Empty> CompleteLogin(CompleteLoginRequest request, ServerCallContext context)
-        {
-            await _loginService.SetPlayerLogedIn(request.CharacterId, request.Channel);
-            return new Empty();
         }
 
         public override Task<CreateCharResponseDto> CreateCharacter(NewPlayerSaveDto request, ServerCallContext context)

@@ -39,7 +39,7 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int petId = p.readInt();
         p.skip(4); // timestamp
@@ -68,10 +68,11 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
             }
             else
             {
-                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "negative item id value in PetExcludeItemsHandler (" + itemId + ")");
+                await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "negative item id value in PetExcludeItemsHandler (" + itemId + ")");
                 return;
             }
         }
         chr.commitExcludedItems();
+        return;
     }
 }

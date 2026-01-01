@@ -6,10 +6,11 @@ public class ReloadPortalsCommand : CommandBase
         Description = "Reload all portal scripts.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         c.CurrentServer.PortalScriptManager.reloadPortalScripts();
         player.dropMessage(5, "Reloaded Portals");
+        return Task.CompletedTask;
     }
 }

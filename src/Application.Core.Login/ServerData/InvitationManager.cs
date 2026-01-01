@@ -8,6 +8,7 @@ using Application.Utility.Tasks;
 using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -64,21 +65,34 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        internal void RemovePlayerInvitation(int masterId, string enumType)
+        internal async Task RemovePlayerInvitation(int masterId, string enumType)
         {
             if (_allRequests.TryGetValue(enumType, out var type))
             {
                 if (type.TryRemove(masterId, out var d))
-                    _inviteMasterHandlerRegistry.GetHandler(enumType)?.OnInvitationExpired(d);
+                {
+                    var handler = _inviteMasterHandlerRegistry.GetHandler(enumType);
+                    if (handler != null)
+                    {
+                        await handler.OnInvitationExpired(d);
+                    }
+                }
             }
         }
 
-        internal void RemovePlayerInvitation(int masterId)
+        internal async Task RemovePlayerInvitation(int masterId)
         {
             foreach (var it in _allRequests)
             {
                 if (it.Value.TryRemove(masterId, out var d))
-                    _inviteMasterHandlerRegistry.GetHandler(it.Key)?.OnInvitationExpired(d);
+                {
+                    var handler = _inviteMasterHandlerRegistry.GetHandler(it.Key);
+                    if (handler != null)
+                    {
+                        await handler.OnInvitationExpired(d);
+
+                    }
+                }
             }
         }
 

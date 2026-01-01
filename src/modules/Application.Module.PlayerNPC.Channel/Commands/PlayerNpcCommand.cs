@@ -14,19 +14,19 @@ public class PlayerNpcCommand : CommandBase
         _service = service;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !playernpc <playername> [honor]");
-            return;
+            return Task.CompletedTask;
         }
 
         var targetPlayer = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (targetPlayer == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (paramsValue.Length == 1)
@@ -34,6 +34,7 @@ public class PlayerNpcCommand : CommandBase
         else
             _service.SpawnPlayerNPCByHonor(targetPlayer);
 
+        return Task.CompletedTask;
         //if (!)
         //{
         //    player.dropMessage(5, "Could not deploy PlayerNPC. Either there's no room available here or depleted out scriptids to use.");

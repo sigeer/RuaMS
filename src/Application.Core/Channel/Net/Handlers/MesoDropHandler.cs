@@ -40,13 +40,13 @@ public class MesoDropHandler : ChannelHandlerBase
         _fishingService = fishingService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (!player.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         p.skip(4);
         int meso = p.readInt();
@@ -54,7 +54,7 @@ public class MesoDropHandler : ChannelHandlerBase
         if (player.isGM() && player.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
             player.MessageI18N(nameof(ClientMessage.DropMeso_NotAccess));
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.tryacquireClient())
@@ -68,7 +68,7 @@ public class MesoDropHandler : ChannelHandlerBase
                 else
                 {
                     c.sendPacket(PacketCreator.enableActions());
-                    return;
+                    return Task.CompletedTask;
                 }
             }
             finally
@@ -79,7 +79,7 @@ public class MesoDropHandler : ChannelHandlerBase
         else
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
 
@@ -91,5 +91,6 @@ public class MesoDropHandler : ChannelHandlerBase
         {
             player.getMap().spawnMesoDrop(meso, player.getPosition(), player, player, true, DropType.FreeForAll);
         }
+        return Task.CompletedTask;
     }
 }

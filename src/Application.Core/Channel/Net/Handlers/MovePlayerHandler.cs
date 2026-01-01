@@ -33,7 +33,7 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(9);
         try
@@ -57,5 +57,6 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
         {
             _logger.LogError(e.ToString());
         }
+        return Task.CompletedTask;
     }
 }

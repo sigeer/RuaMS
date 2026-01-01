@@ -14,7 +14,7 @@ public class PeCommand : CommandBase
     }
 
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         string packet = "";
@@ -27,7 +27,7 @@ public class PeCommand : CommandBase
         {
             log.Error(ex.ToString());
             player.yellowMessage("Failed to load pe.txt");
-            return;
+            return Task.CompletedTask;
 
         }
         byte[] packetContent = HexTool.toBytes(packet);
@@ -48,5 +48,6 @@ public class PeCommand : CommandBase
                         chrInfo, c.AccountEntity.Id, packet);
             }
         }
+        return Task.CompletedTask;
     }
 }

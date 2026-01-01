@@ -1,5 +1,6 @@
 using Application.Core.ServerTransports;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -83,9 +84,9 @@ namespace Application.Core.Channel.ServerData
             _logger.LogInformation("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountEntity!.Id, chr.getName(), packetId, packet);
         }
 
-        public void ToggleMonitor(IPlayer chr, string name)
+        public async Task ToggleMonitor(IPlayer chr, string name)
         {
-            _ = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
+            await _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
         }
     }
 }

@@ -9,7 +9,7 @@ public class MaxSkillCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var skillId in c.CurrentCulture.StringProvider.GetSubProvider(Templates.String.StringCategory.Skill).LoadAll().Select(x => x.TemplateId))
@@ -38,5 +38,6 @@ public class MaxSkillCommand : CommandBase
         }
 
         player.YellowMessageI18N(nameof(ClientMessage.MaxSkillCommand_Result));
+        return Task.CompletedTask;
     }
 }

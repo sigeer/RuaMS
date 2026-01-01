@@ -7,14 +7,14 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class QuickslotKeyMappedModifiedHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         // Invalid size for the packet.
         if (p.available() != QuickslotBinding.QUICKSLOT_SIZE * sizeof(int) ||
                 // not logged in-game
                 c.OnlinedCharacter == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         byte[] aQuickslotKeyMapped = new byte[QuickslotBinding.QUICKSLOT_SIZE];
@@ -25,5 +25,6 @@ public class QuickslotKeyMappedModifiedHandler : ChannelHandlerBase
         }
 
         c.OnlinedCharacter.changeQuickslotKeybinding(aQuickslotKeyMapped);
+        return Task.CompletedTask;
     }
 }

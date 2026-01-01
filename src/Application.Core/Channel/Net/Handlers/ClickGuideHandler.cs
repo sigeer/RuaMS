@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ClickGuideHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.OnlinedCharacter.getJob().Equals(Job.NOBLESSE))
         {
@@ -37,6 +37,7 @@ public class ClickGuideHandler : ChannelHandlerBase
         {
             c.CurrentServer.NPCScriptManager.start(c, NpcId.LILIN, null);
         }
+        return Task.CompletedTask;
     }
 
 }

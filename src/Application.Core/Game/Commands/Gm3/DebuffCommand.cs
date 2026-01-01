@@ -8,20 +8,20 @@ public class DebuffCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.DebuffCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         var disease = EnumClassCache<Disease>.GetValue(paramsValue[0]);
         if (disease == null)
         {
             player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
-            return;
+            return Task.CompletedTask;
         }
 
         int level = -1;
@@ -32,7 +32,7 @@ public class DebuffCommand : CommandBase
         if (skill == null)
         {
             player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
-            return;
+            return Task.CompletedTask;
         }
 
         foreach (var mmo in player.getMap().getMapObjectsInRange(player.getPosition(), 777777.7, Arrays.asList(MapObjectType.PLAYER)))
@@ -44,5 +44,6 @@ public class DebuffCommand : CommandBase
                 chr.giveDebuff(disease, skill);
             }
         }
+        return Task.CompletedTask;
     }
 }

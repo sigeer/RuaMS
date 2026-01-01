@@ -1278,7 +1278,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     #region Guild
     public void GainGuildGP(int value)
     {
-        c.CurrentServerContainer.GuildManager.GainGP(getPlayer(), value);
+        _ = c.CurrentServerContainer.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
 }

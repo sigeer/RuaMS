@@ -26,6 +26,7 @@ using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Session;
 
@@ -304,7 +305,7 @@ public class SessionCoordinator
     /// </summary>
     /// <param name="client">ChannelClient</param>
     /// <param name="immediately"></param>
-    public void closeSession(ILoginClient? client, bool immediately = false)
+    public async Task closeSession(ILoginClient? client, bool immediately = false)
     {
         if (client == null)
             return;
@@ -337,7 +338,7 @@ public class SessionCoordinator
 
         if (immediately)
         {
-            client.CloseSocket();
+            await client.CloseSocket();
         }
     }
 

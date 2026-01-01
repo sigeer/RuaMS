@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Game.Commands;
 
@@ -40,7 +41,7 @@ public class CommandExecutor
         }
     }
 
-    public void handle(IChannelClient client, string message)
+    public async Task handle(IChannelClient client, string message)
     {
         if (!loaded)
         {
@@ -50,7 +51,7 @@ public class CommandExecutor
         {
             try
             {
-                handleInternal(client, message);
+                await handleInternal(client, message);
             }
             finally
             {
@@ -63,7 +64,7 @@ public class CommandExecutor
         }
     }
 
-    private void handleInternal(IChannelClient client, string message)
+    private async Task handleInternal(IChannelClient client, string message)
     {
         if (client.OnlinedCharacter.getMapId() == MapId.JAIL)
         {
@@ -103,7 +104,7 @@ public class CommandExecutor
         }
 
         command.CurrentCommand = commandName;
-        command.Run(client, paramsValue);
+        await command.RunAsync(client, paramsValue);
         log.LogInformation("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }

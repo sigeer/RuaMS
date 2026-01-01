@@ -7,8 +7,9 @@ public class StopMapEventCommand : CommandBase
         Description = "Stop ongoing \"classic\" event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().setEventStarted(false);
+        return Task.CompletedTask;
     }
 }

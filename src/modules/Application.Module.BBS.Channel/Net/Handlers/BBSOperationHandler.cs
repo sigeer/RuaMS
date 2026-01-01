@@ -42,7 +42,7 @@ public class BBSOperationHandler : ChannelHandlerBase
         return inValue.Length > maxSize ? inValue.Substring(0, maxSize) : inValue;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.OnlinedCharacter.getGuildId() < 1)
         {

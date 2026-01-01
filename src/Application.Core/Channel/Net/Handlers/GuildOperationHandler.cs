@@ -41,7 +41,7 @@ public class GuildOperationHandler : ChannelHandlerBase
         _guildManager = guildManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var mc = c.OnlinedCharacter;
         byte type = p.readByte();
@@ -102,7 +102,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
 
                 string targetName = p.readString();
-                _guildManager.SendInvitation(c, targetName);
+                await _guildManager.SendInvitation(c, targetName);
                 break;
             case 0x06:
                 if (mc.GuildId > 0)
@@ -118,7 +118,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.AnswerInvitation(mc, gid, true);
+                await _guildManager.AnswerInvitation(mc, gid, true);
                 break;
             case 0x07:
                 cid = p.readInt();
@@ -129,13 +129,13 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.LeaveMember(mc);
+                await _guildManager.LeaveMember(mc);
                 break;
             case 0x08:
                 cid = p.readInt();
                 name = p.readString();
 
-                _guildManager.ExpelMember(mc, cid);
+                await _guildManager.ExpelMember(mc, cid);
                 break;
             case 0x0d:
                 if (mc.GuildModel == null || mc.getGuildRank() != 1)
@@ -149,7 +149,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     ranks[i] = p.readString();
                 }
 
-                _guildManager.SetGuildRankTitle(mc, ranks);
+                await _guildManager.SetGuildRankTitle(mc, ranks);
                 break;
             case 0x0e:
                 cid = p.readInt();
@@ -163,7 +163,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                _guildManager.ChangeRank(c.OnlinedCharacter, cid, newRank);
+                await _guildManager.ChangeRank(c.OnlinedCharacter, cid, newRank);
                 break;
             case 0x0f:
                 if (mc.GuildModel == null || mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
@@ -181,7 +181,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
 
-                _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
+                await _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
 
                 break;
@@ -199,7 +199,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                _guildManager.SetGuildNotice(mc, notice);
+                await _guildManager.SetGuildNotice(mc, notice);
                 break;
             case 0x1E:
                 p.readInt();
@@ -222,7 +222,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                             int partyid = leader.getPartyId();
                             if (partyid != -1)
                             {
-                                c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
+                                await c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
                             }
                         }
                     }

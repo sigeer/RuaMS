@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class CoconutHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         /*CB 00 A6 00 06 01
          * A6 00 = coconut id
@@ -43,17 +43,17 @@ public class CoconutHandler : ChannelHandlerBase
         var map = c.OnlinedCharacter.getMap();
         if (map is not ICoconutMap coconutMap || coconutMap.Coconut == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var nut = coconutMap.Coconut.getCoconut(id);
         if (!nut.isHittable())
         {
-            return;
+            return Task.CompletedTask;
         }
         if (c.CurrentServerContainer.getCurrentTime() < nut.getHitTime())
         {
-            return;
+            return Task.CompletedTask;
         }
         if (nut.getHits() > 2 && Randomizer.nextDouble() < 0.4)
         {
@@ -62,7 +62,7 @@ public class CoconutHandler : ChannelHandlerBase
                 nut.setHittable(false);
                 coconutMap.Coconut.stopCoconut();
                 map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
-                return;
+                return Task.CompletedTask;
             }
             nut.setHittable(false); // for sure :)
             nut.resetHits(); // For next event (without restarts)
@@ -93,5 +93,6 @@ public class CoconutHandler : ChannelHandlerBase
             nut.hit();
             map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
         }
+        return Task.CompletedTask;
     }
 }

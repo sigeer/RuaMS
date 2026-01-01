@@ -6,7 +6,7 @@ public class EnableAuthCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override Task Execute(IChannelClient c, string[] paramValues)
     {
         if (c.tryacquireClient())
         {
@@ -20,5 +20,6 @@ public class EnableAuthCommand : CommandBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

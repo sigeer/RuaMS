@@ -31,13 +31,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemMoveHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
         if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > c.CurrentServerContainer.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         InventoryType type = InventoryTypeUtils.getByType(p.ReadSByte());
@@ -63,5 +63,6 @@ public class ItemMoveHandler : ChannelHandlerBase
         }
 
         c.OnlinedCharacter.getAutobanManager().spam(6);
+        return Task.CompletedTask;
     }
 }

@@ -7,7 +7,7 @@ public class HealMapCommand : CommandBase
         Description = "Heal all HP/MP of all players in the map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var mch in player.getMap().getAllPlayers())
@@ -17,5 +17,6 @@ public class HealMapCommand : CommandBase
                 mch.healHpMp();
             }
         }
+        return Task.CompletedTask;
     }
 }

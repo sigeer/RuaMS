@@ -40,7 +40,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var player = c.OnlinedCharacter;
@@ -51,7 +51,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         var summon = player.getSummonsValues().FirstOrDefault(x => x.getObjectId() == oid);
         if (summon == null)
         {
-            return;
+            return;;
         }
         var summonSkill = SkillFactory.getSkill(summon.getSkill());
         StatEffect summonEffect = summonSkill.getEffect(summon.getSkillLevel());
@@ -87,7 +87,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             {
                 if (damage > maxDmg)
                 {
-                    autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
+                    await autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
                     string mobName = c.CurrentCulture.GetMobName(target.getId());
                     _logger.LogInformation("Possible exploit - chr {CharacterName} used a summon of skillId {SkillId} to attack {MobName} with damage {Damage} (max: {MaxDamage})",
                             c.OnlinedCharacter.getName(), summon.getSkill(), mobName, damage, maxDmg);
@@ -109,6 +109,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         {  // thanks Periwinks for noticing Gaviota not cancelling after grenade toss
             player.cancelEffect(summonEffect, false, -1);
         }
+        return;
     }
 
     private static int calcMaxDamage(StatEffect summonEffect, IPlayer player, bool magic)

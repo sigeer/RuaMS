@@ -7,7 +7,7 @@ public class ClearSavedLocationsCommand : CommandBase
         Description = "Clear saved locations for a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         IPlayer? victim;
@@ -18,7 +18,7 @@ public class ClearSavedLocationsCommand : CommandBase
             if (victim == null || !victim.IsOnlined)
             {
                 player.message("Player '" + paramsValue[0] + "' could not be found.");
-                return;
+                return Task.CompletedTask;
             }
         }
         else
@@ -32,5 +32,6 @@ public class ClearSavedLocationsCommand : CommandBase
         }
 
         player.message("Cleared " + paramsValue[0] + "'s saved locations.");
+        return Task.CompletedTask;
     }
 }

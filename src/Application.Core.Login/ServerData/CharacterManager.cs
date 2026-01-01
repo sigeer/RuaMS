@@ -13,7 +13,9 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using MessageProto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Serilog;
@@ -113,7 +115,7 @@ namespace Application.Core.Login.Datas
                 {
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.LOGIN_NOTLOGGEDIN);
                 }
-                else if (trigger == SyncCharacterTrigger.ChangeServer)
+                else if (trigger == SyncCharacterTrigger.PreEnterChannel)
                 {
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.PlayerServerTransition);
                     if (YamlConfig.config.server.USE_IP_VALIDATION)
@@ -129,7 +131,7 @@ namespace Application.Core.Login.Datas
                     // 等级变化通知
                     foreach (var module in _masterServer.Modules)
                     {
-                       await module.OnPlayerLevelChanged(origin);
+                        await module.OnPlayerLevelChanged(origin);
                     }
                 }
 
@@ -138,7 +140,7 @@ namespace Application.Core.Login.Datas
                     // 转职通知
                     foreach (var module in _masterServer.Modules)
                     {
-                       await module.OnPlayerJobChanged(origin);
+                        await module.OnPlayerJobChanged(origin);
                     }
 
                 }
@@ -148,7 +150,7 @@ namespace Application.Core.Login.Datas
                     // 地图切换
                     foreach (var module in _masterServer.Modules)
                     {
-                       await module.OnPlayerMapChanged(origin);
+                        await module.OnPlayerMapChanged(origin);
                     }
                 }
 
@@ -162,7 +164,7 @@ namespace Application.Core.Login.Datas
                         await module.OnPlayerServerChanged(origin, lastChannel);
                     }
 
-                    _masterServer.InvitationManager.RemovePlayerInvitation(origin.Character.Id);
+
                 }
             }
         }
@@ -173,18 +175,10 @@ namespace Application.Core.Login.Datas
             {
                 case SyncCharacterTrigger.Logoff:
                     return "离线";
-                case SyncCharacterTrigger.ChangeServer:
-                    {
-                        if (oldChannel == 0)
-                            return $"上线";
-                        else if (oldChannel == -1)
-                            return $"退出商城";
-                        else if (newChannel == -1)
-                            return $"进入商城（从频道{oldChannel}）";
-                        else if (newChannel == 0)
-                            return "下线";
-                        return $"切换频道（从频道{oldChannel}）";
-                    }
+                case SyncCharacterTrigger.EnterCashShop:
+                    return $"进入商城（从频道{oldChannel}）";
+                case SyncCharacterTrigger.PreEnterChannel:
+                    return $"正在进入频道";
                 case SyncCharacterTrigger.LevelChanged:
                     return "等级变化";
                 case SyncCharacterTrigger.JobChanged:
@@ -214,6 +208,20 @@ namespace Application.Core.Login.Datas
                 d.Channel = channel;
                 d.ChannelNode = _masterServer.GetChannelServer(channel);
 
+                if (lastChannel == 0)
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"进入游戏（频道{channel}）");
+                }
+                else if (lastChannel == -1)
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"离开商城（频道{channel}）");
+                }
+                else
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"切换频道（从频道{lastChannel}到频道{channel}）");
+                }
+
+
                 foreach (var module in _masterServer.Modules)
                 {
                     await module.OnPlayerServerChanged(d, lastChannel);
@@ -227,7 +235,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void UpdateMap(int characterId, int mapId)
+        public async Task UpdateMap(int characterId, int mapId)
         {
             var chr = FindPlayerById(characterId);
             if (chr != null)
@@ -236,16 +244,16 @@ namespace Application.Core.Login.Datas
 
                 foreach (var module in _masterServer.Modules)
                 {
-                    module.OnPlayerMapChanged(chr);
+                    await module.OnPlayerMapChanged(chr);
                 }
             }
         }
 
-        public void BatchUpdateMap(List<SyncProto.MapSyncDto> data)
+        public async Task BatchUpdateMap(List<SyncProto.MapSyncDto> data)
         {
             foreach (var item in data)
             {
-                UpdateMap(item.MasterId, item.MapId);
+                await UpdateMap(item.MasterId, item.MapId);
             }
         }
 

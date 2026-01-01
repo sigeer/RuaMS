@@ -25,6 +25,7 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
 using Application.EF;
 using Application.Utility.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Net.Handlers;
@@ -36,7 +37,7 @@ public class DeleteCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string pic = p.readString();
         int cid = p.readInt();
@@ -49,9 +50,9 @@ public class DeleteCharHandler : LoginHandlerBase
             try
             {
                 using var dbContext = new DBContext();
-                var charModel = dbContext.Characters.Where(x => x.Id == cid)
+                var charModel = await dbContext.Characters.Where(x => x.Id == cid)
                     .Select(x => new { x.World, x.GuildId, x.GuildRank })
-                    .FirstOrDefault() ?? throw new BusinessCharacterNotFoundException(cid);
+                    .FirstOrDefaultAsync() ?? throw new BusinessCharacterNotFoundException(cid);
                 if (charModel.GuildId != 0 && charModel.GuildRank <= 1)
                 {
                     c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x16));

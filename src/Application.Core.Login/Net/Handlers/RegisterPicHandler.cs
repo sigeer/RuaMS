@@ -18,7 +18,7 @@ public class RegisterPicHandler : LoginHandlerBase
         this.sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         p.readByte();
         int charId = p.readInt();
@@ -47,7 +47,7 @@ public class RegisterPicHandler : LoginHandlerBase
 
         if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(macs) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
         {
-            sessionCoordinator.closeSession(c, true);
+            await sessionCoordinator.closeSession(c, true);
             return;
         }
 
@@ -61,7 +61,7 @@ public class RegisterPicHandler : LoginHandlerBase
 
         if (!_server.AccountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
         {
-            sessionCoordinator.closeSession(c, true);
+            await sessionCoordinator.closeSession(c, true);
             return;
         }
 
@@ -98,7 +98,7 @@ public class RegisterPicHandler : LoginHandlerBase
         }
         else
         {
-            sessionCoordinator.closeSession(c, true);
+           await  sessionCoordinator.closeSession(c, true);
         }
     }
 }

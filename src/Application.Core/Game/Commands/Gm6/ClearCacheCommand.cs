@@ -10,7 +10,7 @@ public class ClearCacheCommand : ParamsCommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var p = GetParamByIndex(0);
         if (string.IsNullOrEmpty(p))
@@ -28,5 +28,6 @@ public class ClearCacheCommand : ParamsCommandBase
             c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
 
+        return Task.CompletedTask;
     }
 }

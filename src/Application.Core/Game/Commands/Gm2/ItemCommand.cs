@@ -16,14 +16,14 @@ public class ItemCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[0], out var itemId))
@@ -50,15 +50,16 @@ public class ItemCommand : CommandBase
                             ctx.dispose();
                         });
                     });
-                return;
+                return Task.CompletedTask;
             }
             else
             {
                 player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
-                return;
+                return Task.CompletedTask;
             }
         }
         SendItem(c, itemId, paramsValue);
+        return Task.CompletedTask;
     }
 
     private void SendItem(IChannelClient c, int itemId, string[] paramsValue)

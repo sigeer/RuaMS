@@ -25,8 +25,9 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AdminLogHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         //harhar
+        return Task.CompletedTask;
     }
 }

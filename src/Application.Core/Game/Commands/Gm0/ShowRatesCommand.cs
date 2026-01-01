@@ -9,7 +9,7 @@ public class ShowRatesCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         StringBuilder sb = new StringBuilder();
@@ -60,5 +60,6 @@ public class ShowRatesCommand : CommandBase
         sb.Append("\r\n");
 
         player.showHint(sb.ToString(), 300);
+        return Task.CompletedTask;
     }
 }

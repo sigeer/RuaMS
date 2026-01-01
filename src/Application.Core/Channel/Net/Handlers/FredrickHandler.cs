@@ -36,7 +36,7 @@ public class FredrickHandler : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte operation = p.readByte();
 
@@ -54,5 +54,6 @@ public class FredrickHandler : ChannelHandlerBase
             default:
                 break;
         }
+        return Task.CompletedTask;
     }
 }

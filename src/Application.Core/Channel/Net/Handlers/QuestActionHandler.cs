@@ -68,7 +68,7 @@ public class QuestActionHandler : ChannelHandlerBase
         return true;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte action = p.readByte();
         short questid = p.readShort();
@@ -87,7 +87,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     int npc = p.readInt();
                     if (!isNpcNearby(p, player, quest, npc))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     if (quest.canStart(player, npc))
                     {
@@ -100,7 +100,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     int npc = p.readInt();
                     if (!isNpcNearby(p, player, quest, npc))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     if (quest.canComplete(player, npc))
                     {
@@ -125,7 +125,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     int npc = p.readInt();
                     if (!isNpcNearby(p, player, quest, npc))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     if (quest.canStart(player, npc))
                     {
@@ -138,7 +138,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     int npc = p.readInt();
                     if (!isNpcNearby(p, player, quest, npc))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                     if (quest.canComplete(player, npc))
                     {
@@ -147,5 +147,6 @@ public class QuestActionHandler : ChannelHandlerBase
                     break;
                 }
         }
+        return Task.CompletedTask;
     }
 }

@@ -17,7 +17,7 @@ public class IpListCommand : CommandBase
         Description = "Show IP of all players.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         string str = "Player-IP relation:";
 
@@ -29,6 +29,7 @@ public class IpListCommand : CommandBase
         }
 
         TempConversation.Create(c, 22000)?.RegisterTalk(str);
+        return Task.CompletedTask;
     }
 
 }

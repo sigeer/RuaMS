@@ -42,7 +42,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -62,7 +62,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
 
                         if (c.OnlinedCharacter.MCTeam != null)
@@ -71,7 +71,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
-                                return;
+                                return Task.CompletedTask;
                             }
 
                             c.OnlinedCharacter.MCTeam.Summon();
@@ -92,14 +92,14 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         {
                             c.OnlinedCharacter.dropMessage(5, "An unexpected error has occurred.");
                             c.sendPacket(PacketCreator.enableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
                         var skill = CarnivalFactory.getInstance().getSkill(skillid[num]); //ugh wtf
                         if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
                         var dis = skill.getDisease();
                         var enemies = c.OnlinedCharacter.MCTeam!.Enemy!;
@@ -152,7 +152,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
-                            return;
+                            return Task.CompletedTask;
                         }
 
                         if (c.OnlinedCharacter.MCTeam != null)
@@ -161,7 +161,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
-                                return;
+                                return Task.CompletedTask;
                             }
 
                             var map = c.OnlinedCharacter.getMap() as ICPQMap;
@@ -183,7 +183,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                                         break;
                                 }
                                 c.sendPacket(PacketCreator.enableActions());
-                                return;
+                                return Task.CompletedTask;
                             }
                             else
                             {
@@ -204,6 +204,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 
     private int rollHitChance(MobSkillType? type)

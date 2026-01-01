@@ -30,9 +30,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TransferNameResultHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         string name = p.readString();
         c.sendPacket(PacketCreator.sendNameTransferCheck(name, c.CurrentServerContainer.CheckCharacterName(name)));
+        return Task.CompletedTask;
     }
 }

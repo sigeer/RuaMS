@@ -32,12 +32,13 @@ public class TouchMonsterDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)
         {
-            applyAttack(parseDamage(p, chr, false, false), c.OnlinedCharacter, 1);
+            await applyAttack(await parseDamage(p, chr, false, false), c.OnlinedCharacter, 1);
         }
+        return;
     }
 }

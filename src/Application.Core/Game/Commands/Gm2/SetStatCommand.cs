@@ -5,13 +5,13 @@ public class SetStatCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !setstat <newstat>");
-            return;
+            return Task.CompletedTask;
         }
 
         try
@@ -34,5 +34,6 @@ public class SetStatCommand : CommandBase
         {
             log.Error(e.ToString());
         }
+        return Task.CompletedTask;
     }
 }

@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SpawnPetHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         byte slot = p.readByte();
@@ -36,5 +36,6 @@ public class SpawnPetHandler : ChannelHandlerBase
         bool lead = p.readByte() == 1;
 
         SpawnPetProcessor.processSpawnPet(c, slot, lead);
+        return Task.CompletedTask;
     }
 }

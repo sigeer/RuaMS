@@ -11,7 +11,7 @@ public class ShutdownCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -27,6 +27,6 @@ public class ShutdownCommand : CommandBase
             return;
         }
 
-        _adminService.ShutdownMaster(player, seconds);
+        await _adminService.ShutdownMaster(player, seconds);
     }
 }

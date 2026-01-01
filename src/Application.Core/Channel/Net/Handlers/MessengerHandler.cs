@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
+using DotNetty.Common.Internal;
 using tools;
 
 public class MessengerHandler : ChannelHandlerBase
@@ -34,7 +35,7 @@ public class MessengerHandler : ChannelHandlerBase
         _chatRoomService = chatRoomService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -51,20 +52,20 @@ public class MessengerHandler : ChannelHandlerBase
                         {
                             if (messengerid == 0)
                             {
-                                _chatRoomService.CreateChatRoom(player);
+                                await _chatRoomService.CreateChatRoom(player);
                             }
                             else
                             {
-                                _chatRoomService.AnswerInvite(player, messengerid, true);
+                                await _chatRoomService.AnswerInvite(player, messengerid, true);
                             }
                         }
                         else
                         {
-                            _chatRoomService.AnswerInvite(player, messengerid, false);
+                            await _chatRoomService.AnswerInvite(player, messengerid, false);
                         }
                         break;
                     case 0x02:
-                        _chatRoomService.LeftChatRoom(player);
+                        await _chatRoomService.LeftChatRoom(player);
                         break;
                     case 0x03:
                         if (player.ChatRoomId == 0)
@@ -77,7 +78,7 @@ public class MessengerHandler : ChannelHandlerBase
                             // 邀请放进MasterServer后再补上
                             input = p.readString();
 
-                            _chatRoomService.CreateInvite(player, input);
+                            await _chatRoomService.CreateInvite(player, input);
                         }
                         else
                         {
@@ -88,11 +89,11 @@ public class MessengerHandler : ChannelHandlerBase
                         // 拒绝邀请？
                         string targeted = p.readString();
                         // world.declineChat(targeted, player);
-                        _chatRoomService.AnswerInvite(player, -1, false);
+                        await _chatRoomService.AnswerInvite(player, -1, false);
                         break;
                     case 0x06:
                         input = p.readString();
-                        _chatRoomService.SendMessage(player, input);
+                        await _chatRoomService.SendMessage(player, input);
                         break;
                 }
             }

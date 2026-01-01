@@ -9,13 +9,13 @@ public class TimerMapCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
@@ -41,5 +41,6 @@ public class TimerMapCommand : CommandBase
                 player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
             }
         }
+        return Task.CompletedTask;
     }
 }

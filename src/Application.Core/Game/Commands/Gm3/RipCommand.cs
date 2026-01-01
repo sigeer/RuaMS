@@ -7,9 +7,9 @@ public class RipCommand : CommandBase
         Description = "Send a RIP notice.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.CurrentServerContainer.SendDropMessage(6, "[RIP]: " + joinStringFrom(paramsValue, 1));
+        await c.CurrentServerContainer.SendDropMessage(6, "[RIP]: " + joinStringFrom(paramsValue, 1));
     }
 }

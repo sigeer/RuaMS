@@ -38,7 +38,7 @@ public class GrenadeEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var position = new Point(p.readInt(), p.readInt());
@@ -59,6 +59,7 @@ public class GrenadeEffectHandler : ChannelHandlerBase
                 _logger.LogWarning("The skill id: {SkillId} is not coded in {1}", skillId, GetType().Name);
                 break;
         }
+        return Task.CompletedTask;
     }
 
 }

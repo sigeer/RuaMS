@@ -10,7 +10,7 @@ public class MapPlayersCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int map = player.getMapId();
@@ -25,5 +25,6 @@ public class MapPlayersCommand : CommandBase
             sb.Append(name).Append("\r\n");
         }
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        return Task.CompletedTask;
     }
 }

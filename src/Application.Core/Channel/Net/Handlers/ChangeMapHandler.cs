@@ -37,7 +37,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -57,13 +57,13 @@ public class ChangeMapHandler : ChannelHandlerBase
         bool enteringMapFromCashShop = p.available() == 0;
         if (enteringMapFromCashShop)
         {
-            c.LeaveCashShop();
+            await c.LeaveCashShop();
             return;
         }
 
         if (chr.getCashShop().isOpened())
         {
-            c.Disconnect(false, false);
+            await c.Disconnect(false, false);
             return;
         }
 

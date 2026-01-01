@@ -42,7 +42,7 @@ public class UseGachaExpHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
 
         if (c.tryacquireClient())
@@ -62,5 +62,6 @@ public class UseGachaExpHandler : ChannelHandlerBase
         }
 
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

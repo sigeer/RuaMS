@@ -39,7 +39,7 @@ public class PetChatHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int petId = p.readInt();
         p.readInt();
@@ -53,9 +53,9 @@ public class PetChatHandler : ChannelHandlerBase
         string text = p.readString();
         if (text.Length > sbyte.MaxValue)
         {
-            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
+            await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {text.Length}", c.OnlinedCharacter.getName(), text.Length);
-            c.Disconnect(true, false);
+            await c.Disconnect(true, false);
             return;
         }
         c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.petChat(c.OnlinedCharacter.getId(), pet, act, text), true);

@@ -37,7 +37,7 @@ public class ViewAllCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override Task HandlePacket(InPacket p, ILoginClient c)
     {
         try
         {
@@ -45,7 +45,7 @@ public class ViewAllCharHandler : LoginHandlerBase
             {
                 // client breaks if the charlist request pops too soon
                 c.sendPacket(LoginPacketCreator.showAllCharacter(0, 0));
-                return;
+                return Task.CompletedTask;
             }
 
             var worldChrs = c.LoadCharactersView();
@@ -61,5 +61,6 @@ public class ViewAllCharHandler : LoginHandlerBase
         {
             _logger.LogError(e.ToString());
         }
+        return Task.CompletedTask;
     }
 }

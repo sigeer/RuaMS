@@ -8,14 +8,14 @@ public class QuestCompleteCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !completequest <questid>");
-            return;
+            return Task.CompletedTask;
         }
 
         int questId = int.Parse(paramsValue[0]);
@@ -38,5 +38,6 @@ public class QuestCompleteCommand : CommandBase
         {
             player.dropMessage(5, "QUESTID " + questId + " not started or already completed.");
         }
+        return Task.CompletedTask;
     }
 }

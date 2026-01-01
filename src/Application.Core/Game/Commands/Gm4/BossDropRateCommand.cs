@@ -6,13 +6,13 @@ public class BossDropRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !bossdroprate <newrate>");
-            return;
+            return Task.CompletedTask;
         }
 
         if (int.TryParse(paramsValue[0], out var d))
@@ -20,6 +20,7 @@ public class BossDropRateCommand : CommandBase
             int bossdroprate = Math.Max(d, 1);
             c.CurrentServerContainer.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
         }
+        return Task.CompletedTask;
 
     }
 }

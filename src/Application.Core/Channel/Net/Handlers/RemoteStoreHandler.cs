@@ -40,7 +40,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
         _autoBan = autoBan;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var unknown = p.available();
 
@@ -48,7 +48,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
 
         if (chr.getInventory(InventoryType.CASH).findById(ItemId.REMOTE_CONTROLLER) == null)
         {
-            _autoBan.Alert(AutobanFactory.ITEM_VAC, chr, $"没有道具 {ItemId.REMOTE_CONTROLLER} 却尝试远程打开雇佣商店");
+            await _autoBan.Alert(AutobanFactory.ITEM_VAC, chr, $"没有道具 {ItemId.REMOTE_CONTROLLER} 却尝试远程打开雇佣商店");
             return;
         }
 
@@ -71,5 +71,6 @@ public class RemoteStoreHandler : ChannelHandlerBase
             chr.dropMessage(1, "你没有一个正在运营的雇佣商店.");
         }
         c.sendPacket(PacketCreator.enableActions());
+        return;
     }
 }

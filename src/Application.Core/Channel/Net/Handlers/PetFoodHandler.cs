@@ -30,14 +30,14 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class PetFoodHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
         if (abm.getLastSpam(2) + 500 > c.CurrentServerContainer.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         abm.spam(2);
         p.readInt(); // timestamp issue detected thanks to Masterrulax
@@ -45,7 +45,7 @@ public class PetFoodHandler : ChannelHandlerBase
         if (chr.getNoPets() == 0)
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         int previousFullness = 100;
         byte slot = 0;
@@ -66,7 +66,7 @@ public class PetFoodHandler : ChannelHandlerBase
         var pet = chr.getPet(slot);
         if (pet == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         short pos = p.readShort();
@@ -83,7 +83,7 @@ public class PetFoodHandler : ChannelHandlerBase
                     var use = useInv.getItem(pos);
                     if (use == null || (itemId / 10000) != 212 || use.getItemId() != itemId || use.getQuantity() < 1)
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     pet.gainTamenessFullness(chr, (pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
@@ -99,5 +99,6 @@ public class PetFoodHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

@@ -15,14 +15,14 @@ public class DebugCommand : CommandBase
     }
 
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !debug <type>");
-            return;
+            return Task.CompletedTask;
         }
 
         switch (paramsValue[0])
@@ -153,5 +153,6 @@ public class DebugCommand : CommandBase
                 c.OnlinedCharacter.debugListAllBuffs();
                 break;
         }
+        return Task.CompletedTask;
     }
 }

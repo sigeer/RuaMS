@@ -12,9 +12,10 @@ public class ApplyMonsterCardEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         // 始终是0
         // var available = p.available();
+        return Task.CompletedTask;
     }
 }

@@ -8,29 +8,30 @@ public class MobSkillCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient client, string[] paramsValue)
+    public override Task Execute(IChannelClient client, string[] paramsValue)
     {
         if (paramsValue.Length < 2)
         {
             client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.MobSkillCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[0], out var skillId) || !int.TryParse(paramsValue[1], out var skillLevel))
         {
             client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.MobSkillCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         var possibleSkill = MobSkillFactory.GetMobSkill(skillId, skillLevel);
         if (possibleSkill == null)
         {
             client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.MobSkillNotFound), skillId.ToString());
-            return;
+            return Task.CompletedTask;
         }
 
         var chr = client.OnlinedCharacter;
         MobSkill mobSkill = possibleSkill;
         chr.getMap().ProcessMonster(monster => mobSkill.applyEffect(chr, monster, false, []));
+        return Task.CompletedTask;
     }
 }

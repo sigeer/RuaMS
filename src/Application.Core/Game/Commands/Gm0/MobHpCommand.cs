@@ -5,7 +5,7 @@ public class MobHpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.getMap().ProcessMonster(monster =>
@@ -15,5 +15,6 @@ public class MobHpCommand : CommandBase
                 player.yellowMessage(c.CurrentCulture.GetMobName(monster.getId()) + " (" + monster.getId() + ") has " + monster.getHp() + " / " + monster.getMaxHp() + " HP.");
             }
         });
+        return Task.CompletedTask;
     }
 }

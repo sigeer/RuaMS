@@ -12,14 +12,14 @@ public class ItemDropCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         int itemId = int.Parse(paramsValue[0]);
@@ -29,7 +29,7 @@ public class ItemDropCommand : CommandBase
         if (abTemplate == null)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
-            return;
+            return Task.CompletedTask;
         }
 
         short quantity = 1;
@@ -41,7 +41,7 @@ public class ItemDropCommand : CommandBase
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
             player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_CannotCreateCashItem));
-            return;
+            return Task.CompletedTask;
         }
 
         if (abTemplate is PetItemTemplate petTemplate)
@@ -70,12 +70,12 @@ public class ItemDropCommand : CommandBase
 
                 c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDropTemp, c.OnlinedCharacter.getPosition(), true, true);
 
-                return;
+                return Task.CompletedTask;
             }
             else
             {
                 player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_PetSyntax));
-                return;
+                return Task.CompletedTask;
             }
         }
 
@@ -102,5 +102,6 @@ public class ItemDropCommand : CommandBase
         }
 
         c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDrop, c.OnlinedCharacter.getPosition(), true, true);
+        return Task.CompletedTask;
     }
 }

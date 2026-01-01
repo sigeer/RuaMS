@@ -4,7 +4,7 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Internal.Handlers
 {
-    internal class SaveAllHandler : InternalSessionEmptyHandler<MasterServer>
+    internal class SaveAllHandler : InternalSessionMasterEmptyHandler
     {
         public SaveAllHandler(MasterServer server) : base(server)
         {

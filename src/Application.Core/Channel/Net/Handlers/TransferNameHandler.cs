@@ -38,7 +38,7 @@ public class TransferNameHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); //cid
         int birthday = p.readInt();
@@ -47,18 +47,18 @@ public class TransferNameHandler : ChannelHandlerBase
         {
             c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
         if (!YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
-            return;
+            return Task.CompletedTask;
         }
         var chr = c.OnlinedCharacter;
         if (chr.getLevel() < 10)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
-            return;
+            return Task.CompletedTask;
         }
         //else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.UtcNow)
         //{
@@ -91,5 +91,6 @@ public class TransferNameHandler : ChannelHandlerBase
         //    return;
         //}
         c.sendPacket(PacketCreator.sendNameTransferRules(0));
+        return Task.CompletedTask;
     }
 }

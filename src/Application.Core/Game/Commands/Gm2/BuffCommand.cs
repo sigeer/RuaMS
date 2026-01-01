@@ -9,13 +9,13 @@ public class BuffCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.BuffCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
         int skillid = int.Parse(paramsValue[0]);
 
@@ -24,5 +24,6 @@ public class BuffCommand : CommandBase
         {
             skill.getEffect(skill.getMaxLevel()).applyTo(player);
         }
+        return Task.CompletedTask;
     }
 }

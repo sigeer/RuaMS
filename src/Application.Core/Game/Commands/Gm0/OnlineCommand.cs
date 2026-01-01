@@ -13,7 +13,7 @@ public class OnlineCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -43,13 +43,14 @@ public class OnlineCommand : CommandBase
             }
             else
             {
-                ctx.RegisterYesOrNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name), ctx =>
+                ctx.RegisterYesOrNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name), async ctx =>
                 {
-                    _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
+                   await _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
                     list.Clear();
                     ctx.dispose();
                 });
             }
         });
+        return Task.CompletedTask;
     }
 }

@@ -16,6 +16,7 @@ namespace Application.Core.Login.Modules
             await base.OnPlayerServerChanged(obj, lastChannel);
 
             await _server.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = obj.Character.Id });
+            await _server.InvitationManager.RemovePlayerInvitation(obj.Character.Id);
 
             var data = new SyncProto.PlayerFieldChange
             {

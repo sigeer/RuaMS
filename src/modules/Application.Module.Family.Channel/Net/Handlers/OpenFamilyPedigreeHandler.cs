@@ -39,7 +39,7 @@ public class OpenFamilyPedigreeHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var target = c.CurrentServer.Players.getCharacterByName(p.readString());
 

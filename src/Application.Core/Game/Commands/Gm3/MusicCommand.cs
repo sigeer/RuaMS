@@ -174,7 +174,7 @@ public class MusicCommand : CommandBase
         return songList;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
 
         var player = c.OnlinedCharacter;
@@ -186,7 +186,7 @@ public class MusicCommand : CommandBase
             sendMsgTemp += getSongList();
 
             c.sendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsgTemp, "00 00", 0));
-            return;
+            return Task.CompletedTask;
         }
 
         string song = player.getLastCommandMessage();
@@ -196,7 +196,7 @@ public class MusicCommand : CommandBase
             {    // thanks Masterrulax for finding an issue here
                 player.getMap().broadcastMessage(PacketCreator.musicChange(s));
                 player.yellowMessage("Now playing song " + s + ".");
-                return;
+                return Task.CompletedTask;
             }
         }
 
@@ -205,5 +205,6 @@ public class MusicCommand : CommandBase
         sendMsg += getSongList();
 
         c.sendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsg, "00 00", 0));
+        return Task.CompletedTask;
     }
 }

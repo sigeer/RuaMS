@@ -7,7 +7,7 @@ public class ToggleCouponCommand : CommandBase
         Description = "Toggle enable/disable a coupon.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -15,6 +15,6 @@ public class ToggleCouponCommand : CommandBase
             player.yellowMessage("Syntax: !togglecoupon <itemid>");
             return;
         }
-        c.CurrentServerContainer.Transport.SendToggleCoupon(int.Parse(paramsValue[0]));
+        await c.CurrentServerContainer.Transport.SendToggleCoupon(int.Parse(paramsValue[0]));
     }
 }

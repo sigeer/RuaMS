@@ -211,7 +211,7 @@ namespace Application.Core.ServerTransports
 
         public async Task SetPlayerOnlined(int id, int channelId)
         {
-            await _syncClient.CompleteLoginAsync(new ServiceProto.CompleteLoginRequest { CharacterId = id, Channel = channelId });
+            await InternalSession.SendAsync(ChannelSendCode.CompleteLogin, new ServiceProto.CompleteLoginRequest { CharacterId = id, Channel = channelId });
         }
 
         public DropAllDto RequestAllReactorDrops()
@@ -581,11 +581,11 @@ namespace Application.Core.ServerTransports
             return _itemClient.LoadItemFromStore(loadItemsFromStoreRequest);
         }
 
-        public void BatchSyncMap(List<MapSyncDto> data)
+        public async Task BatchSyncMap(List<MapSyncDto> data)
         {
             var req = new MapBatchSyncDto();
             req.List.AddRange(data);
-            InternalSession.Send(ChannelSendCode.SyncMap, req);
+            await InternalSession.SendAsync(ChannelSendCode.SyncMap, req);
         }
 
         public async Task SendReport(SendReportRequest request)
@@ -653,9 +653,9 @@ namespace Application.Core.ServerTransports
             return _systemClient.GetOnlinedClients(new Empty());
         }
 
-        public void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest)
+        public async Task ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest)
         {
-            _systemClient.ShutdownMaster(shutdownMasterRequest);
+            await _systemClient.ShutdownMasterAsync(shutdownMasterRequest);
         }
 
         public ServerStateDto GetServerState()

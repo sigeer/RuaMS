@@ -26,6 +26,7 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
+using System.Threading.Tasks;
 using tools;
 
 namespace client.processor.stat;
@@ -37,7 +38,7 @@ namespace client.processor.stat;
 public class AssignAPProcessor
 {
 
-    public static void APAutoAssignAction(InPacket inPacket, IChannelClient c)
+    public static async Task APAutoAssignAction(InPacket inPacket, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)
@@ -423,9 +424,9 @@ public class AssignAPProcessor
             {
                 if (inPacket.available() < 16)
                 {
-                    c.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
+                    await c.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
 
-                    c.Disconnect(true, false);
+                    await c.Disconnect(true, false);
                     return;
                 }
 

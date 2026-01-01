@@ -32,12 +32,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class SkillBookHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
 
         p.readInt();
@@ -58,12 +58,12 @@ public class SkillBookHandler : ChannelHandlerBase
                 var toUse = inv.getItem(slot);
                 if (toUse == null || toUse.getItemId() != itemId)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (toUse.SourceTemplate is not MasteryItemTemplate template)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var targetSkillId = template.Skills.FirstOrDefault(x => x / 10000 == c.OnlinedCharacter.getJob().getId());
@@ -83,7 +83,7 @@ public class SkillBookHandler : ChannelHandlerBase
                             var used = inv.getItem(slot);
                             if (used != toUse || toUse.getQuantity() < 1)
                             {    // thanks ClouD for noticing skillbooks not being usable when stacked
-                                return;
+                                return Task.CompletedTask;
                             }
 
                             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
@@ -120,5 +120,6 @@ public class SkillBookHandler : ChannelHandlerBase
             // thanks Vcoc for noting skill book result not showing for all in area
             player.getMap().broadcastMessage(PacketCreator.skillBookResult(player, skill, maxlevel, canuse, success));
         }
+        return Task.CompletedTask;
     }
 }

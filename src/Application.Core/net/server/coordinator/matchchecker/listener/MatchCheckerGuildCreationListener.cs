@@ -1,6 +1,7 @@
 using Application.Core.Channel.ServerData;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
+using System.Threading.Tasks;
 
 namespace Application.Core.net.server.coordinator.matchchecker.listener
 {
@@ -15,7 +16,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             _teamManager = teamManager;
         }
 
-        private static void broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
+        private static Task broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
         {
             foreach (var chr in nonLeaderMatchPlayers)
             {
@@ -24,8 +25,9 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                     chr.sendPacket(GuildPackets.genericGuildMessage(0x26));
                 }
             }
+            return Task.CompletedTask;
         }
-        public override void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
+        public override Task onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
         {
             Packet createGuildPacket = GuildPackets.createGuildMessage(leader.getName(), message);
 
@@ -36,23 +38,25 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                     chr.sendPacket(createGuildPacket);
                 }
             }
+            return Task.CompletedTask;
         }
 
-        public override void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override Task onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             _guildManager.CreateGuild(message, leaderid, matchPlayers, () =>
             {
                 broadcastGuildCreationDismiss(matchPlayers);
             });
+            return Task.CompletedTask;
         }
 
-        public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override async Task onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             foreach (var chr in matchPlayers)
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    _teamManager.LeaveParty(chr);
+                    await _teamManager.LeaveParty(chr);
                 }
 
                 if (chr.isLoggedinWorld())
@@ -62,7 +66,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
         }
 
-        public override void onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override async Task onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
 
             var leader = matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
@@ -81,7 +85,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    _teamManager.LeaveParty(chr);
+                    await _teamManager.LeaveParty(chr);
                 }
 
                 if (chr.isLoggedinWorld())

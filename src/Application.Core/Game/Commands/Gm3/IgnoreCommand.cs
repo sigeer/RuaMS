@@ -11,7 +11,7 @@ public class IgnoreCommand : CommandBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -20,6 +20,6 @@ public class IgnoreCommand : CommandBase
             return;
         }
 
-        _autoBanManager.ToggleIgnore(c.OnlinedCharacter, paramsValue[0]);
+        await _autoBanManager.ToggleIgnore(c.OnlinedCharacter, paramsValue[0]);
     }
 }

@@ -9,6 +9,7 @@ namespace Application.Shared.Message
         public const int SyncMap = 5;
         public const int SyncPlayer = 6;
         public const int BatchSyncPlayer = 7;
+        public const int CompleteLogin = 69;
 
         public const int MultiChat = 8;
 

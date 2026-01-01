@@ -49,7 +49,7 @@ public class GeneralChatHandler : ChannelHandlerBase
         return heading == COMMAND_HEADING;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         string s = p.readString();
         var chr = c.OnlinedCharacter;
@@ -60,15 +60,15 @@ public class GeneralChatHandler : ChannelHandlerBase
         }
         if (s.Length > sbyte.MaxValue && !chr.isGM())
         {
-            _autobanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit in General Chat.");
+            await _autobanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit in General Chat.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {StringLength}", c.OnlinedCharacter.getName(), s.Length);
-            c.Disconnect(true);
+            await c.Disconnect(true);
             return;
         }
         char heading = s.ElementAt(0);
         if (isCommand(s))
         {
-            commandExecutor.handle(c, s);
+            await commandExecutor.handle(c, s);
         }
         else if (heading != '/')
         {

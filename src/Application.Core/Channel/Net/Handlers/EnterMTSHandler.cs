@@ -26,12 +26,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class EnterMTSHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!YamlConfig.config.server.USE_MTS)
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
+            return Task.CompletedTask;
         }
+        return Task.CompletedTask;
     }
 }

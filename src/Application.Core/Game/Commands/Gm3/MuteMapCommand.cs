@@ -7,7 +7,7 @@ public class MuteMapCommand : CommandBase
         Description = "Toggle mute players in the map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (player.getMap().isMuted())
@@ -20,5 +20,6 @@ public class MuteMapCommand : CommandBase
             player.getMap().setMuted(true);
             player.dropMessage(5, "The map you are in has been muted.");
         }
+        return Task.CompletedTask;
     }
 }

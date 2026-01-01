@@ -10,8 +10,9 @@ public class ShowSessionsCommand : CommandBase
         Description = "Show online sessions.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         // SessionCoordinator.getInstance().printSessionTrace(c);
+        return Task.CompletedTask;
     }
 }

@@ -74,7 +74,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         return 0;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.tryacquireClient())
         {    // thanks GabrielSin for pointing dupes within player interactions
@@ -693,7 +693,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 int price = p.readInt();
                 if (perBundle <= 0 || perBundle * bundles > 2000 || bundles <= 0 || price <= 0 || price > int.MaxValue)
                 {
-                    _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with hired merchants.");
+                    await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with hired merchants.");
                     _logger.LogWarning("Chr {CharacterName} might possibly have packet edited Hired Merchants. perBundle: {0}, perBundle * bundles (This multiplied cannot be greater than 2000): {1}, bundles: {2}, price: {Price}",
                             chr.getName(), perBundle, perBundle * bundles, bundles, price);
                     return;
@@ -709,7 +709,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 }
 
                 int itemIndex = p.readShort();
-                c.getChannelServer().PlayerShopManager.RemoveCommodity(chr, itemIndex);
+                await c.getChannelServer().PlayerShopManager.RemoveCommodity(chr, itemIndex);
             }
             else if (mode == PlayerInterAction.MERCHANT_MESO.getCode())
             {
@@ -793,9 +793,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 short quantity = p.readShort();
                 if (quantity < 1)
                 {
-                    _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
+                    await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
                     _logger.LogWarning("Chr {CharacterName} tried to buy item {ItemId} with quantity {ItemQuantity}", chr.getName(), itemIndex, quantity);
-                    c.Disconnect(true, false);
+                    await c.Disconnect(true, false);
                     return;
                 }
 

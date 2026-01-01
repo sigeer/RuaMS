@@ -8,7 +8,7 @@ public class ReloadMapCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var newMap = c.getChannelServer().getMapFactory().resetMap(player.getMapId(), out var oldMap);
@@ -27,5 +27,6 @@ public class ReloadMapCommand : CommandBase
         }
         newMap.respawn();
         oldMap?.Dispose();
+        return Task.CompletedTask;
     }
 }

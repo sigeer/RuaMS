@@ -11,7 +11,7 @@ public class SummonCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -20,6 +20,7 @@ public class SummonCommand : CommandBase
             return;
         }
 
-        _adminService.SummonPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        await _adminService.SummonPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        return;
     }
 }

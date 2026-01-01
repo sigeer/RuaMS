@@ -1315,8 +1315,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             equip.wear(false);
             var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
 
-            chr.Client.CurrentServerContainer.SendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true);
-            _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
+            _ = chr.Client.CurrentServerContainer.SendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true);
+            _ = _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
             _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;
         }

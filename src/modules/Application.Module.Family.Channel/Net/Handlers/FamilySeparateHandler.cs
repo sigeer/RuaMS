@@ -37,7 +37,7 @@ public class FamilySeparateHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var oldFamily = _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id);
         if (oldFamily == null)

@@ -47,7 +47,7 @@ public class FamilyAddHandler : ChannelHandlerBase
         _options = options;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         string toAdd = p.readString();
         var addChr = c.CurrentServer.getPlayerStorage().getCharacterByName(toAdd);

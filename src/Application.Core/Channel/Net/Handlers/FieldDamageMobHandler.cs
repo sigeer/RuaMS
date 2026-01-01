@@ -35,7 +35,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mobOid = p.readInt();    // packet structure found thanks to Darter (Rajan)
         int dmg = p.readInt();
@@ -47,7 +47,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         {
             // no environment objects activated to actually hit the mob
             _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.OnlinedCharacter.getName(), map.getId());
-            return;
+            return Task.CompletedTask;
         }
 
         var mob = map.getMonsterByOid(mobOid);
@@ -60,11 +60,12 @@ public class FieldDamageMobHandler : ChannelHandlerBase
                     map.getId(), 
                     ClientCulture.SystemCulture.GetMobName(mob.getId()), 
                     dmg);
-                return;
+                return Task.CompletedTask;
             }
 
             map.broadcastMessage(chr, PacketCreator.damageMonster(mobOid, dmg), true);
             map.damageMonster(chr, mob, dmg);
         }
+        return Task.CompletedTask;
     }
 }

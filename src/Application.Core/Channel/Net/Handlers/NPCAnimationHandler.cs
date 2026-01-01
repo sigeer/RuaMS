@@ -24,11 +24,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class NPCAnimationHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.OnlinedCharacter.isChangingMaps())
         {   // possible cause of error 38 in some map transition scenarios, thanks Arnah
-            return;
+            return Task.CompletedTask;
         }
 
         OutPacket op = OutPacket.create(SendOpcode.NPC_ACTION);
@@ -45,5 +45,6 @@ public class NPCAnimationHandler : ChannelHandlerBase
             op.writeBytes(bytes);
         }
         c.sendPacket(op);
+        return Task.CompletedTask;
     }
 }

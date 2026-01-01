@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RaiseIncExpHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         sbyte inventorytype = p.ReadSByte();//nItemIT
         short slot = p.readShort();//nSlotPosition
@@ -30,7 +30,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 var consItem = ii.getQuestConsumablesInfo(itemid);
                 if (consItem == null)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 int infoNumber = consItem.questid;
@@ -41,7 +41,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 if (!chr.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED))
                 {
                     c.sendPacket(PacketCreator.enableActions());
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 int consId;
@@ -52,7 +52,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                     consId = inv.getItem(slot)!.getItemId();
                     if (!consumables.ContainsKey(consId) || !chr.haveItem(consId))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
@@ -73,5 +73,6 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

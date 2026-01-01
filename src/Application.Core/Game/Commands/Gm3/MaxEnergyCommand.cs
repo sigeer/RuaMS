@@ -9,10 +9,11 @@ public class MaxEnergyCommand : CommandBase
         Description = "Set dojo energy to max value.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         c.OnlinedCharacter.setDojoEnergy(10000);
         c.sendPacket(PacketCreator.getEnergy("energy", 10000));
+        return Task.CompletedTask;
     }
 }

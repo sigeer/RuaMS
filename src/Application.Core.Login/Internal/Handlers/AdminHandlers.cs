@@ -1,5 +1,10 @@
+using Application.Core.Login.Services;
 using Application.Shared.Message;
+using Config;
+using Dto;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using MessageProto;
 using SystemProto;
 
 namespace Application.Core.Login.Internal.Handlers
@@ -43,7 +48,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.Ban;
+            public override int MessageId => ChannelSendCode.Unban;
 
             protected override async Task HandleAsync(UnbanRequest message, CancellationToken cancellationToken = default)
             {
@@ -83,6 +88,98 @@ namespace Application.Core.Login.Internal.Handlers
             }
 
             protected override SummonPlayerByNameRequest Parse(ByteString content) => SummonPlayerByNameRequest.Parser.ParseFrom(content);
+        }
+
+        internal class SendReportPlayerHandler : InternalSessionMasterHandler<SendReportRequest>
+        {
+            readonly MessageService _messageService;
+            public SendReportPlayerHandler(MasterServer server, MessageService messageService) : base(server)
+            {
+                _messageService = messageService;
+            }
+
+            public override int MessageId => ChannelSendCode.SendReport;
+
+            protected override async Task HandleAsync(SendReportRequest message, CancellationToken cancellationToken = default)
+            {
+                await _messageService.AddReport(message);
+            }
+
+            protected override SendReportRequest Parse(ByteString content) => SendReportRequest.Parser.ParseFrom(content);
+        }
+
+        internal class SetAutobanIgnoreHandler : InternalSessionMasterHandler<ToggleAutoBanIgnoreRequest>
+        {
+            public SetAutobanIgnoreHandler(MasterServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => ChannelSendCode.SetAutobanIgnore;
+
+            protected override async Task HandleAsync(ToggleAutoBanIgnoreRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.SystemManager.ToggleAutoBanIgnored(message);
+            }
+
+            protected override ToggleAutoBanIgnoreRequest Parse(ByteString content) => ToggleAutoBanIgnoreRequest.Parser.ParseFrom(content);
+        }
+
+        internal class SetMonitorHandler : InternalSessionMasterHandler<ToggleMonitorPlayerRequest>
+        {
+            public SetMonitorHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => ChannelSendCode.SetMonitor;
+
+            protected override async Task HandleAsync(ToggleMonitorPlayerRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.SystemManager.ToggleMonitor(message);
+            }
+
+            protected override ToggleMonitorPlayerRequest Parse(ByteString content) => ToggleMonitorPlayerRequest.Parser.ParseFrom(content);
+        }
+
+        internal class ReloadWorldEventsHandler : InternalSessionMasterHandler<ReloadEventsRequest>
+        {
+            public ReloadWorldEventsHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => ChannelSendCode.ReloadWorldEvents;
+
+            protected override async Task HandleAsync(ReloadEventsRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, message);
+            }
+
+            protected override ReloadEventsRequest Parse(ByteString content) => ReloadEventsRequest.Parser.ParseFrom(content);
+        }
+
+        internal class SetTimerHandler : InternalSessionMasterHandler<SetTimer>
+        {
+            public SetTimerHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => ChannelSendCode.SetTimer;
+
+            protected override async Task HandleAsync(SetTimer message, CancellationToken cancellationToken = default)
+            {
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleSetTimer, message);
+            }
+
+            protected override SetTimer Parse(ByteString content) => SetTimer.Parser.ParseFrom(content);
+        }
+
+        internal class RemoveTimerHandler : InternalSessionMasterEmptyHandler
+        {
+            public RemoveTimerHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => ChannelSendCode.RemoveTimer;
+
+            protected override async Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
+            {
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleRemoveTimer);
+            }
         }
     }
 }

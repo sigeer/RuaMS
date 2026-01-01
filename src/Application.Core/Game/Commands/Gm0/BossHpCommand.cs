@@ -8,7 +8,7 @@ public class BossHpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.getMap().ProcessMonster(monster =>
@@ -26,5 +26,6 @@ public class BossHpCommand : CommandBase
                 player.YellowMessageI18N(nameof(ClientMessage.BossHpCommand_Message2), bar);
             }
         });
+        return Task.CompletedTask;
     }
 }

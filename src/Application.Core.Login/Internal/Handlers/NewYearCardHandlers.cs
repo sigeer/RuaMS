@@ -32,7 +32,7 @@ namespace Application.Core.Login.Internal.Handlers
             public DiscardHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.ReceiveNewYearCard;
+            public override int MessageId => ChannelSendCode.DiscardNewYearCard;
 
             protected override async Task HandleAsync(DiscardNewYearCardRequest message, CancellationToken cancellationToken = default)
             {

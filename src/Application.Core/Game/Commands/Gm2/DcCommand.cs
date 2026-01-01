@@ -10,15 +10,16 @@ public class DcCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !dc <playername>");
-            return;
+            return ;
         }
 
-        _adminService.DisconnectPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        await _adminService.DisconnectPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        return;
     }
 }

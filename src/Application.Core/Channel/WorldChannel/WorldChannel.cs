@@ -270,20 +270,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
-    public async Task StartServer(CancellationToken cancellationToken)
+    public Task StartServer(CancellationToken cancellationToken)
     {
-        try
-        {
-            IsRunning = false;
-            log.Information("[{ServerName}] 启动中...", ServerLogName);
-            await NettyServer.Start();
-            log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
-            IsRunning = true;
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "[{ServerName}] 启动失败", ServerLogName);
-        }
+        IsRunning = true;
+        log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
+        return Task.CompletedTask;   
     }
 
 

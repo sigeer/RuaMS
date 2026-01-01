@@ -8,7 +8,7 @@ public class TimerAllCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -19,14 +19,14 @@ public class TimerAllCommand : CommandBase
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
         {
-            player.getChannelServer().Container.Transport.RemoveTimer();
+            await player.getChannelServer().Container.Transport.RemoveTimer();
         }
         else
         {
             try
             {
                 int seconds = int.Parse(paramsValue[0]);
-                player.getChannelServer().Container.Transport.SendTimer(seconds);
+                await player.getChannelServer().Container.Transport.SendTimer(seconds);
             }
             catch (FormatException e)
             {

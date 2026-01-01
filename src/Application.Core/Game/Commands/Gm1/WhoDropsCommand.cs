@@ -12,13 +12,13 @@ public class WhoDropsCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.WhoDropsCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (c.tryacquireClient())
@@ -46,5 +46,6 @@ public class WhoDropsCommand : CommandBase
         {
             player.yellowMessage("Please wait a while for your request to be processed.");
         }
+        return Task.CompletedTask;
     }
 }

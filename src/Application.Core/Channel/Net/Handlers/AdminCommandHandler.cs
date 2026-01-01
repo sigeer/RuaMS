@@ -46,7 +46,7 @@ public class AdminCommandHandler : ChannelHandlerBase
         _adminService = adminService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isGM())
         {
@@ -95,7 +95,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 int type = p.readByte(); //reason
                 int duration = p.readInt();
                 string description = p.readString();
-                _adminService.Ban(c.OnlinedCharacter, victim, type, description, duration);
+                await _adminService.Ban(c.OnlinedCharacter, victim, type, description, duration);
                 break;
             case 0x10: // /h, information added by vana -- <and tele mode f1> ... hide ofcourse
                 c.OnlinedCharacter.Hide(p.readByte() == 1);

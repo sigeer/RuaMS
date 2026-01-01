@@ -8,13 +8,13 @@ public class GiveNxCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.GiveNxCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         string recv, typeStr = "nx";
@@ -70,5 +70,6 @@ public class GiveNxCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 }

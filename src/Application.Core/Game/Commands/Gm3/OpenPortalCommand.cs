@@ -7,14 +7,15 @@ public class OpenPortalCommand : CommandBase
         Description = "Open a portal on the map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !openportal <portalid>");
-            return;
+            return Task.CompletedTask;
         }
         player.getMap().getPortal(paramsValue[0])?.setPortalState(true);
+        return Task.CompletedTask;
     }
 }

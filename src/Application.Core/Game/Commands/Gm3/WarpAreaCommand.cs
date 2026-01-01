@@ -7,13 +7,13 @@ public class WarpAreaCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.WarpAreaCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         try
@@ -22,7 +22,7 @@ public class WarpAreaCommand : CommandBase
             if (target == null)
             {
                 player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
-                return;
+                return Task.CompletedTask;
             }
 
             Point pos = player.getPosition();
@@ -43,5 +43,6 @@ public class WarpAreaCommand : CommandBase
             log.Error(e.ToString());
             player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
         }
+        return Task.CompletedTask;
     }
 }

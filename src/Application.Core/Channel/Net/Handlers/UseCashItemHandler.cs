@@ -55,7 +55,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         _playerShopService = playerShopService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
 
@@ -178,7 +178,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 int SPTo = p.readInt();
                 int SPFrom = p.readInt();
 
-                AssignSPProcessor.ResetSkill(player, SPTo, SPFrom);
+                await AssignSPProcessor.ResetSkill(player, SPTo, SPFrom);
             }
             else
             {
@@ -288,7 +288,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     break;
                 case 2:
                     // Super megaphone
-                    c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -318,7 +318,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     var v = p.readInt();
 
-                    _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
+                    await _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
                     return;
                 case 6: //道具喇叭
                     string msg = medal + player.getName() + " : " + p.readString();
@@ -335,7 +335,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, toUse, item, msg, whisper);
+                    await _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, toUse, item, msg, whisper);
                     return;
                 case 7: //缤纷喇叭
                     int lines = p.ReadSByte();
@@ -349,7 +349,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
+                    await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -487,8 +487,10 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            c.CurrentServerContainer.TimerManager.schedule(() => c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            await c.CurrentServerContainer.TimerManager.ScheduleAsync("AvatarMega", 
+                async () => await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()), 
+                TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)

@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RPSActionHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var rps = chr.getRPS();
@@ -26,7 +26,7 @@ public class RPSActionHandler : ChannelHandlerBase
                     {
                         rps.dispose(c);
                     }
-                    return;
+                    return Task.CompletedTask;
                 }
                 byte mode = p.readByte();
                 switch (mode)
@@ -81,5 +81,6 @@ public class RPSActionHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 }

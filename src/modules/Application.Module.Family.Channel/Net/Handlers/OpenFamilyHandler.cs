@@ -38,7 +38,7 @@ public class OpenFamilyHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         c.sendPacket(FamilyPacketCreator.getFamilyInfo(_familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id)?.getEntryByID(c.OnlinedCharacter.Id)));
     }

@@ -17,7 +17,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         p.readByte();
         int charId = p.readInt();
@@ -40,7 +40,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
         if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(mac) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
         {
-            _sessionCoordinator.closeSession(c, true);
+            await _sessionCoordinator.closeSession(c, true);
             return;
         }
 
@@ -53,7 +53,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
         if (!_server.AccountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
         {
-            _sessionCoordinator.closeSession(c, true);
+            await _sessionCoordinator.closeSession(c, true);
             return;
         }
 
@@ -97,7 +97,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
         }
         else
         {
-            _sessionCoordinator.closeSession(c, true);
+            await _sessionCoordinator.closeSession(c, true);
         }
     }
 }

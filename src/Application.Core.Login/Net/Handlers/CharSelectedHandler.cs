@@ -13,7 +13,7 @@ public class CharSelectedHandler : OnCharacterSelectedHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         int charId = p.readInt();
 
@@ -21,6 +21,6 @@ public class CharSelectedHandler : OnCharacterSelectedHandler
         string macs = p.readString();
         string hostString = p.readString();
 
-        Process(c, charId, hostString, macs);
+        await Process(c, charId, hostString, macs);
     }
 }

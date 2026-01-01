@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SpecialMoveHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
@@ -54,7 +54,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         {
             if (chr.getDojoEnergy() < 10000)
             { // PE hacking or maybe just lagging
-                return;
+                return Task.CompletedTask;
             }
             skillLevel = 1;
             chr.setDojoEnergy(0);
@@ -63,7 +63,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         }
         if (skillLevel == 0 || skillLevel != __skillLevel)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         StatEffect effect = skill!.getEffect(skillLevel);
@@ -71,7 +71,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         {
             if (chr.skillIsCooling(skillid))
             {
-                return;
+                return Task.CompletedTask;
             }
             else if (skillid != Corsair.BATTLE_SHIP)
             {
@@ -179,5 +179,6 @@ public class SpecialMoveHandler : ChannelHandlerBase
         {
             c.sendPacket(PacketCreator.enableActions());
         }
+        return Task.CompletedTask;
     }
 }

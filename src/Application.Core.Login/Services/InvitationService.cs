@@ -41,11 +41,5 @@ namespace Application.Core.Login.Services
 
             await handler.HandleInvitationAnswered(request);
         }
-
-        public void RemovePlayerInvitation(int cid)
-        {
-            _server.InvitationManager.RemovePlayerInvitation(cid);
-        }
-
     }
 }

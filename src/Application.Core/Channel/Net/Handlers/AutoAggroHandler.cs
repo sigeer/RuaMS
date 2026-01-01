@@ -25,12 +25,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AutoAggroHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.isHidden())
         {
-            return; // Don't auto aggro GM's in hide...
+            return Task.CompletedTask;
         }
 
         var map = player.getMap();
@@ -41,5 +41,7 @@ public class AutoAggroHandler : ChannelHandlerBase
         {
             monster.aggroAutoAggroUpdate(player);
         }
+
+        return Task.CompletedTask;
     }
 }

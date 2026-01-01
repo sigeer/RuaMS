@@ -41,24 +41,24 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         var map = player.getMap();
 
         if (player.isChangingMaps())
         {  // thanks Lame for noticing mob movement shuffle (mob OID on different maps) happening on map transitions
-            return;
+            return Task.CompletedTask;
         }
         if (map.XiGuai != null)
-            return;
+            return Task.CompletedTask;
 
         int objectid = p.readInt();
         short moveid = p.readShort();
         var mmo = map.getMapObject(objectid);
         if (mmo == null || mmo.getType() != MapObjectType.MONSTER)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var monster = (Monster)mmo;
@@ -149,7 +149,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         var aggro = monster.aggroMoveLifeUpdate(player);
         if (aggro == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (nextUse != null)
@@ -192,6 +192,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                 chr.changeMapBanish(monster.getBanish());
             }
         }
+        return Task.CompletedTask;
     }
 
     private static bool inRangeInclusive(sbyte pVal, int pMin, int pMax)

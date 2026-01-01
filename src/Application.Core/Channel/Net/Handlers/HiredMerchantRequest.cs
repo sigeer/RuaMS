@@ -42,7 +42,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -51,7 +51,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
             if (chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER_SHOP)).Count > 0)
             {
                 chr.sendPacket(PacketCreator.getMiniRoomError(13));
-                return;
+                return Task.CompletedTask;
             }
 
             Point cpos = chr.getPosition();
@@ -59,7 +59,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
             if (portal != null && portal.getPosition().distance(cpos) < 120.0)
             {
                 chr.sendPacket(PacketCreator.getMiniRoomError(10));
-                return;
+                return Task.CompletedTask;
             }
         }
         catch (Exception e)
@@ -71,7 +71,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         {
             if (!_service.CanHiredMerchant(chr))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             chr.sendPacket(PacketCreator.hiredMerchantBox());
@@ -80,5 +80,6 @@ public class HiredMerchantRequest : ChannelHandlerBase
         {
             chr.dropMessage(1, "You cannot open your hired merchant here.");
         }
+        return Task.CompletedTask;
     }
 }

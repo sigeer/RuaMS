@@ -8,13 +8,13 @@ public class SpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.SpCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (paramsValue.Length == 1)
@@ -55,5 +55,6 @@ public class SpCommand : CommandBase
                 player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
+        return Task.CompletedTask;
     }
 }

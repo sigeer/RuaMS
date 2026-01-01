@@ -4,6 +4,7 @@ using Application.Core.Login.Session;
 using Application.Shared.Sessions;
 using Application.Utility;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Net.Handlers
 {
@@ -17,7 +18,7 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string hostString, string macs)
+        protected virtual async Task Process(ILoginClient c, int charId, string hostString, string macs)
         {
             if (c.AccountEntity == null)
                 return;
@@ -51,7 +52,7 @@ namespace Application.Core.Login.Net.Handlers
 
             if (!_server.AccountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
             {
-                _sessionCoordinator.closeSession(c, true);
+                await _sessionCoordinator.closeSession(c, true);
                 return;
             }
 
@@ -98,7 +99,7 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string pic, string hostString, string macs)
+        protected virtual async Task Process(ILoginClient c, int charId, string pic, string hostString, string macs)
         {
             if (!c.CheckPic(pic))
             {
@@ -107,7 +108,7 @@ namespace Application.Core.Login.Net.Handlers
             }
 
 
-            base.Process(c, charId, hostString, macs);
+            await base.Process(c, charId, hostString, macs);
         }
     }
 }

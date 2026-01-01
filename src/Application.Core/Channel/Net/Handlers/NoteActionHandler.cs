@@ -37,7 +37,7 @@ public class NoteActionHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int action = p.readByte();
         if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)
@@ -82,5 +82,6 @@ public class NoteActionHandler : ChannelHandlerBase
                 c.OnlinedCharacter.gainFame(fame);
             }
         }
+        return Task.CompletedTask;
     }
 }

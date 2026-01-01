@@ -13,7 +13,7 @@ public class FamilySummonResponseHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readString(); //family name
         bool accept = p.readByte() != 0;

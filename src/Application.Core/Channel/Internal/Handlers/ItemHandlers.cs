@@ -93,7 +93,7 @@ namespace Application.Core.Channel.Internal.Handlers
             protected override CreateTVMessageResponse Parse(ByteString data) => CreateTVMessageResponse.Parser.ParseFrom(data);
         }
 
-        public class TVMessageFinish : InternalSessionEmptyHandler<WorldChannelServer>
+        public class TVMessageFinish : InternalSessionChannelEmptyHandler
         {
             public TVMessageFinish(WorldChannelServer server) : base(server)
             {

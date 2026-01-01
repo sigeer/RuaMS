@@ -11,7 +11,7 @@ public class PnpcCommand : CommandBase
         _dataService = dataService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -33,6 +33,6 @@ public class PnpcCommand : CommandBase
             return;
         }
 
-        _dataService.CreatePLife(player, npcId, LifeType.NPC);
+       await  _dataService.CreatePLife(player, npcId, LifeType.NPC);
     }
 }

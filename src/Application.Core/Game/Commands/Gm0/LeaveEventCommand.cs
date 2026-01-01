@@ -7,7 +7,7 @@ public class LeaveEventCommand : CommandBase
         Description = "Leave active event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int returnMap = player.getSavedLocation("EVENT");
@@ -32,6 +32,7 @@ public class LeaveEventCommand : CommandBase
         {
             player.dropMessage(5, "You are not currently in an event.");
         }
+        return Task.CompletedTask;
 
     }
 }

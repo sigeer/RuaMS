@@ -46,7 +46,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => ChannelRecvCode.SummonPlayer;
 
-            protected override Task HandleAsync(SummonPlayerByNameResponse res, CancellationToken cancellationToken = default)
+            protected override async Task HandleAsync(SummonPlayerByNameResponse res, CancellationToken cancellationToken = default)
             {
                 var chr = _server.FindPlayerById(res.Request.MasterId);
                 if (chr != null)
@@ -54,7 +54,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     if (res.Code != 0)
                     {
                         chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
-                        return Task.CompletedTask;
+                        return;
                     }
                 }
 
@@ -63,10 +63,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     if (summoned.getEventInstance() == null)
                     {
-                        _server.AdminService.WarpPlayerByName(summoned, res.WarpToName);
+                        await _server.AdminService.WarpPlayerByName(summoned, res.WarpToName);
                     }
                 }
-                return Task.CompletedTask;
+                return;
             }
 
             protected override SummonPlayerByNameResponse Parse(ByteString data) => SummonPlayerByNameResponse.Parser.ParseFrom(data);

@@ -9,13 +9,13 @@ public class TimerCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.YellowMessageI18N(nameof(ClientMessage.TimerCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         var victim = player.getMap().getCharacterByName(paramsValue[0]);
@@ -42,5 +42,6 @@ public class TimerCommand : CommandBase
         {
             player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInMap), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 }

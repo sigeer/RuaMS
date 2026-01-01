@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using scripting;
 using scripting.Event;
 using scripting.npc;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -51,7 +52,7 @@ namespace Application.Core.Channel.Net
         }
 
         bool _isDisconnecting = false;
-        public void Disconnect(bool isShutdown, bool fromCashShop = false)
+        public async Task Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             if (_isDisconnecting)
                 return;
@@ -92,7 +93,7 @@ namespace Application.Core.Channel.Net
                     CurrentServerContainer.RemovePlayer(Character.Id);
 
                     if (!IsServerTransition)
-                        Character.logOff();
+                        await Character.logOff();
                 }
             }
 
@@ -182,19 +183,19 @@ namespace Application.Core.Channel.Net
 
 
 
-        public override void ForceDisconnect()
+        public override async Task ForceDisconnect()
         {
-            Disconnect(true);
+            await Disconnect(true);
         }
 
-        protected override void CloseSessionInternal()
+        protected override async Task CloseSessionInternal()
         {
             if (AccountEntity == null)
                 return;
 
             CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
-            Disconnect(false);
+            await Disconnect(false);
         }
 
         protected override void ProcessPacket(InPacket packet)
@@ -212,7 +213,7 @@ namespace Application.Core.Channel.Net
                 if (handler.ValidateState(this))
                 {
                     CurrentServerContainer.MonitorManager.LogPacketIfMonitored(this, opcode, packet.getBytes());
-                    handler.HandlePacket(packet, this);
+                    _ = handler.HandlePacket(packet, this);
                 }
             }
             else
@@ -330,14 +331,14 @@ namespace Application.Core.Channel.Net
             return CurrentServerContainer.Transport.GainCharacterSlot(AccountId);
         }
 
-        public void ChangeChannel(int channel)
+        public async Task ChangeChannel(int channel)
         {
             if (Character == null)
                 return;
 
             if (Character.isBanned())
             {
-                Disconnect(false, false);
+                await Disconnect(false, false);
                 return;
             }
             if (!Character.isAlive() || FieldLimit.CANNOTMIGRATE.check(Character.getMap().getFieldLimit()))
@@ -363,7 +364,7 @@ namespace Application.Core.Channel.Net
             {
                 CurrentServer.Container.DataService.SaveBuff(Character);
                 SetCharacterOnSessionTransitionState(Character.getId());
-                Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
+                await Character.SyncCharAsync(trigger: SyncCharacterTrigger.PreEnterChannel);
                 sendPacket(PacketCreator.getChannelChange(socket));
             }
             catch (IOException e)
@@ -376,14 +377,14 @@ namespace Application.Core.Channel.Net
         /// 离开商城
         /// </summary>
         /// <param name="c"></param>
-        public void LeaveCashShop()
+        public async Task LeaveCashShop()
         {
             if (Character == null)
                 return;
 
             if (!Character.getCashShop().isOpened())
             {
-                Disconnect(false, false);
+                await Disconnect(false, false);
                 return;
             }
             var socket = CurrentServer.getIP();
@@ -395,7 +396,7 @@ namespace Application.Core.Channel.Net
             Character.getCashShop().open(false);
 
             SetCharacterOnSessionTransitionState(Character.getId());
-            Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
+            await Character.SyncCharAsync(trigger: SyncCharacterTrigger.PreEnterChannel);
             sendPacket(PacketCreator.getChannelChange(socket));
         }
 

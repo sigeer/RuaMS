@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PlayerMapTransitionHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         chr.setMapTransitionComplete();
@@ -68,5 +68,6 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
                 }
             });
         }
+        return Task.CompletedTask;
     }
 }

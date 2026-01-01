@@ -7,7 +7,7 @@ public class HealPersonCommand : CommandBase
         Description = "Heal all HP/MP of a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
@@ -19,5 +19,6 @@ public class HealPersonCommand : CommandBase
         {
             player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
+        return Task.CompletedTask;
     }
 }

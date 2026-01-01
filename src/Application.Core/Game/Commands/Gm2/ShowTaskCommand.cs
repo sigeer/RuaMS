@@ -13,7 +13,7 @@ namespace Application.Core.Game.Commands.Gm2
             Description = "列举当前频道服务器上的所有任务。";
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             var data = _adminService.GetChannelServerTasks();
 
@@ -25,6 +25,7 @@ namespace Application.Core.Game.Commands.Gm2
             }
 
             TempConversation.Create(client)?.RegisterTalk(message.ToString());
+            return Task.CompletedTask;
         }
     }
 }

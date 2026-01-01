@@ -7,7 +7,7 @@ public class JoinEventCommand : CommandBase
         Description = "Join active event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (!FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
@@ -50,5 +50,6 @@ public class JoinEventCommand : CommandBase
         {
             player.dropMessage(5, "You are currently in a map where you can't join an event.");
         }
+        return Task.CompletedTask;
     }
 }

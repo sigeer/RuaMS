@@ -14,7 +14,7 @@ namespace Application.Core.Game.Commands.Gm2
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override Task Execute(IChannelClient client, string[] values)
         {
             var questInput = GetParamByIndex(0) ?? string.Empty;
 
@@ -43,10 +43,11 @@ namespace Application.Core.Game.Commands.Gm2
                         ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
                     });
                 }
-                return;
+                return Task.CompletedTask;
             }
 
             ApplyQuestData(client, questInput, questId);
+            return Task.CompletedTask;
         }
 
         void ApplyQuestData(IChannelClient client, string input, int questId)

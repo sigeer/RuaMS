@@ -44,7 +44,7 @@ public class CouponCodeHandler : ChannelHandlerBase
         _itemService = itemService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(2);
         string code = p.readString();
@@ -60,6 +60,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return Task.CompletedTask;
     }
 
 

@@ -7,11 +7,12 @@ public class HealCommand : CommandBase
         Description = "Fully heal your HP/MP.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.healHpMp();
         player.dispelDebuffs();
+        return Task.CompletedTask;
     }
 
 }

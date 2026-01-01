@@ -13,14 +13,15 @@ public class PlayerNpcRemoveCommand : CommandBase
         _manager = manager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !playernpcremove <playername>");
-            return;
+            return Task.CompletedTask;
         }
         _manager.RemovePlayerNPC(paramsValue[0]);
+        return Task.CompletedTask;
     }
 }

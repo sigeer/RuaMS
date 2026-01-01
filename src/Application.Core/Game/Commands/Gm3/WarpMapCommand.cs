@@ -13,13 +13,13 @@ public class WarpMapCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.WarpMapCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         try
@@ -50,12 +50,12 @@ public class WarpMapCommand : CommandBase
                                 ctx.dispose();
                             });
                         });
-                    return;
+                    return Task.CompletedTask;
                 }
                 else
                 {
                     player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
-                    return;
+                    return Task.CompletedTask;
                 }
             }
 
@@ -66,6 +66,7 @@ public class WarpMapCommand : CommandBase
             log.Warning(ex.ToString());
             player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
         }
+        return Task.CompletedTask;
     }
 
     private void WarpMapById(IChannelClient c, int mapId)

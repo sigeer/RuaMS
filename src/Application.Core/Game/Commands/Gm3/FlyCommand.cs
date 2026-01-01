@@ -10,8 +10,9 @@ public class FlyCommand : ParamsCommandBase
         Description = "Enable/disable fly feature.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         _adminService.SetFly(c.OnlinedCharacter, GetParamByIndex(0)?.Equals("on", StringComparison.OrdinalIgnoreCase) ?? false);
+        return Task.CompletedTask;
     }
 }

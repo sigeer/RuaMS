@@ -12,6 +12,7 @@ using DotNetty.Transport.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Client
 {
@@ -53,17 +54,17 @@ namespace Application.Core.Login.Client
 
             if (handler != null && handler.ValidateState(this))
             {
-                handler.HandlePacket(packet, this);
+                _ = handler.HandlePacket(packet, this);
             }
         }
 
-        protected override void CloseSessionInternal()
+        protected override async Task CloseSessionInternal()
         {
             _sessionCoordinator.closeLoginSession(this);
 
             if (!IsServerTransition)
             {
-                Disconnect();
+                await Disconnect();
             }
         }
 
@@ -72,9 +73,9 @@ namespace Application.Core.Login.Client
             updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
-        public void Disconnect()
+        public async Task Disconnect()
         {
-            _sessionCoordinator.closeSession(this, false);
+            await _sessionCoordinator.closeSession(this, false);
 
             updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             CurrentServer.UnregisterLoginState(this);
@@ -82,9 +83,9 @@ namespace Application.Core.Login.Client
             Dispose();
         }
 
-        public override void ForceDisconnect()
+        public override async Task ForceDisconnect()
         {
-            Disconnect();
+            await Disconnect();
         }
 
 
@@ -183,14 +184,14 @@ namespace Application.Core.Login.Client
             return localState.State;
         }
         int loginattempt = 0;
-        public LoginResultCode Login(string login, string pwd, Hwid nibbleHwid)
+        public async Task<LoginResultCode> Login(string login, string pwd, Hwid nibbleHwid)
         {
             LoginResultCode loginok = LoginResultCode.Fail_AccountNotExsited;
 
             loginattempt++;
             if (loginattempt > 4)
             {
-                _sessionCoordinator.closeSession(this, false);
+                await _sessionCoordinator.closeSession(this, false);
                 return LoginResultCode.Fail_Count;   // thanks Survival_Project for finding out an issue with AUTOMATIC_REGISTER here
             }
 

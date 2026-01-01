@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CharInfoRequestHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
         int cid = p.readInt();
@@ -44,5 +44,6 @@ public class CharInfoRequestHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.charInfo(player));
             }
         }
+        return Task.CompletedTask;
     }
 }

@@ -26,6 +26,7 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using constants.game;
+using System.Threading.Tasks;
 using tools;
 
 namespace client.processor.stat;
@@ -35,7 +36,7 @@ namespace client.processor.stat;
  */
 public class AssignSPProcessor
 {
-    public static bool CanAssinSP(IPlayer player, int skillid)
+    public static async Task<bool> CanAssinSP(IPlayer player, int skillid)
     {
         if (skillid == Aran.HIDDEN_FULL_DOUBLE || skillid == Aran.HIDDEN_FULL_TRIPLE || skillid == Aran.HIDDEN_OVER_DOUBLE || skillid == Aran.HIDDEN_OVER_TRIPLE)
         {
@@ -47,10 +48,10 @@ public class AssignSPProcessor
             || (!player.isGM() && GameConstants.isGMSkills(skillid))
             || (!GameConstants.isInJobTree(skillid, player.getJob().getId()) && !player.isGM()))
         {
-            player.Client.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, player, "tried to packet edit in distributing sp.");
+            await player.Client.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, player, "tried to packet edit in distributing sp.");
             player.Log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", player.getName(), skillid);
 
-            player.Client.Disconnect(true, false);
+            await player.Client.Disconnect(true, false);
             return false;
         }
 
@@ -63,12 +64,12 @@ public class AssignSPProcessor
     /// <param name="player"></param>
     /// <param name="SPTo"></param>
     /// <param name="SPFrom"></param>
-    public static void ResetSkill(IPlayer player, int SPTo, int SPFrom)
+    public static async Task ResetSkill(IPlayer player, int SPTo, int SPFrom)
     {
         var skillSPTo = SkillFactory.GetSkillTrust(SPTo);
         var skillSPFrom = SkillFactory.GetSkillTrust(SPFrom);
 
-        if (!CanAssinSP(player, SPTo))
+        if (!await CanAssinSP(player, SPTo))
         {
             return;
         }
@@ -120,12 +121,12 @@ public class AssignSPProcessor
             }
         }
     }
-    public static void SPAssignAction(IChannelClient c, int skillid)
+    public static async Task SPAssignAction(IChannelClient c, int skillid)
     {
         c.lockClient();
         try
         {
-            if (!CanAssinSP(c.OnlinedCharacter, skillid))
+            if (!await CanAssinSP(c.OnlinedCharacter, skillid))
             {
                 return;
             }

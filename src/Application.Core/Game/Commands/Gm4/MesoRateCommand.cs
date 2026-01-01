@@ -6,19 +6,20 @@ public class MesoRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !mesorate <newrate>");
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[0], out var d))
-            return;
+            return Task.CompletedTask;
 
         int mesorate = Math.Max(d, 1);
         c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { MesoRate = mesorate });
+        return Task.CompletedTask;
     }
 }

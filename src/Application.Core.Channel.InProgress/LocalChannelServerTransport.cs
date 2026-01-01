@@ -19,13 +19,11 @@ using ItemProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
-using server.quest;
 using ServerProto;
 using SyncProto;
 using System.Net;
 using System.Threading.Tasks;
 using SystemProto;
-using XmlWzReader;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -174,9 +172,9 @@ namespace Application.Core.Channel.InProgress
             return _server.GetChannelIPEndPoint(channel);
         }
 
-        public void BatchSyncMap(List<SyncProto.MapSyncDto> data)
+        public async Task BatchSyncMap(List<SyncProto.MapSyncDto> data)
         {
-            _server.CharacterManager.BatchUpdateMap(data);
+            await _server.CharacterManager.BatchUpdateMap(data);
         }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
@@ -215,7 +213,7 @@ namespace Application.Core.Channel.InProgress
 
         public async Task SetPlayerOnlined(int id, int v)
         {
-           await _loginService.SetPlayerLogedIn(id, v);
+            await _loginService.SetPlayerLogedIn(id, v);
         }
 
         public Dto.DropAllDto RequestAllReactorDrops()
@@ -715,10 +713,10 @@ namespace Application.Core.Channel.InProgress
         }
 
 
-        public void ShutdownMaster(ShutdownMasterRequest request)
+        public async Task ShutdownMaster(ShutdownMasterRequest request)
         {
-            _ = _server.Shutdown(request.DelaySeconds);
-            _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
+            await _server.Shutdown(request.DelaySeconds);
+            await _server.DropWorldMessage(0, $"服务器将在 {TimeSpan.FromSeconds(request.DelaySeconds).ToString()} 后停止。");
         }
 
 

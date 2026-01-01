@@ -9,13 +9,13 @@ public class ClearSlotCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         string type = paramsValue[0];
@@ -53,6 +53,7 @@ public class ClearSlotCommand : CommandBase
                 player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
                 break;
         }
+        return Task.CompletedTask;
     }
 
     private void RemovePlayerSlot(IChannelClient c, InventoryType type)

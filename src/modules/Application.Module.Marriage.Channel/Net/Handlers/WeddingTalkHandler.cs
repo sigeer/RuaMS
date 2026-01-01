@@ -33,7 +33,7 @@ namespace Application.Module.Marriage.Channel.Net.Handlers;
 public class WeddingTalkHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte action = p.readByte();
         if (action == 1)

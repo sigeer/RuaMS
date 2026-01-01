@@ -7,9 +7,9 @@ public class ServerMessageCommand : CommandBase
         Description = "Set scrolling server message.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { ServerMessage = player.getLastCommandMessage() });
+       await  c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { ServerMessage = player.getLastCommandMessage() });
     }
 }

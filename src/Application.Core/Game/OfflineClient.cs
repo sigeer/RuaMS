@@ -95,7 +95,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void ChangeChannel(int channel)
+        public Task ChangeChannel(int channel)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -115,12 +115,12 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void CloseSession()
+        public Task CloseSession()
         {
             throw new NotImplementedException();
         }
 
-        public void CloseSocket()
+        public Task CloseSocket()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -130,7 +130,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public void Disconnect(bool isShutdown, bool fromCashShop = false)
+        public Task Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -145,7 +145,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void ForceDisconnect()
+        public Task ForceDisconnect()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -185,7 +185,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void LeaveCashShop()
+        public Task LeaveCashShop()
         {
             throw new NotImplementedException();
         }
@@ -285,11 +285,6 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.ChangeChannel(int channel)
-        {
-            throw new NotImplementedException();
-        }
-
         bool IChannelClient.CheckBirthday(DateTime date)
         {
             throw new NotImplementedException();
@@ -304,33 +299,12 @@ namespace Application.Core.Game
         {
             throw new NotImplementedException();
         }
-
-        void ISocketClient.CloseSession()
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISocketClient.CloseSocket()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IChannelClient.Disconnect(bool isShutdown, bool fromCashShop)
-        {
-            throw new NotImplementedException();
-        }
-
         void IDisposable.Dispose()
         {
             throw new NotImplementedException();
         }
 
         void IChannelClient.enableCSActions()
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISocketClient.ForceDisconnect()
         {
             throw new NotImplementedException();
         }
@@ -361,11 +335,6 @@ namespace Application.Core.Game
         }
 
         string ISocketClient.GetSessionRemoteHost()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IChannelClient.LeaveCashShop()
         {
             throw new NotImplementedException();
         }

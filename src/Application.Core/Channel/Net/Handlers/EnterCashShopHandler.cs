@@ -44,7 +44,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
         _itemService = itemService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         try
         {
@@ -97,7 +97,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
             c.CurrentServer.removePlayer(mc);
             mc.getMap().removePlayer(mc);
             mc.getCashShop().open(true);
-            mc.saveCharToDB(trigger: Shared.Events.SyncCharacterTrigger.ChangeServer);
+            await mc.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.EnterCashShop);
         }
         catch (Exception e)
         {

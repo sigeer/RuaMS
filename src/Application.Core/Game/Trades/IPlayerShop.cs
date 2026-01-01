@@ -48,7 +48,7 @@ namespace Application.Core.Game.Trades
         /// </summary>
         void BroadcastShopItemUpdate();
 
-        void takeItemBack(int slotIndex, IPlayer chr);
+        Task takeItemBack(int slotIndex, IPlayer chr);
 
         List<PlayerShopItem> QueryAvailableBundles(int itemid);
         /// <summary>

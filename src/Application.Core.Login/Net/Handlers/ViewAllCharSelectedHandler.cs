@@ -35,7 +35,7 @@ public class ViewAllCharSelectedHandler : OnCharacterSelectedHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         int charId = p.readInt();
         p.readInt(); // please don't let the client choose which world they should login
@@ -43,6 +43,6 @@ public class ViewAllCharSelectedHandler : OnCharacterSelectedHandler
         string macs = p.readString();
         string hostString = p.readString();
 
-        Process(c, charId, hostString, macs);
+        await  Process(c, charId, hostString, macs);
     }
 }

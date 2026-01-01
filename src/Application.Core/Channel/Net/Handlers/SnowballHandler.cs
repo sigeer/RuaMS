@@ -31,13 +31,13 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SnowballHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         //D3 00 02 00 00 A5 01
         var chr = c.OnlinedCharacter;
         var sMap = chr.getMap();
         if (sMap is not ISnowBallMap map)
-            return;
+            return Task.CompletedTask;
 
         var snowball = map.getSnowball(chr.getTeam());
         var othersnowball = map.getSnowball(chr.getTeam() == 0 ? 1 : 0);
@@ -46,15 +46,15 @@ public class SnowballHandler : ChannelHandlerBase
 
         if (snowball == null || othersnowball == null || snowball.getSnowmanHP() == 0)
         {
-            return;
+            return Task.CompletedTask;
         }
         if ((c.CurrentServerContainer.getCurrentTime() - chr.getLastSnowballAttack()) < 500)
         {
-            return;
+            return Task.CompletedTask;
         }
         if (chr.getTeam() != (what % 2))
         {
-            return;
+            return Task.CompletedTask;
         }
 
         chr.setLastSnowballAttack(c.CurrentServerContainer.getCurrentTime());
@@ -79,6 +79,6 @@ public class SnowballHandler : ChannelHandlerBase
         {
             snowball.hit(what, damage);
         }
-
+        return Task.CompletedTask;
     }
 }

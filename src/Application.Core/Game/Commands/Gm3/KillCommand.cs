@@ -9,7 +9,7 @@ public class KillCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -22,7 +22,7 @@ public class KillCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.KilledBy(player);
-            c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !kill on " + victim.getName());
+            await c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !kill on " + victim.getName());
         }
         else
         {

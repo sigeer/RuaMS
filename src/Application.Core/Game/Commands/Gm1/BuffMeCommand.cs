@@ -9,7 +9,7 @@ public class BuffMeCommand : CommandBase
         Description = "Activate GM buffs on self.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -19,5 +19,6 @@ public class BuffMeCommand : CommandBase
         SkillFactory.GetSkillTrust(2301004).getEffect(SkillFactory.GetSkillTrust(2301004).getMaxLevel()).applyTo(player);
         SkillFactory.GetSkillTrust(1005).getEffect(SkillFactory.GetSkillTrust(1005).getMaxLevel()).applyTo(player);
         player.healHpMp();
+        return Task.CompletedTask;
     }
 }

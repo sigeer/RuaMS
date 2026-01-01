@@ -210,32 +210,30 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity.RemoveAt(slot);
     }
 
-    public void takeItemBack(int slot, IPlayer chr)
+    public Task takeItemBack(int slot, IPlayer chr)
     {
-        lock (Commodity)
+        var shopItem = Commodity.ElementAt(slot);
+        if (shopItem.isExist())
         {
-            var shopItem = Commodity.ElementAt(slot);
-            if (shopItem.isExist())
+            if (shopItem.getBundles() > 0)
             {
-                if (shopItem.getBundles() > 0)
+                Item iitem = shopItem.getItem().copy();
+                iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
+
+                if (!Inventory.checkSpot(chr, iitem))
                 {
-                    Item iitem = shopItem.getItem().copy();
-                    iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
-
-                    if (!Inventory.checkSpot(chr, iitem))
-                    {
-                        chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
-                        chr.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    InventoryManipulator.addFromDrop(chr.Client, iitem, true);
+                    chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    chr.sendPacket(PacketCreator.enableActions());
+                    return Task.CompletedTask;
                 }
 
-                removeFromSlot(slot);
-                chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
+                InventoryManipulator.addFromDrop(chr.Client, iitem, true);
             }
+
+            removeFromSlot(slot);
+            chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         }
+        return Task.CompletedTask;
     }
 
     public void GainMeso(int meso)

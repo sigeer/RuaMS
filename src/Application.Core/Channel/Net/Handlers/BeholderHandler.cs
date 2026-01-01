@@ -34,7 +34,7 @@ public class BeholderHandler : ChannelHandlerBase
 {
     //Summon Skills noobs
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         //Console.WriteLine(slea.ToString());
         var summons = c.OnlinedCharacter.getSummonsValues();
@@ -63,5 +63,6 @@ public class BeholderHandler : ChannelHandlerBase
         {
             c.OnlinedCharacter.clearSummons();
         }
+        return Task.CompletedTask;
     }
 }

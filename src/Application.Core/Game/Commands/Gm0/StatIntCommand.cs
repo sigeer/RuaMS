@@ -7,7 +7,7 @@ public class StatIntCommand : CommandBase
         Description = "Assign AP into INT.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int remainingAp = player.getRemainingAp();
@@ -23,7 +23,7 @@ public class StatIntCommand : CommandBase
             {
                 log.Warning(e.ToString());
                 player.dropMessage("That is not a valid number!");
-                return;
+                return Task.CompletedTask;
             }
         }
         else
@@ -34,5 +34,6 @@ public class StatIntCommand : CommandBase
         {
             player.dropMessage("Please make sure your AP is not over " + YamlConfig.config.server.MAX_AP + " and you have enough to distribute.");
         }
+        return Task.CompletedTask;
     }
 }

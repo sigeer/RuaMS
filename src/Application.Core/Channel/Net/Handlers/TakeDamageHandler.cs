@@ -42,7 +42,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         List<IPlayer> banishPlayers = new();
 
@@ -78,7 +78,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 {
                     if (attacker.isBuffed(MonsterStatus.NEUTRALISE))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     List<LoseItem>? loseItems;
@@ -142,14 +142,14 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
                 else if (damagefrom != 0 || !map.removeSelfDestructive(oid))
                 {    // thanks inhyuk for noticing self-destruct damage not being handled properly
-                    return;
+                    return Task.CompletedTask;
                 }
             }
             catch (InvalidCastException e)
             {
                 //this happens due to mob on last map damaging player just before changing maps
                 _logger.LogWarning(e, "Attack is not a mob-type, rather is a {MapObject} entity", map.getMapObject(oid)?.GetType()?.Name);
-                return;
+                return Task.CompletedTask;
             }
 
             direction = p.readByte();
@@ -349,5 +349,6 @@ public class TakeDamageHandler : ChannelHandlerBase
         {  // chill, if this list ever gets non-empty an attacker does exist, trust me :)
             player.changeMapBanish(attacker.getBanish());
         }
+        return Task.CompletedTask;
     }
 }

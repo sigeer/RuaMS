@@ -24,8 +24,9 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class LoginRequiringNoOpHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
+        return Task.CompletedTask;
     }
 
     public override bool ValidateState(IChannelClient c)

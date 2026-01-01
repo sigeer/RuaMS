@@ -37,7 +37,7 @@ public class NPCTalkHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isAlive())
         {
@@ -68,7 +68,7 @@ public class NPCTalkHandler : ChannelHandlerBase
 
             if (npc.getId() == NpcId.DUEY)
             {
-                c.CurrentServerContainer.DueyManager.SendTalk(c);
+                await c.CurrentServerContainer.DueyManager.SendTalk(c);
             }
             else
             {

@@ -38,26 +38,26 @@ public class RemoteGachaponHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int ticket = p.readInt();
         int gacha = p.readInt();
         if (ticket != ItemId.REMOTE_GACHAPON_TICKET)
         {
-            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
-            c.Disconnect(false, false);
+            await _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
+            await c.Disconnect(false, false);
             return;
         }
         else if (gacha < 0 || gacha > 11)
         {
-            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
-            c.Disconnect(false, false);
+            await _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
+            await c.Disconnect(false, false);
             return;
         }
         else if (c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(ticket)).countById(ticket) < 1)
         {
-            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
-            c.Disconnect(false, false);
+            await _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
+            await c.Disconnect(false, false);
             return;
         }
         int npcId = NpcId.GACHAPON_HENESYS;

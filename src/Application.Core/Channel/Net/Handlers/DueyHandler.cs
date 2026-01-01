@@ -37,13 +37,13 @@ public class DueyHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte operation = p.readByte();
         if (operation == DueyProcessorActions.TOSERVER_RECV_ITEM.getCode())
         {
             // on click 'O' Button, thanks inhyuk
-            _dueyManager.SendTalk(c);
+            await _dueyManager.SendTalk(c);
         }
         else if (operation == DueyProcessorActions.TOSERVER_SEND_ITEM.getCode())
         {
@@ -55,19 +55,19 @@ public class DueyHandler : ChannelHandlerBase
             bool quick = p.readByte() != 0;
             string? message = quick ? p.readString() : null;
 
-            _dueyManager.DueySendItemFromInventory(c, inventId, itemPos, amount, mesos, message, recipient, quick);
+            await _dueyManager.DueySendItemFromInventory(c, inventId, itemPos, amount, mesos, message, recipient, quick);
         }
         else if (operation == DueyProcessorActions.TOSERVER_REMOVE_PACKAGE.getCode())
         {
             int packageid = p.readInt();
 
-            _dueyManager.RemoveDueyPackage(c.OnlinedCharacter, packageid);
+             await _dueyManager.RemoveDueyPackage(c.OnlinedCharacter, packageid);
         }
         else if (operation == DueyProcessorActions.TOSERVER_CLAIM_PACKAGE.getCode())
         {
             int packageid = p.readInt();
 
-            _dueyManager.TakePackage(c.OnlinedCharacter, packageid);
+            await _dueyManager.TakePackage(c.OnlinedCharacter, packageid);
         }
         else
         {

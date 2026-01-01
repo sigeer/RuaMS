@@ -9,11 +9,11 @@ public class HideCommand : CommandBase
         Description = "Hide from players.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var hideSkill = SkillFactory.GetSkillTrust(SuperGM.HIDE);
         hideSkill.getEffect(hideSkill.getMaxLevel()).applyTo(player);
-
+        return Task.CompletedTask;
     }
 }

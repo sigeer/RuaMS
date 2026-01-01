@@ -43,7 +43,7 @@ public class ReportHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
         string victim = p.readString();
@@ -69,7 +69,7 @@ public class ReportHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.reportResponse(2));
                 return;
             }
-            _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
+            await _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
         }
         else if (type == 1)
         {
@@ -91,7 +91,7 @@ public class ReportHandler : ChannelHandlerBase
                     return;
                 }
             }
-            _reportService.SendReport(c.OnlinedCharacter, victim, description, reason, chatlog);
+            await _reportService.SendReport(c.OnlinedCharacter, victim, description, reason, chatlog);
         }
         else
         {

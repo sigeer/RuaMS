@@ -10,7 +10,7 @@ public class WhereaMiCommand : CommandBase
         Description = "Show info about objects on current map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -41,5 +41,6 @@ public class WhereaMiCommand : CommandBase
             }
         }
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        return Task.CompletedTask;
     }
 }

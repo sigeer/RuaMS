@@ -28,13 +28,13 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TouchReactorHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var reactor = c.OnlinedCharacter.getMap().getReactorByOid(oid);
         if (reactor == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (p.readByte() != 0)
@@ -45,5 +45,6 @@ public class TouchReactorHandler : ChannelHandlerBase
         {
             c.CurrentServer.ReactorScriptManager.untouch(c, reactor);
         }
+        return Task.CompletedTask;
     }
 }

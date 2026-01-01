@@ -36,7 +36,7 @@ public class SpouseChatHandler : ChannelHandlerBase
         _marriageManager = marriageManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readString();//recipient
         string msg = p.readString();

@@ -36,7 +36,7 @@ public class SkillMacroHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int num = p.ReadSByte();
@@ -50,8 +50,8 @@ public class SkillMacroHandler : ChannelHandlerBase
             string name = p.readString();
             if (name.Length > 12)
             {
-                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
-                c.Disconnect(false, false);
+                await _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
+                await c.Disconnect(false, false);
                 break;
             }
 
@@ -62,5 +62,6 @@ public class SkillMacroHandler : ChannelHandlerBase
             SkillMacro macro = new SkillMacro(skill1, skill2, skill3, name, shout, i);
             chr.updateMacros(i, macro);
         }
+        return;
     }
 }

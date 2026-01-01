@@ -34,7 +34,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var startPos = p.readPos();
@@ -57,5 +57,6 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
                 _logger.LogError(e.ToString());
             }
         }
+        return Task.CompletedTask;
     }
 }

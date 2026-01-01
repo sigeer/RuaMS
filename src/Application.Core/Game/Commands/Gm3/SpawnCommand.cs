@@ -14,13 +14,13 @@ public class SpawnCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1 || paramsValue.Length > 2)
         {
             player.YellowMessageI18N(nameof(ClientMessage.SpawnCommand_Syntax));
-            return;
+            return Task.CompletedTask;
         }
 
         if (!int.TryParse(paramsValue[0], out var mobId))
@@ -50,17 +50,18 @@ public class SpawnCommand : CommandBase
                             ctx.dispose();
                         });
                     });
-                return;
+                return Task.CompletedTask;
             }
             else
             {
                 player.YellowMessageI18N(nameof(ClientMessage.MobNotFound), paramsValue[0]);
-                return;
+                return Task.CompletedTask;
             }
 
         }
 
         SpawnById(player, mobId, paramsValue);
+        return Task.CompletedTask;
     }
 
     private void SpawnById(IPlayer player, int mobId, string[] paramsValue)
