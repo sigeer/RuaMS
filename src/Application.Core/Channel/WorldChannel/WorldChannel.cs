@@ -277,11 +277,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return Task.CompletedTask;   
     }
 
+    
+
 
     bool isShuttingDown = false;
 
 
-    public async Task ShutdownServer()
+    public async Task Shutdown(int delaySeconds = -1)
     {
         try
         {
@@ -295,7 +297,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
             log.Information("[{ServerName}] 停止定时任务...", ServerLogName);
 
-            await _respawnTask.StopAsync();
+            if (_respawnTask != null)
+            {
+                await _respawnTask.StopAsync();
+            }
 
             log.Information("[{ServerName}] 停止定时任务>>>完成", ServerLogName);
 

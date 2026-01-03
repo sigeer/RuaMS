@@ -5,7 +5,7 @@ namespace Application.Shared.Servers
         int Port { get; set; }
         AbstractNettyServer NettyServer { get; }
         Task StartServer(CancellationToken cancellationToken);
-        Task ShutdownServer();
+        Task Shutdown(int delaySeconds = -1);
         bool IsRunning { get; }
     }
 }

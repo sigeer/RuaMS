@@ -11,9 +11,9 @@ namespace Application.Core.Login
             _server = server;
             _hostLifetime = hostApplicationLifetime;
 
-            _hostLifetime.ApplicationStopping.Register(() =>
+            _hostLifetime.ApplicationStopping.Register(async () =>
             {
-                _server.Shutdown().GetAwaiter().GetResult();
+                await _server.Shutdown();
             });
         }
 

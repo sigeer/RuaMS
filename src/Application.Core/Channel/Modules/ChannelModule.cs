@@ -27,14 +27,7 @@ namespace Application.Core.Channel.Modules
                 }
             }
 
-            if (data.TeamId > 0)
-            {
-                var team = _server.TeamManager.ForcedGetTeam(data.TeamId);
-                if (team != null)
-                {
-                    _server.TeamManager.ProcessTeamUpdate(data);
-                }
-            }
+            _server.TeamManager.ProcessTeamUpdate(data);
         }
 
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)

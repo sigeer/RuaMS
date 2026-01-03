@@ -292,7 +292,7 @@ namespace Application.Core.Channel
 
                 foreach (var channel in Servers.Values)
                 {
-                    await channel.ShutdownServer();
+                    await channel.Shutdown(delaySeconds);
                 }
 
                 await TimerManager.Stop();

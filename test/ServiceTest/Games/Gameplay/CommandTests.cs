@@ -57,6 +57,7 @@ namespace ServiceTest.Games.Gameplay
         {
             var id = GetIntParam("id");
             Assert.That(id, Is.EqualTo(123));
+            return Task.CompletedTask;
         }
     }
 }

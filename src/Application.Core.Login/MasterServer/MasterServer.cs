@@ -268,7 +268,7 @@ namespace Application.Core.Login
 
         AtomicBoolean isShuttingdown = new AtomicBoolean();
 
-        public async Task ShutdownServer()
+        async Task ShutdownServer()
         {
             if (!IsRunning)
             {
