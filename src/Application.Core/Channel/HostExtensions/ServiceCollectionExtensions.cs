@@ -132,7 +132,6 @@ namespace Application.Core.Channel.HostExtensions
             services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
-            services.AddSingleton<MatchCheckerCPQChallengeListener>();
 
             services.AddInvitationService();
             services.AddInternalSessionHandlers();
@@ -194,6 +193,7 @@ namespace Application.Core.Channel.HostExtensions
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();
 
+            builder.Services.AddDistributedMemoryCache();
             builder.Services.AddChannelGrpcClient();
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();
@@ -215,8 +215,7 @@ namespace Application.Core.Channel.HostExtensions
             app.UseDataSource();
 
             MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
-                app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
+                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>());
 
             var staticServices = app.Services.GetServices<IStaticService>();
             foreach (var srv in staticServices)

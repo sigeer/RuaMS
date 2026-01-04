@@ -8,7 +8,7 @@ namespace Application.Core.Game.Players.PlayerProps
     public class PlayerKeyMap : PlayerPropBase<Dto.KeyMapDto>
     {
         private Dictionary<int, KeyBinding> _dataSource;
-        public PlayerKeyMap(IPlayer owner) : base(owner)
+        public PlayerKeyMap(Player owner) : base(owner)
         {
             _dataSource = new Dictionary<int, KeyBinding>();
 

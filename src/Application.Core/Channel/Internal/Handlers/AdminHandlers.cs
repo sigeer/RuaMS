@@ -21,7 +21,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override Task HandleAsync(ReloadEventsResponse res, CancellationToken cancellationToken = default)
             {
-                IPlayer? sender = null;
+                Player? sender = null;
                 foreach (var ch in _server.Servers.Values)
                 {
                     ch.reloadEventScriptManager();

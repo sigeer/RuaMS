@@ -37,9 +37,9 @@ public class MonsterBook
     private int bookLevel = 1;
     private Dictionary<int, int> cards = new();
     private object lockObj = new object();
-    public IPlayer Owner { get; }
+    public Player Owner { get; }
 
-    public MonsterBook(IPlayer owner)
+    public MonsterBook(Player owner)
     {
         Owner = owner;
     }

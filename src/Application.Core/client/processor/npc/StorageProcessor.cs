@@ -37,7 +37,7 @@ using ZLinq;
 public class StorageProcessor
 {
     static ILogger _logger = LogFactory.GetLogger(LogType.Storage);
-    public static bool hasGMRestrictions(IPlayer character)
+    public static bool hasGMRestrictions(Player character)
     {
         return character.isGM() && character.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE;
     }

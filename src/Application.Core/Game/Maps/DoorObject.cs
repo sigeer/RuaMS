@@ -19,6 +19,8 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
+using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;
@@ -29,81 +31,49 @@ namespace Application.Core.Game.Maps;
  */
 public class DoorObject : AbstractMapObject
 {
-    private int pairOid;
-
-    public IPlayer Owner { get; }
+    public int OwnerId { get; }
     private IMap from;
     private IMap to;
-    private int linkedPortalId;
-    private Point linkedPos;
-
-    private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    public DoorObject(IPlayer owner, IMap destination, IMap origin, int townPortalId, Point targetPosition, Point toPosition) : base()
+    public bool InTown => TownPortal != null;
+    public MysticDoorPortal? TownPortal { get; }
+    public DoorObject LinkDoor { get; }
+    public DoorObject(Player owner, Point currentPosition, IMap toMap, IMap fromMap, MysticDoorPortal townPortal) : base()
     {
-        setPosition(targetPosition);
+        setPosition(currentPosition);
 
-        Owner = owner;
-        linkedPortalId = townPortalId;
-        from = origin;
-        to = destination;
-        linkedPos = toPosition;
+        OwnerId = owner.Id;
+        from = fromMap;
+        to = toMap;
+
+        LinkDoor = new DoorObject(this, townPortal);
     }
 
-    public void update(int townPortalId, Point toPosition)
+    public DoorObject(DoorObject areaDoor, MysticDoorPortal townPortal) : base()
     {
-        lockObj.EnterWriteLock();
-        try
-        {
-            linkedPortalId = townPortalId;
-            linkedPos = toPosition;
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        OwnerId = areaDoor.OwnerId;
+        from = areaDoor.to;
+        to = areaDoor.from;
+
+        LinkDoor = areaDoor;
+        TownPortal = townPortal;
+        setPosition(TownPortal.getPosition());
+        TownPortal.Door = this;
     }
 
-    private int getLinkedPortalId()
-    {
-        lockObj.EnterReadLock();
-        try
-        {
-            return linkedPortalId;
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
-    }
-
-    private Point getLinkedPortalPosition()
-    {
-        lockObj.EnterReadLock();
-        try
-        {
-            return linkedPos;
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
-    }
-
-    public void warp(IPlayer chr)
+    public void warp(Player chr)
     {
         var party = chr.getParty();
-        if (chr.getId() == Owner.Id || party != null && party.containsMembers(Owner.Id))
+        if (chr.getId() == OwnerId || party != null && party.containsMembers(OwnerId))
         {
             chr.sendPacket(PacketCreator.playPortalSound());
 
-            if (!inTown() && party == null)
+            if (TownPortal != null)
             {
-                chr.changeMap(to, getLinkedPortalId());
+                chr.changeMap(to, TownPortal.getId());
             }
             else
             {
-                chr.changeMap(to, getLinkedPortalPosition());
+                chr.changeMap(to, LinkDoor.getPosition());
             }
         }
         else
@@ -123,16 +93,21 @@ public class DoorObject : AbstractMapObject
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
         {
-            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.containsMembers(Owner.Id)))
+            if (chr.getParty() != null && (OwnerId == chr.getId() || chr.getParty()!.containsMembers(OwnerId)))
             {
-                chr.sendPacket(PacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
+                chr.sendPacket(TeamPacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
             }
 
             chr.sendPacket(PacketCreator.spawnPortal(getFrom().getId(), getTo().getId(), toPosition()));
-            if (!inTown())
+            if (!InTown)
             {
-                chr.sendPacket(PacketCreator.spawnDoor(Owner.Id, getPosition(), launched));
+                chr.sendPacket(PacketCreator.spawnDoor(getObjectId(), getPosition(), launched));
             }
+        }
+
+        if (TownPortal != null)
+        {
+            TownPortal.Door = this;
         }
     }
 
@@ -142,37 +117,17 @@ public class DoorObject : AbstractMapObject
         if (from.getId() == chr.getMapId())
         {
             var party = chr.getParty();
-            if (party != null && (Owner.Id == chr.getId() || party.containsMembers(Owner.Id)))
+            if (party != null && (OwnerId == chr.getId() || party.containsMembers(OwnerId)))
             {
-                client.sendPacket(PacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
+                client.sendPacket(TeamPacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
             }
-            client.sendPacket(PacketCreator.removeDoor(Owner.Id, inTown()));
+            client.sendPacket(PacketCreator.removeDoor(getObjectId(), InTown));
         }
-    }
 
-    public void sendDestroyData(IChannelClient client, bool partyUpdate)
-    {
-        if (client != null && from.getId() == client.OnlinedCharacter.getMapId())
+        if (TownPortal != null)
         {
-            client.sendPacket(PacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
-            client.sendPacket(PacketCreator.removeDoor(Owner.Id, inTown()));
+            TownPortal.Door = null;
         }
-    }
-
-
-    public void setPairOid(int oid)
-    {
-        pairOid = oid;
-    }
-
-    public int getPairOid()
-    {
-        return pairOid;
-    }
-
-    public bool inTown()
-    {
-        return getLinkedPortalId() == -1;
     }
 
     public IMap getFrom()
@@ -187,22 +142,17 @@ public class DoorObject : AbstractMapObject
 
     public IMap getTown()
     {
-        return inTown() ? from : to;
+        return InTown ? from : to;
     }
 
     public IMap getArea()
     {
-        return !inTown() ? from : to;
-    }
-
-    public Point getAreaPosition()
-    {
-        return !inTown() ? getPosition() : getLinkedPortalPosition();
+        return !InTown ? from : to;
     }
 
     public Point toPosition()
     {
-        return getLinkedPortalPosition();
+        return LinkDoor.getPosition();
     }
 
     public override MapObjectType getType()

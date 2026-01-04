@@ -37,7 +37,7 @@ public class DebuffCommand : CommandBase
 
         foreach (var mmo in player.getMap().getMapObjectsInRange(player.getPosition(), 777777.7, Arrays.asList(MapObjectType.PLAYER)))
         {
-            IPlayer chr = (IPlayer)mmo;
+            Player chr = (Player)mmo;
 
             if (chr.getId() != player.getId())
             {

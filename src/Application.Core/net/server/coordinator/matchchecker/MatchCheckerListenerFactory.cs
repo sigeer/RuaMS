@@ -26,7 +26,6 @@ namespace net.server.coordinator.matchchecker;
 public enum MatchCheckerType
 {
     GUILD_CREATION,
-    CPQ_CHALLENGE
 }
 
 public static class MatchCheckerTypeUtils
@@ -35,9 +34,6 @@ public static class MatchCheckerTypeUtils
     {
         if (type == MatchCheckerType.GUILD_CREATION)
             return MatchCheckerStaticFactory.Context.matchCheckerGuildCreationListener;
-        if (type == MatchCheckerType.CPQ_CHALLENGE)
-            return MatchCheckerStaticFactory.Context.matchCheckerCPQChallengeListener;
-
         throw new Exception();
     }
 }
@@ -46,12 +42,10 @@ public class MatchCheckerStaticFactory
 {
     public static MatchCheckerStaticFactory Context { get; set; }
     public MatchCheckerGuildCreationListener matchCheckerGuildCreationListener { get; }
-    public MatchCheckerCPQChallengeListener matchCheckerCPQChallengeListener { get; }
 
-    public MatchCheckerStaticFactory(MatchCheckerGuildCreationListener matchCheckerGuildCreationListener, MatchCheckerCPQChallengeListener matchCheckerCPQChallengeListener)
+    public MatchCheckerStaticFactory(MatchCheckerGuildCreationListener matchCheckerGuildCreationListener)
     {
         this.matchCheckerGuildCreationListener = matchCheckerGuildCreationListener;
-        this.matchCheckerCPQChallengeListener = matchCheckerCPQChallengeListener;
     }
 
 }

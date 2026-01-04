@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using scripting.Event;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Module.Marriage.Channel
@@ -27,13 +28,13 @@ namespace Application.Module.Marriage.Channel
     public class WeddingManager
     {
         readonly ILogger<WeddingManager> _logger;
-        readonly IChannelServerTransport _transport;
+        readonly IModuleChannelServerTransport _transport;
         readonly IMapper _mapper;
         readonly WorldChannelServer _server;
         readonly Configs _config;
         readonly MarriageManager _marriageManager;
 
-        public WeddingManager(ILogger<WeddingManager> logger, IChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options, 
+        public WeddingManager(ILogger<WeddingManager> logger, IModuleChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options, 
             MarriageManager marriageManager)
         {
             _logger = logger;
@@ -175,21 +176,21 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public void BreakMarriageRing(IPlayer chr)
+        public async Task BreakMarriageRing(IPlayer chr)
         {
-            _transport.BreakMarriage(new MarriageProto.BreakMarriageRequest { MasterId = chr.Id });
+            await _transport.BreakMarriage(new MarriageProto.BreakMarriageRequest { MasterId = chr.Id });
         }
 
-        public void OnMarriageBroken(MarriageProto.BreakMarriageCallback data)
+        public void OnMarriageBroken(MarriageProto.BreakMarriageResponse data)
         {
             if (data.Code != 0)
             {
                 return;
             }
 
-            _marriageManager.RemoveLocalData(data.MasterId, data.MasterPartnerId);
+            _marriageManager.RemoveLocalData(data.Request.MasterId, data.MasterPartnerId);
 
-            var chr = _server.FindPlayerById(data.MasterId);
+            var chr = _server.FindPlayerById(data.Request.MasterId);
             if (chr != null)
             {
                 _marriageManager.RemoveMarriageItems(chr);

@@ -31,23 +31,17 @@ public class PartyOperationHandler : ChannelHandlerBase
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;
-        var party = player.getParty();
         switch (operation)
         {
             case 1:
                 { // create
-                    c.CurrentServerContainer.TeamManager.CreateParty(player, false);
+                    await c.CurrentServerContainer.TeamManager.CreateTeam(player);
                     break;
                 }
             case 2:
-                { // leave/disband
-                    if (party != null)
-                    {
-                        var partymembers = player.getPartyMembersOnline();
-
-                        await c.CurrentServerContainer.TeamManager.LeaveParty(player);
-                        player.partyOperationUpdate(party, partymembers);
-                    }
+                { 
+                    // leave/disband
+                    await c.CurrentServerContainer.TeamManager.LeaveParty(player);
                     break;
                 }
             case 3:
@@ -68,16 +62,12 @@ public class PartyOperationHandler : ChannelHandlerBase
                 {
                     // expel
                     int cid = p.readInt();
-                    await c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
+                    await c.CurrentServerContainer.TeamManager.ExpelFromParty(player, cid);
                     break;
                 }
             case 6:
                 {
                     // change leader
-                    if (party == null)
-                    {
-                        return;
-                    }
                     int newLeader = p.readInt();
                     await c.CurrentServerContainer.TeamManager.ChangeLeader(player, newLeader);
                     break;

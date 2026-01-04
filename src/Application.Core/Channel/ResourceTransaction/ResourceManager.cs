@@ -22,7 +22,7 @@ namespace Application.Core.Channel.ResourceTransaction
         public int CostNxCredit { get; set; }
         public int GainNxCredit { get; set; }
 
-        public bool Execute(IPlayer player, Func<CancellationToken, bool> businessLogic, bool showMessage = false, bool showMessageInChat = false)
+        public bool Execute(Player player, Func<CancellationToken, bool> businessLogic, bool showMessage = false, bool showMessageInChat = false)
         {
             var res = ResourceManager.ConsumeResources(player, this, businessLogic);
 
@@ -124,7 +124,7 @@ namespace Application.Core.Channel.ResourceTransaction
     public class ResourceManager
     {
         static ConcurrentDictionary<int, ResourceTransactionManager> RunningTransactions { get; set; } = new();
-        public static bool ConsumeResources(IPlayer player, ResourceConsumeRequest request, Func<CancellationToken, bool> businessLogic)
+        public static bool ConsumeResources(Player player, ResourceConsumeRequest request, Func<CancellationToken, bool> businessLogic)
         {
             if (RunningTransactions.ContainsKey(player.Id))
             {
@@ -175,7 +175,7 @@ namespace Application.Core.Channel.ResourceTransaction
             }
         }
 
-        public static void Cancel(IPlayer chr)
+        public static void Cancel(Player chr)
         {
             if (RunningTransactions.TryRemove(chr.Id, out var tsc))
                 tsc.Cancel();

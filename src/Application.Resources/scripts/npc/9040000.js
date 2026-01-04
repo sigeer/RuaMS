@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -93,8 +93,7 @@ function action(mode, type, selection) {
                         cm.sendOk("你的公会目前不在此频道上进行战略时间。请再次检查你的公会是否正在计划公会任务，如果是的话，请确认他们分配的频道。");
                     } else {
                         if (cm.isLeader()) {
-                            em.getEligibleParty(cm.getParty());
-                            eim.registerParty(cm.getPlayer());
+                            eim.registerParty(em.getEligibleParty(cm.getParty()));
                         } else {
                             eim.registerPlayer(cm.getPlayer());
                         }

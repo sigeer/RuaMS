@@ -17,12 +17,12 @@ namespace Application.Module.Fishing.Channel
             _manager = manager;
         }
 
-        public bool AttemptCatchFish(IPlayer chr, int baitLevel)
+        public bool AttemptCatchFish(Player chr, int baitLevel)
         {
             return MapId.isFishingArea(chr.getMapId()) && chr.getPosition().Y > 0 && ItemConstants.isFishingChair(chr.getChair()) && _manager.RegisterFisherPlayer(chr, baitLevel);
         }
 
-        public void StopFishing(IPlayer chr)
+        public void StopFishing(Player chr)
         {
             _manager.UnregisterFisherPlayer(chr);
         }

@@ -29,7 +29,7 @@ namespace server.maps;
  */
 public class MiniDungeon
 {
-    List<IPlayer> players = new();
+    List<Player> players = new();
     ScheduledFuture? timeoutTask = null;
     object lockObj = new object();
 
@@ -47,7 +47,7 @@ public class MiniDungeon
         expireTime += worldChannel.Container.getCurrentTime();
     }
 
-    public bool registerPlayer(IPlayer chr)
+    public bool registerPlayer(Player chr)
     {
         int time = (int)((expireTime - _worldChannel.Container.getCurrentTime()) / 1000);
         if (time > 0)
@@ -73,7 +73,7 @@ public class MiniDungeon
         return true;
     }
 
-    public bool unregisterPlayer(IPlayer chr)
+    public bool unregisterPlayer(Player chr)
     {
         chr.sendPacket(PacketCreator.removeClock());
 
@@ -106,9 +106,9 @@ public class MiniDungeon
         Monitor.Enter(lockObj);
         try
         {
-            List<IPlayer> lchr = new(players);
+            List<Player> lchr = new(players);
 
-            foreach (IPlayer chr in lchr)
+            foreach (Player chr in lchr)
             {
                 chr.changeMap(baseMap);
             }

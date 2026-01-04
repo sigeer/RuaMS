@@ -8,7 +8,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
 {
     public class EllinPQ : PlayerPartyQuestBase
     {
-        public EllinPQ(IPlayer player) : base("EllinPQ", "", player)
+        public EllinPQ(Player player) : base("EllinPQ", "", player)
         {
             EntryNpcId = 2133000;
         }

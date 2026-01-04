@@ -198,11 +198,11 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Warning(e, "IPlayer.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
+                Log.Warning(e, "Player.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
             }
         }
 
-        private void announceUpdateQuestInternal(IPlayer chr, KeyValuePair<DelayedQuestUpdate, object[]> questUpdate)
+        private void announceUpdateQuestInternal(Player chr, KeyValuePair<DelayedQuestUpdate, object[]> questUpdate)
         {
             object[] objs = questUpdate.Value;
 

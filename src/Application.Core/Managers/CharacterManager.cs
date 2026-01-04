@@ -26,7 +26,7 @@ namespace Application.Core.Managers
         //    dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
         //}
 
-        //public static void SavePlayerQuestInfo(DBContext dbContext, IPlayer player)
+        //public static void SavePlayerQuestInfo(DBContext dbContext, Player player)
         //{
         //    foreach (var qs in player.getQuests())
         //    {
@@ -55,7 +55,7 @@ namespace Application.Core.Managers
         ///// <param name="client"></param>
         ///// <param name="login"></param>
         ///// <returns></returns>
-        //public static IPlayer? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
+        //public static Player? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
         //{
         //    try
         //    {
@@ -352,7 +352,7 @@ namespace Application.Core.Managers
 
 
 
-        //public void saveCharToDB(IPlayer player, bool notAutosave)
+        //public void saveCharToDB(Player player, bool notAutosave)
         //{
         //    lock (player.SaveToDBLock)
         //    {
@@ -508,7 +508,7 @@ namespace Application.Core.Managers
         //    }
         //}
 
-        //public static void deleteGuild(IPlayer player)
+        //public static void deleteGuild(Player player)
         //{
         //    using var dbContext = new DBContext();
         //    using var dbTrans = dbContext.Database.BeginTransaction();
@@ -519,7 +519,7 @@ namespace Application.Core.Managers
         //    player.GuildRank = 5;
         //}
 
-        public static void ShowAllEquipFeatures(IPlayer player)
+        public static void ShowAllEquipFeatures(Player player)
         {
             string showMsg = "";
 

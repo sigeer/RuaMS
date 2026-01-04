@@ -42,7 +42,11 @@ namespace Application.Core.Channel.Modules
         {
             if (arg.FromChannel == 0 && arg.Channel > 0)
             {
-                OnPlayerLogin(arg);
+                var chr = _server.FindPlayerById(arg.Id);
+                if (chr != null)
+                {
+                    OnPlayerLogin(chr);
+                }
             }
             //if (arg.FromChannel != 0 && arg.Channel == 0)
             //{
@@ -53,7 +57,7 @@ namespace Application.Core.Channel.Modules
             //    await OnPlayerEnterCashShop(obj);
             //}
         }
-        public virtual void OnPlayerLogin(SyncProto.PlayerFieldChange data) { }
+        public virtual void OnPlayerLogin(Player chr) { }
         public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

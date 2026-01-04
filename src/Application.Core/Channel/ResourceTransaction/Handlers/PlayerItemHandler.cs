@@ -6,11 +6,11 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 {
     internal class PlayerCostItemHandler : IResourceHandler
     {
-        readonly IPlayer _player;
+        readonly Player _player;
         Item? _freezedItem;
 
         readonly ItemObjectQuantity _costItems;
-        public PlayerCostItemHandler(IPlayer chr, ItemObjectQuantity data)
+        public PlayerCostItemHandler(Player chr, ItemObjectQuantity data)
         {
             _player = chr;
             _costItems = data;
@@ -52,11 +52,11 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 
     internal class PlayerGainItemHandler : IResourceHandler
     {
-        readonly IPlayer _player;
+        readonly Player _player;
         Item? _freezedItem;
 
         readonly Item _deltaItem;
-        public PlayerGainItemHandler(IPlayer chr, Item data)
+        public PlayerGainItemHandler(Player chr, Item data)
         {
             _player = chr;
             _deltaItem = data;

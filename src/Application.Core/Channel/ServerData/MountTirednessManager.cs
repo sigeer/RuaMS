@@ -15,7 +15,7 @@ namespace Application.Core.Channel.ServerData
             this._server = server;
         }
 
-        public void registerMountHunger(IPlayer chr)
+        public void registerMountHunger(Player chr)
         {
             if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
             {
@@ -43,7 +43,7 @@ namespace Application.Core.Channel.ServerData
                 Monitor.Exit(activeMountsLock);
             }
         }
-        public void unregisterMountHunger(IPlayer chr)
+        public void unregisterMountHunger(Player chr)
         {
             int key = chr.getId();
 

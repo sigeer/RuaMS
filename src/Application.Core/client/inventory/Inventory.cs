@@ -44,11 +44,11 @@ public class Inventory : IEnumerable<Item>
     protected InventoryType type;
     protected object lockObj = new object();
 
-    protected IPlayer owner;
+    protected Player owner;
     protected byte slotLimit;
     protected bool isChecked = false;
 
-    public Inventory(IPlayer mc, InventoryType type, byte slotLimit)
+    public Inventory(Player mc, InventoryType type, byte slotLimit)
     {
         this.owner = mc;
         this.inventory = new();
@@ -535,26 +535,26 @@ public class Inventory : IEnumerable<Item>
         return true;
     }
 
-    public static bool checkSpot(IPlayer chr, Item item)
+    public static bool checkSpot(Player chr, Item item)
     {
         // thanks Vcoc for noticing pshops not checking item stacks when taking item back
         return checkSpot(chr, [item]);
     }
 
-    public static bool checkSpot(IPlayer chr, List<Item> items)
+    public static bool checkSpot(Player chr, List<Item> items)
     {
         return checkSpotsAndOwnership(chr, items.Select(x => new ItemInventoryType(x, x.getInventoryType())).ToList());
     }
 
 
-    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpots(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
         List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
 
         return checkSpots(chr, items, zeroedList, useProofInv);
     }
 
-    static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpots(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
@@ -634,14 +634,14 @@ public class Inventory : IEnumerable<Item>
     }
 
 
-    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpotsAndOwnership(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
         List<int> zeroedList = Enumerable.Repeat(0, 5).ToList();
 
         return checkSpotsAndOwnership(chr, items, zeroedList, useProofInv);
     }
 
-    static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpotsAndOwnership(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         //assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0 and item list to be checked is a legal one.
 

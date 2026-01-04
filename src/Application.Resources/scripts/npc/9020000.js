@@ -41,7 +41,7 @@ function level0() {
     else {
         var eli = em.getEligibleParty(cm.getParty());
         if (eli.Count > 0) {
-            if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
+            if (!em.StartPQInstance(cm.getPlayer(), eli)) {
                 cm.sendOkLevel(cm.GetTalkMessage("PartyQuest_CannotStart_ChannelFull"));
             }
         } else {

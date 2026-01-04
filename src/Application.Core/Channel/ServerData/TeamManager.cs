@@ -1,86 +1,63 @@
-using Acornima;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
-using Dto;
+using Google.Protobuf;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Threading.Tasks;
-using tools;
+using TeamProto;
 
 namespace Application.Core.Channel.ServerData
 {
     public class TeamManager
     {
-        readonly ConcurrentDictionary<int, Team> TeamChannelStorage = new();
         readonly IMapper _mapper;
         readonly ILogger<TeamManager> _logger;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
+        readonly IDistributedCache _cache;
 
-        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server)
+        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server, IDistributedCache cache)
         {
             _mapper = mapper;
             _logger = logger;
             _transport = transport;
             _server = server;
+            _cache = cache;
         }
 
-
-        public bool CreateParty(IPlayer player, bool silentCheck)
+        public async Task CreateTeam(Player leader, bool silentCheck = false)
         {
-            var party = player.getParty();
-            if (party == null)
+            if (leader.Level < 10 && !YamlConfig.config.server.USE_PARTY_FOR_STARTERS)
             {
-                if (player.Level < 10 && !YamlConfig.config.server.USE_PARTY_FOR_STARTERS)
-                {
-                    player.sendPacket(PacketCreator.partyStatusMessage(10));
-                    return false;
-                }
-                else if (player.getAriantColiseum() != null)
-                {
-                    player.dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
-                    return false;
-                }
-
-                var remoteData = _transport.CreateTeam(player.Id);
-                if (remoteData == null)
-                {
-                    player.dropMessage(5, "创建队伍失败：发生了未知错误");
-                    return false;
-                }
-                party = new Team(remoteData.Id, remoteData.LeaderId);
-                foreach (var member in remoteData.Members)
-                {
-                    party.addMember(_mapper.Map<TeamMember>(member));
-                }
-                TeamChannelStorage[party.getId()] = party;
-                player.setParty(party);
-                // player.setMPC(partyplayer);
-                player.silentPartyUpdate();
-
-                player.partyOperationUpdate(party, null);
-
-                player.sendPacket(PacketCreator.partyCreated(party, player.Id));
-
-                return true;
+                leader.sendPacket(TeamPacketCreator.BeginnerCannotCreateTeam());
+                return;
             }
-            else
+            if (leader.getAriantColiseum() != null)
+            {
+                leader.dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
+                return;
+            }
+
+            var party = leader.getParty();
+            if (party != null)
             {
                 if (!silentCheck)
                 {
-                    player.sendPacket(PacketCreator.partyStatusMessage(16));
+                    leader.sendPacket(TeamPacketCreator.AlreadInTeam());
                 }
-
-                return false;
+                return;
             }
+
+            await _transport.CreateTeam(new CreateTeamRequest { LeaderId = leader.Id, Method = 0 });
         }
 
-        public async Task LeaveParty(IPlayer player)
+
+
+        public async Task LeaveParty(Player player)
         {
             await UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
@@ -90,21 +67,17 @@ namespace Application.Core.Channel.ServerData
             //}
         }
 
-        public async Task JoinParty(IPlayer player, int partyid, bool silentCheck)
+        public async Task JoinParty(Player player, int partyid, bool silentCheck)
         {
             await UpdateTeam(partyid, PartyOperation.JOIN, player, player.Id);
         }
 
-        public async Task ExpelFromParty(Team? party, IChannelClient c, int expelCid)
+        public async Task ExpelFromParty(Player player, int expelCid)
         {
-            if (party != null)
-            {
-                await UpdateTeam(party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
-            }
-            return;
+            await UpdateTeam(player.getPartyId(), PartyOperation.EXPEL, player, expelCid);
         }
 
-        internal async Task ChangeLeader(IPlayer player, int newLeader)
+        internal async Task ChangeLeader(Player player, int newLeader)
         {
             await UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
@@ -113,27 +86,17 @@ namespace Application.Core.Channel.ServerData
         {
             if (data.TeamId > 0)
             {
-                var team = ForcedGetTeam(data.TeamId);
+                var team = ForcedGetTeam(data.TeamId, false);
                 if (team != null)
                 {
-                    team.updateMember(new TeamMember
-                    {
-                        Id = data.Id,
-                        JobId = data.JobId,
-                        Level = data.Level,
-                        MapId = data.MapId,
-                        Name = data.Name,
-                        Channel = data.Channel
-                    });
-
                     var partyMembers = team.GetActiveMembers(_server);
 
                     foreach (var partychar in partyMembers)
                     {
-                        partychar.setParty(team);
+                        partychar.Party = data.TeamId;
                         if (partychar.IsOnlined)
                         {
-                            partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, team, PartyOperation.SILENT_UPDATE, data.Id, data.Name));
+                            partychar.sendPacket(TeamPacketCreator.updateParty(partychar.getChannelServer(), team, PartyOperation.SILENT_UPDATE, data.Id, data.Name));
                         }
                     }
                 }
@@ -142,15 +105,15 @@ namespace Application.Core.Channel.ServerData
 
         public void ProcessUpdateResponse(TeamProto.UpdateTeamResponse res)
         {
-            if (res.ErrorCode != 0)
+            if (res.Code != 0)
             {
-                var operatorPlayer = _server.FindPlayerById(res.OperatorId);
-                if (operatorPlayer != null && !res.SilentCheck)
+                var operatorPlayer = _server.FindPlayerById(res.Request.FromId);
+                if (operatorPlayer != null)
                 {
-                    var errorCode = (UpdateTeamCheckResult)res.ErrorCode;
+                    var errorCode = (UpdateTeamCheckResult)res.Code;
                     // 人数已满
                     if (errorCode == UpdateTeamCheckResult.Join_TeamMemberFull)
-                        operatorPlayer.sendPacket(PacketCreator.partyStatusMessage(17));
+                        operatorPlayer.sendPacket(TeamPacketCreator.partyStatusMessage(17));
                     // 队伍已解散
                     if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
                         operatorPlayer.Pink(nameof(ClientMessage.Team_TeamNotFound));
@@ -163,43 +126,19 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            var partyId = res.TeamId;
-            var party = ForcedGetTeam(partyId);
-            if (party == null)
-            {
-                _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, res.Operation, res.UpdatedMember.Id);
-                return;
-            }
+            var party = MapTeam(res.Team);
+            SetTeam(res.Team);
 
-            var targetMember = _mapper.Map<TeamMember>(res.UpdatedMember);
-            var operation = (PartyOperation)res.Operation;
-            switch (operation)
-            {
-                case PartyOperation.JOIN:
-                    party.addMember(targetMember);
-                    break;
-                case PartyOperation.EXPEL:
-                case PartyOperation.LEAVE:
-                    party.removeMember(targetMember.Id);
-                    break;
-                case PartyOperation.DISBAND:
-                    TeamChannelStorage.TryRemove(partyId, out _);
-                    break;
-                case PartyOperation.SILENT_UPDATE:
-                case PartyOperation.LOG_ONOFF:
-                    party.updateMember(targetMember);
-                    break;
-                default:
-                    break;
-            }
+            var targetMember = party.GetTeamMember(res.Request.TargetId);
+            var operation = (PartyOperation)res.Request.Operation;
             var partyMembers = party.GetActiveMembers(_server);
 
             foreach (var partychar in partyMembers)
             {
-                partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
+                partychar.Party = operation == PartyOperation.DISBAND ? -1 : party.getId();
                 if (partychar.IsOnlined)
                 {
-                    partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, party, operation, targetMember.Id, targetMember.Name));
+                    partychar.sendPacket(TeamPacketCreator.updateParty(partychar.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
                 }
             }
 
@@ -211,21 +150,24 @@ namespace Application.Core.Channel.ServerData
                     targetPlayer.receivePartyMemberHP();
                     targetPlayer.updatePartyMemberHP();
 
-                    targetPlayer.partyOperationUpdate(party, null);
+                    targetPlayer.HandleTeamMemberCountChanged(null);
                 }
             }
             else if (operation == PartyOperation.LEAVE)
             {
                 if (targetPlayer != null)
                 {
+                    var partymembers = targetPlayer.getPartyMembersOnline();
+
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
                         eim.leftParty(targetPlayer);
                     }
 
-                    targetPlayer.setParty(null);
-                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.Channel, party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.Party = -1;
+                    targetPlayer.sendPacket(TeamPacketCreator.updateParty(targetPlayer.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.HandleTeamMemberCountChanged(partymembers);
                 }
             }
             else if (operation == PartyOperation.DISBAND)
@@ -251,9 +193,9 @@ namespace Application.Core.Channel.ServerData
                         eim.leftParty(targetPlayer);
                     }
 
-                    targetPlayer.setParty(null);
-                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.Channel, party, operation, targetMember.Id, targetMember.Name));
-                    targetPlayer.partyOperationUpdate(party, preData);
+                    targetPlayer.Party = -1;
+                    targetPlayer.sendPacket(TeamPacketCreator.updateParty(targetPlayer.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.HandleTeamMemberCountChanged(preData);
                 }
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
@@ -290,54 +232,54 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public async Task UpdateTeam(int teamId, PartyOperation operation, IPlayer? player, int target)
+        public async Task UpdateTeam(int teamId, PartyOperation operation, Player? player, int target)
         {
             await _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }
 
-        /// <summary>
-        /// 玩家数据绑定使用，意味着当前服务器需要这个队伍数据，不存在时请求master
-        /// </summary>
-        /// <param name="party"></param>
-        /// <returns></returns>
-        internal Team? ForcedGetTeam(int party)
+        static string GetTeamCacheKey(int teamId) => $"Team_{teamId}";
+        void SetTeam(TeamDto dto)
         {
-            if (TeamChannelStorage.TryGetValue(party, out var d) && d != null)
-                return d;
+            _cache.Set(GetTeamCacheKey(dto.Id), dto.ToByteArray());
+        }
 
-            var dataRemote = _transport.GetTeam(party).Model;
-            if (dataRemote == null)
+        internal Team? ForcedGetTeam(int party, bool useCache = true)
+        {
+            var cacheKey = GetTeamCacheKey(party);
+            TeamDto res;
+            var data = _cache.Get(cacheKey);
+            if (data == null || !useCache)
+            {
+                res = _transport.GetTeam(party).Model;
+                SetTeam(res);
+            }
+            else
+            {
+                res = TeamDto.Parser.ParseFrom(data);
+            }
+
+            if (res == null)
                 return null;
 
-            d = new Team(party, dataRemote.LeaderId);
-            foreach (var member in dataRemote.Members)
+            return MapTeam(res);
+        }
+
+        Team MapTeam(TeamDto dto)
+        {
+            var d = new Team(dto.Id, dto.LeaderId);
+            foreach (var member in dto.Members)
             {
                 d.addMember(_mapper.Map<TeamMember>(member));
             }
-            return TeamChannelStorage[party] = d;
+            return d;
         }
 
-        public async Task CreateInvite(IPlayer fromChr, string toName)
+        public async Task CreateInvite(Player fromChr, string toName)
         {
-            var party = fromChr.getParty();
-            if (party == null)
-            {
-                if (!CreateParty(fromChr, false))
-                {
-                    return;
-                }
-
-                party = fromChr.getParty()!;
-            }
-            if (party.GetMemberCount() >= 6)
-            {
-                fromChr.sendPacket(PacketCreator.partyStatusMessage(17));
-                return;
-            }
             await _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
-        public async Task AnswerInvite(IPlayer chr, int partyId, bool answer)
+        public async Task AnswerInvite(Player chr, int partyId, bool answer)
         {
             await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
         }

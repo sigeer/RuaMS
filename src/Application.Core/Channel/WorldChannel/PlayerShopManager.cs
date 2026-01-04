@@ -13,7 +13,7 @@ using tools;
 
 namespace Application.Core.Channel
 {
-    public class PlayerShopManager
+    public class PlayerShopManager: IAsyncDisposable
     {
         private ConcurrentDictionary<int, IPlayerShop> activeMerchants = new();
         private ConcurrentDictionary<int, IPlayerShop> playerShopData = new();
@@ -28,7 +28,7 @@ namespace Application.Core.Channel
             _worldChannel = worldChannel;
         }
 
-        public void CheckExpired()
+        public List<SyncPlayerShopRequest> CheckExpired()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -47,9 +47,8 @@ namespace Application.Core.Channel
 
                 requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
             }
-            var request = new ItemProto.BatchSyncPlayerShopRequest();
-            request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            return requests;
+
         }
 
         public bool RegisterShop(IPlayerShop shop)
@@ -109,7 +108,7 @@ namespace Application.Core.Channel
             return null;
         }
 
-        public async Task<bool> RemoveCommodity(IPlayer chr, int slotIndex)
+        public async Task<bool> RemoveCommodity(Player chr, int slotIndex)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -136,7 +135,7 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public bool AddCommodity(IPlayer chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
+        public bool AddCommodity(Player chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -174,7 +173,7 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public void BuyItem(IPlayer buyer, int itemIndex, int quantity)
+        public void BuyItem(Player buyer, int itemIndex, int quantity)
         {
             var shop = buyer.VisitingShop;
             if (shop == null)
@@ -281,7 +280,7 @@ namespace Application.Core.Channel
             }
         }
 
-        public bool CloseByPlayer(IPlayer chr)
+        public bool CloseByPlayer(Player chr)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -339,7 +338,7 @@ namespace Application.Core.Channel
 
         }
 
-        internal void Dispose()
+        public async ValueTask DisposeAsync()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -360,7 +359,7 @@ namespace Application.Core.Channel
 
             var request = new ItemProto.BatchSyncPlayerShopRequest();
             request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            await _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
         }
     }
 }

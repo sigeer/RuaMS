@@ -33,12 +33,12 @@ public class Mount : IMount
     private int tiredness;
     private int exp;
     private int level;
-    private IPlayer owner;
+    private Player owner;
     private bool active;
 
     public WorldChannel ChannelServer => owner.getChannelServer();
 
-    public Mount(IPlayer owner, int id)
+    public Mount(Player owner, int id)
     {
         this.owner = owner;
         itemid = id;

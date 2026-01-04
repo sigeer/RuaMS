@@ -1,8 +1,11 @@
 using Application.Core.Game.Life;
+using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
 using Application.Resources.Messages;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
 using SyncProto;
+using System.Xml.Linq;
 using tools;
 using XmlWzReader;
 
@@ -30,17 +33,41 @@ namespace Application.Core.Channel.Modules
             _server.TeamManager.ProcessTeamUpdate(data);
         }
 
+        public override void OnPlayerLogin(Player chr)
+        {
+            base.OnPlayerLogin(chr);
+            chr.updatePartyMemberHP();
+            chr.receivePartyMemberHP();
+        }
+
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
         {
+            Guild? guild;
             if (data.GuildId > 0)
             {
-                var guild = _server.GuildManager.GetGuildById(data.GuildId);
+                guild = _server.GuildManager.GetGuildById(data.GuildId);
                 if (guild != null)
                 {
                     guild.OnMemberJobChanged(data.Id, data.JobId);
                 }
             }
             _server.TeamManager.ProcessTeamUpdate(data);
+
+            if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
+            {
+                var jobModel = JobFactory.GetById(data.JobId);
+                var packet = PacketCreator.serverNotice(6, 
+                    $"[{ClientCulture.SystemCulture.Ordinal(jobModel.Rank)} Job] {data.Name} has just become a {ClientCulture.SystemCulture.GetJobName(jobModel)}.");
+
+                foreach (var buddy in data.Buddies)
+                {
+                    var buddyChr = _server.FindPlayerById(buddy);
+                    if (buddyChr != null)
+                    {
+                        buddyChr.sendPacket(packet);
+                    }
+                }
+            }
 
         }
 

@@ -105,7 +105,7 @@ public class Coconut
         setCoconutsHittable(false);
         Map.ChannelServer.Container.TimerManager.schedule(() =>
         {
-            List<IPlayer> chars = new(Map.getAllPlayers());
+            List<Player> chars = new(Map.getAllPlayers());
 
             foreach (var chr in chars)
             {

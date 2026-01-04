@@ -671,7 +671,7 @@ public class AssignAPProcessor
         }
     }
 
-    private static bool addStat(IPlayer chr, int apTo, bool usedAPReset)
+    private static bool addStat(Player chr, int apTo, bool usedAPReset)
     {
         switch (apTo)
         {
@@ -736,7 +736,7 @@ public class AssignAPProcessor
         return true;
     }
 
-    private static int calcHpChange(IPlayer player, bool usedAPReset)
+    private static int calcHpChange(Player player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxHP = 0;
@@ -890,7 +890,7 @@ public class AssignAPProcessor
         return MaxHP;
     }
 
-    private static int calcMpChange(IPlayer player, bool usedAPReset)
+    private static int calcMpChange(Player player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxMP = 0;

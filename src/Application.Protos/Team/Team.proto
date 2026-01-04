@@ -27,4 +27,11 @@ message GetTeamResponse {
 
 message CreateTeamRequest {
 	int32 leaderId = 1;
+	int32 method = 2;
+}
+
+message CreateTeamResponse{
+	int32 code = 1;
+	CreateTeamRequest request = 2;
+	int32 teamId = 3;
 }

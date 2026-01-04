@@ -20,7 +20,7 @@ namespace Application.Core.Channel.ServerData
             _mapper = mapper;
         }
 
-        public async Task SendNewYearCard(IPlayer from, string toName, string message)
+        public async Task SendNewYearCard(Player from, string toName, string message)
         {
             await _transport.SendNewYearCard(new Dto.SendNewYearCardRequest { FromId = from.Id, ToName = toName, Message = message });
         }
@@ -50,7 +50,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public async Task AcceptNewYearCard(IPlayer receiver, int cardId)
+        public async Task AcceptNewYearCard(Player receiver, int cardId)
         {
             await _transport.ReceiveNewYearCard(new Dto.ReceiveNewYearCardRequest { MasterId = receiver.Id, CardId = cardId });
         }
@@ -111,7 +111,7 @@ namespace Application.Core.Channel.ServerData
 
         }
 
-        public async Task DiscardNewYearCard(IPlayer chr, bool isSender)
+        public async Task DiscardNewYearCard(Player chr, bool isSender)
         {
             await _transport.SendDiscardNewYearCard(new Dto.DiscardNewYearCardRequest { MasterId = chr.Id, IsSender = isSender });
         }

@@ -49,7 +49,7 @@ public class Monster : AbstractLifeObject
     private AtomicInteger hp = new AtomicInteger(1);
     private AtomicLong maxHpPlusHeal = new AtomicLong(1);
     private int mp;
-    private WeakReference<IPlayer?> controller = new(null);
+    private WeakReference<Player?> controller = new(null);
     private bool controllerHasAggro, controllerKnowsAboutAggro, controllerHasPuppet;
 
     private Dictionary<MonsterStatus, MonsterStatusEffect> stati = new();
@@ -427,7 +427,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void broadcastMobHpBar(IPlayer from)
+    public void broadcastMobHpBar(Player from)
     {
         if (hasBossHPBar())
         {
@@ -440,9 +440,9 @@ public class Monster : AbstractLifeObject
             Packet packet = PacketCreator.showMonsterHP(getObjectId(), remainingHP);
             if (from.getParty() != null)
             {
-                foreach (var mpc in from.getParty()!.GetChannelMembers(from.Client.CurrentServer))
+                foreach (var mpc in from.getParty()!.GetTeamMembers())
                 {
-                    var member = from.getMap().getCharacterById(mpc.getId()); // god bless
+                    var member = from.getMap().getCharacterById(mpc.Id); // god bless
                     if (member != null)
                     {
                         member.sendPacket(packet);
@@ -456,7 +456,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public bool damage(IPlayer attacker, int damage, bool stayAlive)
+    public bool damage(Player attacker, int damage, bool stayAlive)
     {
         bool lastHit = false;
 
@@ -513,7 +513,7 @@ public class Monster : AbstractLifeObject
      * @param damage
      * @param stayAlive
      */
-    private void applyDamage(IPlayer from, int damage, bool stayAlive, bool fake)
+    private void applyDamage(Player from, int damage, bool stayAlive, bool fake)
     {
         var trueDamage = applyAndGetHpDamage(damage, stayAlive);
         if (trueDamage == null)
@@ -543,7 +543,7 @@ public class Monster : AbstractLifeObject
         broadcastMobHpBar(from);
     }
 
-    public void applyFakeDamage(IPlayer from, int damage, bool stayAlive)
+    public void applyFakeDamage(Player from, int damage, bool stayAlive)
     {
         applyDamage(from, damage, stayAlive, true);
     }
@@ -574,12 +574,12 @@ public class Monster : AbstractLifeObject
         OnHealed?.Invoke(this, hpHealed.Value);
     }
 
-    public bool isAttackedBy(IPlayer chr)
+    public bool isAttackedBy(Player chr)
     {
         return takenDamage.ContainsKey(chr.getId());
     }
 
-    private static bool isWhiteExpGain(IPlayer chr, Dictionary<int, float> personalRatio, double sdevRatio)
+    private static bool isWhiteExpGain(Player chr, Dictionary<int, float> personalRatio, double sdevRatio)
     {
         return personalRatio.TryGetValue(chr.getId(), out var pr) && pr >= sdevRatio;
     }
@@ -605,7 +605,7 @@ public class Monster : AbstractLifeObject
         return avgExpReward + Math.Sqrt(varExpReward);
     }
 
-    private void distributePlayerExperience(IPlayer chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
+    private void distributePlayerExperience(Player chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
     {
         float playerExp = (YamlConfig.config.server.EXP_SPLIT_COMMON_MOD * chr.getLevel()) / totalPartyLevel;
         if (highestPartyDamager)
@@ -623,13 +623,13 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private void distributePartyExperience(Dictionary<IPlayer, long> partyParticipation, float expPerDmg, HashSet<IPlayer> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
+    private void distributePartyExperience(Dictionary<Player, long> partyParticipation, float expPerDmg, HashSet<Player> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
     {
         IntervalBuilder leechInterval = new IntervalBuilder();
         leechInterval.addInterval(this.getLevel() - YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL, this.getLevel() + YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL);
 
         long maxDamage = 0, partyDamage = 0;
-        IPlayer? participationMvp = null;
+        Player? participationMvp = null;
         foreach (var e in partyParticipation)
         {
             long entryDamage = e.Value;
@@ -646,13 +646,13 @@ public class Monster : AbstractLifeObject
             leechInterval.addInterval(chrLevel - YamlConfig.config.server.EXP_SPLIT_LEECH_INTERVAL, chrLevel + YamlConfig.config.server.EXP_SPLIT_LEECH_INTERVAL);
         }
 
-        List<IPlayer> expMembers = new();
+        List<Player> expMembers = new();
         int totalPartyLevel = 0;
 
         // thanks G h o s t, Alfred, Vcoc, BHB for poiting out a bug in detecting party members after membership transactions in a party took place
         if (YamlConfig.config.server.USE_ENFORCE_MOB_LEVEL_RANGE)
         {
-            foreach (IPlayer member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
+            foreach (Player member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
             {
                 if (!leechInterval.inInterval(member.getLevel()))
                 {
@@ -666,7 +666,7 @@ public class Monster : AbstractLifeObject
         }
         else
         {    // thanks Ari for noticing unused server flag after EXP system overhaul
-            foreach (IPlayer member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
+            foreach (Player member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
             {
                 totalPartyLevel += member.getLevel();
                 expMembers.Add(member);
@@ -680,7 +680,7 @@ public class Monster : AbstractLifeObject
         bool hasPartySharers = membersSize > 1;
         float partyBonusMod = hasPartySharers ? 0.05f * membersSize : 0.0f;
 
-        foreach (IPlayer mc in expMembers)
+        foreach (Player mc in expMembers)
         {
             distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
             foreach (var module in MapModel.ChannelServer.Container.Modules)
@@ -697,10 +697,10 @@ public class Monster : AbstractLifeObject
             return;
         }
 
-        Dictionary<Team, Dictionary<IPlayer, long>> partyExpDist = new();
-        Dictionary<IPlayer, long> soloExpDist = new();
+        Dictionary<int, Dictionary<Player, long>> partyExpDist = new();
+        Dictionary<Player, long> soloExpDist = new();
 
-        Dictionary<int, IPlayer> mapPlayers = MapModel.getMapPlayers();
+        Dictionary<int, Player> mapPlayers = MapModel.getMapPlayers();
 
         int totalEntries = 0;   // counts "participant parties", players who no longer are available in the map is an "independent party"
         foreach (var e in takenDamage)
@@ -710,8 +710,8 @@ public class Monster : AbstractLifeObject
             {
                 long damage = e.Value;
 
-                var p = chr.getParty();
-                if (p != null)
+                var p = chr.getPartyId();
+                if (p > 0)
                 {
                     var partyParticipation = partyExpDist.GetValueOrDefault(p);
                     if (partyParticipation == null)
@@ -750,7 +750,7 @@ public class Monster : AbstractLifeObject
             entryExpRatio.Add(ratio);
         }
 
-        foreach (Dictionary<IPlayer, long> m in partyExpDist.Values)
+        foreach (Dictionary<Player, long> m in partyExpDist.Values)
         {
             float ratio = 0.0f;
             foreach (var e in m)
@@ -767,16 +767,16 @@ public class Monster : AbstractLifeObject
         double sdevRatio = calcExperienceStandDevThreshold(entryExpRatio, totalEntries);
 
         // GMS-like player and party Split calculations found thanks to Russt, KaidaTan, Dusk, AyumiLove - src: https://ayumilovemaple.wordpress.com/maplestory_calculator_formula/
-        HashSet<IPlayer> underleveled = new();
+        HashSet<Player> underleveled = new();
         foreach (var chrParticipation in soloExpDist)
         {
             float exp = chrParticipation.Value * expPerDmg;
-            IPlayer chr = chrParticipation.Key;
+            Player chr = chrParticipation.Key;
 
             distributePlayerExperience(chr, exp, 0.0f, chr.getLevel(), true, isWhiteExpGain(chr, personalRatio, sdevRatio), false);
         }
 
-        foreach (Dictionary<IPlayer, long> partyParticipation in partyExpDist.Values)
+        foreach (Dictionary<Player, long> partyParticipation in partyExpDist.Values)
         {
             distributePartyExperience(partyParticipation, expPerDmg, underleveled, personalRatio, sdevRatio);
         }
@@ -791,14 +791,14 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        foreach (IPlayer mc in underleveled)
+        foreach (Player mc in underleveled)
         {
             mc.showUnderleveledInfo(this);
         }
 
     }
 
-    private float getStatusExpMultiplier(IPlayer attacker, bool hasPartySharers)
+    private float getStatusExpMultiplier(Player attacker, bool hasPartySharers)
     {
         float multiplier = 1.0f;
 
@@ -847,7 +847,7 @@ public class Monster : AbstractLifeObject
         return (int)Math.Round(exp);    // operations on float point are not point-precise... thanks IxianMace for noticing -1 EXP gains
     }
 
-    private void giveExpToCharacter(IPlayer attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
+    private void giveExpToCharacter(Player attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
     {
         if (attacker.isAlive())
         {
@@ -913,9 +913,9 @@ public class Monster : AbstractLifeObject
             return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         }
 
-        Dictionary<int, IPlayer> pchars = MapModel.getMapPlayers();
+        Dictionary<int, Player> pchars = MapModel.getMapPlayers();
 
-        List<IPlayer> lootChars = new();
+        List<Player> lootChars = new();
         foreach (int cid in takenDamage.Keys)
         {
             var chr = pchars.GetValueOrDefault(cid);
@@ -928,7 +928,7 @@ public class Monster : AbstractLifeObject
         return LootManager.retrieveRelevantDrops(this.getId(), lootChars);
     }
 
-    public IPlayer? killBy(IPlayer? killer)
+    public Player? killBy(Player? killer)
     {
         distributeExperience(killer != null ? killer.getId() : 0);
 
@@ -1039,10 +1039,10 @@ public class Monster : AbstractLifeObject
             }
 
             var map = m.getMap();
-            List<IPlayer> chrList = map.getAllPlayers();
+            List<Player> chrList = map.getAllPlayers();
             if (chrList.Count > 0)
             {
-                IPlayer chr = chrList.get(0);
+                Player chr = chrList.get(0);
 
                 var eim = map.getEventInstance();
                 if (eim != null)
@@ -1060,7 +1060,7 @@ public class Monster : AbstractLifeObject
         var attackerChrids = takenDamage.Keys;
         if (attackerChrids.Count > 0)
         {
-            Dictionary<int, IPlayer> mapChars = MapModel.getMapPlayers();
+            Dictionary<int, Player> mapChars = MapModel.getMapPlayers();
             if (mapChars.Count > 0)
             {
                 int mobid = getId();
@@ -1078,7 +1078,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void dispatchMonsterKilled(IPlayer? killer)
+    public void dispatchMonsterKilled(Player? killer)
     {
         processMonsterKilled(killer);
 
@@ -1108,7 +1108,7 @@ public class Monster : AbstractLifeObject
     }
 
     object monsterKilledLock = new object();
-    private void processMonsterKilled(IPlayer? killer)
+    private void processMonsterKilled(Player? killer)
     {
         lock (monsterKilledLock)
         {
@@ -1159,12 +1159,12 @@ public class Monster : AbstractLifeObject
     }
 
 
-    public IPlayer? getController()
+    public Player? getController()
     {
         return controller.TryGetTarget(out var d) ? d : null;
     }
 
-    private void setController(IPlayer? controller)
+    private void setController(Player? controller)
     {
         this.controller = new(controller);
     }
@@ -1289,7 +1289,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private IPlayer? getActiveController()
+    private Player? getActiveController()
     {
         var chr = getController();
 
@@ -1323,7 +1323,7 @@ public class Monster : AbstractLifeObject
         return animationTime;
     }
 
-    public bool applyStatus(IPlayer from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
+    public bool applyStatus(Player from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
     {
         var effectSkill = status.getSkill()!;
         switch (getMonsterEffectiveness(effectSkill.getElement()))
@@ -1941,13 +1941,13 @@ public class Monster : AbstractLifeObject
     {
 
         private int dealDamage;
-        private IPlayer chr;
+        private Player chr;
         private MonsterStatusEffect status;
         private int type;
         private IMap map;
         readonly Monster _monster;
 
-        public DamageTask(Monster mapleMonster, int dealDamage, IPlayer chr, MonsterStatusEffect status, int type)
+        public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
         {
             _monster = mapleMonster;
             this.dealDamage = dealDamage;
@@ -2184,7 +2184,7 @@ public class Monster : AbstractLifeObject
         return summon.getPosition().distanceSq(this.getPosition()) < 177777;
     }
 
-    public bool isCharacterPuppetInVicinity(IPlayer chr)
+    public bool isCharacterPuppetInVicinity(Player chr)
     {
         var mse = chr.getBuffEffect(BuffStat.PUPPET);
         if (mse != null)
@@ -2207,7 +2207,7 @@ public class Monster : AbstractLifeObject
 
     public bool isLeadingPuppetInVicinity()
     {
-        IPlayer? chrController = this.getActiveController();
+        Player? chrController = this.getActiveController();
 
         if (chrController != null)
         {
@@ -2217,17 +2217,17 @@ public class Monster : AbstractLifeObject
         return false;
     }
 
-    private IPlayer? getNextControllerCandidate()
+    private Player? getNextControllerCandidate()
     {
         int mincontrolled = int.MaxValue;
-        IPlayer? newController = null;
+        Player? newController = null;
 
         int mincontrolleddead = int.MaxValue;
-        IPlayer? newControllerDead = null;
+        Player? newControllerDead = null;
 
-        IPlayer? newControllerWithPuppet = null;
+        Player? newControllerWithPuppet = null;
 
-        foreach (IPlayer chr in getMap().getAllPlayers())
+        foreach (Player chr in getMap().getAllPlayers())
         {
             if (!chr.isHidden())
             {
@@ -2274,9 +2274,9 @@ public class Monster : AbstractLifeObject
     /**
      * Removes controllability status from the current controller of this mob.
      */
-    public KeyValuePair<IPlayer?, bool> aggroRemoveController()
+    public KeyValuePair<Player?, bool> aggroRemoveController()
     {
-        IPlayer? chrController;
+        Player? chrController;
         bool hadAggro;
 
         Monitor.Enter(aggroUpdateLock);
@@ -2311,7 +2311,7 @@ public class Monster : AbstractLifeObject
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
      */
-    public void aggroSwitchController(IPlayer? newController, bool immediateAggro)
+    public void aggroSwitchController(Player? newController, bool immediateAggro)
     {
         if (Monitor.TryEnter(aggroUpdateLock))
         {
@@ -2345,7 +2345,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void aggroAddPuppet(IPlayer player)
+    public void aggroAddPuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.addPuppetAggro(player);
@@ -2358,7 +2358,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void aggroRemovePuppet(IPlayer player)
+    public void aggroRemovePuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.removePuppetAggro(player.getId());
@@ -2377,13 +2377,13 @@ public class Monster : AbstractLifeObject
      */
     public void aggroUpdateController()
     {
-        IPlayer? chrController = this.getActiveController();
+        Player? chrController = this.getActiveController();
         if (chrController != null && chrController.isAlive())
         {
             return;
         }
 
-        IPlayer? newController = getNextControllerCandidate();
+        Player? newController = getNextControllerCandidate();
         if (newController == null)
         {
             // was a new controller found? (if not no one is on the map)
@@ -2397,7 +2397,7 @@ public class Monster : AbstractLifeObject
      * Finds a new controller for the given monster from the chars with deployed
      * puppet nearby on the map it is from...
      */
-    private void aggroUpdatePuppetController(IPlayer? newController)
+    private void aggroUpdatePuppetController(Player? newController)
     {
         var chrController = this.getActiveController();
         bool updateController = false;
@@ -2476,7 +2476,7 @@ public class Monster : AbstractLifeObject
      * Returns the current aggro status on the specified player, or null if the
      * specified player is currently not this mob's controller.
      */
-    public bool? aggroMoveLifeUpdate(IPlayer player)
+    public bool? aggroMoveLifeUpdate(Player player)
     {
         var chrController = getController();
         if (chrController != null && player.getId() == chrController.getId())
@@ -2499,7 +2499,7 @@ public class Monster : AbstractLifeObject
      * Refreshes auto aggro for the player passed as parameter, does nothing if
      * there is already an active controller for this mob.
      */
-    public void aggroAutoAggroUpdate(IPlayer player)
+    public void aggroAutoAggroUpdate(Player player)
     {
         var chrController = this.getActiveController();
 
@@ -2522,7 +2522,7 @@ public class Monster : AbstractLifeObject
      * Applied damage input for this mob, enough damage taken implies an aggro
      * target update for the attacker shortly.
      */
-    public void aggroMonsterDamage(IPlayer attacker, int damage)
+    public void aggroMonsterDamage(Player attacker, int damage)
     {
         MonsterAggroCoordinator mmac = this.getMapAggroCoordinator();
         mmac.addAggroDamage(this, attacker.getId(), damage);
@@ -2562,7 +2562,7 @@ public class Monster : AbstractLifeObject
         c.sendPacket(PacketCreator.controlMonster(mob, false, immediateAggro));
     }
 
-    private void aggroRefreshPuppetVisibility(IPlayer chrController, Summon puppet)
+    private void aggroRefreshPuppetVisibility(Player chrController, Summon puppet)
     {
         // lame patch for client to redirect all aggro to the puppet
 

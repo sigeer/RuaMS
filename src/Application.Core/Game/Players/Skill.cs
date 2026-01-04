@@ -121,7 +121,7 @@ namespace Application.Core.Game.Players
         {
             List<PlayerCoolDownValueHolder> ret = new();
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -133,14 +133,14 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
 
             return ret;
         }
         public bool skillIsCooling(int skillId)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -149,7 +149,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -170,7 +170,7 @@ namespace Application.Core.Game.Players
                 {
                     HashSet<KeyValuePair<int, CooldownValueHolder>> es;
 
-                    Monitor.Enter(effLock);
+                    effLock.Enter();
                     chLock.EnterReadLock();
                     try
                     {
@@ -179,7 +179,7 @@ namespace Application.Core.Game.Players
                     finally
                     {
                         chLock.ExitReadLock();
-                        Monitor.Exit(effLock);
+                        effLock.Exit();
                     }
 
                     long curTime = Client.CurrentServerContainer.getCurrentTime();
@@ -198,7 +198,7 @@ namespace Application.Core.Game.Players
 
         public void removeAllCooldownsExcept(int id, bool packet)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -218,13 +218,13 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         public void removeCooldown(int skillId)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -233,12 +233,12 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
         public void addCooldown(int skillId, long startTime, long length)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             chLock.EnterReadLock();
             try
             {
@@ -247,7 +247,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
         public void giveCoolDowns(int skillid, long starttime, long length)

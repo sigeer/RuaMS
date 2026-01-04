@@ -54,18 +54,18 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public async Task ToggleIgnore(IPlayer chr, string name)
+        public async Task ToggleIgnore(Player chr, string name)
         {
              await _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
-        public void AddPoint(AutobanFactory type, IPlayer chr, string reason)
+        public void AddPoint(AutobanFactory type, Player chr, string reason)
         {
             chr.getAutobanManager().addPoint(type, reason);
         }
 
 
-        public void Autoban(AutobanFactory type, IPlayer chr, string value)
+        public void Autoban(AutobanFactory type, Player chr, string value)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
@@ -74,7 +74,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public async Task Alert(AutobanFactory type, IPlayer chr, string reason)
+        public async Task Alert(AutobanFactory type, Player chr, string reason)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {

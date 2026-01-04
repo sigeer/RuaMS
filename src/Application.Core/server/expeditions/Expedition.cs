@@ -72,7 +72,7 @@ public class Expedition : IClientMessenger
             MobId.FURIOUS_TARGA,
     };
 
-    private IPlayer leader;
+    private Player leader;
     private ExpeditionType type;
     private bool registering;
     private IMap startMap;
@@ -86,7 +86,7 @@ public class Expedition : IClientMessenger
     private int minSize;
     private int maxSize;
 
-    public Expedition(IPlayer player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
+    public Expedition(Player player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
     {
         leader = player;
         members.AddOrUpdate(player.getId(), player.getName());
@@ -199,7 +199,7 @@ public class Expedition : IClientMessenger
         _ = startMap.ChannelServer.Container.SendDropGMMessage(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName());
     }
 
-    public string addMember(IPlayer player)
+    public string addMember(Player player)
     {
         if (!registering)
         {
@@ -232,7 +232,7 @@ public class Expedition : IClientMessenger
         return "You have registered for the expedition successfully!";
     }
 
-    public int addMemberInt(IPlayer player)
+    public int addMemberInt(Player player)
     {
         if (!registering)
         {
@@ -266,13 +266,13 @@ public class Expedition : IClientMessenger
 
     private void broadcastExped(Packet packet)
     {
-        foreach (IPlayer chr in getActiveMembers())
+        foreach (Player chr in getActiveMembers())
         {
             chr.sendPacket(packet);
         }
     }
 
-    public bool removeMember(IPlayer chr)
+    public bool removeMember(Player chr)
     {
         if (members.Remove(chr.getId(), out var d) && d != null)
         {
@@ -317,7 +317,7 @@ public class Expedition : IClientMessenger
     //    }
     //}
 
-    public void monsterKilled(IPlayer chr, Monster mob)
+    public void monsterKilled(Player chr, Monster mob)
     {
         foreach (int expeditionBoss in EXPEDITION_BOSSES)
         {
@@ -344,13 +344,13 @@ public class Expedition : IClientMessenger
         return type;
     }
 
-    public List<IPlayer> getActiveMembers()
+    public List<Player> getActiveMembers()
     {
         // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
         // 没看到对频道的限制。 也没有看到切换频道后离开远征队的代码
         var ps = startMap.ChannelServer.getPlayerStorage();
 
-        List<IPlayer> activeMembers = new();
+        List<Player> activeMembers = new();
         foreach (int chrid in getMembers().Keys)
         {
             var chr = ps.getCharacterById(chrid);
@@ -375,7 +375,7 @@ public class Expedition : IClientMessenger
 
     public bool isExpeditionTeamTogether()
     {
-        List<IPlayer> chars = getActiveMembers();
+        List<Player> chars = getActiveMembers();
         if (chars.Count <= 1)
         {
             return true;
@@ -386,9 +386,9 @@ public class Expedition : IClientMessenger
 
     public void warpExpeditionTeam(int warpFrom, int warpTo)
     {
-        List<IPlayer> players = getActiveMembers();
+        List<Player> players = getActiveMembers();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -399,9 +399,9 @@ public class Expedition : IClientMessenger
 
     public void warpExpeditionTeam(int warpTo)
     {
-        List<IPlayer> players = getActiveMembers();
+        List<Player> players = getActiveMembers();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(warpTo);
         }
@@ -409,9 +409,9 @@ public class Expedition : IClientMessenger
 
     public void warpExpeditionTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
-        List<IPlayer> players = getActiveMembers();
+        List<Player> players = getActiveMembers();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -422,9 +422,9 @@ public class Expedition : IClientMessenger
 
     public void warpExpeditionTeamToMapSpawnPoint(int warpTo, int toSp)
     {
-        List<IPlayer> players = getActiveMembers();
+        List<Player> players = getActiveMembers();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(warpTo, toSp);
         }
@@ -440,7 +440,7 @@ public class Expedition : IClientMessenger
         ch.removeExpedition(this);
     }
 
-    public IPlayer getLeader()
+    public Player getLeader()
     {
         return leader;
     }
@@ -450,12 +450,12 @@ public class Expedition : IClientMessenger
         return startMap;
     }
 
-    public bool contains(IPlayer player)
+    public bool contains(Player player)
     {
         return members.ContainsKey(player.getId()) || isLeader(player);
     }
 
-    public bool isLeader(IPlayer player)
+    public bool isLeader(Player player)
     {
         return isLeader(player.getId());
     }
@@ -483,7 +483,7 @@ public class Expedition : IClientMessenger
 
     public void TypedMessage(int type, string messageKey, params string[] param)
     {
-        foreach (IPlayer chr in getActiveMembers())
+        foreach (Player chr in getActiveMembers())
         {
             chr.TypedMessage(type, messageKey, param);
         }
@@ -501,7 +501,7 @@ public class Expedition : IClientMessenger
 
     public void Dialog(string key, params string[] param)
     {
-        foreach (IPlayer chr in getActiveMembers())
+        foreach (Player chr in getActiveMembers())
         {
             chr.Dialog(key, param);
         }
@@ -535,7 +535,7 @@ public class Expedition : IClientMessenger
 
     public void Yellow(string key, params string[] param)
     {
-        foreach (IPlayer chr in getActiveMembers())
+        foreach (Player chr in getActiveMembers())
         {
             chr.Yellow(key, param);
         }

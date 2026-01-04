@@ -51,6 +51,7 @@ public class OpenFamilyPedigreeHandler : ChannelHandlerBase
                 c.sendPacket(FamilyPacketCreator.showPedigree(family, target.Id));
             }
         }
+        return Task.CompletedTask;
     }
 }
 

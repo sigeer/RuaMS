@@ -6,7 +6,7 @@ namespace net.server.guild;
 
 public class GuildPackets
 {
-    public static Packet showGuildInfo(IPlayer? chr)
+    public static Packet showGuildInfo(Player? chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x1A); //signature for showing guild info
@@ -111,7 +111,7 @@ public class GuildPackets
     }
 
     //someone leaving, mode == 0x2c for leaving, 0x2f for expelled
-    public static Packet memberLeft(IPlayer mgc, bool bExpelled) => memberLeft(mgc.GuildId, mgc.Id, mgc.Name, bExpelled);
+    public static Packet memberLeft(Player mgc, bool bExpelled) => memberLeft(mgc.GuildId, mgc.Id, mgc.Name, bExpelled);
 
     public static Packet memberLeft(int guildId, int playerId, string playerName, bool bExpelled)
     {
@@ -124,7 +124,7 @@ public class GuildPackets
     }
 
     //rank change
-    public static Packet changeRank(IPlayer mgc) => changeRank(mgc.GuildId, mgc.Id, mgc.GuildRank);
+    public static Packet changeRank(Player mgc) => changeRank(mgc.GuildId, mgc.Id, mgc.GuildRank);
 
 
     public static Packet changeRank(int guildId, int playerId, int guildRank)
@@ -459,7 +459,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet allianceInvite(int allianceid, IPlayer chr)
+    public static Packet allianceInvite(int allianceid, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x03);

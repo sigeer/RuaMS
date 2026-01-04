@@ -28,8 +28,8 @@ namespace net.server.coordinator.matchchecker;
 
 public abstract class AbstractMatchCheckerListener
 {
-    public abstract Task onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message);
-    public abstract Task onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message);
-    public abstract Task onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message);
-    public abstract Task onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message);
+    public abstract Task onMatchCreated(Player leader, HashSet<Player> nonLeaderMatchPlayers, string message);
+    public abstract Task onMatchAccepted(int leaderid, HashSet<Player> matchPlayers, string message);
+    public abstract Task onMatchDeclined(int leaderid, HashSet<Player> matchPlayers, string message);
+    public abstract Task onMatchDismissed(int leaderid, HashSet<Player> matchPlayers, string message);
 }

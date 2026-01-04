@@ -1,7 +1,9 @@
 using Application.Core.Game.Relation;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.MapObjects;
+using AutoMapper.Execution;
 using tools;
 
 namespace Application.Core.Game.GameEvents.CPQ
@@ -17,16 +19,14 @@ namespace Application.Core.Game.GameEvents.CPQ
         public int TotalCP { get; set; }
         public int SummonedMonster { get; set; }
         public bool IsWinner { get; private set; }
-        public Team Team { get; }
         public MonsterCarnivalEventInstanceManager Event { get; }
         public MonsterCarnivalTeam? Enemy { get; set; }
-        public List<IPlayer> EligibleMembers { get; }
+        public TeamRegistry Team { get; }
 
-        public MonsterCarnivalTeam(MonsterCarnivalEventInstanceManager @event, Team team, sbyte team1)
+        public MonsterCarnivalTeam(MonsterCarnivalEventInstanceManager @event, TeamRegistry team, sbyte team1)
         {
             Event = @event;
             Team = team;
-            EligibleMembers = Team.getEligibleMembers();
 
             TeamFlag = team1;
         }
@@ -34,10 +34,11 @@ namespace Application.Core.Game.GameEvents.CPQ
         public void Initialize(MonsterCarnivalTeam enemy)
         {
             Enemy = enemy;
-            foreach (var mc in EligibleMembers)
+            foreach (var mc in Team.EligibleMembers)
             {
                 if (mc.IsOnlined)
                 {
+                    mc.MCTeam = this;
                     mc.resetCP();
                     mc.setTeam(TeamFlag);
                     mc.setFestivalPoints(0);
@@ -48,13 +49,13 @@ namespace Application.Core.Game.GameEvents.CPQ
             }
         }
 
-        public void AddCP(IPlayer player, int amount)
+        public void AddCP(Player player, int amount)
         {
             TotalCP += amount;
             AvailableCP += amount;
             player.addCP(amount);
         }
-        public void UseCP(IPlayer player, int amount)
+        public void UseCP(Player player, int amount)
         {
             AvailableCP -= amount;
             player.useCP(amount);
@@ -88,7 +89,7 @@ namespace Application.Core.Game.GameEvents.CPQ
             var map = Event.EventMap;
             var effect = IsWinner ? map.EffectWin : map.EffectLose;
             var sound = IsWinner ? map.SoundWin : map.SoundLose;
-            foreach (var mc in EligibleMembers)
+            foreach (var mc in Team.EligibleMembers)
             {
                 if (mc.IsOnlined)
                 {
@@ -108,7 +109,7 @@ namespace Application.Core.Game.GameEvents.CPQ
             var map = Event.EventMap;
 
             var rewardMap = mapFactory.getMap(IsWinner ? map.RewardMapWin : map.RewardMapLose);
-            foreach (var mc in EligibleMembers)
+            foreach (var mc in Team.EligibleMembers)
             {
                 if (mc.IsOnlined)
                 {
@@ -119,15 +120,16 @@ namespace Application.Core.Game.GameEvents.CPQ
                 }
             }
         }
+        public int GetRandomMemberId()
+        {
+            return Randomizer.Select(Team.EligibleMembers).Id;
+        }
 
         public void Dispose()
         {
             Enemy = null;
             TotalCP = 0;
             AvailableCP = 0;
-
-            Team.setEligibleMembers([]);
-            Team.MCTeam = null;
         }
     }
 }

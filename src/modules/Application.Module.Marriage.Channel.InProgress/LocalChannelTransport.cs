@@ -1,9 +1,10 @@
 using AutoMapper;
 using MarriageProto;
+using System.Threading.Tasks;
 
 namespace Application.Module.Marriage.Channel.InProgress
 {
-    public class LocalChannelTransport : IChannelServerTransport
+    public class LocalChannelTransport : IModuleChannelServerTransport
     {
         readonly Master.MarriageManager _marriageManager;
         readonly Master.WeddingManager _weddingManager;
@@ -14,9 +15,9 @@ namespace Application.Module.Marriage.Channel.InProgress
             _weddingManager = weddingManager;
         }
 
-        public void BreakMarriage(BreakMarriageRequest breakMarriageRequest)
+        public async Task BreakMarriage(BreakMarriageRequest breakMarriageRequest)
         {
-            _marriageManager.BreakMarriage(breakMarriageRequest);
+            await _marriageManager.BreakMarriage(breakMarriageRequest);
         }
 
         public void CloseWedding(CloseWeddingRequest closeWeddingRequest)
@@ -54,9 +55,9 @@ namespace Application.Module.Marriage.Channel.InProgress
             return _weddingManager.ReserveWedding(reserveWeddingRequest);
         }
 
-        public SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
+        public async Task SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
         {
-            return _marriageManager.SpouseChat(sendSpouseChatRequest);
+            await _marriageManager.SpouseChat(sendSpouseChatRequest);
         }
 
         public LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest)

@@ -5,11 +5,11 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 {
     internal class PlayerCostItemIdHandler : IResourceHandler
     {
-        readonly IPlayer _player;
+        readonly Player _player;
         ItemQuantity? _freezedItem;
 
         readonly ItemQuantity _costItems;
-        public PlayerCostItemIdHandler(IPlayer chr, ItemQuantity data)
+        public PlayerCostItemIdHandler(Player chr, ItemQuantity data)
         {
             _player = chr;
             _costItems = data;
@@ -50,11 +50,11 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 
     internal class PlayerGainItemIdHandler : IResourceHandler
     {
-        readonly IPlayer _player;
+        readonly Player _player;
         ItemQuantity? _freezedItem;
 
         readonly ItemQuantity _deltaItem;
-        public PlayerGainItemIdHandler(IPlayer chr, ItemQuantity data)
+        public PlayerGainItemIdHandler(Player chr, ItemQuantity data)
         {
             _player = chr;
             _deltaItem = data;

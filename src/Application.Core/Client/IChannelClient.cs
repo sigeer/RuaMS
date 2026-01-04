@@ -13,8 +13,8 @@ namespace Application.Core.Client
         WorldChannel CurrentServer { get; }
         WorldChannelServer CurrentServerContainer { get; }
         int Channel { get; }
-        IPlayer? Character { get; }
-        IPlayer OnlinedCharacter { get; }
+        Player? Character { get; }
+        Player OnlinedCharacter { get; }
         ClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
@@ -36,7 +36,7 @@ namespace Application.Core.Client
 
         bool attemptCsCoupon();
         void resetCsCoupon();
-        void SetPlayer(IPlayer? player);
+        void SetPlayer(Player? player);
         void SetAccount(AccountCtrl accountEntity);
         WorldChannel getChannelServer();
         int getChannel();

@@ -62,7 +62,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         }
 
         var monster = (Monster)mmo;
-        List<IPlayer>? banishPlayers = null;
+        List<Player>? banishPlayers = null;
 
         byte pNibbles = p.readByte();
         sbyte rawActivity = p.ReadSByte();

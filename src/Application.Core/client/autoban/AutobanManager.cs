@@ -16,7 +16,7 @@ public class AutobanManager
 {
     private ILogger log = LogFactory.GetLogger("AutobanManager");
 
-    private IPlayer chr;
+    private Player chr;
     private Dictionary<AutobanFactory, int> points = new();
     private Dictionary<AutobanFactory, long> lastTime = new();
     private int misses = 0;
@@ -27,7 +27,7 @@ public class AutobanManager
     private byte[] timestampcounter = new byte[20];
 
 
-    public AutobanManager(IPlayer chr)
+    public AutobanManager(Player chr)
     {
         this.chr = chr;
     }

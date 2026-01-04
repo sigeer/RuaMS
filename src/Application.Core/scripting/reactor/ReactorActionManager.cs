@@ -69,7 +69,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         reactor.getMap().destroyNPC(npcId);
     }
 
-    private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
+    private static List<DropEntry> assembleReactorDropEntries(Player chr, List<DropEntry> items)
     {
         DropEntry.ClassifyDropEntries(items, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);
 
@@ -176,7 +176,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, IPlayer chr, short delay)
+    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, Player chr, short delay)
     {
         if (d.ItemId == 0)
         {

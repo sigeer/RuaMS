@@ -275,19 +275,19 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public void SendGuildMessage(int guildId, int v, string callout)
+        public async Task SendGuildMessage(int guildId, int v, string callout)
         {
             if (_idGuildDataSource.TryGetValue(guildId, out var guild))
             {
-                _server.DropWorldMessage(v, callout, guild.Members.ToArray());
+                await _server.DropWorldMessage(v, callout, guild.Members.ToArray());
             }
         }
 
-        public void SendGuildPacket(GuildProto.GuildPacketRequest data)
+        public async Task SendGuildPacket(GuildProto.GuildPacketRequest data)
         {
             if (_idGuildDataSource.TryGetValue(data.GuildId, out var guild))
             {
-                _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Except([data.ExceptChrId]));
+                await _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Except([data.ExceptChrId]));
             }
         }
 
@@ -832,7 +832,7 @@ namespace Application.Core.Login.ServerData
             foreach (var key in _guild.Keys.ToList())
             {
                 _guild.TryRemove(key, out var d);
-                updateData[key] = d;
+                updateData[key] = d!;
             }
 
             var updateCount = updateData.Count;
@@ -840,24 +840,24 @@ namespace Application.Core.Login.ServerData
                 return;
 
             var dbData = dbContext.Guilds.Where(x => updateData.Keys.Contains(x.GuildId)).ToList();
-            foreach (var item in updateData.Values)
+            foreach (var item in updateData)
             {
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.Remove)
+                var obj = item.Value.Data;
+                if (item.Value.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
-                    await dbContext.Guilds.Where(x => x.GuildId == obj.GuildId).ExecuteDeleteAsync();
+                    await dbContext.Guilds.Where(x => x.GuildId == item.Key).ExecuteDeleteAsync();
                 }
                 else
                 {
-                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == obj.GuildId);
+                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == item.Key);
                     if (dbModel == null)
                     {
-                        dbModel = new GuildEntity(obj.GuildId, obj.Name, obj.Leader);
+                        dbModel = new GuildEntity(item.Key, obj!.Name, obj.Leader);
                         dbContext.Add(dbModel);
                     }
-                    dbModel.GP = obj.GP;
+                    dbModel.GP = obj!.GP;
                     dbModel.Rank1Title = obj.Rank1Title;
                     dbModel.Rank2Title = obj.Rank2Title;
                     dbModel.Rank3Title = obj.Rank3Title;
@@ -896,7 +896,7 @@ namespace Application.Core.Login.ServerData
             foreach (var key in _alliance.Keys.ToList())
             {
                 _alliance.TryRemove(key, out var d);
-                updateData[key] = d;
+                updateData[key] = d!;
             }
 
             var updateCount = updateData.Count;
@@ -904,24 +904,24 @@ namespace Application.Core.Login.ServerData
                 return;
 
             var dbData = dbContext.Alliances.Where(x => updateData.Keys.Contains(x.Id)).ToList();
-            foreach (var item in updateData.Values)
+            foreach (var item in updateData)
             {
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.Remove)
+                var obj = item.Value.Data;
+                if (item.Value.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
-                    await dbContext.Alliances.Where(x => x.Id == obj.Id).ExecuteDeleteAsync();
+                    await dbContext.Alliances.Where(x => x.Id == item.Key).ExecuteDeleteAsync();
                 }
                 else
                 {
-                    var dbModel = dbData.FirstOrDefault(x => x.Id == obj.Id);
+                    var dbModel = dbData.FirstOrDefault(x => x.Id == item.Key);
                     if (dbModel == null)
                     {
-                        dbModel = new AllianceEntity(obj.Id, obj.Name);
+                        dbModel = new AllianceEntity(item.Key, obj!.Name);
                         dbContext.Add(dbModel);
                     }
-                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Capacity = obj!.Capacity;
                     dbModel.Name = obj.Name;
                     dbModel.Notice = obj.Notice;
                     dbModel.Rank1 = obj.Rank1;

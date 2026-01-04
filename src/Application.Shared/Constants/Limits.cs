@@ -3,6 +3,7 @@ namespace Application.Shared.Constants
     public class Limits
     {
         public const int MaxCharacterSlots = 15;
+        public const int MaxTeamMember = 6;
 
         public const int MaxFullness = 100;
         public const int MaxTameness = 30000;

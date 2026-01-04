@@ -16,7 +16,7 @@ namespace Application.Module.Fishing.Channel
     public class FishingManager : TaskBase
     {
         readonly ILogger<FishingManager> _logger;
-        private ConcurrentDictionary<IPlayer, int> fishingAttempters = new();
+        private ConcurrentDictionary<Player, int> fishingAttempters = new();
         readonly WorldChannelServer _server;
 
         public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger)
@@ -26,12 +26,12 @@ namespace Application.Module.Fishing.Channel
             _logger = logger;
         }
 
-        public bool RegisterFisherPlayer(IPlayer chr, int baitLevel)
+        public bool RegisterFisherPlayer(Player chr, int baitLevel)
         {
             return fishingAttempters.TryAdd(chr, baitLevel);
         }
 
-        public int UnregisterFisherPlayer(IPlayer chr)
+        public int UnregisterFisherPlayer(Player chr)
         {
             if (fishingAttempters.TryRemove(chr, out var baitLevel))
             {
@@ -50,8 +50,8 @@ namespace Application.Module.Fishing.Channel
 
             if (fishingAttempters.Count > 0)
             {
-                List<IPlayer> fishingAttemptersList = fishingAttempters.Keys.ToList();
-                foreach (IPlayer chr in fishingAttemptersList)
+                List<Player> fishingAttemptersList = fishingAttempters.Keys.ToList();
+                foreach (Player chr in fishingAttemptersList)
                 {
                     int baitLevel = UnregisterFisherPlayer(chr);
                     doFishing(chr, baitLevel, yearLikelihood, timeLikelihood);
@@ -79,7 +79,7 @@ namespace Application.Module.Fishing.Channel
             return new double[] { yearLikelihood, timeLikelihood };
         }
 
-        private bool hitFishingTime(IPlayer chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+        private bool hitFishingTime(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
         {
             double baitLikelihood = 0.0002 * chr.getChannelServer().WorldFishingRate * baitLevel;   // can improve 10.0 at "max level 50000" on rate 1x
 
@@ -93,7 +93,7 @@ namespace Application.Module.Fishing.Channel
             return (0.23 * yearLikelihood) + (0.77 * timeLikelihood) + (baitLikelihood) > 57.777;
         }
 
-        public void doFishing(IPlayer chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+        public void doFishing(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
         {
             // thanks Fadi, Vcoc for suggesting a custom fishing system
 

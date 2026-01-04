@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Services
             _mapper = mapper;
         }
 
-        public void AutoBan(IPlayer chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
+        public void AutoBan(Player chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
         {
             var res = _transport.Ban(new SystemProto.BanRequest
             {
@@ -41,7 +41,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public async Task Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
+        public async Task Ban(Player chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
             await _transport.Ban(new SystemProto.BanRequest
             {
@@ -54,7 +54,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public async Task Unban(IPlayer chr, string victim)
+        public async Task Unban(Player chr, string victim)
         {
             await _transport.Unban(new SystemProto.UnbanRequest
             {
@@ -63,13 +63,13 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        internal async Task SetGmLevel(IPlayer chr, string victim, int newLevel)
+        internal async Task SetGmLevel(Player chr, string victim, int newLevel)
         {
             await _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
         }
 
 
-        public void SetFly(IPlayer chr, bool v)
+        public void SetFly(Player chr, bool v)
         {
             var data = _transport.SendSetFly(new ConfigProto.SetFlyRequest { CId = chr.Id, SetStatus = v });
             if (data.Code == 0)
@@ -106,7 +106,7 @@ namespace Application.Core.Channel.Services
         /// </summary>
         /// <param name="targetId"></param>
         [SupportRemoteCall(RemoteCallMethods.WarpPlayerByName)]
-        public async Task WarpPlayerByName(IPlayer chr, string victim)
+        public async Task WarpPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -120,7 +120,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public async Task SummonPlayerByName(IPlayer chr, string victim)
+        public async Task SummonPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -141,7 +141,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public async Task DisconnectPlayerByName(IPlayer chr, string victim)
+        public async Task DisconnectPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -155,7 +155,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public async Task DisconnectAll(IPlayer chr)
+        public async Task DisconnectAll(Player chr)
         {
             await _server.Transport.DisconnectAllNotifyAsync();
             // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
@@ -172,7 +172,7 @@ namespace Application.Core.Channel.Services
         /// 停机
         /// </summary>
         /// <param name="delay">单位：秒。-1：立即</param>
-        public async Task ShutdownMaster(IPlayer chr, int delay = -1)
+        public async Task ShutdownMaster(Player chr, int delay = -1)
         {
             chr.dropMessage("服务器正在停止中...");
             await _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
@@ -184,7 +184,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        internal string QueryExpeditionInfo(IPlayer onlinedCharacter)
+        internal string QueryExpeditionInfo(Player onlinedCharacter)
         {
             return "";
             //var dataSource = _transport.GetExpeditionInfo().List;

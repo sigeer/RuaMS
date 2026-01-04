@@ -84,7 +84,7 @@ namespace Application.Core.Channel.ServerData
             _logger.LogInformation("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountEntity!.Id, chr.getName(), packetId, packet);
         }
 
-        public async Task ToggleMonitor(IPlayer chr, string name)
+        public async Task ToggleMonitor(Player chr, string name)
         {
             await _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
         }

@@ -35,7 +35,7 @@ public abstract class PartyQuest
 
     int channel;
     Team party;
-    List<IPlayer> participants = new();
+    List<Player> participants = new();
     protected WorldChannel worldChannel;
 
     public PartyQuest(WorldChannel worldChannel, Team party)
@@ -63,12 +63,12 @@ public abstract class PartyQuest
         return party;
     }
 
-    public List<IPlayer> getParticipants()
+    public List<Player> getParticipants()
     {
         return participants;
     }
 
-    public void removeParticipant(IPlayer chr)
+    public void removeParticipant(Player chr)
     {
         lock (participants)
         {

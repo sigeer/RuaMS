@@ -1,6 +1,7 @@
 using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using DotNetty.Codecs;
@@ -39,21 +40,24 @@ namespace Application.Shared.Client
 
             this.log = log;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
-                try
+                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL));
+
+                while (await timer.WaitForNextTickAsync())
                 {
-                    while (await packetChannel.Reader.WaitToReadAsync())
+                    if (packetChannel.Reader.Count == 0)
+                        continue;
+
+                    NettyChannel.EventLoop.Execute(() =>
                     {
                         while (packetChannel.Reader.TryRead(out var p))
                         {
-                            await NettyChannel.WriteAndFlushAsync(p);
+                            NettyChannel.WriteAsync(p);
                         }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex.ToString());
+
+                        NettyChannel.Flush();
+                    });
                 }
             });
         }

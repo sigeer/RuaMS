@@ -16,7 +16,7 @@ namespace Application.Core.Gameplay
         int _petIndex = -1;
         bool IsPetPickup => _petIndex > -1;
         public PickupCheckFlags Flags { get; set; }
-        public PlayerPickupProcessor(IPlayer player, int petIdex = -1) : base(player)
+        public PlayerPickupProcessor(Player player, int petIdex = -1) : base(player)
         {
             _petIndex = petIdex;
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;

@@ -119,7 +119,7 @@ public class Pet : Item
         return 3;
     }
 
-    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
+    public void gainTamenessFullness(Player owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
     {
         sbyte slot = owner.getPetIndex(this);
         bool enjoyed;
@@ -246,7 +246,7 @@ public class Pet : Item
         PetAttribute = flag;
     }
 
-    public void addPetAttribute(IPlayer owner, PetAttribute flag)
+    public void addPetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute |= (int)flag;
 
@@ -257,7 +257,7 @@ public class Pet : Item
         }
     }
 
-    public void removePetAttribute(IPlayer owner, PetAttribute flag)
+    public void removePetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
 

@@ -38,7 +38,7 @@ public class Snowball
     private bool hittable = false;
     private int team;
     private bool winner = false;
-    List<IPlayer> characters = new();
+    List<Player> characters = new();
 
     public Snowball(int team, IMap map)
     {

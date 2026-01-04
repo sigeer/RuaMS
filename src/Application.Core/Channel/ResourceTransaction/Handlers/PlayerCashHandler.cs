@@ -2,13 +2,13 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 {
     public class PlayerCostCashHandler : IResourceHandler
     {
-        private IPlayer _player;
+        private Player _player;
         private int _cashType;
         private int _frozenAmount;
 
         private int _costAmount;
 
-        public PlayerCostCashHandler(IPlayer player, int type, int costAmount)
+        public PlayerCostCashHandler(Player player, int type, int costAmount)
         {
             _player = player;
             _cashType = type;
@@ -50,13 +50,13 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 
     public class PlayerGainCashHandler : IResourceHandler
     {
-        private IPlayer _player;
+        private Player _player;
         private int _cashType;
         private int _frozenAmount;
 
         private int _deltaValue;
 
-        public PlayerGainCashHandler(IPlayer player, int type, int gainAmount)
+        public PlayerGainCashHandler(Player player, int type, int gainAmount)
         {
             _player = player;
             _cashType = type;

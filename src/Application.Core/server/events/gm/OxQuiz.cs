@@ -45,7 +45,7 @@ public class OxQuiz
         this.question = 1;
     }
 
-    private bool isCorrectAnswer(IPlayer chr, int answer)
+    private bool isCorrectAnswer(Player chr, int answer)
     {
         double x = chr.getPosition().X;
         double y = chr.getPosition().Y;
@@ -72,7 +72,7 @@ public class OxQuiz
         map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-            List<IPlayer> chars = new(map.getAllPlayers());
+            List<Player> chars = new(map.getAllPlayers());
 
             foreach (var chr in chars)
             {

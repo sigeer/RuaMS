@@ -306,7 +306,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
             disconnectAwayPlayers();
             Players.disconnectAll();
-            PlayerShopManager.Dispose();
+            await PlayerShopManager.DisposeAsync();
 
             eventSM.dispose();
 
@@ -364,7 +364,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return world;
     }
 
-    public void addPlayer(IPlayer chr)
+    public void addPlayer(Player chr)
     {
         Players.AddPlayer(chr);
         Container.PlayerStorage.AddPlayer(chr);
@@ -381,7 +381,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return Players;
     }
 
-    public bool removePlayer(IPlayer chr)
+    public bool removePlayer(Player chr)
     {
         return RemovePlayer(chr.Id);
     }

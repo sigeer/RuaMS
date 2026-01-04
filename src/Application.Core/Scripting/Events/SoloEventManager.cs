@@ -14,17 +14,17 @@ namespace Application.Core.Scripting.Events
         }
 
         #region Start Instance
-        public bool startInstance(IPlayer chr)
+        public bool startInstance(Player chr)
         {
             return startInstance(-1, chr);
         }
 
-        public bool startInstance(int lobbyId, IPlayer leader, int difficult = 1)
+        public bool startInstance(int lobbyId, Player leader, int difficult = 1)
         {
             return startInstance(lobbyId, leader, leader, difficult);
         }
 
-        bool startInstance(int lobbyId, IPlayer chr, IPlayer leader, int difficulty)
+        bool startInstance(int lobbyId, Player chr, Player leader, int difficulty)
         {
             if (this.isDisposed())
             {

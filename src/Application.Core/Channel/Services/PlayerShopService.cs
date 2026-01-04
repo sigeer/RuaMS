@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Services
             _server = server;
         }
 
-        private byte CanRetrieveFromFredrick(IPlayer chr, int netMeso, List<Item> items)
+        private byte CanRetrieveFromFredrick(Player chr, int netMeso, List<Item> items)
         {
             if (!Inventory.checkSpot(chr, items))
             {
@@ -59,7 +59,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public RemoteHiredMerchantData LoadPlayerHiredMerchant(IPlayer chr)
+        public RemoteHiredMerchantData LoadPlayerHiredMerchant(Player chr)
         {
             var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
@@ -132,7 +132,7 @@ namespace Application.Core.Channel.Services
                 }
             }
         }
-        public bool CanHiredMerchant(IPlayer chr)
+        public bool CanHiredMerchant(Player chr)
         {
             var status = (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
             if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
@@ -163,7 +163,7 @@ namespace Application.Core.Channel.Services
 
         }
 
-        internal void OwlSearch(IPlayer chr, int useItemId, int searchItemId)
+        internal void OwlSearch(Player chr, int useItemId, int searchItemId)
         {
             ItemProto.OwlSearchResponse data = _server.Transport.SendOwlSearch(
                 new ItemProto.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });

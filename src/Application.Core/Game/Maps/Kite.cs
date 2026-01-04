@@ -6,12 +6,12 @@ namespace Application.Core.Game.Maps;
 public class Kite : AbstractMapObject
 {
     private Point pos;
-    private IPlayer owner;
+    private Player owner;
     private string text;
     private int ft;
     private int itemid;
 
-    public Kite(IPlayer owner, string text, int itemId)
+    public Kite(Player owner, string text, int itemId)
     {
         this.owner = owner;
         pos = owner.getPosition();
@@ -30,7 +30,7 @@ public class Kite : AbstractMapObject
         return pos;
     }
 
-    public IPlayer getOwner()
+    public Player getOwner()
     {
         return owner;
     }

@@ -18,22 +18,7 @@ namespace Application.Core.Login.Modules
             await _server.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = obj.Character.Id });
             await _server.InvitationManager.RemovePlayerInvitation(obj.Character.Id);
 
-            var data = new SyncProto.PlayerFieldChange
-            {
-                Channel = obj.Channel,
-                FamilyId = obj.Character.FamilyId,
-                GuildId = obj.Character.GuildId,
-                TeamId = obj.Character.Party,
-                Id = obj.Character.Id,
-                JobId = obj.Character.JobId,
-                Level = obj.Character.Level,
-                MapId = obj.Character.Map,
-                Name = obj.Character.Name,
-                MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0,
-                FromChannel = lastChannel,
-            };
-            data.Buddies.AddRange(obj.BuddyList.Keys);
-            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnPlayerServerChanged, data);
+            await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerServerChanged, obj, lastChannel);
         }
         /// <summary>
         /// 进入频道
@@ -60,12 +45,12 @@ namespace Application.Core.Login.Modules
 
         public override async Task OnPlayerJobChanged(CharacterLiveObject origin)
         {
-            await _server.Transport.BroadcastPlayerJobChanged(origin);
+            await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerJobChanged, origin, origin.Channel);
         }
 
         public override async Task OnPlayerLevelChanged(CharacterLiveObject origin)
         {
-            await _server.Transport.BroadcastPlayerLevelChanged(origin);
+            await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerLevelChanged, origin, origin.Channel);
         }
     }
 }

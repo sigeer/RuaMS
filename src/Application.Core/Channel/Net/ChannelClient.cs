@@ -31,9 +31,9 @@ namespace Application.Core.Channel.Net
 
         public override bool IsOnlined => Character != null;
 
-        public IPlayer? Character { get; private set; }
+        public Player? Character { get; private set; }
 
-        public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+        public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
         public WorldChannel CurrentServer { get; }
         public WorldChannelServer CurrentServerContainer => CurrentServer.Container;
@@ -128,7 +128,7 @@ namespace Application.Core.Channel.Net
         /// </summary>
         /// <param name="player"></param>
         /// <param name="serverTransition"></param>
-        private static void RemovePlayer(IPlayer player, bool serverTransition)
+        private static void RemovePlayer(Player player, bool serverTransition)
         {
             player.cancelMagicDoor();
             player.setDisconnectedFromChannelWorld();
@@ -418,7 +418,7 @@ namespace Application.Core.Channel.Net
             csattempt = 0;
         }
 
-        public void SetPlayer(IPlayer? player)
+        public void SetPlayer(Player? player)
         {
             Character = player;
         }

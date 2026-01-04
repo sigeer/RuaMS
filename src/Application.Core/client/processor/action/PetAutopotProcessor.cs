@@ -51,7 +51,7 @@ public class PetAutopotProcessor
         private int maxHp, maxMp, curHp, curMp;
         private double incHp, incMp;
 
-        private bool cursorOnNextAvailablePot(IPlayer chr)
+        private bool cursorOnNextAvailablePot(Player chr)
         {
             if (toUseList == null)
             {

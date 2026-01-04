@@ -17,14 +17,14 @@ public class AcceptFamilyHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override Task HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int inviterId = p.readInt();
         var str = p.readString();
         bool accept = p.readByte() != 0;
         // string inviterName = slea.readMapleAsciiString();
-        _familyManager.AnswerInvite(c.OnlinedCharacter, -1, accept);
+        await _familyManager.AnswerInvite(c.OnlinedCharacter, -1, accept);
         c.sendPacket(FamilyPacketCreator.sendFamilyMessage(0, 0));
     }
 }

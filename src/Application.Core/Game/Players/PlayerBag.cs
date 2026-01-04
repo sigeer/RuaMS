@@ -12,8 +12,8 @@ namespace Application.Core.Game.Players
     {
         readonly Inventory[] _dataSource;
         private bool disposedValue;
-        IPlayer Owner { get; }
-        public PlayerBag(IPlayer owner)
+        Player Owner { get; }
+        public PlayerBag(Player owner)
         {
             Owner = owner;
             var typeList = EnumCache<InventoryType>.Values;

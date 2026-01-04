@@ -373,6 +373,7 @@ namespace Application.Core.Channel
             }
 
             DataService.LoadAllPLife();
+            DataService.LoadAllReactorDrops();
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -401,7 +402,7 @@ namespace Application.Core.Channel
             MapOwnershipManager.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-            playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            playerShopTask = await TimerManager.RegisterAsync(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             if (ServerConfig.SystemConfig.AutoClearMap)
             {
                 checkMapActiveTask = TimerManager.register(new DisposeCheckTask(this), TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
@@ -434,7 +435,7 @@ namespace Application.Core.Channel
             }
         }
 
-        public IPlayer? FindPlayerById(int cid)
+        public Player? FindPlayerById(int cid)
         {
             if (cid <= 0)
                 return null;
@@ -442,7 +443,7 @@ namespace Application.Core.Channel
             return PlayerStorage.getCharacterById(cid);
         }
 
-        public IPlayer? FindPlayerById(int channel, int cid)
+        public Player? FindPlayerById(int channel, int cid)
         {
             if (cid <= 0)
                 return null;
@@ -574,7 +575,7 @@ namespace Application.Core.Channel
             MessageDispatcher.Dispatch(type, message);
         }
 
-        internal async Task SendReloadEvents(IPlayer chr)
+        internal async Task SendReloadEvents(Player chr)
         {
             await Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
         }

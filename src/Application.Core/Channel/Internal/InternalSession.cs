@@ -52,11 +52,6 @@ namespace Application.Core.Channel.Internal
                 Data = message.ToByteString()
             }, cancellationToken);
         }
-        public void Send(int type, IMessage message)
-        {
-            SendAsync(type, message).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
         public async Task SendAsync(int type, CancellationToken cancellationToken = default)
         {
             if (_streamingCall == null)

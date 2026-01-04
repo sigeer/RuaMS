@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -55,7 +56,7 @@ namespace Application.Core.Channel.Services
                 _server.BatchSyncPlayerManager.Enqueue(dto);
         }
 
-        public void BatchSyncChar(List<IPlayer> playerList, bool saveDB = false)
+        public void BatchSyncChar(List<Player> playerList, bool saveDB = false)
         {
             List<SyncProto.PlayerSaveDto> list = [];
             foreach (var player in playerList)
@@ -65,7 +66,7 @@ namespace Application.Core.Channel.Services
             _transport.BatchSyncPlayer(list, saveDB);
         }
 
-        public IPlayer? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
+        public Player? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
         {
             if (o == null)
                 return null;
@@ -158,9 +159,6 @@ namespace Application.Core.Channel.Services
                 player.InitialSpawnPoint = 0;
             }
             player.setPosition(portal.getPosition());
-
-            player.setParty(c.CurrentServerContainer.TeamManager.ForcedGetTeam(player.Party));
-
 
             foreach (var item in o.PetIgnores)
             {
@@ -266,7 +264,7 @@ namespace Application.Core.Channel.Services
             return player;
         }
 
-        private SyncProto.PlayerSaveDto Deserialize(IPlayer player)
+        private SyncProto.PlayerSaveDto Deserialize(Player player)
         {
             List<Dto.QuestStatusDto> questStatusList = new();
             foreach (var qs in player.getQuests())
@@ -413,7 +411,7 @@ namespace Application.Core.Channel.Services
             return data;
         }
 
-        public async Task CompleteLogin(IPlayer chr, SyncProto.PlayerGetterDto o)
+        public async Task CompleteLogin(Player chr, SyncProto.PlayerGetterDto o)
         {
             if (o.LoginInfo.IsNewCommer)
             {
@@ -435,7 +433,7 @@ namespace Application.Core.Channel.Services
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
         }
 
-        //public PlayerSaveDto DeserializeCashShop(IPlayer player)
+        //public PlayerSaveDto DeserializeCashShop(Player player)
         //{
         //    var cashShopItems = player.CashShopModel.getInventory();
         //    var cashShopDto  = new CashShopDto()
@@ -464,7 +462,7 @@ namespace Application.Core.Channel.Services
         //    };
         //}
 
-        public SyncProto.PlayerBuffDto DeserializeBuff(IPlayer player)
+        public SyncProto.PlayerBuffDto DeserializeBuff(Player player)
         {
             var data = new SyncProto.PlayerBuffDto();
             data.Buffs.AddRange(player.getAllBuffs().Select(x => new Dto.BuffDto
@@ -488,7 +486,7 @@ namespace Application.Core.Channel.Services
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public CreatorProto.NewPlayerSaveDto DeserializeNew(IPlayer player)
+        public CreatorProto.NewPlayerSaveDto DeserializeNew(Player player)
         {
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
             if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
@@ -546,7 +544,7 @@ namespace Application.Core.Channel.Services
             return data;
         }
 
-        public void SaveBuff(IPlayer player)
+        public void SaveBuff(Player player)
         {
             _transport.SendBuffObject(player.getId(), DeserializeBuff(player));
         }
@@ -556,7 +554,7 @@ namespace Application.Core.Channel.Services
             long curtime = _server.getCurrentTime();
             return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
         }
-        public void RecoverCharacterBuff(IPlayer player)
+        public void RecoverCharacterBuff(Player player)
         {
             var buffdto = _transport.GetBuffObject(player.Id);
             var buffs = buffdto.Buffs.Select(x => new PlayerBuffValueHolder(x.UsedTime,
@@ -578,7 +576,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public async Task CreatePLife(IPlayer chr, int lifeId, string lifeType, int mobTime = -1)
+        public async Task CreatePLife(Player chr, int lifeId, string lifeType, int mobTime = -1)
         {
             if (lifeType == LifeType.Monster)
             {
@@ -628,7 +626,7 @@ namespace Application.Core.Channel.Services
 
         public void OnPLifeCreated(LifeProto.CreatePLifeRequest data)
         {
-            IPlayer? chr = null;
+            Player? chr = null;
             foreach (var ch in _server.Servers.Values)
             {
                 chr ??= ch.Players.getCharacterById(data.MasterId);
@@ -678,7 +676,7 @@ namespace Application.Core.Channel.Services
             LoadAllPLife();
         }
 
-        public async Task RemovePLife(IPlayer chr, string lifeType, int lifeId = -1)
+        public async Task RemovePLife(Player chr, string lifeType, int lifeId = -1)
         {
             var pos = chr.getPosition();
             await _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
@@ -686,7 +684,7 @@ namespace Application.Core.Channel.Services
 
         public void OnPLifeRemoved(LifeProto.RemovePLifeResponse res)
         {
-            IPlayer? chr = null;
+            Player? chr = null;
             foreach (var ch in _server.Servers.Values)
             {
                 chr ??= ch.Players.getCharacterById(res.MasterId);
@@ -732,6 +730,24 @@ namespace Application.Core.Channel.Services
             return _plifeCache.GetValueOrDefault(mapId, []);
         }
 
+        private Dictionary<int, List<DropEntry>> reactorDropData = new();
+        public void LoadAllReactorDrops()
+        {
+            var allItems = _transport.RequestAllReactorDrops();
+            reactorDropData = allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
+        }
+
+        public void ClearReactorDrops()
+        {
+            reactorDropData.Clear();
+        }
+
+        public List<DropEntry> GetReactorDrops(int reactorId)
+        {
+            return reactorDropData.GetValueOrDefault(reactorId) ?? [];
+        }
+
+
         public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
         {
             var code = CharacterFactory.GetNoviceCreator(request.Type, this)
@@ -739,7 +755,7 @@ namespace Application.Core.Channel.Services
             return new CreatorProto.CreateCharResponseDto { Code = code };
         }
 
-        public int SendNewPlayer(IPlayer player)
+        public int SendNewPlayer(Player player)
         {
             var dto = DeserializeNew(player);
             return _transport.SendNewPlayer(dto).Code;

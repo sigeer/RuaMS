@@ -54,7 +54,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         _service = service;
     }
 
-    private static int establishMiniroomStatus(IPlayer chr, bool isMinigame)
+    private static int establishMiniroomStatus(Player chr, bool isMinigame)
     {
         if (isMinigame && FieldLimit.CANNOTMINIGAME.check(chr.getMap().getFieldLimit()))
         {
@@ -879,7 +879,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         }
     }
 
-    private bool isTradeOpen(IPlayer chr)
+    private bool isTradeOpen(Player chr)
     {
         if (chr.getTrade() != null)
         {
@@ -892,13 +892,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         return false;
     }
 
-    private bool canPlaceStore(IPlayer chr)
+    private bool canPlaceStore(Player chr)
     {
         try
         {
             foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
             {
-                if (mmo is IPlayer mc)
+                if (mmo is Player mc)
                 {
                     if (mc.getId() == chr.getId())
                     {

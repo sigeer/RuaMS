@@ -16,7 +16,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             _teamManager = teamManager;
         }
 
-        private static Task broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
+        private static Task broadcastGuildCreationDismiss(HashSet<Player> nonLeaderMatchPlayers)
         {
             foreach (var chr in nonLeaderMatchPlayers)
             {
@@ -27,7 +27,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
             return Task.CompletedTask;
         }
-        public override Task onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
+        public override Task onMatchCreated(Player leader, HashSet<Player> nonLeaderMatchPlayers, string message)
         {
             Packet createGuildPacket = GuildPackets.createGuildMessage(leader.getName(), message);
 
@@ -41,7 +41,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             return Task.CompletedTask;
         }
 
-        public override Task onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override Task onMatchAccepted(int leaderid, HashSet<Player> matchPlayers, string message)
         {
             _guildManager.CreateGuild(message, leaderid, matchPlayers, () =>
             {
@@ -50,7 +50,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             return Task.CompletedTask;
         }
 
-        public override async Task onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override async Task onMatchDeclined(int leaderid, HashSet<Player> matchPlayers, string message)
         {
             foreach (var chr in matchPlayers)
             {
@@ -66,7 +66,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
         }
 
-        public override async Task onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message)
+        public override async Task onMatchDismissed(int leaderid, HashSet<Player> matchPlayers, string message)
         {
 
             var leader = matchPlayers.FirstOrDefault(x => x.getId() == leaderid);

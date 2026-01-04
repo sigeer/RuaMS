@@ -1202,7 +1202,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET && ItemConstants.isPet(itemId);
     }
 
-    public ICollection<Item> canWearEquipment(IPlayer chr, ICollection<Item> items)
+    public ICollection<Item> canWearEquipment(Player chr, ICollection<Item> items)
     {
         Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
         if (inv.IsChecked())
@@ -1300,7 +1300,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return itemz;
     }
 
-    public bool canWearEquipment(IPlayer chr, Equip equip, int dst)
+    public bool canWearEquipment(Player chr, Equip equip, int dst)
     {
         int id = equip.getItemId();
 
@@ -1414,7 +1414,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return list;
     }
 
-    private bool canUseSkillBook(IPlayer player, int skillBookId)
+    private bool canUseSkillBook(Player player, int skillBookId)
     {
         var template = GetMasteryItemTemplate(skillBookId);
         if (template == null)
@@ -1433,7 +1433,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             && player.getMasterLevel(skill2) < template.MasterLevel;
     }
 
-    public List<int> usableMasteryBooks(IPlayer player)
+    public List<int> usableMasteryBooks(Player player)
     {
         List<int> masterybook = new();
         for (int i = 2290000; i <= 2290139; i++)
@@ -1447,7 +1447,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return masterybook;
     }
 
-    public List<int> usableSkillBooks(IPlayer player)
+    public List<int> usableSkillBooks(Player player)
     {
         List<int> skillbook = new();
         for (int i = 2280000; i <= 2280019; i++)

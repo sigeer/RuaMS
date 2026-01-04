@@ -2,7 +2,7 @@ namespace Application.Core.Game.Invites
 {
     public class LocalInviteRequest
     {
-        public LocalInviteRequest(IPlayer from, IPlayer to)
+        public LocalInviteRequest(Player from, Player to)
         {
             CreationTime = from.Client.CurrentServerContainer.getCurrentTime();
             From = from;
@@ -10,7 +10,7 @@ namespace Application.Core.Game.Invites
         }
 
         public long CreationTime { get; set; }
-        public IPlayer From { get; }
-        public IPlayer To { get; }
+        public Player From { get; }
+        public Player To { get; }
     }
 }

@@ -43,11 +43,11 @@ public class Trade
     public List<Item> ItemList { get; set; } = [];
     public int Meso { get; set; }
     private AtomicBoolean locked = new AtomicBoolean(false);
-    private IPlayer chr;
+    private Player chr;
     private byte number;
     private bool fullTrade = false;
 
-    public Trade(byte number, IPlayer chr)
+    public Trade(byte number, Player chr)
     {
         this.chr = chr;
         this.number = number;
@@ -186,7 +186,7 @@ public class Trade
         this.PartnerTrade = partner;
     }
 
-    public IPlayer getChr()
+    public Player getChr()
     {
         return chr;
     }

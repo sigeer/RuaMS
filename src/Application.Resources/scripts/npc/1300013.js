@@ -44,7 +44,7 @@ function action(mode, type, selection) {
 
                 var party = cm.getPlayer().getParty();
                 if (party != null) {
-                    if (!em.StartPQInstance(party, cm.getMap(), 1)) {
+                    if (!em.StartPQInstance(cm.getPlayer())) {
                         cm.sendOk("另一个队伍已经在这个频道挑战boss了。");
                     }
                 } else {

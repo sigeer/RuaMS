@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Services
             _server = server;
         }
 
-        public async Task SendReport(IPlayer chr, string victim, string text, int reason, string chatLog)
+        public async Task SendReport(Player chr, string victim, string text, int reason, string chatLog)
         {
             await _transport.SendReport(new SendReportRequest { MasterId = chr.Id, Victim = victim, Text = text, Reason = reason, ChatLog = chatLog });
         }

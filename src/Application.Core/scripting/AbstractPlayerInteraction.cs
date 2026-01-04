@@ -61,12 +61,12 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c;
     }
 
-    public IPlayer getPlayer()
+    public Player getPlayer()
     {
         return c.OnlinedCharacter;
     }
 
-    public IPlayer getChar()
+    public Player getChar()
     {
         return c.OnlinedCharacter;
     }
@@ -736,12 +736,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.sendPacket(PacketCreator.enableActions());
     }
 
-    public void guildMessage(int type, string message)
-    {
-        if (getPlayer().GuildModel != null)
-            c.CurrentServerContainer.GuildManager.DropGuildMessage(getPlayer().GuildModel!.GuildId, type, message);
-    }
-
     public Guild? getGuild()
     {
         try
@@ -785,7 +779,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getEventInstance() != null && getPlayer().getId() == getEventInstance()!.getLeaderId();
     }
 
-    public void giveCharacterExp(int amount, IPlayer chr)
+    public void giveCharacterExp(int amount, Player chr)
     {
         chr.gainExp((int)(amount * chr.getExpRate()), true, true);
     }

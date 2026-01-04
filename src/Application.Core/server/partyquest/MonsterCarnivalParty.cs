@@ -58,13 +58,13 @@ public class MonsterCarnivalParty
         this.Enemy = party;
     }
 
-    public void AddCP(IPlayer player, int amount)
+    public void AddCP(Player player, int amount)
     {
         TotalCP += amount;
         AvailableCP += amount;
         player.addCP(amount);
     }
-    public void UseCP(IPlayer player, int amount)
+    public void UseCP(Player player, int amount)
     {
         AvailableCP -= amount;
         player.useCP(amount);

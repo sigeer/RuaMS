@@ -178,7 +178,7 @@ public class MobSkill : ISkill
         }
     }
 
-    public void applyDelayedEffect(IPlayer player, Monster monster, bool skill, int animationTime)
+    public void applyDelayedEffect(Player player, Monster monster, bool skill, int animationTime)
     {
         Action toRun = () =>
         {
@@ -198,7 +198,7 @@ public class MobSkill : ISkill
     }
 
     // TODO: avoid output argument banishPlayersOutput
-    public void applyEffect(IPlayer? player, Monster monster, bool skill, List<IPlayer>? banishPlayersOutput)
+    public void applyEffect(Player? player, Monster monster, bool skill, List<Player>? banishPlayersOutput)
     {
         // See if the MobSkill is successful before doing anything
         if (!makeChanceResult())
@@ -347,7 +347,7 @@ public class MobSkill : ISkill
         }
     }
 
-    private void applyDispelEffect(bool skill, Monster monster, IPlayer player)
+    private void applyDispelEffect(bool skill, Monster monster, Player player)
     {
         if (lt != null && rb != null && skill)
         {
@@ -359,8 +359,8 @@ public class MobSkill : ISkill
         }
     }
 
-    private void applyBanishEffect(bool skill, Monster monster, IPlayer player,
-                                   List<IPlayer> banishPlayersOutput)
+    private void applyBanishEffect(bool skill, Monster monster, Player player,
+                                   List<Player> banishPlayersOutput)
     {
         if (lt != null && rb != null && skill)
         {
@@ -492,7 +492,7 @@ public class MobSkill : ISkill
         }
     }
 
-    private void applyDisease(Disease disease, bool skill, Monster monster, IPlayer player)
+    private void applyDisease(Disease disease, bool skill, Monster monster, Player player)
     {
         if (lt != null && rb != null && skill)
         {
@@ -516,7 +516,7 @@ public class MobSkill : ISkill
         }
     }
 
-    private List<IPlayer> getPlayersInRange(Monster monster)
+    private List<Player> getPlayersInRange(Monster monster)
     {
         return monster.getMap().getPlayersInRange(calculateBoundingBox(monster.getPosition()));
     }

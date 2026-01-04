@@ -120,7 +120,7 @@ namespace Application.Core.Game.Players
 
         public void collectDiseases()
         {
-            foreach (IPlayer chr in MapModel.getAllPlayers())
+            foreach (Player chr in MapModel.getAllPlayers())
             {
                 int cid = chr.getId();
 

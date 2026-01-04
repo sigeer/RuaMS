@@ -522,9 +522,9 @@ public class MatchCheckingElement
         return s;
     }
 
-    public HashSet<IPlayer> getMatchCharacters()
+    public HashSet<Player> getMatchCharacters()
     {
-        HashSet<IPlayer> players = new();
+        HashSet<Player> players = new();
 
         var ps = _worldChannel.getPlayerStorage();
 
@@ -541,7 +541,7 @@ public class MatchCheckingElement
 
     public void dispatchMatchCreated()
     {
-        HashSet<IPlayer> nonLeaderMatchPlayers = getMatchCharacters();
+        HashSet<Player> nonLeaderMatchPlayers = getMatchCharacters();
         var leader = nonLeaderMatchPlayers.FirstOrDefault(x => x.getId() == leaderCid);
         if (leader != null)
         {

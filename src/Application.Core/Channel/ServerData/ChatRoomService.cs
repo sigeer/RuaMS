@@ -23,13 +23,13 @@ namespace Application.Core.Channel.ServerData
             _server = server;
         }
 
-        public async Task CreateChatRoom(IPlayer chr)
+        public async Task CreateChatRoom(Player chr)
         {
             await _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
         }
 
 
-        public async Task JoinChatRoom(IPlayer chr, int roomId)
+        public async Task JoinChatRoom(Player chr, int roomId)
         {
             await _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
         }
@@ -72,7 +72,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public async Task LeftChatRoom(IPlayer chr)
+        public async Task LeftChatRoom(Player chr)
         {
             await _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
         }
@@ -97,7 +97,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public async Task SendMessage(IPlayer chr, string text)
+        public async Task SendMessage(Player chr, string text)
         {
             await _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
@@ -114,12 +114,12 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        internal async Task CreateInvite(IPlayer player, string input)
+        internal async Task CreateInvite(Player player, string input)
         {
            await  _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
-        internal async Task AnswerInvite(IPlayer player, int roomId, bool v)
+        internal async Task AnswerInvite(Player player, int roomId, bool v)
         {
             await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }

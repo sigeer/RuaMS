@@ -43,7 +43,7 @@ public class GiveFameHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as IPlayer;
+        var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as Player;
         int mode = p.readByte();
         int famechange = 2 * mode - 1;
         var player = c.OnlinedCharacter;

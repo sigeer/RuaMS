@@ -20,7 +20,7 @@ public class MakeCharInfoValidator
         premiumCharMale = new MakeCharInfo(data.getChildByPath("PremiumCharMale")!);
     }
 
-    private static MakeCharInfo? getMakeCharInfo(IPlayer character)
+    private static MakeCharInfo? getMakeCharInfo(Player character)
     {
         if (character.JobModel.Type == JobType.Adventurer)
             return character.isMale() ? charMale : charFemale;
@@ -35,7 +35,7 @@ public class MakeCharInfoValidator
         };
     }
 
-    public static bool isNewCharacterValid(IPlayer character)
+    public static bool isNewCharacterValid(Player character)
     {
         var makeCharInfo = getMakeCharInfo(character);
         if (makeCharInfo == null)

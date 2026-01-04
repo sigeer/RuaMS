@@ -38,22 +38,12 @@ namespace Application.Core.Login
             await BroadcastMessageN(ChannelRecvCode.MultiChat, res);
         }
 
-        internal async Task BroadcastPlayerLevelChanged(CharacterLiveObject obj)
-        {
-            await BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerLevelChanged, obj);
-        }
-
-        internal async Task BroadcastPlayerJobChanged(CharacterLiveObject obj)
-        {
-            await BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerJobChanged, obj);
-        }
-
-
-        async Task BroadcastPlayerFieldChange(int evt, CharacterLiveObject obj)
+        public async Task BroadcastPlayerFieldChange(int evt, CharacterLiveObject obj, int fromChannel)
         {
             SyncProto.PlayerFieldChange response = new SyncProto.PlayerFieldChange
             {
                 Channel = obj.Channel,
+                FromChannel = fromChannel,
                 FamilyId = obj.Character.FamilyId,
                 GuildId = obj.Character.GuildId,
                 TeamId = obj.Character.Party,
@@ -64,6 +54,7 @@ namespace Application.Core.Login
                 Name = obj.Character.Name,
                 MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0
             };
+            response.Buddies.AddRange(obj.BuddyList.Keys);
             await BroadcastMessageN(evt, response);
         }
 
@@ -71,12 +62,6 @@ namespace Application.Core.Login
         internal async Task BroadcastShutdown()
         {
             await BroadcastMessageN(ChannelRecvCode.UnregisterChannel);
-        }
-
-        internal async Task SendNewYearCardReceived(ReceiveNewYearCardResponse response)
-        {
-            int[] to = response.Model == null ? [response.Request.MasterId] : [response.Request.MasterId, response.Model.SenderId];
-            await SendMessageN(ChannelRecvCode.OnNewYearCardReceived, response, to);
         }
 
         internal async Task SendNewYearCards(SendNewYearCardResponse response)

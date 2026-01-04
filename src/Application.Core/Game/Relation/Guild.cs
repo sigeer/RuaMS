@@ -59,8 +59,8 @@ public class Guild
     /// <summary>
     /// 相当于原先的 notifications
     /// </summary>
-    List<IPlayer?>? channelMembersCache;
-    List<IPlayer?> GetCurrentChannelMembers()
+    List<Player?>? channelMembersCache;
+    List<Player?> GetCurrentChannelMembers()
     {
         if (!channelDirty && channelMembersCache != null)
         {
@@ -72,7 +72,7 @@ public class Guild
         return channelMembersCache = Members.Keys.Select(x => _serverContainer.FindPlayerById(x)).ToList();
     }
 
-    public void HandleCurrentServerMembers(Action<IPlayer> action)
+    public void HandleCurrentServerMembers(Action<Player> action)
     {
         foreach (var m in GetCurrentChannelMembers())
         {
@@ -436,7 +436,7 @@ public class Guild
     /// <param name="mc"></param>
     /// <param name="guildid">-1. 更新, 0. 解散</param>
     /// <param name="rank"></param>
-    private void SetOnlinedPlayerGuildInfo(IPlayer mc, int guildid, int rank)
+    private void SetOnlinedPlayerGuildInfo(Player mc, int guildid, int rank)
     {
         bool bDifferentGuild;
         if (guildid == -1)

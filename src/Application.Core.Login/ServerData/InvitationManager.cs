@@ -1,7 +1,9 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
+using Application.Shared.Constants;
 using Application.Shared.Invitations;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
@@ -157,6 +159,22 @@ namespace Application.Core.Login.ServerData
             {
                 responseCode = InviteResponseCode.Team_AlreadyInTeam;
             }
+
+            var team = _server.TeamManager.GetTeamModel(fromPlayer.Character.Party);
+            if (team == null)
+            {
+                var res = _server.TeamManager.CreateTeam(new TeamProto.CreateTeamRequest { LeaderId = fromPlayer.Character.Party });
+                if (res.Code == 0)
+                    await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamCreated, res, [res.Request.LeaderId]);
+            }
+            else
+            {
+                if (team.GetMembers().Length >= Limits.MaxTeamMember)
+                {
+                    responseCode = InviteResponseCode.Team_CapacityFull;
+                }
+            }
+
             await BroadcastResult(responseCode, fromPlayer.Character.Party, fromPlayer, toPlayer, request.ToName);
         }
     }

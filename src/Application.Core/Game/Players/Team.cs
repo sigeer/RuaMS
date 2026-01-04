@@ -1,3 +1,5 @@
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using System.Threading.Tasks;
 using tools;
@@ -6,29 +8,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public void setParty(Team? p)
-        {
-            Monitor.Enter(prtLock);
-            try
-            {
-                if (p == null)
-                {
-                    doorSlot = -1;
-
-                    TeamModel = null;
-                }
-                else
-                {
-                    TeamModel = p;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(prtLock);
-            }
-        }
-
-
         public bool isLeader()
         {
             return isPartyLeader();
@@ -38,7 +17,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                return TeamModel?.getLeaderId() == getId();
+                return getParty()?.getLeaderId() == getId();
             }
             finally
             {
@@ -52,7 +31,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                return TeamModel;
+                return Client.CurrentServerContainer.TeamManager.ForcedGetTeam(Party);
             }
             finally
             {
@@ -65,7 +44,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                return TeamModel?.getId() ?? -1;
+                return Party;
             }
             finally
             {
@@ -73,16 +52,17 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public List<IPlayer> getPartyMembersOnline()
+        public List<Player> getPartyMembersOnline()
         {
             Monitor.Enter(prtLock);
             try
             {
-                if (TeamModel != null)
+                var chrParty = getParty();
+                if (chrParty != null)
                 {
-                    return TeamModel.GetChannelMembers(Client.CurrentServer).Where(x => x.IsOnlined).ToList();
+                    return chrParty.GetChannelMembers(Client.CurrentServer).Where(x => x.IsOnlined).ToList();
                 }
-                return new List<IPlayer>();
+                return new List<Player>();
             }
             finally
             {
@@ -90,16 +70,17 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public List<IPlayer> getPartyMembersOnSameMap()
+        public List<Player> getPartyMembersOnSameMap()
         {
-            List<IPlayer> list = new();
+            List<Player> list = new();
             Monitor.Enter(prtLock);
             try
             {
-                if (TeamModel != null)
+                var chrParty = getParty();
+                if (chrParty != null)
                 {
                     int thisMapHash = this.MapModel.GetHashCode();
-                    foreach (var chr in TeamModel.GetChannelMembers(Client.CurrentServer))
+                    foreach (var chr in chrParty.GetChannelMembers(Client.CurrentServer))
                     {
                         var chrMap = chr.getMap();
                         // 用hashcode判断地图是否相同？ -- 同一频道、同一mapid
@@ -118,7 +99,7 @@ namespace Application.Core.Game.Players
             return list;
         }
 
-        public bool isPartyMember(IPlayer chr)
+        public bool isPartyMember(Player chr)
         {
             return isPartyMember(chr.getId());
         }
@@ -128,17 +109,12 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                if (TeamModel != null)
-                {
-                    return TeamModel.containsMembers(cid);
-                }
+                return getParty()?.containsMembers(cid) ?? false;
             }
             finally
             {
                 Monitor.Exit(prtLock);
             }
-
-            return false;
         }
 
         public async Task<bool> leaveParty()
@@ -149,7 +125,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                party = getParty();
+                party = this.getParty();
                 partyLeader = isPartyLeader();
             }
             finally
@@ -174,12 +150,9 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                if (TeamModel != null)
+                foreach (var player in this.getPartyMembersOnSameMap())
                 {
-                    foreach (var player in this.getPartyMembersOnSameMap())
-                    {
-                        player.sendPacket(PacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
-                    }
+                    player.sendPacket(TeamPacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
                 }
             }
             finally
@@ -194,17 +167,74 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                if (TeamModel != null)
+                if (getParty() != null)
                 {
                     foreach (var player in this.getPartyMembersOnSameMap())
                     {
-                        sendPacket(PacketCreator.updatePartyMemberHP(player.getId(), player.HP, player.ActualMaxHP));
+                        sendPacket(TeamPacketCreator.updatePartyMemberHP(player.getId(), player.HP, player.ActualMaxHP));
                     }
                 }
             }
             finally
             {
                 Monitor.Exit(prtLock);
+            }
+        }
+
+        /// <summary>
+        /// 当队伍成员数量发生变化时：更新掉落物归属，更新传送门使用权
+        /// </summary>
+        /// <param name="party"></param>
+        /// <param name="exPartyMembers">null：新增成员，否则移除成员</param>
+        public void HandleTeamMemberCountChanged(List<Player>? exPartyMembers)
+        {
+            List<WeakReference<IMap>> mapids;
+
+            Monitor.Enter(petLock);
+            try
+            {
+                mapids = new(lastVisitedMaps);
+            }
+            finally
+            {
+                Monitor.Exit(petLock);
+            }
+
+            List<Player> partyMembers = new();
+            foreach (var mc in (exPartyMembers ?? this.getPartyMembersOnline()))
+            {
+                if (mc.isLoggedinWorld())
+                {
+                    partyMembers.Add(mc);
+                }
+            }
+
+            Player? partyLeaver = null;
+            if (exPartyMembers != null)
+            {
+                partyMembers.Remove(this);
+                partyLeaver = this;
+            }
+
+            IMap map = MapModel;
+            List<MapItem>? partyItems = null;
+
+            int partyId = exPartyMembers != null ? -1 : this.getPartyId();
+            foreach (var mapRef in mapids)
+            {
+                if (mapRef.TryGetTarget(out var mapObj))
+                {
+                    List<MapItem> partyMapItems = mapObj.updatePlayerItemDropsToParty(partyId, Id, partyMembers, partyLeaver);
+                    if (MapModel.GetHashCode() == mapObj.GetHashCode())
+                    {
+                        partyItems = partyMapItems;
+                    }
+                }
+            }
+
+            if (partyItems != null && exPartyMembers == null)
+            {
+                MapModel.updatePartyItemDropsToNewcomer(this, partyItems);
             }
         }
     }

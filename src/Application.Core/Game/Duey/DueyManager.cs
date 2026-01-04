@@ -31,7 +31,7 @@ namespace Application.Core.Channel.DueyService
             _distributeService = distributeService;
         }
 
-        private async Task CreateDueyPackage(IPlayer chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
+        private async Task CreateDueyPackage(Player chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
             if (chr.TscRequest != null)
             {
@@ -187,12 +187,12 @@ namespace Application.Core.Channel.DueyService
             }
         }
 
-        public async Task RemoveDueyPackage(IPlayer chr, int packageId)
+        public async Task RemoveDueyPackage(Player chr, int packageId)
         {
             await _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
         }
 
-        public async Task TakePackage(IPlayer chr, int packageId)
+        public async Task TakePackage(Player chr, int packageId)
         {
             await _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
         }

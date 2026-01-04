@@ -117,7 +117,7 @@ namespace Application.Core.Scripting.Events
 
         public bool attemptStartGuildInstance()
         {
-            IPlayer? chr = null;
+            Player? chr = null;
             List<int>? guildInstance = null;
             while (chr == null)
             {

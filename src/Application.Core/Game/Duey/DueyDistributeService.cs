@@ -31,7 +31,7 @@ namespace Application.Core.Channel.DueyService
                 Item = _mapper.Map<Dto.ItemDto>(item),
             });
         }
-        public void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
 

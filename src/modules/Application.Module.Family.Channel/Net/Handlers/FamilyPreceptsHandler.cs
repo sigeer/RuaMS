@@ -20,20 +20,21 @@ public class FamilyPreceptsHandler : ChannelHandlerBase
         var family = _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id);
         if (family == null)
         {
-            return;
+            return Task.CompletedTask;
         }
         if (family.getLeader().Id != c.OnlinedCharacter.Id)
         {
-            return; //only the leader can set the precepts
+            return Task.CompletedTask;
         }
         string newPrecepts = p.readString();
         if (newPrecepts.Length > 200)
         {
-            return;
+            return Task.CompletedTask;
         }
         family.setMessage(newPrecepts, true);
         //family.broadcastFamilyInfoUpdate(); //probably don't need to broadcast for this?
         c.sendPacket(FamilyPacketCreator.getFamilyInfo(family.getEntryByID(c.OnlinedCharacter.Id)));
+        return Task.CompletedTask;
     }
 
 }

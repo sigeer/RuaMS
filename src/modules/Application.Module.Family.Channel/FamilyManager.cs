@@ -7,6 +7,7 @@ using Application.Shared.Net;
 using AutoMapper;
 using Dto;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Module.Family.Channel
@@ -152,21 +153,21 @@ namespace Application.Module.Family.Channel
             return ret;
         }
 
-        internal void CreateInvite(IPlayer chr, string toAdd)
+        internal async Task CreateInvite(Player chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
+            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
         }
-        internal void AnswerInvite(IPlayer chr, int familyId, bool accept)
+        internal async Task AnswerInvite(Player chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+           await  _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
-        internal void CreateSummonInvite(IPlayer chr, string toAdd)
+        internal async Task CreateSummonInvite(Player chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
+            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
         }
-        internal void AnswerSummonInvite(IPlayer chr, int familyId, bool accept)
+        internal async Task AnswerSummonInvite(Player chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+            await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
         public void OnJoinFamily(Dto.JoinFamilyResponse data)
@@ -197,7 +198,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public void UseEntitlement(IPlayer player, FamilyEntitlement entitlement)
+        public void UseEntitlement(Player player, FamilyEntitlement entitlement)
         {
             _transport.UseEntitlement(new UseEntitlementRequest { MatserId = player.Id, EntitlementId = entitlement.ordinal() });
         }

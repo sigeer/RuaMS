@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 
@@ -57,7 +58,7 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public List<IPlayer> GetPreparationParty(int roomIndex, Team party)
+        public List<Player> GetPreparationParty(int roomIndex, Team party)
         {
             if (party == null)
             {
@@ -67,8 +68,7 @@ namespace Application.Core.Scripting.Events
             {
                 var room = Rooms[roomIndex];
                 var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv), room, 0);
-                var eligibleParty = result.ToObject<List<IPlayer>>() ?? [];
-                party.setEligibleMembers(eligibleParty);
+                var eligibleParty = result.ToObject<List<Player>>() ?? [];
                 return eligibleParty;
             }
             catch (Exception ex)
@@ -80,36 +80,31 @@ namespace Application.Core.Scripting.Events
         }
 
 
-        public List<IPlayer> GetRoomEligibleParty(MonsterCarnivalEventInstanceManager eim, Team party)
+        public bool Check2(MonsterCarnivalEventInstanceManager eim)
         {
-            if (party == null)
-            {
-                return new();
-            }
             try
             {
-                var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv), eim.Room, 1);
-                var eligibleParty = result.ToObject<List<IPlayer>>() ?? [];
-                party.setEligibleMembers(eligibleParty);
-                return eligibleParty;
+                var t0 = iv.CallFunction("getEligibleParty", eim.Team0.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+                var t1 = iv.CallFunction("getEligibleParty", eim.Team1.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+
+                return t0.Count == t1.Count && t0.Count >= eim.Room.MinCount;
             }
             catch (Exception ex)
             {
                 log.Error(ex, "Script: {Script}", _name);
+                return false;
             }
-
-            return new();
         }
 
 
-        public bool StartInstance(IPlayer chr, IMap map, int roomIndex)
+        public bool StartInstance(Player chr, List<Player> eligiMembers, int roomIndex)
         {
             lock (startLock)
             {
                 if (roomIndex < 0 || roomIndex >= Rooms.Count)
                     return false;
 
-                if (chr.TeamModel == null)
+                if (chr.Party == 0)
                     return false;
 
                 var room = Rooms[roomIndex];
@@ -117,8 +112,12 @@ namespace Application.Core.Scripting.Events
                     return false;
 
                 var eim = createInstance<MonsterCarnivalEventInstanceManager>("setup", roomIndex);
-                eim.Initialize(chr.TeamModel, room);
-                eim.registerParty(chr.TeamModel, map);
+                eim.Initialize(new TeamRegistry(chr.Party, eligiMembers), room);
+
+                foreach (var item in eligiMembers)
+                {
+                    eim.registerPlayer(item);
+                }
 
                 eim.setLeader(chr);
 
@@ -128,7 +127,7 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public int JoinInstance(IPlayer chr, IMap map, int roomIndex)
+        public int JoinInstance(Player chr, List<Player> eligibleMembers, int roomIndex)
         {
             lock (startLock)
             {
@@ -136,10 +135,11 @@ namespace Application.Core.Scripting.Events
                     return 1;
 
                 var room = Rooms[roomIndex];
-                if (room.Instance == null || room.Instance.getLeader() == null)
+                if (room.Instance == null || room.Instance.getLeader() == null || room.Instance.Team0 == null)
                     return 3;
 
-                if (chr.TeamModel == null || chr.TeamModel.getEligibleMembers().Count != room.Instance.Team0.getEligibleMembers().Count)
+                var chrParty = chr.getParty();
+                if (chrParty == null || eligibleMembers.Count != room.Instance.Team0.EligibleMembers.Count)
                     return 2;
 
                 if (room.Instance.Team1 != null)
@@ -148,7 +148,7 @@ namespace Application.Core.Scripting.Events
                 if (room.Instance.getLeader()!.Client.NPCConversationManager != null)
                     return 4;
 
-                room.Instance.Team1 = chr.TeamModel;
+                room.Instance.Team1 = new TeamRegistry(chr.Party, eligibleMembers);
                 // send challenge
                 if (getChannelServer().NPCScriptManager.start(
                     room.Instance.getLeader()!.Client,

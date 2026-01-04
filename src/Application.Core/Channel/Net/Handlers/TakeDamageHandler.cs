@@ -44,7 +44,7 @@ public class TakeDamageHandler : ChannelHandlerBase
 
     public override Task HandlePacket(InPacket p, IChannelClient c)
     {
-        List<IPlayer> banishPlayers = new();
+        List<Player> banishPlayers = new();
 
         var chr = c.OnlinedCharacter;
         p.readInt();

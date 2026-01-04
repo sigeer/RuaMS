@@ -53,22 +53,22 @@ public class NPCScriptManager : AbstractScriptManager
         return engine != null;
     }
 
-    public bool start(IChannelClient c, int npc, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, Player? chr)
     {
         return start(c, npc, -1, chr);
     }
 
-    public bool start(IChannelClient c, int npc, int oid, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, int oid, Player? chr)
     {
         return start(c, npc, oid, null, chr);
     }
 
-    public bool start(IChannelClient c, int npc, string? fileName, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, string? fileName, Player? chr)
     {
         return start(c, npc, -1, fileName, chr);
     }
 
-    public bool start(IChannelClient c, int npc, int oid, string? fileName, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, int oid, string? fileName, Player? chr)
     {
         return start(c, npc, oid, fileName, chr, false, "cm");
     }
@@ -78,7 +78,7 @@ public class NPCScriptManager : AbstractScriptManager
         return start(c, npc, -1, script, null, true, "im");
     }
 
-    public void start(string filename, IChannelClient c, int npc, List<IPlayer> chrs)
+    public void start(string filename, IChannelClient c, int npc, List<Player> chrs)
     {
         try
         {
@@ -107,7 +107,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    private bool start(IChannelClient c, int npc, int oid, string? fileName, IPlayer? chr, bool itemScript, string engineName)
+    private bool start(IChannelClient c, int npc, int oid, string? fileName, Player? chr, bool itemScript, string engineName)
     {
         try
         {

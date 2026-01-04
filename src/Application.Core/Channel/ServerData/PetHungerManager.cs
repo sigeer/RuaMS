@@ -14,14 +14,14 @@ namespace Application.Core.Channel.ServerData
             this._server = server;
         }
 
-        private static int getPetKey(IPlayer chr, sbyte petSlot)
+        private static int getPetKey(Player chr, sbyte petSlot)
         {
             // assuming max 3 pets
             return (chr.getId() << 2) + petSlot;
         }
 
 
-        public void registerPetHunger(IPlayer chr, sbyte petSlot)
+        public void registerPetHunger(Player chr, sbyte petSlot)
         {
             if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
             {
@@ -51,7 +51,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void unregisterPetHunger(IPlayer chr, sbyte petSlot)
+        public void unregisterPetHunger(Player chr, sbyte petSlot)
         {
             int key = getPetKey(chr, petSlot);
 

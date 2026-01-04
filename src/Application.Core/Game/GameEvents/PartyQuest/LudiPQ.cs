@@ -1,8 +1,8 @@
-﻿namespace Application.Core.Game.GameEvents.PartyQuest
+namespace Application.Core.Game.GameEvents.PartyQuest
 {
     public class LudiPQ : PlayerPartyQuestBase
     {
-        public LudiPQ(IPlayer player) : base("LudiPQ", "lpq", player)
+        public LudiPQ(Player player) : base("LudiPQ", "lpq", player)
         {
             EntryNpcId = 2040034;
         }

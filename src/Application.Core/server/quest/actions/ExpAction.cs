@@ -35,12 +35,12 @@ public class ExpAction : AbstractQuestAction
         exp = data;
     }
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         runAction(chr, exp);
     }
 
-    public static void runAction(IPlayer chr, int gain)
+    public static void runAction(Player chr, int gain)
     {
         var expGain = gain * chr.getExpRate();
         if (YamlConfig.config.server.USE_QUEST_RATE)

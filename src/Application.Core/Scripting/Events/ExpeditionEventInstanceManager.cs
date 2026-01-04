@@ -10,7 +10,7 @@ namespace Application.Core.Scripting.Events
         {
             Type = Shared.Events.EventInstanceType.Expedition;
         }
-        protected override void OnMonsterValueChanged(IPlayer chr, Monster mob, int val)
+        protected override void OnMonsterValueChanged(Player chr, Monster mob, int val)
         {
             expedition?.monsterKilled(chr, mob);
         }
@@ -45,7 +45,7 @@ namespace Application.Core.Scripting.Events
         {
             expedition = exped;
 
-            foreach (IPlayer chr in exped.getActiveMembers())
+            foreach (Player chr in exped.getActiveMembers())
             {
                 if (chr.getMapId() == exped.getRecruitingMap().getId())
                 {

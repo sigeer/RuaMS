@@ -358,7 +358,7 @@ public class SkillbookInformationProvider : DataBootstrap
         return foundSkillbooks.GetValueOrDefault(itemId, SkillBookEntry.UNAVAILABLE);
     }
 
-    public List<int> getTeachableSkills(IPlayer chr)
+    public List<int> getTeachableSkills(Player chr)
     {
         List<int> list = new();
 

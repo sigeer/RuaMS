@@ -34,13 +34,13 @@ namespace server.events.gm;
  */
 public class Fitness
 {
-    private IPlayer chr;
+    private Player chr;
     private long time = 0;
     private long timeStarted = 0;
     private ScheduledFuture? schedule = null;
     private ScheduledFuture? schedulemsg = null;
 
-    public Fitness(IPlayer chr)
+    public Fitness(Player chr)
     {
         this.chr = chr;
         this.schedule = chr.Client.CurrentServerContainer.TimerManager.schedule(() =>

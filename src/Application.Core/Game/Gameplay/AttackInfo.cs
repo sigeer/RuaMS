@@ -15,7 +15,7 @@ namespace Application.Core.Game.Gameplay
         public List<int> explodedMesos = [];
         public short attackDelay;
 
-        public StatEffect? getAttackEffect(IPlayer chr, Skill? theSkill)
+        public StatEffect? getAttackEffect(Player chr, Skill? theSkill)
         {
             var mySkill = theSkill ?? SkillFactory.getSkill(skill);
             if (mySkill == null)

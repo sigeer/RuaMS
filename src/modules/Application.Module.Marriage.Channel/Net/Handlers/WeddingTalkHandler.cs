@@ -55,5 +55,6 @@ public class WeddingTalkHandler : ChannelHandlerBase
         }
 
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

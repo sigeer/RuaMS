@@ -41,7 +41,7 @@ public class Storage : AbstractStorage
     public int AccountId { get; set; }
 
     NpcTemplate? NpcTemplate { get; set; }
-    public Storage(IPlayer chr, int id, byte slots, int meso, Item[] items) : base(chr, slots, meso, items)
+    public Storage(Player chr, int id, byte slots, int meso, Item[] items) : base(chr, slots, meso, items)
     {
         log = LogFactory.GetLogger(LogType.Storage);
         this.AccountId = id;

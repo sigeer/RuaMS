@@ -69,8 +69,8 @@ public class Client : ChannelHandlerAdapter, IClient
     /// <summary>
     /// 启动了客户端，但是角色可能并不在线
     /// </summary>
-    public IPlayer? Character { get; private set; }
-    public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+    public Player? Character { get; private set; }
+    public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
     private int accId = -4;
     private bool loggedIn = false;
@@ -345,12 +345,12 @@ public class Client : ChannelHandlerAdapter, IClient
         return getChannelServer().getEventSM().getEventManager(evt);
     }
 
-    public IPlayer? getPlayer()
+    public Player? getPlayer()
     {
         return Character;
     }
 
-    public void setPlayer(IPlayer? player)
+    public void setPlayer(Player? player)
     {
         Character = player;
     }
@@ -370,7 +370,7 @@ public class Client : ChannelHandlerAdapter, IClient
     /// </summary>
     /// <param name="worldId"></param>
     /// <returns></returns>
-    public List<IPlayer> loadCharacters(int worldId)
+    public List<Player> loadCharacters(int worldId)
     {
         return Server.getInstance().LoadAccountCharList(this.accId, worldId + 1).GetValueOrDefault(worldId, []);
     }
@@ -831,7 +831,7 @@ public class Client : ChannelHandlerAdapter, IClient
         return false;
     }
 
-    private static void removePartyPlayer(IPlayer player, IWorld wserv)
+    private static void removePartyPlayer(Player player, IWorld wserv)
     {
         var map = player.getMap();
         var party = player.getParty();
@@ -842,7 +842,7 @@ public class Client : ChannelHandlerAdapter, IClient
             wserv.updateParty(party.getId(), PartyOperation.LOG_ONOFF, player);
             if (party.getLeader().getId() == idz && map != null)
             {
-                IPlayer? lchr = null;
+                Player? lchr = null;
                 foreach (var pchr in party.getMembers())
                 {
                     if (pchr != null && pchr.getId() != idz && (lchr == null || lchr.getLevel() <= pchr.getLevel()) && map.getCharacterById(pchr.getId()) != null)
@@ -858,7 +858,7 @@ public class Client : ChannelHandlerAdapter, IClient
         }
     }
 
-    private void removePlayer(IPlayer player, IWorld wserv, bool serverTransition)
+    private void removePlayer(Player player, IWorld wserv, bool serverTransition)
     {
         try
         {
@@ -1245,7 +1245,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
         foreach (var w in Server.getInstance().getWorlds())
         {
-            foreach (IPlayer chr in w.getPlayerStorage().GetAllOnlinedPlayers())
+            foreach (Player chr in w.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 if (accid == chr.getAccountID())
                 {

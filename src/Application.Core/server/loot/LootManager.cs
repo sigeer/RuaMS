@@ -31,7 +31,7 @@ namespace server.loot;
 public class LootManager
 {
 
-    private static bool isRelevantDrop(DropEntry dropEntry, List<IPlayer> players, List<LootInventory> playersInv)
+    private static bool isRelevantDrop(DropEntry dropEntry, List<Player> players, List<LootInventory> playersInv)
     {
         int qStartAmount = 0, qCompleteAmount = 0;
         Quest quest = Quest.getInstance(dropEntry.QuestId);
@@ -81,7 +81,7 @@ public class LootManager
         return false;
     }
 
-    public static List<DropEntry> retrieveRelevantDrops(int monsterId, List<IPlayer> players)
+    public static List<DropEntry> retrieveRelevantDrops(int monsterId, List<Player> players)
     {
         List<DropEntry> loots = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(monsterId);
         if (loots.Count == 0)

@@ -47,7 +47,7 @@ public class FamilyUseHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override Task HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         FamilyEntitlement type = FamilyEntitlement.Parse(p.readInt());
         int cost = type.getRepCost();
@@ -59,7 +59,7 @@ public class FamilyUseHandler : ChannelHandlerBase
         }
         c.sendPacket(FamilyPacketCreator.getFamilyInfo(entry));
         var toName = p.readString();
-        IPlayer? victim;
+        Player? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
             victim = c.CurrentServer.getPlayerStorage().getCharacterByName(toName);
@@ -92,7 +92,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                                     && (ownMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(ownMap.getId())) && ownMap.getEventInstance() == null)
                             {
 
-                                _familyManager.CreateSummonInvite(c.OnlinedCharacter, toName);
+                                await _familyManager.CreateSummonInvite(c.OnlinedCharacter, toName);
                             }
                             else
                             {

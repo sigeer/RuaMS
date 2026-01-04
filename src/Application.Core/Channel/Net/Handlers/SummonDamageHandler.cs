@@ -112,7 +112,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         return;
     }
 
-    private static int calcMaxDamage(StatEffect summonEffect, IPlayer player, bool magic)
+    private static int calcMaxDamage(StatEffect summonEffect, Player player, bool magic)
     {
         double maxDamage;
 

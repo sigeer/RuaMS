@@ -1,12 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ResourceTransaction;
+using Application.Core.client.Characters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
+using Application.Shared.Objects;
 using client;
 using client.autoban;
 using server;
@@ -15,7 +17,7 @@ using server.maps;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IPlayer
+    public partial class Player : AbstractAnimatedMapObject, IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
@@ -37,9 +39,6 @@ namespace Application.Core.Game.Players
 
         public object SaveToDBLock { get; set; } = new object();
 
-        public event EventHandler<IPlayer>? OnLevelUp;
-        public event EventHandler<IPlayer>? OnJobUpdate;
-        public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         public ResourceConsumeRequest? TscRequest { get; set; }
 

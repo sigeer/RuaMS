@@ -195,7 +195,7 @@ public class EventManager : IDisposable
     }
 
 
-    public virtual List<IPlayer> getEligibleParty(Team party)
+    public virtual List<Player> getEligibleParty(Team party)
     {
         if (party == null)
         {
@@ -204,8 +204,7 @@ public class EventManager : IDisposable
         try
         {
             var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv));
-            var eligibleParty = result.ToObject<List<IPlayer>>();
-            party.setEligibleMembers(eligibleParty);
+            var eligibleParty = result.ToObject<List<Player>>() ?? [];
             return eligibleParty;
         }
         catch (Exception ex)
@@ -242,7 +241,7 @@ public class EventManager : IDisposable
 
 
 
-    public void startQuest(IPlayer chr, int id, int npcid)
+    public void startQuest(Player chr, int id, int npcid)
     {
         try
         {
@@ -254,7 +253,7 @@ public class EventManager : IDisposable
         }
     }
 
-    public void completeQuest(IPlayer chr, int id, int npcid)
+    public void completeQuest(Player chr, int id, int npcid)
     {
         try
         {

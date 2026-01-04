@@ -85,7 +85,7 @@ public class WarpCommand : ParamsCommandBase
         return Task.CompletedTask;
     }
 
-    bool TryGetMapModel(IPlayer admin, MapManager mapManager, int mapId, out IMap target)
+    bool TryGetMapModel(Player admin, MapManager mapManager, int mapId, out IMap target)
     {
         target = mapManager.getMap(mapId);
         if (target == null)

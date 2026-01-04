@@ -38,9 +38,9 @@ public abstract class AbstractQuestAction
         log = LogFactory.GetLogger($"Quest/{quest.getId()}");
     }
 
-    public abstract void run(IPlayer chr, int? extSelection);
+    public abstract void run(Player chr, int? extSelection);
 
-    public virtual bool check(IPlayer chr, int? extSelection)
+    public virtual bool check(Player chr, int? extSelection)
     {
         return true;
     }

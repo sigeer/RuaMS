@@ -6,8 +6,8 @@ namespace Application.Core.Channel.Services
     {
         public void LoadPlayerNpc(IMap map);
         bool CanSpawn(IMap map, string targetName);
-        void SpawnPlayerNPCByHonor(IPlayer chr);
-        void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr);
+        void SpawnPlayerNPCByHonor(Player chr);
+        void SpawnPlayerNPCHere(int mapId, Point position, Player chr);
     }
 
     public class DefaultPlayerNPCService : IPlayerNPCService
@@ -22,12 +22,12 @@ namespace Application.Core.Channel.Services
             
         }
 
-        public void SpawnPlayerNPCByHonor(IPlayer chr)
+        public void SpawnPlayerNPCByHonor(Player chr)
         {
 
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
+        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
 
         }

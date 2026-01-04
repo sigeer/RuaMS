@@ -43,7 +43,7 @@ public class ItemAction : AbstractQuestAction
         items.AddRange(data.Select(x => new ItemData(x.ItemID, x.Count, x.Prop, x.Job, x.Gender, x.Period)));
     }
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         List<ItemData> takeItem = new();
         List<ItemData> giveItem = new();
@@ -137,7 +137,7 @@ public class ItemAction : AbstractQuestAction
         }
     }
 
-    public override bool check(IPlayer chr, int? extSelection)
+    public override bool check(Player chr, int? extSelection)
     {
         List<ItemInventoryType> gainList = new();
         List<ItemInventoryType> selectList = new();
@@ -248,7 +248,7 @@ public class ItemAction : AbstractQuestAction
         return true;
     }
 
-    private void announceInventoryLimit(List<int> itemids, IPlayer chr)
+    private void announceInventoryLimit(List<int> itemids, Player chr)
     {
         if (!chr.canHoldUniques(itemids))
         {
@@ -259,7 +259,7 @@ public class ItemAction : AbstractQuestAction
         chr.dropMessage(1, "Please check if you have enough space in your inventory.");
     }
 
-    private bool canHold(IPlayer chr, List<ItemInventoryType> gainList)
+    private bool canHold(Player chr, List<ItemInventoryType> gainList)
     {
         List<int> toAddItemids = new();
         List<int> toAddQuantity = new();
@@ -286,7 +286,7 @@ public class ItemAction : AbstractQuestAction
         return chr.getAbstractPlayerInteraction().canHoldAllAfterRemoving(toAddItemids, toAddQuantity, toRemoveItemids, toRemoveQuantity);
     }
 
-    private bool canGetItem(ItemData item, IPlayer chr)
+    private bool canGetItem(ItemData item, Player chr)
     {
         if (item.getGender() != 2 && item.getGender() != chr.getGender())
         {
@@ -311,7 +311,7 @@ public class ItemAction : AbstractQuestAction
         return true;
     }
 
-    public bool restoreLostItem(IPlayer chr, int itemid)
+    public bool restoreLostItem(Player chr, int itemid)
     {
         if (!ItemInformationProvider.getInstance().isQuestItem(itemid))
         {

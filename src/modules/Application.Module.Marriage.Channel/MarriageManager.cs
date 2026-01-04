@@ -15,11 +15,11 @@ namespace Application.Module.Marriage.Channel
     {
         ConcurrentDictionary<int, MarriageInfo?> _dataSource = new();
         HashSet<int> inProposal = new();
-        readonly IChannelServerTransport _transport;
+        readonly IModuleChannelServerTransport _transport;
         readonly IMapper _mapper;
         readonly WorldChannelServer _server;
 
-        public MarriageManager(IChannelServerTransport transport, IMapper mapper, WorldChannelServer server)
+        public MarriageManager(IModuleChannelServerTransport transport, IMapper mapper, WorldChannelServer server)
         {
             _transport = transport;
             _mapper = mapper;
@@ -88,32 +88,38 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public void SendSpouseChat(IPlayer chr, string text)
+        public async Task SendSpouseChat(IPlayer chr, string text)
         {
-            var res = _transport.SendSpouseChat(new MarriageProto.SendSpouseChatRequest { SenderId = chr.Id, Text = text });
-            if (res.Code == 1)
-            {
-                chr.dropMessage(5, "You don't have a spouse.");
-            }
-
-            if (res.Code == 2)
-            {
-                chr.dropMessage(5, "Your spouse is currently offline.");
-            }
+            await _transport.SendSpouseChat(new MarriageProto.SendSpouseChatRequest { SenderId = chr.Id, Text = text });
         }
 
-        public void OnReceivedSpouseChat(MarriageProto.OnSpouseChatCallback data)
+        public void OnReceivedSpouseChat(MarriageProto.SendSpouseChatResponse data)
         {
-            var sender = _server.FindPlayerById(data.SenderId);
+            var sender = _server.FindPlayerById(data.Request.SenderId);
             if (sender != null)
             {
-                sender.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Text, true));
+                if (data.Code == 1)
+                {
+                    sender.dropMessage(5, "You don't have a spouse.");
+                    return;
+                }
+
+                if (data.Code == 2)
+                {
+                    sender.dropMessage(5, "Your spouse is currently offline.");
+                    return;
+                }
+
+                sender.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
             }
 
-            var receiver = _server.FindPlayerById(data.SenderPartnerId);
-            if (receiver != null)
+            if (data.Code == 0)
             {
-                receiver.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Text, true));
+                var receiver = _server.FindPlayerById(data.SenderPartnerId);
+                if (receiver != null)
+                {
+                    receiver.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
+                }
             }
         }
 

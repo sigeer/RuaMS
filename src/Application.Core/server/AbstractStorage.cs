@@ -9,7 +9,7 @@ namespace Application.Core.Server
 {
     public abstract class AbstractStorage
     {
-        protected AbstractStorage(IPlayer owner, byte slots, int meso, IEnumerable<Item> items)
+        protected AbstractStorage(Player owner, byte slots, int meso, IEnumerable<Item> items)
         {
             Meso = meso;
             Slots = slots;
@@ -24,7 +24,7 @@ namespace Application.Core.Server
         public int Meso { get; set; }
         public byte Slots { get; set; }
 
-        public IPlayer Owner { get; }
+        public Player Owner { get; }
         protected List<Item> Items { get; set; }
         protected Dictionary<InventoryType, List<Item>> _typedItems;
 

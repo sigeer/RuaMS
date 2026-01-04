@@ -10,13 +10,13 @@ namespace Application.Core.Game.Trades;
 public class PlayerShop : AbstractMapObject, IPlayerShop
 {
 
-    public IPlayer Owner { get; private set; }
+    public Player Owner { get; private set; }
 
-    private IPlayer?[] visitors = new IPlayer[3];
+    private Player?[] visitors = new Player[3];
 
 
     private int boughtnumber = 0;
-    private List<KeyValuePair<IPlayer, string>> chatLog = new();
+    private List<KeyValuePair<Player, string>> chatLog = new();
     private Dictionary<int, byte> chatSlot = new();
     private object visitorLock = new object();
 
@@ -41,7 +41,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public PlayerShop(IPlayer owner, string description, Item item)
+    public PlayerShop(Player owner, string description, Item item)
     {
         setPosition(owner.getPosition());
         Owner = owner;
@@ -97,12 +97,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool IsOwner(IPlayer chr)
+    public bool IsOwner(Player chr)
     {
         return Owner!.Equals(chr);
     }
 
-    private void addVisitor(IPlayer visitor)
+    private void addVisitor(Player visitor)
     {
         var freeSlot = GetFreeSlot();
         if (freeSlot != -1)
@@ -114,7 +114,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void forceRemoveVisitor(IPlayer visitor)
+    public void forceRemoveVisitor(Player visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -138,7 +138,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void RemoveVisitor(IPlayer visitor)
+    public void RemoveVisitor(Player visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -178,7 +178,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
     }
 
-    public bool isVisitor(IPlayer visitor)
+    public bool isVisitor(Player visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -210,7 +210,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity.RemoveAt(slot);
     }
 
-    public Task takeItemBack(int slot, IPlayer chr)
+    public Task takeItemBack(int slot, Player chr)
     {
         var shopItem = Commodity.ElementAt(slot);
         if (shopItem.isExist())
@@ -295,7 +295,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    private void InvokeAllVisitor(Action<IPlayer> action)
+    private void InvokeAllVisitor(Action<Player> action)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -306,7 +306,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    private void InvokeAllVisitor(Action<IPlayer, int> action)
+    private void InvokeAllVisitor(Action<Player, int> action)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -319,7 +319,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void removeVisitors()
     {
-        List<IPlayer> visitorList = new(3);
+        List<Player> visitorList = new(3);
 
         Monitor.Enter(visitorLock);
         try
@@ -342,7 +342,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             Monitor.Exit(visitorLock);
         }
 
-        foreach (IPlayer mc in visitorList)
+        foreach (Player mc in visitorList)
         {
             forceRemoveVisitor(mc);
         }
@@ -368,12 +368,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         broadcastToVisitors(packet);
     }
 
-    private byte getVisitorSlot(IPlayer chr)
+    private byte getVisitorSlot(Player chr)
     {
         return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
-    public void sendMessage(IPlayer fromChar, string chat)
+    public void sendMessage(Player fromChar, string chat)
     {
         byte s = getVisitorSlot(fromChar);
 
@@ -396,7 +396,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         {
             foreach (var it in chatLog)
             {
-                IPlayer chr = it.Key;
+                Player chr = it.Key;
                 var pos = chatSlot.GetValueOrDefault(chr.getId());
 
                 broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
@@ -417,7 +417,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Status.Set(PlayerShopStatus.Opening);
     }
 
-    public void SetMaintenance(IPlayer chr)
+    public void SetMaintenance(Player chr)
     {
         Status.Set(PlayerShopStatus.Maintenance);
     }
@@ -455,7 +455,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public IPlayer?[] getVisitors()
+    public Player?[] getVisitors()
     {
         Monitor.Enter(visitorLock);
         try
@@ -498,7 +498,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             BlackList.Add(name);
         }
 
-        IPlayer? target = null;
+        Player? target = null;
         Monitor.Enter(visitorLock);
         try
         {
@@ -521,7 +521,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return BlackList.Contains(name);
     }
 
-    public bool VisitShop(IPlayer chr)
+    public bool VisitShop(Player chr)
     {
         Monitor.Enter(visitorLock);
         try
@@ -608,7 +608,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    public bool Retrieve(IPlayer owner)
+    public bool Retrieve(Player owner)
     {
         if (owner.Id != this.OwnerId)
             return false;

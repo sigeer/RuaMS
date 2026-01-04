@@ -264,7 +264,7 @@ public class Pyramid : PartyQuest
         }
     }
 
-    public void sendScore(IPlayer chr)
+    public void sendScore(Player chr)
     {
         if (_exp == 0)
         {

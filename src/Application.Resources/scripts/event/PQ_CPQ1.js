@@ -152,9 +152,7 @@ function scheduledTimeout(eim) {
     if (stage == 0) {
         end(eim);
     } else if (stage == 1) {
-        var t1 = em.GetRoomEligibleParty(eim, eim.Team0);
-        var t2 = em.GetRoomEligibleParty(eim, eim.Team1);
-        if (t1.Count == t2.Count && t1.Count >= eim.Room.MinCount) {
+        if (em.Check2(eim)) {
             setStage(eim, 2);
         } else {
             eim.Pink("CPQ_Error");

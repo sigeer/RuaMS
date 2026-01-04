@@ -76,7 +76,7 @@ public class SpawnPetProcessor
         }
     }
 
-    public static void TogglePet(IPlayer chr, Pet pet, bool lead)
+    public static void TogglePet(Player chr, Pet pet, bool lead)
     {
         if (chr.getPetIndex(pet) != -1)
         {

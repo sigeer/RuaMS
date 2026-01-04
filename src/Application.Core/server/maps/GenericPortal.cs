@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Maps;
 using constants.game;
 using tools;
 
@@ -188,4 +189,13 @@ public class GenericPortal : Portal
     {
         return portalState;
     }
+}
+
+public class MysticDoorPortal : GenericPortal
+{
+    public DoorObject? Door { get; set; }
+    public MysticDoorPortal() : base(PortalConstants.DOOR_PORTAL)
+    {
+    }
+
 }

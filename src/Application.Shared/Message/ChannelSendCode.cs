@@ -37,6 +37,7 @@ namespace Application.Shared.Message
         public const int SummonPlayer = 23;
 
         public const int UpdateTeam = 24;
+        public const int CreateTeam = 71;
 
         public const int UpdateGuildGp = 25;
         public const int UpdateGuildRankTitle = 26;
@@ -48,50 +49,52 @@ namespace Application.Shared.Message
         public const int ExpelGuildMember = 32;
         public const int JoinGuild = 33;
         public const int LeaveGuild = 34;
+        public const int SendGuildPacket = 35;
+        public const int DropGuildMessage = 36;
 
-        public const int JoinAlliance = 35;
-        public const int LeaveAlliance = 36;
-        public const int ExpelAllianceGuild = 37;
-        public const int UpdateAllianceCapacity = 38;
-        public const int UpdateAllianceNotice = 39;
-        public const int UpdateAllianceRankTitle = 40;
-        public const int UpdateAllianceGuildRank = 41;
-        public const int UpdateAllianceLeader = 42;
-        public const int DisbandAlliance = 43;
+        public const int JoinAlliance = 37;
+        public const int LeaveAlliance = 38;
+        public const int ExpelAllianceGuild = 39;
+        public const int UpdateAllianceCapacity = 40;
+        public const int UpdateAllianceNotice = 41;
+        public const int UpdateAllianceRankTitle = 42;
+        public const int UpdateAllianceGuildRank = 43;
+        public const int UpdateAllianceLeader = 44;
+        public const int DisbandAlliance = 45;
 
-        public const int JoinChatRoom = 44;
-        public const int LeaveChatRoom = 45;
-        public const int SendChatRoomMessage = 46;
-        public const int CreateChatRoom = 47;
+        public const int JoinChatRoom = 46;
+        public const int LeaveChatRoom = 47;
+        public const int SendChatRoomMessage = 48;
+        public const int CreateChatRoom = 49;
 
-        public const int DropMessage = 48;
+        public const int DropMessage = 50;
 
-        public const int AddBuddy = 49;
-        public const int AddBuddyById = 50;
-        public const int RemoveBuddy = 51;
-        public const int DropBuddyMessage = 52;
-        public const int GetLocation = 53;
+        public const int AddBuddy = 51;
+        public const int AddBuddyById = 52;
+        public const int RemoveBuddy = 53;
+        public const int DropBuddyMessage = 54;
+        public const int GetLocation = 55;
 
-        public const int SendWhisper = 54;
+        public const int SendWhisper = 56;
 
-        public const int SendInvitation = 55;
-        public const int AnswerInvitation = 56;
+        public const int SendInvitation = 57;
+        public const int AnswerInvitation = 58;
 
-        public const int SendNewYearCard = 57;
-        public const int ReceiveNewYearCard = 58;
-        public const int DiscardNewYearCard = 59;
+        public const int SendNewYearCard = 59;
+        public const int ReceiveNewYearCard = 60;
+        public const int DiscardNewYearCard = 61;
 
-        public const int CreatePLife = 60;
-        public const int RemovePLife = 61;
+        public const int CreatePLife = 62;
+        public const int RemovePLife = 63;
 
-        public const int UseItemTV = 62;
-        public const int UseItemMegaphone = 63;
+        public const int UseItemTV = 64;
+        public const int UseItemMegaphone = 65;
 
-        public const int CreateDueyPackage = 64;
-        public const int RemoveDueyPackage = 65;
-        public const int LoadDueyPackage = 66;
-        public const int TakeDueyPackage = 67;
-        public const int TakeDueyPackageCallback = 68;
+        public const int CreateDueyPackage = 66;
+        public const int RemoveDueyPackage = 67;
+        public const int LoadDueyPackage = 68;
+        public const int TakeDueyPackage = 69;
+        public const int TakeDueyPackageCallback = 70;
 
     }
 }

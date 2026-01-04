@@ -330,7 +330,7 @@ public class MonsterAggroCoordinator
         }
     }
 
-    public bool isLeadingCharacterAggro(Monster mob, IPlayer player)
+    public bool isLeadingCharacterAggro(Monster mob, Player player)
     {
         if (mob.isLeadingPuppetInVicinity())
         {
@@ -407,7 +407,7 @@ public class MonsterAggroCoordinator
         }
     }
 
-    public void addPuppetAggro(IPlayer player)
+    public void addPuppetAggro(Player player)
     {
         lock (mapPuppetEntries)
         {

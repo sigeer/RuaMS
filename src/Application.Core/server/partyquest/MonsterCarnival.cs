@@ -87,7 +87,7 @@ public class MonsterCarnival
             map.respawn();
     }
 
-    public void playerDisconnected(IPlayer player)
+    public void playerDisconnected(Player player)
     {
         if (player.MCTeam == null)
             return;
@@ -120,7 +120,7 @@ public class MonsterCarnival
         dispose(true);
     }
 
-    public void leftParty(IPlayer player)
+    public void leftParty(Player player)
     {
         playerDisconnected(player);
     }

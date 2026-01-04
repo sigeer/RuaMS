@@ -26,7 +26,7 @@ namespace client.inventory;
 public class InventoryProof : Inventory
 {
 
-    public InventoryProof(IPlayer mc) : base(mc, InventoryType.CANHOLD, 0)
+    public InventoryProof(Player mc) : base(mc, InventoryType.CANHOLD, 0)
     {
 
     }

@@ -94,7 +94,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             c.sendPacket(LoginPacketCreator.GetLoginFailed((int)loginok));
             return;
         }
-        if (c.FinishLogin() == LoginResultCode.Success && c.CheckChar(c.AccountEntity!.Id))
+        if (c.FinishLogin() == LoginResultCode.Success && await c.CheckChar(c.AccountEntity!.Id))
         {
             c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
             _server.RegisterLoginState(c);

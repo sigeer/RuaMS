@@ -50,12 +50,12 @@ namespace Application.Module.PlayerNPC.Channel
             }
         }
 
-        public void SpawnPlayerNPCByHonor(IPlayer chr)
+        public void SpawnPlayerNPCByHonor(Player chr)
         {
             _manager.SpawnPlayerNPCByHonor(chr);
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
+        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
             _manager.SpawnPlayerNPCHere(mapId, position, chr);
         }

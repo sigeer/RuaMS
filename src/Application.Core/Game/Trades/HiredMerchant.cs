@@ -11,7 +11,7 @@ namespace Application.Core.Game.Trades;
 
 public class HiredMerchant : AbstractMapObject, IPlayerShop
 {
-    public IPlayer? Owner { get; private set; }
+    public Player? Owner { get; private set; }
     public int Mesos { get; private set; }
     public long StartTime { get; }
     public long ExpirationTime { get; }
@@ -39,7 +39,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public HiredMerchant(IPlayer owner, string desc, Item item)
+    public HiredMerchant(Player owner, string desc, Item item)
     {
         setPosition(owner.getPosition());
         StartTime = owner.Client.CurrentServerContainer.getCurrentTime();
@@ -126,7 +126,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool AddVisitor(IPlayer visitor)
+    public bool AddVisitor(Player visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -149,7 +149,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void OwnerLeave(IPlayer chr)
+    public void OwnerLeave(Player chr)
     {
         if (Owner == null)
             return;
@@ -160,7 +160,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         SetOpen();
     }
 
-    public void RemoveVisitor(IPlayer chr)
+    public void RemoveVisitor(Player chr)
     {
         Monitor.Enter(visitorLock);
         try
@@ -194,7 +194,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         visitorHistory.Enqueue(new PastVisitor(visitor.chr.getName(), visitDuration));
     }
 
-    public int getVisitorSlotThreadsafe(IPlayer visitor)
+    public int getVisitorSlotThreadsafe(Player visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -207,7 +207,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    private int getVisitorSlot(IPlayer visitor)
+    private int getVisitorSlot(Player visitor)
     {
         return Array.FindIndex(getVisitorCharacters(), x => x?.Id == visitor.Id);
     }
@@ -222,7 +222,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                 var visitor = visitors[i];
                 if (visitor != null)
                 {
-                    IPlayer visitorChr = visitor.chr;
+                    Player visitorChr = visitor.chr;
                     visitorChr.VisitingShop = null;
                     visitorChr.sendPacket(PacketCreator.leaveHiredMerchant(i + 1, 0x11));
                     visitorChr.sendPacket(PacketCreator.hiredMerchantMaintenanceMessage());
@@ -251,7 +251,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     }
 
     Lock mesoLock = new Lock();
-    public void withdrawMesos(IPlayer chr)
+    public void withdrawMesos(Player chr)
     {
         if (IsOwner(chr))
         {
@@ -262,7 +262,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public async Task takeItemBack(int slot, IPlayer chr)
+    public async Task takeItemBack(int slot, Player chr)
     {
         var shopItem = Commodity[slot];
         if (shopItem.isExist())
@@ -364,7 +364,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         Owner = null;
     }
 
-    public void SetMaintenance(IPlayer chr)
+    public void SetMaintenance(Player chr)
     {
         if (chr.Id == OwnerId)
         {
@@ -375,7 +375,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool Retrieve(IPlayer owner)
+    public bool Retrieve(Player owner)
     {
         if (owner.Id != this.OwnerId)
             return false;
@@ -412,7 +412,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     }
 
-    public bool VisitShop(IPlayer chr)
+    public bool VisitShop(Player chr)
     {
         Monitor.Enter(visitorLock);
         try
@@ -453,7 +453,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     }
 
 
-    public IPlayer?[] getVisitorCharacters()
+    public Player?[] getVisitorCharacters()
     {
         Monitor.Enter(visitorLock);
         try
@@ -496,7 +496,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     /// 整理道具
     /// </summary>
     /// <param name="chr"></param>
-    public void Restore(IPlayer chr)
+    public void Restore(Player chr)
     {
         if (IsOwner(chr))
         {
@@ -531,12 +531,12 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     }
 
 
-    public bool IsOwner(IPlayer chr)
+    public bool IsOwner(Player chr)
     {
         return chr.Id == OwnerId;
     }
 
-    public void sendMessage(IPlayer chr, string msg)
+    public void sendMessage(Player chr, string msg)
     {
         string message = chr.Name + " : " + msg;
         byte slot = (byte)(getVisitorSlot(chr) + 1);
@@ -591,7 +591,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     //    dbTrans.Commit();
     //}
 
-    private static bool check(IPlayer chr, List<PlayerShopItem> items)
+    private static bool check(Player chr, List<PlayerShopItem> items)
     {
         List<ItemInventoryType> li = new();
         foreach (PlayerShopItem item in items)

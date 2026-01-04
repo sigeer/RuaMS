@@ -13,14 +13,9 @@ namespace Application.Core.Login.Servers
             _server = server;
         }
 
-        public override Task<GetTeamResponse> CreateTeam(CreateTeamRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new GetTeamResponse { Model = _server.TeamManager.CreateTeam(request.LeaderId) });
-        }
-
         public override Task<GetTeamResponse> GetTeamModel(GetTeamRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new GetTeamResponse { Model = _server.TeamManager.GetTeamFull(request.Id) });
+            return Task.FromResult(new GetTeamResponse { Model = _server.TeamManager.GetTeamDto(request.Id) });
         }
     }
 }

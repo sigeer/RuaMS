@@ -136,14 +136,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            if (player.getParty() != null)
-            {
-                //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
-                //c.sendPacket(PacketCreator.partyCreated(pchar));
-                await _teamManger.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
-                player.updatePartyMemberHP();
-            }
-
             Inventory eqpInv = player.getInventory(InventoryType.EQUIPPED);
             eqpInv.lockInventory();
             try
@@ -214,8 +206,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.commitExcludedItems();
 
             player.updateCouponRates();
-
-            player.receivePartyMemberHP();
 
             if (newcomer)
             {

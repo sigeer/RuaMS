@@ -54,13 +54,13 @@ namespace Application.Module.PlayerNPC.Channel
 
         }
 
-        public void SpawnPlayerNPCByHonor(IPlayer chr)
+        public void SpawnPlayerNPCByHonor(Player chr)
         {
             var mapId = GameConstants.getHallOfFameMapid(chr.getJob());
             CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), null, chr, true);
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
+        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
             CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), position, chr, false);
         }
@@ -137,7 +137,7 @@ namespace Application.Module.PlayerNPC.Channel
         Lock proLock = new Lock();
 
 
-        internal void CreatePlayerNPCInternal(IMap map, Point? pos, IPlayer chr, bool createByHonor)
+        internal void CreatePlayerNPCInternal(IMap map, Point? pos, Player chr, bool createByHonor)
         {
             lock (proLock)
             {

@@ -204,14 +204,14 @@ function levelSelectRoom(roomIndex) {
     }
 
     if (room.Instance == null) {
-        if (!em.StartInstance(cm.getPlayer(), cm.getMap(), roomIndex)) {
+        if (!em.StartInstance(cm.getPlayer(), team, roomIndex)) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
             return;
         } else {
             cm.Pink("CPQ_EntryLobby");
         }
     } else {
-        const joinResult = em.JoinInstance(cm.getPlayer(), cm.getMap(), roomIndex);
+        const joinResult = em.JoinInstance(cm.getPlayer(), team, roomIndex);
         if (joinResult == 0) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_ChallengeRoomSent"));
             return;

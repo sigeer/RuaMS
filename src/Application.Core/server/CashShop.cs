@@ -56,12 +56,12 @@ public class CashShop
     public int Notes { get; set; }
     private object lockObj = new object();
     public ItemType Factory { get; }
-    public IPlayer Owner { get; set; }
+    public Player Owner { get; set; }
     public int NxCredit { get; set; }
     public int MaplePoint { get; set; }
     public int NxPrepaid { get; set; }
 
-    public CashShop(IPlayer player)
+    public CashShop(Player player)
     {
         Owner = player;
 

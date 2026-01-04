@@ -2,11 +2,11 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 {
     public class PlayerCostMesoHandler : IResourceHandler
     {
-        private IPlayer _player;
+        private Player _player;
         private int _frozenAmount;
         private int _deltaValue;
 
-        public PlayerCostMesoHandler(IPlayer player, int costAmount)
+        public PlayerCostMesoHandler(Player player, int costAmount)
         {
             _player = player;
             _deltaValue = costAmount;
@@ -45,12 +45,12 @@ namespace Application.Core.Channel.ResourceTransaction.Handlers
 
     public class PlayerGainMesoHandler : IResourceHandler
     {
-        private IPlayer _player;
+        private Player _player;
         private int _frozenAmount;
 
         private int _deltaValue;
 
-        public PlayerGainMesoHandler(IPlayer player, int costAmount)
+        public PlayerGainMesoHandler(Player player, int costAmount)
         {
             _player = player;
             _deltaValue = costAmount;

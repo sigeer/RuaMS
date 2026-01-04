@@ -93,9 +93,6 @@ namespace Application.Core.Game.Players
 
         public object SaveToDBLock { get; set; }
 
-        public event EventHandler<IPlayer>? OnLevelUp;
-        public event EventHandler<IPlayer>? OnJobUpdate;
-        public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         ResourceConsumeRequest? TscRequest { get; set; }
 
@@ -162,7 +159,7 @@ namespace Application.Core.Game.Players
         void cancelSkillCooldownTask();
         bool canDoor();
         bool canGainSlots(int type, int slots);
-        FameStatus canGiveFame(IPlayer from);
+        FameStatus canGiveFame(Player from);
         bool canHold(int itemid, int quantity = 1);
         bool canHoldMeso(int gain);
         bool canHoldUniques(List<int> itemids);
@@ -229,7 +226,7 @@ namespace Application.Core.Game.Players
         void gainExp(int gain, bool show, bool inChat, bool white);
         void gainExp(int gain, int party, bool show, bool inChat, bool white);
         void gainFame(int delta);
-        bool gainFame(int delta, IPlayer? fromPlayer, int mode);
+        bool gainFame(int delta, Player? fromPlayer, int mode);
         void gainFestivalPoints(int gain);
         void gainGachaExp();
         [Obsolete("用GainMeso代替")]
@@ -255,7 +252,7 @@ namespace Application.Core.Game.Players
         bool gainSlots(int type, int slots);
         bool gainSlots(int type, int slots, bool update);
 
-        // IPlayer generateCharacterEntry();
+        // Player generateCharacterEntry();
         void genericGuildMessage(int code);
         AbstractPlayerInteraction getAbstractPlayerInteraction();
         int getAccountID();
@@ -388,8 +385,8 @@ namespace Application.Core.Game.Players
         /// </summary>
         /// <returns></returns>
         int getPartyId();
-        List<IPlayer> getPartyMembersOnline();
-        List<IPlayer> getPartyMembersOnSameMap();
+        List<Player> getPartyMembersOnline();
+        List<Player> getPartyMembersOnSameMap();
         PartyQuest? getPartyQuest();
         string getPartyQuestItems();
         Pet? getPet(int index);
@@ -462,7 +459,7 @@ namespace Application.Core.Game.Players
         bool hasEmptySlot(sbyte invType);
         bool hasEntered(string script);
         bool hasEntered(string script, int mapId);
-        void hasGivenFame(IPlayer to);
+        void hasGivenFame(Player to);
         bool hasJustMarried();
         bool hasNoviceExpRate();
         bool haveCleanItem(int itemid);
@@ -508,7 +505,7 @@ namespace Application.Core.Game.Players
         bool isMale();
         bool isMapObjectVisible(IMapObject mo);
         bool isPartyLeader();
-        bool isPartyMember(IPlayer chr);
+        bool isPartyMember(Player chr);
         bool isPartyMember(int cid);
         bool isRidingBattleship();
         bool isSummonsEmpty();
@@ -526,7 +523,7 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers);
+        void partyOperationUpdate(Team party, List<Player>? exPartyMembers);
         int peekSavedLocation(string type);
         void pickupItem(IMapObject? ob, int petIndex = -1);
         long portalDelay();
@@ -628,7 +625,7 @@ namespace Application.Core.Game.Players
         void setMasteries(int jobId);
         MiniGame? getMiniGame();
         void setMiniGame(MiniGame? miniGame);
-        void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok);
+        void setMiniGamePoints(Player visitor, int winnerslot, bool omok);
         void setMonsterBookCover(int bookCover);
         void setMonsterCarnival(MonsterCarnival? monsterCarnival);
         void setName(string name);

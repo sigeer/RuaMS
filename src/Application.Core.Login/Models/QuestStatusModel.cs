@@ -17,14 +17,14 @@ namespace Application.Core.Login.Models
 
         public sbyte Info { get; set; }
         public int Characterid { get; set; }
-        public QuestProgressModel[] Progress { get; set; }
-        public MedalMapModel[] MedalMap { get; set; }
+        public QuestProgressModel[] Progress { get; set; } = [];
+        public MedalMapModel[] MedalMap { get; set; } = [];
     }
 
     public class QuestProgressModel
     {
         public int ProgressId { get; set; }
-        public string Progress { get; set; }
+        public string Progress { get; set; } = string.Empty;
     }
 
     public class MedalMapModel

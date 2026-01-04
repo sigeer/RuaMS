@@ -35,7 +35,6 @@ public class Door
 {
     private int ownerId;
     private IMap? town;
-    private Portal? townPortal;
     private IMap target;
     private KeyValuePair<string, int>? posStatus = null;
     private long deployTime;
@@ -44,62 +43,41 @@ public class Door
     private DoorObject? townDoor;
     private DoorObject? areaDoor;
 
-    public Door(IPlayer owner, Point targetPosition)
+    Door(Player owner, Point targetPosition, MysticDoorPortal townDoorPortal)
     {
         this.ownerId = owner.getId();
         this.target = owner.getMap();
-
-        if (target.canDeployDoor(targetPosition))
-        {
-            if (YamlConfig.config.server.USE_ENFORCE_MDOOR_POSITION)
-            {
-                posStatus = target.getDoorPositionStatus(targetPosition);
-            }
-
-            if (posStatus == null)
-            {
-                this.town = this.target.getReturnMap();
-                this.townPortal = getTownDoorPortal(owner.getDoorSlot());
-                this.deployTime = target.ChannelServer.Container.getCurrentTime();
-                this.active = true;
-
-                if (townPortal != null)
-                {
-                    this.areaDoor = new DoorObject(owner, town, target, townPortal.getId(), targetPosition, townPortal.getPosition());
-                    this.townDoor = new DoorObject(owner, target, town, -1, townPortal.getPosition(), targetPosition);
-
-                    this.areaDoor.setPairOid(this.townDoor.getObjectId());
-                    this.townDoor.setPairOid(this.areaDoor.getObjectId());
-                }
-                else
-                {
-                    this.ownerId = -1;
-                }
-            }
-            else
-            {
-                this.ownerId = -3;
-            }
-        }
-        else
-        {
-            this.ownerId = -2;
-        }
+        this.town = this.target.getReturnMap();
+        this.deployTime = target.ChannelServer.Container.getCurrentTime();
+        this.active = true;
+        this.areaDoor = new DoorObject(owner, targetPosition, town, target, townDoorPortal);
+        this.townDoor = areaDoor.LinkDoor;
     }
 
-    public void updateDoorPortal(IPlayer owner)
+    static Lock lockObj = new();
+    public static int TryCreateDoor(Player chr, Point targetPosition, out Door? door)
     {
-        int slot = owner.fetchDoorSlot();
-
-        var nextTownPortal = getTownDoorPortal(slot);
-        if (nextTownPortal != null)
+        lock (lockObj)
         {
-            townPortal = nextTownPortal;
-            areaDoor.update(nextTownPortal.getId(), nextTownPortal.getPosition());
+            door = null;
+
+            var toMap = chr.MapModel.getReturnMap();
+            if (!chr.MapModel.canDeployDoor(targetPosition))
+            {
+                return -2;
+            }
+
+            if (!toMap.TryGetEffectiveDoorPortal(out var townPortal) || townPortal == null)
+            {
+                return -1;
+            }
+
+            door = new Door(chr, targetPosition, townPortal);
+            return 0;
         }
     }
 
-    private void broadcastRemoveDoor(IPlayer owner)
+    private void broadcastRemoveDoor(Player owner)
     {
         DoorObject areaDoor = this.getAreaDoor();
         DoorObject townDoor = this.getTownDoor();
@@ -113,35 +91,36 @@ public class Door
         target.removeMapObject(areaDoor);
         town.removeMapObject(townDoor);
 
-        foreach (IPlayer chr in targetChars)
+        foreach (Player chr in targetChars)
         {
             areaDoor.sendDestroyData(chr.getClient());
             chr.removeVisibleMapObject(areaDoor);
         }
 
-        foreach (IPlayer chr in townChars)
+        foreach (Player chr in townChars)
         {
             townDoor.sendDestroyData(chr.getClient());
             chr.removeVisibleMapObject(townDoor);
         }
 
-        owner.removePartyDoor(false);
+        owner.removePartyDoor();
 
-        if (this.getTownPortal().getId() == 0x80)
-        {
-            foreach (IPlayer chr in townChars)
-            {
-                var door = chr.getMainTownDoor();
-                if (door != null)
-                {
-                    townDoor.sendSpawnData(chr.getClient());
-                    chr.addVisibleMapObject(townDoor);
-                }
-            }
-        }
+        //// 坐标传送都是0x80，时空门的第1个portal也是0x80，前面移除了这个portal，这里重新生成？--portalFactory让时空门的portalid从0x80+1开始
+        //if (this.getTownPortal().getId() == 0x80)
+        //{
+        //    foreach (Player chr in townChars)
+        //    {
+        //        var door = chr.getMainTownDoor();
+        //        if (door != null)
+        //        {
+        //            townDoor.sendSpawnData(chr.getClient());
+        //            chr.addVisibleMapObject(townDoor);
+        //        }
+        //    }
+        //}
     }
 
-    public static void attemptRemoveDoor(IPlayer owner)
+    public static void attemptRemoveDoor(Player owner)
     {
         var destroyDoor = owner.getPlayerDoor();
         if (destroyDoor != null && destroyDoor.dispose())
@@ -187,11 +166,6 @@ public class Door
     public IMap getTown()
     {
         return town;
-    }
-
-    public Portal getTownPortal()
-    {
-        return townPortal;
     }
 
     public IMap getTarget()

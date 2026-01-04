@@ -19,9 +19,9 @@ namespace Application.Core.Game
 
         public int ActualChannel => 0;
 
-        public IPlayer? Character => null;
+        public Player? Character => null;
 
-        public IPlayer OnlinedCharacter => throw new BusinessCharacterOfflineException();
+        public Player OnlinedCharacter => throw new BusinessCharacterOfflineException();
 
         public bool IsServerTransition => throw new BusinessCharacterOfflineException();
 
@@ -240,7 +240,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetPlayer(IPlayer? player)
+        public void SetPlayer(Player? player)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -389,7 +389,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.SetPlayer(IPlayer? player)
+        void IChannelClient.SetPlayer(Player? player)
         {
             throw new NotImplementedException();
         }

@@ -11,5 +11,4 @@ package ServiceProto;
 
 service TeamService {
 	rpc GetTeamModel(TeamProto.GetTeamRequest) returns (TeamProto.GetTeamResponse);
-	rpc CreateTeam(TeamProto.CreateTeamRequest) returns (TeamProto.GetTeamResponse);
 }

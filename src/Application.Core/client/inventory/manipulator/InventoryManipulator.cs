@@ -49,7 +49,7 @@ public class InventoryManipulator
     /// <returns></returns>
     public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, short flag = 0, long expiration = -1)
     {
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         InventoryType type = ItemConstants.getInventoryType(itemId);
 
         Inventory inv = chr.getInventory(type);
@@ -64,7 +64,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addByIdInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, short flag, long expiration)
+    private static bool addByIdInternal(IChannelClient c, Player chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, short flag, long expiration)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
@@ -322,7 +322,7 @@ public class InventoryManipulator
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         InventoryType type = ItemConstants.getInventoryType(itemid);
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
         if (!chr.CanHoldUniquesOnly(itemid))
@@ -397,7 +397,7 @@ public class InventoryManipulator
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         InventoryType type = !useProofInv ? ItemConstants.getInventoryType(itemid) : InventoryType.CANHOLD;
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
         if (!chr.CanHoldUniquesOnly(itemid))
@@ -470,7 +470,7 @@ public class InventoryManipulator
     /// <param name="consume">true：数量0时不会移除</param>
     public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
         var item = inv.getItem(slot)!;
 
@@ -631,7 +631,7 @@ public class InventoryManipulator
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
         Inventory eqpdInv = chr.getInventory(InventoryType.EQUIPPED);
 
@@ -778,7 +778,7 @@ public class InventoryManipulator
 
     public static void unequip(IChannelClient c, short src, short dst)
     {
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
         Inventory eqpdInv = chr.getInventory(InventoryType.EQUIPPED);
 
@@ -863,7 +863,7 @@ public class InventoryManipulator
             type = InventoryType.EQUIPPED;
         }
 
-        IPlayer chr = c.OnlinedCharacter;
+        Player chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
         var source = inv.getItem(srcItemId);
 

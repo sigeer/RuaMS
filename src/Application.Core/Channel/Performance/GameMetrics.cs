@@ -103,7 +103,8 @@ namespace Application.Core.Channel.Performance
         /// 地图Tick耗时（毫秒）
         /// </summary>
         static Histogram<double> _mapTickDuration = MyMeter.CreateHistogram<double>(
-            "game_map_tick_duration_ms",
+            name: "game_map_tick_duration_ms",
+            unit: "ms",
             description: "地图Tick耗时（毫秒）");
         public static void MapTick(double dur, WorldChannel worldChannel)
         {

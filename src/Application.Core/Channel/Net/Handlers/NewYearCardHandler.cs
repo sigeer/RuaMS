@@ -95,7 +95,7 @@ public class NewYearCardHandler : ChannelHandlerBase
         }
     }
 
-    private static int getValidNewYearCardStatus(int itemid, IPlayer player, short slot)
+    private static int getValidNewYearCardStatus(int itemid, Player player, short slot)
     {
         if (!ItemConstants.isNewYearCardUse(itemid))
         {

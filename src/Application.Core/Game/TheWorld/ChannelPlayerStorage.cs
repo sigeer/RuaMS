@@ -2,14 +2,14 @@ namespace Application.Core.Game.TheWorld
 {
     public class ChannelPlayerStorage
     {
-        private Dictionary<int, IPlayer> storage = new();
-        private Dictionary<string, IPlayer> nameStorage = new();
+        private Dictionary<int, Player> storage = new();
+        private Dictionary<string, Player> nameStorage = new();
         private ReaderWriterLockSlim locks = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-        public event EventHandler<IPlayer>? OnChannelAddPlayer;
+        public event EventHandler<Player>? OnChannelAddPlayer;
 
 
-        public void AddPlayer(IPlayer chr)
+        public void AddPlayer(Player chr)
         {
             locks.EnterWriteLock();
             try
@@ -24,7 +24,7 @@ namespace Application.Core.Game.TheWorld
             }
         }
 
-        public IPlayer? RemovePlayer(int chr)
+        public Player? RemovePlayer(int chr)
         {
             locks.EnterWriteLock();
             try
@@ -40,8 +40,8 @@ namespace Application.Core.Game.TheWorld
                 locks.ExitWriteLock();
             }
         }
-        public IPlayer? this[string name] => getCharacterByName(name);
-        public IPlayer? getCharacterByName(string name)
+        public Player? this[string name] => getCharacterByName(name);
+        public Player? getCharacterByName(string name)
         {
             locks.EnterReadLock();
             try
@@ -53,8 +53,8 @@ namespace Application.Core.Game.TheWorld
                 locks.ExitReadLock();
             }
         }
-        public IPlayer? this[int id] => getCharacterById(id);
-        public IPlayer? getCharacterById(int id)
+        public Player? this[int id] => getCharacterById(id);
+        public Player? getCharacterById(int id)
         {
             locks.EnterReadLock();
             try
@@ -67,12 +67,12 @@ namespace Application.Core.Game.TheWorld
             }
         }
 
-        public List<IPlayer> getAllCharacters()
+        public List<Player> getAllCharacters()
         {
             locks.EnterReadLock();
             try
             {
-                return new List<IPlayer>(storage.Values);
+                return new List<Player>(storage.Values);
             }
             finally
             {
@@ -81,7 +81,7 @@ namespace Application.Core.Game.TheWorld
         }
         public void disconnectAll()
         {
-            List<IPlayer> chrList;
+            List<Player> chrList;
             locks.EnterReadLock();
             try
             {
@@ -92,7 +92,7 @@ namespace Application.Core.Game.TheWorld
                 locks.ExitReadLock();
             }
 
-            foreach (IPlayer mc in chrList)
+            foreach (Player mc in chrList)
             {
                 if (mc.IsOnlined)
                 {

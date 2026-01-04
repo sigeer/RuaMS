@@ -106,7 +106,7 @@ namespace Application.Core.Channel.Services
             return _mapper.Map<List<SpecialCashItem>>(_transport.RequestSpecialCashItems().Items);
         }
 
-        public List<ItemMessagePair> LoadPlayerGifts(IPlayer chr)
+        public List<ItemMessagePair> LoadPlayerGifts(Player chr)
         {
             var cashShop = chr.getCashShop();
             if (cashShop == null)
@@ -200,7 +200,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        internal async Task UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
+        internal async Task UseCash_TV(Player player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
         {
             if (player.TscRequest != null)
             {
@@ -227,7 +227,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        internal async Task UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
+        internal async Task UseCash_ItemMegaphone(Player player, Item costItem, Item? item, string message, bool isWishper)
         {
             if (player.TscRequest != null)
             {
@@ -245,7 +245,7 @@ namespace Application.Core.Channel.Services
             await _transport.SendItemMegaphone(request);
         }
 
-        public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)
+        public void BuyCashItem(Player chr, int cashType, CashItem cItem)
         {
             chr.BuyCashItem(cashType, cItem, () =>
             {
@@ -266,7 +266,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        void BuyCashItemCallback(IPlayer chr, CashItem cItem, CashProto.BuyCashItemResponse data)
+        void BuyCashItemCallback(Player chr, CashItem cItem, CashProto.BuyCashItemResponse data)
         {
             if (data.GiftInfo != null)
             {
@@ -309,7 +309,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void BuyCashItemForGift(IPlayer chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
+        public void BuyCashItemForGift(Player chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
         {
             chr.BuyCashItem(cashType, cItem, () =>
             {
@@ -336,7 +336,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public bool RegisterNameChange(IPlayer chr, string newName)
+        public bool RegisterNameChange(Player chr, string newName)
         {
             Dto.NameChangeResponse res = _transport.ReigsterNameChange(new Dto.NameChangeRequest { MasterId = chr.Id, NewName = newName });
             if (res.Code == 0)
@@ -348,7 +348,7 @@ namespace Application.Core.Channel.Services
             return false;
         }
 
-        internal void UseCdk(IPlayer chr, string cdk)
+        internal void UseCdk(Player chr, string cdk)
         {
             UseCdkResponseCode code = UseCdkResponseCode.Success;
             if (!chr.Client.attemptCsCoupon())

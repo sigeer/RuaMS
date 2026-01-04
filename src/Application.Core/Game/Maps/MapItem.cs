@@ -22,7 +22,7 @@ public class MapItem : AbstractMapObject
 
     public bool NeedCheckSpace => getItem()?.NeedCheckSpace ?? false;
 
-    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
+    public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
     {
         setPosition(position);
         this.Item = item;
@@ -49,13 +49,13 @@ public class MapItem : AbstractMapObject
     /// <param name="type">0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA</param>
     /// <param name="playerDrop"></param>
     /// <param name="questid"></param>
-    public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop, int questid)
+    public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop, int questid)
         : this(item, position, dropper, owner, type, playerDrop)
     {
         this.questid = questid;
     }
 
-    public MapItem(int meso, Point position, IMapObject dropper, IPlayer owner, DropType type, bool playerDrop)
+    public MapItem(int meso, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
     {
         setPosition(position);
         this.Item = null;
@@ -122,7 +122,7 @@ public class MapItem : AbstractMapObject
         }
     }
 
-    public bool hasClientsideOwnership(IPlayer player)
+    public bool hasClientsideOwnership(Player player)
     {
         return this.character_ownerid == player.getId() || this.party_ownerid == player.getPartyId() || hasExpiredOwnershipTime();
     }
@@ -137,7 +137,7 @@ public class MapItem : AbstractMapObject
         return MapModel.ChannelServer.Container.getCurrentTime() - dropTime >= 15 * 1000;
     }
 
-    public bool canBePickedBy(IPlayer chr)
+    public bool canBePickedBy(Player chr)
     {
         if (character_ownerid <= 0 || isFFADrop())
         {

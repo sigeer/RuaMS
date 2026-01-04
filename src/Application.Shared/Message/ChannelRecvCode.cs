@@ -29,6 +29,7 @@ namespace Application.Shared.Message
         public const int HandleFullPacket = 19;
 
         public const int OnTeamUpdate = 20;
+        public const int OnTeamCreated = 72;
 
         public const int OnGuildGpUpdate = 21;
         public const int OnGuildRankTitleUpdate = 22;

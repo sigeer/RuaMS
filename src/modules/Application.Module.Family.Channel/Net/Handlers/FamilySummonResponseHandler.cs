@@ -13,11 +13,11 @@ public class FamilySummonResponseHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override Task HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readString(); //family name
         bool accept = p.readByte() != 0;
-        _familyManager.AnswerSummonInvite(c.OnlinedCharacter, -1, accept);
+        await _familyManager.AnswerSummonInvite(c.OnlinedCharacter, -1, accept);
     }
 
 }

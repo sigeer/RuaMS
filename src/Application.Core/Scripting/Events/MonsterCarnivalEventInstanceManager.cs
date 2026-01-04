@@ -4,6 +4,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Resources.Messages;
 using tools;
 
@@ -19,17 +20,19 @@ namespace Application.Core.Scripting.Events
         /// <summary>
         /// 红队
         /// </summary>
-        public Team Team0 { get; set; } = null!;
+        public TeamRegistry? Team0 { get; set; }
+        public MonsterCarnivalTeam? MCTeam0 { get; set; }
         /// <summary>
         /// 蓝队
         /// </summary>
-        public Team? Team1 { get; set; }
+        public TeamRegistry? Team1 { get; set; }
+        public MonsterCarnivalTeam? MCTeam1 { get; set; }
 
         public MonsterCarnivalEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
         {
         }
 
-        public void Initialize(Team team, MonsterCarnivalPreparationRoom room)
+        public void Initialize(TeamRegistry team, MonsterCarnivalPreparationRoom room)
         {
             Team0 = team;
             Room = room;
@@ -38,15 +41,21 @@ namespace Application.Core.Scripting.Events
             CurrentStage = 0;
         }
 
-        public override void unregisterPlayer(IPlayer chr)
+
+        public override void unregisterPlayer(Player chr)
         {
             base.unregisterPlayer(chr);
 
-            if (chr.TeamModel?.MCTeam != null)
-                chr.TeamModel.MCTeam.EligibleMembers.Remove(chr);
+            if (chr.Party == Team0?.Team)
+            {
+                Team0.EligibleMembers?.Remove(chr);
+            }
+            if (chr.Party == Team1?.Team)
+            {
+                Team1.EligibleMembers?.Remove(chr);
+            }
 
-            chr.resetCP();
-            chr.setTeam(-1);
+            chr.ClearMC();
         }
         public void AcceptChallenge(bool accept)
         {
@@ -54,7 +63,10 @@ namespace Application.Core.Scripting.Events
             {
                 if (Team1 != null)
                 {
-                    registerParty(Team1, getEm().GetMap(Room.RecruitMap));
+                    foreach (var item in Team1.EligibleMembers)
+                    {
+                        registerPlayer(item);
+                    }
                     invokeScriptFunction("setStage", this, 1);
                 }
 
@@ -63,7 +75,7 @@ namespace Application.Core.Scripting.Events
             {
                 if (Team1 != null)
                 {
-                    var requestLeader = Team1.GetChannelLeader(getEm().getChannelServer());
+                    var requestLeader = getLeader();
                     if (requestLeader != null)
                     {
                         requestLeader.Pink(nameof(ClientMessage.CPQ_ChallengeRoomDenied));
@@ -81,16 +93,16 @@ namespace Application.Core.Scripting.Events
             {
                 if (mc.IsOnlined)
                 {
-                    mc.resetCP();
-                    mc.setTeam(-1);
-                    mc.setEventInstance(null);
+                    mc.ClearMC();
                     mc.ForcedWarpOut();
                 }
             }
             base.Dispose();
 
-            Team0.MCTeam?.Dispose();
-            Team1?.MCTeam?.Dispose();
+            Team0 = null;
+            Team1 = null;
+            MCTeam0?.Dispose();
+            MCTeam1?.Dispose();
         }
 
 
@@ -100,20 +112,20 @@ namespace Application.Core.Scripting.Events
         /// <exception cref="Exception"></exception>
         public bool Complete()
         {
-            if (Team0.MCTeam == null || Team1?.MCTeam == null)
+            if (MCTeam0 == null || MCTeam1 == null)
             {
                 // 数据不正常
                 Dispose();
                 return false;
             }
-            if (Team0.MCTeam.TotalCP != Team1.MCTeam.TotalCP)
+            if (MCTeam0.TotalCP != MCTeam1.TotalCP)
             {
                 EventMap.killAllMonsters();
 
-                bool redWin = Team0.MCTeam.TotalCP > Team1.MCTeam.TotalCP;
+                bool redWin = MCTeam0.TotalCP > MCTeam1.TotalCP;
 
-                this.Team0.MCTeam.Complete(redWin);
-                this.Team1.MCTeam.Complete(!redWin);
+                this.MCTeam0.Complete(redWin);
+                this.MCTeam1.Complete(!redWin);
                 return true;
             }
             else
@@ -127,14 +139,14 @@ namespace Application.Core.Scripting.Events
             if (Team1 == null)
                 return;
 
-            Team0.MCTeam = new MonsterCarnivalTeam(this, Team0, 0);
-            Team1.MCTeam = new MonsterCarnivalTeam(this, Team1, 1);
+            MCTeam0 = new MonsterCarnivalTeam(this, Team0!, 0);
+            MCTeam1 = new MonsterCarnivalTeam(this, Team1, 1);
 
-            Team0.MCTeam.Initialize(Team1.MCTeam);
-            Team1.MCTeam.Initialize(Team0.MCTeam);
+            MCTeam0.Initialize(MCTeam1);
+            MCTeam1.Initialize(MCTeam0);
         }
 
-        public override void playerKilled(IPlayer chr)
+        public override void playerKilled(Player chr)
         {
             base.playerKilled(chr);
 
@@ -147,7 +159,7 @@ namespace Application.Core.Scripting.Events
             EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(chr.Name, losing, chr.MCTeam!.TeamFlag));
         }
 
-        public override void monsterKilled(IPlayer chr, Monster mob)
+        public override void monsterKilled(Player chr, Monster mob)
         {
             base.monsterKilled(chr, mob);
 
@@ -157,12 +169,12 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public override void changedMap(IPlayer chr, int mapId)
+        public override void changedMap(Player chr, int mapId)
         {
             base.changedMap(chr, mapId);
         }
 
-        public override void afterChangedMap(IPlayer chr, int mapId)
+        public override void afterChangedMap(Player chr, int mapId)
         {
             base.afterChangedMap(chr, mapId);
 
@@ -174,23 +186,23 @@ namespace Application.Core.Scripting.Events
         {
             base.setEventCleared();
 
-            Team0.MCTeam?.MoveToReward();
-            Team1?.MCTeam?.MoveToReward();
+            MCTeam0?.MoveToReward();
+            MCTeam1?.MoveToReward();
         }
 
         public int GetAveLevel()
         {
-            return Team0.getEligibleMembers().Sum(x => x.Level) / Team0.getEligibleMembers().Count;
+            return Team0.EligibleMembers.Sum(x => x.Level) / Team0.EligibleMembers.Count;
         }
 
         public int GetRoomSize()
         {
-            return Team0.getEligibleMembers().Count;
+            return Team0.EligibleMembers.Count;
         }
 
-        public bool IsWinner(IPlayer chr)
+        public bool IsWinner(Player chr)
         {
-            return chr.TeamModel?.MCTeam?.IsWinner ?? false;
+            return chr.MCTeam?.IsWinner ?? false;
         }
     }
 }

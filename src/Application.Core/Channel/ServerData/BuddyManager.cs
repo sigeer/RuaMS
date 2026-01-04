@@ -46,14 +46,14 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public async Task SendBuddyNoticeMessage(IPlayer chr, int type, string message)
+        public async Task SendBuddyNoticeMessage(Player chr, int type, string message)
         {
             var request = new BuddyProto.SendBuddyNoticeMessageDto { MasterId = chr.Id, Message = message, Type = type };
             request.BuddyId.AddRange(chr.BuddyList.getBuddyIds());
             await _transport.SendBuddyMessage(request);
         }
 
-        public async Task AddBuddy(IPlayer player, string addName, string addGroup)
+        public async Task AddBuddy(Player player, string addName, string addGroup)
         {
             if (player.BuddyList.isFull())
             {
@@ -72,7 +72,7 @@ namespace Application.Core.Channel.ServerData
 
         }
 
-        internal async Task AnswerInvite(IPlayer chr, int fromId)
+        internal async Task AnswerInvite(Player chr, int fromId)
         {
             if (chr.BuddyList.isFull())
             {
@@ -89,17 +89,17 @@ namespace Application.Core.Channel.ServerData
             await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
         }
 
-        public async Task DeleteBuddy(IPlayer chr, int targetId)
+        public async Task DeleteBuddy(Player chr, int targetId)
         {
             await _transport.SendDeleteBuddy(new BuddyProto.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
         }
 
-        internal async Task SendWhisper(IPlayer chr, string targetName, string message)
+        internal async Task SendWhisper(Player chr, string targetName, string message)
         {
             await _transport.SendWhisper(new MessageProto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
         }
 
-        internal async Task GetLocation(IPlayer chr, string name)
+        internal async Task GetLocation(Player chr, string name)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(name);
             if (sameChannelSearch != null)

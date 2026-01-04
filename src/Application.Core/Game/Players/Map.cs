@@ -232,23 +232,12 @@ namespace Application.Core.Game.Players
 
                 Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
 
-                Monitor.Enter(prtLock);
-                try
-                {
-                    if (TeamModel != null)
-                    {
-                        updatePartyMemberHP();
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(prtLock);
-                }
+                updatePartyMemberHP();
             }
             else
             {
                 Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), MapModel.getId());
-                Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
+                _ = Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }
 
@@ -403,7 +392,7 @@ namespace Application.Core.Game.Players
             }, duration);
         }
 
-        public void showMapOwnershipInfo(IPlayer mapOwner)
+        public void showMapOwnershipInfo(Player mapOwner)
         {
             long curTime = Client.CurrentServerContainer.getCurrentTime();
             if (nextWarningTime < curTime)

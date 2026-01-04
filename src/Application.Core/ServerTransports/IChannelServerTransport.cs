@@ -9,6 +9,7 @@ using Config;
 using CreatorProto;
 using Dto;
 using DueyDto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using ItemProto;
@@ -17,6 +18,7 @@ using Polly;
 using SyncProto;
 using System.Net;
 using SystemProto;
+using TeamProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -25,6 +27,8 @@ namespace Application.Core.ServerTransports
     /// </summary>
     public interface IChannelServerTransport : IServerTransport
     {
+        Task SendAsync(int type, CancellationToken cancellationToken = default);
+        Task SendAsync(int type, IMessage message, CancellationToken cancellationToken = default);
         public long GetCurrentTime();
         public int GetCurrentTimestamp();
 
@@ -50,7 +54,7 @@ namespace Application.Core.ServerTransports
         Task SendWorldConfig(Config.WorldConfig updatePatch);
 
         #region Team
-        TeamProto.TeamDto CreateTeam(int playerId);
+        Task CreateTeam(CreateTeamRequest request);
         #endregion
 
         #region
@@ -103,7 +107,7 @@ namespace Application.Core.ServerTransports
 
         GuildProto.GetGuildResponse GetGuild(int id);
         GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
-        void BroadcastGuildMessage(int guildId, int v, string callout);
+        Task BroadcastGuildMessage(int guildId, int v, string callout);
         Task SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request);
         Task SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request);
         Task SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request);
@@ -162,7 +166,7 @@ namespace Application.Core.ServerTransports
         void SyncPlayerShop(SyncPlayerShopRequest request);
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
         ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
-        void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
+        Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
 
         StoreItemsResponse SaveItems(StoreItemsRequest request);
         LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
@@ -202,7 +206,7 @@ namespace Application.Core.ServerTransports
 
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
         bool GainCharacterSlot(int accountId);
-        void SendGuildPacket(GuildPacketRequest guildPacketRequest);
+        Task SendGuildPacket(GuildPacketRequest guildPacketRequest);
         Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers);
         Task SaveAllNotifyAsync();
         Task DisconnectAllNotifyAsync();

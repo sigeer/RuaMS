@@ -68,7 +68,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                HashSet<IPlayer> eligibleMembers = new(_guildManager.getEligiblePlayersForGuild(mc));
+                HashSet<Player> eligibleMembers = new(_guildManager.getEligiblePlayersForGuild(mc));
                 if (eligibleMembers.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
                 {
                     if (mc.getMap().getAllPlayers().Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
@@ -85,11 +85,11 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (!c.CurrentServerContainer.TeamManager.CreateParty(mc, true))
-                {
-                    mc.dropMessage(1, "You cannot create a new Guild while in a party.");
-                    return;
-                }
+                //if (!c.CurrentServerContainer.TeamManager.CreateParty(mc, true))
+                //{
+                //    mc.dropMessage(1, "You cannot create a new Guild while in a party.");
+                //    return;
+                //}
 
                 var eligibleCids = eligibleMembers.Select(x => x.Id).ToHashSet();
 
@@ -216,15 +216,15 @@ public class GuildOperationHandler : ChannelHandlerBase
                     bool result = p.readByte() != 0;
                     if (result && c.CurrentServer.MatchChecker.isMatchConfirmationActive(mc.getId()))
                     {
-                        var leader = c.CurrentServer.getPlayerStorage().getCharacterById(leaderid);
-                        if (leader != null)
-                        {
-                            int partyid = leader.getPartyId();
-                            if (partyid != -1)
-                            {
-                                await c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
-                            }
-                        }
+                        //var leader = c.CurrentServer.getPlayerStorage().getCharacterById(leaderid);
+                        //if (leader != null)
+                        //{
+                        //    int partyid = leader.getPartyId();
+                        //    if (partyid != -1)
+                        //    {
+                        //        await c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
+                        //    }
+                        //}
                     }
 
                     c.CurrentServer.MatchChecker.answerMatchConfirmation(mc.getId(), result);

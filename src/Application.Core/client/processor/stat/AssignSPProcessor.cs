@@ -36,7 +36,7 @@ namespace client.processor.stat;
  */
 public class AssignSPProcessor
 {
-    public static async Task<bool> CanAssinSP(IPlayer player, int skillid)
+    public static async Task<bool> CanAssinSP(Player player, int skillid)
     {
         if (skillid == Aran.HIDDEN_FULL_DOUBLE || skillid == Aran.HIDDEN_FULL_TRIPLE || skillid == Aran.HIDDEN_OVER_DOUBLE || skillid == Aran.HIDDEN_OVER_TRIPLE)
         {
@@ -64,7 +64,7 @@ public class AssignSPProcessor
     /// <param name="player"></param>
     /// <param name="SPTo"></param>
     /// <param name="SPFrom"></param>
-    public static async Task ResetSkill(IPlayer player, int SPTo, int SPFrom)
+    public static async Task ResetSkill(Player player, int SPTo, int SPFrom)
     {
         var skillSPTo = SkillFactory.GetSkillTrust(SPTo);
         var skillSPFrom = SkillFactory.GetSkillTrust(SPFrom);

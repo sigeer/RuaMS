@@ -6,10 +6,10 @@ namespace Application.Core.Game.Maps.Mists
 {
     public class PlayerMist : Mist
     {
-        IPlayer owner;
+        Player owner;
         StatEffect source;
 
-        public PlayerMist(Rectangle mistPosition, IPlayer owner, StatEffect source) : base(mistPosition, 8)
+        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(mistPosition, 8)
         {
             this.owner = owner;
             this.source = source;
@@ -39,7 +39,7 @@ namespace Application.Core.Game.Maps.Mists
             return SkillFactory.getSkill(source.getSourceId());
         }
 
-        public IPlayer getOwner()
+        public Player getOwner()
         {
             return owner;
         }
