@@ -11,8 +11,8 @@ namespace Application.Module.Marriage.Channel
         public List<Item> GroomGiftList { get; set; } = new();
         public List<Item> BrideGiftList { get; set; } = new();
 
-        readonly IChannelServerTransport _transport;
-        public MarriageInstance(MarriageEventManager em, string name, IChannelServerTransport transport) : base(em, name)
+        readonly IModuleChannelServerTransport _transport;
+        public MarriageInstance(MarriageEventManager em, string name, IModuleChannelServerTransport transport) : base(em, name)
         {
             _transport = transport;
         }

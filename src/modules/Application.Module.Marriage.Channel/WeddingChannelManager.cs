@@ -11,10 +11,10 @@ namespace Application.Module.Marriage.Channel
         readonly ILogger<WeddingChannelManager> _logger;
 
         readonly WorldChannelServer _server;
-        readonly IChannelServerTransport _transport;
+        readonly IModuleChannelServerTransport _transport;
         public WorldChannel ChannelServer { get; }
         public List<WeddingInfo> RegisteredWeddings { get; set; } = [];
-        public WeddingChannelManager(WorldChannelServer server, ILogger<WeddingChannelManager> logger, WorldChannel worldChannel, IChannelServerTransport transport)
+        public WeddingChannelManager(WorldChannelServer server, ILogger<WeddingChannelManager> logger, WorldChannel worldChannel, IModuleChannelServerTransport transport)
         {
             _server = server;
             _logger = logger;

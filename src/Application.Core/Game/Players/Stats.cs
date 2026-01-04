@@ -176,7 +176,7 @@ namespace Application.Core.Game.Players
 
         private void changeStatPool(long? strDexIntLuk, long? newSp, int newAp, bool silent)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -248,7 +248,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -264,7 +264,7 @@ namespace Application.Core.Game.Players
         public int safeAddHP(int delta)
         {
 
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -282,7 +282,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -329,7 +329,7 @@ namespace Application.Core.Game.Players
 
         public bool assignHP(int deltaHP, int deltaAp)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -345,13 +345,13 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         public bool assignMP(int deltaMP, int deltaAp)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -367,7 +367,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -378,7 +378,7 @@ namespace Application.Core.Game.Players
 
         public bool assignStrDexIntLuk(int? deltaStr, int? deltaDex, int? deltaInt, int? deltaLuk)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -433,7 +433,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -444,7 +444,7 @@ namespace Application.Core.Game.Players
 
         public void changeRemainingAp(int x, bool silent)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -453,13 +453,13 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
         public void gainAp(int deltaAp, bool silent)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -468,7 +468,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -508,7 +508,7 @@ namespace Application.Core.Game.Players
 
         public void gainSp(int deltaSp, int skillbook, bool silent)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -517,7 +517,7 @@ namespace Application.Core.Game.Players
             finally
             {
                 statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                effLock.Exit();
             }
         }
 
@@ -543,7 +543,7 @@ namespace Application.Core.Game.Players
 
         public void UpdateStatsChunk(Action action)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -555,14 +555,14 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(effLock);
+                effLock.Exit();
                 statLock.ExitWriteLock();
             }
         }
 
         public TOut UpdateStatsChunk<TOut>(Func<TOut> action)
         {
-            Monitor.Enter(effLock);
+            effLock.Enter();
             statLock.EnterWriteLock();
             try
             {
@@ -574,7 +574,7 @@ namespace Application.Core.Game.Players
             {
                 SendStats();
 
-                Monitor.Exit(effLock);
+                effLock.Exit();
                 statLock.ExitWriteLock();
             }
         }

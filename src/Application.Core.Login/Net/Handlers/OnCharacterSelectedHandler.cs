@@ -38,7 +38,7 @@ namespace Application.Core.Login.Net.Handlers
 
             if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(macs) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
             {
-                _sessionCoordinator.closeSession(c, true);
+                await _sessionCoordinator.closeSession(c, true);
                 return;
             }
 
@@ -101,7 +101,7 @@ namespace Application.Core.Login.Net.Handlers
 
         protected virtual async Task Process(ILoginClient c, int charId, string pic, string hostString, string macs)
         {
-            if (!c.CheckPic(pic))
+            if (!await c.CheckPic(pic))
             {
                 c.sendPacket(LoginPacketCreator.WrongPic());
                 return;

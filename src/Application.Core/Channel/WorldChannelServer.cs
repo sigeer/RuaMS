@@ -373,6 +373,7 @@ namespace Application.Core.Channel
             }
 
             DataService.LoadAllPLife();
+            DataService.LoadAllReactorDrops();
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -401,7 +402,7 @@ namespace Application.Core.Channel
             MapOwnershipManager.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-            playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            playerShopTask = await TimerManager.RegisterAsync(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             if (ServerConfig.SystemConfig.AutoClearMap)
             {
                 checkMapActiveTask = TimerManager.register(new DisposeCheckTask(this), TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));

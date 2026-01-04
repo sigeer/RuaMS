@@ -23,13 +23,6 @@ namespace Application.Core.Channel
             _mapper = mapper;
         }
 
-
-        public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
-        {
-            var allItems = _tranport.RequestAllReactorDrops();
-            return allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
-        }
-
         internal List<List<int>> GetMostSellerCashItems()
         {
             return _mapper.Map<List<List<int>>>(_tranport.GetMostSellerCashItems());

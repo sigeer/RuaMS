@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -731,6 +732,24 @@ namespace Application.Core.Channel.Services
         {
             return _plifeCache.GetValueOrDefault(mapId, []);
         }
+
+        private Dictionary<int, List<DropEntry>> reactorDropData = new();
+        public void LoadAllReactorDrops()
+        {
+            var allItems = _transport.RequestAllReactorDrops();
+            reactorDropData = allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
+        }
+
+        public void ClearReactorDrops()
+        {
+            reactorDropData.Clear();
+        }
+
+        public List<DropEntry> GetReactorDrops(int reactorId)
+        {
+            return reactorDropData.GetValueOrDefault(reactorId) ?? [];
+        }
+
 
         public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
         {

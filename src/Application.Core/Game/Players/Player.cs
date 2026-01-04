@@ -37,9 +37,6 @@ namespace Application.Core.Game.Players
 
         public object SaveToDBLock { get; set; } = new object();
 
-        public event EventHandler<IPlayer>? OnLevelUp;
-        public event EventHandler<IPlayer>? OnJobUpdate;
-        public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         public ResourceConsumeRequest? TscRequest { get; set; }
 

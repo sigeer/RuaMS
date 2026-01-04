@@ -43,7 +43,7 @@ public class DeleteCharHandler : LoginHandlerBase
         int cid = p.readInt();
 
 
-        if (c.CheckPic(pic))
+        if (await c.CheckPic(pic))
         {
             //check for family, guild leader, pending marriage, world transfer
             // 可以让用户手动退出队伍、工会后再删除

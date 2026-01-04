@@ -3,9 +3,9 @@ using MarriageProto;
 
 namespace Application.Module.Marriage.Channel
 {
-    public interface IChannelServerTransport
+    public interface IModuleChannelServerTransport
     {
-        void BreakMarriage(BreakMarriageRequest breakMarriageRequest);
+        Task BreakMarriage(BreakMarriageRequest breakMarriageRequest);
         void CloseWedding(CloseWeddingRequest closeWeddingRequest);
         CompleteWeddingResponse CompleteWedding(CompleteWeddingRequest completeWeddingRequest);
         CreateMarriageRelationResponse CreateMarriageRelation(CreateMarriageRelationRequest createMarriageRelationRequest);
@@ -13,7 +13,7 @@ namespace Application.Module.Marriage.Channel
         object LoadMarriageGifts(LoadMarriageGiftsRequest loadMarriageGiftsRequest);
         MarriageProto.LoadMarriageInfoResponse LoadMarriageInfo(LoadMarriageInfoRequest loadMarriageInfoRequest);
         MarriageProto.ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest);
-        SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest);
+        Task SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest);
         LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest);
         InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest);
     }

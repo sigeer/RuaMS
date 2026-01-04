@@ -34,16 +34,16 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(_server.GuildManager.LoadRankedGuilds());
         }
 
-        public override Task<Empty> GuildDropMessage(GuildDropMessageRequest request, ServerCallContext context)
+        public override async Task<Empty> GuildDropMessage(GuildDropMessageRequest request, ServerCallContext context)
         {
-            _server.GuildManager.SendGuildMessage(request.GuildId, request.Type, request.Message);
-            return base.GuildDropMessage(request, context);
+            await _server.GuildManager.SendGuildMessage(request.GuildId, request.Type, request.Message);
+            return await base.GuildDropMessage(request, context);
         }
 
-        public override Task<Empty> SendGuildPacket(GuildPacketRequest request, ServerCallContext context)
+        public override async Task<Empty> SendGuildPacket(GuildPacketRequest request, ServerCallContext context)
         {
-            _server.GuildManager.SendGuildPacket(request);
-            return base.SendGuildPacket(request, context);
+            await _server.GuildManager.SendGuildPacket(request);
+            return await base.SendGuildPacket(request, context);
         }
     }
 }

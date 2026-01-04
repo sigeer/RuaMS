@@ -14,6 +14,7 @@ using Config;
 using CreatorProto;
 using Dto;
 using DueyDto;
+using Google.Protobuf;
 using GuildProto;
 using ItemProto;
 using LifeProto;
@@ -70,6 +71,15 @@ namespace Application.Core.Channel.InProgress
             _invitationService = invitationService;
             _expeditionService = expeditionService;
             _resourceService = resourceDataService;
+        }
+
+        public Task SendAsync(int type, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+        public Task SendAsync(int type, IMessage message, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
         }
 
         public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default)
@@ -337,9 +347,9 @@ namespace Application.Core.Channel.InProgress
             return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
         }
 
-        public void BroadcastGuildMessage(int guildId, int v, string callout)
+        public async Task BroadcastGuildMessage(int guildId, int v, string callout)
         {
-            _server.GuildManager.SendGuildMessage(guildId, v, callout);
+            await _server.GuildManager.SendGuildMessage(guildId, v, callout);
         }
 
         public async Task SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request)
@@ -576,12 +586,13 @@ namespace Application.Core.Channel.InProgress
             return _server.PlayerShopManager.CanHiredMerchant(canHiredMerchantRequest);
         }
 
-        public void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
+        public Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
         {
             foreach (var item in request.List)
             {
                 _server.PlayerShopManager.SyncPlayerStorage(item);
             }
+            return Task.CompletedTask;
         }
         public ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest request)
         {
@@ -740,9 +751,9 @@ namespace Application.Core.Channel.InProgress
             return _server.AccountManager.GainCharacterSlot(accountId);
         }
 
-        public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
+        public async Task SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
-            _server.GuildManager.SendGuildPacket(guildPacketRequest);
+            await _server.GuildManager.SendGuildPacket(guildPacketRequest);
         }
 
         public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)

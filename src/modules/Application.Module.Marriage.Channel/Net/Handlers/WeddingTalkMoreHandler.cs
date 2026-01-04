@@ -44,5 +44,6 @@ public class WeddingTalkMoreHandler : ChannelHandlerBase
 
         c.sendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
         c.sendPacket(PacketCreator.enableActions());
+        return Task.CompletedTask;
     }
 }

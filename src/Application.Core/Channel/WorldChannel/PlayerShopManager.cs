@@ -13,7 +13,7 @@ using tools;
 
 namespace Application.Core.Channel
 {
-    public class PlayerShopManager
+    public class PlayerShopManager: IAsyncDisposable
     {
         private ConcurrentDictionary<int, IPlayerShop> activeMerchants = new();
         private ConcurrentDictionary<int, IPlayerShop> playerShopData = new();
@@ -28,7 +28,7 @@ namespace Application.Core.Channel
             _worldChannel = worldChannel;
         }
 
-        public void CheckExpired()
+        public List<SyncPlayerShopRequest> CheckExpired()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -47,9 +47,8 @@ namespace Application.Core.Channel
 
                 requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
             }
-            var request = new ItemProto.BatchSyncPlayerShopRequest();
-            request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            return requests;
+
         }
 
         public bool RegisterShop(IPlayerShop shop)
@@ -339,7 +338,7 @@ namespace Application.Core.Channel
 
         }
 
-        internal void Dispose()
+        public async ValueTask DisposeAsync()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -360,7 +359,7 @@ namespace Application.Core.Channel
 
             var request = new ItemProto.BatchSyncPlayerShopRequest();
             request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            await _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
         }
     }
 }

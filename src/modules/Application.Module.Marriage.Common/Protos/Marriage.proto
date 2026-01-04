@@ -31,11 +31,7 @@ message BreakMarriageRequest {
 
 message BreakMarriageResponse {
 	int32 code = 1;
-}
-
-message BreakMarriageCallback {
-	int32 code = 1;
-	int32 masterId = 2;
+	BreakMarriageRequest request = 2;
 	string masterName = 3;
 	int32 masterPartnerId  = 4;
 	string masterPartnerName = 5;
@@ -83,11 +79,7 @@ message SendSpouseChatRequest {
 
 message SendSpouseChatResponse {
 	int32 code = 1;
-}
-
-message OnSpouseChatCallback {
-	string senderName = 2;
-	string text = 3;
-	int32 senderId = 4;
+	SendSpouseChatRequest request = 2;
+	string senderName = 3;
 	int32 senderPartnerId = 5;
 }

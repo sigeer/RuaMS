@@ -306,7 +306,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
             disconnectAwayPlayers();
             Players.disconnectAll();
-            PlayerShopManager.Dispose();
+            await PlayerShopManager.DisposeAsync();
 
             eventSM.dispose();
 

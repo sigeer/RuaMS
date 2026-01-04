@@ -6,7 +6,7 @@ namespace Application.Module.Marriage.Channel.InProgress
     {
         public static IServiceCollection AddMarriageInProgress(this IServiceCollection services)
         {
-            services.AddSingleton<IChannelServerTransport, LocalChannelTransport>();
+            services.AddSingleton<IModuleChannelServerTransport, LocalChannelTransport>();
             services.AddMarriageChannel();
 
             return services;

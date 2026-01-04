@@ -1,20 +1,22 @@
-using Application.Core.Channel;
-using Grpc.Net.Client;
+using Application.Core.ServerTransports;
+using Application.Module.Marriage.Common;
 using MarriageProto;
 
 namespace Application.Module.Marriage.Channel
 {
-    public class DefaultChannelServerTransport : IChannelServerTransport
+    public class DefaultModuleChannelServerTransport : IModuleChannelServerTransport
     {
         readonly MarriageServiceProto.ChannelService.ChannelServiceClient _grpcClient;
-        public DefaultChannelServerTransport(MarriageServiceProto.ChannelService.ChannelServiceClient client)
+        IChannelServerTransport _transport;
+        public DefaultModuleChannelServerTransport(MarriageServiceProto.ChannelService.ChannelServiceClient client, IChannelServerTransport transport)
         {
             _grpcClient = client;
+            _transport = transport;
         }
 
-        public void BreakMarriage(BreakMarriageRequest breakMarriageRequest)
+        public async Task BreakMarriage(BreakMarriageRequest breakMarriageRequest)
         {
-            _grpcClient.BreakMarriage(breakMarriageRequest);
+            await _transport.SendAsync(ChannelSend.BreakMarriage, breakMarriageRequest);
         }
 
         public void CloseWedding(CloseWeddingRequest closeWeddingRequest)
@@ -52,9 +54,9 @@ namespace Application.Module.Marriage.Channel
             return _grpcClient.ReserveWedding(reserveWeddingRequest);
         }
 
-        public SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
+        public async Task SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
         {
-            return _grpcClient.SpouseChat(sendSpouseChatRequest);
+            await _transport.SendAsync(ChannelSend.SpouseChat, sendSpouseChatRequest);
         }
 
         public LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest)

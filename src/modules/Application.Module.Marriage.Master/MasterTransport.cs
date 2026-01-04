@@ -2,6 +2,7 @@ using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
 using Application.Module.Marriage.Common;
 using MarriageProto;
+using System.Threading.Tasks;
 
 namespace Application.Module.Marriage.Master
 {
@@ -11,29 +12,29 @@ namespace Application.Module.Marriage.Master
         {
         }
 
-        internal void SendBreakMarriageCallback(BreakMarriageCallback breakMarriageCallback)
+        internal async Task SendBreakMarriageCallback(BreakMarriageResponse breakMarriageCallback)
         {
-            SendMessage(MessageType.MarriageBroken, breakMarriageCallback, [breakMarriageCallback.MasterId, breakMarriageCallback.MasterPartnerId]);
+            await SendMessageN(MasterSend.MarriageBroken, breakMarriageCallback, [breakMarriageCallback.Request.MasterId, breakMarriageCallback.MasterPartnerId]);
         }
 
-        internal void BroadcastWedding(BroadcastWeddingDto broadcastWeddingDto)
+        internal async Task BroadcastWedding(BroadcastWeddingDto broadcastWeddingDto)
         {
-            BroadcastMessage(MessageType.WeddingBroadcast, broadcastWeddingDto);
+            await BroadcastMessageN(MasterSend.WeddingBroadcast, broadcastWeddingDto);
         }
 
-        internal void ReturnGuestInvitation(InviteGuestCallback inviteGuestResponse)
+        internal async Task ReturnGuestInvitation(InviteGuestCallback inviteGuestResponse)
         {
-            SendMessage(MessageType.WeddingInviteGuest, inviteGuestResponse, [inviteGuestResponse.GuestId]);
+            await SendMessageN(MasterSend.WeddingInviteGuest, inviteGuestResponse, [inviteGuestResponse.GuestId]);
         }
 
-        internal void SendPlayerTransfter(PlayerTransferDto request)
+        internal async Task SendPlayerTransfter(PlayerTransferDto request)
         {
-            SendMessage(MessageType.NotifyPartnerWhenTransfer, request, [request.ToPlayerId]);
+            await SendMessageN(MasterSend.NotifyPartnerWhenTransfer, request, [request.ToPlayerId]);
         }
 
-        internal void SendSpouseChat(OnSpouseChatCallback request)
+        internal async Task SendSpouseChat(SendSpouseChatResponse request)
         {
-            SendMessage(MessageType.SpouseChat, request, [request.SenderId, request.SenderPartnerId]);
+            await SendMessageN(MasterSend.SpouseChat, request, [request.Request.SenderId, request.SenderPartnerId]);
         }
     }
 }

@@ -1,12 +1,19 @@
+using Application.Core.Login;
+using Application.Core.Login.ServerTransports;
 using Dto;
+using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
 {
-    public class MasterFamilyModuleTransport
+    public class MasterFamilyModuleTransport: MasterServerTransportBase
     {
-        internal void Send(int matserId, UseEntitlementResponse useEntitlementResponse)
+        public MasterFamilyModuleTransport(MasterServer masterServer) : base(masterServer)
         {
-            throw new NotImplementedException();
+        }
+
+        internal async Task Send(UseEntitlementResponse useEntitlementResponse)
+        {
+            await SendMessageN(1, useEntitlementResponse, [useEntitlementResponse.Request.MatserId]);
         }
 
         internal void SendReputationChanged(int cid, ReputationChangedMessage reputationChangedMessage)

@@ -62,7 +62,7 @@ public class AfterLoginHandler : LoginHandlerBase
         else if (c2 == 1 && c3 == 0)
         {
             string pin = p.readString();
-            if (c.CheckPin(pin))
+            if (await c.CheckPin(pin))
             {
                 c.sendPacket(LoginPacketCreator.pinAccepted());
             }
@@ -74,7 +74,7 @@ public class AfterLoginHandler : LoginHandlerBase
         else if (c2 == 2 && c3 == 0)
         {
             string pin = p.readString();
-            if (c.CheckPin(pin))
+            if (await c.CheckPin(pin))
             {
                 c.sendPacket(LoginPacketCreator.registerPin());
             }

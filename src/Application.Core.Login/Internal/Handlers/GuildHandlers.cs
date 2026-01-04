@@ -165,5 +165,21 @@ namespace Application.Core.Login.Internal.Handlers
 
             protected override UpdateGuildCapacityRequest Parse(ByteString content) => UpdateGuildCapacityRequest.Parser.ParseFrom(content);
         }
+
+        internal class GuildDropMessage : InternalSessionMasterHandler<GuildDropMessageRequest>
+        {
+            public GuildDropMessage(MasterServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => ChannelSendCode.DropGuildMessage;
+
+            protected override async Task HandleAsync(GuildDropMessageRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.GuildManager.SendGuildMessage(message.GuildId, message.Type, message.Message);
+            }
+
+            protected override GuildDropMessageRequest Parse(ByteString content) => GuildDropMessageRequest.Parser.ParseFrom(content);
+        }
     }
 }

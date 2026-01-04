@@ -299,7 +299,7 @@ namespace Application.Core.Login
         TaskCompletionSource _shutdownTcs = new TaskCompletionSource();
         public void OnChannelShutdown(string serverName, bool safe = true)
         {
-            _logger.LogInformation("[{ServerName}]关闭连接", serverName);
+            _logger.LogInformation("[{ServerName}] 关闭连接", serverName);
 
             if (serverName != null)
             {
@@ -309,7 +309,7 @@ namespace Application.Core.Login
                     _shutdownTcs.SetResult();
 
                 if (!safe)
-                    _logger.LogWarning("[{ServerName}]没有安全的关闭，可能丢失数据", serverName);
+                    _logger.LogWarning("[{ServerName}] 没有安全的关闭，可能丢失数据", serverName);
             }
         }
 
@@ -529,7 +529,7 @@ namespace Application.Core.Login
             TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
-            TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
             TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));

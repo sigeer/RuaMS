@@ -93,9 +93,6 @@ namespace Application.Core.Game.Players
 
         public object SaveToDBLock { get; set; }
 
-        public event EventHandler<IPlayer>? OnLevelUp;
-        public event EventHandler<IPlayer>? OnJobUpdate;
-        public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         ResourceConsumeRequest? TscRequest { get; set; }
 

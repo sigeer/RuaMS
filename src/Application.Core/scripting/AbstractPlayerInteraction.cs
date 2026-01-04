@@ -736,12 +736,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.sendPacket(PacketCreator.enableActions());
     }
 
-    public void guildMessage(int type, string message)
-    {
-        if (getPlayer().GuildModel != null)
-            c.CurrentServerContainer.GuildManager.DropGuildMessage(getPlayer().GuildModel!.GuildId, type, message);
-    }
-
     public Guild? getGuild()
     {
         try

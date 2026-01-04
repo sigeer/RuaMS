@@ -14,6 +14,7 @@ using CreatorProto;
 using Dto;
 using DueyDto;
 using ExpeditionProto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using InvitationProto;
@@ -80,6 +81,15 @@ namespace Application.Core.ServerTransports
             _playerShopClient = playerShopClient;
 
             _internalSession = new Lazy<InternalSession>(() => new InternalSession(_sp.GetRequiredService<WorldChannelServer>()));
+        }
+
+        public async Task SendAsync(int type, CancellationToken cancellationToken = default)
+        {
+            await InternalSession.SendAsync(type, cancellationToken);
+        }
+        public async Task SendAsync(int type, IMessage message, CancellationToken cancellationToken = default)
+        {
+             await InternalSession.SendAsync(type, message, cancellationToken);
         }
 
         public long GetCurrentTime()
@@ -311,13 +321,10 @@ namespace Application.Core.ServerTransports
             return _guildClient.CreateGuild(req);
         }
 
-        public void BroadcastGuildMessage(int guildId, int v, string callout)
+        public async Task BroadcastGuildMessage(int guildId, int v, string callout)
         {
-            _guildClient.GuildDropMessage(new GuildDropMessageRequest { GuildId = guildId, Type = v, Message = callout });
+            await InternalSession.SendAsync(ChannelSendCode.DropGuildMessage, new GuildDropMessageRequest { GuildId = guildId, Type = v, Message = callout });
         }
-
-
-
 
         public async Task SendUpdateGuildGP(UpdateGuildGPRequest request)
         {
@@ -566,9 +573,9 @@ namespace Application.Core.ServerTransports
             return _gameClient.CanHiredMerchant(canHiredMerchantRequest);
         }
 
-        public void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
+        public async Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
         {
-            _syncClient.BatchSyncPlayerShop(request);
+            await _syncClient.BatchSyncPlayerShopAsync(request);
         }
 
         public StoreItemsResponse SaveItems(StoreItemsRequest request)
@@ -730,9 +737,9 @@ namespace Application.Core.ServerTransports
             return _systemClient.GainCharacterSlot(new GainAccountCharacterSlotRequest { AccId = accountId }).Code == 0;
         }
 
-        public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
+        public async Task SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
-            _guildClient.SendGuildPacket(guildPacketRequest);
+            await _guildClient.SendGuildPacketAsync(guildPacketRequest);
         }
 
         public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)

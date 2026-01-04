@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Frozen;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
 {
@@ -314,12 +315,14 @@ namespace Application.Module.Family.Master
             return maxDepth;
         }
 
-        public void UseEntitlement(Dto.UseEntitlementRequest request)
+        public async Task UseEntitlement(Dto.UseEntitlementRequest request)
         {
+            var res = new Dto.UseEntitlementResponse() { Request = request };
             var playerFamily = Query(x => x.Id == request.MatserId).FirstOrDefault();
             if (playerFamily == null)
             {
-                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                res.Code = 1;
+                await _transport.Send(res);
                 return;
             }
 
@@ -327,25 +330,27 @@ namespace Application.Module.Family.Master
             var entitlement = FamilyEntitlement.Parse(request.EntitlementId);
             if (playerFamily.Reputation < entitlement.getRepCost())
             {
-                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                res.Code = 1;
+                await _transport.Send(res);
                 return;
             }
             if (playerFamily.EntitlementUseRecord.Count(x => x.Id == request.EntitlementId) >= entitlement.getUsageLimit())
             {
-                _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 1 });
+                res.Code = 1;
+                await _transport.Send(res);
                 return;
             }
 
 
             if (request.EntitlementId == FamilyEntitlement.FAMILY_REUINION.Value)
             {
-                _server.CrossServerService.SummonPlayerById(request.MatserId, request.TargetPlayerId);
+                await _server.CrossServerService.SummonPlayerById(request.MatserId, request.TargetPlayerId);
             }
 
             GainReputation(playerFamily, -entitlement.getRepCost(), false, _server.CharacterManager.GetPlayerName(playerFamily.Id));
             playerFamily.EntitlementUseRecord.Add(new FamilyEntitlementUseRecord(request.EntitlementId));
 
-            _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 0 });
+            await _transport.Send(res);
         }
 
         void GainReputation(FamilyCharacterModel member, int gain, bool countTowardsTotal, string? from = null)
@@ -358,7 +363,7 @@ namespace Application.Module.Family.Master
             }
         }
 
-        public void Refund(int usePlayer)
+        public async Task Refund(int usePlayer)
         {
             var playerFamily = Query(x => x.Id == usePlayer).FirstOrDefault();
             if (playerFamily == null)
@@ -368,7 +373,7 @@ namespace Application.Module.Family.Master
             playerFamily.RemoveRecord(FamilyEntitlement.SUMMON_FAMILY.Value);
 
 
-            _transport.Send(usePlayer, new Dto.UseEntitlementResponse { Code = 0 });
+            await _transport.Send(new Dto.UseEntitlementResponse { Code = 0 });
 
         }
 

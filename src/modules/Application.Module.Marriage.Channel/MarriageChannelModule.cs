@@ -26,12 +26,12 @@ namespace Application.Module.Marriage.Channel
         {
             base.Initialize();
 
-            MessageDispatcher.Register<MarriageProto.BroadcastWeddingDto>(MessageType.WeddingBroadcast, _weddingManager.BroadcastWedding);
-            MessageDispatcher.Register<MarriageProto.InviteGuestCallback>(MessageType.WeddingInviteGuest, _weddingManager.OnGuestInvited);
-            MessageDispatcher.Register<MarriageProto.BreakMarriageCallback>(MessageType.MarriageBroken, _weddingManager.OnMarriageBroken);
+            MessageDispatcher.Register<MarriageProto.BroadcastWeddingDto>(MasterSend.WeddingBroadcast, _weddingManager.BroadcastWedding);
+            MessageDispatcher.Register<MarriageProto.InviteGuestCallback>(MasterSend.WeddingInviteGuest, _weddingManager.OnGuestInvited);
+            MessageDispatcher.Register<MarriageProto.BreakMarriageCallback>(MasterSend.MarriageBroken, _weddingManager.OnMarriageBroken);
 
-            MessageDispatcher.Register<MarriageProto.PlayerTransferDto>(MessageType.NotifyPartnerWhenTransfer, _marriageManager.NotifyPartnerWhenTransfer);
-            MessageDispatcher.Register<MarriageProto.OnSpouseChatCallback>(MessageType.SpouseChat, _marriageManager.OnReceivedSpouseChat);
+            MessageDispatcher.Register<MarriageProto.PlayerTransferDto>(MasterSend.NotifyPartnerWhenTransfer, _marriageManager.NotifyPartnerWhenTransfer);
+            MessageDispatcher.Register<MarriageProto.OnSpouseChatCallback>(MasterSend.SpouseChat, _marriageManager.OnReceivedSpouseChat);
         }
 
         public override void OnPlayerLogin(SyncProto.PlayerFieldChange data)

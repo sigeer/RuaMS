@@ -11,6 +11,7 @@ using Google.Protobuf;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using SystemProto;
 using XmlWzReader;
 
@@ -135,7 +136,7 @@ namespace Application.Core.Login
             }
         }
 
-        private void DisconnectIdlesOnLoginState()
+        private async Task DisconnectIdlesOnLoginState()
         {
             List<ILoginClient> toDisconnect = new();
 
@@ -168,11 +169,11 @@ namespace Application.Core.Login
                 // thanks Lei for pointing a deadlock issue with srvLock
                 if (c.IsOnlined)
                 {
-                    c.Disconnect();
+                    await c.Disconnect();
                 }
                 else
                 {
-                    sessionCoordinator.closeSession(c, true);
+                    await sessionCoordinator.closeSession(c, true);
                 }
             }
         }

@@ -62,9 +62,9 @@ namespace Application.Core.Login.ServerData
             SetDirty(newModel.Id, new StoreUnit<GiftModel>(StoreFlag.AddOrUpdate, newModel));
 
             if (!createRing)
-                _noteService.SendNormal(sender.Character.Name + " has sent you a gift! Go check out the Cash Shop.", sender.Character.Id, receiver.Character.Name);
+                _ = _noteService.SendNormal(sender.Character.Name + " has sent you a gift! Go check out the Cash Shop.", sender.Character.Id, receiver.Character.Name);
             else
-                _noteService.SendWithFame(message, sender.Character.Id, receiver.Character.Name);
+                _ = _noteService.SendWithFame(message, sender.Character.Id, receiver.Character.Name);
 
             return new CreateGiftResponse { Recipient = toName, RingSource = _mapper.Map<ItemProto.RingDto>(ringModel) };
         }

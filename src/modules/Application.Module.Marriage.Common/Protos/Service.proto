@@ -14,7 +14,4 @@ service ChannelService {
 	rpc LoadInvitationContent(MarriageProto.LoadInvitationRequest) returns(MarriageProto.LoadInvitationResponse);
 	rpc CloseWedding(MarriageProto.CloseWeddingRequest) returns(MarriageProto.CloseWeddingResponse);
 	rpc LoadEffectMarriageInfo(MarriageProto.LoadMarriageInfoRequest) returns(MarriageProto.LoadMarriageInfoResponse);
-	rpc SpouseChat(MarriageProto.SendSpouseChatRequest) returns(MarriageProto.SendSpouseChatResponse);
-
-	rpc BreakMarriage(MarriageProto.BreakMarriageRequest) returns(MarriageProto.BreakMarriageResponse);
 }

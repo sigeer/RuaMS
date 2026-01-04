@@ -572,7 +572,7 @@ namespace Application.Core.Login.Datas
                 dbTrans.Commit();
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(data.Character.AccountId, characterId);
-                _masterServer.DropYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name);
+                _ = _masterServer.DropYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name, true);
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", data.Character.AccountId, data.Character.Name);
                 return characterId;
             }

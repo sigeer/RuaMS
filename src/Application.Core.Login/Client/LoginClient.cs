@@ -116,20 +116,28 @@ namespace Application.Core.Login.Client
 
         public bool CanBypassPin()
         {
+            if (Hwid == null)
+            {
+                return false;
+            }
             return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, false);
         }
         int pinattempt = 0;
-        public bool CheckPin(string other)
+        public async Task<bool> CheckPin(string other)
         {
             if (!YamlConfig.config.server.ENABLE_PIN || CanBypassPin())
             {
                 return true;
             }
+            if (Hwid == null)
+            {
+                return false;
+            }
 
             pinattempt++;
             if (pinattempt > 5)
             {
-                _sessionCoordinator.closeSession(this, false);
+                await _sessionCoordinator.closeSession(this, false);
             }
             if (AccountEntity?.Pin == other)
             {
@@ -142,20 +150,28 @@ namespace Application.Core.Login.Client
 
         public bool CanBypassPic()
         {
+            if (Hwid == null)
+            {
+                return false;
+            }
             return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, true);
         }
         int picattempt = 0;
-        public bool CheckPic(string other)
+        public async Task<bool> CheckPic(string other)
         {
             if (!YamlConfig.config.server.ENABLE_PIC || CanBypassPic())
             {
                 return true;
             }
+            if (Hwid == null)
+            {
+                return false;
+            }
 
             picattempt++;
             if (picattempt > 5)
             {
-                _sessionCoordinator.closeSession(this, false);
+                await _sessionCoordinator.closeSession(this, false);
             }
             if (AccountEntity?.Pic == other)
             {    // thanks ryantpayton (HeavenClient) for noticing null pics being checked here
@@ -296,7 +312,7 @@ namespace Application.Core.Login.Client
             return false;
         }
 
-        public bool CheckChar(int accid)
+        public async Task<bool> CheckChar(int accid)
         {
             // issue with multiple chars from same account login found by shavit, resinate
             if (!YamlConfig.config.server.USE_CHARACTER_ACCOUNT_CHECK)
@@ -310,7 +326,7 @@ namespace Application.Core.Login.Client
                 var chr = CurrentServer.CharacterManager.FindPlayerById(chrId);
                 if (chr?.Channel != 0)
                 {
-                    CurrentServer.DisconnectChr(chrId);
+                    await CurrentServer.DisconnectChr(chrId);
                     return false;
                 }
             }

@@ -2188,6 +2188,10 @@ public class MapleMap : IMap
     private void activateItemReactors(MapItem drop, IChannelClient c)
     {
         var item = drop.getItem();
+        if (item == null)
+        {
+            return;
+        }
 
         foreach (IMapObject o in getReactors())
         {
