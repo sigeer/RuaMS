@@ -240,7 +240,10 @@ namespace Application.Core.Channel.ServerData
         static string GetTeamCacheKey(int teamId) => $"Team_{teamId}";
         void SetTeam(TeamDto dto)
         {
-            _cache.Set(GetTeamCacheKey(dto.Id), dto.ToByteArray());
+            if (dto != null)
+            {
+                _cache.Set(GetTeamCacheKey(dto.Id), dto.ToByteArray());
+            }
         }
 
         internal Team? ForcedGetTeam(int party, bool useCache = true)
