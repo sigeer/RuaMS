@@ -239,7 +239,7 @@ namespace Application.Resources.Messages {
         ///   查找类似 #e#b&lt;组队任务：第一次合作&gt;
         ///#k#n{0}
         ///
-        ///你和你的队伍成员一起完成任务怎么样？在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。如果你想尝试，请告诉你的#b队伍领袖#k来找我谈谈。#b 的本地化字符串。
+        ///想不想尝试和你的队员一起完成一个任务?在这里，你们将遇到一系列障碍和挑战.如果你和你的队员不够默契，你们将无法战胜它.如果你想要尝试，请告诉你的#b组队队长#k让他和我交谈。#b 的本地化字符串。
         /// </summary>
         public static string KerningPQ_Description {
             get {
@@ -258,7 +258,7 @@ namespace Application.Resources.Messages {
         
         /// <summary>
         ///   查找类似 #e#b&lt;组队任务：第一次合作&gt;#k#n
-        ///在完成这个组队任务的子目标时，你的队伍必须通过许多障碍和谜题。与你的团队协调合作，以便进一步前进，击败最终BOSS，并收集掉落物品以获得奖励和额外阶段的机会。 的本地化字符串。
+        ///你的队伍必须共同努力通过一系列障碍和测试才能完成任务团结协作,一起打败最终的BOSS并收下你们的奖励。 的本地化字符串。
         /// </summary>
         public static string KerningPQ_Intro {
             get {

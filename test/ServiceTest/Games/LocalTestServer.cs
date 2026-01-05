@@ -94,7 +94,7 @@ namespace ServiceTest.Games
             return container.Servers[i];
         }
 
-        public IPlayer? GetPlayer(int cid = 1)
+        public Player? GetPlayer(int cid = 1)
         {
             var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1];
 
