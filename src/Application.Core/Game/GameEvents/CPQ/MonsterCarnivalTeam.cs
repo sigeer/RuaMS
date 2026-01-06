@@ -38,10 +38,7 @@ namespace Application.Core.Game.GameEvents.CPQ
             {
                 if (mc.IsOnlined)
                 {
-                    mc.MCTeam = this;
-                    mc.resetCP();
-                    mc.setTeam(TeamFlag);
-                    mc.setFestivalPoints(0);
+                    mc.StartMC(this);
                     mc.changeMap(Event.EventMap, Event.EventMap.GetInitPortal(TeamFlag));
                     mc.sendPacket(PacketCreator.startMonsterCarnival(mc));
                     mc.LightBlue(nameof(ClientMessage.CPQ_Entry));

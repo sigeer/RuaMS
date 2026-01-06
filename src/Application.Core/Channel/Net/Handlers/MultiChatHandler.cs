@@ -66,7 +66,7 @@ public class MultiChatHandler : ChannelHandlerBase
             return;
         }
 
-        if (type == 1 && player.getParty() == null)
+        if (type == 1 && player.Party <= 0)
             return;
 
         if (type == 2 && player.GuildModel == null)

@@ -19,6 +19,8 @@ namespace Application.Core.Login.Modules
             await _server.InvitationManager.RemovePlayerInvitation(obj.Character.Id);
 
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerServerChanged, obj, lastChannel);
+
+            await _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.LOG_ONOFF, obj.Character.Id, obj.Character.Id);
         }
         /// <summary>
         /// 进入频道
@@ -40,17 +42,21 @@ namespace Application.Core.Login.Modules
 
         public override async Task OnPlayerMapChanged(CharacterLiveObject obj)
         {
-            await _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.SILENT_UPDATE, obj.Character.Id, obj.Character.Id);
+            // await _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.SILENT_UPDATE, obj.Character.Id, obj.Character.Id);
         }
 
         public override async Task OnPlayerJobChanged(CharacterLiveObject origin)
         {
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerJobChanged, origin, origin.Channel);
+
+            await _server.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
         }
 
         public override async Task OnPlayerLevelChanged(CharacterLiveObject origin)
         {
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerLevelChanged, origin, origin.Channel);
+
+            await _server.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
         }
     }
 }

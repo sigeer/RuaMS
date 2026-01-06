@@ -20,10 +20,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => ChannelRecvCode.OnTeamUpdate;
 
-            protected override Task HandleAsync(UpdateTeamResponse res, CancellationToken cancellationToken = default)
+            protected override async Task HandleAsync(UpdateTeamResponse res, CancellationToken cancellationToken = default)
             {
-                _server.TeamManager.ProcessUpdateResponse(res);
-                return Task.CompletedTask;
+                await _server.TeamManager.ProcessUpdateResponse(res);
             }
 
             protected override UpdateTeamResponse Parse(ByteString data) => UpdateTeamResponse.Parser.ParseFrom(data);

@@ -3876,6 +3876,8 @@ public class MapleMap : IMap
 
     protected virtual void OnPlayerEnter(Player chr)
     {
+        ChannelServer.Container.TeamManager.ChannelNotify(chr);
+
         if (pirateDocked)
         {
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
@@ -4144,7 +4146,6 @@ public class MapleMap : IMap
             chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
         }
 
-        chr.receivePartyMemberHP();
         ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
 
         OnPlayerEnter(chr);

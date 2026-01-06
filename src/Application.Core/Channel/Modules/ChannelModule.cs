@@ -29,15 +29,11 @@ namespace Application.Core.Channel.Modules
                     guild.OnMemberChannelChanged(data.Id, data.Channel);
                 }
             }
-
-            _server.TeamManager.ProcessTeamUpdate(data);
         }
 
         public override void OnPlayerLogin(Player chr)
         {
             base.OnPlayerLogin(chr);
-            chr.updatePartyMemberHP();
-            chr.receivePartyMemberHP();
         }
 
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
@@ -51,7 +47,6 @@ namespace Application.Core.Channel.Modules
                     guild.OnMemberJobChanged(data.Id, data.JobId);
                 }
             }
-            _server.TeamManager.ProcessTeamUpdate(data);
 
             if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
             {
@@ -95,8 +90,6 @@ namespace Application.Core.Channel.Modules
                         );
                 }
             }
-
-            _server.TeamManager.ProcessTeamUpdate(data);
         }
     }
 }

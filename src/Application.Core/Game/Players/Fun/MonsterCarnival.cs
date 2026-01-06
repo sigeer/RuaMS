@@ -5,7 +5,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public MonsterCarnivalTeam? MCTeam { get; set; }
+        public MonsterCarnivalTeam? MCTeam { get; private set; }
         public int TotalCP { get; private set; }
         public int AvailableCP { get; private set; }
 
@@ -20,6 +20,14 @@ namespace Application.Core.Game.Players
             resetCP();
             setTeam(-1);
             setEventInstance(null);
+        }
+
+        public void StartMC(MonsterCarnivalTeam mcTeam)
+        {
+            MCTeam = mcTeam;
+            resetCP();
+            setTeam(mcTeam.TeamFlag);
+            setFestivalPoints(0);
         }
     }
 }

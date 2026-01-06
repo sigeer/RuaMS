@@ -161,26 +161,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-
-        public void receivePartyMemberHP()
-        {
-            Monitor.Enter(prtLock);
-            try
-            {
-                if (getParty() != null)
-                {
-                    foreach (var player in this.getPartyMembersOnSameMap())
-                    {
-                        sendPacket(TeamPacketCreator.updatePartyMemberHP(player.getId(), player.HP, player.ActualMaxHP));
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(prtLock);
-            }
-        }
-
         /// <summary>
         /// 当队伍成员数量发生变化时：更新掉落物归属，更新传送门使用权
         /// </summary>

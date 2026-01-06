@@ -176,6 +176,13 @@ namespace Application.Core.Login.ServerData
         }
 
         #region
+
+        public AllianceModel? GetLocalAllianceByGuildId(int guildId)
+        {
+            if (_idGuildDataSource.TryGetValue(guildId, out var guild) && guild != null)
+                return GetLocalAlliance(guild.AllianceId);
+            return null;
+        }
         public AllianceModel? GetLocalAlliance(int allianceId)
         {
             if (_idAllianceDataSource.TryGetValue(allianceId, out var d) && d != null)

@@ -64,7 +64,7 @@ namespace Application.Core.Channel.Invitation
                             sender.sendPacket(TeamPacketCreator.AlreadInTeam());
                             break;
                         case InviteResponseCode.Team_CapacityFull:
-                            sender.sendPacket(TeamPacketCreator.partyStatusMessage(17));
+                            sender.sendPacket(TeamPacketCreator.TeamFullCapacity());
                             break;
                         case InviteResponseCode.Team_BeginnerLimit:
                             sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));

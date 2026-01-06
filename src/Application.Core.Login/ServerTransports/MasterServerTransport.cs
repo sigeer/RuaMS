@@ -6,6 +6,7 @@ using CashProto;
 using Config;
 using Dto;
 using Google.Protobuf;
+using Humanizer;
 using MessageProto;
 using System.Threading.Tasks;
 
@@ -55,7 +56,23 @@ namespace Application.Core.Login
                 MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0
             };
             response.Buddies.AddRange(obj.BuddyList.Keys);
-            await BroadcastMessageN(evt, response);
+
+            List<int> range = [];
+            range.AddRange(obj.BuddyList.Keys);
+
+            var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
+            if (guild != null)
+            {
+                range.AddRange(guild.Members);
+
+                var alliance = _server.GuildManager.GetLocalAlliance(guild.AllianceId);
+                if (alliance != null)
+                {
+                    range.AddRange(alliance.Guilds.Select(x => _server.GuildManager.GetLocalGuild(x)).SelectMany(x => x.Members));
+                }
+            }
+
+            await SendMessageN(evt, response, range);
         }
 
 

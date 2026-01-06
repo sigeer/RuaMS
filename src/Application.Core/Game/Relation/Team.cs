@@ -10,7 +10,6 @@ namespace Application.Core.Game.Relation
         private Dictionary<int, TeamMember> members = new();
 
         private object lockObj = new object();
-        public MonsterCarnivalTeam? MCTeam { get; set; }
 
         public Team(int id, int leaderId)
         {

@@ -48,11 +48,11 @@ namespace Application.Core.Scripting.Events
 
             if (chr.Party == Team0?.Team)
             {
-                Team0.EligibleMembers?.Remove(chr);
+                Team0.EligibleMembers.Remove(chr);
             }
             if (chr.Party == Team1?.Team)
             {
-                Team1.EligibleMembers?.Remove(chr);
+                Team1.EligibleMembers.Remove(chr);
             }
 
             chr.ClearMC();

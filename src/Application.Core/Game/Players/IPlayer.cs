@@ -96,7 +96,6 @@ namespace Application.Core.Game.Players
 
         ResourceConsumeRequest? TscRequest { get; set; }
 
-        public MonsterCarnivalTeam? MCTeam => TeamModel?.MCTeam;
         public int TotalCP { get; }
         public int AvailableCP { get; }
         Lock ResourceLock { get; }

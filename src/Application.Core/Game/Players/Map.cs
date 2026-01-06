@@ -1,9 +1,11 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
 using Application.Shared.Team;
 using Application.Shared.WzEntity;
 using server.maps;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Game.Players
 {
@@ -231,8 +233,6 @@ namespace Application.Core.Game.Players
                 visitMap(base.MapModel);
 
                 Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
-
-                updatePartyMemberHP();
             }
             else
             {

@@ -1,4 +1,5 @@
 using Application.Core.Login.Models;
+using Application.EF.Entities;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using AutoMapper;
@@ -76,7 +77,8 @@ namespace Application.Core.Login.ServerData
             {
                 errorCode = UpdateTeamCheckResult.TeamNotExsited;
                 response.Code = (int)errorCode;
-                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, [fromId]);
+
+                await SendError(response);
                 return;
             }
 
@@ -107,9 +109,7 @@ namespace Application.Core.Login.ServerData
                         party.Disband();
                     break;
                 case PartyOperation.SILENT_UPDATE:
-                    break;
                 case PartyOperation.LOG_ONOFF:
-                    // fromId = -1 表示下线
                     break;
                 case PartyOperation.CHANGE_LEADER:
                     party.TryChangeLeader(fromId, chrTo!, out errorCode);
@@ -128,7 +128,14 @@ namespace Application.Core.Login.ServerData
                 await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, party.GetMembers());
             }
             else
-                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, [fromId]);
+                await SendError(response);
+        }
+
+        async Task SendError(TeamProto.UpdateTeamResponse response)
+        {
+            var operation = (PartyOperation)response.Request.Operation;
+            if (operation != PartyOperation.SILENT_UPDATE && operation != PartyOperation.LOG_ONOFF)
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, [response.Request.FromId]);
         }
 
         public async Task SendTeamChatAsync(string nameFrom, string chatText)
