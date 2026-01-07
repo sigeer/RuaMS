@@ -96,6 +96,7 @@ namespace Application.Core.Login.ServerData
                     if (fromId == party.LeaderId)
                     {
                         operation = PartyOperation.DISBAND;
+                        response.Request.Operation = (int)operation;
                         goto case PartyOperation.DISBAND;
                     }
                     party.TryRemoveMember(chrFrom!, out errorCode);

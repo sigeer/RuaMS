@@ -351,8 +351,6 @@ public class GuildPackets
         p.writeInt(guild.AllianceId);
     }
 
-    public static Packet allianceMemberOnline(Guild guild, int playerId, bool online) => allianceMemberOnline(guild.AllianceId, guild.GuildId, playerId, online);
-
     public static Packet allianceMemberOnline(int allianceId, int guildId, int playerId, bool online)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
@@ -386,8 +384,6 @@ public class GuildPackets
     }
 
 
-    public static Packet updateAllianceJobLevel(Guild guild, int memberId, int level, int jobId)
-        => updateAllianceJobLevel(guild.AllianceId, guild.GuildId, memberId, level, jobId);
     public static Packet updateAllianceJobLevel(int allianceId, int guildId, int memberId, int level, int jobId)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
@@ -468,8 +464,6 @@ public class GuildPackets
         p.writeString(guildName);
         return p;
     }
-
-    public static Packet guildMarkChanged(int chrId, Guild guild) => guildMarkChanged(chrId, guild.LogoBg, guild.LogoBgColor, guild.Logo, guild.LogoColor);
 
     public static Packet guildMarkChanged(int chrId, int logoBg, int logoBgColor, int logo, int logoColor)
     {

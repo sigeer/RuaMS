@@ -60,7 +60,6 @@ namespace Application.Core.Game.Players
         public SkillMacro?[] SkillMacros { get; set; }
 
         public Team? TeamModel { get; }
-        public Guild? GuildModel { get; }
         public ISchool? SchoolModel { get; set; }
         public Dictionary<short, string> AreaInfo { get; set; }
         public MonsterBook Monsterbook { get; set; }
@@ -318,7 +317,6 @@ namespace Application.Core.Game.Players
         List<Ring> getFriendshipRings();
         int getGachaExp();
         int getGender();
-        Guild? getGuild();
         int getGuildId();
         int getGuildRank();
         int getHair();
