@@ -17,7 +17,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SyncPlayer;
+            public override int MessageId => (int)ChannelSendCode.SyncPlayer;
 
             protected override async Task HandleAsync(SyncPlayerRequest message, CancellationToken cancellationToken = default)
             {
@@ -38,7 +38,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.BatchSyncPlayer;
+            public override int MessageId => (int)ChannelSendCode.BatchSyncPlayer;
 
             protected override async Task HandleAsync(BatchSyncPlayerRequest message, CancellationToken cancellationToken = default)
             {

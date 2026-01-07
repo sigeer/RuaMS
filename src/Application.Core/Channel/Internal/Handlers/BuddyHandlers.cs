@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 _mapper = mapper;
             }
 
-            public override int MessageId => ChannelRecvCode.OnBuddyAdd;
+            public override int MessageId => (int)ChannelRecvCode.OnBuddyAdd;
 
             protected override Task HandleAsync(AddBuddyResponse res, CancellationToken cancellationToken = default)
             {
@@ -75,7 +75,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnBuddyRemove;
+            public override int MessageId => (int)ChannelRecvCode.OnBuddyRemove;
 
             protected override Task HandleAsync(DeleteBuddyResponse res, CancellationToken cancellationToken = default)
             {
@@ -106,7 +106,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnBuddyLocation;
+            public override int MessageId => (int)ChannelRecvCode.OnBuddyLocation;
 
             protected override Task HandleAsync(GetLocationResponse res, CancellationToken cancellationToken = default)
             {
@@ -144,7 +144,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnWhisper;
+            public override int MessageId => (int)ChannelRecvCode.OnWhisper;
 
             protected override Task HandleAsync(SendWhisperMessageResponse res, CancellationToken cancellationToken = default)
             {

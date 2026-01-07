@@ -19,10 +19,6 @@ namespace Application.Core.Login.Servers
             _server = server;
         }
 
-        public override Task<GetGuildResponse> CreateGuild(CreateGuildRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new GetGuildResponse { Model = _server.GuildManager.CreateGuild(request.Name, request.LeaderId, request.Members.ToArray()) });
-        }
 
         public override Task<GetGuildResponse> GetGuildModel(GetGuildRequest request, ServerCallContext context)
         {

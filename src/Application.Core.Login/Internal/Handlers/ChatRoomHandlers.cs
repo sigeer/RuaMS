@@ -14,7 +14,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.CreateChatRoom;
+            public override int MessageId => (int)ChannelSendCode.CreateChatRoom;
 
             protected override async Task HandleAsync(CreateChatRoomRequest message, CancellationToken cancellationToken = default)
             {
@@ -30,7 +30,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.JoinChatRoom;
+            public override int MessageId => (int)ChannelSendCode.JoinChatRoom;
 
             protected override async Task HandleAsync(JoinChatRoomRequest message, CancellationToken cancellationToken = default)
             {
@@ -46,7 +46,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.LeaveChatRoom;
+            public override int MessageId => (int)ChannelSendCode.LeaveChatRoom;
 
             protected override async Task HandleAsync(LeaveChatRoomRequst message, CancellationToken cancellationToken = default)
             {
@@ -62,7 +62,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SendChatRoomMessage;
+            public override int MessageId => (int)ChannelSendCode.SendChatRoomMessage;
 
             protected override async Task HandleAsync(SendChatRoomMessageRequest message, CancellationToken cancellationToken = default)
             {

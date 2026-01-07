@@ -1,3 +1,4 @@
+using Application.Shared.Message;
 using Google.Protobuf;
 
 namespace Application.Core.Login.ServerTransports
@@ -22,6 +23,8 @@ namespace Application.Core.Login.ServerTransports
             }
         }
 
+        public Task SendMessageN<TMessage>(ChannelRecvCode messageType, TMessage message, IEnumerable<int> playerIdArray) where TMessage : IMessage
+                => SendMessageN<TMessage>((int)messageType, message, playerIdArray);
 
         public async Task BroadcastMessageN<TMessage>(int messageType, TMessage message) where TMessage : IMessage
         {
@@ -30,6 +33,9 @@ namespace Application.Core.Login.ServerTransports
                 await server.SendMessage(messageType, message);
             }
         }
+
+        public Task BroadcastMessageN<TMessage>(ChannelRecvCode messageType, TMessage message) where TMessage : IMessage
+            => BroadcastMessageN((int)messageType, message);
         public async Task BroadcastMessageN(int messageType)
         {
             foreach (var server in _server.ChannelServerList.Values)
@@ -37,5 +43,8 @@ namespace Application.Core.Login.ServerTransports
                 await server.SendMessage(messageType);
             }
         }
+
+        public Task BroadcastMessageN(ChannelRecvCode messageType)
+            => BroadcastMessageN((int)messageType);
     }
 }

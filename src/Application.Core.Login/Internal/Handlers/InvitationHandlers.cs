@@ -21,7 +21,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _invitationService = invitationService;
             }
 
-            public override int MessageId => ChannelSendCode.SendInvitation;
+            public override int MessageId => (int)ChannelSendCode.SendInvitation;
 
             protected override async Task HandleAsync(CreateInviteRequest message, CancellationToken cancellationToken = default)
             {
@@ -39,7 +39,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _invitationService = invitationService;
             }
 
-            public override int MessageId => ChannelSendCode.AnswerInvitation;
+            public override int MessageId => (int)ChannelSendCode.AnswerInvitation;
 
             protected override async Task HandleAsync(AnswerInviteRequest message, CancellationToken cancellationToken = default)
             {

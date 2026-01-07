@@ -12,7 +12,7 @@ namespace Application.Core.Login.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelSendCode.DisconnectAll;
+        public override int MessageId => (int)ChannelSendCode.DisconnectAll;
 
         protected override async Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
         {
@@ -26,7 +26,7 @@ namespace Application.Core.Login.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelSendCode.DisconnectOne;
+        public override int MessageId => (int)ChannelSendCode.DisconnectOne;
 
         protected override async Task HandleAsync(DisconnectPlayerByNameRequest message, CancellationToken cancellationToken = default)
         {

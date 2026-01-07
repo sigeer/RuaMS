@@ -39,7 +39,7 @@ namespace Application.Core.Login
             await BroadcastMessageN(ChannelRecvCode.MultiChat, res);
         }
 
-        public async Task BroadcastPlayerFieldChange(int evt, CharacterLiveObject obj, int fromChannel)
+        public async Task BroadcastPlayerFieldChange(ChannelRecvCode evt, CharacterLiveObject obj, int fromChannel)
         {
             SyncProto.PlayerFieldChange response = new SyncProto.PlayerFieldChange
             {
@@ -55,24 +55,8 @@ namespace Application.Core.Login
                 Name = obj.Character.Name,
                 MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0
             };
-            response.Buddies.AddRange(obj.BuddyList.Keys);
 
-            List<int> range = [];
-            range.AddRange(obj.BuddyList.Keys);
-
-            var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
-            if (guild != null)
-            {
-                range.AddRange(guild.Members);
-
-                var alliance = _server.GuildManager.GetLocalAlliance(guild.AllianceId);
-                if (alliance != null)
-                {
-                    range.AddRange(alliance.Guilds.Select(x => _server.GuildManager.GetLocalGuild(x)).SelectMany(x => x.Members));
-                }
-            }
-
-            await SendMessageN(evt, response, range);
+            await SendMessageN(evt, response, obj.BuddyList.Keys);
         }
 
 

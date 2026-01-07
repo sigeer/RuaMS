@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.OnCouponConfigUpdate;
+        public override int MessageId => (int)ChannelRecvCode.OnCouponConfigUpdate;
 
         protected override Task HandleAsync(CouponConfig res, CancellationToken cancellationToken = default)
         {

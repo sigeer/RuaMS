@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 _mapper = mapper;
             }
 
-            public override int MessageId => ChannelRecvCode.HandleItemMegaphone;
+            public override int MessageId => (int)ChannelRecvCode.HandleItemMegaphone;
 
             protected override Task HandleAsync(UseItemMegaphoneResponse res, CancellationToken cancellationToken = default)
             {
@@ -58,7 +58,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.HandleTVMessageStart;
+            public override int MessageId => (int)ChannelRecvCode.HandleTVMessageStart;
 
             protected override Task HandleAsync(CreateTVMessageResponse res, CancellationToken cancellationToken = default)
             {
@@ -99,7 +99,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.HandleTVMessageFinish;
+            public override int MessageId => (int)ChannelRecvCode.HandleTVMessageFinish;
 
             protected override Task HandleAsync(Empty res, CancellationToken cancellationToken = default)
             {

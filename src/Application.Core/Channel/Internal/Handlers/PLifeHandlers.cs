@@ -19,7 +19,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnPlifeCreated;
+            public override int MessageId => (int)ChannelRecvCode.OnPlifeCreated;
 
             protected override Task HandleAsync(CreatePLifeRequest res, CancellationToken cancellationToken = default)
             {
@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnPlifeRemoved;
+            public override int MessageId => (int)ChannelRecvCode.OnPlifeRemoved;
 
             protected override Task HandleAsync(RemovePLifeResponse res, CancellationToken cancellationToken = default)
             {

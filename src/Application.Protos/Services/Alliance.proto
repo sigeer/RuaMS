@@ -12,5 +12,4 @@ package ServiceProto;
 service AllianceService {
 	rpc GetAllianceModel(AllianceProto.GetAllianceRequest) returns(AllianceProto.GetAllianceResponse);
 	rpc CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest) returns(AllianceProto.CreateAllianceCheckResponse);
-	rpc CreateAlliance(AllianceProto.CreateAllianceRequest) returns(AllianceProto.GetAllianceResponse);
 }

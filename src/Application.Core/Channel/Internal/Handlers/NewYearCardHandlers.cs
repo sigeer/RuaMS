@@ -18,7 +18,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnNewYearCardReceived;
+            public override int MessageId => (int)ChannelRecvCode.OnNewYearCardReceived;
 
             protected override Task HandleAsync(ReceiveNewYearCardResponse res, CancellationToken cancellationToken = default)
             {
@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnNewYearCardSent;
+            public override int MessageId => (int)ChannelRecvCode.OnNewYearCardSent;
 
             protected override Task HandleAsync(SendNewYearCardResponse res, CancellationToken cancellationToken = default)
             {
@@ -52,7 +52,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnNewYearCardNotify;
+            public override int MessageId => (int)ChannelRecvCode.OnNewYearCardNotify;
 
             protected override Task HandleAsync(NewYearCardNotifyDto res, CancellationToken cancellationToken = default)
             {
@@ -69,7 +69,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnNewYearCardDiscard;
+            public override int MessageId => (int)ChannelRecvCode.OnNewYearCardDiscard;
 
             protected override Task HandleAsync(DiscardNewYearCardResponse res, CancellationToken cancellationToken = default)
             {

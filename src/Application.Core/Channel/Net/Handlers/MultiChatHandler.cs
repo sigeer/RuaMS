@@ -69,10 +69,10 @@ public class MultiChatHandler : ChannelHandlerBase
         if (type == 1 && player.Party <= 0)
             return;
 
-        if (type == 2 && player.GuildModel == null)
+        if (type == 2 && player.GuildSnapshot == null)
             return;
 
-        if (type == 3 && player.AllianceModel == null)
+        if (type == 3 && player.AllianceSnapshot == null)
             return;
 
         player.getAutobanManager().spam(7);

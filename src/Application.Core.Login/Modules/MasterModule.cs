@@ -1,7 +1,9 @@
 using Application.Core.Login.Models;
 using Application.Shared.Message;
 using Application.Shared.Team;
+using GuildProto;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace Application.Core.Login.Modules
 {
@@ -21,6 +23,7 @@ namespace Application.Core.Login.Modules
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerServerChanged, obj, lastChannel);
 
             await _server.TeamManager.UpdateParty(obj.Character.Party, PartyOperation.LOG_ONOFF, obj.Character.Id, obj.Character.Id);
+
         }
         /// <summary>
         /// 进入频道
@@ -32,12 +35,42 @@ namespace Application.Core.Login.Modules
             await _server.NoteManager.SendNote(obj);
 
             await _server.DueyManager.SendDueyNotifyOnLogin(obj.Character.Id);
+
+            var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
+            if (guild != null)
+            {
+                var res = new GuildMemberServerChangedResponse
+                {
+                    GuildId = guild.GuildId,
+                    MemberChanel = obj.Channel,
+                    MemberId = obj.Character.Id,
+                    AllianceId = guild.AllianceId,
+                };
+                var allMembers = _server.GuildManager.GetAllianceMembers(guild);
+                res.AllMembers.AddRange(allMembers);
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberLoginOff, res, allMembers);
+            }
         }
 
         public override async Task OnPlayerLogoff(CharacterLiveObject obj)
         {
             obj.Character.LastLogoutTime = _server.GetCurrentTimeDateTimeOffset();
             obj.ChannelNode = null;
+
+            var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
+            if (guild != null)
+            {
+                var res = new GuildMemberServerChangedResponse
+                {
+                    GuildId = guild.GuildId,
+                    MemberChanel = obj.Channel,
+                    MemberId = obj.Character.Id,
+                    AllianceId = guild.AllianceId,
+                };
+                var allMembers = _server.GuildManager.GetAllianceMembers(guild);
+                res.AllMembers.AddRange(allMembers);
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberLoginOff, res, allMembers);
+            }
         }
 
         public override async Task OnPlayerMapChanged(CharacterLiveObject obj)
@@ -50,6 +83,23 @@ namespace Application.Core.Login.Modules
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerJobChanged, origin, origin.Channel);
 
             await _server.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+
+            var guild = _server.GuildManager.GetLocalGuild(origin.Character.GuildId);
+            if (guild != null)
+            {
+                var res = new GuildMemberUpdateResponse
+                {
+                    GuildId = guild.GuildId,
+                    MemberJob = origin.Character.JobId,
+                    MemberId = origin.Character.Id,
+                    MemberName = origin.Character.Name,
+                    MemberLevel = origin.Character.Level,
+                    AllianceId = guild.AllianceId,
+                };
+                var allMembers = _server.GuildManager.GetAllianceMembers(guild);
+                res.AllMembers.AddRange(allMembers);
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberUpdate, res, allMembers);
+            }
         }
 
         public override async Task OnPlayerLevelChanged(CharacterLiveObject origin)
@@ -57,6 +107,23 @@ namespace Application.Core.Login.Modules
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerLevelChanged, origin, origin.Channel);
 
             await _server.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+
+            var guild = _server.GuildManager.GetLocalGuild(origin.Character.GuildId);
+            if (guild != null)
+            {
+                var res = new GuildMemberUpdateResponse
+                {
+                    GuildId = guild.GuildId,
+                    MemberJob = origin.Character.JobId,
+                    MemberId = origin.Character.Id,
+                    MemberName = origin.Character.Name,
+                    MemberLevel = origin.Character.Level,
+                    AllianceId = guild.AllianceId,
+                };
+                var allMembers = _server.GuildManager.GetAllianceMembers(guild);
+                res.AllMembers.AddRange(allMembers);
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberUpdate, res, allMembers);
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.HandleWorldEventReload;
+            public override int MessageId => (int)ChannelRecvCode.HandleWorldEventReload;
 
             protected override Task HandleAsync(ReloadEventsResponse res, CancellationToken cancellationToken = default)
             {
@@ -44,7 +44,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.SummonPlayer;
+            public override int MessageId => (int)ChannelRecvCode.SummonPlayer;
 
             protected override async Task HandleAsync(SummonPlayerByNameResponse res, CancellationToken cancellationToken = default)
             {
@@ -78,7 +78,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.WarpPlayer;
+            public override int MessageId => (int)ChannelRecvCode.WarpPlayer;
 
             protected override Task HandleAsync(WrapPlayerByNameResponse res, CancellationToken cancellationToken = default)
             {
@@ -106,7 +106,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.InvokeMonitor;
+            public override int MessageId => (int)ChannelRecvCode.InvokeMonitor;
 
             protected override Task HandleAsync(ToggleMonitorPlayerResponse res, CancellationToken cancellationToken = default)
             {
@@ -134,7 +134,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.BanPlayer;
+            public override int MessageId => (int)ChannelRecvCode.BanPlayer;
 
             protected override Task HandleAsync(BanResponse data, CancellationToken cancellationToken = default)
             {
@@ -178,7 +178,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.Unban;
+            public override int MessageId => (int)ChannelRecvCode.Unban;
 
             protected override Task HandleAsync(UnbanResponse res, CancellationToken cancellationToken = default)
             {

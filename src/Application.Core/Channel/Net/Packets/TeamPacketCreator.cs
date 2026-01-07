@@ -1,10 +1,6 @@
 using Application.Core.Game.Maps;
-using Application.Core.Game.Relation;
 using Application.Shared.Team;
-using server.maps;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using TeamProto;
 
 namespace Application.Core.Channel.Net.Packets
 {
@@ -100,12 +96,12 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
-        private static void addPartyStatus(WorldChannel forchannel, Team party, OutPacket p)
+        private static void AddPartyStatus(WorldChannel forchannel, TeamDto party, OutPacket p)
         {
-            var partymembers = party.GetTeamMembers();
-            while (partymembers.Count < 6)
+            var partymembers = party.Members.ToList();
+            while (partymembers.Count < Limits.MaxTeamMember)
             {
-                partymembers.Add(new TeamMember());
+                partymembers.Add(new());
             }
             foreach (var partychar in partymembers)
             {
@@ -117,7 +113,7 @@ namespace Application.Core.Channel.Net.Packets
             }
             foreach (var partychar in partymembers)
             {
-                p.writeInt(partychar.JobId);
+                p.writeInt(partychar.Job);
             }
             foreach (var partychar in partymembers)
             {
@@ -130,7 +126,7 @@ namespace Application.Core.Channel.Net.Packets
                 else
                     p.writeInt(-2);
             }
-            p.writeInt(party.getLeaderId());
+            p.writeInt(party.LeaderId);
             foreach (var partychar in partymembers)
             {
                 p.writeInt(partychar.MapId);
@@ -172,7 +168,8 @@ namespace Application.Core.Channel.Net.Packets
             }
         }
 
-        public static Packet updateParty(WorldChannel forChannel, Team party, PartyOperation op, int targetId, string targetName)
+
+        public static Packet UpdateParty(WorldChannel forChannel, TeamDto party, PartyOperation op, int targetId, string targetName)
         {
             OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
             switch (op)
@@ -181,12 +178,12 @@ namespace Application.Core.Channel.Net.Packets
                 case PartyOperation.EXPEL:
                 case PartyOperation.LEAVE:
                     p.writeByte(0x0C);
-                    p.writeInt(party.getId());
+                    p.writeInt(party.Id);
                     p.writeInt(targetId);
                     if (op == PartyOperation.DISBAND)
                     {
                         p.writeByte(0);
-                        p.writeInt(party.getId());
+                        p.writeInt(party.Id);
                     }
                     else
                     {
@@ -200,20 +197,20 @@ namespace Application.Core.Channel.Net.Packets
                             p.writeByte(0);
                         }
                         p.writeString(targetName);
-                        addPartyStatus(forChannel, party, p);
+                        AddPartyStatus(forChannel, party, p);
                     }
                     break;
                 case PartyOperation.JOIN:
                     p.writeByte(0xF);
-                    p.writeInt(party.getId());
+                    p.writeInt(party.Id);
                     p.writeString(targetName);
-                    addPartyStatus(forChannel, party, p);
+                    AddPartyStatus(forChannel, party, p);
                     break;
                 case PartyOperation.SILENT_UPDATE:
                 case PartyOperation.LOG_ONOFF:
                     p.writeByte(0x7);
-                    p.writeInt(party.getId());
-                    addPartyStatus(forChannel, party, p);
+                    p.writeInt(party.Id);
+                    AddPartyStatus(forChannel, party, p);
                     break;
                 case PartyOperation.CHANGE_LEADER:
                     p.writeByte(0x1B);

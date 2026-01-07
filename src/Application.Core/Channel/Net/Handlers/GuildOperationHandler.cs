@@ -23,10 +23,7 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Resources.Messages;
-using constants.game;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.matchchecker;
-using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -51,49 +48,8 @@ public class GuildOperationHandler : ChannelHandlerBase
                 //c.sendPacket(PacketCreator.showGuildInfo(mc));
                 break;
             case 0x02:
-                if (mc.GuildId > 0)
-                {
-                    mc.dropMessage(1, "You cannot create a new Guild while in one.");
-                    return;
-                }
-                if (mc.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
-                {
-                    mc.dropMessage(1, "You do not have " + mc.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
-                    return;
-                }
                 string guildName = p.readString();
-                if (!_guildManager.CheckGuildName(guildName))
-                {
-                    mc.dropMessage(1, "The Guild name you have chosen is not accepted.");
-                    return;
-                }
-
-                HashSet<Player> eligibleMembers = new(_guildManager.getEligiblePlayersForGuild(mc));
-                if (eligibleMembers.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
-                {
-                    if (mc.getMap().getAllPlayers().Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
-                    {
-                        // thanks NovaStory for noticing message in need of smoother info
-                        mc.dropMessage(1, "Your Guild doesn't have enough cofounders present here and therefore cannot be created at this time.");
-                    }
-                    else
-                    {
-                        // players may be unaware of not belonging on a party in order to become eligible, thanks Hair (Legalize) for pointing this out
-                        mc.dropMessage(1, "Please make sure everyone you are trying to invite is neither on a guild nor on a party.");
-                    }
-
-                    return;
-                }
-
-                //if (!c.CurrentServerContainer.TeamManager.CreateParty(mc, true))
-                //{
-                //    mc.dropMessage(1, "You cannot create a new Guild while in a party.");
-                //    return;
-                //}
-
-                var eligibleCids = eligibleMembers.Select(x => x.Id).ToHashSet();
-
-                c.CurrentServer.MatchChecker.createMatchConfirmation(MatchCheckerType.GUILD_CREATION, 0, mc.getId(), eligibleCids, guildName);
+                await _guildManager.CreateGuild(mc, guildName);
                 break;
             case 0x05:
                 if (mc.GuildId <= 0 || mc.GuildRank > 2)
@@ -123,7 +79,7 @@ public class GuildOperationHandler : ChannelHandlerBase
             case 0x07:
                 cid = p.readInt();
                 string name = p.readString();
-                if (cid != mc.getId() || !name.Equals(mc.getName()) || mc.GuildModel == null)
+                if (cid != mc.getId() || !name.Equals(mc.getName()))
                 {
                     _logger.LogWarning("[Hack] Chr {CharacterName} tried to quit guild under the name {GuildName} and current guild id of {GuildId}", mc.getName(), name, mc.getGuildId());
                     return;
@@ -138,7 +94,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 await _guildManager.ExpelMember(mc, cid);
                 break;
             case 0x0d:
-                if (mc.GuildModel == null || mc.getGuildRank() != 1)
+                if (mc.GuildRank != 1)
                 {
                     _logger.LogWarning("[Hack] Chr {CharacterName} tried to change guild rank titles when s/he does not have permission", mc.getName());
                     return;
@@ -154,7 +110,7 @@ public class GuildOperationHandler : ChannelHandlerBase
             case 0x0e:
                 cid = p.readInt();
                 byte newRank = p.readByte();
-                if (mc.getGuildRank() > 2 || (newRank <= 2 && mc.getGuildRank() != 1) || mc.GuildModel == null)
+                if (mc.getGuildRank() > 2 || (newRank <= 2 && mc.getGuildRank() != 1))
                 {
                     _logger.LogWarning("[Hack] Chr {CharacterName} is trying to change rank outside of his/her permissions.", mc.getName());
                     return;
@@ -166,7 +122,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 await _guildManager.ChangeRank(c.OnlinedCharacter, cid, newRank);
                 break;
             case 0x0f:
-                if (mc.GuildModel == null || mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
+                if (mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
                 {
                     _logger.LogWarning("[Hack] Chr {CharacterName} tried to change guild emblem without being the guild leader", mc.getName());
                     return;
@@ -181,19 +137,12 @@ public class GuildOperationHandler : ChannelHandlerBase
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
 
+                mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, inChat: true);
                 await _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
 
                 break;
             case 0x10:
-                if (mc.GuildModel == null || mc.GuildRank > 2)
-                {
-                    if (mc.GuildModel == null)
-                    {
-                        _logger.LogWarning("[Hack] Chr {CharacterName} tried to change guild notice while not in a guild", mc.Name);
-                    }
-                    return;
-                }
                 string notice = p.readString();
                 if (notice.Length > 100)
                 {
@@ -202,33 +151,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 await _guildManager.SetGuildNotice(mc, notice);
                 break;
             case 0x1E:
-                p.readInt();
-
-                if (mc.getParty() != null)
-                {
-                    c.CurrentServer.MatchChecker.dismissMatchConfirmation(mc.getId());
-                    return;
-                }
-
-                int leaderid = c.CurrentServer.MatchChecker.getMatchConfirmationLeaderid(mc.getId());
-                if (leaderid != -1)
-                {
-                    bool result = p.readByte() != 0;
-                    if (result && c.CurrentServer.MatchChecker.isMatchConfirmationActive(mc.getId()))
-                    {
-                        //var leader = c.CurrentServer.getPlayerStorage().getCharacterById(leaderid);
-                        //if (leader != null)
-                        //{
-                        //    int partyid = leader.getPartyId();
-                        //    if (partyid != -1)
-                        //    {
-                        //        await c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
-                        //    }
-                        //}
-                    }
-
-                    c.CurrentServer.MatchChecker.answerMatchConfirmation(mc.getId(), result);
-                }
+                _logger.LogWarning("功能移除：回复家族发起");
 
                 break;
             default:

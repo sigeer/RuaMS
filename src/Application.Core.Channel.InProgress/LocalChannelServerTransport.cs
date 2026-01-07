@@ -1,3 +1,4 @@
+using AllianceProto;
 using Application.Core.Login;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
@@ -328,24 +329,23 @@ namespace Application.Core.Channel.InProgress
             return new GuildProto.GetGuildResponse() { Model = _server.GuildManager.GetGuildFull(id) };
         }
 
-        public GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
+        public async Task CreateGuild(GuildProto.CreateGuildRequest request)
         {
-            return new GuildProto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
+             await _server.GuildManager.CreateGuild(request);
         }
 
         public AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request)
         {
             return _server.GuildManager.CreateAllianceCheck(request);
         }
-        public AllianceProto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
+        public async Task CreateAlliance(AllianceProto.CreateAllianceRequest request)
         {
-            return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
+            await _server.GuildManager.CreateAlliance(request);
         }
-
 
         public AllianceProto.GetAllianceResponse GetAlliance(int id)
         {
-            return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
+            return new AllianceProto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceDto(id) };
         }
 
         public async Task BroadcastGuildMessage(int guildId, int v, string callout)
@@ -403,10 +403,6 @@ namespace Application.Core.Channel.InProgress
             await _server.GuildManager.PlayerJoinGuild(request);
         }
 
-        public async Task SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
-        {
-            await _server.GuildManager.GuildJoinAlliance(request);
-        }
 
         public async Task SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
         {
@@ -446,6 +442,11 @@ namespace Application.Core.Channel.InProgress
         public async Task SendAllianceDisband(AllianceProto.DisbandAllianceRequest request)
         {
             await _server.GuildManager.DisbandAlliance(request);
+        }
+
+        public async Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request)
+        {
+            await _server.GuildManager.AllianceBroadcastPlayerInfo(request);
         }
         #endregion
 

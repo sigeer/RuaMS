@@ -1,12 +1,9 @@
 using Application.Core.Login.Models;
-using Application.EF.Entities;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Threading.Tasks;
 using TeamProto;
 
 namespace Application.Core.Login.ServerData
@@ -57,8 +54,11 @@ namespace Application.Core.Login.ServerData
             }
 
             var newTeam = new TeamModel(Interlocked.Increment(ref _currentId), chrFrom);
-            chrFrom.Character.Party = newTeam.Id;
             _dataSource[newTeam.Id] = newTeam;
+
+            chrFrom.Character.Party = newTeam.Id;
+
+            res.TeamDto = MapTeamDto(newTeam);
             return res;
         }
         bool RemoveTeam(int leaderId, int teamId)
@@ -119,13 +119,14 @@ namespace Application.Core.Login.ServerData
                     break;
             }
 
-      
+
             response.Code = (int)errorCode;
 
             if (errorCode == UpdateTeamCheckResult.Success)
             {
                 response.Team = MapTeamDto(party);
-                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, party.GetMembers());
+                response.TargetName = chrTo!.Character.Name;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, party.GetMembers().Concat([fromId, toId]));
             }
             else
                 await SendError(response);

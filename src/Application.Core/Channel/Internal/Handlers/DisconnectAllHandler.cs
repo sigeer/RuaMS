@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.DisconnectAll;
+        public override int MessageId => (int)ChannelRecvCode.DisconnectAll;
 
         protected override Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
         {

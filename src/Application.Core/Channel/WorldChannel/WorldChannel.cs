@@ -1,5 +1,4 @@
 using Application.Core.Channel.Net;
-using Application.Core.Channel.Performance;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
@@ -7,7 +6,6 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Shared.Events;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
-using net.server.coordinator.matchchecker;
 using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
@@ -18,7 +16,6 @@ using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
-using System;
 using System.Net;
 using tools;
 
@@ -62,7 +59,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
 
     private object lockObj = new object();
-    public MatchCheckerCoordinator MatchChecker { get; set; }
 
     // public IWorld WorldModel { get; set; }
     public event Action? OnWorldMobRateChanged;
@@ -143,8 +139,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
         NettyServer = nettyServer;
         log = LogFactory.GetLogger(ServerName);
-
-        MatchChecker = new MatchCheckerCoordinator(this);
 
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
 
@@ -274,10 +268,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     {
         IsRunning = true;
         log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
-        return Task.CompletedTask;   
+        return Task.CompletedTask;
     }
 
-    
+
 
 
     bool isShuttingDown = false;

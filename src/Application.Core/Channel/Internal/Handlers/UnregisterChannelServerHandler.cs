@@ -9,7 +9,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.UnregisterChannel;
+        public override int MessageId => (int)ChannelRecvCode.UnregisterChannel;
 
         protected override async Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
         {

@@ -25,7 +25,7 @@ namespace Application.Core.Login
             if (defaultServer == null)
                 return new CreatorProto.CreateCharResponseDto { Code = -2 };
 
-            await defaultServer.SendMessage(ChannelRecvCode.CreateCharacter, request);
+            await defaultServer.SendMessage((int)ChannelRecvCode.CreateCharacter, request);
 
             return await tcs.Task;
         }

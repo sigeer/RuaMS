@@ -24,7 +24,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.CreateDueyPackage;
+            public override int MessageId => (int)ChannelRecvCode.CreateDueyPackage;
 
             protected override Task HandleAsync(CreatePackageResponse data, CancellationToken cancellationToken = default)
             {
@@ -67,7 +67,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.DeleteDueyPackage;
+            public override int MessageId => (int)ChannelRecvCode.DeleteDueyPackage;
 
             protected override Task HandleAsync(RemovePackageResponse data, CancellationToken cancellationToken = default)
             {
@@ -92,7 +92,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 _mapper = mapper;
             }
 
-            public override int MessageId => ChannelRecvCode.LoadDueyPackage;
+            public override int MessageId => (int)ChannelRecvCode.LoadDueyPackage;
 
             protected override Task HandleAsync(GetPlayerDueyPackageResponse data, CancellationToken cancellationToken = default)
             {
@@ -121,7 +121,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 _logger = logger;
             }
 
-            public override int MessageId => ChannelRecvCode.TakeDueyPackage;
+            public override int MessageId => (int)ChannelRecvCode.TakeDueyPackage;
 
             protected override async Task HandleAsync(TakeDueyPackageResponse data, CancellationToken cancellationToken = default)
             {
@@ -185,7 +185,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.LoginNotifyDueyPackage;
+            public override int MessageId => (int)ChannelRecvCode.LoginNotifyDueyPackage;
 
             protected override async Task HandleAsync(DueyNotificationDto data, CancellationToken cancellationToken = default)
             {

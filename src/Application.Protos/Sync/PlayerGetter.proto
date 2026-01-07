@@ -24,6 +24,8 @@ import "Dto/ServerCrossCallback.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
 import "Dto/Storage.proto";
+import "Guild/Guild.proto";
+import "Guild/Alliance.proto";
 
 package SyncProto;
 
@@ -62,6 +64,8 @@ message PlayerGetterDto {
   repeated Dto.RemoteCallDto remoteCallList = 23;
   repeated PlayerTimerQuestDto runningTimerQuests = 24;
   Dto.StorageDto gachaponStorage = 25;
+  GuildProto.GuildDto guild = 26;
+  AllianceProto.AllianceDto alliance = 27;
 }
 
 message GetPlayerByLoginRequest {

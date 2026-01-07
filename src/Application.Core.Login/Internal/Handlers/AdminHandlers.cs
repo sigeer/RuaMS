@@ -17,7 +17,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SetGmLevel;
+            public override int MessageId => (int)ChannelSendCode.SetGmLevel;
 
             protected override async Task HandleAsync(SetGmLevelRequest message, CancellationToken cancellationToken = default)
             {
@@ -32,7 +32,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.Ban;
+            public override int MessageId => (int)ChannelSendCode.Ban;
 
             protected override async Task HandleAsync(BanRequest message, CancellationToken cancellationToken = default)
             {
@@ -48,7 +48,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.Unban;
+            public override int MessageId => (int)ChannelSendCode.Unban;
 
             protected override async Task HandleAsync(UnbanRequest message, CancellationToken cancellationToken = default)
             {
@@ -64,7 +64,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.WarpPlayer;
+            public override int MessageId => (int)ChannelSendCode.WarpPlayer;
 
             protected override async Task HandleAsync(WrapPlayerByNameRequest message, CancellationToken cancellationToken = default)
             {
@@ -80,7 +80,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SummonPlayer;
+            public override int MessageId => (int)ChannelSendCode.SummonPlayer;
 
             protected override async Task HandleAsync(SummonPlayerByNameRequest message, CancellationToken cancellationToken = default)
             {
@@ -98,7 +98,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _messageService = messageService;
             }
 
-            public override int MessageId => ChannelSendCode.SendReport;
+            public override int MessageId => (int)ChannelSendCode.SendReport;
 
             protected override async Task HandleAsync(SendReportRequest message, CancellationToken cancellationToken = default)
             {
@@ -114,7 +114,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SetAutobanIgnore;
+            public override int MessageId => (int)ChannelSendCode.SetAutobanIgnore;
 
             protected override async Task HandleAsync(ToggleAutoBanIgnoreRequest message, CancellationToken cancellationToken = default)
             {
@@ -129,7 +129,7 @@ namespace Application.Core.Login.Internal.Handlers
             public SetMonitorHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.SetMonitor;
+            public override int MessageId => (int)ChannelSendCode.SetMonitor;
 
             protected override async Task HandleAsync(ToggleMonitorPlayerRequest message, CancellationToken cancellationToken = default)
             {
@@ -144,7 +144,7 @@ namespace Application.Core.Login.Internal.Handlers
             public ReloadWorldEventsHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.ReloadWorldEvents;
+            public override int MessageId => (int)ChannelSendCode.ReloadWorldEvents;
 
             protected override async Task HandleAsync(ReloadEventsRequest message, CancellationToken cancellationToken = default)
             {
@@ -159,7 +159,7 @@ namespace Application.Core.Login.Internal.Handlers
             public SetTimerHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.SetTimer;
+            public override int MessageId => (int)ChannelSendCode.SetTimer;
 
             protected override async Task HandleAsync(SetTimer message, CancellationToken cancellationToken = default)
             {
@@ -174,7 +174,7 @@ namespace Application.Core.Login.Internal.Handlers
             public RemoveTimerHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.RemoveTimer;
+            public override int MessageId => (int)ChannelSendCode.RemoveTimer;
 
             protected override async Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
             {

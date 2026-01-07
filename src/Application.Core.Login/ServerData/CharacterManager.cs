@@ -89,8 +89,11 @@ namespace Application.Core.Login.Datas
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
-                var oldCharacterData = origin.Character;
-                origin.Character = _mapper.Map<CharacterModel>(obj.Character);
+                var oldMap = origin.Character.Map;
+                var oldLevel = origin.Character.Level;
+                var oldJob = origin.Character.JobId;
+
+                _mapper.Map(obj.Character, origin.Character);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
                 origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
                 origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
@@ -126,7 +129,7 @@ namespace Application.Core.Login.Datas
                 }
                 _dataStorage.SetCharacter(origin);
 
-                if (oldCharacterData.Level != origin.Character.Level)
+                if (oldLevel != origin.Character.Level)
                 {
                     // 等级变化通知
                     foreach (var module in _masterServer.Modules)
@@ -135,7 +138,7 @@ namespace Application.Core.Login.Datas
                     }
                 }
 
-                if (oldCharacterData.JobId != origin.Character.JobId)
+                if (oldJob != origin.Character.JobId)
                 {
                     // 转职通知
                     foreach (var module in _masterServer.Modules)
@@ -145,7 +148,7 @@ namespace Application.Core.Login.Datas
 
                 }
 
-                if (oldCharacterData.Map != origin.Character.Map)
+                if (oldMap != origin.Character.Map)
                 {
                     // 地图切换
                     foreach (var module in _masterServer.Modules)

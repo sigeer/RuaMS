@@ -13,7 +13,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.DisbandGuild;
+            public override int MessageId => (int)ChannelSendCode.DisbandGuild;
 
             protected override async Task HandleAsync(GuildDisbandRequest message, CancellationToken cancellationToken = default)
             {
@@ -28,7 +28,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.LeaveGuild;
+            public override int MessageId => (int)ChannelSendCode.LeaveGuild;
 
             protected override async Task HandleAsync(LeaveGuildRequest message, CancellationToken cancellationToken = default)
             {
@@ -44,7 +44,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.JoinGuild;
+            public override int MessageId => (int)ChannelSendCode.JoinGuild;
 
             protected override async Task HandleAsync(JoinGuildRequest message, CancellationToken cancellationToken = default)
             {
@@ -60,7 +60,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.ExpelGuildMember;
+            public override int MessageId => (int)ChannelSendCode.ExpelGuildMember;
 
             protected override async Task HandleAsync(ExpelFromGuildRequest message, CancellationToken cancellationToken = default)
             {
@@ -76,7 +76,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateGuildGp;
+            public override int MessageId => (int)ChannelSendCode.UpdateGuildGp;
 
             protected override async Task HandleAsync(UpdateGuildGPRequest message, CancellationToken cancellationToken = default)
             {
@@ -92,7 +92,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateGuildEmblem;
+            public override int MessageId => (int)ChannelSendCode.UpdateGuildEmblem;
 
             protected override async Task HandleAsync(UpdateGuildEmblemRequest message, CancellationToken cancellationToken = default)
             {
@@ -108,7 +108,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateGuildNotice;
+            public override int MessageId => (int)ChannelSendCode.UpdateGuildNotice;
 
             protected override async Task HandleAsync(UpdateGuildNoticeRequest message, CancellationToken cancellationToken = default)
             {
@@ -124,7 +124,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.ChangeGuildMemberRank;
+            public override int MessageId => (int)ChannelSendCode.ChangeGuildMemberRank;
 
             protected override async Task HandleAsync(UpdateGuildMemberRankRequest message, CancellationToken cancellationToken = default)
             {
@@ -140,7 +140,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateGuildRankTitle;
+            public override int MessageId => (int)ChannelSendCode.UpdateGuildRankTitle;
 
             protected override async Task HandleAsync(UpdateGuildRankTitleRequest message, CancellationToken cancellationToken = default)
             {
@@ -156,7 +156,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateGuildCapacity;
+            public override int MessageId => (int)ChannelSendCode.UpdateGuildCapacity;
 
             protected override async Task HandleAsync(UpdateGuildCapacityRequest message, CancellationToken cancellationToken = default)
             {
@@ -172,7 +172,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.DropGuildMessage;
+            public override int MessageId => (int)ChannelSendCode.DropGuildMessage;
 
             protected override async Task HandleAsync(GuildDropMessageRequest message, CancellationToken cancellationToken = default)
             {

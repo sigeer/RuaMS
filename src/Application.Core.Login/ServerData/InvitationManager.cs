@@ -163,7 +163,7 @@ namespace Application.Core.Login.ServerData
             var team = _server.TeamManager.GetTeamModel(fromPlayer.Character.Party);
             if (team == null)
             {
-                var res = _server.TeamManager.CreateTeam(new TeamProto.CreateTeamRequest { LeaderId = fromPlayer.Character.Party });
+                var res = _server.TeamManager.CreateTeam(new TeamProto.CreateTeamRequest { LeaderId = fromPlayer.Character.Id });
                 if (res.Code == 0)
                     await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamCreated, res, [res.Request.LeaderId]);
             }

@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.HandleFullPacket;
+        public override int MessageId => (int)ChannelRecvCode.HandleFullPacket;
 
         protected override Task HandleAsync(PacketBroadcast data, CancellationToken cancellationToken = default)
         {

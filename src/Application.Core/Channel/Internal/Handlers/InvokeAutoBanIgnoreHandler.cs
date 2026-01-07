@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.InvokeAutoBanIgnore;
+        public override int MessageId => (int)ChannelRecvCode.InvokeAutoBanIgnore;
 
         protected override Task HandleAsync(ToggleAutoBanIgnoreResponse res, CancellationToken cancellationToken = default)
         {

@@ -15,7 +15,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.AddBuddy;
+            public override int MessageId => (int)ChannelSendCode.AddBuddy;
 
             protected override async Task HandleAsync(AddBuddyRequest message, CancellationToken cancellationToken = default)
             {
@@ -31,7 +31,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.AddBuddyById;
+            public override int MessageId => (int)ChannelSendCode.AddBuddyById;
 
             protected override async Task HandleAsync(AddBuddyByIdRequest message, CancellationToken cancellationToken = default)
             {
@@ -47,7 +47,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.RemoveBuddy;
+            public override int MessageId => (int)ChannelSendCode.RemoveBuddy;
 
             protected override async Task HandleAsync(DeleteBuddyRequest message, CancellationToken cancellationToken = default)
             {
@@ -63,7 +63,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.DropBuddyMessage;
+            public override int MessageId => (int)ChannelSendCode.DropBuddyMessage;
 
             protected override async Task HandleAsync(SendBuddyNoticeMessageDto message, CancellationToken cancellationToken = default)
             {
@@ -79,7 +79,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.GetLocation;
+            public override int MessageId => (int)ChannelSendCode.GetLocation;
 
             protected override async Task HandleAsync(GetLocationRequest message, CancellationToken cancellationToken = default)
             {
@@ -95,7 +95,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.SendWhisper;
+            public override int MessageId => (int)ChannelSendCode.SendWhisper;
 
             protected override async Task HandleAsync(SendWhisperMessageRequest message, CancellationToken cancellationToken = default)
             {

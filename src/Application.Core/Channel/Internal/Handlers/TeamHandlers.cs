@@ -18,7 +18,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnTeamUpdate;
+            public override int MessageId => (int)ChannelRecvCode.OnTeamUpdate;
 
             protected override async Task HandleAsync(UpdateTeamResponse res, CancellationToken cancellationToken = default)
             {
@@ -34,19 +34,28 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnTeamCreated;
+            public override int MessageId => (int)ChannelRecvCode.OnTeamCreated;
 
-            protected override async Task HandleAsync(CreateTeamResponse res, CancellationToken cancellationToken = default)
+            protected override Task HandleAsync(CreateTeamResponse res, CancellationToken cancellationToken = default)
             {
+                if (res.Code != 0)
+                {
+                    return Task.CompletedTask;
+                }
+
+                _server.TeamManager.SetTeam(res.TeamDto);
+
                 var player = _server.FindPlayerById(res.Request.LeaderId);
                 if (player != null)
                 {
-                    await _server.TeamManager.UpdateTeam(res.TeamId, PartyOperation.SILENT_UPDATE, player, player.Id);
-                    
+                    player.sendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
+
                     player.HandleTeamMemberCountChanged(null);
 
-                    player.sendPacket(TeamPacketCreator.PartyCreated(res.TeamId, player));
+                    player.sendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, player));
                 }
+
+                return Task.CompletedTask;
             }
 
             protected override CreateTeamResponse Parse(ByteString data) => CreateTeamResponse.Parser.ParseFrom(data);

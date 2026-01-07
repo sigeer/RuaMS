@@ -1,4 +1,6 @@
+using AllianceProto;
 using Application.Core.Game.Relation;
+using GuildProto;
 
 namespace net.server.guild;
 
@@ -6,22 +8,16 @@ namespace net.server.guild;
 
 public class GuildPackets
 {
-    public static Packet showGuildInfo(Player? chr)
+    public static Packet ShowGuildInfo(GuildDto? g)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x1A); //signature for showing guild info
-        if (chr == null)
-        { //show empty guild (used for leaving, expelled)
-            p.writeByte(0);
-            return p;
-        }
-        var g = chr.GuildModel;
         if (g == null)
         { //failed to read from DB - don't show a guild
             p.writeByte(0);
             return p;
         }
-        getGuildInfo(p, g);
+        GetGuildInfo(p, g);
         return p;
     }
 
@@ -105,6 +101,22 @@ public class GuildPackets
         p.writeInt(mgc.Level);
         p.writeInt(mgc.GuildRank); //should be always 5 but whatevs
         p.writeInt(mgc.Channel > 0 ? 1 : 0); //should always be 1 too
+        p.writeInt(1); //? could be guild signature, but doesn't seem to matter
+        p.writeInt(3);
+        return p;
+    }
+
+    public static Packet newGuildMember(int guildId, int memberId, string memberName, int memberJob, int memberLevel, int memberRank, int memberChannel)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
+        p.writeByte(0x27);
+        p.writeInt(guildId);
+        p.writeInt(memberId);
+        p.writeFixedString(memberName);
+        p.writeInt(memberJob);
+        p.writeInt(memberLevel);
+        p.writeInt(memberRank); //should be always 5 but whatevs
+        p.writeInt(memberChannel > 0 ? 1 : 0); //should always be 1 too
         p.writeInt(1); //? could be guild signature, but doesn't seem to matter
         p.writeInt(3);
         return p;
@@ -265,24 +277,64 @@ public class GuildPackets
         return p;
     }
 
-    static void getGuildInfo(OutPacket p, Guild guild)
+    public static Packet UpdateAllianceInfo(AllianceDto alliance)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
+        p.writeByte(0x0F);
+        p.writeInt(alliance.AllianceId);
+        p.writeString(alliance.Name);
+        for (int i = 1; i <= 5; i++)
+        {
+            p.writeString(alliance.RankTitles[i]);
+        }
+        p.writeByte(alliance.Guilds.Count);
+        foreach (var guild in alliance.Guilds)
+        {
+            p.writeInt(guild.GuildId);
+        }
+        p.writeInt(alliance.Capacity); // probably capacity
+        p.writeShort(0);
+
+        var allianceGuilds = alliance.Guilds;
+        foreach (var guild in allianceGuilds)
+        {
+            GetGuildInfo(p, guild);
+        }
+        return p;
+    }
+
+    public static Packet GetGuildAlliances(AllianceDto alliance)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
+        p.writeByte(0x0D);
+
+        var allianceGuilds = alliance.Guilds;
+        p.writeInt(allianceGuilds.Count);
+        foreach (var guild in allianceGuilds)
+        {
+            GetGuildInfo(p, guild);
+        }
+        return p;
+    }
+
+    static void GetGuildInfo(OutPacket p, GuildDto guild)
     {
         p.writeInt(guild.GuildId);
         p.writeString(guild.Name);
-        for (int i = 1; i <= 5; i++)
-        {
-            p.writeString(guild.getRankTitle(i));
-        }
-        var members = guild.getMembers();
-        p.writeByte(members.Count);
-        foreach (var mgc in members)
+        p.writeString(guild.Rank1Title);
+        p.writeString(guild.Rank2Title);
+        p.writeString(guild.Rank3Title);
+        p.writeString(guild.Rank4Title);
+        p.writeString(guild.Rank5Title);
+        p.writeByte(guild.Members.Count);
+        foreach (var mgc in guild.Members)
         {
             p.writeInt(mgc.Id);
         }
-        foreach (var mgc in members)
+        foreach (var mgc in guild.Members)
         {
             p.writeFixedString(mgc.Name);
-            p.writeInt(mgc.JobId);
+            p.writeInt(mgc.Job);
             p.writeInt(mgc.Level);
             p.writeInt(mgc.GuildRank);
             p.writeInt(mgc.Channel > 0 ? 1 : 0);
@@ -295,99 +347,18 @@ public class GuildPackets
         p.writeShort(guild.Logo);
         p.writeByte(guild.LogoColor);
         p.writeString(guild.Notice);
-        p.writeInt(guild.GP);
+        p.writeInt(guild.Gp);
         p.writeInt(guild.AllianceId);
     }
 
-    public static Packet getAllianceInfo(Guild.Alliance alliance)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
-        p.writeByte(0x0C);
-        p.writeByte(1);
-        p.writeInt(alliance.AllianceId);
-        p.writeString(alliance.Name);
-        for (int i = 1; i <= 5; i++)
-        {
-            p.writeString(alliance.getRankTitle(i));
-        }
-        p.writeByte(alliance.getGuilds().Count);
-        p.writeInt(alliance.Capacity); // probably capacity
-        foreach (int guild in alliance.getGuilds())
-        {
-            p.writeInt(guild);
-        }
-        p.writeString(alliance.Notice);
-        return p;
-    }
+    public static Packet allianceMemberOnline(Guild guild, int playerId, bool online) => allianceMemberOnline(guild.AllianceId, guild.GuildId, playerId, online);
 
-    public static Packet updateAllianceInfo(Guild.Alliance alliance)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
-        p.writeByte(0x0F);
-        p.writeInt(alliance.AllianceId);
-        p.writeString(alliance.Name);
-        for (int i = 1; i <= 5; i++)
-        {
-            p.writeString(alliance.getRankTitle(i));
-        }
-        p.writeByte(alliance.getGuilds().Count);
-        foreach (int guild in alliance.getGuilds())
-        {
-            p.writeInt(guild);
-        }
-        p.writeInt(alliance.Capacity); // probably capacity
-        p.writeShort(0);
-
-        var allianceGuilds = alliance.Guilds;
-        foreach (var guild in allianceGuilds)
-        {
-            getGuildInfo(p, guild.Value);
-        }
-        return p;
-    }
-
-    public static Packet getGuildAlliances(Guild.Alliance alliance)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
-        p.writeByte(0x0D);
-
-        var allianceGuilds = alliance.Guilds;
-        p.writeInt(allianceGuilds.Count);
-        foreach (var guild in allianceGuilds)
-        {
-            getGuildInfo(p, guild.Value);
-        }
-        return p;
-    }
-
-    public static Packet addGuildToAlliance(Guild.Alliance alliance, Guild newGuild)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
-        p.writeByte(0x12);
-        p.writeInt(alliance.AllianceId);
-        p.writeString(alliance.Name);
-        for (int i = 1; i <= 5; i++)
-        {
-            p.writeString(alliance.getRankTitle(i));
-        }
-        p.writeByte(alliance.getGuilds().Count);
-        foreach (int guild in alliance.getGuilds())
-        {
-            p.writeInt(guild);
-        }
-        p.writeInt(alliance.Capacity);
-        p.writeString(alliance.Notice);
-        p.writeInt(newGuild.GuildId);
-        getGuildInfo(p, newGuild);
-        return p;
-    }
-
-    public static Packet allianceMemberOnline(Guild guild, int playerId, bool online)
+    public static Packet allianceMemberOnline(int allianceId, int guildId, int playerId, bool online)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0E);
-        p.writeInt(guild.AllianceId);
-        p.writeInt(guild.GuildId);
+        p.writeInt(allianceId);
+        p.writeInt(guildId);
         p.writeInt(playerId);
         p.writeBool(online);
         return p;
@@ -416,18 +387,20 @@ public class GuildPackets
 
 
     public static Packet updateAllianceJobLevel(Guild guild, int memberId, int level, int jobId)
+        => updateAllianceJobLevel(guild.AllianceId, guild.GuildId, memberId, level, jobId);
+    public static Packet updateAllianceJobLevel(int allianceId, int guildId, int memberId, int level, int jobId)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x18);
-        p.writeInt(guild.AllianceId);
-        p.writeInt(guild.GuildId);
+        p.writeInt(allianceId);
+        p.writeInt(guildId);
         p.writeInt(memberId);
         p.writeInt(level);
         p.writeInt(jobId);
         return p;
     }
 
-    public static Packet removeGuildFromAlliance(Guild.Alliance alliance, Guild expelledGuild)
+    public static Packet RemoveGuildFromAlliance(AllianceDto alliance, GuildDto expelledGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x10);
@@ -435,18 +408,18 @@ public class GuildPackets
         p.writeString(alliance.Name);
         for (int i = 1; i <= 5; i++)
         {
-            p.writeString(alliance.getRankTitle(i));
+            p.writeString(alliance.RankTitles[i]);
         }
 
-        p.writeByte(alliance.getGuilds().Count);
-        foreach (int guild in alliance.getGuilds())
+        p.writeByte(alliance.Guilds.Count);
+        foreach (var guild in alliance.Guilds)
         {
-            p.writeInt(guild);
+            p.writeInt(guild.GuildId);
         }
         p.writeInt(alliance.Capacity);
         p.writeString(alliance.Notice);
         p.writeInt(expelledGuild.GuildId);
-        getGuildInfo(p, expelledGuild);
+        GetGuildInfo(p, expelledGuild);
         p.writeByte(0x01);
         return p;
     }

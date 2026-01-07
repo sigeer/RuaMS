@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.HandleSetTimer;
+            public override int MessageId => (int)ChannelRecvCode.HandleSetTimer;
 
             protected override Task HandleAsync(SetTimer res, CancellationToken cancellationToken = default)
             {
@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.HandleRemoveTimer;
+            public override int MessageId => (int)ChannelRecvCode.HandleRemoveTimer;
 
             protected override Task HandleAsync(RemoveTimer res, CancellationToken cancellationToken = default)
             {

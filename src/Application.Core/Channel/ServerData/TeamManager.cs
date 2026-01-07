@@ -88,14 +88,14 @@ namespace Application.Core.Channel.ServerData
         /// <param name="updatePlayer"></param>
         public void ChannelNotify(Player updatePlayer)
         {
-            var team = ForcedGetTeam(updatePlayer.Party, false);
+            var team = GetTeamDto(updatePlayer.Party, false);
             if (team != null)
             {
-                var partyMembers = team.GetChannelMembers(updatePlayer.getChannelServer());
+                var partyMembers = GetChannelMembers(updatePlayer.getChannelServer(), team);
 
                 foreach (var partychar in partyMembers)
                 {
-                    partychar.sendPacket(TeamPacketCreator.updateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
+                    partychar.sendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
 
                     if (partychar.Map == updatePlayer.Map)
                     {
@@ -129,22 +129,19 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            var party = MapTeam(res.Team);
             SetTeam(res.Team);
 
-            var targetMember = party.GetTeamMember(res.Request.TargetId);
-
-            var partyMembers = party.GetActiveMembers(_server);
+            var partyMembers = GetActiveMembers(_server, res.Team);
             foreach (var partychar in partyMembers)
             {
-                partychar.Party = operation == PartyOperation.DISBAND ? -1 : party.getId();
+                partychar!.Party = operation == PartyOperation.DISBAND ? -1 : res.Team.Id;
                 if (partychar.IsOnlined)
                 {
-                    partychar.sendPacket(TeamPacketCreator.updateParty(partychar.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
+                    partychar.sendPacket(TeamPacketCreator.UpdateParty(partychar.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
                 }
             }
 
-            var targetPlayer = _server.FindPlayerById(targetMember.Channel, targetMember.Id);
+            var targetPlayer = _server.FindPlayerById(res.Request.TargetId);
             if (operation == PartyOperation.JOIN)
             {
                 if (targetPlayer != null)
@@ -174,7 +171,7 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.Party = -1;
-                    targetPlayer.sendPacket(TeamPacketCreator.updateParty(targetPlayer.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.sendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
                     targetPlayer.HandleTeamMemberCountChanged(partymembers);
                 }
             }
@@ -188,7 +185,7 @@ namespace Application.Core.Channel.ServerData
                         eim.disbandParty();
                     }
                 }
-                await _cache.RemoveAsync(GetTeamCacheKey(party.getId()));
+                await _cache.RemoveAsync(GetTeamCacheKey(res.Team.Id));
             }
             else if (operation == PartyOperation.EXPEL)
             {
@@ -203,14 +200,13 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.Party = -1;
-                    targetPlayer.sendPacket(TeamPacketCreator.updateParty(targetPlayer.getChannelServer(), party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.sendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
                     targetPlayer.HandleTeamMemberCountChanged(preData);
                 }
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
             {
-                var oldLeader = party.GetTeamMember(party.getLeaderId());
-                var mc = _server.FindPlayerById(oldLeader.Channel, oldLeader.Id);
+                var mc = _server.FindPlayerById(res.Request.FromId);
                 if (mc != null && targetPlayer != null && mc.Channel == targetPlayer.Channel)
                 {
                     var eim = mc.getEventInstance();
@@ -236,7 +232,6 @@ namespace Application.Core.Channel.ServerData
                         }
                     }
                 }
-                party.SetLeaderId(targetMember.Id);
             }
         }
 
@@ -247,7 +242,7 @@ namespace Application.Core.Channel.ServerData
         }
 
         static string GetTeamCacheKey(int teamId) => $"Team_{teamId}";
-        void SetTeam(TeamDto dto)
+        public void SetTeam(TeamDto dto)
         {
             if (dto != null)
             {
@@ -255,7 +250,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        internal Team? ForcedGetTeam(int party, bool useCache = true)
+        internal TeamDto GetTeamDto(int party, bool useCache = true)
         {
             var cacheKey = GetTeamCacheKey(party);
             TeamDto res;
@@ -270,6 +265,12 @@ namespace Application.Core.Channel.ServerData
                 res = TeamDto.Parser.ParseFrom(data);
             }
 
+            return res;
+        }
+
+        internal Team? ForcedGetTeam(int party, bool useCache = true)
+        {
+            var res = GetTeamDto(party, useCache);
             if (res == null)
                 return null;
 
@@ -284,6 +285,16 @@ namespace Application.Core.Channel.ServerData
                 d.addMember(_mapper.Map<TeamMember>(member));
             }
             return d;
+        }
+
+        static List<Player> GetActiveMembers(WorldChannelServer server, TeamDto team)
+        {
+            return team.Members.Select(x => server.FindPlayerById(x.Id)).Where(x => x != null && x.isLoggedinWorld()).ToList();
+        }
+
+        List<Player> GetChannelMembers(WorldChannel channel, TeamDto team)
+        {
+            return team.Members.Select(x => channel.getPlayerStorage().getCharacterById(x.Id)).Where(x => x != null && x.isLoggedinWorld()).ToList();
         }
 
         public async Task CreateInvite(Player fromChr, string toName)

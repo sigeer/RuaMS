@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.OnWorldConfigUpdate;
+        public override int MessageId => (int)ChannelRecvCode.OnWorldConfigUpdate;
 
         protected override Task HandleAsync(WorldConfig res, CancellationToken cancellationToken = default)
         {

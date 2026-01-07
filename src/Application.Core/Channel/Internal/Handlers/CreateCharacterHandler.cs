@@ -11,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.CreateCharacter;
+        public override int MessageId => (int)ChannelRecvCode.CreateCharacter;
 
         protected override async Task HandleAsync(CreateCharRequestDto data, CancellationToken cancellationToken = default)
         {

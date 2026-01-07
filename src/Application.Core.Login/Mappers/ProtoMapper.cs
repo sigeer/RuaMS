@@ -32,7 +32,11 @@ namespace Application.Core.Login.Mappers
             CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
 
             CreateMap<CharacterModel, Dto.CharacterDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(dest => dest.Party, src => src.Ignore())
+                .ForMember(dest => dest.GuildId, src => src.Ignore())
+                .ForMember(dest => dest.GuildRank, src => src.Ignore())
+                .ForMember(dest => dest.AllianceRank, src => src.Ignore());
 
             CreateMap<FameLogModel, Dto.FameLogRecordDto>().ReverseMap();
             CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();

@@ -185,7 +185,7 @@ server:
     QUEST_POINT_PER_EVENT_CLEAR: 0       #Each completed event instance awards N quest points, set 0 to disable.
 
     #Guild Configuration
-    CREATE_GUILD_MIN_PARTNERS: 6         #Minimum number of members on Guild Headquarters to establish a new guild.
+    CREATE_GUILD_MIN_PARTNERS: 3         #Minimum number of members on Guild Headquarters to establish a new guild.
     CREATE_GUILD_COST: 1500000
     CHANGE_EMBLEM_COST: 5000000
     EXPAND_GUILD_BASE_COST: 500000

@@ -53,13 +53,13 @@ namespace Application.Core.Login.Servers
                 {
                     lastHeartbeat = DateTime.UtcNow;
 
-                    if (msg.EventId == ChannelSendCode.RegisterChannel)
+                    if (msg.EventId == (int)ChannelSendCode.RegisterChannel)
                     {
                         serverNode = new RemoteChannelServerNode(_server, responseStream, RegisterServerRequest.Parser.ParseFrom(msg.Data));
                         var channelId = _server.AddChannel(serverNode);
                         if (channelId > 0)
                         {
-                            await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                            await serverNode.SendMessage(msg.EventId, new RegisterServerResult
                             {
                                 StartChannel = channelId,
                                 Coupon = _server.CouponManager.GetConfig(),
@@ -68,7 +68,7 @@ namespace Application.Core.Login.Servers
                         }
                         else
                         {
-                            await serverNode.SendMessage(ChannelRecvCode.RegisterChannel, new RegisterServerResult
+                            await serverNode.SendMessage(msg.EventId, new RegisterServerResult
                             {
                                 StartChannel = channelId,
                             });

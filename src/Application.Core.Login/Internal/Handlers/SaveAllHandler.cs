@@ -10,7 +10,7 @@ namespace Application.Core.Login.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelSendCode.SaveAll;
+        public override int MessageId => (int)ChannelSendCode.SaveAll;
 
         protected override async Task HandleAsync(Empty message, CancellationToken cancellationToken = default)
         {

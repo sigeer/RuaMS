@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "Guild/Alliance.proto";
+import "Guild/Guild.proto";
 
 package AllianceProto;
 
@@ -14,6 +15,8 @@ message GuildLeaveAllianceResponse {
 	int32 allianceId = 2;
 	int32 guildId = 3;
 	GuildLeaveAllianceRequest request = 4;
+	AllianceProto.AllianceDto allianceDto = 6;
+	GuildProto.GuildDto guildDto = 7;
 }
 
 message AllianceExpelGuildRequest {
@@ -26,6 +29,8 @@ message AllianceExpelGuildResponse {
 	int32 allianceId = 2;
 	int32 guildId = 3;
 	AllianceExpelGuildRequest request = 4;
+	AllianceProto.AllianceDto allianceDto = 6;
+	GuildProto.GuildDto guildDto = 7;
 }
 
 message GuildJoinAllianceRequest {
@@ -38,6 +43,7 @@ message GuildJoinAllianceResponse {
 	int32 allianceId = 2;
 	int32 guildId = 3;
 	GuildJoinAllianceRequest request = 4;
+	AllianceProto.AllianceDto allianceDto = 6;
 }
 
 message AllianceChangeLeaderRequest {
@@ -49,6 +55,9 @@ message AllianceChangeLeaderResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	AllianceChangeLeaderRequest request = 3;
+	string oldLeaderName = 5;
+	string newLeaderName = 6;
+	AllianceProto.AllianceDto allianceDto = 7;
 }
 
 message ChangePlayerAllianceRankRequest {
@@ -62,6 +71,7 @@ message ChangePlayerAllianceRankResponse {
 	int32 allianceId = 2;
 	ChangePlayerAllianceRankRequest request = 3;
 	int32 newRank = 4;
+	AllianceProto.AllianceDto allianceDto = 6;
 }
 
 message IncreaseAllianceCapacityRequest {
@@ -72,6 +82,7 @@ message IncreaseAllianceCapacityResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	IncreaseAllianceCapacityRequest request = 3;
+	AllianceProto.AllianceDto allianceDto = 5;
 }
 
 message UpdateAllianceRankTitleRequest {
@@ -83,6 +94,7 @@ message UpdateAllianceRankTitleResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	UpdateAllianceRankTitleRequest request = 3;
+	repeated int32 allMembers = 4;
 }
 
 message UpdateAllianceNoticeRequest {
@@ -94,6 +106,7 @@ message UpdateAllianceNoticeResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	UpdateAllianceNoticeRequest request = 3;
+	repeated int32 allMembers = 4;
 }
 
 message DisbandAllianceRequest{
@@ -104,9 +117,18 @@ message DisbandAllianceResponse {
 	int32 code = 1;
 	int32 allianceId = 2;
 	DisbandAllianceRequest request = 3;
+	repeated int32 allMembers = 4;
+	repeated int32 guilds = 5;
 }
 
-message AllianceChatRequest {
-	string name = 1;
-	string text = 2;
+message AllianceBroadcastPlayerInfoRequest {
+	int32 masterId = 1;
 }
+
+message AllianceBroadcastPlayerInfoResponse {
+	int32 code = 1;
+	AllianceBroadcastPlayerInfoRequest request = 2;
+	int32 allianceId = 3;
+	repeated int32 allMembers = 4;
+}
+

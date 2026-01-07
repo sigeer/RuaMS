@@ -12,7 +12,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateAllianceCapacity;
+            public override int MessageId => (int)ChannelSendCode.UpdateAllianceCapacity;
 
             protected override async Task HandleAsync(IncreaseAllianceCapacityRequest request, CancellationToken cancellationToken = default)
             {
@@ -28,7 +28,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.DisbandAlliance;
+            public override int MessageId => (int)ChannelSendCode.DisbandAlliance;
 
             protected override async Task HandleAsync(DisbandAllianceRequest request, CancellationToken cancellationToken = default)
             {
@@ -38,21 +38,21 @@ namespace Application.Core.Login.Internal.Handlers
             protected override DisbandAllianceRequest Parse(ByteString data) => DisbandAllianceRequest.Parser.ParseFrom(data);
         }
 
-        internal class Join : InternalSessionMasterHandler<GuildJoinAllianceRequest>
-        {
-            public Join(MasterServer server) : base(server)
-            {
-            }
+        //internal class Join : InternalSessionMasterHandler<GuildJoinAllianceRequest>
+        //{
+        //    public Join(MasterServer server) : base(server)
+        //    {
+        //    }
 
-            public override int MessageId => ChannelSendCode.JoinAlliance;
+        //    public override int MessageId => (int)ChannelSendCode.JoinAlliance;
 
-            protected override async Task HandleAsync(GuildJoinAllianceRequest request, CancellationToken cancellationToken = default)
-            {
-                await _server.GuildManager.GuildJoinAlliance(request);
-            }
+        //    protected override async Task HandleAsync(GuildJoinAllianceRequest request, CancellationToken cancellationToken = default)
+        //    {
+        //        await _server.GuildManager.GuildJoinAlliance(request);
+        //    }
 
-            protected override GuildJoinAllianceRequest Parse(ByteString data) => GuildJoinAllianceRequest.Parser.ParseFrom(data);
-        }
+        //    protected override GuildJoinAllianceRequest Parse(ByteString data) => GuildJoinAllianceRequest.Parser.ParseFrom(data);
+        //}
 
         internal class GuildLeave : InternalSessionMasterHandler<GuildLeaveAllianceRequest>
         {
@@ -60,7 +60,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.LeaveAlliance;
+            public override int MessageId => (int)ChannelSendCode.LeaveAlliance;
 
             protected override async Task HandleAsync(GuildLeaveAllianceRequest request, CancellationToken cancellationToken = default)
             {
@@ -76,7 +76,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateAllianceNotice;
+            public override int MessageId => (int)ChannelSendCode.UpdateAllianceNotice;
 
             protected override async Task HandleAsync(UpdateAllianceNoticeRequest request, CancellationToken cancellationToken = default)
             {
@@ -93,7 +93,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateAllianceRankTitle;
+            public override int MessageId => (int)ChannelSendCode.UpdateAllianceRankTitle;
 
             protected override async Task HandleAsync(UpdateAllianceRankTitleRequest request, CancellationToken cancellationToken = default)
             {
@@ -110,7 +110,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateAllianceGuildRank;
+            public override int MessageId => (int)ChannelSendCode.UpdateAllianceGuildRank;
 
             protected override async Task HandleAsync(ChangePlayerAllianceRankRequest request, CancellationToken cancellationToken = default)
             {
@@ -126,7 +126,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateAllianceLeader;
+            public override int MessageId => (int)ChannelSendCode.UpdateAllianceLeader;
 
             protected override async Task HandleAsync(AllianceChangeLeaderRequest request, CancellationToken cancellationToken = default)
             {
@@ -142,7 +142,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.ExpelAllianceGuild;
+            public override int MessageId => (int)ChannelSendCode.ExpelAllianceGuild;
 
             protected override async Task HandleAsync(AllianceExpelGuildRequest request, CancellationToken cancellationToken = default)
             {

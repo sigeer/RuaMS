@@ -413,22 +413,27 @@ namespace Application.Core.Channel.Services
 
         public async Task CompleteLogin(Player chr, SyncProto.PlayerGetterDto o)
         {
+            await _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+
             if (o.LoginInfo.IsNewCommer)
             {
                 chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
-            await _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
-            if (chr.GuildModel != null)
+
+            if (o.Guild != null)
             {
-                chr.sendPacket(GuildPackets.showGuildInfo(chr));
+                chr.sendPacket(GuildPackets.ShowGuildInfo(o.Guild));
+
+                chr.SetGuildSnapshot(o.Guild);
             }
 
-            if (chr.AllianceModel != null)
+            if (o.Alliance != null)
             {
-                chr.sendPacket(GuildPackets.updateAllianceInfo(chr.AllianceModel));
-                chr.sendPacket(GuildPackets.allianceNotice(chr.AllianceModel.AllianceId, chr.AllianceModel.Notice));
-            }
+                chr.sendPacket(GuildPackets.UpdateAllianceInfo(o.Alliance));
+                chr.sendPacket(GuildPackets.allianceNotice(o.Alliance.AllianceId, o.Alliance.Notice));
 
+                chr.SetAllianceSnapshot(o.Alliance);
+            }
 
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
         }

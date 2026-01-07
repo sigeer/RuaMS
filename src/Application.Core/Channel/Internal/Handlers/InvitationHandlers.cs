@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnInvitationSent;
+            public override int MessageId => (int)ChannelRecvCode.OnInvitationSent;
 
             protected override Task HandleAsync(CreateInviteResponse res, CancellationToken cancellationToken = default)
             {
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnInvitationAnswered;
+            public override int MessageId => (int)ChannelRecvCode.OnInvitationAnswered;
 
             protected override Task HandleAsync(AnswerInviteResponse res, CancellationToken cancellationToken = default)
             {

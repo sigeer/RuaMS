@@ -21,6 +21,7 @@ using InvitationProto;
 using ItemProto;
 using LifeProto;
 using MessageProto;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RankProto;
@@ -313,11 +314,9 @@ namespace Application.Core.ServerTransports
             return _guildClient.GetGuildModel(new GetGuildRequest { Id = id });
         }
 
-        public GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
+        public async Task CreateGuild(GuildProto.CreateGuildRequest request)
         {
-            var req = new CreateGuildRequest { LeaderId = playerId, Name = guildName };
-            req.Members.AddRange(members);
-            return _guildClient.CreateGuild(req);
+            await InternalSession.SendAsync(ChannelSendCode.CreateGuild, request);
         }
 
         public async Task BroadcastGuildMessage(int guildId, int v, string callout)
@@ -385,16 +384,9 @@ namespace Application.Core.ServerTransports
             return _allianceClient.CreateAllianceCheck(request);
         }
 
-        public GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
+        public async Task CreateAlliance(AllianceProto.CreateAllianceRequest request)
         {
-            var req = new CreateAllianceRequest() { Name = allianceName };
-            req.Members.AddRange(masters);
-            return _allianceClient.CreateAlliance(req);
-        }
-
-        public async Task SendGuildJoinAlliance(GuildJoinAllianceRequest guildJoinAllianceRequest)
-        {
-            await InternalSession.SendAsync(ChannelSendCode.JoinAlliance, guildJoinAllianceRequest);
+            await InternalSession.SendAsync(ChannelSendCode.CreateAlliance, request);
         }
 
         public async Task SendGuildLeaveAlliance(GuildLeaveAllianceRequest guildLeaveAllianceRequest)
@@ -435,6 +427,11 @@ namespace Application.Core.ServerTransports
         public async Task SendAllianceDisband(DisbandAllianceRequest request)
         {
             await InternalSession.SendAsync(ChannelSendCode.DisbandAlliance, request);
+        }
+
+        public async Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.AllianceBroadcastPlayerInfo, request);
         }
 
         public async Task SendPlayerJoinChatRoom(JoinChatRoomRequest request)

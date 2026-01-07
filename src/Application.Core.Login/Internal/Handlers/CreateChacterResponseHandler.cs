@@ -11,7 +11,7 @@ namespace Application.Core.Login.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelSendCode.CreateCharacterResponse;
+        public override int MessageId => (int)ChannelSendCode.CreateCharacterResponse;
 
         protected override Task HandleAsync(CreateCharResponseDto data, CancellationToken cancellationToken = default)
         {

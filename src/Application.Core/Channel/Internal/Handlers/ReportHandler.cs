@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.HandleReportReceived;
+        public override int MessageId => (int)ChannelRecvCode.HandleReportReceived;
 
         protected override Task HandleAsync(SendReportResponse res, CancellationToken cancellationToken = default)
         {

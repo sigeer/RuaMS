@@ -26,7 +26,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -36,7 +35,6 @@ using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.Scripting.Events;
 using Application.Core.Server;
-using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
@@ -52,7 +50,6 @@ using constants.game;
 using net.server;
 using net.server.guild;
 using scripting;
-using scripting.Event;
 using server;
 using server.events;
 using server.events.gm;
@@ -62,8 +59,6 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using tools;
 using static client.inventory.Equip;
 
@@ -71,8 +66,6 @@ namespace Application.Core.Game.Players;
 
 public partial class Player
 {
-    public Guild? GuildModel => getGuild();
-    public Guild.Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
     public RewardStorage GachaponStorage { get; set; } = null!;
     public AbstractStorage? CurrentStorage { get; set; }
@@ -88,7 +81,7 @@ public partial class Player
     private int ci = 0;
 
     // 替换Family，搁置
-    public ISchool? SchoolModel { get; set; }
+    // public ISchool? SchoolModel { get; set; }
 
     private int battleshipHp = 0;
     private int mesosTraded = 0;
@@ -1266,21 +1259,6 @@ public partial class Player
         }, healInterval, healInterval);
     }
 
-    public void disbandGuild()
-    {
-        if (GuildId < 1 || GuildRank != 1)
-        {
-            return;
-        }
-        try
-        {
-            _ = Client.CurrentServerContainer.GuildManager.Disband(this);
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
-    }
 
     public void dispel()
     {
@@ -1461,13 +1439,6 @@ public partial class Player
     public int getAccountID()
     {
         return AccountId;
-    }
-
-
-
-    public int getAllianceRank()
-    {
-        return AllianceRank;
     }
 
 
@@ -1989,34 +1960,7 @@ public partial class Player
         return getGender() == 0;
     }
 
-    public Guild? getGuild()
-    {
-        try
-        {
-            return Client.CurrentServerContainer.GuildManager.GetGuildById(GuildId);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.ToString());
-            return null;
-        }
-    }
 
-    public Guild.Alliance? getAlliance()
-    {
-        var guild = getGuild();
-        return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
-    }
-
-    public int getGuildId()
-    {
-        return GuildId;
-    }
-
-    public int getGuildRank()
-    {
-        return GuildRank;
-    }
 
     public int getHair()
     {
@@ -2464,24 +2408,6 @@ public partial class Player
     }
 
 
-    public void increaseGuildCapacity()
-    {
-        var guild = getGuild();
-        if (guild == null)
-            return;
-
-        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
-
-        if (getMeso() < cost)
-        {
-            dropMessage(1, "You don't have enough mesos.");
-            return;
-        }
-
-        _ = Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
-
-    }
-
     public bool isBuffFrom(BuffStat stat, Skill skill)
     {
         effLock.Enter();
@@ -2625,7 +2551,7 @@ public partial class Player
         }
     }
 
-    Lock levelUpLock = new ();
+    Lock levelUpLock = new();
     public void levelUp(bool takeexp)
     {
         lock (levelUpLock)
@@ -3181,8 +3107,8 @@ public partial class Player
             eim.playerKilled(this);
         }
 
-        if (JobModel != Job.BEGINNER 
-            && !MapId.isDojo(getMapId()) 
+        if (JobModel != Job.BEGINNER
+            && !MapId.isDojo(getMapId())
             && eim is not MonsterCarnivalEventInstanceManager
             && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
         {
@@ -3199,7 +3125,7 @@ public partial class Player
                     usedSafetyCharm = true;
                     break;
                 }
-            }            
+            }
 
             if (!usedSafetyCharm)
             {
@@ -3720,21 +3646,6 @@ public partial class Player
     public void setGender(int gender)
     {
         this.Gender = gender;
-    }
-
-    public void setGuildId(int _id)
-    {
-        GuildId = _id;
-    }
-
-    public void setGuildRank(int _rank)
-    {
-        GuildRank = _rank;
-    }
-
-    public void setAllianceRank(int _rank)
-    {
-        AllianceRank = _rank;
     }
 
     public void setHair(int hair)

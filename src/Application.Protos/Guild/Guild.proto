@@ -33,7 +33,6 @@ message GuildMemberDto {
 	int32 channel = 5;
 	int32 guildRank = 6;
 	int32 allianceRank = 7;
-	int32 gp = 8;
 	int32 guildId = 9;
 }
 

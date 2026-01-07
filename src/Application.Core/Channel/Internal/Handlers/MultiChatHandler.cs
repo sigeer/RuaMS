@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.MultiChat;
+        public override int MessageId => (int)ChannelRecvCode.MultiChat;
 
         protected override Task HandleAsync(MultiChatMessage data, CancellationToken cancellationToken = default)
         {

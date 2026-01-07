@@ -42,7 +42,7 @@ namespace Application.Shared.Client
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
             _ = Task.Run(async () =>
             {
-                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL));
+                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(150));
 
                 while (await timer.WaitForNextTickAsync())
                 {

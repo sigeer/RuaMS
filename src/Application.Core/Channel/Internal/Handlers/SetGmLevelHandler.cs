@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.InvokeSetGmLevel;
+        public override int MessageId => (int)ChannelRecvCode.InvokeSetGmLevel;
 
         protected override Task HandleAsync(SetGmLevelResponse res, CancellationToken cancellationToken = default)
         {

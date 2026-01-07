@@ -26,12 +26,10 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Events;
-using constants.String;
-using Microsoft.Extensions.DependencyInjection;
-using net.server.coordinator.matchchecker;
 using server;
 using server.expeditions;
 using server.partyquest;
@@ -513,14 +511,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
     }
 
-    public Guild.Alliance? createAlliance(string name)
+    public void CreateAllianceAysnc(string name, int cost)
     {
-        return c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name);
+        _ = c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name, cost);
     }
 
     public int getAllianceCapacity()
     {
-        return getPlayer().AllianceModel!.Capacity;
+        return getPlayer().AllianceSnapshot?.Capacity ?? 0;
     }
 
     public RemoteHiredMerchantData LoadFredrickRegistry()
@@ -972,4 +970,40 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         return ItemInformationProvider.getInstance().getCardTierSize();
     }
+
+    #region Guild Operation
+    public void increaseGuildCapacity()
+    {
+        var guild = getPlayer().getGuild();
+        if (guild == null)
+            return;
+
+        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
+
+        if (getMeso() < cost)
+        {
+            dropMessage(1, "You don't have enough mesos.");
+            return;
+        }
+
+        _ = c.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(getPlayer(), cost);
+    }
+
+    public void disbandGuild()
+    {
+        if (getPlayer().GuildId < 1 || getPlayer().GuildRank != 1)
+        {
+            return;
+        }
+        try
+        {
+            _ = c.CurrentServerContainer.GuildManager.Disband(getPlayer());
+        }
+        catch (Exception e)
+        {
+            Log.Error(e.ToString());
+        }
+    }
+
+    #endregion
 }

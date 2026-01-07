@@ -12,11 +12,6 @@ namespace Application.Core.Login.Servers
             _server = server;
         }
 
-        public override Task<GetAllianceResponse> CreateAlliance(CreateAllianceRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(request.Members.ToArray(), request.Name) });
-        }
-
         public override Task<CreateAllianceCheckResponse> CreateAllianceCheck(CreateAllianceCheckRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.GuildManager.CreateAllianceCheck(request));
@@ -24,7 +19,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<GetAllianceResponse> GetAllianceModel(GetAllianceRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(request.Id) });
+            return Task.FromResult(new GetAllianceResponse { Model = _server.GuildManager.GetAllianceDto(request.Id) });
         }
     }
 }

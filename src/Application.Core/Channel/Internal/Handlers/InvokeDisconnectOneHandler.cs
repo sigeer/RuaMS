@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.InvokeDisconnectPlayer;
+        public override int MessageId => (int)ChannelRecvCode.InvokeDisconnectPlayer;
 
         protected override Task HandleAsync(DisconnectPlayerByNameResponse res, CancellationToken cancellationToken = default)
         {

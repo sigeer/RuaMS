@@ -8,6 +8,7 @@ message UpdateTeamResponse {
   int32 code = 1;
   UpdateTeamRequest request = 2;
   TeamDto team = 3;
+  string targetName = 4; 
 }
 
 message UpdateTeamRequest {

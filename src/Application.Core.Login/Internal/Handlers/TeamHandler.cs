@@ -13,7 +13,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateTeam;
+            public override int MessageId => (int)ChannelSendCode.UpdateTeam;
 
             protected override async Task HandleAsync(UpdateTeamRequest message, CancellationToken cancellationToken = default)
             {

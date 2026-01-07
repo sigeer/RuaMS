@@ -736,19 +736,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.sendPacket(PacketCreator.enableActions());
     }
 
-    public Guild? getGuild()
-    {
-        try
-        {
-            return getPlayer().getGuild();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-        return null;
-    }
-
     public virtual Team? getParty()
     {
         return getPlayer().getParty();

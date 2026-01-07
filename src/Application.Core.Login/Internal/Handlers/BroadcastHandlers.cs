@@ -15,7 +15,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.ToggleCoupon;
+            public override int MessageId => (int)ChannelSendCode.ToggleCoupon;
 
             protected override async Task HandleAsync(ToggelCouponRequest message, CancellationToken cancellationToken = default)
             {
@@ -30,7 +30,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.UpdateWorldConfig;
+            public override int MessageId => (int)ChannelSendCode.UpdateWorldConfig;
 
             protected override async Task HandleAsync(WorldConfig message, CancellationToken cancellationToken = default)
             {
@@ -46,7 +46,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.DropMessage;
+            public override int MessageId => (int)ChannelSendCode.DropMessage;
 
             protected override async Task HandleAsync(DropMessageRequest message, CancellationToken cancellationToken = default)
             {
@@ -62,7 +62,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.BroadcastPacket;
+            public override int MessageId => (int)ChannelSendCode.BroadcastPacket;
 
             protected override async Task HandleAsync(PacketRequest message, CancellationToken cancellationToken = default)
             {

@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class RegisterChannelServerHandler : InternalSessionChannelHandler<RegisterServerResult>
     {
-        public override int MessageId => ChannelRecvCode.RegisterChannel;
+        public override int MessageId => (int)ChannelRecvCode.RegisterChannel;
         public RegisterChannelServerHandler(WorldChannelServer server) : base(server)
         {
         }

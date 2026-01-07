@@ -11,7 +11,7 @@ namespace Application.Core.Login.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelSendCode.MultiChat;
+        public override int MessageId => (int)ChannelSendCode.MultiChat;
 
         protected override async Task HandleAsync(MultiChatMessage data, CancellationToken cancellationToken = default)
         {

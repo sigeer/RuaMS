@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnPlayerJobChanged;
+            public override int MessageId => (int)ChannelRecvCode.OnPlayerJobChanged;
 
             protected override Task HandleAsync(PlayerFieldChange res, CancellationToken cancellationToken = default)
             {
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnPlayerLevelChanged;
+            public override int MessageId => (int)ChannelRecvCode.OnPlayerLevelChanged;
 
             protected override Task HandleAsync(PlayerFieldChange res, CancellationToken cancellationToken = default)
             {
@@ -54,7 +54,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnPlayerServerChanged;
+            public override int MessageId => (int)ChannelRecvCode.OnPlayerServerChanged;
 
             protected override Task HandleAsync(PlayerFieldChange res, CancellationToken cancellationToken = default)
             {

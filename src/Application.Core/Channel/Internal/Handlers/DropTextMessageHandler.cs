@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        public override int MessageId => ChannelRecvCode.DropTextMessage;
+        public override int MessageId => (int)ChannelRecvCode.DropTextMessage;
 
         protected override Task HandleAsync(DropMessageBroadcast msg, CancellationToken cancellationToken = default)
         {

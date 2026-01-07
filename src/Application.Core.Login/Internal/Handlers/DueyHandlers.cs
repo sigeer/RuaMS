@@ -12,7 +12,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.LoadDueyPackage;
+            public override int MessageId => (int)ChannelSendCode.LoadDueyPackage;
 
             protected override async Task HandleAsync(GetPlayerDueyPackageRequest message, CancellationToken cancellationToken = default)
             {
@@ -28,7 +28,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.CreateDueyPackage;
+            public override int MessageId => (int)ChannelSendCode.CreateDueyPackage;
 
             protected override async Task HandleAsync(CreatePackageRequest message, CancellationToken cancellationToken = default)
             {
@@ -44,7 +44,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.RemoveDueyPackage;
+            public override int MessageId => (int)ChannelSendCode.RemoveDueyPackage;
 
             protected override async Task HandleAsync(RemovePackageRequest message, CancellationToken cancellationToken = default)
             {
@@ -60,7 +60,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.TakeDueyPackage;
+            public override int MessageId => (int)ChannelSendCode.TakeDueyPackage;
 
             protected override async Task HandleAsync(TakeDueyPackageRequest message, CancellationToken cancellationToken = default)
             {
@@ -76,7 +76,7 @@ namespace Application.Core.Login.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelSendCode.TakeDueyPackageCallback;
+            public override int MessageId => (int)ChannelSendCode.TakeDueyPackageCallback;
 
             protected override async Task HandleAsync(TakeDueyPackageCommit message, CancellationToken cancellationToken = default)
             {

@@ -1,7 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
-using Application.Core.Channel.Internal.Handlers;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
@@ -9,22 +8,14 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
-using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
-using Application.Protos;
-using Application.Shared.Internal;
 using Application.Shared.Servers;
-using Grpc.Core;
-using Grpc.Net.ClientFactory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using net.server.coordinator.matchchecker;
 using server.life;
 using server.maps;
-using System.Net;
 
 namespace Application.Core.Channel.HostExtensions
 {
@@ -131,8 +122,6 @@ namespace Application.Core.Channel.HostExtensions
             services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
             services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
 
-            services.AddSingleton<MatchCheckerGuildCreationListener>();
-
             services.AddInvitationService();
             services.AddInternalSessionHandlers();
 
@@ -213,10 +202,6 @@ namespace Application.Core.Channel.HostExtensions
         public static void UseChannelServer(this WebApplication app)
         {
             app.UseDataSource();
-
-            MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>());
-
             var staticServices = app.Services.GetServices<IStaticService>();
             foreach (var srv in staticServices)
             {

@@ -140,13 +140,7 @@ function action(mode, type, selection) {
             status = 1;
             choice = 2;
         } else {
-            if (cm.createAlliance(guildName) == null) {
-                cm.sendOk("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
-            } else {
-                cm.gainMeso(-allianceCost);
-                cm.sendOk("你已成功组建了家族联盟。");
-            }
-            cm.dispose();
+            cm.CreateAllianceAsync(guildName, allianceCost);
         }
     }
 }

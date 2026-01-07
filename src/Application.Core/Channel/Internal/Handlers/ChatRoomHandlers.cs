@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnJoinChatRoom;
+            public override int MessageId => (int)ChannelRecvCode.OnJoinChatRoom;
 
             protected override Task HandleAsync(JoinChatRoomResponse res, CancellationToken cancellationToken = default)
             {
@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnLeaveChatRoom;
+            public override int MessageId => (int)ChannelRecvCode.OnLeaveChatRoom;
 
             protected override Task HandleAsync(LeaveChatRoomResponse res, CancellationToken cancellationToken = default)
             {
@@ -50,7 +50,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.OnChatRoomMessageReceived;
+            public override int MessageId => (int)ChannelRecvCode.OnChatRoomMessageReceived;
 
             protected override Task HandleAsync(SendChatRoomMessageResponse res, CancellationToken cancellationToken = default)
             {

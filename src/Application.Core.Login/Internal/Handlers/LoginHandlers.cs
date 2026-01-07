@@ -19,7 +19,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _loginService = loginService;
             }
 
-            public override int MessageId => ChannelSendCode.CompleteLogin;
+            public override int MessageId => (int)ChannelSendCode.CompleteLogin;
 
             protected override async Task HandleAsync(CompleteLoginRequest message, CancellationToken cancellationToken = default)
             {

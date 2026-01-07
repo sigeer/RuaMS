@@ -1,3 +1,4 @@
+using AllianceProto;
 using Application.Core.Channel;
 using Application.Shared.Events;
 using Application.Shared.Login;
@@ -106,7 +107,7 @@ namespace Application.Core.ServerTransports
         TeamProto.GetTeamResponse GetTeam(int party);
 
         GuildProto.GetGuildResponse GetGuild(int id);
-        GuildProto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
+        Task CreateGuild(GuildProto.CreateGuildRequest request);
         Task BroadcastGuildMessage(int guildId, int v, string callout);
         Task SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request);
         Task SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request);
@@ -122,8 +123,7 @@ namespace Application.Core.ServerTransports
 
         AllianceProto.GetAllianceResponse GetAlliance(int id);
         AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request);
-        AllianceProto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
-        Task SendGuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest guildJoinAllianceRequest);
+        Task CreateAlliance(AllianceProto.CreateAllianceRequest request);
         Task SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
         Task SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest allianceExpelGuildRequest);
         Task SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
@@ -132,6 +132,7 @@ namespace Application.Core.ServerTransports
         Task SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request);
         Task SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
         Task SendAllianceDisband(AllianceProto.DisbandAllianceRequest disbandAllianceRequest);
+        Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request);
         #endregion
 
         Task SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest joinChatRoomRequest);

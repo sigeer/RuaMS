@@ -17,37 +17,8 @@ namespace Application.Core.Channel.Modules
         {
         }
 
-        public override void OnPlayerServerChanged(PlayerFieldChange data)
-        {
-            base.OnPlayerServerChanged(data);
-
-            if (data.GuildId > 0)
-            {
-                var guild = _server.GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.OnMemberChannelChanged(data.Id, data.Channel);
-                }
-            }
-        }
-
-        public override void OnPlayerLogin(Player chr)
-        {
-            base.OnPlayerLogin(chr);
-        }
-
         public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
         {
-            Guild? guild;
-            if (data.GuildId > 0)
-            {
-                guild = _server.GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.OnMemberJobChanged(data.Id, data.JobId);
-                }
-            }
-
             if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
             {
                 var jobModel = JobFactory.GetById(data.JobId);
@@ -57,26 +28,16 @@ namespace Application.Core.Channel.Modules
                 foreach (var buddy in data.Buddies)
                 {
                     var buddyChr = _server.FindPlayerById(buddy);
-                    if (buddyChr != null)
+                    if (buddyChr != null && buddyChr.BuddyList.Contains(data.Id))
                     {
                         buddyChr.sendPacket(packet);
                     }
                 }
             }
-
         }
 
         public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange data)
         {
-            if (data.GuildId > 0)
-            {
-                var guild = _server.GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.OnMemberLevelChanged(data.Id, data.Level);
-                }
-            }
-
             if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
             {
                 foreach (var ch in _server.Servers.Values)

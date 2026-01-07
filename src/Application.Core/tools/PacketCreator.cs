@@ -1801,10 +1801,10 @@ public class PacketCreator
         }
         else
         {
-            var gs = chr.GuildModel;
+            var gs = chr.GuildSnapshot;
             if (gs != null)
             {
-                p.writeString(gs.Name);
+                p.writeString(gs.GuildName);
                 p.writeShort(gs.LogoBg);
                 p.writeByte(gs.LogoBgColor);
                 p.writeShort(gs.Logo);
@@ -2689,19 +2689,8 @@ public class PacketCreator
         p.writeShort(chr.getJob().getId());
         p.writeShort(chr.getFame());
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
-        string guildName = "";
-        string allianceName = "";
-        if (chr.getGuildId() > 0)
-        {
-            guildName = chr.GuildModel?.Name ?? "";
-
-            if (chr.AllianceModel != null)
-            {
-                allianceName = chr.AllianceModel.Name;
-            }
-        }
-        p.writeString(guildName);
-        p.writeString(allianceName);  // does not seem to work
+        p.writeString(chr.GuildSnapshot?.GuildName ?? "");
+        p.writeString(chr.AllianceSnapshot?.Name ?? "");  // does not seem to work
         p.writeByte(0); // pMedalInfo, thanks to Arnah (Vertisy)
 
         var pets = chr.getPets();

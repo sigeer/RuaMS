@@ -18,7 +18,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
             }
 
-            public override int MessageId => ChannelRecvCode.InvokeNoteMessage;
+            public override int MessageId => (int)ChannelRecvCode.InvokeNoteMessage;
 
             protected override Task HandleAsync(SendNoteResponse res, CancellationToken cancellationToken = default)
             {

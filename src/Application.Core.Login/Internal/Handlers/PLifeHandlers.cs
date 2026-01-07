@@ -17,7 +17,7 @@ namespace Application.Core.Login.Internal.Handlers
             public CreateHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.CreatePLife;
+            public override int MessageId => (int)ChannelSendCode.CreatePLife;
 
             protected override async Task HandleAsync(CreatePLifeRequest message, CancellationToken cancellationToken = default)
             {
@@ -32,7 +32,7 @@ namespace Application.Core.Login.Internal.Handlers
             public RemoveHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.RemovePLife;
+            public override int MessageId => (int)ChannelSendCode.RemovePLife;
 
             protected override async Task HandleAsync(RemovePLifeRequest message, CancellationToken cancellationToken = default)
             {

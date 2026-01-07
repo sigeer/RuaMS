@@ -17,7 +17,7 @@ namespace Application.Core.Login.Internal.Handlers
             public ReceiveHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.ReceiveNewYearCard;
+            public override int MessageId => (int)ChannelSendCode.ReceiveNewYearCard;
 
             protected override async Task HandleAsync(ReceiveNewYearCardRequest message, CancellationToken cancellationToken = default)
             {
@@ -32,7 +32,7 @@ namespace Application.Core.Login.Internal.Handlers
             public DiscardHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.DiscardNewYearCard;
+            public override int MessageId => (int)ChannelSendCode.DiscardNewYearCard;
 
             protected override async Task HandleAsync(DiscardNewYearCardRequest message, CancellationToken cancellationToken = default)
             {
@@ -46,7 +46,7 @@ namespace Application.Core.Login.Internal.Handlers
             public SendHandler(MasterServer server) : base(server)
             { }
 
-            public override int MessageId => ChannelSendCode.SendNewYearCard;
+            public override int MessageId => (int)ChannelSendCode.SendNewYearCard;
 
             protected override async Task HandleAsync(SendNewYearCardRequest message, CancellationToken cancellationToken = default)
             {

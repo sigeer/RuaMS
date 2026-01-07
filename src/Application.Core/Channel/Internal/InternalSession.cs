@@ -52,6 +52,9 @@ namespace Application.Core.Channel.Internal
                 Data = message.ToByteString()
             }, cancellationToken);
         }
+
+        public Task SendAsync(ChannelSendCode type, IMessage message, CancellationToken cancellationToken = default)
+            => SendAsync((int)type, message, cancellationToken);
         public async Task SendAsync(int type, CancellationToken cancellationToken = default)
         {
             if (_streamingCall == null)
@@ -62,11 +65,8 @@ namespace Application.Core.Channel.Internal
                 EventId = type,
             }, cancellationToken);
         }
-        public void Send(int type)
-        {
-            SendAsync(type).GetAwaiter().GetResult();
-        }
-
+        public Task SendAsync(ChannelSendCode type, CancellationToken cancellationToken = default)
+            => SendAsync((int)type, cancellationToken);
         public void Dispose()
         {
             _streamingCall?.Dispose();

@@ -20,7 +20,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _service = itemService;
             }
 
-            public override int MessageId => ChannelSendCode.UseItemTV;
+            public override int MessageId => (int)ChannelSendCode.UseItemTV;
 
             protected override async Task HandleAsync(CreateTVMessageRequest message, CancellationToken cancellationToken = default)
             {
@@ -38,7 +38,7 @@ namespace Application.Core.Login.Internal.Handlers
                 _service = itemService;
             }
 
-            public override int MessageId => ChannelSendCode.UseItemMegaphone;
+            public override int MessageId => (int)ChannelSendCode.UseItemMegaphone;
 
             protected override async Task HandleAsync(UseItemMegaphoneRequest message, CancellationToken cancellationToken = default)
             {
