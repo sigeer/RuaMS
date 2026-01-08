@@ -17,7 +17,7 @@ using server.maps;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
+    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;

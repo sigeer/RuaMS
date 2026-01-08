@@ -26,22 +26,22 @@ namespace Application.Module.Marriage.Channel
             _server = server;
         }
 
-        public void SetInProposal(IPlayer chr)
+        public void SetInProposal(Player chr)
         {
             inProposal.Add(chr.Id);
         }
 
-        public void CancelProposal(IPlayer chr)
+        public void CancelProposal(Player chr)
         {
             inProposal.Remove(chr.Id);
         }
 
-        public void CompleteProposal(IPlayer chr)
+        public void CompleteProposal(Player chr)
         {
             inProposal.Remove(chr.Id);
         }
 
-        public bool IsProposalActive(IPlayer from)
+        public bool IsProposalActive(Player from)
         {
             return inProposal.Contains(from.Id);
         }
@@ -79,16 +79,7 @@ namespace Application.Module.Marriage.Channel
             _dataSource.TryRemove(wifeId, out _);
         }
 
-        internal void NotifyPartnerWhenTransfer(PlayerTransferDto dto)
-        {
-            var chr = _server.FindPlayerById(dto.ToPlayerId);
-            if (chr != null)
-            {
-                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(dto.PlayerId, dto.MapId));
-            }
-        }
-
-        public async Task SendSpouseChat(IPlayer chr, string text)
+        public async Task SendSpouseChat(Player chr, string text)
         {
             await _transport.SendSpouseChat(new MarriageProto.SendSpouseChatRequest { SenderId = chr.Id, Text = text });
         }
@@ -123,7 +114,7 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public void RemoveMarriageItems(IPlayer chr)
+        public void RemoveMarriageItems(Player chr)
         {
             chr.Bag.BatchRemoveFromInventory([InventoryType.ETC], x => ItemId.GetEngagementItems().Contains(x.getItemId()), false);
             var marriageRing = chr.getMarriageRing();
@@ -143,7 +134,7 @@ namespace Application.Module.Marriage.Channel
         /// 检测婚姻数据并修复
         /// </summary>
         /// <param name="chr"></param>
-        public void CheckMarriageData(IPlayer chr)
+        public void CheckMarriageData(Player chr)
         {
             var marriageInfo = GetPlayerMarriageInfo(chr.Id);
             if (marriageInfo == null)

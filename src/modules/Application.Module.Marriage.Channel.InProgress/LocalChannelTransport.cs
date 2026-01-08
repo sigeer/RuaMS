@@ -65,9 +65,9 @@ namespace Application.Module.Marriage.Channel.InProgress
             return _weddingManager.GetInvitationContent(loadInvitationRequest);
         }
 
-        public InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest)
+        public async Task TryInviteGuest(InviteGuestRequest inviteGuestRequest)
         {
-            return _weddingManager.InviteGuest(inviteGuestRequest);
+            await _weddingManager.InviteGuest(inviteGuestRequest);
         }
     }
 }

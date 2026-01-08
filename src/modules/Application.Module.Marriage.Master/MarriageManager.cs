@@ -156,9 +156,9 @@ namespace Application.Module.Marriage.Master
             SetDirty(model.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, model));
         }
 
-        internal void NotifyPartner(int to, int chrId, int chrMap)
+        internal async Task NotifyPartner(int to, int chrId, int chrMap)
         {
-            _transport.SendPlayerTransfter(new PlayerTransferDto { ToPlayerId = to, PlayerId = chrId, MapId = chrMap });
+            await _transport.SendPlayerTransfter(new PlayerTransferDto { ToPlayerId = to, PlayerId = chrId, MapId = chrMap });
         }
 
         public async Task SpouseChat(MarriageProto.SendSpouseChatRequest request)

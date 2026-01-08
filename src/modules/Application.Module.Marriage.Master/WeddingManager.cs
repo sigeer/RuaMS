@@ -1,9 +1,12 @@
 using Application.Core.Login;
+using Application.Module.Marriage.Common;
 using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Master.Models;
+using Application.Shared.Constants.Item;
 using AutoMapper;
 using MarriageProto;
 using System.Collections.Concurrent;
+using XmlWzReader;
 
 namespace Application.Module.Marriage.Master
 {
@@ -46,7 +49,7 @@ namespace Application.Module.Marriage.Master
                 return new ReserveWeddingResponse() { Code = (int)ReserveErrorCode.AlreadyReserved };
             }
 
-            var weddingInfo = new WeddingInfo(marriageInfo.Id, request.Channel, request.IsCathedral, request.IsPremium, 
+            var weddingInfo = new WeddingInfo(marriageInfo.Id, request.Channel, request.IsCathedral, request.IsPremium,
                 request.MasterId, marriageInfo.GetPartnerId(chr.Character.Id), [], request.StartTime + (long)TimeSpan.FromMinutes(30).TotalMilliseconds);
             registeredWedding[marriageInfo.Id] = weddingInfo;
 
@@ -94,49 +97,56 @@ namespace Application.Module.Marriage.Master
             return new MarriageProto.CompleteWeddingResponse { Code = 1 };
         }
 
-        public MarriageProto.InviteGuestResponse InviteGuest(MarriageProto.InviteGuestRequest request)
+        public async Task InviteGuest(MarriageProto.InviteGuestRequest request)
         {
-            InviteErrorCode code = InviteErrorCode.Success;
+            var res = new MarriageProto.InviteGuestResponse { Request = request };
             var guestChr = _server.CharacterManager.FindPlayerByName(request.GuestName);
             if (guestChr == null)
             {
-                code = InviteErrorCode.GuestNotFound;
-                return new InviteGuestResponse() { Code = (int)code };
+                res.Code = (int)InviteErrorCode.GuestNotFound;
+                return;
             }
 
             if (!registeredWedding.TryGetValue(request.MarriageId, out var wedding))
             {
-                code = InviteErrorCode.MarriageNotFound;
-                return new InviteGuestResponse() { Code = (int)code };
+                res.Code = (int)InviteErrorCode.MarriageNotFound;
+                return;
             }
 
             if (wedding.Guests.Contains(guestChr.Character.Id))
             {
-                code = InviteErrorCode.DuplicateInvitation;
-                return new InviteGuestResponse() { Code = (int)code };
+                res.Code = (int)InviteErrorCode.DuplicateInvitation;
+                return;
             }
 
             if (_server.getCurrentTime() >= wedding.StartTime)
             {
-                code = InviteErrorCode.WeddingUnderway;
-                return new InviteGuestResponse() { Code = (int)code };
+                res.Code = (int)InviteErrorCode.WeddingUnderway;
+                return;
             }
 
-            var res = new MarriageProto.InviteGuestCallback
-            {
-                WeddingId = wedding.Id,
-                BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId),
-                GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId),
-                GuestId = guestChr.Character.Id,
-                IsCathedral = wedding.IsCathedral
-            };
+            res.WeddingId = wedding.Id;
+            res.BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId);
+            res.GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId);
+            res.GuestId = guestChr.Character.Id;
+            res.IsCathedral = wedding.IsCathedral;
             wedding.Guests.Add(guestChr.Character.Id);
-            if (guestChr.Channel <= 0)
-            {
-                // duey发送
-            }
-            _transport.ReturnGuestInvitation(res);
-            return new InviteGuestResponse { Code = (int)code };
+
+            await _server.DueyManager.CreateDueyPackage(
+                new DueyDto.CreatePackageRequest
+                {
+                    Quick = true,
+                    ReceiverName = guestChr.Character.Name,
+                    SenderId = request.MasterId,
+                    SendMessage = "",
+                    Item = new Dto.ItemDto { 
+                        Itemid = wedding.IsCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL, 
+                        Quantity = 1,
+                        GiftFrom = wedding.Id.ToString()
+                    }
+                });
+
+            await _transport.SendMessageN(MasterSend.WeddingInviteGuest, res, [res.GuestId]);
         }
 
         public MarriageProto.LoadInvitationResponse GetInvitationContent(MarriageProto.LoadInvitationRequest request)

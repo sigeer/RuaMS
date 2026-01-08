@@ -31,7 +31,6 @@ namespace Application.Core.Game.Players
                 }
                 else
                 {
-                    GuildId = guild.GuildId;
                     GuildSnapshot.GuildId = guild.GuildId;
                     GuildSnapshot.GuildName = guild.Name;
                     GuildSnapshot.Logo = guild.Logo;
@@ -45,7 +44,6 @@ namespace Application.Core.Game.Players
         public void RemoveGuildSnapshot()
         {
             GuildSnapshot = null;
-            GuildId = 0;
             GuildRank = 5;
             RemoveAllianceSnapshot();
         }

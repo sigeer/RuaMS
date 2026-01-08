@@ -25,8 +25,8 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
-                    _marriageManager.NotifyPartner(obj.Character.Id, partner.Character.Id, partner.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(obj.Character.Id, partner.Character.Id, partner.Character.Map);
                 }
             }
         }
@@ -42,7 +42,7 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }

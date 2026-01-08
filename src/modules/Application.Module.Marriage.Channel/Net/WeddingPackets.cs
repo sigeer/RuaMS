@@ -76,7 +76,7 @@ public class WeddingPackets : PacketCreator
 
     //public class WeddingWishList
     //{
-    //    public IPlayer pUser;
+    //    public Player pUser;
     //    public int dwMarriageNo;
     //    public int nGender;
     //    public int nWLType;
@@ -142,7 +142,7 @@ public class WeddingPackets : PacketCreator
      * @param m_dwUsers         The List of all Character guests within the current cake map to be encoded
      * @return mplew (MaplePacket) Byte array to be converted and read for byte[]->ImageIO
      */
-    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<IPlayer> m_dwUsers)
+    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<Player> m_dwUsers)
     { // OnIFailedAtWeddingPhotos
         OutPacket p = OutPacket.create(SendOpcode.WEDDING_PHOTO);// v53 header, convert -> v83
         p.writeString(ReservedGroomName);
@@ -150,7 +150,7 @@ public class WeddingPackets : PacketCreator
         p.writeInt(m_dwField); // field id?
         p.writeInt(m_dwUsers.Count);
 
-        foreach (IPlayer guest in m_dwUsers)
+        foreach (Player guest in m_dwUsers)
         {
             // Begin Avatar Encoding
             addCharLook(p, guest, false); // CUser::EncodeAvatar

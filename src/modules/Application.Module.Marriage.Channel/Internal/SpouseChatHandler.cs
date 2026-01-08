@@ -14,7 +14,7 @@ namespace Application.Module.Marriage.Channel.Internal
             _marriageManager = marriageManager;
         }
 
-        public override int MessageId => MasterSend.MarriageBroken;
+        public override int MessageId => MasterSend.SpouseChat;
 
         protected override Task HandleAsync(SendSpouseChatResponse res, CancellationToken cancellationToken = default)
         {

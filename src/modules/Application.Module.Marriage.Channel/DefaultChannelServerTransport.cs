@@ -64,9 +64,9 @@ namespace Application.Module.Marriage.Channel
             return _grpcClient.LoadInvitationContent(loadInvitationRequest);
         }
 
-        public InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest)
+        public async Task TryInviteGuest(InviteGuestRequest inviteGuestRequest)
         {
-            return _grpcClient.InviteGuest(inviteGuestRequest);
+            await _transport.SendAsync(ChannelSend.WeddingInviteGuest, inviteGuestRequest);
         }
     }
 }

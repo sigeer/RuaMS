@@ -258,7 +258,7 @@ public class RingActionHandler : ChannelHandlerBase
                         return;
                     }
 
-                    _weddingManager.TryInviteGuest(c.OnlinedCharacter, item, marriageId, name);
+                    await _weddingManager.TryInviteGuest(c.OnlinedCharacter, item, marriageId, name);
                     break;
                 }
 

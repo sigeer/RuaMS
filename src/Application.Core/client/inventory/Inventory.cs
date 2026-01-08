@@ -335,6 +335,11 @@ public class Inventory : IEnumerable<Item>
             return 0;
         }
 
+        if (quantity < 0)
+        {
+            return 0;
+        }
+
         var original = item.getQuantity();
         var left = original - quantity;
         short removed = 0;

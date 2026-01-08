@@ -15,6 +15,6 @@ namespace Application.Module.Marriage.Channel
         MarriageProto.ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest);
         Task SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest);
         LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest);
-        InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest);
+        Task TryInviteGuest(InviteGuestRequest inviteGuestRequest);
     }
 }

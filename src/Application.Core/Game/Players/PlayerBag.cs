@@ -226,7 +226,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        void RemoveFromInventory(Inventory inv, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        void RemoveFromInventory(Inventory inv, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             inv.lockInventory();
             try
@@ -239,12 +239,13 @@ namespace Application.Core.Game.Players
                     var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
                     if (item != null)
                     {
-                        if (filter == null || filter(item))
+                        if (filter == null || filter(item) || toRemoveCount > 0)
                         {
                             UnEquip(inv, item);
 
                             bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                            var removedCount = inv.removeItem(i, item.getQuantity());
+                            var removedCount = inv.removeItem(i, toRemoveCount > short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
+                            toRemoveCount -= removedCount;
                             if (type != InventoryType.CANHOLD)
                             {
                                 InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
@@ -272,6 +273,7 @@ namespace Application.Core.Game.Players
             foreach (var type in includedInv)
             {
                 RemoveFromInventory(this[type],
+                    int.MaxValue,
                     item => (item.SourceTemplate as ItemTemplateBase)?.PartyQuest ?? false,
                     showMessage: true);
             }
@@ -286,6 +288,7 @@ namespace Application.Core.Game.Players
             foreach (var type in includedInv)
             {
                 RemoveFromInventory(this[type],
+                    int.MaxValue,
                     item => item.SourceTemplate.ExpireOnLogout,
                     showMessage: true);
             }
@@ -295,7 +298,7 @@ namespace Application.Core.Game.Players
         {
             foreach (var type in inventoryTypes)
             {
-                RemoveFromInventory(this[type], filter, fromDrop, consume);
+                RemoveFromInventory(this[type], int.MaxValue, filter, fromDrop, consume);
             }
         }
     }

@@ -1,4 +1,5 @@
 using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
 using Application.Shared.Team;
 using TeamProto;
 
@@ -98,47 +99,47 @@ namespace Application.Core.Channel.Net.Packets
 
         private static void AddPartyStatus(WorldChannel forchannel, TeamDto party, OutPacket p)
         {
-            var partymembers = party.Members.ToList();
-            while (partymembers.Count < Limits.MaxTeamMember)
+            List<(TeamMemberDto? RemotePlayer, Player? ChannelPlayer)> members = [];
+            for (int i = 0; i < Limits.MaxTeamMember; i++)
             {
-                partymembers.Add(new());
+                if (i < party.Members.Count)
+                    members.Add((party.Members[i], forchannel.getPlayerStorage().getCharacterById(party.Members[i].Id)));
+                else
+                    members.Add((null, null));
             }
-            foreach (var partychar in partymembers)
+
+            foreach (var partychar in members)
             {
-                p.writeInt(partychar.Id);
+                p.writeInt(partychar.RemotePlayer?.Id ?? 0);
             }
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                p.writeFixedString(partychar.Name);
+                p.writeFixedString(partychar.RemotePlayer?.Name ?? "");
             }
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                p.writeInt(partychar.Job);
+                p.writeInt(partychar.RemotePlayer?.Job ?? 0);
             }
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                p.writeInt(partychar.Level);
+                p.writeInt(partychar.RemotePlayer?.Level ?? 0);
             }
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                if (partychar.Channel > 0)
-                    p.writeInt(partychar.Channel - 1);
+                if (partychar.ChannelPlayer?.Channel > 0)
+                    p.writeInt(partychar.ChannelPlayer.Channel - 1);
                 else
                     p.writeInt(-2);
             }
             p.writeInt(party.LeaderId);
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                p.writeInt(partychar.MapId);
-                //if (partychar.Channel == forchannel.Id)
-                //    p.writeInt(partychar.MapId);
-                //else
-                //    p.writeInt(0);
+                p.writeInt(partychar.ChannelPlayer?.Map ?? 0);
             }
 
-            foreach (var partychar in partymembers)
+            foreach (var partychar in members)
             {
-                var memberChr = forchannel.getPlayerStorage().getCharacterById(partychar.Id);
+                var memberChr = partychar.Item2;
                 if (memberChr != null)
                 {
                     var door = memberChr.getPlayerDoor();

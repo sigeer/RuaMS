@@ -22,11 +22,6 @@ namespace Application.Module.Marriage.Master
             await BroadcastMessageN(MasterSend.WeddingBroadcast, broadcastWeddingDto);
         }
 
-        internal async Task ReturnGuestInvitation(InviteGuestCallback inviteGuestResponse)
-        {
-            await SendMessageN(MasterSend.WeddingInviteGuest, inviteGuestResponse, [inviteGuestResponse.GuestId]);
-        }
-
         internal async Task SendPlayerTransfter(PlayerTransferDto request)
         {
             await SendMessageN(MasterSend.NotifyPartnerWhenTransfer, request, [request.ToPlayerId]);

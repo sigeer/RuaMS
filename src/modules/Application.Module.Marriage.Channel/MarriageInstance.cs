@@ -85,7 +85,7 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public bool? isMarriageGroom(IPlayer chr)
+        public bool? isMarriageGroom(Player chr)
         {
             bool? groom = null;
             try

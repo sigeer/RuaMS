@@ -14,7 +14,6 @@ message TeamMemberDto {
 	int32 level = 3;
 	int32 job = 4;
 	int32 channel = 5;
-	int32 mapId = 6;
 }
 
 message GetTeamRequest {

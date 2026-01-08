@@ -260,6 +260,8 @@ namespace Application.Core.Channel.Services
             }
 
             player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.BuddyList));
+            player.SetGuildSnapshot(o.Guild);
+            player.SetAllianceSnapshot(o.Alliance);
             player.UpdateLocalStats(true);
             return player;
         }
@@ -423,16 +425,12 @@ namespace Application.Core.Channel.Services
             if (o.Guild != null)
             {
                 chr.sendPacket(GuildPackets.ShowGuildInfo(o.Guild));
-
-                chr.SetGuildSnapshot(o.Guild);
             }
 
             if (o.Alliance != null)
             {
                 chr.sendPacket(GuildPackets.UpdateAllianceInfo(o.Alliance));
                 chr.sendPacket(GuildPackets.allianceNotice(o.Alliance.AllianceId, o.Alliance.Notice));
-
-                chr.SetAllianceSnapshot(o.Alliance);
             }
 
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
