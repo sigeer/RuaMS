@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 import "Base/BoolWrapper.proto";
 
 import "Base/MonsterCardData.proto";
@@ -9,29 +8,17 @@ import "Dto/Drop.proto";
 import "Dto/Note.proto";
 import "Dto/Shop.proto";
 
-import "ChatRoom/ChatRoom.proto";
-
-import "Invitation/AnswerInvite.proto";
-import "Invitation/CreateInvite.proto";
-
 import "Expedition/ExpeditionRegistry.proto";
 import "Expedition/ExpeditionEntry.proto";
-import "Expedition/ExpeditionInfo.proto";
 
-import "Dto/NewYearCard.proto";
 import "Item/Gachapon.proto";
 import "Item/SkillBook.proto";
 
 import "Dto/NameChange.proto";
-import "Message/YellowTip.proto";
-import "Message/EarnTitleMessage.proto";
 import "Item/CDK.proto";
-import "Events/ReloadEvents.proto";
 import "Rank/RankCharacter.proto";
 import "Item/HiredMerchant.proto";
-import "Dto/Report.proto";
 import "Config/MonitorConfig.proto";
-import "Config/CouponConfig.proto";
 import "Lives/DBLife.proto";
 
 

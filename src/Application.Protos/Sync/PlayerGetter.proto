@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
 
 import "Dto/Character.proto";
 import "Dto/AccountCtrl.proto";
@@ -24,8 +22,6 @@ import "Dto/ServerCrossCallback.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
 import "Dto/Storage.proto";
-import "Guild/Guild.proto";
-import "Guild/Alliance.proto";
 
 package SyncProto;
 

@@ -1,8 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "Base/BoolWrapper.proto";
 
 import "Item/Gift.proto";
 import "Cash/Cash.proto";

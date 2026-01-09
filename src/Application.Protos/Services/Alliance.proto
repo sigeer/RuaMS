@@ -1,11 +1,6 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "Base/BoolWrapper.proto";
-
 import "Guild/Alliance.proto";
-import "Guild/UpdateAlliance.proto";
 
 package ServiceProto;
 

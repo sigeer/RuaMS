@@ -1,15 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 import "Base/TimeWrapper.proto";
 import "Base/IPEndPoint.proto";
-import "Config/RegisterServer.proto";
-import "Config/WorldConfig.proto";
-import "Message/DropMessage.proto";
-import "Message/Packet.proto";
-import "Message/Timer.proto";
-import "Dto/Report.proto";
 import "Config/AutoBanConfig.proto";
 import "Config/Admin.proto";
 import "Config/FlySetting.proto";
