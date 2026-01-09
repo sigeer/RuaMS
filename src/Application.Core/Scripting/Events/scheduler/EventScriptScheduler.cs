@@ -33,7 +33,7 @@ public class EventScriptScheduler
     private Dictionary<Action, long> registeredEntries = new();
 
     private Task? schedulerTask = null;
-    private object schedulerLock = new object();
+    private Lock schedulerLock = new ();
 
     CancellationTokenSource? cancellationTokenSource;
 
@@ -49,7 +49,7 @@ public class EventScriptScheduler
         List<Action> toRemove;
         Dictionary<Action, long> registeredEntriesCopy;
 
-        Monitor.Enter(schedulerLock);
+        schedulerLock.Enter();
         try
         {
             if (registeredEntries.Count == 0)
@@ -95,13 +95,13 @@ public class EventScriptScheduler
         }
         finally
         {
-            Monitor.Exit(schedulerLock);
+            schedulerLock.Exit();
         }
     }
 
     public void registerEntry(Action scheduledAction, long duration)
     {
-        Monitor.Enter(schedulerLock);
+        schedulerLock.Enter();
         try
         {
             idleProcs = 0;
@@ -122,26 +122,26 @@ public class EventScriptScheduler
         }
         finally
         {
-            Monitor.Exit(schedulerLock);
+            schedulerLock.Exit();
         }
     }
 
     public void cancelEntry(Action scheduledAction)
     {
-        Monitor.Enter(schedulerLock);
+        schedulerLock.Enter();
         try
         {
             registeredEntries.Remove(scheduledAction);
         }
         finally
         {
-            Monitor.Exit(schedulerLock);
+            schedulerLock.Exit();
         }
     }
 
     public void dispose()
     {
-        Monitor.Enter(schedulerLock);
+        schedulerLock.Enter();
         try
         {
             cancellationTokenSource?.Cancel();
@@ -155,7 +155,7 @@ public class EventScriptScheduler
         }
         finally
         {
-            Monitor.Exit(schedulerLock);
+            schedulerLock.Exit();
         }
     }
 }

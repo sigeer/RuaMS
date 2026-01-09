@@ -32,8 +32,8 @@ namespace net.server.coordinator.world;
  */
 public class MonsterAggroCoordinator
 {
-    private object lockObj = new object();
-    private object idleLock = new object();
+    private Lock lockObj = new ();
+    private Lock idleLock = new ();
     private long lastStopTime;
 
     private ScheduledFuture? aggroMonitor = null;
@@ -64,7 +64,7 @@ public class MonsterAggroCoordinator
 
     public void stopAggroCoordinator()
     {
-        Monitor.Enter(idleLock);
+        idleLock.Enter();
         try
         {
             if (aggroMonitor == null)
@@ -77,7 +77,7 @@ public class MonsterAggroCoordinator
         }
         finally
         {
-            Monitor.Exit(idleLock);
+            idleLock.Exit();
         }
 
         lastStopTime = Map.ChannelServer.Container.getCurrentTime();
@@ -85,7 +85,7 @@ public class MonsterAggroCoordinator
 
     public void startAggroCoordinator()
     {
-        Monitor.Enter(idleLock);
+        idleLock.Enter();
         try
         {
             if (aggroMonitor != null)
@@ -101,7 +101,7 @@ public class MonsterAggroCoordinator
         }
         finally
         {
-            Monitor.Exit(idleLock);
+            idleLock.Exit();
         }
 
         int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Container.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
@@ -169,7 +169,7 @@ public class MonsterAggroCoordinator
         Dictionary<int, PlayerAggroEntry>? mobAggro = mobAggroEntries.GetValueOrDefault(mob);
         if (mobAggro == null)
         {
-            if (Monitor.TryEnter(lockObj))
+            if (lockObj.TryEnter())
             {   // can run unreliably, as fast as possible... try lock that is!
                 try
                 {
@@ -189,7 +189,7 @@ public class MonsterAggroCoordinator
                 }
                 finally
                 {
-                    Monitor.Exit(lockObj);
+                    lockObj.Exit();
                 }
             }
             else
@@ -232,14 +232,14 @@ public class MonsterAggroCoordinator
     private void runAggroUpdate(int deltaTime)
     {
         List<KeyValuePair<Monster, Dictionary<int, PlayerAggroEntry>>> aggroMobs = new();
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             aggroMobs = mobAggroEntries.ToList();
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         foreach (var am in aggroMobs)
@@ -374,14 +374,14 @@ public class MonsterAggroCoordinator
     public void runSortLeadingCharactersAggro()
     {
         List<List<PlayerAggroEntry>> aggroList;
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             aggroList = new(mobSortedAggros.Values);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         foreach (List<PlayerAggroEntry> mobAggroList in aggroList)
@@ -395,7 +395,7 @@ public class MonsterAggroCoordinator
 
     public void removeAggroEntries(Monster mob)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             mobAggroEntries.Remove(mob);
@@ -403,7 +403,7 @@ public class MonsterAggroCoordinator
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -435,7 +435,7 @@ public class MonsterAggroCoordinator
     {
         stopAggroCoordinator();
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             mobAggroEntries.Clear();
@@ -443,7 +443,7 @@ public class MonsterAggroCoordinator
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 }

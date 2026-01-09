@@ -54,7 +54,7 @@ public class CashShop
     private List<Item> inventory = new();
     private List<int> wishList = new();
     public int Notes { get; set; }
-    private object lockObj = new object();
+    private Lock lockObj = new ();
     public ItemType Factory { get; }
     public Player Owner { get; set; }
     public int NxCredit { get; set; }
@@ -200,14 +200,14 @@ public class CashShop
 
     public List<Item> getInventory()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return inventory.ToList();
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -226,27 +226,27 @@ public class CashShop
 
     public void addToInventory(Item item)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Add(item);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void removeFromInventory(Item item)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Remove(item);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -283,14 +283,14 @@ public class CashShop
 
     public int getItemsSize()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return inventory.Count;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 }

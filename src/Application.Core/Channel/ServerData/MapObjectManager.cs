@@ -4,7 +4,7 @@ namespace Application.Core.Channel.ServerData
     public class MapObjectManager : TaskBase
     {
         private Dictionary<Action, DateTime> registeredTimedMapObjects = new();
-        private object timedMapObjectLock = new object();
+        private Lock timedMapObjectLock = new ();
 
         public MapObjectManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(MapObjectManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
@@ -12,14 +12,14 @@ namespace Application.Core.Channel.ServerData
 
         public void RegisterTimedMapObject(Action r, long duration)
         {
-            Monitor.Enter(timedMapObjectLock);
+            timedMapObjectLock.Enter();
             try
             {
                 registeredTimedMapObjects[r] = DateTime.UtcNow.AddMilliseconds(duration);
             }
             finally
             {
-                Monitor.Exit(timedMapObjectLock);
+                timedMapObjectLock.Exit();
             }
         }
 
@@ -27,7 +27,7 @@ namespace Application.Core.Channel.ServerData
         {
             List<Action> toRemove = new();
 
-            Monitor.Enter(timedMapObjectLock);
+            timedMapObjectLock.Enter();
             try
             {
                 var timeNow = DateTime.UtcNow;
@@ -47,7 +47,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(timedMapObjectLock);
+                timedMapObjectLock.Exit();
             }
 
             foreach (Action r in toRemove)

@@ -23,7 +23,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     private Visitor?[] visitors = new Visitor[3];
     FixedSizeQueue<PastVisitor> visitorHistory = new(Limits.VISITOR_HISTORY_LIMIT);
-    private object visitorLock = new object();
+    private Lock visitorLock = new ();
     public AtomicEnum<PlayerShopStatus> Status { get; set; }
     public HashSet<string> BlackList { get; }
     public int SourceItemId { get; }
@@ -64,14 +64,14 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public void broadcastToVisitorsThreadsafe(Packet packet)
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             broadcastToVisitors(packet);
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
@@ -99,7 +99,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public byte[] getShopRoomInfo()
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             byte count = 0;
@@ -122,13 +122,13 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
     public bool AddVisitor(Player visitor)
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             int i = getFreeSlot();
@@ -145,7 +145,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
@@ -162,7 +162,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public void RemoveVisitor(Player chr)
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             int slot = getVisitorSlot(chr);
@@ -183,7 +183,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
@@ -196,14 +196,14 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public int getVisitorSlotThreadsafe(Player visitor)
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             return getVisitorSlot(visitor);
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
@@ -214,7 +214,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     private void removeAllVisitors()
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             for (int i = 0; i < 3; i++)
@@ -235,7 +235,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
@@ -414,7 +414,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public bool VisitShop(Player chr)
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             if (chr.VisitingShop != null)
@@ -448,21 +448,21 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 
 
     public Player?[] getVisitorCharacters()
     {
-        Monitor.Enter(visitorLock);
+        visitorLock.Enter();
         try
         {
             return visitors.Select(x => x?.chr).ToArray();
         }
         finally
         {
-            Monitor.Exit(visitorLock);
+            visitorLock.Exit();
         }
     }
 

@@ -30,6 +30,6 @@ public class JailCommand : CommandBase
             }
         }
 
-        await _adminService.JailPlayer(player, paramsValue[0], minutesJailed);
+        await _adminService.JailPlayer(player.Id, paramsValue[0], minutesJailed);
     }
 }

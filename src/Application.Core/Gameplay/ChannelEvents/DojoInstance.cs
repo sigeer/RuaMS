@@ -11,7 +11,7 @@ namespace Application.Core.Gameplay.ChannelEvents
         private long[] dojoFinishTime;
         private ScheduledFuture?[] dojoTask;
         private Dictionary<int, int> dojoParty = new();
-        private object lockObj = new object();
+        private Lock lockObj = new ();
 
         public const int StageCount = 20;
         public DojoInstance(WorldChannel channel)
@@ -55,7 +55,7 @@ namespace Application.Core.Gameplay.ChannelEvents
 
         public int IngressDojo(bool isPartyDojo, Team? party, int fromStage)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 int dojoList = this.usedDojo;
@@ -104,7 +104,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
@@ -113,14 +113,14 @@ namespace Application.Core.Gameplay.ChannelEvents
             int mask = 0b11111111111111111111;
             mask ^= (1 << slot);
 
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 usedDojo &= mask;
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
 
             if (party != null)
@@ -199,7 +199,7 @@ namespace Application.Core.Gameplay.ChannelEvents
 
             long clockTime = (stage > 36 ? 15 : (stage / 6) + 5) * 60000;
 
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 if (this.dojoTask[slot] != null)
@@ -235,7 +235,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
 
             dojoFinishTime[slot] = this.Channel.Container.getCurrentTime() + clockTime;
@@ -250,7 +250,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 return;
             }
 
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 if (this.dojoTask[slot] != null)
@@ -261,7 +261,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
 
             FreeDojoSlot(slot, party);

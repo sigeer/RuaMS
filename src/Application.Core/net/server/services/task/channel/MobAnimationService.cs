@@ -64,13 +64,13 @@ public class MobAnimationService : BaseService
     private class MobAnimationScheduler : BaseScheduler
     {
         HashSet<int> onAnimationMobs = new(1000);
-        private object animationLock = new object();
+        private Lock animationLock = new ();
 
         public MobAnimationScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
             base.addListener((toRemove, update) =>
             {
-                Monitor.Enter(animationLock);
+                animationLock.Enter();
                 try
                 {
                     foreach (object hashObj in toRemove)
@@ -81,14 +81,14 @@ public class MobAnimationService : BaseService
                 }
                 finally
                 {
-                    Monitor.Exit(animationLock);
+                    animationLock.Exit();
                 }
             });
         }
 
         public bool registerAnimationMode(int mobHash, long animationTime)
         {
-            Monitor.Enter(animationLock);
+            animationLock.Enter();
             try
             {
                 if (onAnimationMobs.Contains(mobHash))
@@ -102,7 +102,7 @@ public class MobAnimationService : BaseService
             }
             finally
             {
-                Monitor.Exit(animationLock);
+                animationLock.Exit();
             }
         }
 

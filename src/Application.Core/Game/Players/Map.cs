@@ -339,7 +339,7 @@ namespace Application.Core.Game.Players
 
         public void visitMap(IMap map)
         {
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 int idx = getVisitedMapIndex(map);
@@ -362,7 +362,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 

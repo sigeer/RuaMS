@@ -33,8 +33,7 @@ public class InventoryProof : Inventory
 
     public void cloneContents(Inventory inv)
     {
-        inv.lockInventory();
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Clear();
@@ -48,21 +47,20 @@ public class InventoryProof : Inventory
         }
         finally
         {
-            Monitor.Exit(lockObj);
-            inv.unlockInventory();
+            lockObj.Exit();
         }
     }
 
     public void flushContents()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Clear();
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -73,7 +71,7 @@ public class InventoryProof : Inventory
             return -1;
         }
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             short slotId = getNextFreeSlot();
@@ -87,33 +85,33 @@ public class InventoryProof : Inventory
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public override void addSlotFromDB(short slot, Item item)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.AddOrUpdate(slot, item);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public override void removeSlot(short slot)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Remove(slot);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 }

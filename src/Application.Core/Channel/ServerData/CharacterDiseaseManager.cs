@@ -2,7 +2,7 @@ namespace Application.Core.Channel.ServerData
 {
     public class CharacterDiseaseManager : TaskBase
     {
-        private object disLock = new object();
+        private Lock disLock = new ();
         private Queue<IChannelClient> processDiseaseAnnouncePlayers = new();
         private Queue<IChannelClient> registeredDiseaseAnnouncePlayers = new();
 
@@ -17,14 +17,14 @@ namespace Application.Core.Channel.ServerData
 
         public void registerAnnouncePlayerDiseases(IChannelClient c)
         {
-            Monitor.Enter(disLock);
+            disLock.Enter();
             try
             {
                 registeredDiseaseAnnouncePlayers.Enqueue(c);
             }
             finally
             {
-                Monitor.Exit(disLock);
+                disLock.Exit();
             }
         }
 
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.ServerData
             _server.UpdateServerTime();
 
             Queue<IChannelClient> processDiseaseAnnounceClients;
-            Monitor.Enter(disLock);
+            disLock.Enter();
             try
             {
                 processDiseaseAnnounceClients = new(processDiseaseAnnouncePlayers);
@@ -42,7 +42,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(disLock);
+                disLock.Exit();
             }
 
             while (processDiseaseAnnounceClients.TryDequeue(out var c))
@@ -55,7 +55,7 @@ namespace Application.Core.Channel.ServerData
                 }
             }
 
-            Monitor.Enter(disLock);
+            disLock.Enter();
             try
             {
                 // this is to force the system to wait for at least one complete tick before releasing disease info for the registered clients
@@ -66,7 +66,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(disLock);
+                disLock.Exit();
             }
         }
 

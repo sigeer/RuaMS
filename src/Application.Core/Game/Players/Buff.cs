@@ -451,7 +451,7 @@ namespace Application.Core.Game.Players
         {
             bool ret;
 
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             effLock.Enter();
             try
             {
@@ -460,12 +460,12 @@ namespace Application.Core.Game.Players
             finally
             {
                 effLock.Exit();
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
 
             if (effect.isMagicDoor() && ret)
             {
-                Monitor.Enter(prtLock);
+                prtLock.Enter();
                 effLock.Enter();
                 try
                 {
@@ -477,7 +477,7 @@ namespace Application.Core.Game.Players
                 finally
                 {
                     effLock.Exit();
-                    Monitor.Exit(prtLock);
+                    prtLock.Exit();
                 }
             }
 
@@ -1405,7 +1405,7 @@ namespace Application.Core.Game.Players
                 startChairTask();
             }
 
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             effLock.Enter();
             chLock.EnterReadLock();
             try
@@ -1503,7 +1503,7 @@ namespace Application.Core.Game.Players
             {
                 chLock.ExitReadLock();
                 effLock.Exit();
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
 
             UpdateLocalStats();

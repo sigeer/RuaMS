@@ -39,8 +39,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    protected object propertyLock = new object();
-    protected object scriptLock = new object();
+    protected Lock propertyLock = new ();
+    protected Lock scriptLock = new ();
 
     private ScheduledFuture? event_schedule = null;
     private bool disposed = false;
@@ -298,7 +298,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         int scriptResult = 0;
 
-        Monitor.Enter(scriptLock);
+        scriptLock.Enter();
         try
         {
             mobs.Remove(mob);
@@ -315,7 +315,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
         finally
         {
-            Monitor.Exit(scriptLock);
+            scriptLock.Exit();
         }
 
         if (scriptResult > 0)
@@ -529,14 +529,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
 
-        Monitor.Enter(scriptLock);
+        scriptLock.Enter();
         try
         {
             EventManager.disposeInstance(name);
         }
         finally
         {
-            Monitor.Exit(scriptLock);
+            scriptLock.Exit();
         }
     }
     #endregion
@@ -786,7 +786,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             props.Clear();
             objectProps.Clear();
 
-            Monitor.Enter(scriptLock);
+            scriptLock.Enter();
             try
             {
                 if (!eventCleared)
@@ -796,7 +796,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             }
             finally
             {
-                Monitor.Exit(scriptLock);
+                scriptLock.Exit();
             }
 
             EventManager.getChannelServer().Container.TimerManager.schedule(() =>
@@ -884,46 +884,46 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void setProperty(string key, string value)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             props.AddOrUpdate(key, value);
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 
     public object? setProperty(string key, string value, bool prev)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             return props.AddOrUpdateReturnOldValue(key, value);
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 
     public void setObjectProperty(string key, object obj)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             objectProps.AddOrUpdate(key, obj);
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 
     public string? getProperty(string key)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             var d = props.GetValueOrDefault(key);
@@ -931,13 +931,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 
     public int getIntProperty(string key)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             var d = props.GetValueOrDefault(key);
@@ -945,20 +945,20 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 
     public object? getObjectProperty(string key)
     {
-        Monitor.Enter(propertyLock);
+        propertyLock.Enter();
         try
         {
             return objectProps.GetValueOrDefault(key);
         }
         finally
         {
-            Monitor.Exit(propertyLock);
+            propertyLock.Exit();
         }
     }
 

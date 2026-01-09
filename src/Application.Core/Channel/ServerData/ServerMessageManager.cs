@@ -5,7 +5,7 @@ namespace Application.Core.Channel.ServerData
     public class ServerMessageManager : TaskBase
     {
         private Dictionary<int, int> disabledServerMessages = new();
-        private object srvMessagesLock = new object();
+        private Lock srvMessagesLock = new ();
 
         readonly WorldChannelServer _server;
 
@@ -16,20 +16,20 @@ namespace Application.Core.Channel.ServerData
 
         public void resetDisabledServerMessages()
         {
-            Monitor.Enter(srvMessagesLock);
+            srvMessagesLock.Enter();
             try
             {
                 disabledServerMessages.Clear();
             }
             finally
             {
-                Monitor.Exit(srvMessagesLock);
+                srvMessagesLock.Exit();
             }
         }
 
         public bool registerDisabledServerMessage(int chrid)
         {
-            Monitor.Enter(srvMessagesLock);
+            srvMessagesLock.Enter();
             try
             {
                 bool alreadyDisabled = disabledServerMessages.ContainsKey(chrid);
@@ -39,20 +39,20 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(srvMessagesLock);
+                srvMessagesLock.Exit();
             }
         }
 
         public bool unregisterDisabledServerMessage(int chrid)
         {
-            Monitor.Enter(srvMessagesLock);
+            srvMessagesLock.Enter();
             try
             {
                 return disabledServerMessages.Remove(chrid, out var d);
             }
             finally
             {
-                Monitor.Exit(srvMessagesLock);
+                srvMessagesLock.Exit();
             }
         }
 
@@ -60,7 +60,7 @@ namespace Application.Core.Channel.ServerData
         {
             List<int> toRemove = new();
 
-            Monitor.Enter(srvMessagesLock);
+            srvMessagesLock.Enter();
             try
             {
                 foreach (var dsm in disabledServerMessages)
@@ -84,7 +84,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(srvMessagesLock);
+                srvMessagesLock.Exit();
             }
 
             foreach (int chrid in toRemove)

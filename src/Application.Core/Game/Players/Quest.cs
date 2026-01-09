@@ -309,7 +309,7 @@ namespace Application.Core.Game.Players
 
         public void cancelQuestExpirationTask()
         {
-            Monitor.Enter(evtLock);
+            evtLock.Enter();
             try
             {
                 if (questExpireTask != null)
@@ -320,13 +320,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(evtLock);
+                evtLock.Exit();
             }
         }
 
         public void forfeitExpirableQuests()
         {
-            Monitor.Enter(evtLock);
+            evtLock.Enter();
             try
             {
                 foreach (Quest quest in QuestExpirations.Keys)
@@ -338,13 +338,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(evtLock);
+                evtLock.Exit();
             }
         }
 
         public void questExpirationTask()
         {
-            Monitor.Enter(evtLock);
+            evtLock.Enter();
             try
             {
                 if (QuestExpirations.Count > 0)
@@ -358,13 +358,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(evtLock);
+                evtLock.Exit();
             }
         }
 
         private void runQuestExpireTask()
         {
-            Monitor.Enter(evtLock);
+            evtLock.Enter();
             try
             {
                 long timeNow = Client.CurrentServerContainer.getCurrentTime();
@@ -395,13 +395,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(evtLock);
+                evtLock.Exit();
             }
         }
 
         private void registerQuestExpire(Quest quest, TimeSpan time)
         {
-            Monitor.Enter(evtLock);
+            evtLock.Enter();
             try
             {
                 if (questExpireTask == null)
@@ -417,7 +417,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(evtLock);
+                evtLock.Exit();
             }
         }
 

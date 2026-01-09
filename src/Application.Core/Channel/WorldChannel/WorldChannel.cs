@@ -58,7 +58,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     public DojoInstance DojoInstance { get; }
 
 
-    private object lockObj = new object();
+    private Lock lockObj = new ();
 
     // public IWorld WorldModel { get; set; }
     public event Action? OnWorldMobRateChanged;
@@ -573,7 +573,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public bool addMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             if (dungeons.ContainsKey(dungeonid))
@@ -589,33 +589,33 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public MiniDungeon? getMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return dungeons.GetValueOrDefault(dungeonid);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void removeMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             dungeons.Remove(dungeonid);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 

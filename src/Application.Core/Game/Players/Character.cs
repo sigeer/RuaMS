@@ -179,10 +179,10 @@ public partial class Player
     private ScheduledFuture? pendantOfSpirit = null; //1122017
     private ScheduledFuture? cpqSchedule = null;
 
-    private object chrLock = new object();
-    private object evtLock = new object();
+    private Lock chrLock = new ();
+    private Lock evtLock = new ();
 
-    private object prtLock = new object();
+    private Lock prtLock = new ();
 
     /// <summary>
     /// PetId -> ItemId
@@ -1031,7 +1031,7 @@ public partial class Player
     {
         List<int> lastVisited = new(5);
 
-        Monitor.Enter(petLock);
+        petLock.Enter();
         try
         {
             foreach (var lv in lastVisitedMaps)
@@ -1042,7 +1042,7 @@ public partial class Player
         }
         finally
         {
-            Monitor.Exit(petLock);
+            petLock.Exit();
         }
 
         return lastVisited;
@@ -1375,7 +1375,7 @@ public partial class Player
 
     private KeyValuePair<int, int> applyFame(int delta)
     {
-        Monitor.Enter(petLock);
+        petLock.Enter();
         try
         {
             int newFame = Fame + delta;
@@ -1393,7 +1393,7 @@ public partial class Player
         }
         finally
         {
-            Monitor.Exit(petLock);
+            petLock.Exit();
         }
     }
 
@@ -1621,27 +1621,27 @@ public partial class Player
 
     public Door? getPlayerDoor()
     {
-        Monitor.Enter(prtLock);
+        prtLock.Enter();
         try
         {
             return pdoor;
         }
         finally
         {
-            Monitor.Exit(prtLock);
+            prtLock.Exit();
         }
     }
 
     public void applyPartyDoor(Door door)
     {
-        Monitor.Enter(prtLock);
+        prtLock.Enter();
         try
         {
             pdoor = door;
         }
         finally
         {
-            Monitor.Exit(prtLock);
+            prtLock.Exit();
         }
 
         silentPartyUpdate();
@@ -1649,14 +1649,14 @@ public partial class Player
 
     public void removePartyDoor()
     {
-        Monitor.Enter(prtLock);
+        prtLock.Enter();
         try
         {
             pdoor = null;
         }
         finally
         {
-            Monitor.Exit(prtLock);
+            prtLock.Exit();
         }
 
         silentPartyUpdate();
@@ -1670,26 +1670,26 @@ public partial class Player
 
     public void setEventInstance(AbstractEventInstanceManager? eventInstance)
     {
-        Monitor.Enter(evtLock);
+        evtLock.Enter();
         try
         {
             this.eventInstance = eventInstance;
         }
         finally
         {
-            Monitor.Exit(evtLock);
+            evtLock.Exit();
         }
     }
     public AbstractEventInstanceManager? getEventInstance()
     {
-        Monitor.Enter(evtLock);
+        evtLock.Enter();
         try
         {
             return eventInstance;
         }
         finally
         {
-            Monitor.Exit(evtLock);
+            evtLock.Exit();
         }
     }
 
@@ -2142,14 +2142,14 @@ public partial class Player
 
     public int getNoPets()
     {
-        Monitor.Enter(petLock);
+        petLock.Enter();
         try
         {
             return pets.Count(x => x != null);
         }
         finally
         {
-            Monitor.Exit(petLock);
+            petLock.Exit();
         }
     }
 
@@ -3013,14 +3013,14 @@ public partial class Player
 
     public IReadOnlyCollection<int> getActiveCoupons()
     {
-        Monitor.Enter(chrLock);
+        chrLock.Enter();
         try
         {
             return new ReadOnlyCollection<int>(activeCoupons.Keys.ToList());
         }
         finally
         {
-            Monitor.Exit(chrLock);
+            chrLock.Exit();
         }
     }
 
@@ -3389,7 +3389,7 @@ public partial class Player
 
     public void UpdateLocalStats(bool isInitial = false)
     {
-        Monitor.Enter(prtLock);
+        prtLock.Enter();
         effLock.Enter();
         statLock.EnterWriteLock();
         try
@@ -3412,7 +3412,7 @@ public partial class Player
         {
             statLock.ExitWriteLock();
             effLock.Exit();
-            Monitor.Exit(prtLock);
+            prtLock.Exit();
         }
     }
 
@@ -4072,7 +4072,7 @@ public partial class Player
 
     public void shiftPetsRight()
     {
-        Monitor.Enter(petLock);
+        petLock.Enter();
         try
         {
             if (pets[2] == null)
@@ -4084,7 +4084,7 @@ public partial class Player
         }
         finally
         {
-            Monitor.Exit(petLock);
+            petLock.Exit();
         }
     }
 

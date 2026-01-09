@@ -2,7 +2,7 @@ namespace Application.Core.Channel.ServerData
 {
     public class PetHungerManager : TaskBase
     {
-        private object activePetsLock = new object();
+        private Lock activePetsLock = new ();
         private Dictionary<int, int> activePets = new();
         private DateTimeOffset petUpdate;
 
@@ -30,7 +30,7 @@ namespace Application.Core.Channel.ServerData
 
             int key = getPetKey(chr, petSlot);
 
-            Monitor.Enter(activePetsLock);
+            activePetsLock.Enter();
             try
             {
                 int initProc;
@@ -47,7 +47,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(activePetsLock);
+                activePetsLock.Exit();
             }
         }
 
@@ -55,14 +55,14 @@ namespace Application.Core.Channel.ServerData
         {
             int key = getPetKey(chr, petSlot);
 
-            Monitor.Enter(activePetsLock);
+            activePetsLock.Enter();
             try
             {
                 activePets.Remove(key);
             }
             finally
             {
-                Monitor.Exit(activePetsLock);
+                activePetsLock.Exit();
             }
         }
 
@@ -70,7 +70,7 @@ namespace Application.Core.Channel.ServerData
         {
             Dictionary<int, int> deployedPets;
 
-            Monitor.Enter(activePetsLock);
+            activePetsLock.Enter();
             try
             {
                 petUpdate = DateTimeOffset.UtcNow;
@@ -78,7 +78,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(activePetsLock);
+                activePetsLock.Exit();
             }
 
             foreach (var dp in deployedPets)
@@ -96,14 +96,14 @@ namespace Application.Core.Channel.ServerData
                     dpVal = 0;
                 }
 
-                Monitor.Enter(activePetsLock);
+                activePetsLock.Enter();
                 try
                 {
                     activePets.AddOrUpdate(dp.Key, dpVal);
                 }
                 finally
                 {
-                    Monitor.Exit(activePetsLock);
+                    activePetsLock.Exit();
                 }
             }
         }

@@ -107,32 +107,32 @@ namespace Application.Core.Login
         }
 
 
-        private object srvLock = new object();
+        private Lock srvLock = new ();
 
         private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
         public void RegisterLoginState(ILoginClient c)
         {
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 inLoginState[c] = DateTimeOffset.UtcNow.AddMinutes(10);
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
         }
 
         public void UnregisterLoginState(ILoginClient c)
         {
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 inLoginState.Remove(c);
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
         }
 
@@ -140,7 +140,7 @@ namespace Application.Core.Login
         {
             List<ILoginClient> toDisconnect = new();
 
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 var timeNow = DateTimeOffset.UtcNow;
@@ -160,7 +160,7 @@ namespace Application.Core.Login
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
 
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();

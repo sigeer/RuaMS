@@ -293,7 +293,7 @@ namespace Application.Core.Game.Players
         public void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
         {
             long nextMeso;
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 nextMeso = (long)MesoValue.get() + gain;  // thanks Thora for pointing integer overflow here
@@ -309,7 +309,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
 
             if (gain != 0)
@@ -330,7 +330,7 @@ namespace Application.Core.Game.Players
         {
             bool canGainMeso = false;
             long nextMeso;
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 nextMeso = (long)MesoValue.get() + gain;
@@ -346,7 +346,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
 
 
@@ -370,7 +370,7 @@ namespace Application.Core.Game.Players
         {
             int notGained = 0;
             long nextMeso;
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 nextMeso = (long)MesoValue.get() + gain;
@@ -389,7 +389,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
 
             if (gain != 0)

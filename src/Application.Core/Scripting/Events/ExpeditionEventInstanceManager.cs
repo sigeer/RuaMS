@@ -27,14 +27,14 @@ namespace Application.Core.Scripting.Events
             {
                 expedition.dispose(eventCleared);
 
-                Monitor.Enter(scriptLock);
+                scriptLock.Enter();
                 try
                 {
                     expedition.removeChannelExpedition(EventManager.getChannelServer());
                 }
                 finally
                 {
-                    Monitor.Exit(scriptLock);
+                    scriptLock.Exit();
                 }
 
                 expedition = null;

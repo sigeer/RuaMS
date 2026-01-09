@@ -3,7 +3,7 @@ namespace Application.Core.Channel.ServerData
     public class MountTirednessManager : TaskBase
     {
 
-        private object activeMountsLock = new object();
+        private Lock activeMountsLock = new ();
         private Dictionary<int, int> activeMounts = new();
         private DateTime mountUpdate;
 
@@ -23,7 +23,7 @@ namespace Application.Core.Channel.ServerData
             }
 
             int key = chr.getId();
-            Monitor.Enter(activeMountsLock);
+            activeMountsLock.Enter();
             try
             {
                 int initProc;
@@ -40,28 +40,28 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(activeMountsLock);
+                activeMountsLock.Exit();
             }
         }
         public void unregisterMountHunger(Player chr)
         {
             int key = chr.getId();
 
-            Monitor.Enter(activeMountsLock);
+            activeMountsLock.Enter();
             try
             {
                 activeMounts.Remove(key);
             }
             finally
             {
-                Monitor.Exit(activeMountsLock);
+                activeMountsLock.Exit();
             }
         }
 
         protected override void HandleRun()
         {
             Dictionary<int, int> deployedMounts;
-            Monitor.Enter(activeMountsLock);
+            activeMountsLock.Enter();
             try
             {
                 mountUpdate = DateTime.UtcNow;
@@ -69,7 +69,7 @@ namespace Application.Core.Channel.ServerData
             }
             finally
             {
-                Monitor.Exit(activeMountsLock);
+                activeMountsLock.Exit();
             }
 
             foreach (var dp in deployedMounts)
@@ -90,14 +90,14 @@ namespace Application.Core.Channel.ServerData
                     dpVal = 0;
                 }
 
-                Monitor.Enter(activeMountsLock);
+                activeMountsLock.Enter();
                 try
                 {
                     activeMounts.AddOrUpdate(dp.Key, dpVal);
                 }
                 finally
                 {
-                    Monitor.Exit(activeMountsLock);
+                    activeMountsLock.Exit();
                 }
             }
         }

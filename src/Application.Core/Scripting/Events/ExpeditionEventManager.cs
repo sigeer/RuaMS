@@ -51,7 +51,7 @@ namespace Application.Core.Scripting.Events
                 {
                     playerPermit.Add(leader.getId());
 
-                    Monitor.Enter(startLock);
+                    startLock.Enter();
                     try
                     {
                         try
@@ -101,7 +101,7 @@ namespace Application.Core.Scripting.Events
                     }
                     finally
                     {
-                        Monitor.Exit(startLock);
+                        startLock.Exit();
                         playerPermit.Remove(leader.getId());
                         startSemaphore.Release();
                     }

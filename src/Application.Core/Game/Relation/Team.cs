@@ -9,7 +9,7 @@ namespace Application.Core.Game.Relation
         private int leaderId;
         private Dictionary<int, TeamMember> members = new();
 
-        private object lockObj = new object();
+        private Lock lockObj = new ();
 
         public Team(int id, int leaderId)
         {
@@ -19,40 +19,40 @@ namespace Application.Core.Game.Relation
 
         public bool containsMembers(int memberId)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 return members.ContainsKey(memberId);
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
         public void addMember(TeamMember member)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 members.TryAdd(member.Id, member);
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
         public void removeMember(int member)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 members.Remove(member);
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
@@ -63,14 +63,14 @@ namespace Application.Core.Game.Relation
 
         public void updateMember(TeamMember member)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 members[member.Id] = member;
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
@@ -84,14 +84,14 @@ namespace Application.Core.Game.Relation
         /// <returns></returns>
         public List<Player> GetChannelMembers(WorldChannel currentServer)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 return members.Keys.Select(x => currentServer.Players.getCharacterById(x)).Where(x => x != null).ToList()!;
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
@@ -102,14 +102,14 @@ namespace Application.Core.Game.Relation
         /// <returns></returns>
         public List<Player> GetActiveMembers(WorldChannelServer server)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 return members.Values.Select(x => server.FindPlayerById(x.Channel, x.Id)).Where(x => x != null).ToList()!;
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 
@@ -131,14 +131,14 @@ namespace Application.Core.Game.Relation
 
         public Player? GetChannelLeader(WorldChannel server)
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
             try
             {
                 return server.Players.getCharacterById(leaderId);
             }
             finally
             {
-                Monitor.Exit(lockObj);
+                lockObj.Exit();
             }
         }
 

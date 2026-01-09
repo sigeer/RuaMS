@@ -50,8 +50,8 @@ public class Reactor : AbstractMapObject
     private Action? delayedRespawnRun = null;
     private GuardianSpawnPoint? guardian = null;
     private sbyte facingDirection = 0;
-    private object reactorLock = new object();
-    private object hitLock = new object();
+    private Lock reactorLock = new ();
+    private Lock hitLock = new ();
 
     public Reactor(ReactorStats stats, int rid)
     {
@@ -73,24 +73,24 @@ public class Reactor : AbstractMapObject
 
     public void lockReactor()
     {
-        Monitor.Enter(reactorLock);
+        reactorLock.Enter();
     }
 
     public void unlockReactor()
     {
-        Monitor.Exit(reactorLock);
+        reactorLock.Exit();
     }
 
     public void hitLockReactor()
     {
-        Monitor.Enter(hitLock);
-        Monitor.Enter(reactorLock);
+        hitLock.Enter();
+        reactorLock.Enter();
     }
 
     public void hitUnlockReactor()
     {
-        Monitor.Exit(reactorLock);
-        Monitor.Exit(hitLock);
+        reactorLock.Exit();
+        hitLock.Exit();
     }
 
     public void setState(sbyte state)
@@ -220,7 +220,7 @@ public class Reactor : AbstractMapObject
 
     private void tryForceHitReactor(sbyte newState)
     {  // weak hit state signal, if already changed reactor state before timeout then drop this
-        if (!Monitor.TryEnter(reactorLock))
+        if (!reactorLock.TryEnter())
         {
             return;
         }
@@ -232,7 +232,7 @@ public class Reactor : AbstractMapObject
         }
         finally
         {
-            Monitor.Exit(reactorLock);
+            reactorLock.Exit();
         }
     }
 
@@ -282,7 +282,7 @@ public class Reactor : AbstractMapObject
                 return;
             }
 
-            if (Monitor.TryEnter(hitLock))
+            if (hitLock.TryEnter())
             {
                 this.lockReactor();
                 try
@@ -383,7 +383,7 @@ public class Reactor : AbstractMapObject
                 finally
                 {
                     this.unlockReactor();
-                    Monitor.Exit(hitLock);   // non-encapsulated unlock found thanks to MiLin
+                    hitLock.Exit();   // non-encapsulated unlock found thanks to MiLin
                 }
             }
         }
@@ -399,7 +399,7 @@ public class Reactor : AbstractMapObject
     /// <returns></returns>
     public bool destroy()
     {
-        if (Monitor.TryEnter(reactorLock))
+        if (reactorLock.TryEnter())
         {
             try
             {
@@ -422,7 +422,7 @@ public class Reactor : AbstractMapObject
             }
             finally
             {
-                Monitor.Exit(reactorLock);
+                reactorLock.Exit();
             }
         }
 

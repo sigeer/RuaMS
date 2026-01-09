@@ -71,7 +71,7 @@ public class MobStatusService : BaseService
     {
 
         private Dictionary<MonsterStatusEffect, MobStatusOvertimeEntry> registeredMobStatusOvertime = new();
-        private object overtimeStatusLock = new object();
+        private Lock overtimeStatusLock = new ();
 
         public class MobStatusOvertimeEntry
         {
@@ -104,7 +104,7 @@ public class MobStatusService : BaseService
                 {
                     List<AbstractRunnable> toRun = new();
 
-                    Monitor.Enter(overtimeStatusLock);
+                    overtimeStatusLock.Enter();
                     try
                     {
                         foreach (object mseo in toRemove)
@@ -125,7 +125,7 @@ public class MobStatusService : BaseService
                     }
                     finally
                     {
-                        Monitor.Exit(overtimeStatusLock);
+                        overtimeStatusLock.Exit();
                     }
 
                     foreach (AbstractRunnable r in toRun)
@@ -142,14 +142,14 @@ public class MobStatusService : BaseService
             {
                 MobStatusOvertimeEntry mdoe = new MobStatusOvertimeEntry(overtimeDelay, overtimeStatus);
 
-                Monitor.Enter(overtimeStatusLock);
+                overtimeStatusLock.Enter();
                 try
                 {
                     registeredMobStatusOvertime.AddOrUpdate(mse, mdoe);
                 }
                 finally
                 {
-                    Monitor.Exit(overtimeStatusLock);
+                    overtimeStatusLock.Exit();
                 }
             }
 

@@ -75,11 +75,11 @@ public class Monster : AbstractLifeObject
     /// </summary>
     public List<DropEntry>? CustomeDrops { get; set; }
 
-    private object externalLock = new object();
-    private object monsterLock = new object();
-    private object statiLock = new object();
-    private object animationLock = new object();
-    private object aggroUpdateLock = new object();
+    private Lock externalLock = new ();
+    private Lock monsterLock = new ();
+    private Lock statiLock = new ();
+    private Lock animationLock = new ();
+    private Lock aggroUpdateLock = new ();
 
     /// <summary>
     /// 地图上生成
@@ -133,12 +133,12 @@ public class Monster : AbstractLifeObject
 
     public void lockMonster()
     {
-        Monitor.Enter(externalLock);
+        externalLock.Enter();
     }
 
     public void unlockMonster()
     {
-        Monitor.Exit(externalLock);
+        externalLock.Exit();
     }
 
     public void setSpawnEffect(int effect)
@@ -816,7 +816,7 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             var mse = stati.GetValueOrDefault(MonsterStatus.SHOWDOWN);
@@ -827,7 +827,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
 
         return multiplier;
@@ -1123,7 +1123,7 @@ public class Monster : AbstractLifeObject
 
             OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
 
-            Monitor.Enter(statiLock);
+            statiLock.Enter();
             try
             {
                 stati.Clear();
@@ -1131,7 +1131,7 @@ public class Monster : AbstractLifeObject
             }
             finally
             {
-                Monitor.Exit(statiLock);
+                statiLock.Exit();
             }
 
         }
@@ -1260,7 +1260,7 @@ public class Monster : AbstractLifeObject
 
     public ElementalEffectiveness getElementalEffectiveness(Element e)
     {
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             if (stati.GetValueOrDefault(MonsterStatus.DOOM) != null)
@@ -1270,7 +1270,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
 
         return getMonsterEffectiveness(e);
@@ -1278,14 +1278,14 @@ public class Monster : AbstractLifeObject
 
     private ElementalEffectiveness getMonsterEffectiveness(Element e)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             return stats.getEffectiveness(e);
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
@@ -1387,7 +1387,7 @@ public class Monster : AbstractLifeObject
         int mapid = MapModel.getId();
         if (statis.Count > 0)
         {
-            Monitor.Enter(statiLock);
+            statiLock.Enter();
             try
             {
                 foreach (MonsterStatus stat in statis.Keys)
@@ -1406,7 +1406,7 @@ public class Monster : AbstractLifeObject
             }
             finally
             {
-                Monitor.Exit(statiLock);
+                statiLock.Exit();
             }
         }
 
@@ -1418,7 +1418,7 @@ public class Monster : AbstractLifeObject
                 broadcastMonsterStatusMessage(packet);
             }
 
-            Monitor.Enter(statiLock);
+            statiLock.Enter();
             try
             {
                 foreach (MonsterStatus stat in status.getStati().Keys)
@@ -1428,7 +1428,7 @@ public class Monster : AbstractLifeObject
             }
             finally
             {
-                Monitor.Exit(statiLock);
+                statiLock.Exit();
             }
 
             setVenomMulti(0);
@@ -1513,7 +1513,7 @@ public class Monster : AbstractLifeObject
             animationTime = broadcastStatusEffect(status);
         }
 
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             foreach (MonsterStatus stat in status.getStati().Keys)
@@ -1524,7 +1524,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
 
         MobStatusService service = MapModel.getChannelServer().MobStatusService;
@@ -1559,7 +1559,7 @@ public class Monster : AbstractLifeObject
                 Packet packet = PacketCreator.cancelMonsterStatus(getObjectId(), stats);
                 broadcastMonsterStatusMessage(packet);
 
-                Monitor.Enter(statiLock);
+                statiLock.Enter();
                 try
                 {
                     foreach (MonsterStatus stat in stats.Keys)
@@ -1569,7 +1569,7 @@ public class Monster : AbstractLifeObject
                 }
                 finally
                 {
-                    Monitor.Exit(statiLock);
+                    statiLock.Exit();
                 }
             }
         };
@@ -1577,7 +1577,7 @@ public class Monster : AbstractLifeObject
         Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), effect, reflection);
         broadcastMonsterStatusMessage(packet);
 
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             foreach (MonsterStatus stat in stats.Keys)
@@ -1588,7 +1588,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
 
         MobStatusService service = MapModel.getChannelServer().MobStatusService;
@@ -1615,14 +1615,14 @@ public class Monster : AbstractLifeObject
     private void debuffMobStat(MonsterStatus stat)
     {
         MonsterStatusEffect? oldEffect;
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             stati.Remove(stat, out oldEffect);
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
 
         if (oldEffect != null)
@@ -1635,7 +1635,7 @@ public class Monster : AbstractLifeObject
     public void debuffMob(int skillid)
     {
         MonsterStatus[] statups = { MonsterStatus.WEAPON_ATTACK_UP, MonsterStatus.WEAPON_DEFENSE_UP, MonsterStatus.MAGIC_ATTACK_UP, MonsterStatus.MAGIC_DEFENSE_UP };
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             if (skillid == Hermit.SHADOW_MESO)
@@ -1687,46 +1687,46 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
     }
 
     public bool isBuffed(MonsterStatus status)
     {
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             return stati.ContainsKey(status);
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
     }
 
     public void setFake(bool fake)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             this.fake = fake;
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
     public bool isFake()
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             return fake;
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
@@ -1760,7 +1760,7 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             if (usedSkills.Contains(toUse.getId()))
@@ -1787,7 +1787,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
 
         return true;
@@ -1806,7 +1806,7 @@ public class Monster : AbstractLifeObject
     private void usedSkill(MobSkill skill)
     {
         MobSkillId msId = skill.getId();
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             mp -= skill.getMpCon();
@@ -1815,7 +1815,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
 
         Monster mons = this;
@@ -1828,20 +1828,20 @@ public class Monster : AbstractLifeObject
 
     private void clearSkill(MobSkillId msId)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             usedSkills.Remove(msId);
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
     public int canUseAttack(int attackPos, bool isSkill)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             /*
@@ -1872,13 +1872,13 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
     private void usedAttack(int attackPos, int mpCon, int cooltime)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             mp -= mpCon;
@@ -1893,20 +1893,20 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
     private void clearAttack(int attackPos)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             usedAttacks.Remove(attackPos);
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
@@ -2021,7 +2021,7 @@ public class Monster : AbstractLifeObject
 
     public void setTempEffectiveness(Element e, ElementalEffectiveness ee, long milli)
     {
-        Monitor.Enter(monsterLock);
+        monsterLock.Enter();
         try
         {
             Element fE = e;
@@ -2033,7 +2033,7 @@ public class Monster : AbstractLifeObject
                 var mmap = this.getMap();
                 var r = () =>
                 {
-                    Monitor.Enter(monsterLock);
+                    monsterLock.Enter();
                     try
                     {
                         stats.removeEffectiveness(fE);
@@ -2041,7 +2041,7 @@ public class Monster : AbstractLifeObject
                     }
                     finally
                     {
-                        Monitor.Exit(monsterLock);
+                        monsterLock.Exit();
                     }
                 };
 
@@ -2051,20 +2051,20 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(monsterLock);
+            monsterLock.Exit();
         }
     }
 
     public ICollection<MonsterStatus> alreadyBuffedStats()
     {
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             return new List<MonsterStatus>(alreadyBuffed);
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
     }
 
@@ -2090,27 +2090,27 @@ public class Monster : AbstractLifeObject
 
     public Dictionary<MonsterStatus, MonsterStatusEffect> getStati()
     {
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             return new(stati);
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
     }
 
     public MonsterStatusEffect? getStati(MonsterStatus ms)
     {
-        Monitor.Enter(statiLock);
+        statiLock.Enter();
         try
         {
             return stati.GetValueOrDefault(ms);
         }
         finally
         {
-            Monitor.Exit(statiLock);
+            statiLock.Exit();
         }
     }
 
@@ -2279,7 +2279,7 @@ public class Monster : AbstractLifeObject
         Player? chrController;
         bool hadAggro;
 
-        Monitor.Enter(aggroUpdateLock);
+        aggroUpdateLock.Enter();
         try
         {
             chrController = getActiveController();
@@ -2291,7 +2291,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(aggroUpdateLock);
+            aggroUpdateLock.Exit();
         }
 
         if (chrController != null)
@@ -2313,7 +2313,7 @@ public class Monster : AbstractLifeObject
      */
     public void aggroSwitchController(Player? newController, bool immediateAggro)
     {
-        if (Monitor.TryEnter(aggroUpdateLock))
+        if (aggroUpdateLock.TryEnter())
         {
             try
             {
@@ -2336,7 +2336,7 @@ public class Monster : AbstractLifeObject
             }
             finally
             {
-                Monitor.Exit(aggroUpdateLock);
+                aggroUpdateLock.Exit();
             }
 
             this.aggroUpdatePuppetVisibility();
@@ -2654,7 +2654,7 @@ public class Monster : AbstractLifeObject
      */
     public void aggroResetAggro()
     {
-        Monitor.Enter(aggroUpdateLock);
+        aggroUpdateLock.Enter();
         try
         {
             this.setControllerHasAggro(false);
@@ -2662,7 +2662,7 @@ public class Monster : AbstractLifeObject
         }
         finally
         {
-            Monitor.Exit(aggroUpdateLock);
+            aggroUpdateLock.Exit();
         }
     }
 

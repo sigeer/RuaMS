@@ -29,7 +29,7 @@ namespace Application.Core.Scripting.Events
 
         protected HashSet<int> playerPermit = new();
         protected SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
-        protected object startLock = new object();
+        protected Lock startLock = new ();
         public AbstractInstancedEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
         {
         }

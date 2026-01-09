@@ -6,18 +6,18 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private object petLock = new object();
+        private Lock petLock = new ();
         private Pet?[] pets = new Pet?[3];
         public Pet?[] getPets()
         {
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 return Arrays.copyOf(pets, pets.Length);
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 
@@ -28,20 +28,20 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 return pets[index];
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 
         public sbyte getPetIndex(long petId)
         {
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 for (sbyte i = 0; i < 3; i++)
@@ -58,7 +58,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 
@@ -68,7 +68,7 @@ namespace Application.Core.Game.Players
         }
         public void addPet(Pet pet)
         {
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 for (int i = 0; i < 3; i++)
@@ -82,13 +82,13 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 
         public void removePet(Pet pet, bool shift_left)
         {
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 int slot = -1;
@@ -124,7 +124,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
         }
 

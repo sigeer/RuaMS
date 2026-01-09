@@ -42,7 +42,7 @@ public class Inventory : IEnumerable<Item>
     /// </summary>
     protected Dictionary<short, Item> inventory;
     protected InventoryType type;
-    protected object lockObj = new object();
+    protected Lock lockObj = new ();
 
     protected Player owner;
     protected byte slotLimit;
@@ -68,20 +68,20 @@ public class Inventory : IEnumerable<Item>
 
     public byte getSlotLimit()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return slotLimit;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void setSlotLimit(int newLimit)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             if (newLimit < slotLimit)
@@ -105,20 +105,20 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public IList<Item> list()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return inventory.Values.ToList();
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -251,7 +251,7 @@ public class Inventory : IEnumerable<Item>
 
     public void move(short sSlot, short dSlot, short slotMax)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             Item? source = inventory.GetValueOrDefault(sSlot);
@@ -291,7 +291,7 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -308,14 +308,14 @@ public class Inventory : IEnumerable<Item>
 
     public Item? getItem(short slot)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return inventory.GetValueOrDefault(slot);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -367,7 +367,7 @@ public class Inventory : IEnumerable<Item>
         }
 
         short slotId;
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             slotId = getNextFreeSlot();
@@ -380,7 +380,7 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
@@ -394,14 +394,14 @@ public class Inventory : IEnumerable<Item>
 
     public virtual void addSlotFromDB(short slot, Item item)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.AddOrUpdate(slot, item);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
@@ -413,14 +413,14 @@ public class Inventory : IEnumerable<Item>
     public virtual void removeSlot(short slot)
     {
         Item? item;
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             inventory.Remove(slot, out item);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
@@ -431,20 +431,20 @@ public class Inventory : IEnumerable<Item>
 
     public bool isFull()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return inventory.Count >= slotLimit;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public bool isFull(int margin)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + ")");
@@ -452,13 +452,13 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public bool isFullAfterSomeItems(int margin, int used)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + " -" + used + ")");
@@ -466,7 +466,7 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -477,7 +477,7 @@ public class Inventory : IEnumerable<Item>
             return -1;
         }
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             for (short i = 1; i <= slotLimit; i++)
@@ -491,7 +491,7 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -502,7 +502,7 @@ public class Inventory : IEnumerable<Item>
             return 0;
         }
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             short free = 0;
@@ -517,7 +517,7 @@ public class Inventory : IEnumerable<Item>
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -738,38 +738,38 @@ public class Inventory : IEnumerable<Item>
 
     public bool IsChecked()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return isChecked;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void SetChecked(bool yes)
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             isChecked = yes;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void lockInventory()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
     }
 
     public void unlockInventory()
     {
-        Monitor.Exit(lockObj);
+        lockObj.Exit();
     }
 
     public void dispose()

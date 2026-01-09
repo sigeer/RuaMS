@@ -30,11 +30,11 @@ public abstract class BaseScheduler
 {
     private int idleProcs = 0;
     private List<Action<List<object>, bool>> listeners = new();
-    private List<object> externalLocks = new();
+    private List<Lock> externalLocks = new();
     private Dictionary<object, KeyValuePair<AbstractRunnable, long>> registeredEntries = new();
 
     private Task? schedulerTask = null;
-    private object schedulerLock = new object();
+    private Lock schedulerLock = new ();
 
     CancellationTokenSource? cancellationTokenSource;
 
@@ -62,26 +62,26 @@ public abstract class BaseScheduler
     {
         if (externalLocks.Count > 0)
         {
-            foreach (object l in externalLocks)
+            foreach (var l in externalLocks)
             {
-                Monitor.Enter(l);
+                l.Enter();
             }
         }
 
-        Monitor.Enter(schedulerLock);
+        schedulerLock.Enter();
     }
 
     private void unlockScheduler()
     {
         if (externalLocks.Count > 0)
         {
-            foreach (object l in externalLocks)
+            foreach (var l in externalLocks)
             {
-                Monitor.Exit(l);
+                l.Exit();
             }
         }
 
-        Monitor.Exit(schedulerLock);
+        schedulerLock.Exit();
     }
 
     private void runBaseSchedule()

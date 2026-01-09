@@ -36,7 +36,7 @@ public class MonsterBook
     private int normalCard = 0;
     private int bookLevel = 1;
     private Dictionary<int, int> cards = new();
-    private object lockObj = new object();
+    private Lock lockObj = new ();
     public Player Owner { get; }
 
     public MonsterBook(Player owner)
@@ -65,14 +65,14 @@ public class MonsterBook
 
     public HashSet<KeyValuePair<int, int>> getCardSet()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return cards.ToHashSet();
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
@@ -81,7 +81,7 @@ public class MonsterBook
         Owner.getMap().broadcastMessage(Owner, PacketCreator.showForeignCardEffect(Owner.Id), false);
 
         int qty;
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             qty = cards.GetValueOrDefault(cardid);
@@ -105,7 +105,7 @@ public class MonsterBook
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         if (qty < CardMaxCount)
@@ -127,7 +127,7 @@ public class MonsterBook
 
     private void calculateLevel()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             int collectionExp = (normalCard + specialCard);
@@ -143,72 +143,72 @@ public class MonsterBook
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public int getBookLevel()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return bookLevel;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public Dictionary<int, int> getCards()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return new(cards);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public int getTotalCards()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return specialCard + normalCard;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public int getNormalCard()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return normalCard;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public int getSpecialCard()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             return specialCard;
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 

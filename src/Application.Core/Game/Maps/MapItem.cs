@@ -17,7 +17,7 @@ public class MapItem : AbstractMapObject
     protected long dropTime;
     public Item? Item { get; }
     public long ExpiredTime { get; }
-    private object itemLock = new object();
+    private Lock itemLock = new ();
     public bool IsPartyDrop => this.party_ownerid != -1;
 
     public bool NeedCheckSpace => getItem()?.NeedCheckSpace ?? false;
@@ -214,12 +214,12 @@ public class MapItem : AbstractMapObject
 
     public void lockItem()
     {
-        Monitor.Enter(itemLock);
+        itemLock.Enter();
     }
 
     public void unlockItem()
     {
-        Monitor.Exit(itemLock);
+        itemLock.Exit();
     }
 
     public override MapObjectType getType()

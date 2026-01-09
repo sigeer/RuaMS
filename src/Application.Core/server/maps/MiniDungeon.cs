@@ -31,7 +31,7 @@ public class MiniDungeon
 {
     List<Player> players = new();
     ScheduledFuture? timeoutTask = null;
-    object lockObj = new object();
+    Lock lockObj = new ();
 
     int baseMap;
     long expireTime;
@@ -55,7 +55,7 @@ public class MiniDungeon
             chr.sendPacket(PacketCreator.getClock(time));
         }
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             if (timeoutTask == null)
@@ -67,7 +67,7 @@ public class MiniDungeon
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         return true;
@@ -77,7 +77,7 @@ public class MiniDungeon
     {
         chr.sendPacket(PacketCreator.removeClock());
 
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             players.Remove(chr);
@@ -90,7 +90,7 @@ public class MiniDungeon
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         if (chr.isPartyLeader())
@@ -103,7 +103,7 @@ public class MiniDungeon
 
     public void close()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             List<Player> lchr = new(players);
@@ -118,13 +118,13 @@ public class MiniDungeon
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 
     public void dispose()
     {
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             players.Clear();
@@ -137,7 +137,7 @@ public class MiniDungeon
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 }

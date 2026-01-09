@@ -123,7 +123,7 @@ public class MapleMap : IMap
     ReaderWriterLockSlim objectLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
     // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
-    private static object bndLock = new object();
+    private static Lock bndLock = new ();
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
     public MapTemplate SourceTemplate { get; }
@@ -491,7 +491,7 @@ public class MapleMap : IMap
 
     public void generateMapDropRangeCache()
     {
-        Monitor.Enter(bndLock);
+        bndLock.Enter();
         try
         {
             var bounds = MapGlobalData.dropBoundsCache.GetValueOrDefault(Id);
@@ -516,7 +516,7 @@ public class MapleMap : IMap
         }
         finally
         {
-            Monitor.Exit(bndLock);
+            bndLock.Exit();
         }
     }
 

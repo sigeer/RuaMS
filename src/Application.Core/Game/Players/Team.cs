@@ -14,47 +14,47 @@ namespace Application.Core.Game.Players
         }
         public bool isPartyLeader()
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 return getParty()?.getLeaderId() == getId();
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
 
         public Team? getParty()
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 return Client.CurrentServerContainer.TeamManager.ForcedGetTeam(Party);
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
         public int getPartyId()
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 return Party;
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
         public List<Player> getPartyMembersOnline()
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 var chrParty = getParty();
@@ -66,14 +66,14 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
         public List<Player> getPartyMembersOnSameMap()
         {
             List<Player> list = new();
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 var chrParty = getParty();
@@ -93,7 +93,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
 
             return list;
@@ -106,14 +106,14 @@ namespace Application.Core.Game.Players
 
         public bool isPartyMember(int cid)
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 return getParty()?.containsMembers(cid) ?? false;
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
@@ -122,7 +122,7 @@ namespace Application.Core.Game.Players
             Team? party;
             bool partyLeader;
 
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 party = this.getParty();
@@ -130,7 +130,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
 
             if (party != null)
@@ -147,7 +147,7 @@ namespace Application.Core.Game.Players
 
         public void updatePartyMemberHP()
         {
-            Monitor.Enter(prtLock);
+            prtLock.Enter();
             try
             {
                 foreach (var player in this.getPartyMembersOnSameMap())
@@ -157,7 +157,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                Monitor.Exit(prtLock);
+                prtLock.Exit();
             }
         }
 
@@ -170,14 +170,14 @@ namespace Application.Core.Game.Players
         {
             List<WeakReference<IMap>> mapids;
 
-            Monitor.Enter(petLock);
+            petLock.Enter();
             try
             {
                 mapids = new(lastVisitedMaps);
             }
             finally
             {
-                Monitor.Exit(petLock);
+                petLock.Exit();
             }
 
             List<Player> partyMembers = new();
