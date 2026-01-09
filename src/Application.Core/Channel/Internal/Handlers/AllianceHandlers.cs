@@ -72,7 +72,6 @@ namespace Application.Core.Channel.Internal.Handlers
                     var chr = _server.FindPlayerById(member.Id);
                     if (chr != null)
                     {
-                        chr.SetAllianceSnapshot(res.Model);
                         chr.AllianceRank = member.AllianceRank;
 
                         chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.Model));
@@ -86,6 +85,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         }
                     }
                 }
+                _server.GuildManager.StoreAlliance(res.Model);
 
                 return Task.CompletedTask;
             }
@@ -145,6 +145,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.dropMessage(5, "* Alliance Notice : " + res.Request.Notice);
                     }
                 }
+                _server.GuildManager.ClearAllianceCache(res.AllianceId);
                 return Task.CompletedTask;
             }
 
@@ -183,15 +184,13 @@ namespace Application.Core.Channel.Internal.Handlers
                             chr.dropMessage("Your guild has joined the [" + res.AllianceDto.Name + "] union.");
                         }
 
-                        chr.SetAllianceSnapshot(res.AllianceDto);
                         chr.AllianceRank = 5;
                         if (chr.GuildRank == 1)
                             chr.AllianceRank = 2;
-
                     }
                 }
 
-                _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -235,12 +234,11 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
 
                         chr.sendPacket(GuildPackets.disbandAlliance(res.AllianceId));
-                        chr.RemoveAllianceSnapshot();
                     }
                 }
 
-                _server.GuildManager.SetAlliance(res.AllianceDto);
-                _server.GuildManager.SetGuild(res.GuildDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
+                _server.GuildManager.StoreGuild(res.GuildDto);
                 return Task.CompletedTask;
             }
 
@@ -285,12 +283,11 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
 
                         chr.sendPacket(GuildPackets.disbandAlliance(res.AllianceId));
-                        chr.RemoveAllianceSnapshot();
                     }
                 }
 
-                _server.GuildManager.SetAlliance(res.AllianceDto);
-                _server.GuildManager.SetGuild(res.GuildDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
+                _server.GuildManager.StoreGuild(res.GuildDto);
                 return Task.CompletedTask;
             }
 
@@ -325,11 +322,10 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
                         }
-                        chr.SetAllianceSnapshot(res.AllianceDto);
                     }
                 }
 
-                _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -392,7 +388,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.AllianceRank = res.NewRank;
                     }
                 }
-                _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -463,7 +459,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.dropMessage("'" + res.NewLeaderName + "' has been appointed as the new head of this Alliance.");
                     }
                 }
-                _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 

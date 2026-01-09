@@ -182,7 +182,7 @@ namespace Application.Core.Channel.HostExtensions
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();
 
-            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddMemoryCache();
             builder.Services.AddChannelGrpcClient();
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();

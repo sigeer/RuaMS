@@ -35,11 +35,6 @@ namespace Application.Module.Marriage.Master
             return Task.FromResult(_weddingManager.CompleteWedding(request));
         }
 
-        public override Task<InviteGuestResponse> InviteGuest(InviteGuestRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_weddingManager.InviteGuest(request));
-        }
-
         public override Task<LoadInvitationResponse> LoadInvitationContent(LoadInvitationRequest request, ServerCallContext context)
         {
             return Task.FromResult(_weddingManager.GetInvitationContent(request));

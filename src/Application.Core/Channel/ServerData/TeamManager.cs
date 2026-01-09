@@ -7,6 +7,7 @@ using Application.Shared.Team;
 using AutoMapper;
 using Google.Protobuf;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using TeamProto;
@@ -19,9 +20,9 @@ namespace Application.Core.Channel.ServerData
         readonly ILogger<TeamManager> _logger;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
-        readonly IDistributedCache _cache;
+        readonly IMemoryCache _cache;
 
-        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server, IDistributedCache cache)
+        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server, IMemoryCache cache)
         {
             _mapper = mapper;
             _logger = logger;
@@ -185,7 +186,7 @@ namespace Application.Core.Channel.ServerData
                         eim.disbandParty();
                     }
                 }
-                await _cache.RemoveAsync(GetTeamCacheKey(res.Team.Id));
+                _cache.Remove(GetTeamCacheKey(res.Team.Id));
             }
             else if (operation == PartyOperation.EXPEL)
             {
@@ -246,26 +247,17 @@ namespace Application.Core.Channel.ServerData
         {
             if (dto != null)
             {
-                _cache.Set(GetTeamCacheKey(dto.Id), dto.ToByteArray());
+                _cache.Set(GetTeamCacheKey(dto.Id), dto);
             }
         }
 
-        internal TeamDto GetTeamDto(int party, bool useCache = true)
+        internal TeamDto? GetTeamDto(int party, bool useCache = true)
         {
             var cacheKey = GetTeamCacheKey(party);
-            TeamDto res;
-            var data = _cache.Get(cacheKey);
-            if (data == null || !useCache)
+            return _cache.GetOrCreate(cacheKey, e =>
             {
-                res = _transport.GetTeam(party).Model;
-                SetTeam(res);
-            }
-            else
-            {
-                res = TeamDto.Parser.ParseFrom(data);
-            }
-
-            return res;
+                return _transport.GetTeam(party).Model;
+            });
         }
 
         internal Team? ForcedGetTeam(int party, bool useCache = true)

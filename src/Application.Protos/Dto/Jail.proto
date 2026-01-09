@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package JailProto;
+
+message CreateJailRequest {
+  int32 masterId = 1;
+  string targetName = 2;
+  int32 minutes = 3;
+}
+
+message CreateJailResponse {
+	int32 code = 1;
+	CreateJailRequest request = 2;
+	int32 targetId = 3;
+	bool isExtend = 4;
+}
+
+message CreateUnjailRequest {
+  int32 masterId = 1;
+  string targetName = 2;
+}
+
+message CreateUnjailResponse {
+	int32 code = 1;
+	CreateUnjailRequest request = 2;
+	int32 targetId = 3;
+}

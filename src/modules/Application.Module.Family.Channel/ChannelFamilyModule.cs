@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Modules;
+using Application.Core.Game.Players;
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
@@ -78,7 +79,7 @@ namespace Application.Module.Family.Channel
         }
 
 
-        public override void OnPlayerLogin(SyncProto.PlayerFieldChange data)
+        public override void OnPlayerLogin(Player data)
         {
             FamilyEntry? familyEntry = null;
 

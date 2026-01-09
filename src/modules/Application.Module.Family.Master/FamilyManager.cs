@@ -132,6 +132,7 @@ namespace Application.Module.Family.Master
 
         public Dto.GetFamilyResponse AcceptInvite(int masterId, int memberId)
         {
+            var res = new Dto.GetFamilyResponse();
             var theFamily = Query(x => x.Id == memberId).FirstOrDefault();
             if (theFamily != null && theFamily.Seniorid != 0)
             {

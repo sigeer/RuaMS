@@ -51,10 +51,6 @@ namespace Application.Core.Login.Services
                 IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION ,
                 Language = accountModel.Language
             };
-            data.Guild = _masterServer.GuildManager.GetGuildFull(data.Character.GuildId);
-            if (data.Guild != null && data.Guild.AllianceId > 0)
-                data.Alliance = _masterServer.GuildManager.GetAllianceDto(data.Guild.AllianceId);
-
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)

@@ -175,7 +175,7 @@ namespace Application.Core.Login.Services
         }
 
 
-        public void SetCharacter(CharacterLiveObject obj)
+        public void StoreCharacter(CharacterLiveObject obj)
         {
             _chrUpdate[obj.Character.Id] = obj;
         }

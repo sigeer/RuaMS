@@ -17,9 +17,10 @@ namespace Application.Module.Family.Master
             _familyManager = familyManager;
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override Task OnInvitationAccepted(InviteRequest request)
         {
             _familyManager.AcceptInvite(request.ToPlayerId, request.FromPlayerId);
+            return Task.CompletedTask;
         }
 
         public override async Task HandleInvitationCreated(CreateInviteRequest request)

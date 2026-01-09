@@ -77,7 +77,7 @@ namespace Application.Core.Game.Players
 
         public int JobRankMove { get; set; }
 
-        public int GuildId => GuildSnapshot?.GuildId ?? 0;
+        public int GuildId { get; set; }
 
         public int GuildRank { get; set; }
 

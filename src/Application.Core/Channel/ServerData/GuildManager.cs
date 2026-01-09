@@ -6,6 +6,7 @@ using AutoMapper;
 using Google.Protobuf;
 using GuildProto;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
 using System.Collections.Concurrent;
@@ -19,8 +20,9 @@ namespace Application.Core.Channel.ServerData
         readonly IMapper _mapper;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _serverContainer;
-        readonly IDistributedCache _cache;
-        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer, IDistributedCache cache)
+        readonly IMemoryCache _cache;
+        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer, 
+            IMemoryCache cache)
         {
             _logger = logger;
             _mapper = mapper;
@@ -32,35 +34,20 @@ namespace Application.Core.Channel.ServerData
         static string GetGuildCacheKey(int guildId) => $"Guild:{guildId}";
         static string GetAllianceCacheKey(int allianceId) => $"Alliance:{allianceId}";
 
-        public void SetGuild(GuildDto guild)
+        public void StoreGuild(GuildDto? guild)
         {
-            _cache.Set(GetGuildCacheKey(guild.GuildId), guild.ToByteArray());
+            if (guild == null)
+                return;
+
+            _cache.Set(GetGuildCacheKey(guild.GuildId), guild);
         }
-        public GuildDto? GetGuildFromCache(int id)
+        public GuildDto? GetGuild(int guildId)
         {
-            var data = _cache.Get(GetGuildCacheKey(id));
-            if (data == null)
+            var cacheKey = GetGuildCacheKey(guildId);
+            return _cache.GetOrCreate<GuildDto>(cacheKey, e =>
             {
-                return null;
-            }
-            return GuildDto.Parser.ParseFrom(data);
-        }
-        public void SetAlliance(AllianceDto alliance)
-        {
-            _cache.Set(GetAllianceCacheKey(alliance.AllianceId), alliance.ToByteArray());
-            foreach (var guild in alliance.Guilds)
-            {
-                SetGuild(guild);
-            }
-        }
-        public AllianceDto? GetAllianceFromCache(int id)
-        {
-            var data = _cache.Get(GetAllianceCacheKey(id));
-            if (data == null)
-            {
-                return null;
-            }
-            return AllianceDto.Parser.ParseFrom(data);
+                return _transport.GetGuild(guildId).Model;
+            });
         }
 
         public bool CheckGuildName(string name)
@@ -259,20 +246,28 @@ namespace Application.Core.Channel.ServerData
             await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
-        public AllianceDto? GetAlliance(int allianceId)
-        {
-            var data = GetAllianceFromCache(allianceId);
-            if (data == null)
-            {
-                data = _transport.GetAlliance(allianceId).Model;
-                SetAlliance(data);
-            }
-            return data;
-        }
 
         #endregion
 
         #region Alliance
+        public void StoreAlliance(AllianceDto? alliance)
+        {
+            if (alliance == null)
+                return;
+            _cache.Set(GetAllianceCacheKey(alliance.AllianceId), alliance);
+            foreach (var guild in alliance.Guilds)
+            {
+                StoreGuild(guild);
+            }
+        }
+        public AllianceDto? GetAlliance(int allianceId)
+        {
+            var cacheKey = GetGuildCacheKey(allianceId);
+            return _cache.GetOrCreate<AllianceDto>(cacheKey, e =>
+            {
+                return _transport.GetAlliance(allianceId).Model;
+            });
+        }
         public async Task AllianceBroadcastPlayerInfo(Player chr)
         {
             await _transport.AllianceBroadcastPlayerInfo(new AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });

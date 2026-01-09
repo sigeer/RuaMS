@@ -10,6 +10,10 @@ namespace Application.Shared.Message
         InvokeSetGmLevel,
         BanPlayer,
         Unban,
+
+        Jail,
+        Unjail,
+
         InvokeAutoBanIgnore,
         InvokeMonitor ,
         InvokeNoteMessage ,

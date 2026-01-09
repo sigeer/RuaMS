@@ -19,6 +19,7 @@ using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using InvitationProto;
 using ItemProto;
+using JailProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -778,6 +779,16 @@ namespace Application.Core.ServerTransports
         public async Task TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit)
         {
             await InternalSession.SendAsync(ChannelSendCode.TakeDueyPackageCallback);
+        }
+
+        public async Task JailPlayer(CreateJailRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.Jail, request);
+        }
+
+        public async Task UnjailPlayer(CreateUnjailRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.Unjail, request);
         }
     }
 }

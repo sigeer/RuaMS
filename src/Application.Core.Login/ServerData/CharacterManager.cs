@@ -13,6 +13,7 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using JailProto;
 using MessageProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -127,7 +128,7 @@ namespace Application.Core.Login.Datas
                         _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
                     }
                 }
-                _dataStorage.SetCharacter(origin);
+                _dataStorage.StoreCharacter(origin);
 
                 if (oldLevel != origin.Character.Level)
                 {
@@ -640,6 +641,53 @@ namespace Application.Core.Login.Datas
             }
 
             return new NameChangeResponse();
+        }
+
+        public async Task JailPlayer(CreateJailRequest request)
+        {
+            var res = new CreateJailResponse { Request = request };
+            var targetChr = FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+            {
+                res.Code = 1;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId]);
+                return;
+            }
+
+            if (targetChr.Character.Jailexpire < _masterServer.getCurrentTime())
+            {
+                targetChr.Character.Jailexpire = _masterServer.getCurrentTime() + request.Minutes * 60000;
+            }
+            else
+            {
+                targetChr.Character.Jailexpire += request.Minutes * 60000;
+                res.IsExtend = true;
+            }
+            res.TargetId = targetChr.Character.Id;
+            await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId, res.TargetId]);
+        }
+
+        public async Task UnjailPlayer(CreateUnjailRequest request)
+        {
+            var res = new CreateUnjailResponse { Request = request };
+            var targetChr = FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+            {
+                res.Code = 1;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId]);
+                return;
+            }
+
+            if (targetChr.Character.Jailexpire < _masterServer.getCurrentTime())
+            {
+                res.Code = 2;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId]);
+                return;
+            }
+
+            targetChr.Character.Jailexpire = 0;
+            res.TargetId = targetChr.Character.Id;
+            await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId, res.TargetId]);
         }
     }
 }

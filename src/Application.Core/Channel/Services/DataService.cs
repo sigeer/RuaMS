@@ -260,8 +260,6 @@ namespace Application.Core.Channel.Services
             }
 
             player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.BuddyList));
-            player.SetGuildSnapshot(o.Guild);
-            player.SetAllianceSnapshot(o.Alliance);
             player.UpdateLocalStats(true);
             return player;
         }
@@ -422,18 +420,22 @@ namespace Application.Core.Channel.Services
                 chr.setLoginTime(_server.GetCurrentTimeDateTimeOffSet());
             }
 
-            if (o.Guild != null)
+            var guild = chr.GetGuild();
+            if (guild != null)
             {
-                chr.sendPacket(GuildPackets.ShowGuildInfo(o.Guild));
+                chr.sendPacket(GuildPackets.ShowGuildInfo(guild));
             }
 
-            if (o.Alliance != null)
+            var alliance = chr.GetAlliance();
+            if (alliance != null)
             {
-                chr.sendPacket(GuildPackets.UpdateAllianceInfo(o.Alliance));
-                chr.sendPacket(GuildPackets.allianceNotice(o.Alliance.AllianceId, o.Alliance.Notice));
+                chr.sendPacket(GuildPackets.UpdateAllianceInfo(alliance));
+                chr.sendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.Notice));
             }
 
             _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
+
+            chr.CheckJail();
         }
 
         //public PlayerSaveDto DeserializeCashShop(Player player)

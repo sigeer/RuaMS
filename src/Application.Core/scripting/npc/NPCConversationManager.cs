@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using AllianceProto;
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
@@ -30,6 +31,7 @@ using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Events;
+using GuildProto;
 using server;
 using server.expeditions;
 using server.partyquest;
@@ -496,31 +498,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return reward;
     }
 
-    public void upgradeAlliance()
-    {
-        _ = c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
-    }
-
-    public void disbandAlliance(IChannelClient c, int allianceId)
-    {
-        _ = c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
-    }
-
-    public bool canBeUsedAllianceName(string name)
-    {
-        return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
-    }
-
-    public void CreateAllianceAysnc(string name, int cost)
-    {
-        _ = c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name, cost);
-    }
-
-    public int getAllianceCapacity()
-    {
-        return getPlayer().AllianceSnapshot?.Capacity ?? 0;
-    }
-
     public RemoteHiredMerchantData LoadFredrickRegistry()
     {
         return c.CurrentServerContainer.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
@@ -971,10 +948,38 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return ItemInformationProvider.getInstance().getCardTierSize();
     }
 
-    #region Guild Operation
+    #region Guild/Alliance Operation
+    public GuildDto? GetGuild() => getPlayer().GetGuild();
+    public AllianceDto? GetAlliance() => getPlayer().GetAlliance();
+
+    public void upgradeAlliance()
+    {
+        _ = c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
+    }
+
+    public void disbandAlliance(IChannelClient c, int allianceId)
+    {
+        _ = c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
+    }
+
+    public bool canBeUsedAllianceName(string name)
+    {
+        return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
+    }
+
+    public void CreateAllianceAysnc(string name, int cost)
+    {
+        _ = c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name, cost);
+    }
+
+    public int getAllianceCapacity()
+    {
+        return getPlayer().GetAlliance()?.Capacity ?? 0;
+    }
+
     public void increaseGuildCapacity()
     {
-        var guild = getPlayer().getGuild();
+        var guild = GetGuild();
         if (guild == null)
             return;
 

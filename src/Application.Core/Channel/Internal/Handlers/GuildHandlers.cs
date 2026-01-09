@@ -77,7 +77,6 @@ namespace Application.Core.Channel.Internal.Handlers
                     var chr = _server.FindPlayerById(member.Id);
                     if (chr != null)
                     {
-                        chr.SetGuildSnapshot(res.GuildDto);
                         if (res.GuildDto.Leader == chr.Id)
                         {
                             chr.GuildRank = 1;
@@ -95,6 +94,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     }
                 }
 
+                _server.GuildManager.StoreGuild(res.GuildDto);
                 return Task.CompletedTask;
             }
 
@@ -121,10 +121,7 @@ namespace Application.Core.Channel.Internal.Handlers
                             {
                                 chr.sendPacket(GuildPackets.guildMemberOnline(res.GuildId, res.MemberId, res.MemberChanel > 0));
                             }
-                            else
-                            {
-                                chr.sendPacket(GuildPackets.allianceMemberOnline(res.AllianceId, res.GuildId, res.MemberId, res.MemberChanel > 0));
-                            }
+                            chr.sendPacket(GuildPackets.allianceMemberOnline(res.AllianceId, res.GuildId, res.MemberId, res.MemberChanel > 0));
                         }
                     }
                 }
@@ -174,6 +171,15 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.sendPacket(GuildPackets.updateAllianceJobLevel(res.AllianceId, res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
                     }
                 }
+                if (res.AllianceId > 0)
+                {
+                    _server.GuildManager.ClearAllianceCache(res.AllianceId);
+                }
+                else
+                {
+                    _server.GuildManager.ClearGuildCache(res.GuildId);
+                }
+
                 return Task.CompletedTask;
             }
 
@@ -319,7 +325,6 @@ namespace Application.Core.Channel.Internal.Handlers
                         if (chr.GuildId == res.GuildId)
                         {
                             chr.sendPacket(GuildPackets.guildEmblemChange(res.GuildId, (short)res.Request.LogoBg, (byte)res.Request.LogoBgColor, (short)res.Request.Logo, (byte)res.Request.LogoColor));
-                            chr.SetGuildSnapshot(guildDto);
                         }
 
                         if (res.AllianceDto != null)
@@ -331,8 +336,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
-                if (res.AllianceDto != null)
-                    _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -434,7 +438,6 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         if (chr.Id == newMember.Id)
                         {
-                            chr.SetGuildSnapshot(res.GuildDto);
                             chr.GuildRank = newMember.GuildRank;
 
                             chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
@@ -464,9 +467,8 @@ namespace Application.Core.Channel.Internal.Handlers
                     }
                 }
 
-                _server.GuildManager.SetGuild(res.GuildDto);
-                if (res.AllianceDto != null)
-                    _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreGuild(res.GuildDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -500,8 +502,6 @@ namespace Application.Core.Channel.Internal.Handlers
 
                 if (masterChr != null)
                 {
-                    masterChr.RemoveGuildSnapshot();
-
                     masterChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                     masterChr.sendPacket(GuildPackets.ShowGuildInfo(null));
 
@@ -528,9 +528,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     }
                 }
+
                 _server.GuildManager.ClearGuildCache(res.GuildId);
-                if (res.AllianceDto != null)
-                    _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -563,8 +563,6 @@ namespace Application.Core.Channel.Internal.Handlers
                 var targetChr = _server.FindPlayerById(res.Request.TargetPlayerId);
                 if (targetChr != null)
                 {
-                    targetChr.RemoveGuildSnapshot();
-
                     targetChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                     targetChr.sendPacket(GuildPackets.ShowGuildInfo(null));
 
@@ -593,8 +591,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
-                if (res.AllianceDto != null)
-                    _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
                 return Task.CompletedTask;
             }
 
@@ -617,8 +614,6 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         if (chr.GuildId == res.GuildId)
                         {
-                            chr.RemoveGuildSnapshot();
-
                             chr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                             chr.sendPacket(GuildPackets.ShowGuildInfo(null));
 
@@ -636,8 +631,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
-                if (res.AllianceDto != null)
-                    _server.GuildManager.SetAlliance(res.AllianceDto);
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
 
                 return Task.CompletedTask;
             }

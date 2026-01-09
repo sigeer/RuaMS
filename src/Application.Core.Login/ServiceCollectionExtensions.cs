@@ -182,7 +182,7 @@ namespace Application.Core.Login
             services.AddSingleton<AbstractMasterModule, MasterModule>();
             services.AddServices();
             services.AddStorage();
-            services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
             services.AddScheduleTask();
 
 #if !IsStandalone

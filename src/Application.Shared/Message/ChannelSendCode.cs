@@ -11,6 +11,7 @@ namespace Application.Shared.Message
         SyncPlayer,
         BatchSyncPlayer,
         CompleteLogin,
+
         MultiChat,
         CreateCharacterResponse,
         ToggleCoupon,
@@ -25,6 +26,10 @@ namespace Application.Shared.Message
         BroadcastPacket,
         Ban,
         Unban,
+
+        Jail,
+        Unjail,
+
         SetGmLevel,
         WarpPlayer,
         SummonPlayer,

@@ -36,7 +36,8 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Party, src => src.Ignore())
                 .ForMember(dest => dest.GuildId, src => src.Ignore())
                 .ForMember(dest => dest.GuildRank, src => src.Ignore())
-                .ForMember(dest => dest.AllianceRank, src => src.Ignore());
+                .ForMember(dest => dest.AllianceRank, src => src.Ignore())
+                .ForMember(dest => dest.Jailexpire, src => src.Ignore());
 
             CreateMap<FameLogModel, Dto.FameLogRecordDto>().ReverseMap();
             CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();
@@ -50,7 +51,8 @@ namespace Application.Core.Login.Mappers
                 .ReverseMap();
             CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
-            CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
+            CreateMap<AccountCtrl, Dto.AccountCtrlDto>()
+                .ReverseMap();
             CreateMap<AccountGame, Dto.AccountGameDto>().ReverseMap();
             CreateMap<StorageModel, Dto.StorageDto>().ReverseMap();
 

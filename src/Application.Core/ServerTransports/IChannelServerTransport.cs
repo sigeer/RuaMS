@@ -14,6 +14,7 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using ItemProto;
+using JailProto;
 using MessageProto;
 using Polly;
 using SyncProto;
@@ -220,5 +221,8 @@ namespace Application.Core.ServerTransports
         Task GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request);
         Task TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit);
         #endregion
+
+        Task JailPlayer(CreateJailRequest request);
+        Task UnjailPlayer(CreateUnjailRequest request);
     }
 }

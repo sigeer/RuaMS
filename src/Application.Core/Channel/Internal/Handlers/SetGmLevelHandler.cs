@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
                 else
                 {
-                    masterChr.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), res.Request.TargetName);
+                    masterChr.Yellow(nameof(ClientMessage.PlayerNotFound), res.Request.TargetName);
                 }
             }
 

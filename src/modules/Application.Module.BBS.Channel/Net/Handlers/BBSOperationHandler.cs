@@ -46,7 +46,7 @@ public class BBSOperationHandler : ChannelHandlerBase
     {
         if (c.OnlinedCharacter.getGuildId() < 1)
         {
-            return;
+            return Task.CompletedTask;
         }
         byte mode = p.readByte();
         int localthreadid = 0;
@@ -66,12 +66,12 @@ public class BBSOperationHandler : ChannelHandlerBase
                 {
                     if (!c.OnlinedCharacter.haveItemWithId(5290000 + icon - 0x64, false))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                 }
                 else if (icon < 0 || icon > 3)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
                 if (!bEdit)
                 {
@@ -108,6 +108,7 @@ public class BBSOperationHandler : ChannelHandlerBase
                 //Console.WriteLine("Unhandled BBS mode: " + slea.ToString());
                 break;
         }
+        return Task.CompletedTask;
     }
 
 

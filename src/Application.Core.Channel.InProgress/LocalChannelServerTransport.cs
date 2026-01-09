@@ -18,6 +18,7 @@ using DueyDto;
 using Google.Protobuf;
 using GuildProto;
 using ItemProto;
+using JailProto;
 using LifeProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
@@ -803,6 +804,16 @@ namespace Application.Core.Channel.InProgress
         public async Task TakeDueyPackageCommit(TakeDueyPackageCommit request)
         {
             await _server.DueyManager.TakeDueyPackageCommit(request);
+        }
+
+        public async Task JailPlayer(CreateJailRequest request)
+        {
+            await _server.CharacterManager.JailPlayer(request);
+        }
+
+        public async Task UnjailPlayer(CreateUnjailRequest request)
+        {
+            await _server.CharacterManager.UnjailPlayer(request);
         }
     }
 }

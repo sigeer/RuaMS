@@ -1794,27 +1794,20 @@ public class PacketCreator
         p.writeInt(chr.getId());
         p.writeByte(chr.getLevel()); //v83
         p.writeString(chr.getName());
-        if (chr.getGuildId() < 1)
+
+        var gs = chr.GetGuild();
+        if (gs != null)
         {
-            p.writeString("");
-            p.skip(6);
+            p.writeString(gs.Name);
+            p.writeShort(gs.LogoBg);
+            p.writeByte(gs.LogoBgColor);
+            p.writeShort(gs.Logo);
+            p.writeByte(gs.LogoColor);
         }
         else
         {
-            var gs = chr.GuildSnapshot;
-            if (gs != null)
-            {
-                p.writeString(gs.GuildName);
-                p.writeShort(gs.LogoBg);
-                p.writeByte(gs.LogoBgColor);
-                p.writeShort(gs.Logo);
-                p.writeByte(gs.LogoColor);
-            }
-            else
-            {
-                p.writeString("");
-                p.skip(6);
-            }
+            p.writeString("");
+            p.skip(6);
         }
 
         writeForeignBuffs(p, chr);
@@ -2689,8 +2682,8 @@ public class PacketCreator
         p.writeShort(chr.getJob().getId());
         p.writeShort(chr.getFame());
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
-        p.writeString(chr.GuildSnapshot?.GuildName ?? "");
-        p.writeString(chr.AllianceSnapshot?.Name ?? "");  // does not seem to work
+        p.writeString(chr.GetGuild()?.Name ?? "");
+        p.writeString(chr.GetAlliance()?.Name ?? "");  // does not seem to work
         p.writeByte(0); // pMedalInfo, thanks to Arnah (Vertisy)
 
         var pets = chr.getPets();

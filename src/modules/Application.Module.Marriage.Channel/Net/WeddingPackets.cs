@@ -157,12 +157,12 @@ public class WeddingPackets : PacketCreator
             p.writeInt(30000); // v20 = *(_DWORD *)(v13 + 2192) -- new groom marriage ID??
             p.writeInt(30000); // v20 = *(_DWORD *)(v13 + 2192) -- new bride marriage ID??
             p.writeString(guest.getName());
-            var guestGuild = guest.getGuild();
-            p.writeString(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.Name : "");
-            p.writeShort(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoBg : 0);
-            p.writeByte(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoBgColor : 0);
-            p.writeShort(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.Logo : 0);
-            p.writeByte(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoColor : 0);
+            var guestGuild = guest.GetGuild();
+            p.writeString(guestGuild?.Name ?? "");
+            p.writeShort(guestGuild?.LogoBg ?? 0);
+            p.writeByte(guestGuild?.LogoBgColor ?? 0);
+            p.writeShort(guestGuild?.Logo ?? 0);
+            p.writeByte(guestGuild?.LogoColor ?? 0);
             p.writeShort(guest.getPosition().X); // v18 = *(_DWORD *)(v13 + 3204);
             p.writeShort(guest.getPosition().Y); // v20 = *(_DWORD *)(v13 + 3208);
             // Begin Screenshot Encoding

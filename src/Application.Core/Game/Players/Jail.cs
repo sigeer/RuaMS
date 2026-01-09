@@ -24,6 +24,24 @@ namespace Application.Core.Game.Players
             {
                 setFutureJailExpiration(timeLeft + time);
             }
+
+            if (getMapId() != MapId.JAIL)
+            {
+                saveLocationOnWarp();
+                changeMap(MapId.JAIL);
+            }
+        }
+
+        public void CheckJail()
+        {
+            if (Jailexpire > Client.CurrentServerContainer.getCurrentTime())
+            {
+                if (getMapId() != MapId.JAIL)
+                {
+                    saveLocationOnWarp();
+                    changeMap(MapId.JAIL);
+                }
+            }
         }
 
         public void removeJailExpirationTime()

@@ -1,9 +1,12 @@
+using Application.Core.Game.Players;
 using Application.Resources.Messages;
 using Application.Shared.Internal;
 using Application.Shared.Message;
 using Config;
 using Dto;
 using Google.Protobuf;
+using JailProto;
+using System.Numerics;
 using SystemProto;
 using tools;
 
@@ -196,6 +199,91 @@ namespace Application.Core.Channel.Internal.Handlers
             }
 
             protected override UnbanResponse Parse(ByteString data) => UnbanResponse.Parser.ParseFrom(data);
+        }
+
+        public class Jail : InternalSessionChannelHandler<CreateJailResponse>
+        {
+            public Jail(WorldChannelServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.Jail;
+
+            protected override Task HandleAsync(CreateJailResponse res, CancellationToken cancellationToken = default)
+            {
+                var masterChr = _server.FindPlayerById(res.Request.MasterId);
+                if (res.Code != 0)
+                {
+                    if (masterChr != null)
+                    {
+                        masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
+                    }
+                    return Task.CompletedTask;
+                }
+
+                var targetChr = _server.FindPlayerById(res.TargetId);
+                if (targetChr != null)
+                {
+                    targetChr.addJailExpirationTime(res.Request.Minutes * 60000);
+                }
+
+                if (masterChr!= null)
+                {
+                    if (res.IsExtend)
+                        masterChr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
+                    else
+                        masterChr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
+                }
+
+                return Task.CompletedTask;
+            }
+
+            protected override CreateJailResponse Parse(ByteString data) => CreateJailResponse.Parser.ParseFrom(data);
+        }
+
+        public class Unjail : InternalSessionChannelHandler<CreateUnjailResponse>
+        {
+            public Unjail(WorldChannelServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.Unjail;
+
+            protected override Task HandleAsync(CreateUnjailResponse res, CancellationToken cancellationToken = default)
+            {
+                var masterChr = _server.FindPlayerById(res.Request.MasterId);
+                if (res.Code != 0)
+                {
+                    if (masterChr != null)
+                    {
+                        if (res.Code == 1)
+                        {
+                            masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
+                        }
+                        else if (res.Code == 2)
+                        {
+                            masterChr.Pink(nameof(ClientMessage.UnjailCommand_AlreadyFree));
+                        }   
+                    }
+                    return Task.CompletedTask;
+                }
+
+                var targetChr = _server.FindPlayerById(res.TargetId);
+                if (targetChr != null)
+                {
+                    targetChr.removeJailExpirationTime();
+                    targetChr.Pink(nameof(ClientMessage.Unjail_Notify));
+                }
+
+                if (masterChr != null)
+                {
+                    masterChr.Yellow(nameof(ClientMessage.Command_Done), masterChr.getLastCommandMessage());
+                }
+
+                return Task.CompletedTask;
+            }
+
+            protected override CreateUnjailResponse Parse(ByteString data) => CreateUnjailResponse.Parser.ParseFrom(data);
         }
     }
 }

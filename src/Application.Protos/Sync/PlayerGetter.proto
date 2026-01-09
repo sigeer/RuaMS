@@ -64,8 +64,6 @@ message PlayerGetterDto {
   repeated Dto.RemoteCallDto remoteCallList = 23;
   repeated PlayerTimerQuestDto runningTimerQuests = 24;
   Dto.StorageDto gachaponStorage = 25;
-  GuildProto.GuildDto guild = 26;
-  AllianceProto.AllianceDto alliance = 27;
 }
 
 message GetPlayerByLoginRequest {

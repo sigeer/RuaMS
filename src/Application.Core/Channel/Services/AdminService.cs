@@ -280,5 +280,15 @@ namespace Application.Core.Channel.Services
         {
             return _server.TimerManager.TaskScheduler.Keys.OrderBy(x => x).ToList();
         }
+
+        public async Task JailPlayer(Player chr, string targetName, int minutes)
+        {
+            await _transport.JailPlayer(new JailProto.CreateJailRequest { MasterId = chr.Id, TargetName = targetName, Minutes = minutes });
+        }
+
+        public async Task UnjailPlayer(Player chr, string targetName)
+        {
+            await _transport.UnjailPlayer(new JailProto.CreateUnjailRequest { MasterId = chr.Id, TargetName = targetName });
+        }
     }
 }

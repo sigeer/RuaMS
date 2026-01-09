@@ -4,6 +4,7 @@ using Config;
 using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using JailProto;
 using MessageProto;
 using SystemProto;
 
@@ -180,6 +181,34 @@ namespace Application.Core.Login.Internal.Handlers
             {
                 await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleRemoveTimer);
             }
+        }
+
+        internal class JailHandler : InternalSessionMasterHandler<CreateJailRequest>
+        {
+            public JailHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => (int)ChannelSendCode.Jail;
+
+            protected override async Task HandleAsync(CreateJailRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.CharacterManager.JailPlayer(message);
+            }
+            protected override CreateJailRequest Parse(ByteString content) => CreateJailRequest.Parser.ParseFrom(content);
+        }
+
+        internal class UnjailHandler : InternalSessionMasterHandler<CreateUnjailRequest>
+        {
+            public UnjailHandler(MasterServer server) : base(server)
+            { }
+
+            public override int MessageId => (int)ChannelSendCode.Unjail;
+
+            protected override async Task HandleAsync(CreateUnjailRequest message, CancellationToken cancellationToken = default)
+            {
+                await _server.CharacterManager.UnjailPlayer(message);
+            }
+            protected override CreateUnjailRequest Parse(ByteString content) => CreateUnjailRequest.Parser.ParseFrom(content);
         }
     }
 }

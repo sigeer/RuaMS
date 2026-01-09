@@ -6,11 +6,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public PlayerGuildSnapshot? GuildSnapshot { get; set; }
-        public PlayerAllianceSnapshot? AllianceSnapshot { get; set; }
-
-        public PlayerAllianceSnapshot? getGuild() => AllianceSnapshot;
-
         public int getGuildId()
         {
             return GuildId;
@@ -21,54 +16,21 @@ namespace Application.Core.Game.Players
             return GuildRank;
         }
 
-        public void SetGuildSnapshot(GuildDto? guild)
+        public GuildDto? GetGuild()
         {
-            if (guild != null)
+            if (GuildId <= 0)
             {
-                if (GuildSnapshot == null)
-                {
-                    GuildSnapshot = new PlayerGuildSnapshot(guild.GuildId, guild.Name, guild.AllianceId, guild.Logo, guild.LogoColor, guild.LogoBg, guild.LogoBgColor);
-                }
-                else
-                {
-                    GuildSnapshot.GuildId = guild.GuildId;
-                    GuildSnapshot.GuildName = guild.Name;
-                    GuildSnapshot.Logo = guild.Logo;
-                    GuildSnapshot.LogoColor = guild.LogoColor;
-                    GuildSnapshot.LogoBg = guild.LogoBg;
-                    GuildSnapshot.LogoBgColor = guild.LogoBgColor;
-                }
+                return null;
             }
+            return Client.CurrentServerContainer.GuildManager.GetGuild(GuildId);
         }
 
-        public void RemoveGuildSnapshot()
+        public AllianceDto? GetAlliance()
         {
-            GuildSnapshot = null;
-            GuildRank = 5;
-            RemoveAllianceSnapshot();
-        }
-
-        public void SetAllianceSnapshot(AllianceDto? alliance)
-        {
-            if (alliance != null)
-            {
-                if (AllianceSnapshot == null)
-                {
-                    AllianceSnapshot = new PlayerAllianceSnapshot(alliance.AllianceId, alliance.Name, alliance.Capacity);
-                }
-                else
-                {
-                    AllianceSnapshot.Id = alliance.AllianceId;
-                    AllianceSnapshot.Name = alliance.Name;
-                    AllianceSnapshot.Capacity = alliance.Capacity;
-                }
-            }
-        }
-
-        public void RemoveAllianceSnapshot()
-        {
-            AllianceSnapshot = null;
-            AllianceRank = 5;
+            var guild = GetGuild();
+            if (guild == null)
+                return null;
+            return Client.CurrentServerContainer.GuildManager.GetAlliance(guild.AllianceId);
         }
     }
 }

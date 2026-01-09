@@ -25,7 +25,7 @@ namespace Application.Module.Marriage.Channel
             }).AddInterceptor<WithServerNameInterceptor>();
 
             services.AddAutoMapper(typeof(Mapper));
-            services.TryAddSingleton<IModuleChannelServerTransport, DefaultChannelServerTransport>();
+            services.TryAddSingleton<IModuleChannelServerTransport, DefaultModuleChannelServerTransport>();
 
             services.AddSingleton<MarriageManager>();
             services.AddSingleton<WeddingManager>();

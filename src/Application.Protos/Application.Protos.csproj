@@ -19,6 +19,9 @@
 			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Base\IPEndPoint.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Jail.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Lives\DBLife.proto" GrpcServices="None" />
 		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
