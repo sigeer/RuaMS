@@ -20,6 +20,7 @@ import "Rank/RankCharacter.proto";
 import "Item/HiredMerchant.proto";
 import "Config/MonitorConfig.proto";
 import "Lives/DBLife.proto";
+import "Lives/PlayerNPC.proto";
 
 
 package ServiceProto;
@@ -54,6 +55,13 @@ service GameService {
 
 	rpc GetAllPLife(LifeProto.GetAllPLifeRequest) returns(LifeProto.GetAllPLifeResponse);
 	rpc GetLifeByMapId(LifeProto.GetPLifeByMapIdRequest) returns(LifeProto.GetPLifeByMapIdResponse);
+
+	rpc CreatePlayerNPCCheck(LifeProto.CreatePlayerNPCPreRequest)returns(LifeProto.CreatePlayerNPCPreResponse);
+	rpc CreatePlayerNPC(LifeProto.CreatePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc RemoveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
+	rpc RemoveByName(LifeProto.RemovePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc GetMapPlayerNPC(LifeProto.GetMapPlayerNPCListRequest) returns(LifeProto.GetMapPlayerNPCListResponse);
+	rpc GetAllPlayerNPC(google.protobuf.Empty) returns(LifeProto.GetAllPlayerNPCDataResponse);
 }
 
 message CheckCharacterNameRequest {

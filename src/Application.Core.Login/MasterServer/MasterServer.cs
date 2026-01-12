@@ -139,6 +139,8 @@ namespace Application.Core.Login
 
         readonly Lazy<DueyManager> _dueyManager;
         public DueyManager DueyManager => _dueyManager.Value;
+        readonly Lazy<IPlayerNPCManager> _playerNPCManager;
+        public IPlayerNPCManager PlayerNPCManager => _playerNPCManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -213,6 +215,7 @@ namespace Application.Core.Login
             _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
             _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
+            _playerNPCManager = new(() => ServiceProvider.GetRequiredService<IPlayerNPCManager>());
 
             _messageDispatcher = new(() => new(this));
         }
@@ -360,27 +363,27 @@ namespace Application.Core.Login
                 {
                     await module.InitializeAsync();
                 }
+
+                _logger.LogInformation(SystemMessage.Server_Start, ServerName);
+                await NettyServer.Start();
+                _logger.LogInformation(SystemMessage.Server_StartSuccess, ServerName, "成功", Port);
+
+                StartupTime = DateTimeOffset.UtcNow;
+                ForceUpdateServerTime();
+
+                await RegisterTask();
+
+                IsRunning = true;
+                _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+                    ServerName,
+                    DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+                    DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[{ServerName}] 启动{Status}", ServerName, "失败");
                 return;
             }
-
-            _logger.LogInformation(SystemMessage.Server_Start, ServerName);
-            await NettyServer.Start();
-            _logger.LogInformation(SystemMessage.Server_StartSuccess, ServerName, "成功", Port);
-
-            StartupTime = DateTimeOffset.UtcNow;
-            ForceUpdateServerTime();
-
-            await RegisterTask();
-
-            IsRunning = true;
-            _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-                ServerName,
-                DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
-                DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
 

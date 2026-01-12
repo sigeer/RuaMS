@@ -1,13 +1,10 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
-using Application.Core.ServerTransports;
 using Application.Module.PlayerNPC.Channel.Commands.Gm4;
 using Application.Module.PlayerNPC.Channel.Commands.Gm6;
-using Application.Module.PlayerNPC.Channel.Models;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Servers;
-using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,12 +15,6 @@ namespace Application.Module.PlayerNPC.Channel
     {
         public static IServiceCollection AddPlayerNPCChannel(this IServiceCollection services)
         {
-            services.AddGrpcClient<PlayerNPCProto.ChannelService.ChannelServiceClient>("PlayerNpcGrpcClient", (sp, o) =>
-            {
-                o.Address = new(AppSettingKeys.Grpc_Master);
-            }).AddInterceptor<WithServerNameInterceptor>();
-
-            services.AddAutoMapper(typeof(Mapper));
             services.AddSingleton<PlayerNPCChannelModule>();
             services.AddSingleton<AbstractChannelModule, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());
             services.AddSingleton<IPlayerNPCService, PlayerNPCChannelModule>(sp => sp.GetRequiredService<PlayerNPCChannelModule>());

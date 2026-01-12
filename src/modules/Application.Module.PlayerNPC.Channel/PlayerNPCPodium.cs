@@ -19,13 +19,11 @@
 */
 
 
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Module.PlayerNPC.Channel.Models;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.MapObjects;
-using Application.Utility.Compatible;
 using Application.Utility.Configs;
-using Microsoft.Extensions.Options;
 using Serilog;
 using System.Drawing;
 

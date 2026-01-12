@@ -131,5 +131,40 @@ namespace Application.Core.Login.Servers
         {
             return Task.FromResult(_server.CDKManager.UseCdk(request));
         }
+
+        #region PlayerNPC
+        public override Task<Empty> CreatePlayerNPC(CreatePlayerNPCRequest request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.Create(request);
+            return Task.FromResult(new Empty());
+        }
+
+        public override Task<CreatePlayerNPCPreResponse> CreatePlayerNPCCheck(CreatePlayerNPCPreRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.PreCreate(request));
+        }
+
+        public override Task<GetMapPlayerNPCListResponse> GetMapPlayerNPC(GetMapPlayerNPCListRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.GetMapData(request));
+        }
+
+        public override Task<GetAllPlayerNPCDataResponse> GetAllPlayerNPC(Empty request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.GetAllData());
+        }
+
+        public override Task<Empty> RemoveAll(Empty request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.RemoveAll();
+            return Task.FromResult(new Empty());
+        }
+
+        public override Task<Empty> RemoveByName(RemovePlayerNPCRequest request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.Remove(request);
+            return Task.FromResult(new Empty());
+        }
+        #endregion
     }
 }

@@ -1,13 +1,12 @@
+using Application.Core.Login.Mappers.Resolvers;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
 using Application.EF.Entities;
 using Application.Shared.Items;
-using Application.Shared.NewYear;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
-using pplication.Core.Login.Mappers;
 
 namespace Application.Core.Login.Mappers
 {
@@ -84,7 +83,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
             CreateMap<CharacterLiveObject, SyncProto.PlayerGetterDto>()
-                .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
+                .ForMember(dest => dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
             CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
             CreateMap<CharacterLiveObject, TeamProto.TeamMemberDto>()
@@ -123,7 +122,7 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
 
-            CreateMap<ItemModel, ItemModel>(); 
+            CreateMap<ItemModel, ItemModel>();
             CreateMap<PlayerShopItemModel, ItemModel>()
                 .IncludeMembers(src => src.Item)
                 .ForMember(dest => dest.Quantity, src => src.MapFrom(x => x.Bundles * x.Item.Quantity));

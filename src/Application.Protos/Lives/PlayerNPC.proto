@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-import "Protos/PlayerNPCPositioner.proto";
-
-package PlayerNPCProto;
+package LifeProto;
 
 message PlayerNPCDto {
 	string name = 1;

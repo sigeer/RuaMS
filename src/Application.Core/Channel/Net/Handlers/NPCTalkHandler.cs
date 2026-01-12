@@ -108,15 +108,15 @@ public class NPCTalkHandler : ChannelHandlerBase
                 }
             }
         }
-        else if (obj.getType() == MapObjectType.PLAYER_NPC)
+        else if (obj is PlayerNpc playerNpc)
         {
-            if (obj.GetSourceId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + obj.GetSourceId()))
+            if (playerNpc.GetSourceId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + playerNpc.GetSourceId()))
             {
-                c.CurrentServer.NPCScriptManager.start(c, obj.GetSourceId(), "rank_user", null);
+                c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), "rank_user", null);
             }
             else
             {
-                c.CurrentServer.NPCScriptManager.start(c, obj.GetSourceId(), null);
+                c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), null);
             }
         }
     }

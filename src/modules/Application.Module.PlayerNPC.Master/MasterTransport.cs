@@ -1,10 +1,10 @@
 using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
-using PlayerNPCProto;
+using LifeProto;
 
 namespace Application.Module.PlayerNPC.Master
 {
-    public class MasterTransport: MasterServerTransportBase
+    public class MasterTransport : MasterServerTransportBase
     {
         public MasterTransport(MasterServer masterServer) : base(masterServer)
         {

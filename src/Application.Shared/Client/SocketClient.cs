@@ -1,14 +1,12 @@
 using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Servers;
-using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 
 namespace Application.Shared.Client
 {
@@ -29,6 +27,7 @@ namespace Application.Shared.Client
         public bool IsActive { get; protected set; }
 
         protected string _clientInfo;
+        protected PeriodicTimer packetTick = new PeriodicTimer(TimeSpan.FromMilliseconds(150));
         protected SocketClient(long sessionId, IChannel nettyChannel, ISocketServer server, ILogger<ISocketClient> log)
         {
             SessionId = sessionId;
@@ -42,9 +41,7 @@ namespace Application.Shared.Client
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
             _ = Task.Run(async () =>
             {
-                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(150));
-
-                while (await timer.WaitForNextTickAsync())
+                while (await packetTick.WaitForNextTickAsync())
                 {
                     if (packetChannel.Reader.Count == 0)
                         continue;
@@ -67,7 +64,7 @@ namespace Application.Shared.Client
             return _clientInfo;
         }
 
-        Lock lockObj = new ();
+        Lock lockObj = new();
         private Semaphore actionsSemaphore = new Semaphore(7, 7);
         public void lockClient()
         {
@@ -226,6 +223,7 @@ namespace Application.Shared.Client
         public virtual void Dispose()
         {
             this.packetChannel.Writer.TryComplete();
+            this.packetTick.Dispose();
         }
 
         public void PongReceived()

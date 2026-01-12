@@ -1,19 +1,20 @@
+using Application.Core.Login.Models;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Module.PlayerNPC.Master.Models;
 using Application.Shared.Constants.Npc;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
+using LifeProto;
 using Microsoft.EntityFrameworkCore;
-using PlayerNPCProto;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
 namespace Application.Module.PlayerNPC.Master
 {
-    public class PlayerNPCManager : StorageBase<int, PlayerNpcModel>
+    public class PlayerNPCManager : StorageBase<int, PlayerNpcModel>, IPlayerNPCManager
     {
         readonly MasterTransport _transport;
         readonly IMapper _mapper;
@@ -112,10 +113,10 @@ namespace Application.Module.PlayerNPC.Master
 
             var dataFromDB = _mapper.Map<List<PlayerNpcModel>>(dbList);
 
-            var allData = QueryWithDirty(dataFromDB, x => x.Scriptid >= request.BranchSidStart && x.Scriptid < request.BranchSidEnd);
+            var allData = QueryWithDirty(dataFromDB, x => x.NpcId >= request.BranchSidStart && x.NpcId < request.BranchSidEnd);
 
             var res = new CreatePlayerNPCPreResponse();
-            res.UsedScriptIdList.AddRange(allData.Select(x => x.Scriptid).ToHashSet());
+            res.UsedScriptIdList.AddRange(allData.Select(x => x.NpcId).ToHashSet());
             res.NextPositionData = _fields.GetValueOrDefault(request.MapId, -1);
             res.MapId = request.MapId;
             return res;

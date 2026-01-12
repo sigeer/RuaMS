@@ -1,4 +1,4 @@
-using PlayerNPCProto;
+using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel
 {
@@ -9,6 +9,6 @@ namespace Application.Module.PlayerNPC.Channel
         void RemoveAllPlayerNPC();
         void RemovePlayerNPC(RemovePlayerNPCRequest removePlayerNPCRequest);
         GetMapPlayerNPCListResponse GetMapPlayerNPCList(GetMapPlayerNPCListRequest getMapPlayerNPCListRequest);
-        GetAllPlayerNPCDataResponse GetAllPlayerNPCList(GetAllPlayerNPCDataRequest request);
+        GetAllPlayerNPCDataResponse GetAllPlayerNPCList();
     }
 }

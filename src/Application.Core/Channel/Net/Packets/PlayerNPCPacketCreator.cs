@@ -1,17 +1,15 @@
-using Application.Module.PlayerNPC.Channel.Models;
-using Application.Shared.Net;
-using Application.Utility.Extensions;
+using Application.Core.Game.Life;
 
-namespace Application.Module.PlayerNPC.Channel.Net
+namespace Application.Core.Channel.Net.Packets
 {
-    internal class PlayerNPCPacketCreator
+    public class PlayerNPCPacketCreator
     {
-        public static Packet SpawnPlayerNPC(PlayerNpc npc)
+        public static Packet SpawnPlayerNPCController(PlayerNpc npc)
         {
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_NPC_REQUEST_CONTROLLER);
             p.writeByte(1);
             p.writeInt(npc.getObjectId());
-            p.writeInt(npc.Scriptid);
+            p.writeInt(npc.NpcId);
             p.writeShort(npc.getPosition().X);
             p.writeShort(npc.Cy);
             p.writeByte(npc.Dir);
@@ -25,8 +23,8 @@ namespace Application.Module.PlayerNPC.Channel.Net
         public static Packet GetPlayerNPC(PlayerNpc npc)
         {     // thanks to Arnah
             OutPacket p = OutPacket.create(SendOpcode.IMITATED_NPC_DATA);
-            p.writeByte(0x01);
-            p.writeInt(npc.Scriptid);
+            p.writeByte(1);
+            p.writeInt(npc.NpcId);
             p.writeString(npc.Name);
             p.writeByte(npc.Gender);
             p.writeByte(npc.Skin);

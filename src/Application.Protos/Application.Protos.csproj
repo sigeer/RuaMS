@@ -75,6 +75,8 @@
 		</Protobuf>
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
+		<Protobuf Include="Lives\PlayerNPC.proto" GrpcServices="None" />
+		<Protobuf Include="Lives\PlayerNPCPositioner.proto" GrpcServices="None" />
 		<Protobuf Include="Message\MultiChat.proto" GrpcServices="None" />
 		<Protobuf Include="Message\EarnTitleMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />

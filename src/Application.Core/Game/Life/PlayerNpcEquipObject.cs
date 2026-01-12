@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Module.PlayerNPC.Channel.Models
+namespace Application.Core.Game.Life
 {
     public class PlayerNpcEquipObject
     {

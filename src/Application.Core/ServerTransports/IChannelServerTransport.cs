@@ -15,6 +15,7 @@ using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using ItemProto;
 using JailProto;
+using LifeProto;
 using MessageProto;
 using Polly;
 using SyncProto;

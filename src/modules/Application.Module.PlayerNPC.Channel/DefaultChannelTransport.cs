@@ -1,19 +1,11 @@
-using Application.Core.Channel;
-using Grpc.Net.Client;
-using net.server.services;
-using PlayerNPCProto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel
 {
     public class DefaultChannelTransport : IChannelTransport
     {
-        readonly PlayerNPCProto.ChannelService.ChannelServiceClient _grpcClient;
-        public DefaultChannelTransport(PlayerNPCProto.ChannelService.ChannelServiceClient client)
+        readonly ServiceProto.GameService.GameServiceClient _grpcClient;
+        public DefaultChannelTransport(ServiceProto.GameService.GameServiceClient client)
         {
             _grpcClient = client;
         }
@@ -28,9 +20,9 @@ namespace Application.Module.PlayerNPC.Channel
             return _grpcClient.GetMapPlayerNPC(request);
         }
 
-        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList(GetAllPlayerNPCDataRequest request)
+        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
         {
-            return _grpcClient.GetAllPlayerNPC(request);
+            return _grpcClient.GetAllPlayerNPC(new Google.Protobuf.WellKnownTypes.Empty());
         }
 
         public CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest request)

@@ -4,7 +4,7 @@ using Application.Shared.Constants;
 using AutoMapper;
 using DueyDto;
 
-namespace pplication.Core.Login.Mappers
+namespace Application.Core.Login.Mappers.Resolvers
 {
     internal class DueyPackageValueResolver : IValueResolver<DueyPackageModel, DueyDto.DueyPackageDto, string>
     {

@@ -25,14 +25,14 @@ namespace Application.Module.PlayerNPC.Channel
         public override void Initialize()
         {
             base.Initialize();
-            MessageDispatcher.Register<PlayerNPCProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
-            MessageDispatcher.Register<PlayerNPCProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
-            MessageDispatcher.Register<PlayerNPCProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
+            MessageDispatcher.Register<LifeProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
+            MessageDispatcher.Register<LifeProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
+            MessageDispatcher.Register<LifeProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
 
             _manager.LoadAllData();
         }
 
-        public bool CanSpawn(IMap map, string targetName)
+        public bool CanSpawnHonor(IMap map, string targetName)
         {
             if (_config.PLAYERNPC_AUTODEPLOY)
                 return false;

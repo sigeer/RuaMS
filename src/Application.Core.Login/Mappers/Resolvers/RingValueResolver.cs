@@ -3,7 +3,7 @@ using Application.Shared.Constants;
 using AutoMapper;
 using ItemProto;
 
-namespace Application.Core.Login.Mappers
+namespace Application.Core.Login.Mappers.Resolvers
 {
     public class RingCharacterName1ValueResolver : IValueResolver<RingSourceModel, ItemProto.RingDto, string>
     {

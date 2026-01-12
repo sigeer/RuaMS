@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package PlayerNPCProto;
+package LifeProto;
 
 message GetPositionerRequest {
 	int32 mapId = 1;

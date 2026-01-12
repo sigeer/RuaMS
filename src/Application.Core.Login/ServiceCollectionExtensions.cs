@@ -114,6 +114,8 @@ namespace Application.Core.Login
             services.AddSingleton<DueyManager>();
             services.AddSingleton<IStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
 
+            services.TryAddSingleton<IPlayerNPCManager, DefaultPlayerNPCManager>();
+
             services.AddSingleton<BuddyManager>();
 
             services.AddSingleton<InventoryManager>();

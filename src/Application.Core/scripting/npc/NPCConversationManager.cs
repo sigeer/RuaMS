@@ -285,7 +285,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var chr = getPlayer();
         return chr.getLevel() >= chr.getMaxClassLevel()
                 && !chr.isGM()
-                && c.CurrentServerContainer.PlayerNPCService.CanSpawn(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
+                && c.CurrentServerContainer.PlayerNPCService.CanSpawnHonor(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
     }
 
     public IMapObject? getPlayerNPCByScriptid(int scriptId)

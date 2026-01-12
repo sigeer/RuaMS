@@ -4,7 +4,7 @@ using Application.Shared.Constants;
 using AutoMapper;
 using Dto;
 
-namespace Application.Core.Login.Mappers
+namespace Application.Core.Login.Mappers.Resolvers
 {
     public class BuddyConverter : ITypeConverter<BuddyModel, BuddyProto.BuddyDto>
     {

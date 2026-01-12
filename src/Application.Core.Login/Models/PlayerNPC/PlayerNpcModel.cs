@@ -1,13 +1,8 @@
 using Application.Core.Login.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Application.Module.PlayerNPC.Master.Models
+namespace Application.Core.Login.Models
 {
-    public class PlayerNpcModel: ITrackableEntityKey<int>
+    public class PlayerNpcModel : ITrackableEntityKey<int>
     {
         public int Id { get; set; }
 
@@ -31,7 +26,7 @@ namespace Application.Module.PlayerNPC.Master.Models
 
         public int Dir { get; set; }
 
-        public int Scriptid { get; set; }
+        public int NpcId { get; set; }
 
         public int Fh { get; set; }
 

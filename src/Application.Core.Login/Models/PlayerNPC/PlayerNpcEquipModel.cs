@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Module.PlayerNPC.Master.Models
+namespace Application.Core.Login.Models
 {
     public class PlayerNpcEquipModel
     {

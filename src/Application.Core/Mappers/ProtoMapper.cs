@@ -264,6 +264,23 @@ namespace Application.Core.Mappers
             CreateMap<ItemProto.GachaponPoolDto, GachaponDataObject>();
             CreateMap<ItemProto.GachaponPoolChanceDto, GachaponPoolLevelChanceDataObject>();
             CreateMap<ItemProto.GachaponPoolItemDto, GachaponPoolItemDataObject>();
+
+            CreateMap<LifeProto.PlayerNPCEquip, PlayerNpcEquipObject>()
+                .ForMember(dest => dest.EquipId, src => src.MapFrom(x => x.ItemId))
+                .ForMember(dest => dest.EquipPos, src => src.MapFrom(x => x.Position))
+                .ReverseMap()
+                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.EquipId))
+                .ForMember(dest => dest.Position, src => src.MapFrom(x => x.EquipPos));
+
+            CreateMap<LifeProto.PlayerNPCDto, PlayerNpc>()
+                .ForMember(dest => dest.NpcId, src => src.MapFrom(x => x.ScriptId))
+                .AfterMap((src, dest) =>
+                {
+                    dest.setObjectId(dest.Id);
+                    dest.setPosition(new Point(dest.X, dest.Cy));
+                })
+                .ReverseMap()
+                .ForMember(dest => dest.ScriptId, src => src.MapFrom(x => x.NpcId));
         }
 
         private int[] TranslateArray(string str)

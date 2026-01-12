@@ -1,16 +1,7 @@
-using Application.Core.Client;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
-using Application.Module.PlayerNPC.Channel.Net;
-using Application.Shared.MapObjects;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using tools;
 
-namespace Application.Module.PlayerNPC.Channel.Models
+namespace Application.Core.Game.Life
 {
     public class PlayerNpc : AbstractMapObject
     {
@@ -35,8 +26,11 @@ namespace Application.Module.PlayerNPC.Channel.Models
         public int Map { get; set; }
 
         public int Dir { get; set; }
+        /// <summary>
+        /// 虽然是基于玩家生成，但还是使用的已经预设的NpcId
+        /// </summary>
 
-        public int Scriptid { get; set; }
+        public int NpcId { get; set; }
 
         public int Fh { get; set; }
 
@@ -66,7 +60,7 @@ namespace Application.Module.PlayerNPC.Channel.Models
 
         public override void sendSpawnData(IChannelClient client)
         {
-            client.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPC(this));
+            client.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(this));
             client.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(this));
         }
 
@@ -83,7 +77,7 @@ namespace Application.Module.PlayerNPC.Channel.Models
 
         public override int GetSourceId()
         {
-            return Scriptid;
+            return NpcId;
         }
 
         public override int getObjectId()

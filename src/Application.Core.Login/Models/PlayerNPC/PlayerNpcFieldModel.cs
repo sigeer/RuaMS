@@ -1,4 +1,4 @@
-namespace Application.Module.PlayerNPC.Master.Models
+namespace Application.Core.Login.Models
 {
     public class PlayerNpcFieldModel
     {
