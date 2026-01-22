@@ -1,7 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Net;
-using Application.Core.Channel.ResourceTransaction;
-using Application.Core.client.Characters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -35,12 +32,8 @@ namespace Application.Core.Game.Players
         public MapManager MapManager => Client.CurrentServer.getMapFactory();
 
         public List<FameLogObject> FameLogs { get; set; }
-        public Lock ResourceLock { get; } = new Lock();
 
         public object SaveToDBLock { get; set; } = new object();
-
-
-        public ResourceConsumeRequest? TscRequest { get; set; }
 
         public Player(int world, int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
         {

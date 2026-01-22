@@ -519,14 +519,14 @@ namespace Application.Core.Channel.InProgress
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, reloadEventsRequest);
         }
 
-        public async Task BroadcastTV(ItemProto.CreateTVMessageRequest request)
+        public async Task<CreateTVMessageResponse> BroadcastTV(CreateTVMessageRequest request)
         {
-            await _itemService.BroadcastTV(request);
+            return await _itemService.BroadcastTV(request);
         }
 
-        public async Task SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
+        public async Task<UseItemMegaphoneResponse> SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
-            await _itemService.BroadcastItemMegaphone(request);
+            return await _itemService.BroadcastItemMegaphone(request);
         }
 
         public DropAllDto RequestDropData()
@@ -781,9 +781,9 @@ namespace Application.Core.Channel.InProgress
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
         }
 
-        public async Task CreateDueyPackage(CreatePackageRequest request)
+        public async Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request)
         {
-            await _server.DueyManager.CreateDueyPackage(request);
+            return await _server.DueyManager.CreateDueyPackage(request);
         }
 
         public async Task TakeDueyPackage(TakeDueyPackageRequest request)

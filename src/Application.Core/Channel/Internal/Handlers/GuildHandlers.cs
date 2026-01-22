@@ -67,7 +67,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             masterChr.Popup(msg);
                         }
-                        masterChr.GainMeso(YamlConfig.config.server.CREATE_GUILD_COST, false);
+                        masterChr.GainMeso(YamlConfig.config.server.CREATE_GUILD_COST);
                     }
                     return Task.CompletedTask;
                 }
@@ -273,7 +273,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             masterChr.Popup("Your guild already reached the maximum capacity of players.");
                         }
-                        masterChr.GainMeso(res.Request.Cost, false);
+                        masterChr.GainMeso(res.Request.Cost);
                     }
                     return Task.CompletedTask;
                 }
@@ -311,7 +311,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     if (masterChr != null)
                     {
                         // 失败回滚
-                        masterChr.GainMeso(YamlConfig.config.server.CHANGE_EMBLEM_COST, false);
+                        masterChr.GainMeso(YamlConfig.config.server.CHANGE_EMBLEM_COST);
                     }
                     return Task.CompletedTask;
                 }

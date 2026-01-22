@@ -137,7 +137,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
 
-                mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, inChat: true);
+                mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, GainItemShow.ShowInChat);
                 await _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
 

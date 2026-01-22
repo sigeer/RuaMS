@@ -162,7 +162,7 @@ public class StorageProcessor
             }
             storage.Meso -= meso;
 
-            storage.Owner.GainMeso(meso, false, true, false);
+            storage.Owner.GainMeso(meso, enableActions: true);
             _logger.Debug("Chr {CharacterName} {0} {meso} mesos", storage.Owner.Name, meso > 0 ? "took out" : "stored", Math.Abs(meso));
             storage.UpdateMeso();
         }

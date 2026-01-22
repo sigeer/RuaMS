@@ -223,7 +223,7 @@ namespace Application.Core.Channel
                         if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
                             && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
                         {
-                            buyer.GainMeso(-price, false);
+                            buyer.GainMeso(-price);
                             price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
 
                             shop.GainMeso(price);

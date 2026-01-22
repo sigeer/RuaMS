@@ -18,7 +18,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class DueyHandlers
     {
-        internal class CreateHandler : InternalSessionChannelHandler<CreatePackageResponse>
+        internal class CreateHandler : InternalSessionChannelHandler<CreatePackageBroadcast>
         {
             public CreateHandler(WorldChannelServer server) : base(server)
             {
@@ -26,39 +26,18 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.CreateDueyPackage;
 
-            protected override Task HandleAsync(CreatePackageResponse data, CancellationToken cancellationToken = default)
+            protected override Task HandleAsync(CreatePackageBroadcast data, CancellationToken cancellationToken = default)
             {
-                var dueyResponseCode = (SendDueyItemResponseCode)data.Code;
-                var chr = _server.FindPlayerById(data.Request.SenderId);
-                if (chr != null)
+                var receiver = _server.FindPlayerById(data.Package.ReceiverId);
+                if (receiver != null)
                 {
-                    if (dueyResponseCode == SendDueyItemResponseCode.Success)
-                    {
-                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
-                    }
-                    if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
-                    {
-                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
-                    }
-                    if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
-                    {
-                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
-                    }
-                }
-
-                if (dueyResponseCode == SendDueyItemResponseCode.Success)
-                {
-                    var receiver = _server.FindPlayerById(data.Package.ReceiverId);
-                    if (receiver != null)
-                    {
-                        receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
-                    }
+                    receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
                 }
 
                 return Task.CompletedTask;
             }
 
-            protected override CreatePackageResponse Parse(ByteString content) => CreatePackageResponse.Parser.ParseFrom(content);
+            protected override CreatePackageBroadcast Parse(ByteString content) => CreatePackageBroadcast.Parser.ParseFrom(content);
         }
 
         internal class RemoveHandler : InternalSessionChannelHandler<RemovePackageResponse>
@@ -159,7 +138,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     }
 
 
-                    _ = _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true });
+                    await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true });
                     _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
                 }
                 else

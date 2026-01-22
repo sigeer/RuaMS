@@ -190,7 +190,7 @@ namespace Application.Core.Channel.ServerData
 
         public async Task IncreaseGuildCapacity(Player chr, int cost)
         {
-            chr.GainMeso(-cost, true, false, true);
+            chr.GainMeso(-cost, GainItemShow.ShowInChat);
             await _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
@@ -224,7 +224,7 @@ namespace Application.Core.Channel.ServerData
 
         public async Task CreateAlliance(Player leader, string name, int cost)
         {
-            leader.GainMeso(-cost, inChat: true);
+            leader.GainMeso(-cost, GainItemShow.ShowInChat);
             var guilds = leader.getPartyMembersOnSameMap().Select(x => x.Id).ToArray();
 
             var request = new CreateAllianceRequest { Name = name, Cost = cost };

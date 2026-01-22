@@ -94,13 +94,13 @@ public class Storage : AbstractStorage
     public override void OnTakeOutSuccess(Item item)
     {
         if (NpcTemplate != null)
-            Owner.GainMeso(-NpcTemplate.TrunkGet, false, true, false);
+            Owner.GainMeso(-NpcTemplate.TrunkGet, enableActions: true);
     }
 
     public override void OnStoreSuccess(short slot, int itemId, short quantity)
     {
         if (NpcTemplate != null)
-            Owner.GainMeso(-NpcTemplate.TrunkPut, false, true, false);
+            Owner.GainMeso(-NpcTemplate.TrunkPut, enableActions: true);
     }
 
     public override void OpenStorage(int npcId)

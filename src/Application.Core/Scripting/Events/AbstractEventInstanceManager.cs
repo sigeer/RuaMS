@@ -1526,7 +1526,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 SetRewardClaimed(mc, thisStage);
                 mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+                mc.GainMeso((int)(list[1] * mc.getMesoRate()),  GainItemShow.ShowInChat);
             }
         }
     }
@@ -1545,7 +1545,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             SetRewardClaimed(mc, thisStage);
             mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-            mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+            mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
         }
     }
 

@@ -152,7 +152,7 @@ namespace Application.Module.Marriage.Channel
                         return;
                     }
 
-                    masterChr.GainItem(data.Request.ItemId, 1, false, false);
+                    masterChr.GainItem(data.Request.ItemId, 1, false);
                 }
                 return;
             }

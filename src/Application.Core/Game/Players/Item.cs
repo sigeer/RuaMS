@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Templates.Item.Pet;
 using client.inventory;
@@ -366,7 +367,7 @@ namespace Application.Core.Game.Players
             return true;
         }
 
-        public int GainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
+        public int GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
             int notGained = 0;
             long nextMeso;
@@ -395,10 +396,7 @@ namespace Application.Core.Game.Players
             if (gain != 0)
             {
                 updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-                if (show)
-                {
-                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
-                }
+                GainMesoShowMessage(gain, d);
             }
             else
             {
@@ -408,9 +406,56 @@ namespace Application.Core.Game.Players
         }
         #endregion
 
-
-        public Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
+        void GainItemShowMessage(int itemId, short quantity, GainItemShow d = GainItemShow.NotShown)
         {
+            switch (d)
+            {
+                case Shared.Constants.Item.GainItemShow.NotShown:
+                    break;
+                case Shared.Constants.Item.GainItemShow.ShowInChat:
+                    sendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));
+                    break;
+                case Shared.Constants.Item.GainItemShow.ShowInMessage:
+                    sendPacket(PacketCreator.getShowItemGain(itemId, quantity, false));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void GainMesoShowMessage(int meso, GainItemShow d = GainItemShow.NotShown)
+        {
+            switch (d)
+            {
+                case Shared.Constants.Item.GainItemShow.NotShown:
+                    break;
+                case Shared.Constants.Item.GainItemShow.ShowInChat:
+                    sendPacket(PacketCreator.getShowMesoGain(meso, true));
+                    break;
+                case Shared.Constants.Item.GainItemShow.ShowInMessage:
+                    sendPacket(PacketCreator.getShowMesoGain(meso, false));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="itemId">道具Id</param>
+        /// <param name="quantity">数量，可负数</param>
+        /// <param name="randomStats">item为装备时有效：随机属性</param>
+        /// <param name="show">显示</param>
+        /// <param name="expires">道具过期时间。单位ms，-1不会过期</param>
+        /// <returns>获得的道具</returns>
+        public Item? GainItem(int itemId, short quantity, bool randomStats, GainItemShow show = GainItemShow.NotShown, long expires = -1)
+        {
+            if (quantity == 0)
+            {
+                return null;
+            }
+
             Item? item = null;
 
             var invType = ItemConstants.getInventoryType(itemId);
@@ -420,31 +465,6 @@ namespace Application.Core.Game.Players
                 {
                     dropMessage(1, "Your inventory is full. Please remove an item from your " + invType.ToString() + " inventory.");
                     return null;
-                }
-
-                var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(itemId);
-                if (abTemplate is PetItemTemplate petTemplate)
-                {
-                    if (from != null)
-                    {
-                        var evolved = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-
-                        Point pos = getPosition();
-                        pos.Y -= 12;
-                        evolved.setPos(pos);
-                        evolved.setFh(getMap().Footholds.FindBelowFoothold(evolved.getPos()).getId());
-                        evolved.setStance(0);
-                        evolved.Summoned = true;
-
-                        var fromDefaultName = Client.CurrentCulture.GetItemName(from.getItemId());
-                        evolved.Name = from.Name != fromDefaultName ? from.Name : fromDefaultName;
-                        evolved.Tameness = from.Tameness;
-                        evolved.Fullness = from.Fullness;
-                        evolved.Level = from.Level;
-                        evolved.setExpiration(Client.CurrentServerContainer.getCurrentTime() + expires);
-
-                        item = evolved;
-                    }
                 }
 
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -499,12 +519,38 @@ namespace Application.Core.Game.Players
                 InventoryManipulator.removeById(Client, invType, itemId, -quantity, true, false);
             }
 
-            if (showMessage)
-            {
-                Client.sendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));
-            }
+            GainItemShowMessage(itemId, quantity, show);
 
             return item;
+        }
+
+        public Pet? EvolvePet(Pet from, long expires)
+        {
+            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(from.getItemId());
+            if (abTemplate is PetItemTemplate petTemplate)
+            {
+                if (from != null)
+                {
+                    var evolved = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+
+                    Point pos = getPosition();
+                    pos.Y -= 12;
+                    evolved.setPos(pos);
+                    evolved.setFh(getMap().Footholds.FindBelowFoothold(evolved.getPos()).getId());
+                    evolved.setStance(0);
+                    evolved.Summoned = true;
+
+                    var fromDefaultName = Client.CurrentCulture.GetItemName(from.getItemId());
+                    evolved.Name = from.Name != fromDefaultName ? from.Name : fromDefaultName;
+                    evolved.Tameness = from.Tameness;
+                    evolved.Fullness = from.Fullness;
+                    evolved.Level = from.Level;
+                    evolved.setExpiration(Client.CurrentServerContainer.getCurrentTime() + expires);
+
+                    return evolved;
+                }
+            }
+            return null;
         }
 
         public Ring? GetRingFromTotal(RingSourceModel? ring)
@@ -521,27 +567,6 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        readonly ConditionalWeakTable<Item, UseItemAction> _itemLocks = new();
-        public UseItemCheck UseItem(Item item, short quantity, Func<bool> condition)
-        {
-            if (quantity <= 0)
-                throw new BusinessFatalException("不合法的输入：消耗物品消耗的数量不能为负数");
-
-            if (item.getQuantity() < quantity)
-                return UseItemCheck.QuantityNotEnough;
-
-            var itemLock = _itemLocks.GetValue(item, _ => new UseItemAction(quantity));
-
-            lock (itemLock)
-            {
-                if (!condition.Invoke())
-                    return UseItemCheck.NotPass;
-
-                Bag.RemoveFromSlot(item.getInventoryType(), item.getPosition(), quantity, false);
-                return UseItemCheck.Success;
-            }
-        }
-
         readonly Lock buyCashItemLock = new Lock();
         public void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition)
         {
@@ -555,34 +580,6 @@ namespace Application.Core.Game.Players
 
                 CashShopModel.BuyCashItem(cashType, cItem);
                 sendPacket(PacketCreator.showCash(this));
-            }
-        }
-
-        public UseItemCheck TryUseItem(Item item, short quantity)
-        {
-            if (quantity <= 0)
-                throw new BusinessFatalException("不合法的输入：消耗物品消耗的数量不能为负数");
-
-            if (item.getQuantity() < quantity)
-                return UseItemCheck.QuantityNotEnough;
-
-            if (!_itemLocks.TryAdd(item, new UseItemAction(quantity)))
-                return UseItemCheck.InProgressing;
-
-            return UseItemCheck.Success;
-        }
-
-        public void CancelUseItem(Item item)
-        {
-            _itemLocks.Remove(item);
-        }
-
-        public void CommitUseItem(Item item)
-        {
-            if (_itemLocks.TryGetValue(item, out var action))
-            {
-                _itemLocks.Remove(item);
-                Bag.RemoveFromSlot(item.getInventoryType(), item.getPosition(), action.Quantity, false);
             }
         }
     }

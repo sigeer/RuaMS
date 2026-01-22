@@ -1,18 +1,13 @@
-using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;
-using Application.Shared.Languages;
-using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting;
-using scripting.Event;
 using scripting.npc;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -138,8 +133,6 @@ namespace Application.Core.Channel.Net
 
             player.closePlayerInteractions();
             player.closePartySearchInteractions();
-
-            ResourceManager.Cancel(player);
 
             if (!serverTransition)
             {

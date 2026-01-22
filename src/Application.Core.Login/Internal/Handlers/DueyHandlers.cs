@@ -22,21 +22,6 @@ namespace Application.Core.Login.Internal.Handlers
             protected override GetPlayerDueyPackageRequest Parse(ByteString content) => GetPlayerDueyPackageRequest.Parser.ParseFrom(content);
         }
 
-        internal class CreateHandler : InternalSessionMasterHandler<CreatePackageRequest>
-        {
-            public CreateHandler(MasterServer server) : base(server)
-            {
-            }
-
-            public override int MessageId => (int)ChannelSendCode.CreateDueyPackage;
-
-            protected override async Task HandleAsync(CreatePackageRequest message, CancellationToken cancellationToken = default)
-            {
-                await _server.DueyManager.CreateDueyPackage(message);
-            }
-
-            protected override CreatePackageRequest Parse(ByteString content) => CreatePackageRequest.Parser.ParseFrom(content);
-        }
 
         internal class RemoveHandler : InternalSessionMasterHandler<RemovePackageRequest>
         {

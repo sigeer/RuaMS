@@ -15,7 +15,10 @@ message CreateTVMessageRequest {
 
 message CreateTVMessageResponse {
 	int32 code = 1;
-	CreateTVMessageRequest request = 2;
-    Dto.PlayerViewDto master = 3;
-    Dto.PlayerViewDto masterPartner = 4;
+}
+
+message CreateTVMessageBroadcast {
+	CreateTVMessageRequest request = 1;
+    Dto.PlayerViewDto master = 2;
+    Dto.PlayerViewDto masterPartner = 3;
 }

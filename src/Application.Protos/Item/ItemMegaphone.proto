@@ -13,6 +13,9 @@ message UseItemMegaphoneRequest {
 
 message UseItemMegaphoneResponse {
 	int32 code = 1;
-	UseItemMegaphoneRequest request  = 2;
-	int32 masterChannel = 3;
+}
+
+message UseItemMegaphoneBroadcast {
+	UseItemMegaphoneRequest request  = 1;
+	int32 masterChannel = 2;
 }

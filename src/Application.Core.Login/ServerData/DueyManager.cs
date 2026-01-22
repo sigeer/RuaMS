@@ -61,7 +61,7 @@ namespace Application.Core.Login.ServerData
 
         public async Task TakeDueyPackage(DueyDto.TakeDueyPackageRequest request)
         {
-            var res  = new DueyDto.TakeDueyPackageResponse { Request = request };
+            var res = new DueyDto.TakeDueyPackageResponse { Request = request };
             var package = Query(x => x.Id == request.PackageId).FirstOrDefault();
             if (package == null)
             {
@@ -128,21 +128,21 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public async Task CreateDueyPackage(DueyDto.CreatePackageRequest request)
+        public async Task<CreatePackageResponse> CreateDueyPackage(DueyDto.CreatePackageRequest request)
         {
-            var res = new CreatePackageResponse() { Request = request };
+            var res = new CreatePackageResponse();
             var target = _server.CharacterManager.FindPlayerByName(request.ReceiverName);
             var sender = _server.CharacterManager.FindPlayerById(request.SenderId);
             if (target == null || sender == null)
             {
                 res.Code = (int)SendDueyItemResponseCode.CharacterNotExisted;
-                await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, res, [request.SenderId]);
+                return res;
             }
 
             else if (target.Character.AccountId == sender.Character.AccountId)
             {
                 res.Code = (int)SendDueyItemResponseCode.SameAccount;
-                await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, res, [request.SenderId]);
+                return res;
             }
 
             else
@@ -168,9 +168,10 @@ namespace Application.Core.Login.ServerData
                 };
 
                 SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
-                res.Package = _mapper.Map<DueyDto.DueyPackageDto>(model);
 
-                await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, res, [request.SenderId, model.ReceiverId]);
+                var data = new CreatePackageBroadcast { Package = _mapper.Map<DueyDto.DueyPackageDto>(model) };
+                await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, data, [model.ReceiverId]);
+                return res;
             }
         }
 

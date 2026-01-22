@@ -22,6 +22,11 @@ import "Config/MonitorConfig.proto";
 import "Lives/DBLife.proto";
 import "Lives/PlayerNPC.proto";
 
+import "Duey/CreatePackageRequest.proto";
+import "Duey/RemovePackageRequest.proto";
+import "Duey/TakeDueyPackage.proto";
+import "Duey/DueyPackage.proto";
+
 
 package ServiceProto;
 
@@ -62,6 +67,8 @@ service GameService {
 	rpc RemoveByName(LifeProto.RemovePlayerNPCRequest) returns(google.protobuf.Empty);
 	rpc GetMapPlayerNPC(LifeProto.GetMapPlayerNPCListRequest) returns(LifeProto.GetMapPlayerNPCListResponse);
 	rpc GetAllPlayerNPC(google.protobuf.Empty) returns(LifeProto.GetAllPlayerNPCDataResponse);
+
+	rpc CreateDueyPackage (DueyDto.CreatePackageRequest) returns(DueyDto.CreatePackageResponse);
 }
 
 message CheckCharacterNameRequest {

@@ -500,14 +500,14 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.ReloadWorldEvents, reloadEventsRequest);
         }
 
-        public async Task BroadcastTV(CreateTVMessageRequest request)
+        public async Task<CreateTVMessageResponse> BroadcastTV(CreateTVMessageRequest request)
         {
-            await InternalSession.SendAsync(ChannelSendCode.UseItemTV, request);
+            return await _itemClient.UseTVMessageAsync(request);
         }
 
-        public async Task SendItemMegaphone(UseItemMegaphoneRequest request)
+        public async Task<UseItemMegaphoneResponse> SendItemMegaphone(UseItemMegaphoneRequest request)
         {
-            await InternalSession.SendAsync(ChannelSendCode.UseItemMegaphone, request);
+            return await _itemClient.UseMegaPhoneAsync(request);
         }
 
         public DropAllDto RequestDropData()
@@ -756,9 +756,9 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.DisconnectAll);
         }
 
-        public async Task CreateDueyPackage(CreatePackageRequest request)
+        public async Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request)
         {
-            await InternalSession.SendAsync(ChannelSendCode.CreateDueyPackage);
+            return await _gameClient.CreateDueyPackageAsync(request);
         }
 
         public async Task TakeDueyPackage(TakeDueyPackageRequest request)

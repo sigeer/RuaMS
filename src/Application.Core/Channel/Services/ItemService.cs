@@ -1,11 +1,9 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
 using Application.Templates.Character;
-using Application.Templates.Exceptions;
 using Application.Templates.Item.Pet;
 using AutoMapper;
 using client.inventory;
@@ -13,8 +11,6 @@ using client.inventory.manipulator;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using server;
-using System.Threading.Tasks;
-using System.Transactions;
 using tools;
 using static server.CashShop;
 
@@ -48,7 +44,7 @@ namespace Application.Core.Channel.Services
         }
         public Item CashItem2Item(CashItem cashItem)
         {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId()) ;
+            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId());
             Item item;
 
             if (abTemplate is PetItemTemplate petTemplate)
@@ -200,12 +196,8 @@ namespace Application.Core.Channel.Services
         }
 
 
-        internal async Task UseCash_TV(Player player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
+        internal async Task<bool> UseCash_TV(Player player, string? victim, List<string> messages, int tvType, bool showEar)
         {
-            if (player.TscRequest != null)
-            {
-                return;
-            }
             var request = new ItemProto.CreateTVMessageRequest
             {
                 MasterId = player.Id,
@@ -214,9 +206,8 @@ namespace Application.Core.Channel.Services
                 ShowEar = showEar,
             };
             request.MessageList.AddRange(messages);
-
-            player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(item, 1).Build();
-            await _transport.BroadcastTV(request);
+            var r = await _transport.BroadcastTV(request);
+            return r.Code == 0;
         }
 
         public void OnBroadcastTVFinished(Empty data)
@@ -227,12 +218,8 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        internal async Task UseCash_ItemMegaphone(Player player, Item costItem, Item? item, string message, bool isWishper)
+        internal async Task<bool> UseCash_ItemMegaphone(Player player, Item? item, string message, bool isWishper)
         {
-            if (player.TscRequest != null)
-            {
-                return;
-            }
             var request = new ItemProto.UseItemMegaphoneRequest
             {
                 MasterId = player.Id,
@@ -240,9 +227,8 @@ namespace Application.Core.Channel.Services
                 Item = _mapper.Map<Dto.ItemDto>(item),
                 IsWishper = isWishper,
             };
-
-            player.TscRequest = new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Build();
-            await _transport.SendItemMegaphone(request);
+            var r = await _transport.SendItemMegaphone(request);
+            return r.Code == 0;
         }
 
         public void BuyCashItem(Player chr, int cashType, CashItem cItem)

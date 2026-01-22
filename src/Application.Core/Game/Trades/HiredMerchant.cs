@@ -257,7 +257,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         {
             lock (mesoLock)
             {
-                Mesos = chr.GainMeso(Mesos, false);
+                Mesos = chr.GainMeso(Mesos);
             }
         }
     }
@@ -507,7 +507,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
             lock (mesoLock)
             {
-                Mesos = chr.GainMeso(Mesos, false);
+                Mesos = chr.GainMeso(Mesos);
             }
         }
     }

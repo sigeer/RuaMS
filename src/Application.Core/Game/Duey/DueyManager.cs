@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Trades;
 using AutoMapper;
@@ -8,10 +7,9 @@ using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using DueyDto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Channel.DueyService
 {
@@ -33,23 +31,7 @@ namespace Application.Core.Channel.DueyService
 
         private async Task CreateDueyPackage(Player chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
-            if (chr.TscRequest != null)
-            {
-                return;
-            }
-
-            List<Item> items = [];
-            if (quick)
-            {
-                items.Add(new Item(ItemId.QUICK_DELIVERY_TICKET, 0, 1));
-            }
-
-            var builder = new ResourceConsumeBuilder().ConsumeMeso(costMeso);
-            if (quick)
-                builder.ConsumeItem(ItemId.QUICK_DELIVERY_TICKET, 1);
-
-            chr.TscRequest = builder.Build();
-            await _server.Transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+            var res = await _server.Transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
             {
                 SenderId = chr.Id,
                 SendMeso = sendMesos,
@@ -58,6 +40,24 @@ namespace Application.Core.Channel.DueyService
                 Quick = quick,
                 Item = _mapper.Map<Dto.ItemDto>(item),
             });
+            var dueyResponseCode = (SendDueyItemResponseCode)res.Code;
+            if (dueyResponseCode == SendDueyItemResponseCode.Success)
+            {
+                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                if (quick)
+                {
+                    chr.GainItem(ItemId.QUICK_DELIVERY_TICKET, -1, false);
+                    chr.GainMeso(-costMeso);
+                }
+            }
+            else if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
+            {
+                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
+            }
+            else if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
+            {
+                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
+            }
         }
 
 
@@ -145,7 +145,7 @@ namespace Application.Core.Channel.DueyService
                     }
                     else if (!c.OnlinedCharacter.haveItem(ItemId.QUICK_DELIVERY_TICKET))
                     {
-                       await  _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                        await _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                         await c.Disconnect(true, false);
                         return;
@@ -154,7 +154,7 @@ namespace Application.Core.Channel.DueyService
                     long finalcost = (long)sendMesos + fee;
                     if (sendMesos < 0 || finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
                     {
-                       await  _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
+                        await _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                         await c.Disconnect(true, false);
                         return;

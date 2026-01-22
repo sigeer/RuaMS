@@ -3,6 +3,8 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "Item/OwlSearch.proto";
 import "Item/ItemStorage.proto";
+import "Item/TVMessage.proto";
+import "Item/ItemMegaphone.proto";
 
 package ServiceProto;
 
@@ -12,4 +14,7 @@ service ItemService {
 
 	rpc SaveItems(ItemProto.StoreItemsRequest) returns(ItemProto.StoreItemsResponse);
 	rpc LoadItemFromStore(ItemProto.LoadItemsFromStoreRequest) returns(ItemProto.LoadItemsFromStoreResponse);
+
+	rpc UseTVMessage(ItemProto.CreateTVMessageRequest) returns (ItemProto.CreateTVMessageResponse);
+	rpc UseMegaPhone(ItemProto.UseItemMegaphoneRequest) returns (ItemProto.UseItemMegaphoneResponse);
 }

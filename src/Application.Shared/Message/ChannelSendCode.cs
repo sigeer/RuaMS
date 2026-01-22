@@ -87,10 +87,6 @@ namespace Application.Shared.Message
         CreatePLife,
         RemovePLife,
 
-        UseItemTV,
-        UseItemMegaphone,
-
-        CreateDueyPackage,
         RemoveDueyPackage,
         LoadDueyPackage,
         TakeDueyPackage,

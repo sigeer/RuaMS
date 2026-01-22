@@ -102,7 +102,7 @@ namespace Application.Core.Channel.Services
                             return;
                         }
 
-                        chr.GainMeso(res.Mesos, false);
+                        chr.GainMeso(res.Mesos);
 
                         var commitRequest = new CommitRetrievedRequest
                         {
@@ -171,7 +171,7 @@ namespace Application.Core.Channel.Services
             if (data.Items.Count > 0)
             {
                 // 消耗道具
-                chr.GainItem(useItemId, -1, false, true);
+                chr.GainItem(useItemId, -1, false, GainItemShow.ShowInChat);
             }
 
             chr.sendPacket(PacketCreator.owlOfMinerva(searchItemId, _mapper.Map<OwlSearchResult>(data)));

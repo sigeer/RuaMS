@@ -318,8 +318,9 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     var v = p.readInt();
 
-                    await _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
-                    return;
+                    if (!await _itemService.UseCash_TV(player, victim, messages, tvType, ear))
+                        return;
+                    break;
                 case 6: //道具喇叭
                     string msg = medal + player.getName() + " : " + p.readString();
                     whisper = p.readByte() == 1;
@@ -335,8 +336,9 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    await _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, toUse, item, msg, whisper);
-                    return;
+                    if (!await _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, item, msg, whisper))
+                        return;
+                    break;
                 case 7: //缤纷喇叭
                     int lines = p.ReadSByte();
                     if (lines < 1 || lines > 3) //hack
@@ -488,8 +490,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            await c.CurrentServerContainer.TimerManager.ScheduleAsync("AvatarMega", 
-                async () => await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()), 
+            await c.CurrentServerContainer.TimerManager.ScheduleAsync("AvatarMega",
+                async () => await c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
                 TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
@@ -565,7 +567,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
         }
         else if (itemType == 550)
-        { 
+        {
             //Extend item expiration
             c.sendPacket(PacketCreator.enableActions());
         }

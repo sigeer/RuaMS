@@ -154,8 +154,8 @@ namespace Application.Core.ServerTransports
 
         ConfigProto.SetFlyResponse SendSetFly(ConfigProto.SetFlyRequest setFlyRequest);
         Task SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
-        Task BroadcastTV(ItemProto.CreateTVMessageRequest request);
-        Task SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
+        Task<CreateTVMessageResponse> BroadcastTV(CreateTVMessageRequest request);
+        Task<UseItemMegaphoneResponse> SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
         Dto.DropAllDto RequestDropData();
         BaseProto.QueryMonsterCardDataResponse RequestMonsterCardData();
         GuildProto.QueryRankedGuildsResponse RequestRankedGuilds();
@@ -216,7 +216,7 @@ namespace Application.Core.ServerTransports
         Task CreatePlayerResponseAsync(CreateCharResponseDto res, CancellationToken cancellationToken);
 
         #region Duey
-        Task CreateDueyPackage(CreatePackageRequest request);
+        Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request);
         Task TakeDueyPackage(TakeDueyPackageRequest request);
         Task RequestRemovePackage(RemovePackageRequest request);
         Task GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request);

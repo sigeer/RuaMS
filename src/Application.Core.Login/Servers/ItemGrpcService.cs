@@ -40,5 +40,10 @@ namespace Application.Core.Login.Servers
         {
             return Task.FromResult(_server.PlayerShopManager.OwlSearch(request));
         }
+
+        public override async Task<CreateTVMessageResponse> UseTVMessage(CreateTVMessageRequest request, ServerCallContext context)
+        {
+            return await _itemService.BroadcastTV(request);
+        }
     }
 }

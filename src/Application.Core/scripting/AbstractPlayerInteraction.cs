@@ -616,7 +616,6 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public Item? evolvePet(byte slot, int afterId)
     {
-        Pet? evolved = null;
         Pet? target;
 
         long period = (long)TimeSpan.FromDays(90).TotalMilliseconds;    //refreshes expiration date: 90 days
@@ -629,7 +628,15 @@ public class AbstractPlayerInteraction : IClientMessenger
             return (null);
         }
 
-        var tmp = gainItem(afterId, 1, false, true, period, target);
+        var pet = getPlayer().EvolvePet(target, period);
+        if (pet != null)
+        {
+            InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
+
+            InventoryManipulator.addFromDrop(getClient(), pet, false);
+            return pet;
+        }
+        return null;
 
         /*
         evolved = Pet.loadFromDb(tmp.getItemId(), tmp.getPosition(), tmp.getPetId());
@@ -652,9 +659,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(evolved));
         */
 
-        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
 
-        return evolved;
     }
     // js使用
     public void gainItem(int id, bool show) => gainItem(id, 1, show);
@@ -665,9 +670,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         gainItem(id, (short)quantity, false, show);
     }
 
-    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
+    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats, showMessage, expires, from);
+        return getPlayer().GainItem(id, quantity, randomStats, showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires);
     }
 
     public void gainFame(int delta)

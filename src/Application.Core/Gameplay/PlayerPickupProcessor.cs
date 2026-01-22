@@ -176,12 +176,12 @@ namespace Application.Core.Gameplay
                     int mesosamm = mapItem.getMeso() / mpcs.Count;
                     foreach (var partymem in mpcs)
                     {
-                        partymem.GainMeso(mesosamm, true, true, false);
+                        partymem.GainMeso(mesosamm, GainItemShow.ShowInMessage, true);
                     }
                 }
                 else
                 {
-                    _player.GainMeso(meso, true, true, false);
+                    _player.GainMeso(meso, GainItemShow.ShowInMessage, true);
                 }
                 return true;
             }

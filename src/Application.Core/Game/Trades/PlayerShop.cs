@@ -238,7 +238,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
-        Owner.GainMeso(meso, true);
+        Owner.GainMeso(meso, GainItemShow.ShowInMessage);
     }
 
     public string? MesoCheck(int meso)

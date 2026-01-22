@@ -59,7 +59,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     var masterChr = _server.FindPlayerById(res.Request.Members[0]);
                     if (masterChr != null)
                     {
-                        masterChr.GainMeso(res.Request.Cost, false);
+                        masterChr.GainMeso(res.Request.Cost);
 
                         masterChr.Client.NPCConversationManager?.sendOk("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
                         masterChr.Client.NPCConversationManager?.dispose();
