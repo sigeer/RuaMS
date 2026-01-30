@@ -19,6 +19,7 @@
 */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 
 namespace net.server.services;
 
@@ -30,11 +31,10 @@ public abstract class BaseScheduler
 {
     private int idleProcs = 0;
     private List<Action<List<object>, bool>> listeners = new();
-    private List<object> externalLocks = new();
-    private Dictionary<object, KeyValuePair<AbstractRunnable, long>> registeredEntries = new();
+
+    private Dictionary<object, KeyValuePair<IWorldChannelCommand, long>> registeredEntries = new();
 
     private Task? schedulerTask = null;
-    private object schedulerLock = new object();
 
     CancellationTokenSource? cancellationTokenSource;
 
@@ -58,143 +58,86 @@ public abstract class BaseScheduler
         listeners.Add(listener);
     }
 
-    private void lockScheduler()
-    {
-        if (externalLocks.Count > 0)
-        {
-            foreach (object l in externalLocks)
-            {
-                Monitor.Enter(l);
-            }
-        }
-
-        Monitor.Enter(schedulerLock);
-    }
-
-    private void unlockScheduler()
-    {
-        if (externalLocks.Count > 0)
-        {
-            foreach (object l in externalLocks)
-            {
-                Monitor.Exit(l);
-            }
-        }
-
-        Monitor.Exit(schedulerLock);
-    }
 
     private void runBaseSchedule()
     {
         List<object> toRemove;
-        Dictionary<object, KeyValuePair<AbstractRunnable, long>> registeredEntriesCopy;
+        Dictionary<object, KeyValuePair<IWorldChannelCommand, long>> registeredEntriesCopy;
 
-        lockScheduler();
-        try
+        if (registeredEntries.Count == 0)
         {
-            if (registeredEntries.Count == 0)
+            idleProcs++;
+
+            if (idleProcs >= YamlConfig.config.server.MOB_STATUS_MONITOR_LIFE)
             {
-                idleProcs++;
-
-                if (idleProcs >= YamlConfig.config.server.MOB_STATUS_MONITOR_LIFE)
+                if (schedulerTask != null)
                 {
-                    if (schedulerTask != null)
-                    {
-                        cancellationTokenSource?.Cancel();
-                        schedulerTask = null;
-                    }
+                    cancellationTokenSource?.Cancel();
+                    schedulerTask = null;
                 }
-
-                return;
             }
 
-            idleProcs = 0;
-            registeredEntriesCopy = new(registeredEntries);
-        }
-        finally
-        {
-            unlockScheduler();
+            return;
         }
 
-        long timeNow = _channelServer.Container.getCurrentTime();
+        idleProcs = 0;
+        registeredEntriesCopy = new(registeredEntries);
+
+        long timeNow = _channelServer.Node.getCurrentTime();
         toRemove = new();
         foreach (var rmd in registeredEntriesCopy)
         {
-            KeyValuePair<AbstractRunnable, long> r = rmd.Value;
+            var r = rmd.Value;
 
             if (r.Value < timeNow)
             {
-                r.Key.run();  // runs the scheduled action
+                _channelServer.Post(r.Key);
                 toRemove.Add(rmd.Key);
             }
         }
 
         if (toRemove.Count > 0)
         {
-            lockScheduler();
-            try
+            foreach (object o in toRemove)
             {
-                foreach (object o in toRemove)
-                {
-                    registeredEntries.Remove(o);
-                }
-            }
-            finally
-            {
-                unlockScheduler();
+                registeredEntries.Remove(o);
             }
         }
 
         dispatchRemovedEntries(toRemove, true);
     }
 
-    protected void registerEntry(object key, AbstractRunnable removalAction, long duration)
+    protected void registerEntry(object key, IWorldChannelCommand command, long duration)
     {
-        lockScheduler();
-        try
+        idleProcs = 0;
+        if (schedulerTask == null)
         {
-            idleProcs = 0;
-            if (schedulerTask == null)
+            cancellationTokenSource = new CancellationTokenSource();
+            schedulerTask = Task.Run(async () =>
             {
-                cancellationTokenSource = new CancellationTokenSource();
-                schedulerTask = Task.Run(async () =>
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    while (!cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-                        runBaseSchedule();
-                    }
-                }, cancellationTokenSource.Token);
-            }
+                    await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                    runBaseSchedule();
+                }
+            }, cancellationTokenSource.Token);
+        }
 
-            registeredEntries.AddOrUpdate(key, new(removalAction, _channelServer.Container.getCurrentTime() + duration));
-        }
-        finally
-        {
-            unlockScheduler();
-        }
+        registeredEntries.AddOrUpdate(key, new(command, _channelServer.Node.getCurrentTime() + duration));
     }
 
     protected void interruptEntry(object key)
     {
-        AbstractRunnable? toRun = null;
+        IWorldChannelCommand? toRun = null;
 
-        lockScheduler();
-        try
+        if (registeredEntries.Remove(key, out var rm))
         {
-            if (registeredEntries.Remove(key, out var rm))
-            {
-                toRun = rm.Key;
-            }
-        }
-        finally
-        {
-            unlockScheduler();
+            toRun = rm.Key;
         }
 
         if (toRun != null)
         {
-            toRun.run();
+            _channelServer.Post(toRun);
         }
 
         dispatchRemovedEntries(Collections.singletonList(key), false);
@@ -210,22 +153,13 @@ public abstract class BaseScheduler
 
     public virtual void dispose()
     {
-        lockScheduler();
-        try
+        cancellationTokenSource?.Cancel();
+        if (schedulerTask != null)
         {
-            cancellationTokenSource?.Cancel();
-            if (schedulerTask != null)
-            {
-                schedulerTask = null;
-            }
+            schedulerTask = null;
+        }
 
-            listeners.Clear();
-            registeredEntries.Clear();
-        }
-        finally
-        {
-            unlockScheduler();
-            externalLocks.Clear();
-        }
+        listeners.Clear();
+        registeredEntries.Clear();
     }
 }

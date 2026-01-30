@@ -9,6 +9,6 @@ public class ReloadEventsCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        c.CurrentServerContainer.SendReloadEvents(c.OnlinedCharacter);
+        c.CurrentServer.NodeService.SendReloadEvents(c.OnlinedCharacter);
     }
 }

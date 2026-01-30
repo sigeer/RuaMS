@@ -6,7 +6,7 @@ namespace Application.Core.Game.Players.PlayerProps
     public class PlayerSkill : PlayerPropBase<Dto.SkillDto>
     {
         private Dictionary<Skill, SkillEntry> _dataSource;
-        public PlayerSkill(IPlayer owner) : base(owner)
+        public PlayerSkill(Player owner) : base(owner)
         {
             _dataSource = [];
         }

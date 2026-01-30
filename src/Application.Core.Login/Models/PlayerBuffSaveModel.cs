@@ -15,7 +15,8 @@ namespace Application.Core.Login.Models
     }
     public class DiseaseModel
     {
-        public long LeftTime { get; set; }
+        public long StartTime { get; set; }
+        public long Length { get; set; }
         public int MobSkillId { get; set; }
         public int MobSkillLevel { get; set; }
         public int DiseaseOrdinal { get; set; }

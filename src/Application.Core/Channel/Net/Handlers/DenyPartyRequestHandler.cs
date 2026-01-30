@@ -20,25 +20,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Core.Channel.ServerData;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 public class DenyPartyRequestHandler : ChannelHandlerBase
 {
-    readonly TeamManager _teamManager;
-
-    public DenyPartyRequestHandler(TeamManager teamManager)
-    {
-        _teamManager = teamManager;
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var value = p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        _teamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
+        c.CurrentServer.NodeService.TeamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
     }
 }

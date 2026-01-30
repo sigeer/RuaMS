@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
+using Application.Core.Scripting.Events;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net;
 using Application.Module.Marriage.Common.ErrorCodes;
@@ -19,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using scripting.Event;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Module.Marriage.Channel
@@ -26,13 +28,13 @@ namespace Application.Module.Marriage.Channel
     public class WeddingManager
     {
         readonly ILogger<WeddingManager> _logger;
-        readonly IChannelServerTransport _transport;
+        readonly IModuleChannelServerTransport _transport;
         readonly IMapper _mapper;
         readonly WorldChannelServer _server;
         readonly Configs _config;
         readonly MarriageManager _marriageManager;
 
-        public WeddingManager(ILogger<WeddingManager> logger, IChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options, 
+        public WeddingManager(ILogger<WeddingManager> logger, IModuleChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options, 
             MarriageManager marriageManager)
         {
             _logger = logger;
@@ -54,7 +56,7 @@ namespace Application.Module.Marriage.Channel
         }
 
 
-        public bool AcceptProposal(IPlayer sender, IPlayer receiver, int usedItem)
+        public bool AcceptProposal(Player sender, Player receiver, int usedItem)
         {
             int newItemId = EngageItem.GetEngagementBoxId(usedItem);
 
@@ -93,7 +95,7 @@ namespace Application.Module.Marriage.Channel
         /// <param name="chr"></param>
         /// <param name="isCathedral"></param>
         /// <param name="isPremium"></param>
-        public MarriageProto.ReserveWeddingResponse ReserveWedding(IPlayer chr, bool isCathedral, bool isPremium)
+        public MarriageProto.ReserveWeddingResponse ReserveWedding(Player chr, bool isCathedral, bool isPremium)
         {
             return _transport.ReserveWedding(
                 new MarriageProto.ReserveWeddingRequest
@@ -105,67 +107,20 @@ namespace Application.Module.Marriage.Channel
                 });
         }
 
-        public void TryInviteGuest(IPlayer chr, Item item, int marriageId, string guestName)
+        public async Task TryInviteGuest(Player chr, Item item, int marriageId, string guestName)
         {
-            chr.UseItem(item, 1, () =>
+            if (chr.Bag.RemoveFromItem(InventoryType.ETC, item))
             {
-                var res = _transport.TryInviteGuest(new MarriageProto.InviteGuestRequest
+                await _transport.TryInviteGuest(new MarriageProto.InviteGuestRequest
                 {
                     MarriageId = marriageId,
                     MasterId = chr.Id,
                     GuestName = guestName,
                 });
-                var code = (InviteErrorCode)res.Code;
-
-                if (code == InviteErrorCode.GuestNotFound)
-                {
-                    chr.dropMessage(5, "Unable to find " + guestName + "!");
-                    return false;
-                }
-
-                if (code == InviteErrorCode.MarriageNotFound)
-                {
-                    chr.dropMessage(5, $"Invitation was not sent to '{guestName}'. Either the time for your marriage reservation already came or it was not found.");
-                    return false;
-                }
-
-                if (code == InviteErrorCode.DuplicateInvitation)
-                {
-                    chr.dropMessage(5, $"'{guestName}' is already invited for your marriage.");
-                    return false;
-                }
-
-                if (code == InviteErrorCode.WeddingUnderway)
-                {
-                    chr.dropMessage(5, "Wedding is already under way. You cannot invite any more guests for the event.");
-                    return false;
-                }
-
-                return true;
-            });
-
-        }
-
-        public void OnGuestInvited(MarriageProto.InviteGuestCallback data)
-        {
-            string baseMessage = $"You've been invited to {data.GroomName} and {data.BrideName}'s Wedding!";
-            var guestChr = _server.FindPlayerById(data.GuestId);
-            if (guestChr != null && guestChr.isLoggedinWorld())
-            {
-                int newItemId = data.IsCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
-                var newItem = Item.CreateVirtualItem(newItemId, 1);
-                // GiftFrom应该是仅在现金道具上生效，在这里临时使用存放婚礼id
-                newItem.setGiftFrom(data.WeddingId.ToString());
-
-                if (InventoryManipulator.addFromDrop(guestChr.Client, newItem, false))
-                {
-                    guestChr.dropMessage(6, $"[Wedding] {baseMessage}");
-                }
-
             }
         }
 
-        public void TryGetInvitationInfo(IPlayer chr, int weddingId)
+        public void TryGetInvitationInfo(Player chr, int weddingId)
         {
             var res = _transport.TryGetInvitationInfo(new MarriageProto.LoadInvitationRequest { WeddingId = weddingId });
             if (res.MarriageId > 0)
@@ -174,61 +129,29 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public void BreakMarriageRing(IPlayer chr)
+        public async Task BreakMarriageRing(Player chr)
         {
-            _transport.BreakMarriage(new MarriageProto.BreakMarriageRequest { MasterId = chr.Id });
+            await _transport.BreakMarriage(new MarriageProto.BreakMarriageRequest { MasterId = chr.Id });
         }
 
-        public void OnMarriageBroken(MarriageProto.BreakMarriageCallback data)
-        {
-            if (data.Code != 0)
-            {
-                return;
-            }
-
-            _marriageManager.RemoveLocalData(data.MasterId, data.MasterPartnerId);
-
-            var chr = _server.FindPlayerById(data.MasterId);
-            if (chr != null)
-            {
-                _marriageManager.RemoveMarriageItems(chr);
-
-                chr.dropMessage(5, "You have successfully break the "+ (data.Type == 0 ? "engagement." : "marriage") + " with " + data.MasterPartnerName + ".");
-                //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
-                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-            }
-
-            var partner = _server.FindPlayerById(data.MasterPartnerId);
-            if (partner != null)
-            {
-                _marriageManager.RemoveMarriageItems(partner);
-
-                partner.dropMessage(5, data.MasterName + " has decided to break up the " + (data.Type == 0 ? "engagement." : "marriage."));
-                //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-            }
-
-        }
-
-
-        public bool HasWeddingRing(IPlayer chr)
+        public bool HasWeddingRing(Player chr)
         {
             int[] rings = { ItemId.WEDDING_RING_STAR, ItemId.WEDDING_RING_MOONSTONE, ItemId.WEDDING_RING_GOLDEN, ItemId.WEDDING_RING_SILVER };
             return rings.Any(x => chr.haveItemWithId(x));
         }
 
-        public bool HasEngagement(IPlayer chr)
+        public bool HasEngagement(Player chr)
         {
             return ItemId.GetEngagementItems().Any(x => chr.haveItemWithId(x));
         }
 
-        public List<Item> GetUnclaimedMarriageGifts(IPlayer chr)
+        public List<Item> GetUnclaimedMarriageGifts(Player chr)
         {
             return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { 
                 Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
         }
 
-        public void TakeItemFromGifts(IPlayer chr, int itemPos)
+        public void TakeItemFromGifts(Player chr, int itemPos)
         {
             if (chr.Client.tryacquireClient())
             {
@@ -261,7 +184,7 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public MarriageInstance? GetMarriageInstance(IPlayer chr)
+        public MarriageInstance? GetMarriageInstance(Player chr)
         {
             return chr.getEventInstance() as MarriageInstance;
         }
@@ -272,9 +195,9 @@ namespace Application.Module.Marriage.Channel
         /// <param name="em"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public MarriageInstance CreateMarriageInstance(EventManager em, string name)
+        public MarriageInstance CreateMarriageInstance(MarriageEventManager em, string name)
         {
-            return GetWeddingManager(em.getChannelServer()).CreateMarriageInstance(em, name);
+            return em.newInstance(name) as MarriageInstance;
         }
 
         private void StoreGifts(int id, List<Item> items)
@@ -311,7 +234,7 @@ namespace Application.Module.Marriage.Channel
         /// <param name="chr"></param>
         /// <param name="isCathedral"></param>
         /// <returns></returns>
-        public List<WeddingInfo> GetWeddingMasterByGuestTicket(IPlayer chr, bool isCathedral)
+        public List<WeddingInfo> GetWeddingMasterByGuestTicket(Player chr, bool isCathedral)
         {
             var manager = GetWeddingManager(chr.getChannelServer());
             var itemId = isCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
@@ -338,7 +261,7 @@ namespace Application.Module.Marriage.Channel
             return _mapper.Map<List<WeddingInfo>>(_transport.LoadAllWeddingById(request));
         }
 
-        public WeddingInfo? GetPlayerWeddingInfoFromAll(IPlayer chr)
+        public WeddingInfo? GetPlayerWeddingInfoFromAll(Player chr)
         {
             var marriageInfo = _marriageManager.GetPlayerMarriageInfo(chr.Id);
             if (marriageInfo == null)
@@ -353,7 +276,7 @@ namespace Application.Module.Marriage.Channel
         /// <param name="player"></param>
         /// <param name="partner"></param>
         /// <param name="marriageRingItemId"></param>
-        public void CompleteWedding(IPlayer player, IPlayer partner, int marriageRingItemId)
+        public void CompleteWedding(Player player, Player partner, int marriageRingItemId)
         {
             var marriageInfo = _marriageManager.GetPlayerMarriageInfo(player.Id);
             if (marriageInfo == null)
@@ -389,7 +312,7 @@ namespace Application.Module.Marriage.Channel
             partner.broadcastMarriageMessage();
         }
 
-        public void sendMarriageWishlist(IPlayer player, bool groom)
+        public void sendMarriageWishlist(Player player, bool groom)
         {
             var marriage = GetMarriageInstance(player);
             if (marriage != null)
@@ -411,12 +334,12 @@ namespace Application.Module.Marriage.Channel
             }
         }
 
-        public void sendMarriageGifts(IPlayer player, List<Item> gifts)
+        public void sendMarriageGifts(Player player, List<Item> gifts)
         {
             player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, Collections.singletonList(""), gifts));
         }
 
-        public bool createMarriageWishlist(IPlayer player)
+        public bool createMarriageWishlist(Player player)
         {
             var marriage = GetMarriageInstance(player);
             if (marriage != null)

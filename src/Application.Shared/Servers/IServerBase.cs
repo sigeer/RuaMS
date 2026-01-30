@@ -1,6 +1,7 @@
 using Application.Shared.Login;
 using Application.Shared.Models;
 using Application.Shared.Net;
+using Application.Utility.Tasks;
 
 namespace Application.Shared.Servers
 {
@@ -8,9 +9,10 @@ namespace Application.Shared.Servers
     {
         string ServerName { get; }
         TServerTransport Transport { get; }
-        Task StartServer();
+        Task StartServer(CancellationToken cancellationToken);
         Task Shutdown(int delaySeconds = -1);
         bool IsRunning { get; }
+        ITimerManager TimerManager { get; }
 
         /// <summary>
         /// 当前服务器的启动时间(StartServer之后)
@@ -22,6 +24,7 @@ namespace Application.Shared.Servers
         /// <returns></returns>
         int getCurrentTimestamp();
         long getCurrentTime();
+        DateTimeOffset GetCurrentTimeDateTimeOffset();
         void UpdateServerTime();
         /// <summary>
         /// 主服务器强制更新、频道服务器强制从主服务器获取

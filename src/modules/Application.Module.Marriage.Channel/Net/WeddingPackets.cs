@@ -76,7 +76,7 @@ public class WeddingPackets : PacketCreator
 
     //public class WeddingWishList
     //{
-    //    public IPlayer pUser;
+    //    public Player pUser;
     //    public int dwMarriageNo;
     //    public int nGender;
     //    public int nWLType;
@@ -142,7 +142,7 @@ public class WeddingPackets : PacketCreator
      * @param m_dwUsers         The List of all Character guests within the current cake map to be encoded
      * @return mplew (MaplePacket) Byte array to be converted and read for byte[]->ImageIO
      */
-    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<IPlayer> m_dwUsers)
+    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<Player> m_dwUsers)
     { // OnIFailedAtWeddingPhotos
         OutPacket p = OutPacket.create(SendOpcode.WEDDING_PHOTO);// v53 header, convert -> v83
         p.writeString(ReservedGroomName);
@@ -150,19 +150,19 @@ public class WeddingPackets : PacketCreator
         p.writeInt(m_dwField); // field id?
         p.writeInt(m_dwUsers.Count);
 
-        foreach (IPlayer guest in m_dwUsers)
+        foreach (Player guest in m_dwUsers)
         {
             // Begin Avatar Encoding
             addCharLook(p, guest, false); // CUser::EncodeAvatar
             p.writeInt(30000); // v20 = *(_DWORD *)(v13 + 2192) -- new groom marriage ID??
             p.writeInt(30000); // v20 = *(_DWORD *)(v13 + 2192) -- new bride marriage ID??
             p.writeString(guest.getName());
-            var guestGuild = guest.getGuild();
-            p.writeString(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.Name : "");
-            p.writeShort(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoBg : 0);
-            p.writeByte(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoBgColor : 0);
-            p.writeShort(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.Logo : 0);
-            p.writeByte(guest.getGuildId() > 0 && guestGuild != null ? guestGuild.LogoColor : 0);
+            var guestGuild = guest.GetGuild();
+            p.writeString(guestGuild?.Name ?? "");
+            p.writeShort(guestGuild?.LogoBg ?? 0);
+            p.writeByte(guestGuild?.LogoBgColor ?? 0);
+            p.writeShort(guestGuild?.Logo ?? 0);
+            p.writeByte(guestGuild?.LogoColor ?? 0);
             p.writeShort(guest.getPosition().X); // v18 = *(_DWORD *)(v13 + 3204);
             p.writeShort(guest.getPosition().Y); // v20 = *(_DWORD *)(v13 + 3208);
             // Begin Screenshot Encoding

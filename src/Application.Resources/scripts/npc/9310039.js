@@ -58,11 +58,10 @@ function level0() {
     } else {
         let eli = em.getEligibleParty(cm.getParty());
         if (eli.size() > 0) {
-            if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), EventLevel)) {//开始事件
+            if (!em.StartPQInstance(cm.getPlayer(), eli, EventLevel)) {//开始事件
                 msg = "另一个队伍已经进入了该频道的#r组队任务#k。请尝试其他频道，或者等待当前队伍完成。";
             }
         } else {
-            list = em.getEligibleParty(cm.getParty());
             msg = "你目前无法开始这个组队任务，因为你的队伍可能不符合人数要求，有些队员可能不符合参与条件，或者他们不在这张地图上。如果你找不到队员，可以尝试使用组队搜索功能。\r\n";
         }
     }

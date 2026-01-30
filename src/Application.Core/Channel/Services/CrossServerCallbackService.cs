@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Application.Core.Channel.Services
 {
     /// <summary>
-    /// 第一个参数必须是IPlayer
+    /// 第一个参数必须是Player
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class SupportRemoteCallAttribute : Attribute
@@ -62,7 +62,7 @@ namespace Application.Core.Channel.Services
             _logger = logger;
         }
 
-        public void RunEventAfterLogin(IPlayer chr, RepeatedField<Dto.RemoteCallDto> list)
+        public void RunEventAfterLogin(Player chr, RepeatedField<Dto.RemoteCallDto> list)
         {
             foreach (var item in list)
             {
@@ -71,7 +71,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public void Invoke(Dto.RemoteCallDto data, IPlayer? chr = null)
+        public void Invoke(Dto.RemoteCallDto data, Player? chr = null)
         {
             if (!_cache.TryGetValue(data.CallbackName, out var method))
                 method = _adminService.GetType()

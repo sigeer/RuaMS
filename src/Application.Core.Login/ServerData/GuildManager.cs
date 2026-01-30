@@ -1,18 +1,25 @@
+using AllianceProto;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Guild;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility;
 using AutoMapper;
-using GuildProto;
 using Dto;
+using Google.Protobuf;
+using GuildProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using XmlWzReader;
 
 namespace Application.Core.Login.ServerData
 {
@@ -67,54 +74,73 @@ namespace Application.Core.Login.ServerData
             _logger.LogInformation("共加载了{GuildCount}个家族，{AllianceCount}个联盟", allGuilds.Count, allAliance.Count);
         }
 
-        public GuildProto.GuildDto? CreateGuild(string guildName, int leaderId, int[] members)
+        public async Task CreateGuild(GuildProto.CreateGuildRequest request)
         {
-            if (_nameGuildDataSource.Keys.Contains(guildName))
-                return null;
+            var res = new GuildProto.CreateGuildResponse { Request = request };
+            if (_nameGuildDataSource.ContainsKey(request.Name))
+            {
+                res.Code = (int)GuildUpdateResult.Create_NameDumplicate;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCreated, res, [request.LeaderId]);
+                return;
+            }
 
-            var header = _server.CharacterManager.FindPlayerById(leaderId);
+            var header = _server.CharacterManager.FindPlayerById(request.LeaderId);
             if (header == null || header.Character.GuildId > 0)
-                return null;
+            {
+                res.Code = (int)GuildUpdateResult.Create_AlreadyInGuild;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCreated, res, [request.LeaderId]);
+                return;
+            }
 
-            var guildModel = new GuildModel() { GuildId = Interlocked.Increment(ref _currentGuildId), Name = guildName, Leader = leaderId, Signature = _server.getCurrentTime() };
+            var memberList = request.Members.Select(_server.CharacterManager.FindPlayerById).Where(x => x != null).ToList();
+            if (memberList.Any(x => x!.Character.GuildId != 0))
+            {
+                res.Code = (int)GuildUpdateResult.Create_AlreadyInGuild;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCreated, res, [request.LeaderId]);
+                return;
+            }
+
+            var guildModel = new GuildModel() { 
+                GuildId = Interlocked.Increment(ref _currentGuildId), 
+                Name = request.Name, 
+                Leader = request.LeaderId, 
+                Signature = _server.getCurrentTime() 
+            };
 
             _idGuildDataSource[guildModel.GuildId] = guildModel;
             _nameGuildDataSource[guildModel.Name] = guildModel;
 
-            var memberList = members.Select(_server.CharacterManager.FindPlayerById).Where(x => x != null).ToList();
-            if (memberList.Any(x => x!.Character.GuildId != 0))
-                return null;
 
             foreach (var member in memberList)
             {
-                if (member!.Character.Id == leaderId)
+                if (member!.Character.Id == request.LeaderId)
                 {
                     header.Character.GuildId = guildModel.GuildId;
                     header.Character.GuildRank = 1;
                 }
                 else
                 {
-                    var cofounder = member!.Character.Party == header.Character.Party;
                     member.Character.GuildId = guildModel.GuildId;
-                    member.Character.GuildRank = cofounder ? 2 : 5;
+                    member.Character.GuildRank = 2;
                     member.Character.AllianceRank = 5;
                 }
             }
 
             SetGuildUpdate(guildModel);
-            var response = new GuildProto.GuildDto();
-            response.GuildId = guildModel.GuildId;
-            response.Leader = guildModel.Leader;
-            response.Members.AddRange(_mapper.Map<GuildProto.GuildMemberDto[]>(memberList));
-            return response;
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCreated, res, request.Members);
         }
 
         public GuildModel? GetLocalGuild(int guildId)
         {
-            if (_idGuildDataSource.TryGetValue(guildId, out var d) && d != null)
-                return d;
+            return _idGuildDataSource.GetValueOrDefault(guildId);
+        }
 
-            return null;
+        GuildProto.GuildDto? MapGuildDto(GuildModel data)
+        {
+            var response = _mapper.Map<GuildProto.GuildDto>(data);
+            response.Members.AddRange(_mapper.Map<GuildProto.GuildMemberDto[]>(GetGuildMembers(data)));
+            return response;
         }
         public GuildModel? FindGuildByName(string name) => _nameGuildDataSource.GetValueOrDefault(name);
         public GuildProto.GuildDto? GetGuildFull(int guildId)
@@ -128,6 +154,7 @@ namespace Application.Core.Login.ServerData
             return response;
         }
 
+
         List<CharacterLiveObject> GetGuildMembers(GuildModel guild)
         {
             return guild.Members.Select(_server.CharacterManager.FindPlayerById).Where(x => x != null).ToList()!;
@@ -139,25 +166,7 @@ namespace Application.Core.Login.ServerData
             _nameGuildDataSource.Clear();
         }
 
-        List<int> GetAllianceGuilds(int allianceId)
-        {
-            List<int> total = [];
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbData = dbContext.Guilds.Where(x => x.AllianceId == allianceId).ToList();
-            foreach (var guild in dbData)
-            {
-                var localData = GetLocalGuild(guild.GuildId);
-                if (localData != null && localData.AllianceId == allianceId)
-                {
-                    total.Add(localData.GuildId);
-                }
-            }
-
-            total.AddRange(_idGuildDataSource.Values.Where(x => x.AllianceId == allianceId).Select(x => x.GuildId));
-            return total.ToHashSet().ToList();
-        }
-
-        public void SendGuildChat(string nameFrom, string chatText)
+        public async Task SendGuildChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
@@ -166,33 +175,50 @@ namespace Application.Core.Login.ServerData
                 {
                     var onlinedGuildMembers = guild.Members.Where(x => x != sender.Character.Id).Select(_server.CharacterManager.FindPlayerById)
                         .Where(x => x != null && x.Channel > 0);
-                    _server.Transport.SendMultiChat(2, nameFrom, onlinedGuildMembers, chatText);
+                    await _server.Transport.SendMultiChatAsync(2, nameFrom, onlinedGuildMembers, chatText);
                 }
 
             }
         }
 
+
         #region
+
+        public IEnumerable<int> GetAllianceMembers(GuildModel guild)
+        {
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                return guild.Members;
+            }
+
+            return alliance.Guilds.Select(x => GetLocalGuild(x)).Where(x => x != null).SelectMany(x => x!.Members);
+        }
+        public IEnumerable<int> GetAllianceMembers(AllianceModel alliance)
+        {
+            return alliance.Guilds.Select(x => GetLocalGuild(x)).Where(x => x != null).SelectMany(x => x!.Members);
+        }
+        public IEnumerable<int> GetAllianceMembers(AllianceDto alliance)
+        {
+            return alliance.Guilds.SelectMany(x => x.Members.Select(y => y.Id));
+        }
         public AllianceModel? GetLocalAlliance(int allianceId)
         {
-            if (_idAllianceDataSource.TryGetValue(allianceId, out var d) && d != null)
-                return d;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var dbModel = dbContext.Alliances.AsNoTracking().FirstOrDefault(x => x.Id == allianceId);
-            d = _mapper.Map<AllianceModel>(dbModel);
-            d.Guilds = GetAllianceGuilds(allianceId);
-            return d;
+            return _idAllianceDataSource.GetValueOrDefault(allianceId);
         }
-        public AllianceProto.AllianceDto? GetAllianceFull(int guildId)
+        public AllianceProto.AllianceDto? GetAllianceDto(int allianceId)
         {
-            var data = GetLocalAlliance(guildId);
+            var data = GetLocalAlliance(allianceId);
             if (data == null)
                 return null;
 
+            return MapAllianceDto(data);
+        }
+
+        AllianceProto.AllianceDto MapAllianceDto(AllianceModel data)
+        {
             var response = _mapper.Map<AllianceProto.AllianceDto>(data);
-            response.Guilds.AddRange(data.Guilds);
+            response.Guilds.AddRange(data.Guilds.Select(x => GetGuildFull(x)));
             return response;
         }
 
@@ -200,41 +226,60 @@ namespace Application.Core.Login.ServerData
         {
             return new AllianceProto.CreateAllianceCheckResponse() { IsValid = !_nameAllianceDataSource.Keys.Contains(request.Name) };
         }
-        public AllianceProto.AllianceDto? CreateAlliance(int[] memberPlayers, string allianceName)
+        public async Task CreateAlliance(CreateAllianceRequest request)
         {
-            if (_nameAllianceDataSource.Keys.Contains(allianceName))
-                return null;
+            var res = new CreateAllianceResponse { Request = request };
+            if (_nameAllianceDataSource.Keys.Contains(request.Name))
+            {
+                res.Code = (int)AllianceUpdateResult.Create_NameInvalid;
+                return;
+            }
 
-            if (memberPlayers.Length != 2)
-                return null;
+            if (request.Members.Count != 2)
+            {
+                res.Code = (int)AllianceUpdateResult.Create_Error;
+                return;
+            }
 
-            var first = _server.CharacterManager.FindPlayerById(memberPlayers[0]);
+            var first = _server.CharacterManager.FindPlayerById(request.Members[0]);
             if (first == null)
-                return null;
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                return;
+            }
 
-            var second = _server.CharacterManager.FindPlayerById(memberPlayers[1]);
+            var second = _server.CharacterManager.FindPlayerById(request.Members[1]);
             if (second == null)
-                return null;
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                return;
+            }
 
             if (first.Character.GuildRank != 1 || second.Character.GuildRank != 1)
-                return null;
+            {
+                res.Code = (int)AllianceUpdateResult.NotGuildLeader;
+                return;
+            }
 
             var guild1 = GetLocalGuild(first.Character.GuildId);
             var guild2 = GetLocalGuild(second.Character.GuildId);
             if (guild1 == null || guild2 == null || guild1.AllianceId != 0 || guild2.AllianceId != 0)
-                return null;
+            {
+                res.Code = (int)AllianceUpdateResult.AlreadyInAlliance;
+                return;
+            }
 
             var allianceModel = new AllianceModel()
             {
                 Id = Interlocked.Increment(ref _currentAllianceId),
-                Name = allianceName,
+                Name = request.Name,
                 Guilds = [guild1.GuildId, guild2.GuildId],
                 Capacity = 2,
             };
 
             _idAllianceDataSource[allianceModel.Id] = allianceModel;
-            _nameAllianceDataSource[allianceName] = allianceModel;
-            SetAlliance(allianceModel);
+            _nameAllianceDataSource[request.Name] = allianceModel;
+            SetAllianceUpdate(allianceModel);
 
             guild1.AllianceId = allianceModel.Id;
             guild2.AllianceId = allianceModel.Id;
@@ -249,12 +294,11 @@ namespace Application.Core.Login.ServerData
             first.Character.AllianceRank = 1;
             second.Character.AllianceRank = 2;
 
-            var response = _mapper.Map<AllianceProto.AllianceDto>(allianceModel);
-            return response;
+            res.Model = _mapper.Map<AllianceProto.AllianceDto>(allianceModel);
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCreated, res, request.Members);
         }
 
-
-        public void SendAllianceChat(string nameFrom, string chatText)
+        public async Task SendAllianceChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
@@ -265,544 +309,975 @@ namespace Application.Core.Login.ServerData
                     {
                         var allianceMembers = alliance.Guilds.Select(GetLocalGuild)
                             .SelectMany(x => GetGuildMembers(x).Where(y => y.Character.Id != sender.Character.Id && y.Channel > 0));
-                        _server.Transport.SendMultiChat(3, nameFrom, allianceMembers, chatText);
+                        await _server.Transport.SendMultiChatAsync(3, nameFrom, allianceMembers, chatText);
                     }
                 }
 
             }
         }
 
-        public void SendGuildMessage(int guildId, int v, string callout)
+        public async Task SendGuildMessage(int guildId, int v, string callout)
         {
             if (_idGuildDataSource.TryGetValue(guildId, out var guild))
             {
-                _server.DropWorldMessage(v, callout, guild.Members.ToArray());
+                await _server.DropWorldMessage(v, callout, guild.Members.ToArray());
             }
         }
 
-        public void SendGuildPacket(GuildProto.GuildPacketRequest data)
+        public async Task SendGuildPacket(GuildProto.GuildPacketRequest data)
         {
             if (_idGuildDataSource.TryGetValue(data.GuildId, out var guild))
             {
-                _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Except([data.ExceptChrId]));
+                await _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Where(x => x != data.ExceptChrId));
             }
         }
 
-        private int HandleGuildRequest(int masterId, Func<GuildModel, GuildUpdateResult> guildAction, out GuildUpdateResult code)
+        public async Task UpdateGuildGPAsync(UpdateGuildGPRequest request)
         {
-            var master = _server.CharacterManager.FindPlayerById(masterId);
+            var response = new UpdateGuildGPResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
-                code = GuildUpdateResult.PlayerNotExisted;
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildGpUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildGpUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            guild.GP += request.Gp;
+
+            response.GuildGP = guild.GP;
+
+            response.GuildMembers.AddRange(guild.Members);
+            response.GuildId = guild.GuildId;
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildGpUpdate, response, response.GuildMembers);
+        }
+
+        public async Task UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
+        {
+            var response = new UpdateGuildRankTitleResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankTitleUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankTitleUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            guild.Rank1Title = request.RankTitles[0];
+            guild.Rank2Title = request.RankTitles[1];
+            guild.Rank3Title = request.RankTitles[2];
+            guild.Rank4Title = request.RankTitles[3];
+            guild.Rank5Title = request.RankTitles[4];
+            SetGuildUpdate(guild);
+
+            response.GuildId = guild.GuildId;
+            response.GuildMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankTitleUpdate, response, response.GuildMembers);
+        }
+
+        public async Task UpdateGuildNotice(UpdateGuildNoticeRequest request)
+        {
+            var response = new UpdateGuildNoticeResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildNoticeUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildNoticeUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            guild.Notice = request.Notice;
+            SetGuildUpdate(guild);
+
+            response.GuildId = guild.GuildId;
+            response.GuildMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildNoticeUpdate, response, response.GuildMembers);
+        }
+
+        public async Task IncreseGuildCapacity(UpdateGuildCapacityRequest request)
+        {
+            var response = new UpdateGuildCapacityResponse { Request = request };
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            if (guild.Capacity > 99)
+            {
+                response.Code = (int)GuildUpdateResult.GuildFull;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            guild.Capacity += 5;
+            SetGuildUpdate(guild);
+
+            response.GuildCapacity = guild.Capacity;
+            response.GuildId = guild.GuildId;
+            response.GuildMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, response.GuildMembers);
+        }
+
+        public async Task UpdateGuildEmblem(UpdateGuildEmblemRequest request)
+        {
+            var response = new UpdateGuildEmblemResponse {  Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildEmblemUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildEmblemUpdate, response, [request.MasterId]);
+                return;
+            }
+
+            guild.Logo = request.Logo;
+            guild.LogoBg = request.LogoBg;
+            guild.LogoColor = (short)request.LogoColor;
+            guild.LogoBgColor = (short)request.LogoBgColor;
+            SetGuildUpdate(guild);
+
+            response.GuildId = guild.GuildId;
+            response.AllianceId = guild.AllianceId;
+            response.AllianceDto = GetAllianceDto(guild.AllianceId);
+            if (response.AllianceDto != null)
+            {
+                response.AllMembers.AddRange(GetAllianceMembers(response.AllianceDto));
             }
             else
             {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    code = GuildUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    SetGuildUpdate(guild!);
-                    code = guildAction(guild);
-                    return guild.GuildId;
-                }
+                response.AllMembers.AddRange(guild.Members);
             }
-            return 0;
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildEmblemUpdate, response, response.AllMembers);
         }
 
-        private int HandleGuildRequest(int masterId, Func<GuildModel, CharacterLiveObject, GuildUpdateResult> guildAction, out GuildUpdateResult code)
+        public async Task DisbandGuild(GuildDisbandRequest request)
         {
-            var master = _server.CharacterManager.FindPlayerById(masterId);
+            var response = new GuildDisbandResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
-                code = GuildUpdateResult.PlayerNotExisted;
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildDisband, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildDisband, response, [request.MasterId]);
+                return;
+            }
+
+            List<int> notifyMembers = [];
+            notifyMembers.AddRange(guild.Members);
+            foreach (var member in GetGuildMembers(guild))
+            {
+                if (member != null)
+                {
+                    member.Character.GuildId = 0;
+                    member.Character.GuildRank = 5;
+                    member.Character.AllianceRank = 5;
+                }
+            }
+
+            if (guild.AllianceId > 0)
+            {
+                var alliance = GetLocalAlliance(guild.AllianceId);
+                if (alliance != null)
+                {
+                    alliance.TryRemoveGuild(guild.GuildId, out _);
+
+                    response.AllianceId = guild.AllianceId;
+                    response.AllianceDto = MapAllianceDto(alliance);
+                    notifyMembers.AddRange(response.AllianceDto.Guilds.SelectMany(x => x.Members.Select(y => y.Id)));
+                }
+                guild.AllianceId = 0;
+            }
+
+
+            SetGuildRemoved(guild!);
+            response.GuildId = guild.GuildId;
+
+            response.AllMembers.AddRange(notifyMembers);
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildDisband, response, notifyMembers);
+        }
+
+
+        public async Task ChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
+        {
+            var response = new UpdateGuildMemberRankResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, [request.MasterId]);
+                return;
+            }
+
+            var chrTo = _server.CharacterManager.FindPlayerById(request.TargetPlayerId);
+            if (chrTo == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, [request.MasterId]);
+                return;
+            }
+
+            if (master.Character.GuildId != chrTo.Character.GuildId || master.Character.GuildRank >= chrTo.Character.GuildRank)
+            {
+                response.Code = (int)GuildUpdateResult.MasterRankFail;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, [request.MasterId]);
+                return;
+            }
+
+            chrTo.Character.GuildRank = request.NewRank;
+
+            response.GuildId = guild.GuildId;
+            response.GuildMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, response.GuildMembers);
+        }
+
+        public async Task GuildExpelMember(ExpelFromGuildRequest request)
+        {
+            var response = new ExpelFromGuildResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, [request.MasterId]);
+                return;
+            }
+
+            var chrTo = _server.CharacterManager.FindPlayerById(request.TargetPlayerId);
+            if (chrTo == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, [request.MasterId]);
+                return;
+            }
+
+            if (master.Character.GuildRank > 2)
+            {
+                _logger.LogWarning("[Hack] Chr {CharacterName} is trying to expel without rank 1 or 2", master.Character.Name);
+                response.Code = (int)GuildUpdateResult.MasterRankFail;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, [request.MasterId]);
+                return;
+            }
+
+            if (master.Character.GuildId != chrTo.Character.GuildId || master.Character.GuildRank >= chrTo.Character.GuildRank)
+            {
+                response.Code = (int)GuildUpdateResult.MasterRankFail;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, [request.MasterId]);
+                return;
+            }
+
+            List<int> notifyMembers = [];
+
+            if (chrTo.Channel == 0)
+            {
+                await _server.NoteManager
+                    .SendNormal("You have been expelled from the guild.", master.Character.Id, chrTo.Character.Name);
+            }
+
+            chrTo.Character.GuildId = 0;
+            chrTo.Character.GuildRank = 5;
+            chrTo.Character.AllianceRank = 5;
+
+            guild.Members.Remove(chrTo.Character.Id);
+            SetGuildUpdate(guild);
+
+            response.GuildId = guild.GuildId;
+            response.TargetName = chrTo.Character.Name;
+
+            response.AllianceId = guild.AllianceId;
+            response.AllianceDto = GetAllianceDto(guild.AllianceId);
+            if (response.AllianceDto != null)
+            {
+                response.AllLeftMembers.AddRange(GetAllianceMembers(response.AllianceDto));
             }
             else
             {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    code = GuildUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    code = guildAction(guild, master);
-                    return guild.GuildId;
-                }
+                response.AllLeftMembers.AddRange(guild.Members);
             }
-            return 0;
+
+
+            notifyMembers.Add(request.MasterId); // 操作者
+            notifyMembers.Add(request.TargetPlayerId); // 被操作者
+            notifyMembers.AddRange(response.AllLeftMembers); // 家族/联盟剩余人员
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, notifyMembers);
         }
 
-        public void UpdateGuildGP(UpdateGuildGPRequest request)
+        public async Task PlayerLeaveGuild(LeaveGuildRequest request)
         {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                guild.GP += request.Gp;
-                return GuildUpdateResult.Success;
-            }, out var code);
-            var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildGPUpdate(response);
-        }
+            var response = new LeaveGuildResponse { Request = request };
 
-        public void UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                guild.Rank1Title = request.RankTitles[0];
-                guild.Rank2Title = request.RankTitles[1];
-                guild.Rank3Title = request.RankTitles[2];
-                guild.Rank4Title = request.RankTitles[3];
-                guild.Rank5Title = request.RankTitles[4];
-
-                return GuildUpdateResult.Success;
-            }, out var code);
-            var response = new UpdateGuildRankTitleResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildRankTitleUpdate(response);
-        }
-
-        public void UpdateGuildNotice(UpdateGuildNoticeRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                guild.Notice = request.Notice;
-                return GuildUpdateResult.Success;
-            }, out var code);
-            var response = new UpdateGuildNoticeResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildNoticeUpdate(response);
-        }
-
-        public void IncreseGuildCapacity(UpdateGuildCapacityRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                if (guild.Capacity > 99)
-                    return GuildUpdateResult.GuildFull;
-
-                guild.Capacity += 5;
-                return GuildUpdateResult.Success;
-            }, out var code);
-
-            var response = new UpdateGuildCapacityResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildCapacityUpdate(response);
-        }
-
-        public void UpdateGuildEmblem(UpdateGuildEmblemRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                guild.Logo = request.Logo;
-                guild.LogoBg = request.LogoBg;
-                guild.LogoColor = (short)request.LogoColor;
-                guild.LogoBgColor = (short)request.LogoBgColor;
-
-                return GuildUpdateResult.Success;
-            }, out var code);
-
-            var response = new UpdateGuildEmblemResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildEmblemUpdate(response);
-        }
-
-        public void DisbandGuild(GuildDisbandRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, guild =>
-            {
-                foreach (var member in GetGuildMembers(guild))
-                {
-                    if (member != null)
-                    {
-                        member.Character.GuildId = 0;
-                        member.Character.GuildRank = 5;
-                    }
-                }
-                if (guild.AllianceId > 0)
-                {
-                    var alliance = GetLocalAlliance(guild.AllianceId);
-                    if (alliance != null)
-                        alliance.TryRemoveGuild(guild.GuildId, out _);
-                    guild.AllianceId = 0;
-                }
-                _idGuildDataSource.Remove(guild.GuildId, out _);
-                _nameGuildDataSource.Remove(guild.Name, out _);
-                SetGuildRemoved(guild!);
-
-                return GuildUpdateResult.Success;
-            }, out var code);
-
-            var response = new GuildDisbandResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildDisband(response);
-        }
-
-        public void ChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, (guild, master) =>
-            {
-                var chrTo = _server.CharacterManager.FindPlayerById(request.TargetPlayerId);
-                if (chrTo == null)
-                    return GuildUpdateResult.PlayerNotExisted;
-
-                if (master.Character.GuildId == chrTo.Character.GuildId && master.Character.GuildRank < chrTo.Character.GuildRank)
-                {
-                    chrTo.Character.GuildRank = request.NewRank;
-                    return GuildUpdateResult.Success;
-                }
-                return GuildUpdateResult.MasterRankFail;
-            }, out var code);
-
-            var response = new UpdateGuildMemberRankResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildRankChanged(response);
-        }
-
-        public void GuildExpelMember(ExpelFromGuildRequest request)
-        {
-            var guildId = HandleGuildRequest(request.MasterId, (guild, master) =>
-            {
-                var chrTo = _server.CharacterManager.FindPlayerById(request.TargetPlayerId);
-                if (chrTo == null)
-                    return GuildUpdateResult.PlayerNotExisted;
-
-                if (master.Character.GuildRank > 2)
-                {
-                    _logger.LogWarning("[Hack] Chr {CharacterName} is trying to expel without rank 1 or 2", master.Character.Name);
-                    return GuildUpdateResult.MasterRankFail;
-                }
-
-                if (master.Character.GuildId == chrTo.Character.GuildId && master.Character.GuildRank < chrTo.Character.GuildRank)
-                {
-                    if (chrTo.Channel == 0)
-                    {
-                        _server.NoteManager
-                            .SendNormal("You have been expelled from the guild.", master.Character.Id, chrTo.Character.Name);
-                    }
-
-                    chrTo.Character.GuildId = 0;
-                    chrTo.Character.GuildRank = 5;
-                    guild.Members.Remove(chrTo.Character.Id);
-                    return GuildUpdateResult.Success;
-                }
-                return GuildUpdateResult.MasterRankFail;
-            }, out var code);
-
-            var response = new ExpelFromGuildResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastGuildExpelMember(response);
-        }
-
-        public void PlayerLeaveGuild(LeaveGuildRequest request)
-        {
-            var guildId = HandleGuildRequest(request.PlayerId, (guild, master) =>
-            {
-                if (master.Character.Id == guild.Leader)
-                {
-                    // disband
-                    DisbandGuild(new GuildDisbandRequest { MasterId = request.PlayerId });
-                }
-                else
-                {
-                    master.Character.GuildId = 0;
-                    master.Character.GuildRank = 5;
-                }
-                return 0;
-            }, out var code);
-
-            var response = new LeaveGuildResponse { Code = (int)code, Request = request, GuildId = guildId };
-            _server.Transport.BroadcastPlayerLeaveGuild(response);
-        }
-
-        public void PlayerJoinGuild(JoinGuildRequest request)
-        {
-            GuildUpdateResult code = GuildUpdateResult.Success;
             var master = _server.CharacterManager.FindPlayerById(request.PlayerId);
-            if (master != null)
+            if (master == null)
             {
-                if (master.Character.GuildId > 0)
-                    code = GuildUpdateResult.Join_AlreadyInGuild;
-                else
-                {
-                    var guild = GetLocalGuild(request.GuildId);
-                    if (guild == null)
-                    {
-                        code = GuildUpdateResult.GuildNotExisted;
-                    }
-                    else if (guild.Members.Count >= guild.Members.Capacity)
-                    {
-                        code = GuildUpdateResult.GuildFull;
-                    }
-                    else
-                    {
-                        guild.Members.Add(master.Character.Id);
-                        master.Character.GuildId = guild.GuildId;
-                        master.Character.GuildRank = 5;
-                    }
-                }
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response, [request.PlayerId]);
+                return;
             }
 
-            var response = new JoinGuildResponse { Code = (int)code, Request = request };
-            _server.Transport.BroadcastPlayerJoinGuild(response);
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            if (master.Character.Id == guild.Leader)
+            {
+                response.Code = (int)GuildUpdateResult.LeaderCannotLeave;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            master.Character.GuildId = 0;
+            master.Character.GuildRank = 5;
+            master.Character.AllianceRank = 5;
+
+            List<int> notifyMembers = [];
+
+            guild.Members.Remove(master.Character.Id);
+            SetGuildUpdate(guild);
+
+            response.GuildId = guild.GuildId;
+            response.MasterName = master.Character.Name;
+
+            response.AllianceId = guild.AllianceId;
+            response.AllianceDto = GetAllianceDto(guild.AllianceId);
+            if (response.AllianceDto != null)
+            {
+                response.AllLeftMembers.AddRange(GetAllianceMembers(response.AllianceDto));
+            }
+            else
+            {
+                response.AllLeftMembers.AddRange(guild.Members);
+            }
+
+            notifyMembers.Add(request.PlayerId);
+            notifyMembers.AddRange(response.AllLeftMembers);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response, notifyMembers);
+        }
+
+        public async Task PlayerJoinGuild(JoinGuildRequest request)
+        {
+            var response = new JoinGuildResponse { Request = request };
+            var master = _server.CharacterManager.FindPlayerById(request.PlayerId);
+            if (master == null)
+            {
+                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            if (master.Character.GuildId > 0)
+            {
+                response.Code = (int)GuildUpdateResult.Join_AlreadyInGuild;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(request.GuildId);
+            if (guild == null)
+            {
+                response.Code = (int)GuildUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            if (guild.Members.Count >= guild.Members.Capacity)
+            {
+                response.Code = (int)GuildUpdateResult.GuildFull;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, [request.PlayerId]);
+                return;
+            }
+
+            guild.Members.Add(master.Character.Id);
+            SetGuildUpdate(guild);
+
+            master.Character.GuildId = guild.GuildId;
+            master.Character.GuildRank = 5;
+            master.Character.AllianceRank = 5;
+
+            response.GuildDto = MapGuildDto(guild);
+
+            response.AllianceId = guild.AllianceId;
+            response.AllianceDto = GetAllianceDto(guild.AllianceId);
+            if (response.AllianceDto != null)
+            {
+                response.AllMembers.AddRange(GetAllianceMembers(response.AllianceDto));
+            }
+            else
+            {
+                response.AllMembers.AddRange(guild.Members);
+            }
+
+            List<int> notifyMembers = [];
+            notifyMembers.Add(request.PlayerId);
+            notifyMembers.AddRange(response.AllMembers); 
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, notifyMembers);
         }
 
         #endregion
 
         #region Alliance
-        private (int, int) HandleAllianceRequest(int masterId, Func<CharacterLiveObject, AllianceModel, GuildModel, AllianceUpdateResult> guildAction, out AllianceUpdateResult code)
-        {
-            var master = _server.CharacterManager.FindPlayerById(masterId);
-            if (master == null)
-            {
-                code = AllianceUpdateResult.PlayerNotExisted;
-            }
-            else
-            {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    code = AllianceUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    var alliance = GetLocalAlliance(guild.AllianceId);
-                    if (alliance == null)
-                    {
-                        code = AllianceUpdateResult.AllianceNotFound;
-                    }
-                    else
-                    {
-                        code = guildAction(master, alliance, guild);
-                        SetGuildUpdate(guild!);
-                        return (alliance.Id, guild.GuildId);
-                    }
-                }
-            }
-            return (0, 0);
-        }
-        public void GuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
+        public async Task GuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
         {
             var response = new AllianceProto.GuildJoinAllianceResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
                 response.Code = (int)AllianceUpdateResult.PlayerNotExisted;
-            }
-            else
-            {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    response.Code = (int)AllianceUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    if (guild.AllianceId > 0)
-                    {
-                        response.Code = (int)AllianceUpdateResult.GuildAlreadyInAlliance;
-                    }
-                    else
-                    {
-                        var alliance = GetLocalAlliance(request.AllianceId);
-                        if (alliance == null)
-                        {
-                            response.Code = (int)AllianceUpdateResult.AllianceNotFound;
-                        }
-                        else
-                        {
-                            if (alliance.TryAddGuild(guild.GuildId, out var code))
-                            {
-                                var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
-                                foreach (var member in guildMembers)
-                                {
-                                    if (member != null)
-                                        member.Character.AllianceRank = 5;
-                                }
-                                guild.AllianceId = alliance.Id;
-                                master.Character.AllianceRank = 2;
-
-                                response.GuildId = guild.GuildId;
-                                response.AllianceId = alliance.Id;
-                            }
-                            else
-                            {
-                                response.Code = (int)code;
-                            }
-                        }
-                    }
-                }
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, [request.MasterId]);
+                return;
             }
 
-            _server.Transport.BroadcastGuildJoinAlliance(response);
-        }
-
-        public void GuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
-        {
-            var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
             {
-                if (master.Character.GuildRank != 1)
-                {
-                    return AllianceUpdateResult.NotGuildLeader;
-                }
-                if (alliance.TryRemoveGuild(master.Character.GuildId, out var code))
-                {
-                    guild.AllianceId = 0;
+                response.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, [request.MasterId]);
+                return;
+            }
 
-                    var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
-                    foreach (var member in guildMembers)
-                    {
-                        if (member != null)
-                            member.Character.AllianceRank = 5;
-                    }
-                    return AllianceUpdateResult.Success;
-                }
-                return code;
-            }, out var code);
-
-            _server.Transport.BroadcastGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
-        }
-
-        public void AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
-        {
-            var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            if (guild.AllianceId > 0)
             {
-                if (master.Character.AllianceRank != 1)
-                {
-                    return AllianceUpdateResult.NotAllianceLeader;
-                }
-                if (alliance.TryRemoveGuild(guild.GuildId, out var code))
-                {
-                    guild.AllianceId = 0;
-                    var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
-                    foreach (var member in guildMembers)
-                    {
-                        if (member != null)
-                            member.Character.AllianceRank = 5;
-                    }
-                }
-                return code;
-            }, out var code);
+                response.Code = (int)AllianceUpdateResult.AlreadyInAlliance;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, [request.MasterId]);
+                return;
+            }
 
-            _server.Transport.BroadcastAllianceExpelGuild(new AllianceProto.AllianceExpelGuildResponse { Code = (int)code, Request = request, AllianceId = allianceId, GuildId = guildId });
-        }
-
-        public void IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
-        {
-            var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            var alliance = GetLocalAlliance(request.AllianceId);
+            if (alliance == null)
             {
-                alliance.Capacity += 1;
-                SetAlliance(alliance);
-                return 0;
-            }, out var code);
+                response.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, [request.MasterId]);
+                return;
+            }
 
-            _server.Transport.BroadcastAllianceCapacityIncreased(new AllianceProto.IncreaseAllianceCapacityResponse { Code = (int)code, Request = request, AllianceId = allianceId });
-        }
-
-        public void UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
-        {
-            var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            if (!alliance.TryAddGuild(guild.GuildId, out var code))
             {
-                alliance.Rank1 = request.RankTitles[0];
-                alliance.Rank2 = request.RankTitles[1];
-                alliance.Rank3 = request.RankTitles[2];
-                alliance.Rank4 = request.RankTitles[3];
-                alliance.Rank5 = request.RankTitles[4];
-                SetAlliance(alliance);
-                return 0;
-            }, out var code);
+                response.Code = (int)code;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, [request.MasterId]);
+                return;
+            }
+            SetAllianceUpdate(alliance);
 
-            _server.Transport.BroadcastAllianceRankTitleChanged(new AllianceProto.UpdateAllianceRankTitleResponse { Code = (int)code, Request = request, AllianceId = allianceId });
-        }
-
-        public void UpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
-        {
-            var (allianceId, _) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
+            foreach (var member in guildMembers)
             {
-                alliance.Notice = request.Notice;
-                SetAlliance(alliance);
-                return 0;
-            }, out var code);
+                if (member != null)
+                    member.Character.AllianceRank = 5;
+            }
+            guild.AllianceId = alliance.Id;
+            SetGuildUpdate(guild);
 
-            _server.Transport.BroadcastAllianceNoticeChanged(new AllianceProto.UpdateAllianceNoticeResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            master.Character.AllianceRank = 2;
+
+            response.GuildId = guild.GuildId;
+            response.AllianceId = alliance.Id;
+            response.AllianceDto = MapAllianceDto(alliance);
+
+            List<int> notifyMembers = [];
+            notifyMembers.AddRange(GetAllianceMembers(response.AllianceDto));
+            notifyMembers.Add(request.MasterId);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, notifyMembers);
         }
 
-        public void ChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
+        public async Task GuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
         {
-            var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
+            var res = new AllianceProto.GuildLeaveAllianceResponse { Request = request };
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
             {
-                if (master.Character.AllianceRank != 1)
-                {
-                    return AllianceUpdateResult.NotAllianceLeader;
-                }
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, [request.MasterId]);
+                return;
+            }
 
-                var newLeader = _server.CharacterManager.FindPlayerById(request.PlayerId);
-                if (newLeader == null)
-                {
-                    return AllianceUpdateResult.LeaderNotExisted;
-                }
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, [request.MasterId]);
+                return;
+            }
 
-                if (newLeader.Character.GuildRank != 2)
-                {
-                    return AllianceUpdateResult.NotGuildLeader;
-                }
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, [request.MasterId]);
+                return;
+            }
 
-                if (newLeader.Channel < 1)
-                {
-                    return AllianceUpdateResult.PlayerNotOnlined;
-                }
+            if (!alliance.TryRemoveGuild(master.Character.GuildId, out var code))
+            {
+                res.Code = (int)code;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, [request.MasterId]);
+                return;
+            }
+            SetAllianceUpdate(alliance);
 
-                master.Character.AllianceRank = 2;
-                newLeader.Character.AllianceRank = 1;
-                return 0;
-            }, out var code);
+            guild.AllianceId = 0;
+            var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
+            foreach (var member in guildMembers)
+            {
+                if (member != null)
+                    member.Character.AllianceRank = 5;
+            }
+            SetGuildUpdate(guild);
 
-            _server.Transport.BroadcastAllianceLeaderChanged(new AllianceProto.AllianceChangeLeaderResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            res.AllianceId = alliance.Id;
+            res.AllianceDto = MapAllianceDto(alliance);
+            res.GuildDto = MapGuildDto(guild);
+            res.GuildId = guild.GuildId;
+
+            List<int> notifyMembers = [];
+            notifyMembers.AddRange(GetAllianceMembers(res.AllianceDto));
+            notifyMembers.Add(request.MasterId);
+            notifyMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, notifyMembers);
         }
 
-        public void ChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
+        public async Task AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
         {
-            int newRank = 0;
-            var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
-            {
-                var targetPlayer = _server.CharacterManager.FindPlayerById(request.PlayerId);
-                if (targetPlayer == null)
-                {
-                    return AllianceUpdateResult.PlayerNotExisted;
-                }
-                newRank = targetPlayer.Character.AllianceRank + request.Delta;
-                if (newRank < 3 || newRank > 5)
-                {
-                    return AllianceUpdateResult.RankLimitted;
-                }
-                targetPlayer.Character.AllianceRank = newRank;
-                return 0;
-            }, out var code);
+            var res = new AllianceProto.AllianceExpelGuildResponse { Request = request };
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
-            _server.Transport.BroadcastAllianceMemberRankChanged(new AllianceProto.ChangePlayerAllianceRankResponse { Code = (int)code, NewRank = newRank, Request = request, AllianceId = allianceId });
+            var guild = GetLocalGuild(masterChr.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, [request.MasterId]);
+                return;
+            }
+
+            if (!_idAllianceDataSource.TryGetValue(guild.AllianceId, out var alliance))
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, [request.MasterId]);
+                return;
+            }
+
+            if (masterChr.Character.AllianceRank != 1)
+            {
+                res.Code = (int)AllianceUpdateResult.NotAllianceLeader;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, [request.MasterId]);
+                return;
+            }
+
+            if (!alliance.TryRemoveGuild(guild.GuildId, out var code))
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotInAlliance;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, [request.MasterId]);
+                return;
+            }
+            SetAllianceUpdate(alliance);
+
+            guild.AllianceId = 0;
+            var guildMembers = guild.Members.Select(_server.CharacterManager.FindPlayerById);
+            foreach (var member in guildMembers)
+            {
+                if (member != null)
+                    member.Character.AllianceRank = 5;
+            }
+            SetGuildUpdate(guild);
+
+            res.GuildId = guild.GuildId;
+            res.GuildDto = MapGuildDto(guild);
+
+            res.AllianceId = alliance.Id;
+            res.AllianceDto = MapAllianceDto(alliance);
+
+            List<int> notifyMembers = [];
+            notifyMembers.AddRange(GetAllianceMembers(res.AllianceDto));
+            notifyMembers.Add(request.MasterId);
+            notifyMembers.AddRange(guild.Members);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, notifyMembers);
         }
 
-        public void DisbandAlliance(AllianceProto.DisbandAllianceRequest request)
+        public async Task IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
         {
-            var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
-            {
-                if (master.Character.AllianceRank != 1)
-                {
-                    return AllianceUpdateResult.NotAllianceLeader;
-                }
-                var allianceGuilds = alliance.Guilds.Select(GetLocalGuild).ToList();
-                foreach (var item in allianceGuilds)
-                {
-                    item.AllianceId = 0;
-                    var guildMembers = item.Members.Select(_server.CharacterManager.FindPlayerById);
-                    foreach (var member in guildMembers)
-                    {
-                        if (member != null)
-                            member.Character.AllianceRank = 5;
-                    }
-                }
-                SetAllianceRemoved(alliance);
-                return 0;
-            }, out var code);
+            var res = new AllianceProto.IncreaseAllianceCapacityResponse { Request = request };
 
-            _server.Transport.BroadcastAllianceDisband(new AllianceProto.DisbandAllianceResponse { Code = (int)code, Request = request, AllianceId = allianceId });
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            alliance.Capacity += 1;
+            SetAllianceUpdate(alliance);
+
+            res.AllianceId = alliance.Id;
+            res.AllianceDto = MapAllianceDto(alliance);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res,  GetAllianceMembers(res.AllianceDto));
+        }
+
+        public async Task UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
+        {
+            var res = new AllianceProto.UpdateAllianceRankTitleResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            alliance.Rank1 = request.RankTitles[0];
+            alliance.Rank2 = request.RankTitles[1];
+            alliance.Rank3 = request.RankTitles[2];
+            alliance.Rank4 = request.RankTitles[3];
+            alliance.Rank5 = request.RankTitles[4];
+            SetAllianceUpdate(alliance);
+
+            res.AllianceId = alliance.Id;
+            res.AllMembers.AddRange(GetAllianceMembers(alliance));
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, res, res.AllMembers);
+        }
+
+        public async Task UpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
+        {
+            var res = new AllianceProto.UpdateAllianceNoticeResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, res, [request.MasterId]);
+                return;
+            }
+
+            alliance.Notice = request.Notice;
+            SetAllianceUpdate(alliance);
+
+            res.AllianceId = alliance.Id;
+            res.AllMembers.AddRange(GetAllianceMembers(alliance));
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, res, res.AllMembers);
+        }
+
+        public async Task ChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
+        {
+            var res = new AllianceProto.AllianceChangeLeaderResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            if (master.Character.AllianceRank != 1)
+            {
+                res.Code = (int)AllianceUpdateResult.NotAllianceLeader;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var newLeader = _server.CharacterManager.FindPlayerById(request.PlayerId);
+            if (newLeader == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            if (newLeader.Character.AllianceRank != 2)
+            {
+                res.Code = (int)AllianceUpdateResult.NotGuildLeader;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, [request.MasterId]);
+                return;
+            }
+
+            master.Character.AllianceRank = 2;
+            newLeader.Character.AllianceRank = 1;
+
+            res.AllianceId = alliance.Id;
+            res.OldLeaderName = master.Character.Name;
+            res.NewLeaderName = newLeader.Character.Name;
+            res.AllianceDto = MapAllianceDto(alliance);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, GetAllianceMembers(res.AllianceDto));
+        }
+
+        public async Task ChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
+        {
+            var res = new AllianceProto.ChangePlayerAllianceRankResponse { Request = request };
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (master == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var guild = GetLocalGuild(master.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var alliance = GetLocalAlliance(guild.AllianceId);
+            if (alliance == null)
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var targetPlayer = _server.CharacterManager.FindPlayerById(request.PlayerId);
+            if (targetPlayer == null)
+            {
+                res.Code = (int)AllianceUpdateResult.PlayerNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, [request.MasterId]);
+                return;
+            }
+
+            var newRank = targetPlayer.Character.AllianceRank + request.Delta;
+            if (newRank < 3 || newRank > 5)
+            {
+                res.Code = (int)AllianceUpdateResult.RankLimitted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, [request.MasterId]);
+                return;
+            }
+
+            targetPlayer.Character.AllianceRank = newRank;
+
+            res.AllianceId = alliance.Id;
+            res.NewRank = newRank;
+            res.AllianceDto = MapAllianceDto(alliance);
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, GetAllianceMembers(res.AllianceDto));
+        }
+
+        public async Task DisbandAlliance(AllianceProto.DisbandAllianceRequest request)
+        {
+            var res = new AllianceProto.DisbandAllianceResponse { Request = request };
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
+
+            var guild = GetLocalGuild(masterChr.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceDisband, res, [request.MasterId]);
+                return;
+            }
+
+            if (!_idAllianceDataSource.TryRemove(guild.AllianceId, out var alliance))
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceDisband, res, [request.MasterId]);
+                return;
+            }
+
+            if (masterChr.Character.AllianceRank != 1)
+            {
+                res.Code = (int)AllianceUpdateResult.NotAllianceLeader;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceDisband, res, [request.MasterId]);
+                return;
+            }
+
+            var allianceGuilds = alliance.Guilds.Select(GetLocalGuild).ToList();
+            foreach (var item in allianceGuilds)
+            {
+                item!.AllianceId = 0;
+
+                var guildMembers = item.Members.Select(_server.CharacterManager.FindPlayerById);
+                foreach (var member in guildMembers)
+                {
+                    if (member != null)
+                        member.Character.AllianceRank = 5;
+                }
+                res.AllMembers.AddRange(item.Members);
+                SetGuildUpdate(item);
+            }
+            SetAllianceRemoved(alliance);
+
+            res.AllianceId = alliance.Id;
+            res.Guilds.AddRange(alliance.Guilds);
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceDisband, res, res.AllMembers);
 
         }
 
+        public async Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request)
+        {
+            var res = new AllianceProto.AllianceBroadcastPlayerInfoResponse { Request = request };
+            var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
+
+            var guild = GetLocalGuild(masterChr.Character.GuildId);
+            if (guild == null)
+            {
+                res.Code = (int)AllianceUpdateResult.GuildNotExisted;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAlliancePlayerInfoBroadcast, res, [request.MasterId]);
+                return;
+            }
+
+            if (!_idAllianceDataSource.TryRemove(guild.AllianceId, out var alliance))
+            {
+                res.Code = (int)AllianceUpdateResult.AllianceNotFound;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnAlliancePlayerInfoBroadcast, res, [request.MasterId]);
+                return;
+            }
+
+            res.AllianceId = guild.AllianceId;
+            res.AllMembers.AddRange(GetAllianceMembers(alliance));
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAlliancePlayerInfoBroadcast, res, res.AllMembers);
+        }
         #endregion
 
         public QueryRankedGuildsResponse LoadRankedGuilds()
@@ -813,23 +1288,26 @@ namespace Application.Core.Login.ServerData
             return res;
         }
 
-        #region Guild
-        ConcurrentDictionary<int, StoreUnit<GuildModel>> _guild = new();
+        #region Guild Storage
+        ConcurrentDictionary<int, StoreUnit<GuildModel>> _guildStorage = new();
         public void SetGuildUpdate(GuildModel data)
         {
-            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.AddOrUpdate, data);
+            _guildStorage[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.AddOrUpdate, data);
         }
         public void SetGuildRemoved(GuildModel data)
         {
-            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.Remove, data);
+            _idGuildDataSource.Remove(data.GuildId, out _);
+            _nameGuildDataSource.Remove(data.Name, out _);
+
+            _guildStorage[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.Remove, data);
         }
         public async Task CommitGuildAsync(DBContext dbContext)
         {
             var updateData = new Dictionary<int, StoreUnit<GuildModel>>();
-            foreach (var key in _guild.Keys.ToList())
+            foreach (var key in _guildStorage.Keys.ToList())
             {
-                _guild.TryRemove(key, out var d);
-                updateData[key] = d;
+                _guildStorage.TryRemove(key, out var d);
+                updateData[key] = d!;
             }
 
             var updateCount = updateData.Count;
@@ -837,24 +1315,24 @@ namespace Application.Core.Login.ServerData
                 return;
 
             var dbData = dbContext.Guilds.Where(x => updateData.Keys.Contains(x.GuildId)).ToList();
-            foreach (var item in updateData.Values)
+            foreach (var item in updateData)
             {
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.Remove)
+                var obj = item.Value.Data;
+                if (item.Value.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
-                    await dbContext.Guilds.Where(x => x.GuildId == obj.GuildId).ExecuteDeleteAsync();
+                    await dbContext.Guilds.Where(x => x.GuildId == item.Key).ExecuteDeleteAsync();
                 }
                 else
                 {
-                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == obj.GuildId);
+                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == item.Key);
                     if (dbModel == null)
                     {
-                        dbModel = new GuildEntity(obj.GuildId, obj.Name, obj.Leader);
+                        dbModel = new GuildEntity(item.Key, obj!.Name, obj.Leader);
                         dbContext.Add(dbModel);
                     }
-                    dbModel.GP = obj.GP;
+                    dbModel.GP = obj!.GP;
                     dbModel.Rank1Title = obj.Rank1Title;
                     dbModel.Rank2Title = obj.Rank2Title;
                     dbModel.Rank3Title = obj.Rank3Title;
@@ -877,9 +1355,9 @@ namespace Application.Core.Login.ServerData
         }
         #endregion
 
-        #region Alliance
+        #region Alliance Storage
         ConcurrentDictionary<int, StoreUnit<AllianceModel>> _alliance = new();
-        public void SetAlliance(AllianceModel data)
+        public void SetAllianceUpdate(AllianceModel data)
         {
             _alliance[data.Id] = new StoreUnit<AllianceModel>(StoreFlag.AddOrUpdate, data);
         }
@@ -893,7 +1371,7 @@ namespace Application.Core.Login.ServerData
             foreach (var key in _alliance.Keys.ToList())
             {
                 _alliance.TryRemove(key, out var d);
-                updateData[key] = d;
+                updateData[key] = d!;
             }
 
             var updateCount = updateData.Count;
@@ -901,24 +1379,24 @@ namespace Application.Core.Login.ServerData
                 return;
 
             var dbData = dbContext.Alliances.Where(x => updateData.Keys.Contains(x.Id)).ToList();
-            foreach (var item in updateData.Values)
+            foreach (var item in updateData)
             {
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.Remove)
+                var obj = item.Value.Data;
+                if (item.Value.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
-                    await dbContext.Alliances.Where(x => x.Id == obj.Id).ExecuteDeleteAsync();
+                    await dbContext.Alliances.Where(x => x.Id == item.Key).ExecuteDeleteAsync();
                 }
                 else
                 {
-                    var dbModel = dbData.FirstOrDefault(x => x.Id == obj.Id);
+                    var dbModel = dbData.FirstOrDefault(x => x.Id == item.Key);
                     if (dbModel == null)
                     {
-                        dbModel = new AllianceEntity(obj.Id, obj.Name);
+                        dbModel = new AllianceEntity(item.Key, obj!.Name);
                         dbContext.Add(dbModel);
                     }
-                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Capacity = obj!.Capacity;
                     dbModel.Name = obj.Name;
                     dbModel.Notice = obj.Notice;
                     dbModel.Rank1 = obj.Rank1;
@@ -938,5 +1416,7 @@ namespace Application.Core.Login.ServerData
             await CommitAllianceAsync(dbContext);
             await CommitGuildAsync(dbContext);
         }
+
+
     }
 }

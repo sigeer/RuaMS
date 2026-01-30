@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("绝对不包括阿尔卡德诺.....呼呼呼呼.....愚蠢的人....看不到真正重要的事情.....");
+    cm.sendDefault();
     cm.dispose();
 }

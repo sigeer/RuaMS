@@ -17,6 +17,5 @@ public class BuffMapCommand : CommandBase
         SkillFactory.GetSkillTrust(9101003).getEffect(SkillFactory.GetSkillTrust(9101003).getMaxLevel()).applyTo(player, true);
         SkillFactory.GetSkillTrust(9101008).getEffect(SkillFactory.GetSkillTrust(9101008).getMaxLevel()).applyTo(player, true);
         SkillFactory.GetSkillTrust(1005).getEffect(SkillFactory.GetSkillTrust(1005).getMaxLevel()).applyTo(player, true);
-
     }
 }

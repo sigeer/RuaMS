@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Invitation
 {
     internal class GuildInviteChannelHandler : InviteChannelHandler
     {
-        public GuildInviteChannelHandler(WorldChannelServer server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Guild, logger)
+        public GuildInviteChannelHandler(WorldChannel server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Guild, logger)
         {
         }
 
@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Invitation
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     var code = result == InviteResultType.DENIED ? GuildResponse.DENIED_INVITE : GuildResponse.NOT_FOUND_INVITE;
@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Invitation
             var code = (GuildResponse)data.Code;
             if (code == GuildResponse.Success)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
                     receiver.sendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
@@ -39,7 +39,7 @@ namespace Application.Core.Channel.Invitation
             }
             else
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     sender.sendPacket(code.getPacket(data.ReceivePlayerName));

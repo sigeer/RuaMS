@@ -15,6 +15,6 @@ public class ToggleCouponCommand : CommandBase
             player.yellowMessage("Syntax: !togglecoupon <itemid>");
             return;
         }
-        c.CurrentServerContainer.Transport.SendToggleCoupon(int.Parse(paramsValue[0]));
+        _ = c.CurrentServer.Node.Transport.SendToggleCoupon(int.Parse(paramsValue[0]));
     }
 }

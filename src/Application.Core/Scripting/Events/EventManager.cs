@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Resources.Messages;
@@ -87,22 +88,23 @@ public class EventManager : IDisposable
 
     public EventScheduledFuture schedule(string methodName, EventInstanceManager? eim, long delay)
     {
-        var r = () =>
-        {
-            try
-            {
-                iv.CallFunction(methodName, eim);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Event script schedule, Script: {Script}, Method: {Method}", _name, methodName);
-            }
-        };
-
-        ess.registerEntry(r, delay);
+        var command = new EventCallMethodCommand(this, methodName, eim);
+        ess.registerEntry(command, delay);
 
         // hate to do that, but those schedules can still be cancelled, so well... Let GC do it's job
-        return new EventScheduledFuture(r, ess);
+        return new EventScheduledFuture(command, ess);
+    }
+
+    public void InvokeMethod(string methodName, AbstractEventInstanceManager? eim)
+    {
+        try
+        {
+            iv.CallFunction(methodName, eim);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Event script schedule, Script: {Script}, Method: {Method}", _name, methodName);
+        }
     }
 
     /// <summary>
@@ -195,7 +197,7 @@ public class EventManager : IDisposable
     }
 
 
-    public virtual List<IPlayer> getEligibleParty(Team party)
+    public virtual List<Player> getEligibleParty(Team party)
     {
         if (party == null)
         {
@@ -204,8 +206,7 @@ public class EventManager : IDisposable
         try
         {
             var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv));
-            var eligibleParty = result.ToObject<List<IPlayer>>();
-            party.setEligibleMembers(eligibleParty);
+            var eligibleParty = result.ToObject<List<Player>>() ?? [];
             return eligibleParty;
         }
         catch (Exception ex)
@@ -242,7 +243,7 @@ public class EventManager : IDisposable
 
 
 
-    public void startQuest(IPlayer chr, int id, int npcid)
+    public void startQuest(Player chr, int id, int npcid)
     {
         try
         {
@@ -254,7 +255,7 @@ public class EventManager : IDisposable
         }
     }
 
-    public void completeQuest(IPlayer chr, int id, int npcid)
+    public void completeQuest(Player chr, int id, int npcid)
     {
         try
         {

@@ -51,7 +51,7 @@ public class CoconutHandler : ChannelHandlerBase
         {
             return;
         }
-        if (c.CurrentServerContainer.getCurrentTime() < nut.getHitTime())
+        if (c.CurrentServer.Node.getCurrentTime() < nut.getHitTime())
         {
             return;
         }
@@ -93,5 +93,6 @@ public class CoconutHandler : ChannelHandlerBase
             nut.hit();
             map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
         }
+        return;
     }
 }

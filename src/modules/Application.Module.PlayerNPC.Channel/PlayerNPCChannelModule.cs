@@ -4,7 +4,9 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
+using Application.Core.Managers;
 using Application.Module.PlayerNPC.Common;
+using Application.Shared.Constants.Job;
 using Application.Shared.MapObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,14 +27,14 @@ namespace Application.Module.PlayerNPC.Channel
         public override void Initialize()
         {
             base.Initialize();
-            MessageDispatcher.Register<PlayerNPCProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
-            MessageDispatcher.Register<PlayerNPCProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
-            MessageDispatcher.Register<PlayerNPCProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
+            MessageDispatcher.Register<LifeProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
+            MessageDispatcher.Register<LifeProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
+            MessageDispatcher.Register<LifeProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
 
             _manager.LoadAllData();
         }
 
-        public bool CanSpawn(IMap map, string targetName)
+        public bool CanSpawnHonor(IMap map, string targetName)
         {
             if (_config.PLAYERNPC_AUTODEPLOY)
                 return false;
@@ -50,33 +52,29 @@ namespace Application.Module.PlayerNPC.Channel
             }
         }
 
-        public void SpawnPlayerNPCByHonor(IPlayer chr)
+        public void SpawnPlayerNPCByHonor(Player chr)
         {
             _manager.SpawnPlayerNPCByHonor(chr);
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
+        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
             _manager.SpawnPlayerNPCHere(mapId, position, chr);
         }
 
         public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
         {
-            var chr = _server.FindPlayerById(arg.Id);
-            if (chr != null)
+            if (arg.Level == JobFactory.GetById(arg.JobId).GetSlackMaxLevel())
             {
-                if (arg.Level == chr.getMaxClassLevel())
+                var chr = _server.GetChannel(arg.Channel)?.getPlayerStorage()?.getCharacterById(arg.Id);
+                if (chr != null && !chr.isGM())
                 {
-                    if (!chr.isGM())
+                    if (_config.PLAYERNPC_AUTODEPLOY)
                     {
-                        if (_config.PLAYERNPC_AUTODEPLOY)
-                        {
-                            SpawnPlayerNPCByHonor(chr);
-                        }
+                        SpawnPlayerNPCByHonor(chr);
                     }
                 }
             }
-
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -34,7 +34,7 @@ function start() {
     if (cm.isQuestStarted(3320) || cm.isQuestCompleted(3320)) {
         cm.warp(926120200, 1);
     } else {
-        cm.sendOk("唔呼呼……为什么这里只有鬼魂？");
+        cm.sendDefault();
     }
 
     cm.dispose();

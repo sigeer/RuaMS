@@ -6,19 +6,10 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private object petLock = new object();
         private Pet?[] pets = new Pet?[3];
         public Pet?[] getPets()
         {
-            Monitor.Enter(petLock);
-            try
-            {
-                return Arrays.copyOf(pets, pets.Length);
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return Arrays.copyOf(pets, pets.Length);
         }
 
         public Pet? getPet(int index)
@@ -28,38 +19,22 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            Monitor.Enter(petLock);
-            try
-            {
-                return pets[index];
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return pets[index];
         }
 
         public sbyte getPetIndex(long petId)
         {
-            Monitor.Enter(petLock);
-            try
+            for (sbyte i = 0; i < 3; i++)
             {
-                for (sbyte i = 0; i < 3; i++)
+                if (pets[i] != null)
                 {
-                    if (pets[i] != null)
+                    if (pets[i]!.getUniqueId() == petId)
                     {
-                        if (pets[i]!.getUniqueId() == petId)
-                        {
-                            return i;
-                        }
+                        return i;
                     }
                 }
-                return -1;
             }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return -1;
         }
 
         public sbyte getPetIndex(Pet pet)
@@ -68,63 +43,47 @@ namespace Application.Core.Game.Players
         }
         public void addPet(Pet pet)
         {
-            Monitor.Enter(petLock);
-            try
+            for (int i = 0; i < 3; i++)
             {
-                for (int i = 0; i < 3; i++)
+                if (pets[i] == null)
                 {
-                    if (pets[i] == null)
-                    {
-                        pets[i] = pet;
-                        return;
-                    }
+                    pets[i] = pet;
+                    return;
                 }
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
             }
         }
 
         public void removePet(Pet pet, bool shift_left)
         {
-            Monitor.Enter(petLock);
-            try
+            int slot = -1;
+            for (int i = 0; i < 3; i++)
             {
-                int slot = -1;
-                for (int i = 0; i < 3; i++)
+                if (pets[i] != null)
                 {
-                    if (pets[i] != null)
+                    if (pets[i]!.getUniqueId() == pet.getUniqueId())
                     {
-                        if (pets[i]!.getUniqueId() == pet.getUniqueId())
-                        {
-                            pets[i] = null;
-                            slot = i;
-                            break;
-                        }
-                    }
-                }
-                if (shift_left)
-                {
-                    if (slot > -1)
-                    {
-                        for (int i = slot; i < 3; i++)
-                        {
-                            if (i != 2)
-                            {
-                                pets[i] = pets[i + 1];
-                            }
-                            else
-                            {
-                                pets[i] = null;
-                            }
-                        }
+                        pets[i] = null;
+                        slot = i;
+                        break;
                     }
                 }
             }
-            finally
+            if (shift_left)
             {
-                Monitor.Exit(petLock);
+                if (slot > -1)
+                {
+                    for (int i = slot; i < 3; i++)
+                    {
+                        if (i != 2)
+                        {
+                            pets[i] = pets[i + 1];
+                        }
+                        else
+                        {
+                            pets[i] = null;
+                        }
+                    }
+                }
             }
         }
 
@@ -150,7 +109,7 @@ namespace Application.Core.Game.Players
                 chrPet.setSummoned(false);
             }
 
-            Client.CurrentServerContainer.PetHungerManager.unregisterPetHunger(this, petIdx);
+            Client.CurrentServer.PetHungerManager.unregisterPetHunger(this, petIdx);
             MapModel.broadcastMessage(this, PacketCreator.showPet(this, pet, true, hunger), true);
 
             removePet(pet, shift_left);
@@ -183,6 +142,21 @@ namespace Application.Core.Game.Players
                 {
                     forceUpdateItem(petz);
                 }
+            }
+        }
+
+        public int getNoPets()
+        {
+            return pets.Count(x => x != null);
+        }
+
+        public void shiftPetsRight()
+        {
+            if (pets[2] == null)
+            {
+                pets[2] = pets[1];
+                pets[1] = pets[0];
+                pets[0] = null;
             }
         }
 

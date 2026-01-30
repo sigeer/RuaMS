@@ -5,11 +5,21 @@ namespace Application.Shared.Team
         Success,
         PlayerNotExisted,
         PlayerNotOnlined,
+        NoGuild,
         GuildNotExisted ,
         GuildFull,
 
         MasterRankFail,
 
-        Join_AlreadyInGuild
+        Join_AlreadyInGuild,
+        LeaderCannotLeave,
+
+        Create_NameDumplicate,
+        Create_AlreadyInGuild,
+        Create_LeaderRequired,
+        Create_MapRequired,
+        Create_MemberNotHere,
+        Create_MemberAlreadyInGuild,
+        Create_MesoNotEnough,
     }
 }

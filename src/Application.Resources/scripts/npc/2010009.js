@@ -61,7 +61,7 @@ function action(mode, type, selection) {
                 cm.dispose();
                 return;
             }
-            if (cm.getPlayer().getGuild().AllianceId > 0) {
+            if (cm.GetGuild().AllianceId > 0) {
                 cm.sendOk("当你的公会已经注册在其他家族联盟中时，你无法创建家族联盟。");
                 cm.dispose();
                 return;
@@ -69,13 +69,13 @@ function action(mode, type, selection) {
 
             cm.sendYesNo("哦，你对组建家族联盟感兴趣吗？目前这项操作的费用是 #b" + allianceCost + " 冒险币#k。");
         } else if (selection == 3) {
-            if (cm.getPlayer().AllianceModel == null) {
+            if (cm.GetGuild() == null) {
                 cm.sendOk("如果你没有公会，就无法扩展家族联盟。");
                 cm.dispose();
                 return;
             }
 
-            var rank = cm.getPlayer().AllianceModel.AllianceRank;
+            var rank = cm.getPlayer().AllianceRank;
             if (rank == 1) {
                 cm.sendYesNo("你想要增加你的家族联盟 #rone guild#k 的位置吗？这个手续的费用是 #b" + increaseCost + " 冒险币#k。");
             } else {
@@ -83,13 +83,13 @@ function action(mode, type, selection) {
                 cm.dispose();
             }
         } else if (selection == 4) {
-            if (cm.getPlayer().AllianceModel == null) {
+            if (cm.GetAlliance() == null) {
                 cm.sendOk("如果你没有家族联盟，你就无法解散家族联盟。");
                 cm.dispose();
                 return;
             }
 
-            var rank = cm.getPlayer().AllianceModel.AllianceRank;
+            var rank = cm.getPlayer().AllianceRank;
             if (rank == 1) {
                 cm.sendYesNo("你确定要解散你的家族联盟吗？");
             } else {
@@ -122,11 +122,12 @@ function action(mode, type, selection) {
             cm.sendOk("你的联盟现在可以接受一个额外的公会。");
             cm.dispose();
         } else if (choice == 4) {
-            if (cm.getPlayer().getGuild() == null || cm.getPlayer().getGuild().AllianceId <= 0) {
+            const alliance = cm.GetAlliance();
+            if (alliance == null) {
                 cm.sendNext("你无法解散一个不存在的家族联盟。");
                 cm.dispose();
             } else {
-                cm.disbandAlliance(cm.getClient(), cm.getPlayer().getGuild().AllianceId);
+                cm.disbandAlliance(cm.getClient(), alliance.AllianceId);
                 cm.sendOk("你的家族联盟已经解散。");
                 cm.dispose();
             }
@@ -140,13 +141,7 @@ function action(mode, type, selection) {
             status = 1;
             choice = 2;
         } else {
-            if (cm.createAlliance(guildName) == null) {
-                cm.sendOk("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
-            } else {
-                cm.gainMeso(-allianceCost);
-                cm.sendOk("你已成功组建了家族联盟。");
-            }
-            cm.dispose();
+            cm.CreateAllianceAsync(guildName, allianceCost);
         }
     }
 }

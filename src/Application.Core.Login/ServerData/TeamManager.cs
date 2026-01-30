@@ -1,8 +1,10 @@
 using Application.Core.Login.Models;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using TeamProto;
 
 namespace Application.Core.Login.ServerData
 {
@@ -22,32 +24,42 @@ namespace Application.Core.Login.ServerData
             _logger = logger;
         }
 
-        public TeamProto.TeamDto? GetTeamFull(int teamId)
+        public TeamProto.TeamDto? GetTeamDto(int teamId)
         {
-            var data = GetTeamLocal(teamId);
+            var data = GetTeamModel(teamId);
             if (data == null)
                 return null;
 
+            return MapTeamDto(data);
+        }
+
+        public TeamProto.TeamDto? MapTeamDto(TeamModel data)
+        {
             var response = new TeamProto.TeamDto();
-            response.Id = teamId;
+            response.Id = data.Id;
             response.LeaderId = data.LeaderId;
             response.Members.AddRange(_mapper.Map<TeamProto.TeamMemberDto[]>(data.GetMembers().Select(_server.CharacterManager.FindPlayerById)));
             return response;
         }
-        public TeamModel? GetTeamLocal(int teamId) => _dataSource.GetValueOrDefault(teamId);
+        public TeamModel? GetTeamModel(int teamId) => _dataSource.GetValueOrDefault(teamId);
 
-        public TeamProto.TeamDto CreateTeam(int playerId)
+        public CreateTeamResponse CreateTeam(CreateTeamRequest request)
         {
-            var newTeam = new TeamModel(Interlocked.Increment(ref _currentId), playerId);
-            var chrFrom = _server.CharacterManager.FindPlayerById(playerId)!;
+            var res = new CreateTeamResponse() { Request = request };
+            var chrFrom = _server.CharacterManager.FindPlayerById(request.LeaderId)!;
+            if (chrFrom.Character.Party > 0)
+            {
+                res.Code = 1;
+                return res;
+            }
+
+            var newTeam = new TeamModel(Interlocked.Increment(ref _currentId), chrFrom);
+            _dataSource[newTeam.Id] = newTeam;
+
             chrFrom.Character.Party = newTeam.Id;
 
-            var response = new TeamProto.TeamDto();
-            response.Id = newTeam.Id;
-            response.LeaderId = newTeam.LeaderId;
-            response.Members.AddRange(_mapper.Map<TeamProto.TeamMemberDto[]>(new CharacterLiveObject[] { chrFrom }));
-            _dataSource[newTeam.Id] = newTeam;
-            return response;
+            res.TeamDto = MapTeamDto(newTeam);
+            return res;
         }
         bool RemoveTeam(int leaderId, int teamId)
         {
@@ -55,90 +67,95 @@ namespace Application.Core.Login.ServerData
                 return _dataSource.TryRemove(teamId, out _);
             return false;
         }
-        public TeamProto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
+        public async Task UpdateParty(int partyid, PartyOperation operation, int fromId, int toId, int reason = 0)
         {
-            var response = new TeamProto.UpdateTeamResponse();
+            var response = new TeamProto.UpdateTeamResponse() { 
+                Request = new UpdateTeamRequest { 
+                    TeamId = partyid, 
+                    Operation = (int)operation,
+                    FromId = fromId, 
+                    TargetId = toId ,
+                    Reason = reason
+                } 
+            };
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
 
-            var party = GetTeamLocal(partyid);
+            var party = GetTeamModel(partyid);
             if (party == null)
-                errorCode = UpdateTeamCheckResult.TeamNotExsited;
-            else
             {
-                var chrFrom = fromId > 0 ? _server.CharacterManager.FindPlayerById(fromId) : null;
-                var chrTo = fromId == toId ? chrFrom : _server.CharacterManager.FindPlayerById(toId)!;
-                response.UpdatedMember = _mapper.Map<TeamProto.TeamMemberDto>(chrTo);
-                switch (operation)
-                {
-                    case PartyOperation.JOIN:
-                        if (chrFrom!.Character.Party > 0)
-                            errorCode = UpdateTeamCheckResult.Join_HasTeam;
-                        if (party.TryAddMember(toId, out errorCode))
-                            chrFrom.Character.Party = partyid;
-                        break;
-                    case PartyOperation.EXPEL:
-                        if (party.TryExpel(fromId, toId, out errorCode))
-                            chrTo!.Character.Party = 0;
-                        break;
-                    case PartyOperation.LEAVE:
-                        if (fromId == party.LeaderId)
-                        {
-                            operation = PartyOperation.DISBAND;
-                            goto case PartyOperation.DISBAND;
-                        }
-                        if (party.TryRemoveMember(fromId, out errorCode))
-                            chrFrom!.Character.Party = 0;
-                        break;
-                    case PartyOperation.DISBAND:
-                        if (fromId != party.LeaderId)
-                            errorCode = UpdateTeamCheckResult.Disband_NotLeader;
-                        else if (!RemoveTeam(fromId, partyid))
-                            errorCode = UpdateTeamCheckResult.Leave_InnerError;
-                        else
-                        {
-                            var allMember = party.GetMembers().Select(_server.CharacterManager.FindPlayerById).ToArray();
-                            foreach (var member in allMember)
-                            {
-                                if (member != null)
-                                    member.Character.Party = 0;
-                            }
-                        }
-                        break;
-                    case PartyOperation.SILENT_UPDATE:
-                        break;
-                    case PartyOperation.LOG_ONOFF:
-                        // fromId = -1 表示下线
-                        break;
-                    case PartyOperation.CHANGE_LEADER:
-                        party.TryChangeLeader(fromId, toId, out errorCode);
-                        break;
-                    default:
-                        _logger.LogWarning("Unhandled updateParty operation: {PartyOperation}", operation.ToString());
-                        break;
-                }
+                errorCode = UpdateTeamCheckResult.TeamNotExsited;
+                response.Code = (int)errorCode;
+
+                await SendError(response);
+                return;
             }
-            response.TeamId = partyid;
-            response.Operation = (int)operation;
-            response.ErrorCode = (int)errorCode;
-            response.OperatorId = fromId;
+
+            var chrFrom = fromId > 0 ? _server.CharacterManager.FindPlayerById(fromId) : null;
+            var chrTo = fromId == toId ? chrFrom : _server.CharacterManager.FindPlayerById(toId)!;
+            switch (operation)
+            {
+                case PartyOperation.JOIN:
+                    party.TryAddMember(chrTo!, out errorCode);
+                    break;
+                case PartyOperation.EXPEL:
+                    party.TryExpel(fromId, chrTo!, out errorCode);
+                    break;
+                case PartyOperation.LEAVE:
+                    if (fromId == party.LeaderId)
+                    {
+                        operation = PartyOperation.DISBAND;
+                        response.Request.Operation = (int)operation;
+                        goto case PartyOperation.DISBAND;
+                    }
+                    party.TryRemoveMember(chrFrom!, out errorCode);
+                    break;
+                case PartyOperation.DISBAND:
+                    if (fromId != party.LeaderId)
+                        errorCode = UpdateTeamCheckResult.Disband_NotLeader;
+                    else if (!RemoveTeam(fromId, partyid))
+                        errorCode = UpdateTeamCheckResult.Leave_InnerError;
+                    else
+                        party.Disband();
+                    break;
+                case PartyOperation.SILENT_UPDATE:
+                case PartyOperation.LOG_ONOFF:
+                    break;
+                case PartyOperation.CHANGE_LEADER:
+                    party.TryChangeLeader(fromId, chrTo!, out errorCode);
+                    break;
+                default:
+                    _logger.LogWarning("Unhandled updateParty operation: {PartyOperation}", operation.ToString());
+                    break;
+            }
+
+
+            response.Code = (int)errorCode;
 
             if (errorCode == UpdateTeamCheckResult.Success)
-                _server.Transport.BroadcastTeamUpdate(response);
-            return response;
+            {
+                response.Team = MapTeamDto(party);
+                response.TargetName = chrTo!.Character.Name;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, party.GetMembers().Concat([fromId, toId]));
+            }
+            else
+                await SendError(response);
         }
 
-        public void SendTeamChat(string nameFrom, string chatText)
+        async Task SendError(TeamProto.UpdateTeamResponse response)
+        {
+            var operation = (PartyOperation)response.Request.Operation;
+            if (operation != PartyOperation.SILENT_UPDATE && operation != PartyOperation.LOG_ONOFF)
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamUpdate, response, [response.Request.FromId]);
+        }
+
+        public async Task SendTeamChatAsync(string nameFrom, string chatText)
         {
             var sender = _server.CharacterManager.FindPlayerByName(nameFrom);
             if (sender != null)
             {
                 if (_dataSource.TryGetValue(sender.Character.Party, out var team))
                 {
-                    var teamMember = team.GetMembers().Where(x => x != sender.Character.Id)
-                        .Select(x => _server.CharacterManager.FindPlayerById(x))
-                        .Where(x => x != null && x.Channel > 0)
-                        .ToArray();
-                    _server.Transport.SendMultiChat(1, nameFrom, teamMember, chatText);
+                    await _server.Transport.SendMultiChatAsync(1, nameFrom, team.GetMemberObjectss(), chatText);
                 }
             }
         }

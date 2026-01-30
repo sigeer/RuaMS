@@ -358,28 +358,6 @@ public class SkillbookInformationProvider : DataBootstrap
         return foundSkillbooks.GetValueOrDefault(itemId, SkillBookEntry.UNAVAILABLE);
     }
 
-    public List<int> getTeachableSkills(IPlayer chr)
-    {
-        List<int> list = new();
-
-        foreach (int book in foundSkillbooks.Keys)
-        {
-            if (book >= 0)
-            {
-                continue;
-            }
-
-            int skillid = -book;
-            if (skillid / 10000 == chr.getJob().getId())
-            {
-                if (chr.getMasterLevel(skillid) == 0)
-                {
-                    list.Add(-skillid);
-                }
-            }
-        }
-
-        return list;
-    }
+    public Dictionary<int, SkillBookEntry> GetAllSkills() => foundSkillbooks;
 
 }

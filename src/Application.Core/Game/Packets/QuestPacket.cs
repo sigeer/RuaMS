@@ -4,7 +4,7 @@ namespace Application.Core.Game.Packets
 {
     public class QuestPacket
     {
-        public static void AddQuestInfo(OutPacket p, IPlayer chr)
+        public static void AddQuestInfo(OutPacket p, Player chr)
         {
             List<QuestStatus> started = chr.getStartedQuests();
             int startedSize = 0;
@@ -87,7 +87,7 @@ namespace Application.Core.Game.Packets
             return p;
         }
 
-        public static Packet UpdateQuest(IPlayer chr, QuestStatus qs, bool infoUpdate)
+        public static Packet UpdateQuest(Player chr, QuestStatus qs, bool infoUpdate)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
             p.writeByte(1);

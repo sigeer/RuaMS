@@ -1,4 +1,5 @@
 using Application.Core.Login.Services;
+using Application.Shared.Events;
 using BaseProto;
 using CreatorProto;
 using Dto;
@@ -24,31 +25,12 @@ namespace Application.Core.Login.Servers
             _server = server;
             _loginService = loginService;
         }
-
-        public override Task<Empty> BatchPushCharacter(BatchSyncCharacterRequest request, ServerCallContext context)
-        {
-            _server.CharacterManager.BatchUpdate(request.List.ToList());
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> BatchSyncMap(MapBatchSyncDto request, ServerCallContext context)
-        {
-            _server.CharacterManager.BatchUpdateMap(request.List.ToList());
-            return Task.FromResult(new Empty());
-        }
-
         public override Task<Empty> BatchSyncPlayerShop(BatchSyncPlayerShopRequest request, ServerCallContext context)
         {
             foreach (var item in request.List)
             {
                 _server.PlayerShopManager.SyncPlayerStorage(item);
-            }            
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> CompleteLogin(CompleteLoginRequest request, ServerCallContext context)
-        {
-            _loginService.SetPlayerLogedIn(request.CharacterId, request.Channel);
+            }
             return Task.FromResult(new Empty());
         }
 
@@ -74,7 +56,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<BoolWrapper> HasCharacterInTransition(CheckCharacterInTransitionRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new BoolWrapper { Value = _server.HasCharacteridInTransition(request.ClientSession)});
+            return Task.FromResult(new BoolWrapper { Value = _server.HasCharacteridInTransition(request.ClientSession) });
         }
 
         public override Task<Empty> PushPlayerBuffers(PushPlayerBuffsRequest request, ServerCallContext context)
@@ -98,7 +80,7 @@ namespace Application.Core.Login.Servers
         public override Task<AccountLoginStateDto> UpdateAccountState(UpdateAccountStateRequest request, ServerCallContext context)
         {
             var data = _server.AccountManager.UpdateAccountState(request.AccId, (sbyte)request.State);
-            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId =request.AccId, Time = Timestamp.FromDateTimeOffset(data.DateTime) });
+            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.DateTime) });
         }
     }
 }

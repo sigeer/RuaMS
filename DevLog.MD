@@ -35,31 +35,6 @@ dotnet ef database update --startup-project ../Application.Host
 
 `docker build -f ./src/Application.Host/Dockerfile-standalone -t ruams-standalone:latest -t ruams-standalone:0.0.1 .`
 
-#### 运行
-
-```bash
-docker run -itd \
--p 8080:8080 \
--p 8484:8484 \
--p 7575-7600:7575-7600 \
--v ./logs:/app/logs \
---name ruams-standalone \
-sigeer/ruams-standalone
-
-# 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
-
-# 使用Mysql需要设置数据库类型及连接字符串
--e "RUA_MS_Database=MySql" \
--e "RUA_MS_ConnectionStrings__MySql=" \
-
-# 公网运行运行需要修改`ChannelServerConfig.ServerHost`
--e "RUA_MS_ChannelServerConfig__ServerHost=" \
-
-# 允许接入其他频道服务器
--p 7878:7878 \
--e "RUA_MS_UseExtraChannel=true" \
-```
-
 #### sqlite数据库备份 
 `docker cp [container_id]:/app/database.db ./backup.db`
 

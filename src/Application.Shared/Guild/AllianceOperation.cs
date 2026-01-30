@@ -9,10 +9,13 @@ namespace Application.Shared.Guild
         AllianceNotFound,
         NotGuildLeader,
         LeaderNotExisted,
-        GuildAlreadyInAlliance,
+        AlreadyInAlliance,
         NotAllianceLeader,
         PlayerNotOnlined,
         RankLimitted,
-        CapacityFull
+        CapacityFull,
+        GuildNotInAlliance,
+        Create_NameInvalid,
+        Create_Error
     }
 }

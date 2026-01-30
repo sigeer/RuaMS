@@ -11,15 +11,15 @@ namespace Application.Core.Channel
             _server = server;
             _hostLifetime = hostLifetime;
 
-            _hostLifetime.ApplicationStopping.Register(() =>
+            _hostLifetime.ApplicationStopping.Register(async () =>
             {
-                _server.Shutdown().GetAwaiter().GetResult();
+                await _server.Shutdown();
             });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _server.StartServer();
+            await _server.StartServer(cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

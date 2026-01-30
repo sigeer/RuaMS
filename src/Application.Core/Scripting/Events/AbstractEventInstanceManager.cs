@@ -1,8 +1,8 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Shared.Events;
@@ -17,14 +17,14 @@ namespace Application.Core.Scripting.Events;
 public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
-    private Dictionary<int, IPlayer> chars = new();
+    private Dictionary<int, Player> chars = new();
     /// <summary>
     /// 每关 已领取奖励的玩家
     /// </summary>
     protected Dictionary<int, HashSet<int>> rewardedChr = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
-    private Dictionary<IPlayer, int> killCount = new();
+    private Dictionary<Player, int> killCount = new();
     public AbstractInstancedEventManager EventManager { get; }
     private EventScriptScheduler ess;
     protected MapManager mapManager;
@@ -35,11 +35,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private long eventTime = 0;
 
     public int LobbyId { get; set; } = -1;
-
-    private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    protected object propertyLock = new object();
-    protected object scriptLock = new object();
 
     private ScheduledFuture? event_schedule = null;
     private bool disposed = false;
@@ -94,12 +89,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void applyEventPlayersItemBuff(int itemId)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
         var mse = ItemInformationProvider.getInstance().getItemEffect(itemId);
 
         if (mse != null)
         {
-            foreach (IPlayer player in players)
+            foreach (Player player in players)
             {
                 mse.applyTo(player);
             }
@@ -113,7 +108,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void applyEventPlayersSkillBuff(int skillId, int skillLv)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
         var skill = SkillFactory.getSkill(skillId);
 
         if (skill != null)
@@ -121,7 +116,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             StatEffect mse = skill.getEffect(Math.Min(skillLv, skill.getMaxLevel()));
             if (mse != null)
             {
-                foreach (IPlayer player in players)
+                foreach (Player player in players)
                 {
                     mse.applyTo(player);
                 }
@@ -135,18 +130,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             return;
 
         var bonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
         if (mapId == -1)
         {
-            foreach (IPlayer mc in players)
+            foreach (Player mc in players)
             {
                 mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
             }
         }
         else
         {
-            foreach (IPlayer mc in players)
+            foreach (Player mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -164,18 +159,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             return;
         }
 
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
         if (mapId == -1)
         {
-            foreach (IPlayer mc in players)
+            foreach (Player mc in players)
             {
                 mc.gainMeso((int)(gain * mc.getMesoRate()), inChat: true);
             }
         }
         else
         {
-            foreach (IPlayer mc in players)
+            foreach (Player mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -205,7 +200,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// 离开地图
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void exitPlayer(IPlayer chr)
+    public virtual void exitPlayer(Player chr)
     {
         if (chr == null || !chr.isLoggedin())
         {
@@ -224,7 +219,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public virtual void unregisterPlayer(IPlayer chr)
+    public virtual void unregisterPlayer(Player chr)
     {
         try
         {
@@ -235,22 +230,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             log.Error(ex, "Event script {ScriptName} does not implement the playerUnregistered function", EventManager.getName());
         }
 
-        lockObj.EnterWriteLock();
-        try
-        {
-            chars.Remove(chr.getId());
-            chr.setEventInstance(null);
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        chars.Remove(chr.getId());
+        chr.setEventInstance(null);
 
         gridRemove(chr);
         dropExclusiveItems(chr);
     }
 
-    public virtual void changedMap(IPlayer chr, int mapId)
+    public virtual void changedMap(Player chr, int mapId)
     {
         try
         {
@@ -262,7 +249,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         } // optional
     }
 
-    public virtual void afterChangedMap(IPlayer chr, int mapId)
+    public virtual void afterChangedMap(Player chr, int mapId)
     {
         try
         {
@@ -274,47 +261,34 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         } // optional
     }
 
-    object changeLeaderLock = new object();
-    public virtual void changedLeader(IPlayer ldr)
+    public virtual void changedLeader(Player ldr)
     {
-        lock (changeLeaderLock)
+        try
         {
-            try
-            {
-                invokeScriptFunction("changedLeader", this, ldr);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedLeader", EventManager.getName());
-            }
-
-            leaderId = ldr.getId();
+            invokeScriptFunction("changedLeader", this, ldr);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedLeader", EventManager.getName());
         }
 
+        leaderId = ldr.getId();
     }
 
     public virtual void monsterKilled(Monster mob, bool hasKiller)
     {
         int scriptResult = 0;
 
-        Monitor.Enter(scriptLock);
-        try
-        {
-            mobs.Remove(mob);
+        mobs.Remove(mob);
 
-            if (eventStarted)
+        if (eventStarted)
+        {
+            scriptResult = 1;
+
+            if (mobs.Count == 0)
             {
-                scriptResult = 1;
-
-                if (mobs.Count == 0)
-                {
-                    scriptResult = 2;
-                }
+                scriptResult = 2;
             }
-        }
-        finally
-        {
-            Monitor.Exit(scriptLock);
         }
 
         if (scriptResult > 0)
@@ -378,7 +352,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         } // optional
     }
 
-    public virtual void playerKilled(IPlayer chr)
+    public virtual void playerKilled(Player chr)
     {
         try
         {
@@ -402,7 +376,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         } // optional
     }
 
-    public virtual bool revivePlayer(IPlayer chr)
+    public virtual bool revivePlayer(Player chr)
     {
         try
         {
@@ -416,7 +390,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return true;
     }
 
-    public virtual void playerDisconnected(IPlayer chr)
+    public virtual void playerDisconnected(Player chr)
     {
         try
         {
@@ -433,7 +407,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public virtual void monsterKilled(IPlayer chr, Monster mob)
+    public virtual void monsterKilled(Player chr, Monster mob)
     {
         try
         {
@@ -450,12 +424,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    protected virtual void OnMonsterValueChanged(IPlayer chr, Monster mob, int val)
+    protected virtual void OnMonsterValueChanged(Player chr, Monster mob, int val)
     {
         killCount[chr] = killCount.GetValueOrDefault(chr) + val;
     }
 
-    public virtual void leftParty(IPlayer chr)
+    public virtual void leftParty(Player chr)
     {
         try
         {
@@ -495,7 +469,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// playerExit
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void removePlayer(IPlayer chr)
+    public virtual void removePlayer(Player chr)
     {
         try
         {
@@ -523,71 +497,51 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         eventCleared = true;
 
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
 
-        Monitor.Enter(scriptLock);
-        try
-        {
-            EventManager.disposeInstance(name);
-        }
-        finally
-        {
-            Monitor.Exit(scriptLock);
-        }
+        EventManager.disposeInstance(name);
     }
     #endregion
 
-    object registerLock = new object();
 
-    public void registerPlayer(IPlayer chr, bool runEntryScript = true)
+    public void registerPlayer(Player chr, bool runEntryScript = true)
     {
 
-        lock (registerLock)
+        if (chr == null || !chr.isLoggedinWorld() || disposed)
         {
-            if (chr == null || !chr.isLoggedinWorld() || disposed)
-            {
-                return;
-            }
-
-            lockObj.EnterWriteLock();
-            try
-            {
-                if (chars.ContainsKey(chr.getId()))
-                {
-                    return;
-                }
-
-                chars.AddOrUpdate(chr.getId(), chr);
-                chr.setEventInstance(this);
-            }
-            finally
-            {
-                lockObj.ExitWriteLock();
-            }
-
-            if (runEntryScript)
-            {
-                try
-                {
-                    invokeScriptFunction("playerEntry", this, chr);
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerEntry", EventManager.getName());
-                }
-            }
+            return;
         }
 
+
+        if (chars.ContainsKey(chr.getId()))
+        {
+            return;
+        }
+
+        chars.AddOrUpdate(chr.getId(), chr);
+        chr.setEventInstance(this);
+
+        if (runEntryScript)
+        {
+            try
+            {
+                invokeScriptFunction("playerEntry", this, chr);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerEntry", EventManager.getName());
+            }
+        }
     }
 
 
 
     public void dropMessage(int type, string message)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.TypedMessage(type, message);
         }
@@ -601,32 +555,37 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void startEventTimer(long time)
     {
-        timeStarted = EventManager.getChannelServer().Container.getCurrentTime();
+        timeStarted = EventManager.getChannelServer().Node.getCurrentTime();
         eventTime = time;
 
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
 
-        event_schedule = EventManager.getChannelServer().Container.TimerManager.schedule(() =>
+        event_schedule = EventManager.getChannelServer().Node.TimerManager.schedule(() =>
         {
-            dismissEventTimer();
-
-            try
-            {
-                invokeScriptFunction("scheduledTimeout", this);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", EventManager.getName());
-            }
+            EventManager.getChannelServer().Post(new EventInstanceDismissTimerCommand(this));
         }, time);
+    }
+
+    public void DismissEventTimer()
+    {
+        dismissEventTimer();
+
+        try
+        {
+            invokeScriptFunction("scheduledTimeout", this);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", EventManager.getName());
+        }
     }
 
     private void dismissEventTimer()
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.sendPacket(PacketCreator.removeClock());
         }
@@ -654,83 +613,38 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public long getTimeLeft()
     {
-        return eventTime - (EventManager.getChannelServer().Container.getCurrentTime() - timeStarted);
+        return eventTime - (EventManager.getChannelServer().Node.getCurrentTime() - timeStarted);
     }
 
-    public virtual void registerParty(IPlayer chr)
+    public virtual void registerParty(List<Player> eligibleMembers)
     {
-        if (chr.isPartyLeader())
-        {
-            registerParty(chr.getParty()!, chr.getMap());
-        }
-    }
-
-    public virtual void registerParty(Team party, IMap map)
-    {
-        foreach (var mpc in party.getEligibleMembers())
+        foreach (var mpc in eligibleMembers)
         {
             if (mpc.IsOnlined)
             {
-                // thanks resinate
-                var chr = map.getCharacterById(mpc.getId());
-                if (chr != null)
-                {
-                    registerPlayer(chr);
-                }
+                registerPlayer(mpc);
             }
         }
     }
 
     public int getPlayerCount()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return chars.Count;
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return chars.Count;
     }
 
-    public IPlayer? getPlayerById(int id)
+    public Player? getPlayerById(int id)
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return chars.GetValueOrDefault(id);
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return chars.GetValueOrDefault(id);
     }
 
-    public List<IPlayer> getPlayers()
+    public List<Player> getPlayers()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return new(chars.Values);
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return new(chars.Values);
     }
 
-    private List<IPlayer> getPlayerList()
+    private List<Player> getPlayerList()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return chars.Values.ToList();
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return chars.Values.ToList();
     }
 
     public void registerMonster(Monster mob)
@@ -743,89 +657,61 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     }
 
 
-    public int getKillCount(IPlayer chr)
+    public int getKillCount(Player chr)
     {
         return killCount.GetValueOrDefault(chr, 0);
     }
 
 
-    Lock disposeLock = new();
     public virtual void Dispose()
     {
-        lock (disposeLock)
+        // should not trigger any event script method after disposed
+        if (disposed)
         {
-            // should not trigger any event script method after disposed
-            if (disposed)
-            {
-                return;
-            }
-
-            try
-            {
-                invokeScriptFunction("dispose", this);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.getName());
-            }
-            disposed = true;
-
-            ess.dispose();
-
-            lockObj.EnterWriteLock();
-            try
-            {
-                foreach (IPlayer chr in chars.Values)
-                {
-                    chr.setEventInstance(null);
-                }
-                chars.Clear();
-                mobs.Clear();
-                // ess = null;
-            }
-            finally
-            {
-                lockObj.ExitWriteLock();
-            }
-
-            if (event_schedule != null)
-            {
-                event_schedule.cancel(false);
-                event_schedule = null;
-            }
-
-            killCount.Clear();
-            props.Clear();
-            objectProps.Clear();
-
-            Monitor.Enter(scriptLock);
-            try
-            {
-                if (!eventCleared)
-                {
-                    EventManager.disposeInstance(name);
-                }
-            }
-            finally
-            {
-                Monitor.Exit(scriptLock);
-            }
-
-            EventManager.getChannelServer().Container.TimerManager.schedule(() =>
-            {
-                mapManager.Dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
-                //lockObj.EnterWriteLock();
-                //try
-                //{
-                //    mapManager = null;
-                //    EventManager = null;
-                //}
-                //finally
-                //{
-                //    lockObj.ExitWriteLock();
-                //}
-            }, TimeSpan.FromMinutes(1));
+            return;
         }
+
+        try
+        {
+            invokeScriptFunction("dispose", this);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.getName());
+        }
+        disposed = true;
+
+        ess.dispose();
+
+
+        foreach (Player chr in chars.Values)
+        {
+            chr.setEventInstance(null);
+        }
+        chars.Clear();
+        mobs.Clear();
+        // ess = null;
+
+        if (event_schedule != null)
+        {
+            event_schedule.cancel(false);
+            event_schedule = null;
+        }
+
+        killCount.Clear();
+        props.Clear();
+        objectProps.Clear();
+
+        if (!eventCleared)
+        {
+            EventManager.disposeInstance(name);
+        }
+
+        EventManager.getChannelServer().Node.TimerManager.schedule(() =>
+        {
+            EventManager.getChannelServer().Post(new MapManagerDisposeCommand(mapManager));
+        }, TimeSpan.FromMinutes(1));
+
     }
 
     public MapManager getMapFactory()
@@ -835,31 +721,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void schedule(string methodName, long delay)
     {
-        lockObj.EnterReadLock();
-        try
+        if (ess != null)
         {
-            if (ess != null)
-            {
-                var r = () =>
-                {
-                    try
-                    {
-                        invokeScriptFunction(methodName, this);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error(ex, "Invoke {JsFunction} from {ScriptName}", methodName, EventManager.getName());
-                    }
-                };
-
-                ess.registerEntry(r, delay);
-            }
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
+            ess.registerEntry(new EventInstanceCallMethodCommand(this, methodName), delay);
         }
     }
+
 
     public string getName()
     {
@@ -896,92 +763,48 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void setProperty(string key, string value)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            props.AddOrUpdate(key, value);
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+
+        props.AddOrUpdate(key, value);
     }
 
     public object? setProperty(string key, string value, bool prev)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            return props.AddOrUpdateReturnOldValue(key, value);
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+
+        return props.AddOrUpdateReturnOldValue(key, value);
     }
 
     public void setObjectProperty(string key, object obj)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            objectProps.AddOrUpdate(key, obj);
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+        objectProps.AddOrUpdate(key, obj);
     }
 
     public string? getProperty(string key)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            var d = props.GetValueOrDefault(key);
-            return d?.ToString();
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+        var d = props.GetValueOrDefault(key);
+        return d?.ToString();
     }
 
     public int getIntProperty(string key)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            var d = props.GetValueOrDefault(key);
-            return Convert.ToInt32(d);
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+
+        var d = props.GetValueOrDefault(key);
+        return Convert.ToInt32(d);
     }
 
     public object? getObjectProperty(string key)
     {
-        Monitor.Enter(propertyLock);
-        try
-        {
-            return objectProps.GetValueOrDefault(key);
-        }
-        finally
-        {
-            Monitor.Exit(propertyLock);
-        }
+
+        return objectProps.GetValueOrDefault(key);
     }
 
 
 
-    public bool isLeader(IPlayer chr)
+    public bool isLeader(Player chr)
     {
         return chr.isPartyLeader();
     }
 
-    public bool isEventLeader(IPlayer chr)
+    public bool isEventLeader(Player chr)
     {
         return (chr.getId() == getLeaderId());
     }
@@ -1004,13 +827,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             map = this.getMapFactory().getMap(towarp);
         }
 
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
         try
         {
             if (players.Count < size)
             {
-                foreach (IPlayer chr in players)
+                foreach (Player chr in players)
                 {
                     if (chr == null)
                     {
@@ -1056,9 +879,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         var mapChars = getInstanceMap(mapid)?.getMapPlayers() ?? [];
         if (mapChars.Count > 0)
         {
-            List<IPlayer> eventMembers = getPlayers();
+            List<Player> eventMembers = getPlayers();
 
-            foreach (IPlayer evChr in eventMembers)
+            foreach (Player evChr in eventMembers)
             {
                 var chr = mapChars.GetValueOrDefault(evChr.getId());
 
@@ -1121,7 +944,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return list;
     }
 
-    private void dropExclusiveItems(IPlayer chr)
+    private void dropExclusiveItems(Player chr)
     {
         chr.Bag.ClearPartyQuestItems();
         //AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
@@ -1141,15 +964,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         List<int> exclusive = convertToIntegerList(items);
 
-        lockObj.EnterWriteLock();
-        try
-        {
-            exclusiveItems.UnionWith(exclusive);
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+
+        exclusiveItems.UnionWith(exclusive);
     }
 
     public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven = 0)
@@ -1171,15 +987,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         List<int> rewardQtys = convertToIntegerList(qtys);
 
         //rewardsSet and rewardsQty hold temporary values
-        lockObj.EnterWriteLock();
-        try
-        {
-            eventRewards.AddOrUpdate(eventLevel, new EventRewardsPair(rewardIds, rewardQtys, expGiven));
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        eventRewards.AddOrUpdate(eventLevel, new EventRewardsPair(rewardIds, rewardQtys, expGiven));
     }
 
     private byte getRewardListRequirements(int level)
@@ -1200,7 +1008,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return rewardTypes;
     }
 
-    private bool hasRewardSlot(IPlayer player, int eventLevel)
+    private bool hasRewardSlot(Player player, int eventLevel)
     {
         byte listReq = getRewardListRequirements(eventLevel);   //gets all types of items present in the event reward list
 
@@ -1218,36 +1026,28 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
-    public bool giveEventReward(IPlayer player, int eventLevel = 1)
+    public bool giveEventReward(Player player, int eventLevel = 1)
     {
         List<int>? rewardsSet, rewardsQty;
         int rewardExp;
         var rewardIndex = eventLevel - 1;
 
-        lockObj.EnterReadLock();
-        try
+        if (!CanGiveReward(player, -eventLevel))
         {
-            if (!CanGiveReward(player, -eventLevel))
-            {
-                return true;
-            }
-
-
-            if (rewardIndex >= eventRewards.Count)
-            {
-                return true;
-            }
-
-            var item = eventRewards.GetValueOrDefault(rewardIndex)!;
-            rewardsSet = item.Rewards;
-            rewardsQty = item.Quantity;
-
-            rewardExp = item.Exp;
+            return true;
         }
-        finally
+
+
+        if (rewardIndex >= eventRewards.Count)
         {
-            lockObj.ExitReadLock();
+            return true;
         }
+
+        var item = eventRewards.GetValueOrDefault(rewardIndex)!;
+        rewardsSet = item.Rewards;
+        rewardsQty = item.Quantity;
+
+        rewardExp = item.Exp;
 
         if (rewardsSet.Count > 0)
         {
@@ -1299,7 +1099,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return getPlayerCount() < minPlayers;
     }
 
-    public bool isExpeditionTeamLackingNow(bool leavingEventMap, int minPlayers, IPlayer quitter)
+    public bool isExpeditionTeamLackingNow(bool leavingEventMap, int minPlayers, Player quitter)
     {
         if (eventCleared)
         {
@@ -1319,7 +1119,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="minPlayers">任务要求的最少人数</param>
     /// <param name="quitter">离开者</param>
     /// <returns>true：不能继续任务</returns>
-    public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, IPlayer quitter)
+    public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, Player quitter)
     {
         if (eventCleared)
         {
@@ -1337,29 +1137,21 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public bool isEventTeamTogether()
     {
-        lockObj.EnterReadLock();
-        try
+        if (chars.Count <= 1)
         {
-            if (chars.Count <= 1)
-            {
-                return true;
-            }
-
-            if (chars.Values.Zip(chars.Values.Skip(1), (a, b) => a.getMapId() == b.getMapId()).Any(x => x))
-                return false;
             return true;
         }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+
+        if (chars.Values.Zip(chars.Values.Skip(1), (a, b) => a.getMapId() == b.getMapId()).Any(x => x))
+            return false;
+        return true;
     }
 
     public void warpEventTeam(int warpFrom, int warpTo)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -1370,9 +1162,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void warpEventTeam(int warpTo)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(warpTo);
         }
@@ -1380,9 +1172,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void warpEventTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -1393,9 +1185,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void warpEventTeamToMapSpawnPoint(int warpTo, int toSp)
     {
-        List<IPlayer> players = getPlayerList();
+        List<Player> players = getPlayerList();
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(warpTo, toSp);
         }
@@ -1403,41 +1195,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public int getLeaderId()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return leaderId;
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return leaderId;
     }
 
-    public IPlayer? getLeader()
+    public Player? getLeader()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return chars.GetValueOrDefault(leaderId);
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return chars.GetValueOrDefault(leaderId);
     }
 
-    public void setLeader(IPlayer chr)
+    public void setLeader(Player chr)
     {
-        lockObj.EnterWriteLock();
-        try
-        {
-            leaderId = chr.getId();
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        leaderId = chr.getId();
     }
 
     public void showWrongEffect()
@@ -1494,31 +1262,16 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         if (hasGate)
         {
             map.broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
-            lockObj.EnterWriteLock();
-            try
-            {
-                openedGates.AddOrUpdate(map.getId(), new(mapObj, newState));
-            }
-            finally
-            {
-                lockObj.ExitWriteLock();
-            }
+
+            openedGates.AddOrUpdate(map.getId(), new(mapObj, newState));
         }
     }
 
-    public void recoverOpenedGate(IPlayer chr, int thisMapId)
+    public void recoverOpenedGate(Player chr, int thisMapId)
     {
         KeyValuePair<string, int>? gateData = null;
 
-        lockObj.EnterReadLock();
-        try
-        {
-            gateData = openedGates.GetValueOrDefault(thisMapId);
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        gateData = openedGates.GetValueOrDefault(thisMapId);
 
         if (gateData != null)
         {
@@ -1532,13 +1285,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
         var players = getPlayerList();
-        foreach (IPlayer mc in players)
+        foreach (Player mc in players)
         {
             if (CanGiveReward(mc, thisStage))
             {
                 SetRewardClaimed(mc, thisStage);
                 mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+                mc.GainMeso((int)(list[1] * mc.getMesoRate()),  GainItemShow.ShowInChat);
             }
         }
     }
@@ -1547,7 +1300,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// </summary>
     /// <param name="mc"></param>
     /// <param name="thisStage"></param>
-    public void GiveEventClearReward(IPlayer mc, int thisStage)
+    public void GiveEventClearReward(Player mc, int thisStage)
     {
         List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
 
@@ -1557,7 +1310,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             SetRewardClaimed(mc, thisStage);
             mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-            mc.GainMeso((int)(list[1] * mc.getMesoRate()), inChat: true);
+            mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
         }
     }
 
@@ -1580,71 +1333,31 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     }
 
     // registers a player status in an event
-    public void gridInsert(IPlayer chr, int newStatus)
+    public void gridInsert(Player chr, int newStatus)
     {
-        lockObj.EnterWriteLock();
-        try
-        {
-            playerGrid.AddOrUpdate(chr.getId(), newStatus);
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        playerGrid.AddOrUpdate(chr.getId(), newStatus);
     }
 
     // unregisters a player status in an event
-    public void gridRemove(IPlayer chr)
+    public void gridRemove(Player chr)
     {
-        lockObj.EnterWriteLock();
-        try
-        {
-            playerGrid.Remove(chr.getId());
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        playerGrid.Remove(chr.getId());
     }
 
     // checks a player status
-    public int gridCheck(IPlayer chr)
+    public int gridCheck(Player chr)
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return playerGrid.GetValueOrDefault(chr.getId(), -1);
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return playerGrid.GetValueOrDefault(chr.getId(), -1);
     }
 
     public int gridSize()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            return playerGrid.Count;
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
+        return playerGrid.Count;
     }
 
     public void gridClear()
     {
-        lockObj.EnterWriteLock();
-        try
-        {
-            playerGrid.Clear();
-        }
-        finally
-        {
-            lockObj.ExitWriteLock();
-        }
+        playerGrid.Clear();
     }
 
     public bool activatedAllReactorsOnMap(int mapId, int minReactorId, int maxReactorId)
@@ -1672,7 +1385,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void TypedMessage(int type, string messageKey, params string[] param)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.TypedMessage(type, messageKey, param);
         }
@@ -1680,7 +1393,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void Dialog(string key, params string[] param)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.Dialog(key, param);
         }
@@ -1688,7 +1401,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void Yellow(string key, params string[] param)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.Yellow(key, param);
         }
@@ -1716,7 +1429,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void LightBlue(Func<ClientCulture, string> action)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.LightBlue(action);
         }
@@ -1724,18 +1437,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void TopScrolling(string key, params string[] param)
     {
-        foreach (IPlayer chr in getPlayers())
+        foreach (Player chr in getPlayers())
         {
             chr.TopScrolling(key, param);
         }
     }
 
-    bool CanGiveReward(IPlayer chr, int stage = 1)
+    bool CanGiveReward(Player chr, int stage = 1)
     {
         return chars.ContainsKey(chr.Id) && !rewardedChr.GetValueOrDefault(stage, []).Contains(chr.Id);
     }
 
-    void SetRewardClaimed(IPlayer chr, int stage = 1)
+    void SetRewardClaimed(Player chr, int stage = 1)
     {
         if (rewardedChr.TryGetValue(stage, out var arr))
             arr.Add(chr.Id);

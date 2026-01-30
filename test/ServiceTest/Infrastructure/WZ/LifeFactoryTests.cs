@@ -1,9 +1,14 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
+using Application.Scripting;
+using Application.Templates.Etc;
 using Application.Templates.Mob;
+using Application.Templates.Npc;
 using Application.Templates.Providers;
+using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
+using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json;
 using server.life;
 using ServiceTest.TestUtilities;
@@ -31,6 +36,7 @@ namespace ServiceTest.Infrastructure.WZ
             _providerSource.TryRegisterProvider<MobProvider>(o => new MobProvider(o));
             _providerSource.TryRegisterProvider<NpcProvider>(o => new NpcProvider(o));
             _providerSource.TryRegisterProvider<MobSkillProvider>(o => new MobSkillProvider(o));
+            _providerSource.TryRegisterProvider<EtcScriptInfoProvider>(o => new EtcScriptInfoProvider(o));
 
             _providerSource.TryRegisterKeydProvider("zh-CN", o => new StringProvider(o, CultureInfo.GetCultureInfo("zh-CN")));
             _providerSource.TryRegisterKeydProvider("en-US", o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")));
@@ -150,6 +156,30 @@ namespace ServiceTest.Infrastructure.WZ
         {
             Assert.That(_providerSource.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).OrderBy(x => x).ToHashSet(),
                 Is.EqualTo(OldLifeFactory.getHpBarBosses().OrderBy(x => x).ToHashSet()));
+        }
+
+        [Test]
+        public void FindAllScriptedNpc()
+        {
+            var allNpcStr = _providerSource.GetProviderByKey<StringProvider>("zh-CN").GetSubProvider(StringCategory.Npc).LoadAll().OfType<StringNpcTemplate>();
+
+            // 用于推测是不是Npc.img中的几个字段来触发NpcTalkHandler
+            var allNpc = _providerSource.GetProvider<NpcProvider>().LoadAll().OfType<NpcTemplate>();
+
+            var hasScript = allNpc
+                .Where(x => x.Script != null || x.MapleTV || x.TrunkGet != null || x.TrunkPut != null).ToArray();
+
+            var exsitedNpcScripts = Directory.GetFiles(@"scripts\npc")
+                .Select(x => Path.GetFileNameWithoutExtension(x));
+
+            foreach (var item in allNpcStr)
+            {
+                Console.WriteLine(
+                    $"NpcId  {item.TemplateId:D7}, Name: {item.Name, -20}\t, Func: {item.Func, -20}\t, 有脚本属性: {hasScript.Any(x => x.TemplateId == item.TemplateId)}, 有脚本：{exsitedNpcScripts.Contains(item.TemplateId.ToString())}");
+            }
+
+            //    NpcId  1012118, Name: 炎海                  	, Func: 弓手修炼场助手             	, 有脚本属性: False, 有脚本：True
+            //    NpcId  0002100, Name: 莎丽                  	, Func:                     	    , 有脚本属性: False, 有脚本：True
         }
     }
 }

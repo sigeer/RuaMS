@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Services
         /// <param name="items"></param>
         /// <param name="meso"></param>
         /// <param name="title"></param>
-        void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
+        void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public class DefaultItemDistributeService : IItemDistributeService
     {
-        public void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
             foreach (var item in items)
@@ -37,11 +37,11 @@ namespace Application.Core.Channel.Services
             if (meso != 0)
             {
                 if (chr.canHoldMeso(meso))
-                    chr.gainMeso(meso, false);
+                    chr.GainMeso(meso);
                 else
                 {
                     needNotice = true;
-                    chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, 0);
+                    chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, DropType.OnlyOwner);
                 }
             }
 

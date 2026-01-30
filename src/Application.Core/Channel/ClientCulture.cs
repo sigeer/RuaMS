@@ -71,9 +71,25 @@ namespace Application.Core.Channel
             return StringProvider.GetSubProvider(StringCategory.Npc)?.GetRequiredItem<StringNpcTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo;
         }
 
-        public string GetNpcDefaultTalk(int npcId)
+        /// <summary>
+        /// 获取NPC对话文本
+        /// </summary>
+        /// <param name="npcId"></param>
+        /// <param name="status">0: d0, 1: d1, 其他: 随机</param>
+        /// <returns></returns>
+        public string GetNpcDefaultTalk(int npcId, int status = 0)
         {
-            return StringProvider.GetSubProvider(StringCategory.Npc)?.GetRequiredItem<StringNpcTemplate>(npcId)?.DefaultTalk ?? "(...)";
+            var template = StringProvider.GetSubProvider(StringCategory.Npc)?.GetRequiredItem<StringNpcTemplate>(npcId);
+            if (template == null)
+            {
+                return "(...)";
+            }
+            if (status == 0)
+                return template.DefaultTalk0;
+            else if (status == 1)
+                return template.DefaultTalk1;
+            else
+                return (Randomizer.nextInt(100) % 2 == 0) ? template.DefaultTalk0 : template.DefaultTalk1;
         }
 
         public string GetItemMessage(int itemId)

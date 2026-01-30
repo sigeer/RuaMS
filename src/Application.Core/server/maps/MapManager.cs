@@ -21,16 +21,17 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Performance;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
+using Application.Utility.Performance;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace server.maps;
 
-public class MapManager : IDisposable
+public class MapManager : IDisposable, INamedInstance
 {
+    public string InstanceName { get; }
     private AbstractEventInstanceManager? evt;
     readonly WorldChannel _channelServer;
 
@@ -40,60 +41,45 @@ public class MapManager : IDisposable
     {
         _channelServer = worldChannel;
         this.evt = eim;
+
+        InstanceName = "MapManager:" + (evt == null ? "None" : evt.getName());
     }
 
     public IMap resetMap(int mapid, out IMap? oldMap)
     {
-        if (maps.TryRemove(mapid, out oldMap))
-            _channelServer.Metrics.ActiveMaps.Dec();
+        RemoveMap(mapid, out oldMap);
         return getMap(mapid);
     }
 
-    object loadWZLock = new object();
-    private IMap loadMapFromWz(int mapid, bool cache)
+    private IMap loadMapFromWz(int mapid)
     {
-        lock (loadWZLock)
+        if (maps.TryGetValue(mapid, out var map) && map != null)
         {
-            IMap? map;
-
-            if (cache)
-            {
-                map = maps.GetValueOrDefault(mapid);
-
-                if (map != null)
-                {
-                    return map;
-                }
-            }
-
-            map = MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
-            _channelServer.Metrics.ActiveMaps.Inc();
-            if (cache)
-            {
-                maps.AddOrUpdate(mapid, map);
-            }
-
             return map;
         }
 
+
+        map = MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
+        maps[mapid] = map;
+
+        GameMetrics.ActiveMapCount.Add(1, 
+            new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName), 
+            new KeyValuePair<string, object?>("Name", InstanceName));
+        return map;
     }
 
     public IMap getMap(int mapid)
     {
-        return loadMapFromWz(mapid, true);
+        return loadMapFromWz(mapid);
     }
 
-    public IMap getDisposableMap(int mapid)
-    {
-        return loadMapFromWz(mapid, false);
-    }
 
     public bool isMapLoaded(int mapId)
     {
         return maps.ContainsKey(mapId);
     }
 
-    public bool TryGetMap(int mapId, out IMap map)
+    public bool TryGetMap(int mapId, out IMap? map)
     {
         return maps.TryGetValue(mapId, out map);
     }
@@ -112,10 +98,25 @@ public class MapManager : IDisposable
             map.mobMpRecovery();
         }
         sw.Stop();
-        _channelServer.Metrics.MapTick(sw.Elapsed.TotalMilliseconds);
+
+        GameMetrics.MapTickDuration.Record(sw.Elapsed.TotalMilliseconds,
+            new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName),
+            new KeyValuePair<string, object?>("Name", InstanceName));
+    }
+
+    void RemoveMap(int mapId, out IMap? oldMap)
+    {
+        if (maps.TryRemove(mapId, out oldMap))
+        {
+            GameMetrics.ActiveMapCount.Add(-1
+                , new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName)
+                , new KeyValuePair<string, object?>("Name", InstanceName));
+            oldMap.Dispose();
+        }
     }
 
     bool disposed = false;
+
     public void Dispose()
     {
         if (disposed)
@@ -124,11 +125,7 @@ public class MapManager : IDisposable
         disposed = true;
         foreach (var kv in getMaps())
         {
-            if (maps.TryRemove(kv.Key, out var v))
-            {
-                v.Dispose();
-                _channelServer.Metrics.ActiveMaps.Dec();
-            }
+            RemoveMap(kv.Key, out _);
         }
 
         this.evt = null;
@@ -140,11 +137,7 @@ public class MapManager : IDisposable
         {
             if (!map.Value.IsTrackedByEvent && map.Value.EventInstanceManager == null && !map.Value.IsActive())
             {
-                if(maps.TryRemove(map.Key, out var v))
-                {
-                    v.Dispose();
-                    _channelServer.Metrics.ActiveMaps.Dec();
-                }
+                RemoveMap(map.Key, out _);
             }
         }
     }

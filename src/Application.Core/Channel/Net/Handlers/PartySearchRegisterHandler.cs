@@ -28,5 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PartySearchRegisterHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c) { }
+    public override void HandlePacket(InPacket p, IChannelClient c)
+    {
+    }
 }

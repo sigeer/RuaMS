@@ -1,27 +1,28 @@
+using Application.Core.Channel.Commands;
+
 namespace Application.Core.Channel.ServerData
 {
-    public class PetHungerManager : TaskBase
+    public class PetHungerManager
     {
-        private object activePetsLock = new object();
         private Dictionary<int, int> activePets = new();
         private DateTimeOffset petUpdate;
 
-        readonly WorldChannelServer _server;
+        readonly WorldChannel _server;
 
-        public PetHungerManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(PetHungerManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public PetHungerManager(WorldChannel server)
         {
             petUpdate = DateTimeOffset.UtcNow;
             this._server = server;
         }
 
-        private static int getPetKey(IPlayer chr, sbyte petSlot)
+        private static int getPetKey(Player chr, sbyte petSlot)
         {
             // assuming max 3 pets
             return (chr.getId() << 2) + petSlot;
         }
 
 
-        public void registerPetHunger(IPlayer chr, sbyte petSlot)
+        public void registerPetHunger(Player chr, sbyte petSlot)
         {
             if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
             {
@@ -30,60 +31,36 @@ namespace Application.Core.Channel.ServerData
 
             int key = getPetKey(chr, petSlot);
 
-            Monitor.Enter(activePetsLock);
-            try
+            int initProc;
+            if (DateTimeOffset.UtcNow - petUpdate > TimeSpan.FromSeconds(55))
             {
-                int initProc;
-                if (DateTimeOffset.UtcNow - petUpdate > TimeSpan.FromSeconds(55))
-                {
-                    initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
-                }
-                else
-                {
-                    initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 1;
-                }
+                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
+            }
+            else
+            {
+                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 1;
+            }
 
-                activePets.AddOrUpdate(key, initProc);
-            }
-            finally
-            {
-                Monitor.Exit(activePetsLock);
-            }
+            activePets.AddOrUpdate(key, initProc);
         }
 
-        public void unregisterPetHunger(IPlayer chr, sbyte petSlot)
+        public void unregisterPetHunger(Player chr, sbyte petSlot)
         {
             int key = getPetKey(chr, petSlot);
 
-            Monitor.Enter(activePetsLock);
-            try
-            {
-                activePets.Remove(key);
-            }
-            finally
-            {
-                Monitor.Exit(activePetsLock);
-            }
+            activePets.Remove(key);
         }
 
-        protected override void HandleRun()
+        public void HandleRun()
         {
             Dictionary<int, int> deployedPets;
 
-            Monitor.Enter(activePetsLock);
-            try
-            {
-                petUpdate = DateTimeOffset.UtcNow;
-                deployedPets = new(activePets);   // exception here found thanks to MedicOP
-            }
-            finally
-            {
-                Monitor.Exit(activePetsLock);
-            }
+            petUpdate = DateTimeOffset.UtcNow;
+            deployedPets = new(activePets);   // exception here found thanks to MedicOP
 
             foreach (var dp in deployedPets)
             {
-                var chr = _server.FindPlayerById(dp.Key / 4);
+                var chr = _server.getPlayerStorage().getCharacterById(dp.Key / 4);
                 if (chr == null || !chr.isLoggedinWorld())
                 {
                     continue;
@@ -96,15 +73,7 @@ namespace Application.Core.Channel.ServerData
                     dpVal = 0;
                 }
 
-                Monitor.Enter(activePetsLock);
-                try
-                {
-                    activePets.AddOrUpdate(dp.Key, dpVal);
-                }
-                finally
-                {
-                    Monitor.Exit(activePetsLock);
-                }
+                activePets.AddOrUpdate(dp.Key, dpVal);
             }
         }
     }

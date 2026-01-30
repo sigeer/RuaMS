@@ -1,4 +1,4 @@
-using PlayerNPCProto;
+using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel.InProgress
 {
@@ -21,7 +21,7 @@ namespace Application.Module.PlayerNPC.Channel.InProgress
             return _manager.GetMapData(getMapPlayerNPCListRequest);
         }
 
-        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList(GetAllPlayerNPCDataRequest request)
+        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
         {
             return _manager.GetAllData();
         }

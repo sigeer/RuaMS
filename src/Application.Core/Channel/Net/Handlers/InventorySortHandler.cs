@@ -34,7 +34,7 @@ public class InventorySortHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         var unknown = p.readInt();
-        chr.getAutobanManager().setTimestamp(3, c.CurrentServerContainer.getCurrentTimestamp(), 4);
+        chr.getAutobanManager().setTimestamp(3, c.CurrentServer.Node.getCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {
@@ -53,9 +53,7 @@ public class InventorySortHandler : ChannelHandlerBase
         List<ModifyInventory> mods = new();
 
         Inventory inventory = chr.getInventory(InventoryTypeUtils.getByType(invType));
-        inventory.lockInventory();
-        try
-        {
+
             for (short i = 1; i <= inventory.getSlotLimit(); i++)
             {
                 var item = inventory.getItem(i);
@@ -82,11 +80,6 @@ public class InventorySortHandler : ChannelHandlerBase
                 mods.Add(new ModifyInventory(0, item.copy()));//to prevent crashes
             }
             itemarray.Clear();
-        }
-        finally
-        {
-            inventory.unlockInventory();
-        }
 
         c.sendPacket(PacketCreator.modifyInventory(true, mods));
         c.sendPacket(PacketCreator.finishedSort2(invType));

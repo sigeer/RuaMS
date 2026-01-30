@@ -22,11 +22,11 @@
  */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -36,7 +36,6 @@ using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.Scripting.Events;
 using Application.Core.Server;
-using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
 using Application.Shared.Login;
@@ -52,7 +51,6 @@ using constants.game;
 using net.server;
 using net.server.guild;
 using scripting;
-using scripting.Event;
 using server;
 using server.events;
 using server.events.gm;
@@ -63,27 +61,13 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static client.inventory.Equip;
 
 namespace Application.Core.Game.Players;
 
 public partial class Player
 {
-    private Team? teamModel;
-    public Team? TeamModel
-    {
-        get
-        {
-            return teamModel;
-        }
-        private set
-        {
-            teamModel = value;
-            Party = teamModel?.getId() ?? 0;
-        }
-    }
-    public Guild? GuildModel => getGuild();
-    public Guild.Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
     public RewardStorage GachaponStorage { get; set; } = null!;
     public AbstractStorage? CurrentStorage { get; set; }
@@ -99,7 +83,7 @@ public partial class Player
     private int ci = 0;
 
     // 替换Family，搁置
-    public ISchool? SchoolModel { get; set; }
+    // public ISchool? SchoolModel { get; set; }
 
     private int battleshipHp = 0;
     private int mesosTraded = 0;
@@ -110,7 +94,7 @@ public partial class Player
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
     private int localchairrate;
-    private bool hidden, equipchanged = true, berserk, hasSandboxItem = false, whiteChat = false;
+    private bool hidden, equipchanged = true, hasSandboxItem = false, whiteChat = false;
     private bool equippedMesoMagnet = false, equippedItemPouch = false, equippedPetItemIgnore = false;
     private bool usedSafetyCharm = false;
     private float autopotHpAlert, autopotMpAlert;
@@ -184,23 +168,14 @@ public partial class Player
     public byte[]? QuickSlotLoaded { get; set; }
     public QuickslotBinding? QuickSlotKeyMapped { get; set; }
 
-    private Door? pdoor = null;
-
 
     private ScheduledFuture? dragonBloodSchedule;
-    private ScheduledFuture? hpDecreaseTask;
     private ScheduledFuture? beholderHealingSchedule, beholderBuffSchedule, berserkSchedule;
 
     private ScheduledFuture? recoveryTask = null;
     private ScheduledFuture? extraRecoveryTask = null;
 
     private ScheduledFuture? pendantOfSpirit = null; //1122017
-    private ScheduledFuture? cpqSchedule = null;
-
-    private object chrLock = new object();
-    private object evtLock = new object();
-
-    private object prtLock = new object();
 
     /// <summary>
     /// PetId -> ItemId
@@ -218,7 +193,6 @@ public partial class Player
     private bool blockCashShop = false;
     private bool allowExpGain = true;
     private byte pendantExp = 0, lastmobcount = 0;
-    sbyte doorSlot = -1;
 
     public Dictionary<string, Events> Events { get; set; }
 
@@ -242,7 +216,6 @@ public partial class Player
     private DateTimeOffset loginTime;
     private bool chasing = false;
 
-    ReaderWriterLockSlim chLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     float expRateByLevel = 1;
     float mesoRateByLevel = 1;
     float dropRateByLevel = 1;
@@ -290,7 +263,7 @@ public partial class Player
 
     public bool CanTalkNpc()
     {
-        return Client.CurrentServerContainer.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
+        return Client.CurrentServer.Node.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
     }
 
     public void addCrushRing(Ring r)
@@ -490,7 +463,7 @@ public partial class Player
         this.Client = c;
     }
 
-    private void RemoveWorldWatcher()
+    public void RemoveWorldWatcher()
     {
         var channelServer = Client.CurrentServer;
         channelServer.OnWorldExpRateChanged -= UpdateActualExpRate;
@@ -573,7 +546,7 @@ public partial class Player
         {
             if (mbsvh.effect.isMagicDoor())
             {
-                cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                cancelEffect(mbsvh.effect, false);
                 break;
             }
         }
@@ -614,28 +587,20 @@ public partial class Player
         {
             Inventory inv = this.getInventory(invType);
 
-            inv.lockInventory();
-            try
+            foreach (Item item in inv.list())
             {
-                foreach (Item item in inv.list())
+                if (InventoryManipulator.isSandboxItem(item))
                 {
-                    if (InventoryManipulator.isSandboxItem(item))
-                    {
-                        InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                        dropMessage(5, "[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
-                    }
+                    InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
+                    dropMessage(5, "[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                 }
-            }
-            finally
-            {
-                inv.unlockInventory();
             }
         }
 
         hasSandboxItem = false;
     }
 
-    public FameStatus canGiveFame(IPlayer from)
+    public FameStatus canGiveFame(Player from)
     {
         if (this.isGM())
         {
@@ -645,7 +610,7 @@ public partial class Player
         if (FameLogs.Count == 0)
             return FameStatus.OK;
 
-        if (TimeSpan.FromMilliseconds(FameLogs[FameLogs.Count - 1].Time - Client.CurrentServerContainer.getCurrentTime()) < TimeSpan.FromDays(1))
+        if (TimeSpan.FromMilliseconds(FameLogs[FameLogs.Count - 1].Time - Client.CurrentServer.Node.getCurrentTime()) < TimeSpan.FromDays(1))
             return FameStatus.NOT_TODAY;
 
         if (FameLogs.Any(x => x.ToId == from.getId()))
@@ -771,10 +736,11 @@ public partial class Player
 
     private void broadcastChangeJob()
     {
-        foreach (IPlayer chr in MapModel.getAllPlayers())
+        foreach (Player chr in MapModel.getAllPlayers())
         {
             var chrC = chr.Client;
 
+            // 转职需要在地图上重新生成角色吗？
             if (chrC != null)
             {     // propagate new job 3rd-person effects (FJ, Aran 1st strike, etc)
                 this.sendDestroyData(chrC);
@@ -782,196 +748,163 @@ public partial class Player
             }
         }
 
-        Client.CurrentServerContainer.TimerManager.schedule(() =>
+        Client.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            var thisChr = this;
-            var map = thisChr.MapModel;
-
-            if (map != null)
-            {
-                MapModel.broadcastMessage(thisChr, PacketCreator.showForeignEffect(thisChr.getId(), 8), false);
-            }
+            Client.CurrentServer.Post(new MapBroadcastJobChangedCommand(this.getMap(), this.Id));
         }, 777);
     }
 
-    object changeJobLock = new object();
     public void changeJob(Job? newJob)
     {
-        lock (changeJobLock)
+        if (newJob == null)
         {
-            if (newJob == null)
-            {
-                return;//the fuck you doing idiot!
-            }
+            return;//the fuck you doing idiot!
+        }
 
-            this.JobModel = newJob;
+        this.JobModel = newJob;
 
-            int spGain = 1;
-            if (newJob.HasSPTable)
+        int spGain = 1;
+        if (newJob.HasSPTable)
+        {
+            spGain += 2;
+        }
+        else
+        {
+            if (newJob.getId() % 10 == 2)
             {
                 spGain += 2;
             }
+
+            if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE)
+            {
+                spGain = getChangedJobSp(newJob);
+            }
+        }
+
+        if (spGain > 0)
+        {
+            gainSp(spGain, GameConstants.getSkillBook(newJob.getId()), true);
+        }
+
+        // thanks xinyifly for finding out missing AP awards (AP Reset can be used as a compass)
+        if (newJob.getId() % 100 >= 1)
+        {
+            if (this.isCygnus())
+            {
+                gainAp(7, true);
+            }
             else
             {
-                if (newJob.getId() % 10 == 2)
+                if (YamlConfig.config.server.USE_STARTING_AP_4 || newJob.getId() % 10 >= 1)
                 {
-                    spGain += 2;
-                }
-
-                if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE)
-                {
-                    spGain = getChangedJobSp(newJob);
+                    gainAp(5, true);
                 }
             }
-
-            if (spGain > 0)
+        }
+        else
+        {    // thanks Periwinks for noticing an AP shortage from lower levels
+            if (YamlConfig.config.server.USE_STARTING_AP_4 && newJob.getId() % 1000 >= 1)
             {
-                gainSp(spGain, GameConstants.getSkillBook(newJob.getId()), true);
+                gainAp(4, true);
             }
+        }
 
-            // thanks xinyifly for finding out missing AP awards (AP Reset can be used as a compass)
-            if (newJob.getId() % 100 >= 1)
+        if (!isGM())
+        {
+            for (byte i = 1; i < 5; i++)
             {
-                if (this.isCygnus())
-                {
-                    gainAp(7, true);
-                }
-                else
-                {
-                    if (YamlConfig.config.server.USE_STARTING_AP_4 || newJob.getId() % 10 >= 1)
-                    {
-                        gainAp(5, true);
-                    }
-                }
+                gainSlots(i, 4, true);
             }
-            else
-            {    // thanks Periwinks for noticing an AP shortage from lower levels
-                if (YamlConfig.config.server.USE_STARTING_AP_4 && newJob.getId() % 1000 >= 1)
-                {
-                    gainAp(4, true);
-                }
-            }
+        }
 
-            if (!isGM())
+        int addhp = 0, addmp = 0;
+        int job_ = JobId % 1000; // lame temp "fix"
+        if (job_ == 100)
+        {                      // 1st warrior
+            addhp += Randomizer.rand(200, 250);
+        }
+        else if (job_ == 200)
+        {               // 1st mage
+            addmp += Randomizer.rand(100, 150);
+        }
+        else if (job_ % 100 == 0)
+        {           // 1st others
+            addhp += Randomizer.rand(100, 150);
+            addmp += Randomizer.rand(25, 50);
+        }
+        else if (job_ > 0 && job_ < 200)
+        {    // 2nd~4th warrior
+            addhp += Randomizer.rand(300, 350);
+        }
+        else if (job_ < 300)
+        {                // 2nd~4th mage
+            addmp += Randomizer.rand(450, 500);
+        }
+        else if (job_ > 0)
+        {                  // 2nd~4th others
+            addhp += Randomizer.rand(300, 350);
+            addmp += Randomizer.rand(150, 200);
+        }
+
+        /*
+        //aran perks?
+        int newJobId = newJobId;
+        if(newJobId == 2100) {          // become aran1
+            addhp += 275;
+            addmp += 15;
+        } else if(newJobId == 2110) {   // become aran2
+            addmp += 275;
+        } else if(newJobId == 2111) {   // become aran3
+            addhp += 275;
+            addmp += 275;
+        }
+        */
+
+        ChangeMaxHP(addhp);
+        ChangeMaxMP(addmp);
+        SetHP(ActualMaxHP);
+        SetMP(ActualMaxMP);
+
+        UpdateLocalStats();
+
+        List<KeyValuePair<Stat, int>> statup = new(7);
+        statup.Add(new(Stat.HP, HP));
+        statup.Add(new(Stat.MP, MP));
+        statup.Add(new(Stat.MAXHP, MaxHP));
+        statup.Add(new(Stat.MAXMP, MaxMP));
+        statup.Add(new(Stat.AVAILABLEAP, Ap));
+        statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
+        statup.Add(new(Stat.JOB, JobId));
+        sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+
+
+        saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
+
+        // setMPC(new PartyCharacter(this));
+
+        if (dragon != null)
+        {
+            MapModel.broadcastMessage(PacketCreator.removeDragon(dragon.getObjectId()));
+            dragon = null;
+        }
+
+        setMasteries(this.JobId);
+
+        broadcastChangeJob();
+
+        if (newJob.HasDragon())
+        {
+            if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
             {
-                for (byte i = 1; i < 5; i++)
-                {
-                    gainSlots(i, 4, true);
-                }
+                cancelBuffStats(BuffStat.MONSTER_RIDING);
             }
-
-            int addhp = 0, addmp = 0;
-            int job_ = JobId % 1000; // lame temp "fix"
-            if (job_ == 100)
-            {                      // 1st warrior
-                addhp += Randomizer.rand(200, 250);
-            }
-            else if (job_ == 200)
-            {               // 1st mage
-                addmp += Randomizer.rand(100, 150);
-            }
-            else if (job_ % 100 == 0)
-            {           // 1st others
-                addhp += Randomizer.rand(100, 150);
-                addmp += Randomizer.rand(25, 50);
-            }
-            else if (job_ > 0 && job_ < 200)
-            {    // 2nd~4th warrior
-                addhp += Randomizer.rand(300, 350);
-            }
-            else if (job_ < 300)
-            {                // 2nd~4th mage
-                addmp += Randomizer.rand(450, 500);
-            }
-            else if (job_ > 0)
-            {                  // 2nd~4th others
-                addhp += Randomizer.rand(300, 350);
-                addmp += Randomizer.rand(150, 200);
-            }
-
-            /*
-            //aran perks?
-            int newJobId = newJobId;
-            if(newJobId == 2100) {          // become aran1
-                addhp += 275;
-                addmp += 15;
-            } else if(newJobId == 2110) {   // become aran2
-                addmp += 275;
-            } else if(newJobId == 2111) {   // become aran3
-                addhp += 275;
-                addmp += 275;
-            }
-            */
-
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                ChangeMaxHP(addhp);
-                ChangeMaxMP(addmp);
-                SetHP(ActualMaxHP);
-                SetMP(ActualMaxMP);
-
-                UpdateLocalStats();
-
-                List<KeyValuePair<Stat, int>> statup = new(7);
-                statup.Add(new(Stat.HP, HP));
-                statup.Add(new(Stat.MP, MP));
-                statup.Add(new(Stat.MAXHP, MaxHP));
-                statup.Add(new(Stat.MAXMP, MaxMP));
-                statup.Add(new(Stat.AVAILABLEAP, Ap));
-                statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
-                statup.Add(new(Stat.JOB, JobId));
-                sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
-
-            saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
-
-            // setMPC(new PartyCharacter(this));
-
-            if (dragon != null)
-            {
-                MapModel.broadcastMessage(PacketCreator.removeDragon(dragon.getObjectId()));
-                dragon = null;
-            }
-
-            setMasteries(this.JobId);
-
-            broadcastChangeJob();
-
-            if (newJob.HasDragon())
-            {
-                if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
-                {
-                    cancelBuffStats(BuffStat.MONSTER_RIDING);
-                }
-                createDragon();
-            }
-
-            if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
-            {
-                if (!this.isGM())
-                {
-                    broadcastAcquaintances(6, "[" + ClientCulture.SystemCulture.Ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + ClientCulture.SystemCulture.GetJobName(JobModel) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
-                }
-            }
+            createDragon();
 
         }
 
     }
 
-    public void broadcastAcquaintances(int type, string message)
-    {
-        broadcastAcquaintances(PacketCreator.serverNotice(type, message));
-        Client.CurrentServerContainer.BuddyManager.SendBuddyNoticeMessage(this, type, message);
-    }
-
-    public void broadcastAcquaintances(Packet packet)
+    void broadcastAcquaintances(Packet packet)
     {
         // guild已经有转职提示
         //var guild = getGuild();
@@ -1021,32 +954,24 @@ public partial class Player
         int thisMapid = getMapId();
         int returnMapid = Client.CurrentServer.getMapFactory().getMap(thisMapid).getReturnMapId();
 
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
-        {
-            foreach (var mbs in effects)
-            {
-                if (mbs.Key == BuffStat.MAP_PROTECTION)
-                {
-                    byte value = (byte)mbs.Value.value;
 
-                    if (value == 1 && ((returnMapid == MapId.EL_NATH && thisMapid != MapId.ORBIS_TOWER_BOTTOM) || returnMapid == MapId.INTERNET_CAFE))
-                    {
-                        return true;        //protection from cold
-                    }
-                    else
-                    {
-                        return value == 2 && (returnMapid == MapId.AQUARIUM || thisMapid == MapId.ORBIS_TOWER_BOTTOM);        //breathing underwater
-                    }
+        foreach (var mbs in effects)
+        {
+            if (mbs.Key == BuffStat.MAP_PROTECTION)
+            {
+                byte value = (byte)mbs.Value.value;
+
+                if (value == 1 && ((returnMapid == MapId.EL_NATH && thisMapid != MapId.ORBIS_TOWER_BOTTOM) || returnMapid == MapId.INTERNET_CAFE))
+                {
+                    return true;        //protection from cold
+                }
+                else
+                {
+                    return value == 2 && (returnMapid == MapId.AQUARIUM || thisMapid == MapId.ORBIS_TOWER_BOTTOM);        //breathing underwater
                 }
             }
         }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
+
 
         foreach (Item it in this.getInventory(InventoryType.EQUIPPED).list())
         {
@@ -1064,221 +989,13 @@ public partial class Player
     {
         List<int> lastVisited = new(5);
 
-        Monitor.Enter(petLock);
-        try
+        foreach (var lv in lastVisitedMaps)
         {
-            foreach (var lv in lastVisitedMaps)
-            {
-                if (lv.TryGetTarget(out var lvm))
-                    lastVisited.Add(lvm.getId());
-            }
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
+            if (lv.TryGetTarget(out var lvm))
+                lastVisited.Add(lvm.getId());
         }
 
         return lastVisited;
-    }
-
-    public void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers)
-    {
-        List<WeakReference<IMap>> mapids;
-
-        Monitor.Enter(petLock);
-        try
-        {
-            mapids = new(lastVisitedMaps);
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
-
-        List<IPlayer> partyMembers = new();
-        foreach (var mc in (exPartyMembers != null) ? exPartyMembers : this.getPartyMembersOnline())
-        {
-            if (mc.isLoggedinWorld())
-            {
-                partyMembers.Add(mc);
-            }
-        }
-
-        IPlayer? partyLeaver = null;
-        if (exPartyMembers != null)
-        {
-            partyMembers.Remove(this);
-            partyLeaver = this;
-        }
-
-        IMap map = MapModel;
-        List<MapItem>? partyItems = null;
-
-        int partyId = exPartyMembers != null ? -1 : this.getPartyId();
-        foreach (var mapRef in mapids)
-        {
-            if (mapRef.TryGetTarget(out var mapObj))
-            {
-                List<MapItem> partyMapItems = mapObj.updatePlayerItemDropsToParty(partyId, Id, partyMembers, partyLeaver);
-                if (MapModel.GetHashCode() == mapObj.GetHashCode())
-                {
-                    partyItems = partyMapItems;
-                }
-            }
-        }
-
-        if (partyItems != null && exPartyMembers == null)
-        {
-            MapModel.updatePartyItemDropsToNewcomer(this, partyItems);
-        }
-
-        updatePartyTownDoors(party, this, partyLeaver, partyMembers);
-    }
-
-    private static void addPartyPlayerDoor(IPlayer target)
-    {
-        var targetDoor = target.getPlayerDoor();
-        if (targetDoor != null)
-        {
-            target.applyPartyDoor(targetDoor, true);
-        }
-    }
-
-    private static void removePartyPlayerDoor(Team party, IPlayer target)
-    {
-        target.removePartyDoor(party);
-    }
-
-
-    private static void updatePartyTownDoors(Team party, IPlayer target, IPlayer? partyLeaver, List<IPlayer> partyMembers)
-    {
-        if (partyLeaver != null)
-        {
-            removePartyPlayerDoor(party, target);
-        }
-        else
-        {
-            addPartyPlayerDoor(target);
-        }
-
-        Dictionary<int, Door>? partyDoors = null;
-        if (partyMembers.Count > 0)
-        {
-            partyDoors = party.getDoors();
-
-            foreach (IPlayer pchr in partyMembers)
-            {
-                Door? door = partyDoors.GetValueOrDefault(pchr.getId());
-                if (door != null)
-                {
-                    door.updateDoorPortal(pchr);
-                }
-            }
-
-            foreach (Door door in partyDoors.Values)
-            {
-                foreach (IPlayer pchar in partyMembers)
-                {
-                    DoorObject mdo = door.getTownDoor();
-                    mdo.sendDestroyData(pchar.Client, true);
-                    pchar.removeVisibleMapObject(mdo);
-                }
-            }
-
-            if (partyLeaver != null)
-            {
-                var leaverDoors = partyLeaver.getDoors();
-                foreach (Door door in leaverDoors)
-                {
-                    foreach (IPlayer pchar in partyMembers)
-                    {
-                        DoorObject mdo = door.getTownDoor();
-                        mdo.sendDestroyData(pchar.Client, true);
-                        pchar.removeVisibleMapObject(mdo);
-                    }
-                }
-            }
-
-            List<int> histMembers = party.getMembersSortedByHistory();
-            foreach (int chrid in histMembers)
-            {
-                Door? door = partyDoors.GetValueOrDefault(chrid);
-                if (door != null)
-                {
-                    foreach (IPlayer pchar in partyMembers)
-                    {
-                        DoorObject mdo = door.getTownDoor();
-                        mdo.sendSpawnData(pchar.Client);
-                        pchar.addVisibleMapObject(mdo);
-                    }
-                }
-            }
-        }
-
-        if (partyLeaver != null)
-        {
-            var leaverDoors = partyLeaver.getDoors();
-
-            if (partyDoors != null)
-            {
-                foreach (Door door in partyDoors.Values)
-                {
-                    DoorObject mdo = door.getTownDoor();
-                    mdo.sendDestroyData(partyLeaver.Client, true);
-                    partyLeaver.removeVisibleMapObject(mdo);
-                }
-            }
-
-            foreach (Door door in leaverDoors)
-            {
-                DoorObject mdo = door.getTownDoor();
-                mdo.sendDestroyData(partyLeaver.Client, true);
-                partyLeaver.removeVisibleMapObject(mdo);
-            }
-
-            foreach (Door door in leaverDoors)
-            {
-                door.updateDoorPortal(partyLeaver);
-
-                DoorObject mdo = door.getTownDoor();
-                mdo.sendSpawnData(partyLeaver.Client);
-                partyLeaver.addVisibleMapObject(mdo);
-            }
-        }
-    }
-
-    public void checkBerserk(bool isHidden)
-    {
-        berserkSchedule?.cancel(false);
-
-        IPlayerStats chr = this;
-        if (JobModel.Equals(Job.DARKKNIGHT))
-        {
-            Skill BerserkX = SkillFactory.GetSkillTrust(DarkKnight.BERSERK);
-            int skilllevel = getSkillLevel(BerserkX);
-            if (skilllevel > 0)
-            {
-                berserk = (this.HP * 100 / this.ActualMaxHP) < BerserkX.getEffect(skilllevel).getX();
-                berserkSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
-                {
-                    if (awayFromWorld.Get())
-                    {
-                        return;
-                    }
-
-                    sendPacket(PacketCreator.showOwnBerserk(skilllevel, berserk));
-                    if (!isHidden)
-                    {
-                        MapModel.broadcastMessage(this, PacketCreator.showBerserk(Id, skilllevel, berserk), false);
-                    }
-                    else
-                    {
-                        MapModel.broadcastGMMessage(this, PacketCreator.showBerserk(Id, skilllevel, berserk), false);
-                    }
-                }
-                , 5000, 3000);
-            }
-        }
     }
 
     public void controlMonster(Monster monster)
@@ -1321,8 +1038,8 @@ public partial class Player
                 var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId());
                 if (template.Party)
                 {
-                    List<IPlayer> partyMembers = getPartyMembersOnSameMap();
-                    foreach (IPlayer mc in partyMembers)
+                    List<Player> partyMembers = getPartyMembersOnSameMap();
+                    foreach (Player mc in partyMembers)
                     {
                         if (mc.isAlive())
                         {
@@ -1381,7 +1098,7 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServerContainer.getCurrentTime(), cooldown * 1000);
+            addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServer.Node.getCurrentTime(), cooldown * 1000);
             removeCooldown(5221999);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
@@ -1399,79 +1116,53 @@ public partial class Player
 
     private void stopExtraTask()
     {
-        chLock.EnterReadLock();
-        try
+        if (extraRecoveryTask != null)
         {
-            if (extraRecoveryTask != null)
-            {
-                extraRecoveryTask.cancel(false);
-                extraRecoveryTask = null;
-            }
-        }
-        finally
-        {
-            chLock.ExitReadLock();
+            extraRecoveryTask.cancel(false);
+            extraRecoveryTask = null;
         }
     }
 
     private void startExtraTask(sbyte healHP, sbyte healMP, short healInterval)
     {
-        chLock.EnterReadLock();
-        try
-        {
-            startExtraTaskInternal(healHP, healMP, healInterval);
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+        startExtraTaskInternal(healHP, healMP, healInterval);
     }
 
     private void startExtraTaskInternal(sbyte healHP, sbyte healMP, short healInterval)
     {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
+        extraRecoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
         {
-            if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1)
-            {
-                stopExtraTask();
-                return;
-            }
-
-            if (HP < ActualMaxHP)
-            {
-                if (healHP > 0)
-                {
-                    sendPacket(PacketCreator.showOwnRecovery(healHP));
-                    MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, healHP), false);
-                }
-            }
-
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(healHP);
-                ChangeMP(healMP);
-            });
-
+            Client.CurrentServer.Post(new PlayerExtralRecoveryCommand(this, healHP, healMP));
         }, healInterval, healInterval);
     }
 
-    public void disbandGuild()
+    public void ApplyExtralRecovery(sbyte healHP, sbyte healMP)
     {
-        if (GuildId < 1 || GuildRank != 1)
+        if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1)
         {
+            stopExtraTask();
             return;
         }
-        try
+
+        if (HP < ActualMaxHP)
         {
-            Client.CurrentServerContainer.GuildManager.Disband(this);
+            if (healHP > 0)
+            {
+                sendPacket(PacketCreator.showOwnRecovery(healHP));
+                MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, healHP), false);
+            }
         }
-        catch (Exception e)
+
+        UpdateStatsChunk(() =>
         {
-            Log.Error(e.ToString());
-        }
+            ChangeHP(healHP);
+            ChangeMP(healMP);
+        });
+
     }
+
 
     public void dispel()
     {
@@ -1485,7 +1176,7 @@ public partial class Player
                     if (mbsvh.effect.getBuffSourceId() != Aran.COMBO_ABILITY)
                     {
                         // check discovered thanks to Croosade dev team
-                        cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                        cancelEffect(mbsvh.effect, false);
                     }
                 }
             }
@@ -1501,12 +1192,12 @@ public partial class Player
             {
                 if (mbsvh.effect.isSkill() && (mbsvh.effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.effect.getSourceId())))
                 {
-                    cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                    cancelEffect(mbsvh.effect, false);
                 }
             }
             else if (mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skillid)
             {
-                cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                cancelEffect(mbsvh.effect, false);
             }
         }
     }
@@ -1537,7 +1228,7 @@ public partial class Player
     /// <param name="emote"></param>
     public void changeFaceExpression(int emote)
     {
-        long timeNow = Client.CurrentServerContainer.getCurrentTime();
+        long timeNow = Client.CurrentServer.Node.getCurrentTime();
         // IClient allows changing every 2 seconds. Give it a little bit of overhead for packet delays.
         if (timeNow - lastExpression > 1500)
         {
@@ -1588,26 +1279,18 @@ public partial class Player
 
     private KeyValuePair<int, int> applyFame(int delta)
     {
-        Monitor.Enter(petLock);
-        try
+        int newFame = Fame + delta;
+        if (newFame < -30000)
         {
-            int newFame = Fame + delta;
-            if (newFame < -30000)
-            {
-                delta = -(30000 + Fame);
-            }
-            else if (newFame > 30000)
-            {
-                delta = 30000 - Fame;
-            }
+            delta = -(30000 + Fame);
+        }
+        else if (newFame > 30000)
+        {
+            delta = 30000 - Fame;
+        }
 
-            Fame += delta;
-            return new(Fame, delta);
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
+        Fame += delta;
+        return new(Fame, delta);
     }
 
     public void gainFame(int delta)
@@ -1615,7 +1298,7 @@ public partial class Player
         gainFame(delta, null, 0);
     }
 
-    public bool gainFame(int delta, IPlayer? fromPlayer, int mode)
+    public bool gainFame(int delta, Player? fromPlayer, int mode)
     {
         KeyValuePair<int, int> fameRes = applyFame(delta);
         delta = fameRes.Value;
@@ -1656,13 +1339,6 @@ public partial class Player
 
 
 
-    public int getAllianceRank()
-    {
-        return AllianceRank;
-    }
-
-
-
     public int getBattleshipHp()
     {
         return battleshipHp;
@@ -1676,7 +1352,7 @@ public partial class Player
 
     //public List<KeyValuePair<BuffStat, int>> getAllActiveStatups()
     //{
-    //    Monitor.Enter(effLock);
+    //    effLock.Enter();
     //    chLock.EnterReadLock();
     //    try
     //    {
@@ -1685,24 +1361,11 @@ public partial class Player
     //    finally
     //    {
     //        chLock.ExitReadLock();
-    //        Monitor.Exit(effLock);
+    //        effLock.Exit();
     //    }
     //}
 
-    public bool hasBuffFromSourceid(int sourceid)
-    {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
-        {
-            return buffEffects.ContainsKey(sourceid);
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
-    }
+
 
     //private void dropWorstEffectFromItemEffectHolder(BuffStat mbs)
     //{
@@ -1838,95 +1501,18 @@ public partial class Player
         return LastDojoStage;
     }
 
-    public ICollection<Door> getDoors()
-    {
-        Monitor.Enter(prtLock);
-        try
-        {
-            return (TeamModel != null ? new List<Door>(TeamModel.getDoors().Values.ToList()) : (pdoor != null ? Collections.singletonList(pdoor) : new()));
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-    }
 
     public Door? getPlayerDoor()
     {
-        Monitor.Enter(prtLock);
-        try
-        {
-            return pdoor;
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
+        return Client.CurrentServer.PlayerDoors.GetValueOrDefault(Id);
     }
 
-    public Door? getMainTownDoor()
+    public void applyPartyDoor(Door door)
     {
-        return getDoors().FirstOrDefault(x => x.getTownPortal().getId() == 0x80);
+        Client.CurrentServer.PlayerDoors[Id] = door;
+        silentPartyUpdate();
     }
 
-    public void applyPartyDoor(Door door, bool partyUpdate)
-    {
-        Team? chrParty;
-        Monitor.Enter(prtLock);
-        try
-        {
-            if (!partyUpdate)
-            {
-                pdoor = door;
-            }
-
-            chrParty = getParty();
-            if (chrParty != null)
-            {
-                chrParty.addDoor(Id, door);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-
-        silentPartyUpdateInternal(chrParty);
-    }
-
-    public Door? removePartyDoor(bool partyUpdate)
-    {
-        Door? ret = null;
-        Team? chrParty;
-
-        Monitor.Enter(prtLock);
-        try
-        {
-            chrParty = getParty();
-            if (chrParty != null)
-            {
-                chrParty.removeDoor(Id);
-            }
-
-            if (!partyUpdate)
-            {
-                ret = pdoor;
-                pdoor = null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-
-        silentPartyUpdateInternal(chrParty);
-        return ret;
-    }
-
-    public void removePartyDoor(Team formerParty)
-    {    // player is no longer registered at this party
-        formerParty.removeDoor(Id);
-    }
 
     public int getEnergyBar()
     {
@@ -1935,79 +1521,39 @@ public partial class Player
 
     public void setEventInstance(AbstractEventInstanceManager? eventInstance)
     {
-        Monitor.Enter(evtLock);
-        try
-        {
-            this.eventInstance = eventInstance;
-        }
-        finally
-        {
-            Monitor.Exit(evtLock);
-        }
+        this.eventInstance = eventInstance;
     }
     public AbstractEventInstanceManager? getEventInstance()
     {
-        Monitor.Enter(evtLock);
-        try
-        {
-            return eventInstance;
-        }
-        finally
-        {
-            Monitor.Exit(evtLock);
-        }
+        return eventInstance;
     }
 
 
 
     public void resetExcluded(long petId)
     {
-        chLock.EnterReadLock();
-        try
-        {
-            HashSet<int>? petExclude = excluded.GetValueOrDefault(petId);
+        HashSet<int>? petExclude = excluded.GetValueOrDefault(petId);
 
-            if (petExclude != null)
-            {
-                petExclude.Clear();
-            }
-            else
-            {
-                excluded.AddOrUpdate(petId, new());
-            }
-        }
-        finally
+        if (petExclude != null)
         {
-            chLock.ExitReadLock();
+            petExclude.Clear();
+        }
+        else
+        {
+            excluded.AddOrUpdate(petId, new());
         }
     }
 
     public void addExcluded(long petId, int x)
     {
-        chLock.EnterReadLock();
-        try
-        {
-            excluded.GetValueOrDefault(petId)?.Add(x);
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+        excluded.GetValueOrDefault(petId)?.Add(x);
     }
 
     public void commitExcludedItems()
     {
         var petExcluded = this.getExcluded();
 
-        chLock.EnterReadLock();
-        try
-        {
-            excludedItems.Clear();
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+        excludedItems.Clear();
 
         foreach (var pe in petExcluded)
         {
@@ -2022,17 +1568,9 @@ public partial class Player
             {
                 sendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
 
-                chLock.EnterReadLock();
-                try
+                foreach (int itemid in exclItems)
                 {
-                    foreach (int itemid in exclItems)
-                    {
-                        excludedItems.Add(itemid);
-                    }
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
+                    excludedItems.Add(itemid);
                 }
             }
         }
@@ -2059,28 +1597,12 @@ public partial class Player
 
     public Dictionary<long, HashSet<int>> getExcluded()
     {
-        chLock.EnterReadLock();
-        try
-        {
-            return excluded.ToDictionary();
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+        return excluded.ToDictionary();
     }
 
     public HashSet<int> getExcludedItems()
     {
-        chLock.EnterReadLock();
-        try
-        {
-            return excludedItems.ToHashSet();
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+        return excludedItems.ToHashSet();
     }
 
     public int getExp()
@@ -2225,34 +1747,7 @@ public partial class Player
         return getGender() == 0;
     }
 
-    public Guild? getGuild()
-    {
-        try
-        {
-            return Client.CurrentServerContainer.GuildManager.GetGuildById(GuildId);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.ToString());
-            return null;
-        }
-    }
 
-    public Guild.Alliance? getAlliance()
-    {
-        var guild = getGuild();
-        return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
-    }
-
-    public int getGuildId()
-    {
-        return GuildId;
-    }
-
-    public int getGuildRank()
-    {
-        return GuildRank;
-    }
 
     public int getHair()
     {
@@ -2407,12 +1902,12 @@ public partial class Player
     public void setPlayerAggro(int mobHash)
     {
         setTargetHpBarHash(mobHash);
-        setTargetHpBarTime(Client.CurrentServerContainer.getCurrentTime());
+        setTargetHpBarTime(Client.CurrentServer.Node.getCurrentTime());
     }
 
     public void resetPlayerAggro()
     {
-        if (getChannelServer().Container.ServerMessageManager.unregisterDisabledServerMessage(Id))
+        if (getChannelServer().ServerMessageManager.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -2430,19 +1925,6 @@ public partial class Player
     public string getName()
     {
         return Name;
-    }
-
-    public int getNoPets()
-    {
-        Monitor.Enter(petLock);
-        try
-        {
-            return pets.Count(x => x != null);
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
     }
 
 
@@ -2564,18 +2046,8 @@ public partial class Player
 
     public StatEffect? getStatForBuff(BuffStat effect)
     {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
-        {
-            BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
-            return mbsvh?.effect;
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
+        BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
+        return mbsvh?.effect;
     }
 
     public Storage getStorage()
@@ -2639,7 +2111,7 @@ public partial class Player
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
         StatEffect ceffect;
         ceffect = energycharge.getEffect(getSkillLevel(energycharge));
-        var tMan = Client.CurrentServerContainer.TimerManager;
+
         if (energybar < 10000)
         {
             energybar += 102;
@@ -2658,17 +2130,21 @@ public partial class Player
         if (energybar >= 10000 && energybar < 11000)
         {
             energybar = 15000;
-            IPlayer chr = this;
-            tMan.schedule(() =>
+            Player chr = this;
+            Client.CurrentServer.Node.TimerManager.schedule(() =>
             {
-                energybar = 0;
-                var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
-                setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-                sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-                MapModel.broadcastPacket(chr, PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50));
-
+                Client.CurrentServer.Post(new PlayerEnergyChargeCommand(chr));
             }, ceffect.getDuration());
         }
+    }
+
+    public void ApplyEnergeCharge()
+    {
+        energybar = 0;
+        var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
+        setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
+        sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
+        MapModel.BroadcastAll(chr => chr.sendPacket(PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50)), Id);
     }
 
     public void handleOrbconsume()
@@ -2679,7 +2155,7 @@ public partial class Player
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(
             skillid,
-            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServerContainer.getCurrentTime()),
+            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServer.Node.getCurrentTime()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
@@ -2694,48 +2170,20 @@ public partial class Player
         return entered.GetValueOrDefault(mapId) == script;
     }
 
-    public void hasGivenFame(IPlayer to)
+    public void hasGivenFame(Player to)
     {
-        FameLogs.Add(new Core.Models.FameLogObject(to.Id, Client.CurrentServerContainer.getCurrentTime()));
+        FameLogs.Add(new Core.Models.FameLogObject(to.Id, Client.CurrentServer.Node.getCurrentTime()));
     }
 
-
-    public void increaseGuildCapacity()
-    {
-        var guild = getGuild();
-        if (guild == null)
-            return;
-
-        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
-
-        if (getMeso() < cost)
-        {
-            dropMessage(1, "You don't have enough mesos.");
-            return;
-        }
-
-        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
-
-    }
 
     public bool isBuffFrom(BuffStat stat, Skill skill)
     {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
+        BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(stat);
+        if (mbsvh == null)
         {
-            BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(stat);
-            if (mbsvh == null)
-            {
-                return false;
-            }
-            return mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skill.getId();
+            return false;
         }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
+        return mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skill.getId();
     }
 
     public bool isGmJob()
@@ -2784,10 +2232,6 @@ public partial class Player
         releaseControlledMonsters();
         visibleMapObjects.Clear();
         setChair(-1);
-        if (hpDecreaseTask != null)
-        {
-            hpDecreaseTask.cancel(false);
-        }
 
         var arena = this.getAriantColiseum();
         if (arena != null)
@@ -2861,237 +2305,211 @@ public partial class Player
         }
     }
 
-    object levelUpLock = new object();
     public void levelUp(bool takeexp)
     {
-        lock (levelUpLock)
+
+        Skill? improvingMaxHP = null;
+        Skill? improvingMaxMP = null;
+        int improvingMaxHPLevel = 0;
+        int improvingMaxMPLevel = 0;
+
+        bool isBeginner = isBeginnerJob();
+        if (YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP && isBeginner && Level < 11)
         {
-            Skill? improvingMaxHP = null;
-            Skill? improvingMaxMP = null;
-            int improvingMaxHPLevel = 0;
-            int improvingMaxMPLevel = 0;
+            gainAp(5, true);
 
-            bool isBeginner = isBeginnerJob();
-            if (YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP && isBeginner && Level < 11)
+            int str = 0, dex = 0;
+            if (Level < 6)
             {
-                Monitor.Enter(effLock);
-                statLock.EnterWriteLock();
-                try
-                {
-                    gainAp(5, true);
-
-                    int str = 0, dex = 0;
-                    if (Level < 6)
-                    {
-                        str += 5;
-                    }
-                    else
-                    {
-                        str += 4;
-                        dex += 1;
-                    }
-
-                    assignStrDexIntLuk(str, dex, 0, 0);
-                }
-                finally
-                {
-                    statLock.ExitWriteLock();
-                    Monitor.Exit(effLock);
-                }
+                str += 5;
             }
             else
             {
-                int remainingAp = 5;
+                str += 4;
+                dex += 1;
+            }
 
-                if (isCygnus())
+            assignStrDexIntLuk(str, dex, 0, 0);
+        }
+        else
+        {
+            int remainingAp = 5;
+
+            if (isCygnus())
+            {
+                if (Level > 10)
                 {
-                    if (Level > 10)
+                    if (Level <= 17)
                     {
-                        if (Level <= 17)
-                        {
-                            remainingAp += 2;
-                        }
-                        else if (Level < 77)
-                        {
-                            remainingAp++;
-                        }
+                        remainingAp += 2;
+                    }
+                    else if (Level < 77)
+                    {
+                        remainingAp++;
                     }
                 }
-
-                gainAp(remainingAp, true);
             }
 
-            int addhp = 0, addmp = 0;
-            if (isBeginner)
+            gainAp(remainingAp, true);
+        }
+
+        int addhp = 0, addmp = 0;
+        if (isBeginner)
+        {
+            addhp += Randomizer.rand(12, 16);
+            addmp += Randomizer.rand(10, 12);
+        }
+        else if (JobModel.isA(Job.WARRIOR) || JobModel.isA(Job.DAWNWARRIOR1))
+        {
+            improvingMaxHP = isCygnus() ? SkillFactory.GetSkillTrust(DawnWarrior.MAX_HP_INCREASE) : SkillFactory.GetSkillTrust(Warrior.IMPROVED_MAXHP);
+            if (JobModel.isA(Job.CRUSADER))
             {
-                addhp += Randomizer.rand(12, 16);
-                addmp += Randomizer.rand(10, 12);
+                improvingMaxMP = SkillFactory.GetSkillTrust(1210000);
             }
-            else if (JobModel.isA(Job.WARRIOR) || JobModel.isA(Job.DAWNWARRIOR1))
+            else if (JobModel.isA(Job.DAWNWARRIOR2))
             {
-                improvingMaxHP = isCygnus() ? SkillFactory.GetSkillTrust(DawnWarrior.MAX_HP_INCREASE) : SkillFactory.GetSkillTrust(Warrior.IMPROVED_MAXHP);
-                if (JobModel.isA(Job.CRUSADER))
-                {
-                    improvingMaxMP = SkillFactory.GetSkillTrust(1210000);
-                }
-                else if (JobModel.isA(Job.DAWNWARRIOR2))
-                {
-                    improvingMaxMP = SkillFactory.GetSkillTrust(11110000);
-                }
-                improvingMaxHPLevel = getSkillLevel(improvingMaxHP);
-                addhp += Randomizer.rand(24, 28);
-                addmp += Randomizer.rand(4, 6);
+                improvingMaxMP = SkillFactory.GetSkillTrust(11110000);
             }
-            else if (JobModel.isA(Job.MAGICIAN) || JobModel.isA(Job.BLAZEWIZARD1))
+            improvingMaxHPLevel = getSkillLevel(improvingMaxHP);
+            addhp += Randomizer.rand(24, 28);
+            addmp += Randomizer.rand(4, 6);
+        }
+        else if (JobModel.isA(Job.MAGICIAN) || JobModel.isA(Job.BLAZEWIZARD1))
+        {
+            improvingMaxMP = isCygnus() ? SkillFactory.GetSkillTrust(BlazeWizard.INCREASING_MAX_MP) : SkillFactory.GetSkillTrust(Magician.IMPROVED_MAX_MP_INCREASE);
+            improvingMaxMPLevel = getSkillLevel(improvingMaxMP);
+            addhp += Randomizer.rand(10, 14);
+            addmp += Randomizer.rand(22, 24);
+        }
+        else if (JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.THIEF) || (JobId > 1299 && JobId < 1500))
+        {
+            addhp += Randomizer.rand(20, 24);
+            addmp += Randomizer.rand(14, 16);
+        }
+        else if (JobModel.isA(Job.GM))
+        {
+            addhp += 30000;
+            addmp += 30000;
+        }
+        else if (JobModel.isA(Job.PIRATE) || JobModel.isA(Job.THUNDERBREAKER1))
+        {
+            improvingMaxHP = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.IMPROVE_MAX_HP) : SkillFactory.GetSkillTrust(Brawler.IMPROVE_MAX_HP);
+            improvingMaxHPLevel = getSkillLevel(improvingMaxHP);
+            addhp += Randomizer.rand(22, 28);
+            addmp += Randomizer.rand(18, 23);
+        }
+        else if (JobModel.isA(Job.ARAN1))
+        {
+            addhp += Randomizer.rand(44, 48);
+            int aids = Randomizer.rand(4, 8);
+            addmp += (int)(aids + Math.Floor(aids * 0.1));
+        }
+        if (improvingMaxHPLevel > 0 && (JobModel.isA(Job.WARRIOR) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.DAWNWARRIOR1) || JobModel.isA(Job.THUNDERBREAKER1)))
+        {
+            addhp += improvingMaxHP!.getEffect(improvingMaxHPLevel).getX();
+        }
+        if (improvingMaxMPLevel > 0 && (JobModel.isA(Job.MAGICIAN) || JobModel.isA(Job.CRUSADER) || JobModel.isA(Job.BLAZEWIZARD1)))
+        {
+            addmp += improvingMaxMP!.getEffect(improvingMaxMPLevel).getX();
+        }
+
+        if (YamlConfig.config.server.USE_RANDOMIZE_HPMP_GAIN)
+        {
+            if (getJobStyle() == Job.MAGICIAN)
             {
-                improvingMaxMP = isCygnus() ? SkillFactory.GetSkillTrust(BlazeWizard.INCREASING_MAX_MP) : SkillFactory.GetSkillTrust(Magician.IMPROVED_MAX_MP_INCREASE);
-                improvingMaxMPLevel = getSkillLevel(improvingMaxMP);
-                addhp += Randomizer.rand(10, 14);
-                addmp += Randomizer.rand(22, 24);
+                addmp += localint_ / 20;
             }
-            else if (JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.THIEF) || (JobId > 1299 && JobId < 1500))
+            else
             {
-                addhp += Randomizer.rand(20, 24);
-                addmp += Randomizer.rand(14, 16);
-            }
-            else if (JobModel.isA(Job.GM))
-            {
-                addhp += 30000;
-                addmp += 30000;
-            }
-            else if (JobModel.isA(Job.PIRATE) || JobModel.isA(Job.THUNDERBREAKER1))
-            {
-                improvingMaxHP = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.IMPROVE_MAX_HP) : SkillFactory.GetSkillTrust(Brawler.IMPROVE_MAX_HP);
-                improvingMaxHPLevel = getSkillLevel(improvingMaxHP);
-                addhp += Randomizer.rand(22, 28);
-                addmp += Randomizer.rand(18, 23);
-            }
-            else if (JobModel.isA(Job.ARAN1))
-            {
-                addhp += Randomizer.rand(44, 48);
-                int aids = Randomizer.rand(4, 8);
-                addmp += (int)(aids + Math.Floor(aids * 0.1));
-            }
-            if (improvingMaxHPLevel > 0 && (JobModel.isA(Job.WARRIOR) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.DAWNWARRIOR1) || JobModel.isA(Job.THUNDERBREAKER1)))
-            {
-                addhp += improvingMaxHP!.getEffect(improvingMaxHPLevel).getX();
-            }
-            if (improvingMaxMPLevel > 0 && (JobModel.isA(Job.MAGICIAN) || JobModel.isA(Job.CRUSADER) || JobModel.isA(Job.BLAZEWIZARD1)))
-            {
-                addmp += improvingMaxMP!.getEffect(improvingMaxMPLevel).getX();
-            }
-
-            if (YamlConfig.config.server.USE_RANDOMIZE_HPMP_GAIN)
-            {
-                if (getJobStyle() == Job.MAGICIAN)
-                {
-                    addmp += localint_ / 20;
-                }
-                else
-                {
-                    addmp += localint_ / 10;
-                }
-            }
-
-            ChangeMaxHP(addhp);
-            ChangeMaxMP(addmp);
-            SetHP(ActualMaxHP);
-            SetMP(ActualMaxMP);
-
-            if (takeexp)
-            {
-                ExpValue.addAndGet(-ExpTable.getExpNeededForLevel(Level));
-                if (ExpValue.get() < 0)
-                {
-                    ExpValue.set(0);
-                }
-            }
-
-            setLevel(Level + 1);
-
-            int maxClassLevel = getMaxClassLevel();
-            if (Level >= maxClassLevel)
-            {
-                ExpValue.set(0);
-
-                setLevel(maxClassLevel);
-            }
-
-            levelUpGainSp();
-
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                UpdateLocalStats();
-
-                List<KeyValuePair<Stat, int>> statup = new(10);
-                statup.Add(new(Stat.AVAILABLEAP, Ap));
-                statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
-                statup.Add(new(Stat.EXP, ExpValue.get()));
-                statup.Add(new(Stat.LEVEL, Level));
-                statup.Add(new(Stat.MAXHP, MaxHP));
-                statup.Add(new(Stat.MAXMP, MaxMP));
-                statup.Add(new(Stat.HP, HP));
-                statup.Add(new(Stat.MP, MP));
-                statup.Add(new(Stat.STR, Str));
-                statup.Add(new(Stat.DEX, Dex));
-
-                sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
-
-            saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
-
-            MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
-            // setMPC(new PartyCharacter(this));
-
-            if (Level % 20 == 0)
-            {
-                if (YamlConfig.config.server.USE_ADD_SLOTS_BY_LEVEL == true)
-                {
-                    if (!isGM())
-                    {
-                        for (byte i = 1; i < 5; i++)
-                        {
-                            gainSlots(i, 4, true);
-                        }
-
-                        this.yellowMessage("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
-                    }
-                }
-                if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
-                {
-                    this.yellowMessage("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
-                }
-            }
-
-            if (YamlConfig.config.server.USE_PERFECT_PITCH && Level >= 30)
-            {
-                //milestones?
-                if (InventoryManipulator.checkSpace(Client, ItemId.PERFECT_PITCH, 1, ""))
-                {
-                    InventoryManipulator.addById(Client, ItemId.PERFECT_PITCH, 1, "");
-                }
-            }
-            else if (Level == 10)
-            {
-                Action r = () =>
-                {
-                    if (leaveParty())
-                    {
-                        showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
-
-                    }
-                };
-
-                ThreadManager.getInstance().newTask(r);
+                addmp += localint_ / 10;
             }
         }
+
+        ChangeMaxHP(addhp);
+        ChangeMaxMP(addmp);
+        SetHP(ActualMaxHP);
+        SetMP(ActualMaxMP);
+
+        if (takeexp)
+        {
+            ExpValue.addAndGet(-ExpTable.getExpNeededForLevel(Level));
+            if (ExpValue.get() < 0)
+            {
+                ExpValue.set(0);
+            }
+        }
+
+        setLevel(Level + 1);
+
+        int maxClassLevel = getMaxClassLevel();
+        if (Level >= maxClassLevel)
+        {
+            ExpValue.set(0);
+
+            setLevel(maxClassLevel);
+        }
+
+        levelUpGainSp();
+
+
+        UpdateLocalStats();
+
+        List<KeyValuePair<Stat, int>> statup = new(10);
+        statup.Add(new(Stat.AVAILABLEAP, Ap));
+        statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
+        statup.Add(new(Stat.EXP, ExpValue.get()));
+        statup.Add(new(Stat.LEVEL, Level));
+        statup.Add(new(Stat.MAXHP, MaxHP));
+        statup.Add(new(Stat.MAXMP, MaxMP));
+        statup.Add(new(Stat.HP, HP));
+        statup.Add(new(Stat.MP, MP));
+        statup.Add(new(Stat.STR, Str));
+        statup.Add(new(Stat.DEX, Dex));
+
+        sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+
+
+        saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
+
+        MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
+        // setMPC(new PartyCharacter(this));
+
+        if (Level % 20 == 0)
+        {
+            if (YamlConfig.config.server.USE_ADD_SLOTS_BY_LEVEL == true)
+            {
+                if (!isGM())
+                {
+                    for (byte i = 1; i < 5; i++)
+                    {
+                        gainSlots(i, 4, true);
+                    }
+
+                    this.yellowMessage("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
+                }
+            }
+            if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
+            {
+                this.yellowMessage("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
+            }
+        }
+
+        if (YamlConfig.config.server.USE_PERFECT_PITCH && Level >= 30)
+        {
+            //milestones?
+            if (InventoryManipulator.checkSpace(Client, ItemId.PERFECT_PITCH, 1, ""))
+            {
+                InventoryManipulator.addById(Client, ItemId.PERFECT_PITCH, 1, "");
+            }
+        }
+        else if (Level == 10)
+        {
+            if (Party > 0)
+            {
+                Client.CurrentServer.NodeService.TeamManager.LeaveStarterParty(this);
+            }
+        }
+
     }
 
     void UpdateActualRate()
@@ -3139,16 +2557,9 @@ public partial class Player
         List<int> couponEffects;
 
         var cashItems = this.getInventory(InventoryType.CASH).list();
-        chLock.EnterReadLock();
-        try
-        {
-            setActiveCoupons(cashItems);
-            couponEffects = activateCouponsEffects();
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-        }
+
+        setActiveCoupons(cashItems);
+        couponEffects = activateCouponsEffects();
 
         foreach (int couponId in couponEffects)
         {
@@ -3165,20 +2576,8 @@ public partial class Player
             return;
         }
 
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        cashInv.lockInventory();
-        try
-        {
-            revertCouponsEffects();
-            setCouponRates();
-        }
-        finally
-        {
-            cashInv.unlockInventory();
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
+        revertCouponsEffects();
+        setCouponRates();
     }
 
     /// <summary>
@@ -3274,8 +2673,8 @@ public partial class Player
     {
         activeCoupons.Clear();
 
-        Dictionary<int, int> coupons = Client.CurrentServerContainer.CouponRates;
-        List<int> active = Client.CurrentServerContainer.ActiveCoupons;
+        Dictionary<int, int> coupons = Client.CurrentServer.NodeService.GetCouponRates();
+        List<int> active = Client.CurrentServer.NodeService.GetActiveCoupons();
 
         foreach (Item it in cashItems)
         {
@@ -3316,22 +2715,14 @@ public partial class Player
         {
             if (ItemConstants.isRateCoupon(mbsvh.effect.getSourceId()))
             {
-                cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                cancelEffect(mbsvh.effect, false);
             }
         }
     }
 
     public IReadOnlyCollection<int> getActiveCoupons()
     {
-        Monitor.Enter(chrLock);
-        try
-        {
-            return new ReadOnlyCollection<int>(activeCoupons.Keys.ToList());
-        }
-        finally
-        {
-            Monitor.Exit(chrLock);
-        }
+        return new ReadOnlyCollection<int>(activeCoupons.Keys.ToList());
     }
 
     public void addPlayerRing(Ring? ring)
@@ -3409,7 +2800,7 @@ public partial class Player
     {
         cancelAllBuffs(false);
         dispelDebuffs();
-        lastDeathtime = Client.CurrentServerContainer.getCurrentTime();
+        lastDeathtime = Client.CurrentServer.Node.getCurrentTime();
 
         var eim = getEventInstance();
         if (eim != null)
@@ -3417,8 +2808,8 @@ public partial class Player
             eim.playerKilled(this);
         }
 
-        if (JobModel != Job.BEGINNER 
-            && !MapId.isDojo(getMapId()) 
+        if (JobModel != Job.BEGINNER
+            && !MapId.isDojo(getMapId())
             && eim is not MonsterCarnivalEventInstanceManager
             && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
         {
@@ -3435,7 +2826,7 @@ public partial class Player
                     usedSafetyCharm = true;
                     break;
                 }
-            }            
+            }
 
             if (!usedSafetyCharm)
             {
@@ -3559,170 +2950,149 @@ public partial class Player
     /// </summary>
     private void reapplyLocalStats()
     {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        statLock.EnterWriteLock();
-        try
+
+        localdex = getDex();
+        localint_ = getInt();
+        localstr = getStr();
+        localluk = getLuk();
+        localmagic = localint_;
+        localwatk = 0;
+        localchairrate = -1;
+
+        RefreshByEquipChange();
+        RefreshByBuff();
+        RecalculateMaxHP();
+        RecalculateMaxMP();
+
+        localmagic = Math.Min(localmagic, 2000);
+
+        StatEffect? combo = getBuffEffect(BuffStat.ARAN_COMBO);
+        if (combo != null)
         {
-            localdex = getDex();
-            localint_ = getInt();
-            localstr = getStr();
-            localluk = getLuk();
-            localmagic = localint_;
-            localwatk = 0;
-            localchairrate = -1;
+            localwatk += combo.getX();
+        }
 
-            RefreshByEquipChange();
-            RefreshByBuff();
-            RecalculateMaxHP();
-            RecalculateMaxMP();
+        if (energybar == 15000)
+        {
+            Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
+            StatEffect ceffect = energycharge.getEffect(getSkillLevel(energycharge));
+            localwatk += ceffect.getWatk();
+        }
 
-            localmagic = Math.Min(localmagic, 2000);
-
-            StatEffect? combo = getBuffEffect(BuffStat.ARAN_COMBO);
-            if (combo != null)
+        int? mwarr = getBuffedValue(BuffStat.MAPLE_WARRIOR);
+        if (mwarr != null)
+        {
+            localstr += getStr() * mwarr.Value / 100;
+            localdex += getDex() * mwarr.Value / 100;
+            localint_ += getInt() * mwarr.Value / 100;
+            localluk += getLuk() * mwarr.Value / 100;
+        }
+        if (JobModel.isA(Job.BOWMAN))
+        {
+            Skill? expert = null;
+            if (JobModel.isA(Job.MARKSMAN))
             {
-                localwatk += combo.getX();
+                expert = SkillFactory.getSkill(3220004);
             }
-
-            if (energybar == 15000)
+            else if (JobModel.isA(Job.BOWMASTER))
             {
-                Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
-                StatEffect ceffect = energycharge.getEffect(getSkillLevel(energycharge));
-                localwatk += ceffect.getWatk();
+                expert = SkillFactory.getSkill(3120005);
             }
-
-            int? mwarr = getBuffedValue(BuffStat.MAPLE_WARRIOR);
-            if (mwarr != null)
+            if (expert != null)
             {
-                localstr += getStr() * mwarr.Value / 100;
-                localdex += getDex() * mwarr.Value / 100;
-                localint_ += getInt() * mwarr.Value / 100;
-                localluk += getLuk() * mwarr.Value / 100;
-            }
-            if (JobModel.isA(Job.BOWMAN))
-            {
-                Skill? expert = null;
-                if (JobModel.isA(Job.MARKSMAN))
+                int boostLevel = getSkillLevel(expert);
+                if (boostLevel > 0)
                 {
-                    expert = SkillFactory.getSkill(3220004);
+                    localwatk += expert.getEffect(boostLevel).getX();
                 }
-                else if (JobModel.isA(Job.BOWMASTER))
+            }
+        }
+
+        int? watkbuff = getBuffedValue(BuffStat.WATK);
+        if (watkbuff != null)
+        {
+            localwatk += watkbuff.Value;
+        }
+        int? matkbuff = getBuffedValue(BuffStat.MATK);
+        if (matkbuff != null)
+        {
+            localmagic += matkbuff.Value;
+        }
+
+        /*
+        int speedbuff = getBuffedValue(BuffStat.SPEED);
+        if (speedbuff != null) {
+            localspeed += speedbuff;
+        }
+        int jumpbuff = getBuffedValue(BuffStat.JUMP);
+        if (jumpbuff != null) {
+            localjump += jumpbuff;
+        }
+        */
+
+        int blessing = getSkillLevel(10000000 * getJobType() + 12);
+        if (blessing > 0)
+        {
+            localwatk += blessing;
+            localmagic += blessing * 2;
+        }
+
+        if (JobModel.isA(Job.THIEF) || JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.NIGHTWALKER1) || JobModel.isA(Job.WINDARCHER1))
+        {
+            var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
+            if (weapon_item != null)
+            {
+                ItemInformationProvider ii = ItemInformationProvider.getInstance();
+                WeaponType weapon = ii.getWeaponType(weapon_item.getItemId());
+                bool bow = weapon == WeaponType.BOW;
+                bool crossbow = weapon == WeaponType.CROSSBOW;
+                bool claw = weapon == WeaponType.CLAW;
+                bool gun = weapon == WeaponType.GUN;
+                if (bow || crossbow || claw || gun)
                 {
-                    expert = SkillFactory.getSkill(3120005);
-                }
-                if (expert != null)
-                {
-                    int boostLevel = getSkillLevel(expert);
-                    if (boostLevel > 0)
+                    // Also calc stars into this.
+                    Inventory inv = getInventory(InventoryType.USE);
+                    for (short i = 1; i <= inv.getSlotLimit(); i++)
                     {
-                        localwatk += expert.getEffect(boostLevel).getX();
-                    }
-                }
-            }
-
-            int? watkbuff = getBuffedValue(BuffStat.WATK);
-            if (watkbuff != null)
-            {
-                localwatk += watkbuff.Value;
-            }
-            int? matkbuff = getBuffedValue(BuffStat.MATK);
-            if (matkbuff != null)
-            {
-                localmagic += matkbuff.Value;
-            }
-
-            /*
-            int speedbuff = getBuffedValue(BuffStat.SPEED);
-            if (speedbuff != null) {
-                localspeed += speedbuff;
-            }
-            int jumpbuff = getBuffedValue(BuffStat.JUMP);
-            if (jumpbuff != null) {
-                localjump += jumpbuff;
-            }
-            */
-
-            int blessing = getSkillLevel(10000000 * getJobType() + 12);
-            if (blessing > 0)
-            {
-                localwatk += blessing;
-                localmagic += blessing * 2;
-            }
-
-            if (JobModel.isA(Job.THIEF) || JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.NIGHTWALKER1) || JobModel.isA(Job.WINDARCHER1))
-            {
-                var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
-                if (weapon_item != null)
-                {
-                    ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                    WeaponType weapon = ii.getWeaponType(weapon_item.getItemId());
-                    bool bow = weapon == WeaponType.BOW;
-                    bool crossbow = weapon == WeaponType.CROSSBOW;
-                    bool claw = weapon == WeaponType.CLAW;
-                    bool gun = weapon == WeaponType.GUN;
-                    if (bow || crossbow || claw || gun)
-                    {
-                        // Also calc stars into this.
-                        Inventory inv = getInventory(InventoryType.USE);
-                        for (short i = 1; i <= inv.getSlotLimit(); i++)
+                        var item = inv.getItem(i);
+                        if (item != null)
                         {
-                            var item = inv.getItem(i);
-                            if (item != null)
+                            if ((claw && ItemConstants.isThrowingStar(item.getItemId()))
+                                || (gun && ItemConstants.isBullet(item.getItemId()))
+                                || (bow && ItemConstants.isArrowForBow(item.getItemId()))
+                                || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
                             {
-                                if ((claw && ItemConstants.isThrowingStar(item.getItemId()))
-                                    || (gun && ItemConstants.isBullet(item.getItemId()))
-                                    || (bow && ItemConstants.isArrowForBow(item.getItemId()))
-                                    || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
+                                if (item.getQuantity() > 0)
                                 {
-                                    if (item.getQuantity() > 0)
-                                    {
-                                        // Finally there!
-                                        localwatk += ii.getWatkForProjectile(item.getItemId());
-                                        break;
-                                    }
+                                    // Finally there!
+                                    localwatk += ii.getWatkForProjectile(item.getItemId());
+                                    break;
                                 }
                             }
                         }
                     }
                 }
-                // Add throwing stars to dmg.
             }
+            // Add throwing stars to dmg.
         }
-        finally
-        {
-            statLock.ExitWriteLock();
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
+
     }
 
     public void UpdateLocalStats(bool isInitial = false)
     {
-        Monitor.Enter(prtLock);
-        Monitor.Enter(effLock);
-        statLock.EnterWriteLock();
-        try
-        {
-            int oldmaxhp = ActualMaxHP;
-            int oldmaxmp = ActualMaxMP;
-            reapplyLocalStats();
 
-            //登录时不能发送 不然客户端会崩溃
-            if (!isInitial)
-                SendStats();
+        int oldmaxhp = ActualMaxHP;
+        int oldmaxmp = ActualMaxMP;
+        reapplyLocalStats();
 
-            if (oldmaxhp != ActualMaxHP)
-            {
-                // thanks Wh1SK3Y (Suwaidy) for pointing out a deadlock occuring related to party members HP
-                updatePartyMemberHP();
-            }
-        }
-        finally
+        //登录时不能发送 不然客户端会崩溃
+        if (!isInitial)
+            SendStats();
+
+        if (oldmaxhp != ActualMaxHP)
         {
-            statLock.ExitWriteLock();
-            Monitor.Exit(effLock);
-            Monitor.Exit(prtLock);
+            // thanks Wh1SK3Y (Suwaidy) for pointing out a deadlock occuring related to party members HP
+            updatePartyMemberHP();
         }
     }
 
@@ -3733,69 +3103,56 @@ public partial class Player
         visibleMapObjects.Remove(mo);
     }
 
-    object resetStateLock = new object();
     public void resetStats()
     {
-        lock (resetStateLock)
+        if (!YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP)
         {
-            if (!YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP)
-            {
-                return;
-            }
+            return;
+        }
 
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                int tap = Ap + Str + Dex + Int + Luk, tsp = 1;
-                int tstr = 4, tdex = 4, tint = 4, tluk = 4;
 
-                switch (JobId)
-                {
-                    case 100:
-                    case 1100:
-                    case 2100:
-                        tstr = 35;
-                        tsp += ((getLevel() - 10) * 3);
-                        break;
-                    case 200:
-                    case 1200:
-                        tint = 20;
-                        tsp += ((getLevel() - 8) * 3);
-                        break;
-                    case 300:
-                    case 1300:
-                    case 400:
-                    case 1400:
-                        tdex = 25;
-                        tsp += ((getLevel() - 10) * 3);
-                        break;
-                    case 500:
-                    case 1500:
-                        tdex = 20;
-                        tsp += ((getLevel() - 10) * 3);
-                        break;
-                }
+        int tap = Ap + Str + Dex + Int + Luk, tsp = 1;
+        int tstr = 4, tdex = 4, tint = 4, tluk = 4;
 
-                tap -= tstr;
-                tap -= tdex;
-                tap -= tint;
-                tap -= tluk;
+        switch (JobId)
+        {
+            case 100:
+            case 1100:
+            case 2100:
+                tstr = 35;
+                tsp += ((getLevel() - 10) * 3);
+                break;
+            case 200:
+            case 1200:
+                tint = 20;
+                tsp += ((getLevel() - 8) * 3);
+                break;
+            case 300:
+            case 1300:
+            case 400:
+            case 1400:
+                tdex = 25;
+                tsp += ((getLevel() - 10) * 3);
+                break;
+            case 500:
+            case 1500:
+                tdex = 20;
+                tsp += ((getLevel() - 10) * 3);
+                break;
+        }
 
-                if (tap >= 0)
-                {
-                    updateStrDexIntLukSp(tstr, tdex, tint, tluk, tap, tsp, GameConstants.getSkillBook(JobId));
-                }
-                else
-                {
-                    Log.Warning("Chr {CharacterId} tried to have its stats reset without enough AP available", this.Id);
-                }
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+        tap -= tstr;
+        tap -= tdex;
+        tap -= tint;
+        tap -= tluk;
+
+        if (tap >= 0)
+        {
+            updateStrDexIntLukSp(tstr, tdex, tint, tluk, tap, tsp, GameConstants.getSkillBook(JobId));
+        }
+        else
+        {
+            Log.Warning("Chr {CharacterId} tried to have its stats reset without enough AP available", this.Id);
         }
     }
 
@@ -3849,13 +3206,13 @@ public partial class Player
     {
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
         this.isbanned = true;
-        Client.CurrentServerContainer.TimerManager.schedule(() =>
+        Client.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            Client.Disconnect(false, false);
+            Client.CurrentServer.Post(new InvokePlayerDisconnectCommand(Id));
         }, duration);
     }
 
-    public void sendPolice(string text)
+    public async Task sendPolice(string text)
     {
         string message = getName() + " received this - " + text;
         //if (Server.getInstance().isGmOnline(this.getWorld()))
@@ -3868,13 +3225,13 @@ public partial class Player
         //    //Auto DC and log if no GM is online
         //    Client.Disconnect(false, false);
         //}
-        Client.CurrentServerContainer.SendYellowTip(message, true);
+        Client.CurrentServer.NodeService.SendDropMessage(-1, message, true);
         Client.Disconnect(false);
         Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
         //this.isbanned = true;
-        //Client.CurrentServerContainer.TimerManager.schedule(new Runnable() {
+        //Client.CurrentServer.Node.TimerManager.schedule(new Runnable() {
         //    public override    public void run() {
         //        Client.disconnect(false, false);
         //    }
@@ -3958,21 +3315,6 @@ public partial class Player
         this.Gender = gender;
     }
 
-    public void setGuildId(int _id)
-    {
-        GuildId = _id;
-    }
-
-    public void setGuildRank(int _rank)
-    {
-        GuildRank = _rank;
-    }
-
-    public void setAllianceRank(int _rank)
-    {
-        AllianceRank = _rank;
-    }
-
     public void setHair(int hair)
     {
         this.Hair = hair;
@@ -3989,38 +3331,29 @@ public partial class Player
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);
 
-        Monitor.Enter(effLock);
-        statLock.EnterWriteLock();
-        try
+
+        int nextHp = HP + hpchange, nextMp = MP + mpchange;
+        bool cannotApplyHp = hpchange != 0 && nextHp <= 0 && (!zombify || hpCon > 0);
+        bool cannotApplyMp = mpchange != 0 && nextMp < 0;
+
+        if (cannotApplyHp || cannotApplyMp)
         {
-            int nextHp = HP + hpchange, nextMp = MP + mpchange;
-            bool cannotApplyHp = hpchange != 0 && nextHp <= 0 && (!zombify || hpCon > 0);
-            bool cannotApplyMp = mpchange != 0 && nextMp < 0;
-
-            if (cannotApplyHp || cannotApplyMp)
+            if (!isGM())
             {
-                if (!isGM())
-                {
-                    return false;
-                }
-
-                if (cannotApplyHp)
-                {
-                    nextHp = 1;
-                }
+                return false;
             }
 
-            UpdateStatsChunk(() =>
+            if (cannotApplyHp)
             {
-                SetHP(nextHp);
-                SetMP(nextMp);
-            });
+                nextHp = 1;
+            }
         }
-        finally
+
+        UpdateStatsChunk(() =>
         {
-            statLock.ExitWriteLock();
-            Monitor.Exit(effLock);
-        }
+            SetHP(nextHp);
+            SetMP(nextMp);
+        });
 
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
@@ -4105,29 +3438,6 @@ public partial class Player
         this.Name = name;
     }
 
-    public int getDoorSlot()
-    {
-        if (doorSlot != -1)
-        {
-            return doorSlot;
-        }
-        return fetchDoorSlot();
-    }
-
-    public int fetchDoorSlot()
-    {
-        Monitor.Enter(prtLock);
-        try
-        {
-            doorSlot = TeamModel?.getPartyDoor(this.getId()) ?? 0;
-            return doorSlot;
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-    }
-
     public void setSearch(string? find)
     {
         search = find;
@@ -4144,22 +3454,14 @@ public partial class Player
         InventoryType type = InventoryTypeUtils.getByType(invTypeId);
 
         Inventory inv = getInventory(type);
-        inv.lockInventory();
-        try
+        var it = inv.findByName(name);
+        if (it == null)
         {
-            var it = inv.findByName(name);
-            if (it == null)
-            {
-                return (-1);
-            }
+            return (-1);
+        }
 
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            return (sellAllItemsFromPosition(ii, type, it.getPosition()));
-        }
-        finally
-        {
-            inv.unlockInventory();
-        }
+        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+        return (sellAllItemsFromPosition(ii, type, it.getPosition()));
     }
 
     public int sellAllItemsFromPosition(ItemInformationProvider ii, InventoryType type, short pos)
@@ -4167,21 +3469,14 @@ public partial class Player
         int mesoGain = 0;
 
         Inventory inv = getInventory(type);
-        inv.lockInventory();
-        try
+
+        for (short i = pos; i <= inv.getSlotLimit(); i++)
         {
-            for (short i = pos; i <= inv.getSlotLimit(); i++)
+            if (inv.getItem(i) == null)
             {
-                if (inv.getItem(i) == null)
-                {
-                    continue;
-                }
-                mesoGain += standaloneSell(ii, type, i, inv.getItem(i)!.getQuantity());
+                continue;
             }
-        }
-        finally
-        {
-            inv.unlockInventory();
+            mesoGain += standaloneSell(ii, type, i, inv.getItem(i)!.getQuantity());
         }
 
         return (mesoGain);
@@ -4196,48 +3491,40 @@ public partial class Player
         }
 
         Inventory inv = getInventory(type);
-        inv.lockInventory();
-        try
-        {
-            Item? item = inv.getItem(slot);
-            if (item == null)
-            { //Basic check
-                return (0);
-            }
-
-            int itemid = item.getItemId();
-            if (ItemConstants.isRechargeable(itemid))
-            {
-                quantity = item.getQuantity();
-            }
-            else if (ItemId.isWeddingToken(itemid) || ItemId.isWeddingRing(itemid))
-            {
-                return (0);
-            }
-
-            if (quantity < 0)
-            {
-                return (0);
-            }
-            short iQuant = item.getQuantity();
-
-            if (quantity <= iQuant && iQuant > 0)
-            {
-                InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
-                int recvMesos = ii.getPrice(itemid, quantity);
-                if (recvMesos > 0)
-                {
-                    gainMeso(recvMesos, false);
-                    return (recvMesos);
-                }
-            }
-
+        Item? item = inv.getItem(slot);
+        if (item == null)
+        { //Basic check
             return (0);
         }
-        finally
+
+        int itemid = item.getItemId();
+        if (ItemConstants.isRechargeable(itemid))
         {
-            inv.unlockInventory();
+            quantity = item.getQuantity();
         }
+        else if (ItemId.isWeddingToken(itemid) || ItemId.isWeddingRing(itemid))
+        {
+            return (0);
+        }
+
+        if (quantity < 0)
+        {
+            return (0);
+        }
+        short iQuant = item.getQuantity();
+
+        if (quantity <= iQuant && iQuant > 0)
+        {
+            InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
+            int recvMesos = ii.getPrice(itemid, quantity);
+            if (recvMesos > 0)
+            {
+                gainMeso(recvMesos, false);
+                return (recvMesos);
+            }
+        }
+
+        return (0);
     }
 
 
@@ -4254,106 +3541,90 @@ public partial class Player
         InventoryType type = InventoryType.EQUIP;
 
         Inventory inv = getInventory(type);
-        inv.lockInventory();
-        try
+        var it = inv.findByName(name);
+        if (it == null)
         {
-            var it = inv.findByName(name);
-            if (it == null)
+            return false;
+        }
+
+        Dictionary<StatUpgrade, float> statups = new();
+        mergeAllItemsFromPosition(statups, it.getPosition());
+
+        List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> upgradeableEquipped = new();
+        Dictionary<Equip, List<KeyValuePair<StatUpgrade, int>>> equipUpgrades = new();
+        foreach (Equip eq in getUpgradeableEquipped())
+        {
+            upgradeableEquipped.Add(new(eq, eq.getStats()));
+            equipUpgrades.AddOrUpdate(eq, new());
+        }
+
+        /*
+        foreach(Entry<StatUpgrade, float> es in statups) {
+            Console.WriteLine(es);
+        }
+        */
+
+        foreach (var e in statups)
+        {
+            double ev = Math.Sqrt(e.Value);
+
+            HashSet<Equip> extraEquipped = new(equipUpgrades.Keys);
+            List<Equip> statEquipped = ItemManager.GetEquipsWithStat(upgradeableEquipped, e.Key);
+            float extraRate = (float)(0.2 * Randomizer.nextDouble());
+
+            if (statEquipped.Count > 0)
             {
-                return false;
-            }
+                float statRate = 1.0f - extraRate;
 
-            Dictionary<StatUpgrade, float> statups = new();
-            mergeAllItemsFromPosition(statups, it.getPosition());
-
-            List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> upgradeableEquipped = new();
-            Dictionary<Equip, List<KeyValuePair<StatUpgrade, int>>> equipUpgrades = new();
-            foreach (Equip eq in getUpgradeableEquipped())
-            {
-                upgradeableEquipped.Add(new(eq, eq.getStats()));
-                equipUpgrades.AddOrUpdate(eq, new());
-            }
-
-            /*
-            foreach(Entry<StatUpgrade, float> es in statups) {
-                Console.WriteLine(es);
-            }
-            */
-
-            foreach (var e in statups)
-            {
-                double ev = Math.Sqrt(e.Value);
-
-                HashSet<Equip> extraEquipped = new(equipUpgrades.Keys);
-                List<Equip> statEquipped = ItemManager.GetEquipsWithStat(upgradeableEquipped, e.Key);
-                float extraRate = (float)(0.2 * Randomizer.nextDouble());
-
-                if (statEquipped.Count > 0)
+                int statup = (int)Math.Ceiling((ev * statRate) / statEquipped.Count);
+                foreach (Equip statEq in statEquipped)
                 {
-                    float statRate = 1.0f - extraRate;
-
-                    int statup = (int)Math.Ceiling((ev * statRate) / statEquipped.Count);
-                    foreach (Equip statEq in statEquipped)
-                    {
-                        equipUpgrades.GetValueOrDefault(statEq)?.Add(new(e.Key, statup));
-                        extraEquipped.Remove(statEq);
-                    }
+                    equipUpgrades.GetValueOrDefault(statEq)?.Add(new(e.Key, statup));
+                    extraEquipped.Remove(statEq);
                 }
+            }
 
-                if (extraEquipped.Count > 0)
+            if (extraEquipped.Count > 0)
+            {
+                int statup = (int)Math.Round((ev * extraRate) / extraEquipped.Count);
+                if (statup > 0)
                 {
-                    int statup = (int)Math.Round((ev * extraRate) / extraEquipped.Count);
-                    if (statup > 0)
+                    foreach (Equip extraEq in extraEquipped)
                     {
-                        foreach (Equip extraEq in extraEquipped)
-                        {
-                            equipUpgrades.GetValueOrDefault(extraEq)?.Add(new(e.Key, statup));
-                        }
+                        equipUpgrades.GetValueOrDefault(extraEq)?.Add(new(e.Key, statup));
                     }
                 }
             }
-
-            dropMessage(6, "EQUIPMENT MERGE operation results:");
-            foreach (var eqpUpg in equipUpgrades)
-            {
-                List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
-                if (eqpStatups.Count > 0)
-                {
-                    Equip eqp = eqpUpg.Key;
-                    ItemManager.SetMergeFlag(eqp);
-
-                    string showStr = " '" + Client.CurrentCulture.GetItemName(eqp.getItemId()) + "': ";
-                    string upgdStr = eqp.gainStats(eqpStatups).Key;
-
-                    this.forceUpdateItem(eqp);
-
-                    showStr += upgdStr;
-                    dropMessage(6, showStr);
-                }
-            }
-
-            return true;
         }
-        finally
+
+        dropMessage(6, "EQUIPMENT MERGE operation results:");
+        foreach (var eqpUpg in equipUpgrades)
         {
-            inv.unlockInventory();
+            List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
+            if (eqpStatups.Count > 0)
+            {
+                Equip eqp = eqpUpg.Key;
+                ItemManager.SetMergeFlag(eqp);
+
+                string showStr = " '" + Client.CurrentCulture.GetItemName(eqp.getItemId()) + "': ";
+                string upgdStr = eqp.gainStats(eqpStatups).Key;
+
+                this.forceUpdateItem(eqp);
+
+                showStr += upgdStr;
+                dropMessage(6, showStr);
+            }
         }
+
+        return true;
     }
 
     public void mergeAllItemsFromPosition(Dictionary<StatUpgrade, float> statups, short pos)
     {
         Inventory inv = getInventory(InventoryType.EQUIP);
-        inv.lockInventory();
-        try
+        for (short i = pos; i <= inv.getSlotLimit(); i++)
         {
-            for (short i = pos; i <= inv.getSlotLimit(); i++)
-            {
-                standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
-            }
-        }
-        finally
-        {
-            inv.unlockInventory();
+            standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
         }
     }
 
@@ -4418,27 +3689,11 @@ public partial class Player
         this.World = world;
     }
 
-    public void shiftPetsRight()
-    {
-        Monitor.Enter(petLock);
-        try
-        {
-            if (pets[2] == null)
-            {
-                pets[2] = pets[1];
-                pets[1] = pets[0];
-                pets[0] = null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
-    }
+
 
     private long getDojoTimeLeft()
     {
-        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Client.CurrentServerContainer.getCurrentTime();
+        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Client.CurrentServer.Node.getCurrentTime();
     }
 
     public void showDojoClock()
@@ -4451,7 +3706,7 @@ public partial class Player
 
     public void showUnderleveledInfo(Monster mob)
     {
-        long curTime = Client.CurrentServerContainer.getCurrentTime();
+        long curTime = Client.CurrentServer.Node.getCurrentTime();
         if (nextWarningTime < curTime)
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
@@ -4476,14 +3731,15 @@ public partial class Player
 
     public void silentPartyUpdate()
     {
-        silentPartyUpdateInternal(TeamModel);
+        silentPartyUpdateInternal(Party);
     }
 
-    private void silentPartyUpdateInternal(Team? chrParty)
+    private void silentPartyUpdateInternal(int partyId)
     {
-        if (chrParty != null)
+        if (partyId > 0)
         {
-            Client.CurrentServerContainer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            Client.CurrentServer.NodeService.TeamManager.ChannelNotify(this);
+            // _ = Client.CurrentServerContainer.TeamManager.UpdateTeam(partyId, PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 
@@ -4565,7 +3821,7 @@ public partial class Player
 
     public void portalDelay(long delay)
     {
-        this.portaldelay = Client.CurrentServerContainer.getCurrentTime();
+        this.portaldelay = Client.CurrentServer.Node.getCurrentTime();
     }
 
     public long portalDelay()
@@ -4628,7 +3884,7 @@ public partial class Player
             return;
         }
 
-        Client.CurrentServerContainer.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
+        Client.CurrentServer.NodeService.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
     }
 
 
@@ -4663,10 +3919,10 @@ public partial class Player
             equippedPetItemIgnore = true;
         }
 
-        if (equip.getPosition() == EquipSlot.Medal)
-        {
-            saveCharToDB(SyncCharacterTrigger.Unknown);
-        }
+        //if (equip.getPosition() == EquipSlot.Medal)
+        //{
+        //    saveCharToDB(SyncCharacterTrigger.Unknown);
+        //}
     }
 
     public void unequippedItem(Equip equip)
@@ -4710,19 +3966,23 @@ public partial class Player
     {
         if (pendantOfSpirit == null)
         {
-            pendantOfSpirit = Client.CurrentServerContainer.TimerManager.register(() =>
+            pendantOfSpirit = Client.CurrentServer.Node.TimerManager.register(() =>
             {
-                if (pendantExp < 3)
-                {
-                    pendantExp++;
-                    message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
-                }
-                else
-                {
-                    pendantOfSpirit!.cancel(false);
-                }
-
+                Client.CurrentServer.Post(new PlayerPendantExpRateIncreaseCommand(this));
             }, TimeSpan.FromHours(1)); //1 hour
+        }
+    }
+
+    public void IncreasePendantExpRate()
+    {
+        if (pendantExp < 3)
+        {
+            pendantExp++;
+            message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
+        }
+        else
+        {
+            pendantOfSpirit?.cancel(false);
         }
     }
 
@@ -4785,20 +4045,6 @@ public partial class Player
         this.partyQuest = pq;
     }
 
-    public void setCpqTimer(ScheduledFuture timer)
-    {
-        this.cpqSchedule = timer;
-    }
-
-    public void clearCpqTimer()
-    {
-        if (cpqSchedule != null)
-        {
-            cpqSchedule.cancel(true);
-        }
-        cpqSchedule = null;
-    }
-
     public void Dispose()
     {
         if (dragonBloodSchedule != null)
@@ -4806,12 +4052,6 @@ public partial class Player
             dragonBloodSchedule.cancel(true);
         }
         dragonBloodSchedule = null;
-
-        if (hpDecreaseTask != null)
-        {
-            hpDecreaseTask.cancel(true);
-        }
-        hpDecreaseTask = null;
 
         if (beholderHealingSchedule != null)
         {
@@ -4832,8 +4072,6 @@ public partial class Player
         berserkSchedule = null;
 
         StopPlayerTask();
-
-        QuestExpirations.Clear();
 
         if (recoveryTask != null)
         {
@@ -4858,7 +4096,6 @@ public partial class Player
         pendantOfSpirit = null;
 
         _pickerProcessor.Clear();
-        clearCpqTimer();
 
         if (MountModel != null)
         {
@@ -4868,16 +4105,17 @@ public partial class Player
 
         partyQuest = null;
 
-        TeamModel = null;
         Bag.Dispose();
     }
 
     public void logOff()
     {
         // 切换频道/退出商城的保存不能放在断开连接时处理
-        saveCharToDB(SyncCharacterTrigger.Logoff);
-        RemoveWorldWatcher();
-        setClient(new OfflineClient());
+        _ = SyncCharAsync(SyncCharacterTrigger.Logoff)
+            .ContinueWith(t =>
+            {
+                Client.CurrentServer.Post(new PlayerLogoutCommand(Id));
+            });
     }
 
 
@@ -4896,7 +4134,7 @@ public partial class Player
     /// <returns></returns>
     public TimeSpan getLoggedInTime()
     {
-        return Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet() - loginTime;
+        return Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset() - loginTime;
     }
 
     public bool isLoggedin()
@@ -5005,21 +4243,6 @@ public partial class Player
     public WorldChannel getChannelServer()
     {
         return Client.CurrentServer;
-    }
-
-    public void LeaveGuild()
-    {
-        if (GuildModel == null)
-            return;
-
-        if (GuildRank > 1)
-        {
-            Client.CurrentServerContainer.GuildManager.LeaveMember(this);
-        }
-        else
-        {
-            Client.CurrentServerContainer.GuildManager.Disband(this);
-        }
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using Application.Resources;
+using Application.Templates.Item.Consume;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
@@ -92,7 +93,7 @@ namespace ServiceTest.Infrastructure.WZ
                 else
                 {
                     Assert.That(newData.Name, Is.EqualTo(item.Name), "npcId " + item.Id);
-                    Assert.That(newData.DefaultTalk, Is.EqualTo(item.DefaultTalk), "npcId " + item.Id);
+                    Assert.That(newData.DefaultTalk0, Is.EqualTo(item.DefaultTalk), "npcId " + item.Id);
                 }
             }
 

@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Services
             _server = server;
         }
 
-        private byte CanRetrieveFromFredrick(IPlayer chr, int netMeso, List<Item> items)
+        private byte CanRetrieveFromFredrick(Player chr, int netMeso, List<Item> items)
         {
             if (!Inventory.checkSpot(chr, items))
             {
@@ -59,7 +59,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public RemoteHiredMerchantData LoadPlayerHiredMerchant(IPlayer chr)
+        public RemoteHiredMerchantData LoadPlayerHiredMerchant(Player chr)
         {
             var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
@@ -102,7 +102,7 @@ namespace Application.Core.Channel.Services
                             return;
                         }
 
-                        chr.GainMeso(res.Mesos, false);
+                        chr.GainMeso(res.Mesos);
 
                         var commitRequest = new CommitRetrievedRequest
                         {
@@ -132,7 +132,7 @@ namespace Application.Core.Channel.Services
                 }
             }
         }
-        public bool CanHiredMerchant(IPlayer chr)
+        public bool CanHiredMerchant(Player chr)
         {
             var status = (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
             if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
@@ -151,19 +151,19 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
-        {
-            var owner = _server.FindPlayerById(data.OwnerId);
-            if (owner != null)
-            {
-                string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
-                owner.dropMessage(6,
-                    $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
-            }
+        //public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
+        //{
+        //    var owner = _server.FindPlayerById(data.OwnerId);
+        //    if (owner != null)
+        //    {
+        //        string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
+        //        owner.dropMessage(6,
+        //            $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
+        //    }
 
-        }
+        //}
 
-        internal void OwlSearch(IPlayer chr, int useItemId, int searchItemId)
+        internal void OwlSearch(Player chr, int useItemId, int searchItemId)
         {
             ItemProto.OwlSearchResponse data = _server.Transport.SendOwlSearch(
                 new ItemProto.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });
@@ -171,7 +171,7 @@ namespace Application.Core.Channel.Services
             if (data.Items.Count > 0)
             {
                 // 消耗道具
-                chr.GainItem(useItemId, -1, false, true);
+                chr.GainItem(useItemId, -1, false, GainItemShow.ShowInChat);
             }
 
             chr.sendPacket(PacketCreator.owlOfMinerva(searchItemId, _mapper.Map<OwlSearchResult>(data)));

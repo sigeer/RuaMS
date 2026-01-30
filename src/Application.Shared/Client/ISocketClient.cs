@@ -16,7 +16,7 @@ namespace Application.Shared.Client
 
         DateTimeOffset LastPacket { get; }
         void PongReceived();
-
+        void ProcessPacket(InPacket packet);
         void sendPacket(Packet packet);
         void CloseSession();
         void CloseSocket();

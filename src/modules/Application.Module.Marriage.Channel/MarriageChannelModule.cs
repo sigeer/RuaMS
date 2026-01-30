@@ -22,25 +22,13 @@ namespace Application.Module.Marriage.Channel
             _marriageManager = marriageManager;
         }
 
-        public override void Initialize()
+        public override void OnPlayerLogin(Player chr)
         {
-            base.Initialize();
-
-            MessageDispatcher.Register<MarriageProto.BroadcastWeddingDto>(MessageType.WeddingBroadcast, _weddingManager.BroadcastWedding);
-            MessageDispatcher.Register<MarriageProto.InviteGuestCallback>(MessageType.WeddingInviteGuest, _weddingManager.OnGuestInvited);
-            MessageDispatcher.Register<MarriageProto.BreakMarriageCallback>(MessageType.MarriageBroken, _weddingManager.OnMarriageBroken);
-
-            MessageDispatcher.Register<MarriageProto.PlayerTransferDto>(MessageType.NotifyPartnerWhenTransfer, _marriageManager.NotifyPartnerWhenTransfer);
-            MessageDispatcher.Register<MarriageProto.OnSpouseChatCallback>(MessageType.SpouseChat, _marriageManager.OnReceivedSpouseChat);
-        }
-
-        public override void OnPlayerEnterGame(IPlayer chr, bool isNewComer)
-        {
-            base.OnPlayerEnterGame(chr, isNewComer);
+            base.OnPlayerLogin(chr);
             _marriageManager.CheckMarriageData(chr);
         }
 
-        public void WriteMarriageRing(OutPacket p, IPlayer chr)
+        public void WriteMarriageRing(OutPacket p, Player chr)
         {
             var info = _marriageManager.GetPlayerMarriageInfo(chr.Id);
             if (info == null)

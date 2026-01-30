@@ -16,7 +16,7 @@ function enter(pi) {
         } else {
             var eli = em.getEligibleParty(pi.getParty());
             if (eli.size() > 0) {
-                if (!em.StartPQInstance(pi.getParty(), pi.getPlayer().getMap(), 1)) {
+                if (!em.StartPQInstance(cm.getPlayer(), eli)) {
                     pi.playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
                     return false;
                 }

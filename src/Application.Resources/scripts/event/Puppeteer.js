@@ -50,11 +50,7 @@ function playerDisconnected(eim, player) {
     var party = eim.getPlayers();
 
     for (var i = 0; i < party.size(); i++) {
-        if (party.get(i).equals(player)) {
-            removePlayer(eim, player);
-        } else {
-            playerExit(eim, party.get(i));
-        }
+        playerExit(eim, party.get(i));
     }
     eim.dispose();
 }
@@ -76,17 +72,11 @@ function playerExit(eim, player) {
 
 function changedMap(eim, chr, mapid) {
     if (mapid < minMapId || mapid > maxMapId) {
-        removePlayer(eim, chr);
+        playerExit(eim, chr);
         eim.stopEventTimer();
         eim.setEventCleared();
         eim.dispose();
     }
-}
-
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getMap().removePlayer(player);
-    player.setMap(exitMap);
 }
 
 function cancelSchedule() {}

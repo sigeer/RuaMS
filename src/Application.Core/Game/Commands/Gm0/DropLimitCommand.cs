@@ -22,6 +22,5 @@ public class DropLimitCommand : CommandBase
             c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.DropLimitCommand_Message1)) 
                 + " #r" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
-
     }
 }

@@ -11,7 +11,7 @@ namespace Application.Core.Game.Players.PlayerProps
         int[] _vipDataSouce;
         int _size;
         int _vipSize;
-        public PlayerTrockLocation(IPlayer owner, int size, int vipSize) : base(owner)
+        public PlayerTrockLocation(Player owner, int size, int vipSize) : base(owner)
         {
             _size = size;
             _vipSize = vipSize;

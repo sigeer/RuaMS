@@ -1,8 +1,7 @@
-using Application.Core.Login.Datas;
+using Application.Core.Login.Commands;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
-using Application.EF;
 using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using Application.Shared.Sessions;
@@ -11,7 +10,6 @@ using Application.Utility.Configs;
 using DotNetty.Transport.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.server;
 
 namespace Application.Core.Login.Client
 {
@@ -41,7 +39,13 @@ namespace Application.Core.Login.Client
         public override string AccountName => AccountEntity?.Name ?? "-";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
 
-        protected override void ProcessPacket(InPacket packet)
+        protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
+        {
+            base.ChannelRead0(ctx, msg);
+            CurrentServer.Post(new HandleMasterPacketCommand(this, msg));
+        }
+
+        public override void ProcessPacket(InPacket packet)
         {
             short opcode = packet.readShort();
             var handler = _packetProcessor.GetPacketHandler(opcode);
@@ -115,6 +119,10 @@ namespace Application.Core.Login.Client
 
         public bool CanBypassPin()
         {
+            if (Hwid == null)
+            {
+                return false;
+            }
             return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, false);
         }
         int pinattempt = 0;
@@ -123,6 +131,10 @@ namespace Application.Core.Login.Client
             if (!YamlConfig.config.server.ENABLE_PIN || CanBypassPin())
             {
                 return true;
+            }
+            if (Hwid == null)
+            {
+                return false;
             }
 
             pinattempt++;
@@ -141,6 +153,10 @@ namespace Application.Core.Login.Client
 
         public bool CanBypassPic()
         {
+            if (Hwid == null)
+            {
+                return false;
+            }
             return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, true);
         }
         int picattempt = 0;
@@ -149,6 +165,10 @@ namespace Application.Core.Login.Client
             if (!YamlConfig.config.server.ENABLE_PIC || CanBypassPic())
             {
                 return true;
+            }
+            if (Hwid == null)
+            {
+                return false;
             }
 
             picattempt++;

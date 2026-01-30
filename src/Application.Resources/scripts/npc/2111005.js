@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("几乎所有的玛加提亚人都是炼金术士。每个人都专注于炼金术。所以... 玛加提亚一直都很安静。");
+    cm.sendDefault(3333);
     cm.dispose();
 }

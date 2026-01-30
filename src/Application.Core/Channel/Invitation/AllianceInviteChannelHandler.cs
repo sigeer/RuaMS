@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Invitation
 {
     internal class AllianceInviteChannelHandler : InviteChannelHandler
     {
-        public AllianceInviteChannelHandler(WorldChannelServer server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Alliance, logger)
+        public AllianceInviteChannelHandler(WorldChannel server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Alliance, logger)
         {
         }
 
@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Invitation
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     string msg = "";
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Invitation
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
                     receiver.sendPacket(GuildPackets.allianceInvite(data.Key, receiver));
@@ -43,7 +43,7 @@ namespace Application.Core.Channel.Invitation
             }
             else
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     // sender.dropMessage(5, "The master of the guild that you offered an invitation is currently managing another invite.");

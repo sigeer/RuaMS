@@ -34,7 +34,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(4, c.CurrentServerContainer.getCurrentTimestamp(), 28);
+        chr.getAutobanManager().setTimestamp(4, c.CurrentServer.Node.getCurrentTimestamp(), 28);
         int skillid = p.readInt();
 
         /*
@@ -82,7 +82,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                 }
 
                 c.sendPacket(PacketCreator.skillCooldown(skillid, cooldownTime));
-                chr.addCooldown(skillid, c.CurrentServerContainer.getCurrentTime(), 1000 * (cooldownTime));
+                chr.addCooldown(skillid, c.CurrentServer.Node.getCurrentTime(), 1000 * (cooldownTime));
             }
         }
         if (skillid == Hero.MONSTER_MAGNET || skillid == Paladin.MONSTER_MAGNET || skillid == DarkKnight.MONSTER_MAGNET)

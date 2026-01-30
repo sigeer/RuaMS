@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Trades;
 using client.autoban;
@@ -44,7 +45,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
     {
         int channel = p.readByte() + 1;
         p.readInt();
-        c.OnlinedCharacter.getAutobanManager().setTimestamp(6, c.CurrentServerContainer.getCurrentTimestamp(), 3);
+        c.OnlinedCharacter.getAutobanManager().setTimestamp(6, c.CurrentServer.Node.getCurrentTimestamp(), 3);
         if (c.Channel == channel)
         {
             _autobanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, "CCing to same channel.");

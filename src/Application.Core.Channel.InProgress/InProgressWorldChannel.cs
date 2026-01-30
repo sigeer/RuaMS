@@ -1,33 +1,33 @@
 using Application.Core.Login.Servers;
+using Application.Shared.Servers;
+using CreatorProto;
 using ExpeditionProto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using SystemProto;
 
 namespace Application.Core.Channel.InProgress
 {
     public sealed class InProgressWorldChannel : ChannelServerNode
     {
-        public InProgressWorldChannel(WorldChannelServer worldChannel, List<WorldChannel> channels) 
-            : base(worldChannel.ServerName, worldChannel.ServerConfig.ServerHost, channels.Select(x => x.ChannelConfig).ToList())
+        public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels)
         {
+            ServerName = worldChannel.ServerName;
+            ServerHost = worldChannel.ServerConfig.ServerHost;
+            ServerConfigs = channels;
             ChannelServer = worldChannel;
         }
 
         public WorldChannelServer ChannelServer { get; }
 
-        public override void BroadcastMessage<TMessage>(string type, TMessage message)
+        public override Task SendMessage<TMessage>(int type, TMessage message)
         {
-            ChannelServer.OnMessageReceived(type, message);
+            ChannelServer.MessageDispatcherV.DispatchAsync(type, message.ToByteString());
+            return Task.CompletedTask;
         }
 
-        public override CreatorProto.CreateCharResponseDto CreateCharacterFromChannel(CreatorProto.CreateCharRequestDto request)
+        public override async Task SendMessage(int type)
         {
-            return ChannelServer.DataService.CreatePlayer(request);
-        }
-
-        public override QueryChannelExpedtionResponse GetExpeditionInfo()
-        {
-            return ChannelServer.DataService.GetExpeditionInfo();
+            await SendMessage(type, new Empty());
         }
     }
 }

@@ -35,12 +35,12 @@ public class Coconuts
     {
         _root = coconut;
         this.id = id;
-        hittime = _root.Map.ChannelServer.Container.getCurrentTime();
+        hittime = _root.Map.ChannelServer.Node.getCurrentTime();
     }
 
     public void hit()
     {
-        this.hittime = _root.Map.ChannelServer.Container.getCurrentTime() + 750;
+        this.hittime = _root.Map.ChannelServer.Node.getCurrentTime() + 750;
         hits++;
     }
 

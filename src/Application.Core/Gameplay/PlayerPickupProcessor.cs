@@ -16,13 +16,13 @@ namespace Application.Core.Gameplay
         int _petIndex = -1;
         bool IsPetPickup => _petIndex > -1;
         public PickupCheckFlags Flags { get; set; }
-        public PlayerPickupProcessor(IPlayer player, int petIdex = -1) : base(player)
+        public PlayerPickupProcessor(Player player, int petIdex = -1) : base(player)
         {
             _petIndex = petIdex;
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
-        protected virtual Packet GetPickupPacket(MapItem mapItem) => 
+        protected virtual Packet GetPickupPacket(MapItem mapItem) =>
             PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? MapItemRemoveAnimation.PickupByPet : MapItemRemoveAnimation.PickupByPlayer, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
@@ -88,7 +88,7 @@ namespace Application.Core.Gameplay
             }
 
             // 掉落物捡取时间限制
-            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (_player.Client.CurrentServerContainer.getCurrentTime() - mapItem.getDropTime() < 400))
+            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (_player.Client.CurrentServer.Node.getCurrentTime() - mapItem.getDropTime() < 400))
             {
                 _player.sendPacket(PacketCreator.enableActions());
                 return false;
@@ -152,16 +152,7 @@ namespace Application.Core.Gameplay
         {
             if (mapItem == null)
                 return;
-
-            mapItem.lockItem();
-            try
-            {
-                base.Handle(mapItem);
-            }
-            finally
-            {
-                mapItem.unlockItem();
-            }
+            base.Handle(mapItem);
 
         }
 
@@ -176,12 +167,12 @@ namespace Application.Core.Gameplay
                     int mesosamm = mapItem.getMeso() / mpcs.Count;
                     foreach (var partymem in mpcs)
                     {
-                        partymem.GainMeso(mesosamm, true, true, false);
+                        partymem.GainMeso(mesosamm, GainItemShow.ShowInMessage, true);
                     }
                 }
                 else
                 {
-                    _player.GainMeso(meso, true, true, false);
+                    _player.GainMeso(meso, GainItemShow.ShowInMessage, true);
                 }
                 return true;
             }

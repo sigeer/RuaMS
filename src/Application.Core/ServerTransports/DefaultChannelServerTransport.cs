@@ -1,5 +1,10 @@
+using AllianceProto;
 using Application.Core.Channel;
+using Application.Core.Channel.Internal;
+using Application.Shared.Events;
 using Application.Shared.Login;
+using Application.Shared.Message;
+using Application.Shared.Servers;
 using Application.Shared.Team;
 using BaseProto;
 using CashProto;
@@ -7,26 +12,28 @@ using Config;
 using ConfigProto;
 using CreatorProto;
 using Dto;
+using DueyDto;
 using ExpeditionProto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using Grpc.Net.Client;
 using GuildProto;
 using InvitationProto;
 using ItemProto;
+using JailProto;
+using LifeProto;
 using MessageProto;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RankProto;
+using server.quest;
+using ServerProto;
+using ServiceProto;
 using SyncProto;
 using System.Net;
+using System.Threading.Tasks;
 using SystemProto;
 using TeamProto;
-using AllianceProto;
-using Microsoft.Extensions.Options;
-using Application.Shared.Servers;
-using Grpc.Core;
-using Grpc.Core.Interceptors;
-using Application.Protos;
-using LifeProto;
-using ServerProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -41,26 +48,50 @@ namespace Application.Core.ServerTransports
         readonly ServiceProto.ItemService.ItemServiceClient _itemClient;
         readonly ServiceProto.CashService.CashServiceClient _cashClient;
         readonly ServiceProto.TeamService.TeamServiceClient _teamClient;
-        readonly ServiceProto.BuddyService.BuddyServiceClient _buddyClient;
         readonly ServiceProto.PlayerShopService.PlayerShopServiceClient _playerShopClient;
 
+        Lazy<InternalSession> _internalSession;
+        public InternalSession InternalSession => _internalSession.Value;
+
         readonly ChannelServerConfig _config;
-        public DefaultChannelServerTransport(IOptions<ChannelServerConfig> options)
+        IServiceProvider _sp;
+        public DefaultChannelServerTransport(
+            IServiceProvider sp,
+            IOptions<ChannelServerConfig> options,
+            SystemService.SystemServiceClient systemClient,
+            GameService.GameServiceClient gameClient,
+            SyncService.SyncServiceClient syncClient,
+            GuildService.GuildServiceClient guildClient,
+            AllianceService.AllianceServiceClient allianceClient,
+            DataService.DataServiceClient dataClient,
+            ItemService.ItemServiceClient itemClient,
+            CashService.CashServiceClient cashClient,
+            TeamService.TeamServiceClient teamClient,
+            PlayerShopService.PlayerShopServiceClient playerShopClient)
         {
+            _sp = sp;
             _config = options.Value;
-            var channel = GrpcChannel.ForAddress(_config.MasterServerGrpcAddress);
-            var callInvoker = channel.Intercept(new GlobalHeaderInterceptor("x-server-name", _config.ServerName));
-            _systemClient = new ServiceProto.SystemService.SystemServiceClient(callInvoker);
-            _gameClient = new ServiceProto.GameService.GameServiceClient(channel);
-            _syncClient = new ServiceProto.SyncService.SyncServiceClient(channel);
-            _guildClient = new ServiceProto.GuildService.GuildServiceClient(channel);
-            _allianceClient = new ServiceProto.AllianceService.AllianceServiceClient(channel);
-            _dataClient = new ServiceProto.DataService.DataServiceClient(channel);
-            _itemClient = new ServiceProto.ItemService.ItemServiceClient(channel);
-            _cashClient = new ServiceProto.CashService.CashServiceClient(channel);
-            _buddyClient = new(channel);
-            _teamClient = new(channel);
-            _playerShopClient = new ServiceProto.PlayerShopService.PlayerShopServiceClient(channel);
+            _systemClient = systemClient;
+            _gameClient = gameClient;
+            _syncClient = syncClient;
+            _guildClient = guildClient;
+            _allianceClient = allianceClient;
+            _dataClient = dataClient;
+            _itemClient = itemClient;
+            _cashClient = cashClient;
+            _teamClient = teamClient;
+            _playerShopClient = playerShopClient;
+
+            _internalSession = new Lazy<InternalSession>(() => new InternalSession(_sp.GetRequiredService<WorldChannelServer>()));
+        }
+
+        public async Task SendAsync(int type, CancellationToken cancellationToken = default)
+        {
+            await InternalSession.SendAsync(type, cancellationToken);
+        }
+        public async Task SendAsync(int type, IMessage message, CancellationToken cancellationToken = default)
+        {
+             await InternalSession.SendAsync(type, message, cancellationToken);
         }
 
         public long GetCurrentTime()
@@ -73,14 +104,14 @@ namespace Application.Core.ServerTransports
             return (int)_systemClient.GetCurrentTimestamp(new Google.Protobuf.WellKnownTypes.Empty()).Value;
         }
 
-        public void BroadcastMessage(MessageProto.PacketRequest p)
+        public async Task BroadcastMessage(MessageProto.PacketRequest p)
         {
-            _systemClient.BroadcastMessage(p);
+            await InternalSession.SendAsync(ChannelSendCode.BroadcastPacket, p);
         }
 
-        public void SendWorldConfig(Config.WorldConfig updatePatch)
+        public async Task SendWorldConfig(Config.WorldConfig updatePatch)
         {
-            _systemClient.SendWorldConfig(updatePatch);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateWorldConfig, updatePatch);
         }
 
         public IPEndPoint GetChannelEndPoint(int channel)
@@ -94,31 +125,44 @@ namespace Application.Core.ServerTransports
             return _syncClient.GetPlayerObject(new SyncProto.GetPlayerByLoginRequest { ClientSession = clientSession, CharacterId = cid }).Data;
         }
 
-        public void SetTimer(int seconds)
+        public async Task SendTimer(int seconds)
         {
-            _systemClient.SendTimer(new MessageProto.SetTimer { Seconds = seconds });
+            await InternalSession.SendAsync(ChannelSendCode.SetTimer, new SetTimer { Seconds = seconds });
+        }
+        public async Task RemoveTimer()
+        {
+            await InternalSession.SendAsync(ChannelSendCode.RemoveTimer);
         }
 
-        public void RemoveTimer()
+        public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken)
         {
-            _systemClient.RemoveTimer(new Google.Protobuf.WellKnownTypes.Empty());
+            var streamingCall = _systemClient.Connect();
+            InternalSession.Connect(streamingCall);
+
+            var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost };
+            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.Port, MaxSize = x.MaxSize }));
+
+            await InternalSession.SendAsync(ChannelSendCode.RegisterChannel, req, cancellationToken);
         }
 
-        public async Task<RegisterServerResult> RegisterServer(List<WorldChannel> channels)
+        public async Task CreatePlayerResponseAsync(CreateCharResponseDto res)
         {
-            var req = new RegisterServerRequest { ServerName = _config.ServerName, ServerHost = _config.ServerHost, GrpcPort = _config.GrpcPort };
-            req.Channels.AddRange(channels.Select(x => new RegisterChannelConfigDto { Port = x.ChannelConfig.Port, MaxSize = x.ChannelConfig.MaxSize }));
-            return await _systemClient.RegisterServerAsync(req);
+            await InternalSession.SendAsync(ChannelSendCode.CreateCharacterResponse, res);
         }
 
-        public void DropWorldMessage(DropMessageRequest request)
+        public async Task CompleteChannelShutdown()
         {
-            _systemClient.DropMessage(request);
+            await InternalSession.DisconnectAsync();
+        }
+
+        public async Task DropWorldMessage(DropMessageRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.DropMessage, request);
         }
 
         public void RemoveGuildQueued(int guildId)
         {
-            _dataClient.RemoveGuildQueued(new QuildRequest { GuildId = guildId});
+            _dataClient.RemoveGuildQueued(new QuildRequest { GuildId = guildId });
         }
 
         public bool IsGuildQueued(int guildId)
@@ -131,16 +175,10 @@ namespace Application.Core.ServerTransports
             _dataClient.PutGuildQueued(new QuildRequest { GuildId = guildId });
         }
 
-        public TeamDto CreateTeam(int playerId)
+        public async Task CreateTeam(CreateTeamRequest request)
         {
-            return _teamClient.CreateTeam(new CreateTeamRequest { LeaderId = playerId }).Model;
+            await InternalSession.SendAsync(ChannelSendCode.CreateTeam, request);
         }
-
-        public void SendTimer(int seconds)
-        {
-            _systemClient.SendTimer(new MessageProto.SetTimer { Seconds = seconds });
-        }
-
         public SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request)
         {
             return _playerShopClient.FindPlayerShopChannel(request);
@@ -182,9 +220,9 @@ namespace Application.Core.ServerTransports
             return _syncClient.GetPlayerBuffers(new GetPlayerBufferRequest { CharacterId = id });
         }
 
-        public void SetPlayerOnlined(int id, int channelId)
+        public async Task SetPlayerOnlined(int id, int channelId)
         {
-            _syncClient.CompleteLogin(new ServiceProto.CompleteLoginRequest { CharacterId = id, Channel = channelId });
+            await InternalSession.SendAsync(ChannelSendCode.CompleteLogin, new ServiceProto.CompleteLoginRequest { CharacterId = id, Channel = channelId });
         }
 
         public DropAllDto RequestAllReactorDrops()
@@ -231,12 +269,12 @@ namespace Application.Core.ServerTransports
 
         public LoadCharacterRankResponse LoadPlayerRanking(int topCount)
         {
-            return _gameClient.LoadCharacterRank(new LoadCharacterRankRequest { Count = topCount});
+            return _gameClient.LoadCharacterRank(new LoadCharacterRankRequest { Count = topCount });
         }
 
-        public void SendToggleCoupon(int itemId)
+        public async Task SendToggleCoupon(int itemId)
         {
-            _gameClient.SendToggleCoupon(new ToggelCouponRequest { Id = itemId });
+            await InternalSession.SendAsync(ChannelSendCode.ToggleCoupon, new ToggelCouponRequest { Id = itemId });
         }
 
         public CreateCharResponseDto SendNewPlayer(NewPlayerSaveDto data)
@@ -263,16 +301,17 @@ namespace Application.Core.ServerTransports
         {
             return _itemClient.UseOwlSearch(owlSearchRequest);
         }
-        public UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
+        public async Task SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId, int reason)
         {
-            return _teamClient.SendTeamUpdate(new UpdateTeamRequest { FromId = fromId, Operation = (int)operation, TargetId = toId, TeamId = teamId });
+            await InternalSession.SendAsync(ChannelSendCode.UpdateTeam, 
+                new UpdateTeamRequest { 
+                    FromId = fromId, 
+                    Operation = (int)operation, 
+                    TargetId = toId, 
+                    TeamId = teamId ,
+                    Reason = reason
+                });
         }
-
-        public void SendTeamChat(string name, string chattext)
-        {
-            _teamClient.SendTeamChat(new TeamChatRequest { FromName = name, Text = chattext });
-        }
-
         public GetTeamResponse GetTeam(int party)
         {
             return _teamClient.GetTeamModel(new GetTeamRequest { Id = party });
@@ -283,74 +322,64 @@ namespace Application.Core.ServerTransports
             return _guildClient.GetGuildModel(new GetGuildRequest { Id = id });
         }
 
-        public GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
+        public async Task CreateGuild(GuildProto.CreateGuildRequest request)
         {
-            var req = new CreateGuildRequest { LeaderId = playerId, Name = guildName };
-            req.Members.AddRange(members);
-            return _guildClient.CreateGuild(req);
+            await InternalSession.SendAsync(ChannelSendCode.CreateGuild, request);
         }
 
-        public void SendGuildChat(string name, string text)
+        public async Task BroadcastGuildMessage(int guildId, int v, string callout)
         {
-            _guildClient.SendGuildChat(new GuildChatRequest { Name = name, Text = text });
+            await InternalSession.SendAsync(ChannelSendCode.DropGuildMessage, new GuildDropMessageRequest { GuildId = guildId, Type = v, Message = callout });
         }
 
-        public void BroadcastGuildMessage(int guildId, int v, string callout)
+        public async Task SendUpdateGuildGP(UpdateGuildGPRequest request)
         {
-            _guildClient.GuildDropMessage(new GuildDropMessageRequest { GuildId = guildId, Type = v, Message = callout });
+            await InternalSession.SendAsync(ChannelSendCode.UpdateGuildGp, request);
         }
 
-
-
-
-        public void SendUpdateGuildGP(UpdateGuildGPRequest request)
+        public async Task SendUpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
         {
-            _guildClient.UpdateGP(request);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateGuildRankTitle, request);
         }
 
-        public void SendUpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
+        public async Task SendUpdateGuildNotice(UpdateGuildNoticeRequest request)
         {
-            _guildClient.UpdateRankTitle(request);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateGuildNotice, request);
         }
 
-        public void SendUpdateGuildNotice(UpdateGuildNoticeRequest request)
+        public async Task SendUpdateGuildCapacity(UpdateGuildCapacityRequest request)
         {
-            _guildClient.UpdateNotice(request);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateGuildCapacity, request);
         }
 
-        public void SendUpdateGuildCapacity(UpdateGuildCapacityRequest request)
+        public async Task SendUpdateGuildEmblem(UpdateGuildEmblemRequest request)
         {
-            _guildClient.UpdateCapacity(request);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateGuildEmblem, request);
         }
 
-        public void SendUpdateGuildEmblem(UpdateGuildEmblemRequest request)
+        public async Task SendGuildDisband(GuildDisbandRequest request)
         {
-            _guildClient.UpdateEmblem(request);
+            await InternalSession.SendAsync(ChannelSendCode.DisbandGuild, request);
         }
 
-        public void SendGuildDisband(GuildDisbandRequest request)
+        public async Task SendChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
         {
-            _guildClient.DisbandGuild(request);
+            await InternalSession.SendAsync(ChannelSendCode.ChangeGuildMemberRank, request);
         }
 
-        public void SendChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
+        public async Task SendGuildExpelMember(ExpelFromGuildRequest expelFromGuildRequest)
         {
-            _guildClient.UpdateMemberRank(request);
+            await InternalSession.SendAsync(ChannelSendCode.ExpelGuildMember, expelFromGuildRequest);
         }
 
-        public void SendGuildExpelMember(ExpelFromGuildRequest expelFromGuildRequest)
+        public async Task SendPlayerLeaveGuild(LeaveGuildRequest leaveGuildRequest)
         {
-            _guildClient.ExpelFromGuild(expelFromGuildRequest);
+            await InternalSession.SendAsync(ChannelSendCode.LeaveGuild, leaveGuildRequest);
         }
 
-        public void SendPlayerLeaveGuild(LeaveGuildRequest leaveGuildRequest)
+        public async Task SendPlayerJoinGuild(JoinGuildRequest joinGuildRequest)
         {
-            _guildClient.LeaveGuild(leaveGuildRequest);
-        }
-
-        public void SendPlayerJoinGuild(JoinGuildRequest joinGuildRequest)
-        {
-            _guildClient.JoinGuild(joinGuildRequest);
+            await InternalSession.SendAsync(ChannelSendCode.JoinGuild, joinGuildRequest);
         }
 
         public GetAllianceResponse GetAlliance(int id)
@@ -358,97 +387,89 @@ namespace Application.Core.ServerTransports
             return _allianceClient.GetAllianceModel(new GetAllianceRequest { Id = id });
         }
 
-        public void SendAllianceChat(string name, string text)
-        {
-            _allianceClient.SendAllianceChat(new AllianceChatRequest { Name = name, Text = text });
-        }
-
-
         public CreateAllianceCheckResponse CreateAllianceCheck(CreateAllianceCheckRequest request)
         {
             return _allianceClient.CreateAllianceCheck(request);
         }
 
-        public GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
+        public async Task CreateAlliance(AllianceProto.CreateAllianceRequest request)
         {
-            var req = new CreateAllianceRequest() { Name  = allianceName};
-            req.Members.AddRange(masters);
-            return _allianceClient.CreateAlliance(req);
+            await InternalSession.SendAsync(ChannelSendCode.CreateAlliance, request);
         }
 
-        public void SendGuildJoinAlliance(GuildJoinAllianceRequest guildJoinAllianceRequest)
+        public async Task SendGuildLeaveAlliance(GuildLeaveAllianceRequest guildLeaveAllianceRequest)
         {
-            _allianceClient.JoinAlliance(guildJoinAllianceRequest);
+            await InternalSession.SendAsync(ChannelSendCode.LeaveAlliance, guildLeaveAllianceRequest);
         }
 
-        public void SendGuildLeaveAlliance(GuildLeaveAllianceRequest guildLeaveAllianceRequest)
+        public async Task SendAllianceExpelGuild(AllianceExpelGuildRequest allianceExpelGuildRequest)
         {
-            _allianceClient.LeavelAlliance(guildLeaveAllianceRequest);
+            await InternalSession.SendAsync(ChannelSendCode.ExpelAllianceGuild, allianceExpelGuildRequest);
         }
 
-        public void SendAllianceExpelGuild(AllianceExpelGuildRequest allianceExpelGuildRequest)
+        public async Task SendChangeAllianceLeader(AllianceChangeLeaderRequest allianceChangeLeaderRequest)
         {
-            _allianceClient.AllianceExpelGuild(allianceExpelGuildRequest);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateAllianceLeader, allianceChangeLeaderRequest);
         }
 
-        public void SendChangeAllianceLeader(AllianceChangeLeaderRequest allianceChangeLeaderRequest)
+        public async Task SendChangePlayerAllianceRank(ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest)
         {
-            _allianceClient.ChangeLeader(allianceChangeLeaderRequest);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateAllianceGuildRank, changePlayerAllianceRankRequest);
         }
 
-        public void SendChangePlayerAllianceRank(ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest)
+        public async Task SendIncreaseAllianceCapacity(IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest)
         {
-            _allianceClient.ChangeMemberRank(changePlayerAllianceRankRequest);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateAllianceCapacity, increaseAllianceCapacityRequest);
         }
 
-        public void SendIncreaseAllianceCapacity(IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest)
+        public async Task SendUpdateAllianceRankTitle(UpdateAllianceRankTitleRequest request)
         {
-            _allianceClient.IncreaseAllianceCapacity(increaseAllianceCapacityRequest);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateAllianceRankTitle, request);
         }
 
-        public void SendUpdateAllianceRankTitle(UpdateAllianceRankTitleRequest request)
+        public async Task SendUpdateAllianceNotice(UpdateAllianceNoticeRequest request)
         {
-            _allianceClient.UpdateRankTitle(request);
+            await InternalSession.SendAsync(ChannelSendCode.UpdateAllianceNotice, request);
         }
 
-        public void SendUpdateAllianceNotice(UpdateAllianceNoticeRequest updateAllianceNoticeRequest)
+        public async Task SendAllianceDisband(DisbandAllianceRequest request)
         {
-            _allianceClient.UpdateNotice(updateAllianceNoticeRequest);
+            await InternalSession.SendAsync(ChannelSendCode.DisbandAlliance, request);
         }
 
-        public void SendAllianceDisband(DisbandAllianceRequest disbandAllianceRequest)
+        public async Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request)
         {
-            _allianceClient.DisbandAlliance(disbandAllianceRequest);
+            await InternalSession.SendAsync(ChannelSendCode.AllianceBroadcastPlayerInfo, request);
         }
 
-        public void SendPlayerJoinChatRoom(JoinChatRoomRequest joinChatRoomRequest)
+        public async Task SendPlayerJoinChatRoom(JoinChatRoomRequest request)
         {
-            _gameClient.JoinChatRoom(joinChatRoomRequest);
+            await InternalSession.SendAsync(ChannelSendCode.JoinChatRoom, request);
         }
 
-        public void SendPlayerLeaveChatRoom(LeaveChatRoomRequst leaveChatRoomRequst)
+        public async Task SendPlayerLeaveChatRoom(LeaveChatRoomRequst request)
         {
-            _gameClient.LeaveChatRoom(leaveChatRoomRequst);
+            await InternalSession.SendAsync(ChannelSendCode.LeaveChatRoom, request);
         }
 
-        public void SendChatRoomMesage(SendChatRoomMessageRequest sendChatRoomMessageRequest)
+        public async Task SendChatRoomMesage(SendChatRoomMessageRequest request)
         {
-            _gameClient.SendChatRoomMessage(sendChatRoomMessageRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SendChatRoomMessage, request);
         }
 
-        public void SendCreateChatRoom(CreateChatRoomRequest createChatRoomRequest)
+        public async Task SendCreateChatRoom(CreateChatRoomRequest request)
         {
-            _gameClient.CreateChatRoom(createChatRoomRequest);
+            await InternalSession.SendAsync(ChannelSendCode.CreateChatRoom, request);
         }
 
-        public void SendInvitation(CreateInviteRequest request)
+        public async Task SendInvitation(CreateInviteRequest request)
         {
-            _gameClient.SendInvitation(request);
+            await InternalSession.SendAsync(ChannelSendCode.SendInvitation, request);
         }
 
-        public void AnswerInvitation(AnswerInviteRequest request)
+        public async Task AnswerInvitation(AnswerInviteRequest request)
         {
-            _gameClient.AnswerInvitation(request);
+            await InternalSession.SendAsync(ChannelSendCode.AnswerInvitation, request);
         }
 
         public void RegisterExpedition(ExpeditionRegistry request)
@@ -461,24 +482,19 @@ namespace Application.Core.ServerTransports
             return _gameClient.CheckExpedition(expeditionCheckRequest);
         }
 
-        public QueryChannelExpedtionResponse GetExpeditionInfo()
+        public async Task ReceiveNewYearCard(ReceiveNewYearCardRequest request)
         {
-            return _gameClient.GetExpeditionInfo(new Empty());
+            await InternalSession.SendAsync(ChannelSendCode.ReceiveNewYearCard, request);
         }
 
-        public void ReceiveNewYearCard(ReceiveNewYearCardRequest receiveNewYearCardRequest)
+        public async Task SendNewYearCard(SendNewYearCardRequest request)
         {
-            _gameClient.RecevieNewyearCard(receiveNewYearCardRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SendNewYearCard, request);
         }
 
-        public void SendNewYearCard(SendNewYearCardRequest sendNewYearCardRequest)
+        public async Task SendDiscardNewYearCard(DiscardNewYearCardRequest request)
         {
-            _gameClient.SendNewyearCard(sendNewYearCardRequest);
-        }
-
-        public void SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest)
-        {
-            _gameClient.DiscardNewyearCard(discardNewYearCardRequest);
+            await InternalSession.SendAsync(ChannelSendCode.DiscardNewYearCard, request);
         }
 
         public SetFlyResponse SendSetFly(SetFlyRequest setFlyRequest)
@@ -486,19 +502,19 @@ namespace Application.Core.ServerTransports
             return _systemClient.SetAccountFly(setFlyRequest);
         }
 
-        public void SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
+        public async Task SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
         {
-            _gameClient.ReloadEvents(reloadEventsRequest);
+            await InternalSession.SendAsync(ChannelSendCode.ReloadWorldEvents, reloadEventsRequest);
         }
 
         public CreateTVMessageResponse BroadcastTV(CreateTVMessageRequest request)
         {
-            return _itemClient.UseTV(request);
+            return _itemClient.UseTVMessage(request);
         }
 
         public UseItemMegaphoneResponse SendItemMegaphone(UseItemMegaphoneRequest request)
         {
-            return _itemClient.UseItemMegaphone(request);
+            return _itemClient.UseMegaPhone(request);
         }
 
         public DropAllDto RequestDropData()
@@ -526,14 +542,14 @@ namespace Application.Core.ServerTransports
             return _gameClient.GetAllPLife(request);
         }
 
-        public void SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest)
+        public async Task SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest)
         {
-            _gameClient.CreateLife(createPLifeRequest);
+            await InternalSession.SendAsync(ChannelSendCode.CreatePLife, createPLifeRequest);
         }
 
-        public void SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest)
+        public async Task SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest)
         {
-            _gameClient.RemoveLife(removePLifeRequest);
+            await InternalSession.SendAsync(ChannelSendCode.RemovePLife, removePLifeRequest);
         }
 
         public BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
@@ -561,9 +577,9 @@ namespace Application.Core.ServerTransports
             return _gameClient.CanHiredMerchant(canHiredMerchantRequest);
         }
 
-        public void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
+        public async Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
         {
-            _syncClient.BatchSyncPlayerShop(request);
+            await _syncClient.BatchSyncPlayerShopAsync(request);
         }
 
         public StoreItemsResponse SaveItems(StoreItemsRequest request)
@@ -576,21 +592,21 @@ namespace Application.Core.ServerTransports
             return _itemClient.LoadItemFromStore(loadItemsFromStoreRequest);
         }
 
-        public void BatchSyncMap(List<MapSyncDto> data)
+        public async Task BatchSyncMap(List<MapSyncDto> data)
         {
             var req = new MapBatchSyncDto();
             req.List.AddRange(data);
-            _syncClient.BatchSyncMap(req);
+            await InternalSession.SendAsync(ChannelSendCode.SyncMap, req);
         }
 
-        public SendReportResponse SendReport(SendReportRequest sendReportRequest)
+        public async Task SendReport(SendReportRequest request)
         {
-            return _systemClient.SendReport(sendReportRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SendReport, request);
         }
 
-        public ToggleMonitorPlayerResponse SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest)
+        public async Task SetMonitor(ToggleMonitorPlayerRequest request)
         {
-            return _gameClient.SetMonitor(toggleMonitorPlayerRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SetMonitor, request);
         }
 
         public MonitorDataWrapper LoadMonitor()
@@ -598,9 +614,9 @@ namespace Application.Core.ServerTransports
             return _gameClient.LoadMonitor(new Empty());
         }
 
-        public ToggleAutoBanIgnoreResponse SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest)
+        public async Task SetAutoBanIgnored(ToggleAutoBanIgnoreRequest request)
         {
-            return _systemClient.SetAutobanIgnore(toggleAutoBanIgnoreRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SetAutobanIgnore, request);
         }
 
         public AutoBanIgnoredWrapper LoadAutobanIgnoreData()
@@ -608,19 +624,19 @@ namespace Application.Core.ServerTransports
             return _systemClient.GetAutobanIgnores(new Empty());
         }
 
-        public BanResponse Ban(BanRequest banRequest)
+        public async Task Ban(BanRequest request)
         {
-            return _systemClient.Ban(banRequest);
+            await InternalSession.SendAsync(ChannelSendCode.Ban, request);
         }
 
-        public UnbanResponse Unban(UnbanRequest unbanRequest)
+        public async Task Unban(UnbanRequest request)
         {
-            return _systemClient.Unban(unbanRequest);
+            await InternalSession.SendAsync(ChannelSendCode.Unban, request);
         }
 
-        public SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest)
+        public async Task SetGmLevel(SetGmLevelRequest request)
         {
-            return _systemClient.SetGmLevel(setGmLevelRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SetGmLevel, request);
         }
 
         public ShowOnlinePlayerResponse GetOnlinedPlayers()
@@ -628,24 +644,19 @@ namespace Application.Core.ServerTransports
             return _systemClient.GetOnlinedPlayers(new Empty());
         }
 
-        public WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest)
+        public async Task WarpPlayerByName(WrapPlayerByNameRequest request)
         {
-            return _systemClient.WrapPlayer(wrapPlayerByNameRequest);
+            await InternalSession.SendAsync(ChannelSendCode.WarpPlayer, request);
         }
 
-        public SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest)
+        public async Task SummonPlayerByName(SummonPlayerByNameRequest request)
         {
-            return _systemClient.SummonPlayer(summonPlayerByNameRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SummonPlayer, request);
         }
 
-        public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest)
+        public async Task DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
         {
-            return _systemClient.DisconnectPlayer(disconnectPlayerByNameRequest);
-        }
-
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            _systemClient.DisconnectAll(disconnectAllRequest);
+            await InternalSession.SendAsync(ChannelSendCode.DisconnectOne, request);
         }
 
         public GetAllClientInfo GetOnliendClientInfo()
@@ -653,19 +664,9 @@ namespace Application.Core.ServerTransports
             return _systemClient.GetOnlinedClients(new Empty());
         }
 
-        public void ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest)
+        public async Task ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest)
         {
-            _systemClient.ShutdownMaster(shutdownMasterRequest);
-        }
-
-        public void CompleteChannelShutdown(string serverName)
-        {
-            _systemClient.CompleteChannelShutdown(new ChannelShutdownCallback { ServerName = serverName });
-        }
-
-        public void SaveAll(Empty empty)
-        {
-            _systemClient.SaveAll(new Empty());
+            await _systemClient.ShutdownMasterAsync(shutdownMasterRequest);
         }
 
         public ServerStateDto GetServerState()
@@ -683,56 +684,46 @@ namespace Application.Core.ServerTransports
             return _gameClient.ChangeName(nameChangeRequest);
         }
 
-        public void BatchSyncPlayer(List<PlayerSaveDto> data)
+        public async Task BatchSyncPlayer(List<PlayerSaveDto> data, bool saveDB = false)
         {
-            var req = new ServiceProto.BatchSyncCharacterRequest();
+            var req = new SyncProto.BatchSyncPlayerRequest() { SaveDb = saveDB };
             req.List.AddRange(data);
-            _syncClient.BatchPushCharacter(req);
+            await InternalSession.SendAsync(ChannelSendCode.BatchSyncPlayer, req);
         }
 
 
-        public void SyncPlayer(PlayerSaveDto data)
+        public async Task SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
         {
-            _syncClient.PushCharacter(data);
+            await InternalSession.SendAsync(ChannelSendCode.SyncPlayer, new SyncPlayerRequest { Trigger = (int)trigger, Data = data, SaveDb = saveDB });
         }
-        public AddBuddyResponse SendAddBuddyRequest(AddBuddyRequest request)
+        public async Task SendAddBuddyRequest(BuddyProto.AddBuddyRequest request)
         {
-            return _buddyClient.AddBuddyByName(request);
-        }
-
-        public AddBuddyResponse SendAddBuddyRequest(AddBuddyByIdRequest request)
-        {
-            return _buddyClient.AddBuddyById(request);
+            await InternalSession.SendAsync(ChannelSendCode.AddBuddy, request);
         }
 
-        public void SendBuddyChat(BuddyChatRequest request)
+        public async Task SendAddBuddyRequest(BuddyProto.AddBuddyByIdRequest request)
         {
-            _buddyClient.SendBuddyChat(request);
+            await InternalSession.SendAsync(ChannelSendCode.AddBuddyById, request);
         }
 
-        public void SendBuddyMessage(SendBuddyNoticeMessageDto request)
+        public async Task SendBuddyMessage(BuddyProto.SendBuddyNoticeMessageDto request)
         {
-            _buddyClient.SendBuddfyNotice(request);
+            await InternalSession.SendAsync(ChannelSendCode.DropBuddyMessage, request);
         }
 
-        public DeleteBuddyResponse SendDeleteBuddy(DeleteBuddyRequest deleteBuddyRequest)
+        public async Task SendDeleteBuddy(BuddyProto.DeleteBuddyRequest deleteBuddyRequest)
         {
-            return _buddyClient.DeleteBuddy(deleteBuddyRequest);
+            await InternalSession.SendAsync(ChannelSendCode.RemoveBuddy, deleteBuddyRequest);
         }
 
-        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest)
+        public async Task SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest)
         {
-            return _buddyClient.SendWhisper(sendWhisperMessageRequest);
+            await InternalSession.SendAsync(ChannelSendCode.SendWhisper, sendWhisperMessageRequest);
         }
 
-        public GetLocationResponse GetLocation(GetLocationRequest getLocationRequest)
+        public async Task GetLocation(BuddyProto.GetLocationRequest getLocationRequest)
         {
-            return _buddyClient.GetLocation(getLocationRequest);
-        }
-
-        public void SendYellowTip(YellowTipRequest yellowTipRequest)
-        {
-            _gameClient.SendYellowTip(yellowTipRequest);
+            await InternalSession.SendAsync(ChannelSendCode.GetLocation, getLocationRequest);
         }
 
         public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
@@ -745,19 +736,71 @@ namespace Application.Core.ServerTransports
             _systemClient.HealthCheck(data);
         }
 
-        public void SendEarnTitleMessage(EarnTitleMessageRequest data)
-        {
-            _gameClient.SendEarnTitleMessage(data);
-        }
-
         public bool GainCharacterSlot(int accountId)
         {
             return _systemClient.GainCharacterSlot(new GainAccountCharacterSlotRequest { AccId = accountId }).Code == 0;
         }
 
-        public void SendGuildPacket(GuildPacketRequest guildPacketRequest)
+        public async Task SendGuildPacket(GuildPacketRequest guildPacketRequest)
         {
-            _guildClient.SendGuildPacket(guildPacketRequest);
+            await _guildClient.SendGuildPacketAsync(guildPacketRequest);
+        }
+
+        public async Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers)
+        {
+            var data = new MessageProto.MultiChatMessage { Type = type, FromName = fromName, Text = msg };
+            data.Receivers.AddRange(receivers);
+            await InternalSession.SendAsync(ChannelSendCode.MultiChat, data);
+        }
+
+        public async Task SaveAllNotifyAsync()
+        {
+            await InternalSession.SendAsync(ChannelSendCode.SaveAll);
+        }
+
+        public async Task DisconnectAllNotifyAsync()
+        {
+            await InternalSession.SendAsync(ChannelSendCode.DisconnectAll);
+        }
+
+        public async Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request)
+        {
+            return await _gameClient.CreateDueyPackageAsync(request);
+        }
+
+        public async Task TakeDueyPackage(TakeDueyPackageRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.TakeDueyPackage);
+        }
+
+        public async Task RequestRemovePackage(RemovePackageRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.RemoveDueyPackage);
+        }
+
+        public async Task GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.LoadDueyPackage);
+        }
+
+        public async Task TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.TakeDueyPackageCallback);
+        }
+
+        public async Task JailPlayer(CreateJailRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.Jail, request);
+        }
+
+        public async Task UnjailPlayer(CreateUnjailRequest request)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.Unjail, request);
+        }
+
+        public async Task SendRemoveDoor(int ownerId)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.RemoveDoor);
         }
     }
 }

@@ -1,5 +1,6 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
+using Application.Core.Login.Commands;
 using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
@@ -13,6 +14,7 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using JailProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
@@ -62,7 +64,6 @@ namespace Application.Core.Login.Datas
             data = GetCharacter(id);
             if (data == null)
                 return null;
-            _idDataSource[id] = data;
             return data;
         }
         public CharacterLiveObject? FindPlayerByName(string name)
@@ -73,7 +74,6 @@ namespace Application.Core.Login.Datas
             data = GetCharacter(null, name);
             if (data == null)
                 return null;
-            _nameDataSource[name] = data;
             return data;
         }
 
@@ -82,12 +82,15 @@ namespace Application.Core.Login.Datas
             return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
-        public void Update(SyncProto.PlayerSaveDto obj)
+        public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
-                var oldCharacterData = origin.Character;
-                origin.Character = _mapper.Map<CharacterModel>(obj.Character);
+                var oldMap = origin.Character.Map;
+                var oldLevel = origin.Character.Level;
+                var oldJob = origin.Character.JobId;
+
+                _mapper.Map(obj.Character, origin.Character);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
                 origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
                 origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
@@ -97,7 +100,6 @@ namespace Application.Core.Login.Datas
                 origin.MonsterBooks = _mapper.Map<MonsterbookModel[]>(obj.MonsterBooks);
                 origin.PetIgnores = _mapper.Map<PetIgnoreModel[]>(obj.PetIgnores);
                 origin.QuestStatuses = _mapper.Map<QuestStatusModel[]>(obj.QuestStatuses);
-                origin.RunningTimerQuests = _mapper.Map<TimerQuestModel[]>(obj.RunningTimerQuests);
                 origin.SavedLocations = _mapper.Map<SavedLocationModel[]>(obj.SavedLocations);
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
@@ -106,14 +108,13 @@ namespace Application.Core.Login.Datas
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
-                var trigger = (SyncCharacterTrigger)obj.Trigger;
                 _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}",
                     obj.Character.Name, GetTriggerDetail(trigger, origin.Channel, obj.Channel));
                 if (trigger == SyncCharacterTrigger.Logoff)
                 {
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.LOGIN_NOTLOGGEDIN);
                 }
-                else if (trigger == SyncCharacterTrigger.ChangeServer)
+                else if (trigger == SyncCharacterTrigger.PreEnterChannel)
                 {
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.PlayerServerTransition);
                     if (YamlConfig.config.server.USE_IP_VALIDATION)
@@ -122,64 +123,47 @@ namespace Application.Core.Login.Datas
                         _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
                     }
                 }
-                _dataStorage.SetCharacter(origin);
+                _dataStorage.StoreCharacter(origin);
 
-                if (oldCharacterData.Level != origin.Character.Level)
+                if (oldLevel != origin.Character.Level)
                 {
                     // 等级变化通知
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerLevelChanged(origin);
+                        await module.OnPlayerLevelChanged(origin);
                     }
                 }
 
-                if (oldCharacterData.JobId != origin.Character.JobId)
+                if (oldJob != origin.Character.JobId)
                 {
                     // 转职通知
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerJobChanged(origin);
+                        await module.OnPlayerJobChanged(origin);
                     }
 
                 }
 
-                if (oldCharacterData.Map != origin.Character.Map)
+                if (oldMap != origin.Character.Map)
                 {
                     // 地图切换
                     foreach (var module in _masterServer.Modules)
                     {
-                        module.OnPlayerMapChanged(origin);
+                        await module.OnPlayerMapChanged(origin);
                     }
                 }
 
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
                 if (origin.Channel != obj.Channel)
                 {
+                    var lastChannel = origin.Channel;
                     origin.Channel = obj.Channel;
-                    // 离线通知
-                    if (obj.Channel == 0)
+                    foreach (var module in _masterServer.Modules)
                     {
-                        origin.Character.LastLogoutTime = DateTimeOffset.FromUnixTimeMilliseconds(_masterServer.getCurrentTime());
-                        origin.ChannelNode = null;
-
-
-                        foreach (var module in _masterServer.Modules)
-                        {
-                            module.OnPlayerLogoff(origin);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var module in _masterServer.Modules)
-                        {
-                            module.OnPlayerEnterCashShop(origin);
-                        }
+                        await module.OnPlayerServerChanged(origin, lastChannel);
                     }
 
-                    _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
 
-                    _masterServer.BuddyManager.BroadcastNotify(origin);
-                    _masterServer.InvitationManager.RemovePlayerInvitation(origin.Character.Id);
                 }
             }
         }
@@ -190,18 +174,10 @@ namespace Application.Core.Login.Datas
             {
                 case SyncCharacterTrigger.Logoff:
                     return "离线";
-                case SyncCharacterTrigger.ChangeServer:
-                    {
-                        if (oldChannel == 0)
-                            return $"上线";
-                        else if (oldChannel == -1)
-                            return $"退出商城";
-                        else if (newChannel == -1)
-                            return $"进入商城（从频道{oldChannel}）";
-                        else if (newChannel == 0)
-                            return "下线";
-                        return $"切换频道（从频道{oldChannel}）";
-                    }
+                case SyncCharacterTrigger.EnterCashShop:
+                    return $"进入商城（从频道{oldChannel}）";
+                case SyncCharacterTrigger.PreEnterChannel:
+                    return $"正在进入频道";
                 case SyncCharacterTrigger.LevelChanged:
                     return "等级变化";
                 case SyncCharacterTrigger.JobChanged:
@@ -215,29 +191,66 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void BatchUpdate(List<SyncProto.PlayerSaveDto> list)
+        async Task BatchUpdateCore(List<SyncProto.PlayerSaveDto> list)
         {
             foreach (var item in list)
             {
-                Update(item);
+                await Update(item, SyncCharacterTrigger.System);
             }
         }
 
-        internal void CompleteLogin(int playerId, int channel, out int accountId)
+        public void BatchUpdateOrSave(List<SyncProto.PlayerSaveDto> list, bool saveDB)
+        {
+            _ = BatchUpdateCore(list)
+                    .ContinueWith(t =>
+                    {
+                        if (saveDB)
+                        {
+                            _masterServer.Post(new CommitDBCommand());
+                        }
+                    });
+        }
+
+        public void UpdateOrSave(SyncProto.PlayerSaveDto data, SyncCharacterTrigger trigger, bool saveDB)
+        {
+            _ = Update(data, trigger)
+                    .ContinueWith(t =>
+                    {
+                        if (saveDB)
+                        {
+                            _masterServer.Post(new CommitDBCommand());
+                        }
+                    });
+        }
+
+        internal async Task<int> CompleteLogin(int playerId, int channel)
         {
             if (_idDataSource.TryGetValue(playerId, out var d))
             {
-                accountId = d.Character.AccountId;
-                var isNewComer = d.Channel == 0;
-
+                var lastChannel = d.Channel;
                 d.Channel = channel;
                 d.ChannelNode = _masterServer.GetChannelServer(channel);
+
+                if (lastChannel == 0)
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"进入游戏（频道{channel}）");
+                }
+                else if (lastChannel == -1)
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"离开商城（频道{channel}）");
+                }
+                else
+                {
+                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"切换频道（从频道{lastChannel}到频道{channel}）");
+                }
 
 
                 foreach (var module in _masterServer.Modules)
                 {
-                    module.OnPlayerLogin(d, isNewComer);
+                    await module.OnPlayerServerChanged(d, lastChannel);
                 }
+
+                return d.Character.AccountId;
             }
             else
             {
@@ -245,7 +258,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void UpdateMap(int characterId, int mapId)
+        public async Task UpdateMap(int characterId, int mapId)
         {
             var chr = FindPlayerById(characterId);
             if (chr != null)
@@ -254,16 +267,16 @@ namespace Application.Core.Login.Datas
 
                 foreach (var module in _masterServer.Modules)
                 {
-                    module.OnPlayerMapChanged(chr);
+                    await module.OnPlayerMapChanged(chr);
                 }
             }
         }
 
-        public void BatchUpdateMap(List<SyncProto.MapSyncDto> data)
+        public async Task BatchUpdateMap(List<SyncProto.MapSyncDto> data)
         {
             foreach (var item in data)
             {
-                UpdateMap(item.MasterId, item.MapId);
+                await UpdateMap(item.MasterId, item.MapId);
             }
         }
 
@@ -298,11 +311,6 @@ namespace Application.Core.Login.Datas
                 characterName = characterEntity.Name;
 
                 var chrModel = _mapper.Map<CharacterModel>(characterEntity);
-
-                foreach (var module in _masterServer.Modules)
-                {
-                    module.OnPlayerLoad(dbContext, chrModel);
-                }
 
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
@@ -569,7 +577,7 @@ namespace Application.Core.Login.Datas
                 Shoes = shoes,
                 Weapon = weapon,
                 Gender = gender
-            }).Code;
+            }).ConfigureAwait(false).GetAwaiter().GetResult().Code;
         }
 
         public int CreatePlayerDB(CreatorProto.NewPlayerSaveDto data)
@@ -582,7 +590,7 @@ namespace Application.Core.Login.Datas
                 dbTrans.Commit();
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(data.Character.AccountId, characterId);
-                _masterServer.DropYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name);
+                _ = _masterServer.DropYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name, true);
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", data.Character.AccountId, data.Character.Name);
                 return characterId;
             }
@@ -647,6 +655,53 @@ namespace Application.Core.Login.Datas
             }
 
             return new NameChangeResponse();
+        }
+
+        public async Task JailPlayer(CreateJailRequest request)
+        {
+            var res = new CreateJailResponse { Request = request };
+            var targetChr = FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+            {
+                res.Code = 1;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId]);
+                return;
+            }
+
+            if (targetChr.Character.Jailexpire < _masterServer.getCurrentTime())
+            {
+                targetChr.Character.Jailexpire = _masterServer.getCurrentTime() + request.Minutes * 60000;
+            }
+            else
+            {
+                targetChr.Character.Jailexpire += request.Minutes * 60000;
+                res.IsExtend = true;
+            }
+            res.TargetId = targetChr.Character.Id;
+            await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId, res.TargetId]);
+        }
+
+        public async Task UnjailPlayer(CreateUnjailRequest request)
+        {
+            var res = new CreateUnjailResponse { Request = request };
+            var targetChr = FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+            {
+                res.Code = 1;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId]);
+                return;
+            }
+
+            if (targetChr.Character.Jailexpire < _masterServer.getCurrentTime())
+            {
+                res.Code = 2;
+                await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId]);
+                return;
+            }
+
+            targetChr.Character.Jailexpire = 0;
+            res.TargetId = targetChr.Character.Id;
+            await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId, res.TargetId]);
         }
     }
 }

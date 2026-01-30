@@ -14,18 +14,18 @@ public class SessionInitialization
     private const int RETRY_DELAY_MILLIS = 1777;
 
     private HashSet<string> remoteHostsInInitState = new();
-    private List<object> locks = new(100);
+    private List<Lock> locks = new(100);
 
     public SessionInitialization(ILogger<SessionInitialization> logger)
     {
         _logger = logger;
         for (int i = 0; i < 100; i++)
         {
-            locks.Add(new object());
+            locks.Add(new ());
         }
     }
 
-    private object getLock(string remoteHost)
+    private Lock getLock(string remoteHost)
     {
         return locks.ElementAt(Math.Abs(remoteHost.GetHashCode()) % 100);
     }
@@ -46,7 +46,7 @@ public class SessionInitialization
             int tries = 0;
             while (true)
             {
-                if (Monitor.TryEnter(lockObj))
+                if (lockObj.TryEnter())
                 {
                     try
                     {
@@ -59,7 +59,7 @@ public class SessionInitialization
                     }
                     finally
                     {
-                        Monitor.Exit(lockObj);
+                        lockObj.Exit();
                     }
 
                     break;
@@ -90,14 +90,14 @@ public class SessionInitialization
     public void finalize(string remoteHost)
     {
         var lockObj = getLock(remoteHost);
-        Monitor.Enter(lockObj);
+        lockObj.Enter();
         try
         {
             remoteHostsInInitState.Remove(remoteHost);
         }
         finally
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
     }
 }

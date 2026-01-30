@@ -4,10 +4,10 @@ namespace Application.Core.Channel.Invitation
 {
     public abstract class InviteChannelHandler
     {
-        protected WorldChannelServer _server;
+        protected WorldChannel _server;
         protected ILogger<InviteChannelHandler> _logger;
         public string Type { get; }
-        protected InviteChannelHandler(WorldChannelServer server, string type, ILogger<InviteChannelHandler> logger)
+        protected InviteChannelHandler(WorldChannel server, string type, ILogger<InviteChannelHandler> logger)
         {
             _server = server;
             Type = type;

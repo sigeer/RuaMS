@@ -24,7 +24,6 @@
 using Application.Core.Game.Invites;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.game;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -43,11 +42,11 @@ public class Trade
     public List<Item> ItemList { get; set; } = [];
     public int Meso { get; set; }
     private AtomicBoolean locked = new AtomicBoolean(false);
-    private IPlayer chr;
+    private Player chr;
     private byte number;
     private bool fullTrade = false;
 
-    public Trade(byte number, IPlayer chr)
+    public Trade(byte number, Player chr)
     {
         this.chr = chr;
         this.number = number;
@@ -111,7 +110,7 @@ public class Trade
         }
         if (Meso > 0)
         {
-            chr.gainMeso(Meso, show, true, show);
+            chr.GainMeso(Meso, GainItemShow.ShowInChat, true);
         }
         Meso = 0;
         ItemList.Clear();
@@ -155,15 +154,12 @@ public class Trade
 
     public bool addItem(Item item)
     {
-        lock (ItemList)
+        if (ItemList.Count > MaxItemCount || ItemList.Any(x => x.getPosition() == item.getPosition()))
         {
-            if (ItemList.Count > MaxItemCount || ItemList.Any(x => x.getPosition() == item.getPosition()))
-            {
-                return false;
-            }
-
-            ItemList.Add(item);
+            return false;
         }
+
+        ItemList.Add(item);
 
         return true;
     }
@@ -186,7 +182,7 @@ public class Trade
         this.PartnerTrade = partner;
     }
 
-    public IPlayer getChr()
+    public Player getChr()
     {
         return chr;
     }
@@ -217,32 +213,28 @@ public class Trade
         return chr.canHoldUniques(exchangeItemids);
     }
 
-    object checkLock = new object();
     private bool checkTradeCompleteHandshake(bool updateSelf)
     {
-        lock (checkLock)
+        Trade self, other;
+
+        if (updateSelf)
         {
-            Trade self, other;
-
-            if (updateSelf)
-            {
-                self = this;
-                other = PartnerTrade!;
-            }
-            else
-            {
-                self = PartnerTrade!;
-                other = this;
-            }
-
-            if (self.isLocked())
-            {
-                return false;
-            }
-
-            self.lockTrade();
-            return other.isLocked();
+            self = this;
+            other = PartnerTrade!;
         }
+        else
+        {
+            self = PartnerTrade!;
+            other = this;
+        }
+
+        if (self.isLocked())
+        {
+            return false;
+        }
+
+        self.lockTrade();
+        return other.isLocked();
     }
 
     public bool checkCompleteHandshake()

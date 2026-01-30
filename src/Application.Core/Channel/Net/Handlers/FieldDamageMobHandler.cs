@@ -66,5 +66,6 @@ public class FieldDamageMobHandler : ChannelHandlerBase
             map.broadcastMessage(chr, PacketCreator.damageMonster(mobOid, dmg), true);
             map.damageMonster(chr, mob, dmg);
         }
+        return;
     }
 }

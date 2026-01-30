@@ -5,14 +5,10 @@ import "Team/Team.proto";
 package TeamProto;
 
 message UpdateTeamResponse {
-  bool isSuccess = 1;
-  int32 teamId = 2;
-  int32 operation = 3;
-  // operation == update 时有值
-  TeamMemberDto updatedMember = 4;
-  int32 errorCode = 5;
-  bool silentCheck = 6;
-  int32 operatorId = 7;
+  int32 code = 1;
+  UpdateTeamRequest request = 2;
+  TeamDto team = 3;
+  string targetName = 4; 
 }
 
 message UpdateTeamRequest {
@@ -20,9 +16,5 @@ message UpdateTeamRequest {
 	int32 operation  = 2;
 	int32 fromId = 3;
 	int32 targetId =  4;
-}
-
-message TeamChatRequest {
-	string fromName = 1;
-	string text = 2;
+	int32 reason = 5;
 }

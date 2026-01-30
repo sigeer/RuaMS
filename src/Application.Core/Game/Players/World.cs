@@ -6,32 +6,7 @@ namespace Application.Core.Game.Players
         /// player client is currently trying to change maps or log in the game map
         /// </summary>
         private AtomicBoolean mapTransitioning = new AtomicBoolean(true);
-        /// <summary>
-        /// player is online, but on cash shop or mts
-        /// </summary>
-        private AtomicBoolean awayFromWorld = new AtomicBoolean(true);
 
-        public void setDisconnectedFromChannelWorld()
-        {
-            setAwayFromChannelWorld(true);
-        }
-        public void setAwayFromChannelWorld()
-        {
-            setAwayFromChannelWorld(false);
-        }
-        private void setAwayFromChannelWorld(bool disconnect)
-        {
-            awayFromWorld.Set(true);
-
-            if (!disconnect)
-            {
-                Client.CurrentServer.insertPlayerAway(Id);
-            }
-            else
-            {
-                Client.CurrentServer.removePlayerAway(Id);
-            }
-        }
         public bool isLoggedinWorld()
         {
             return this.isLoggedin() && !this.isAwayFromWorld();
@@ -39,13 +14,7 @@ namespace Application.Core.Game.Players
 
         public bool isAwayFromWorld()
         {
-            return awayFromWorld.Get();
-        }
-
-        public void setEnteredChannelWorld(int channel)
-        {
-            awayFromWorld.Set(false);
-            Client.CurrentServer.removePlayerAway(Id);
+            return Client.CurrentServer.IsAwayFromWorld(Id);
         }
     }
 }

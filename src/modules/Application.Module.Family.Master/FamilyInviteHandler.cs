@@ -4,6 +4,8 @@ using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Application.Utility.Configs;
 using Dto;
+using InvitationProto;
+using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
 {
@@ -15,12 +17,13 @@ namespace Application.Module.Family.Master
             _familyManager = familyManager;
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override Task OnInvitationAccepted(InviteRequest request)
         {
             _familyManager.AcceptInvite(request.ToPlayerId, request.FromPlayerId);
+            return Task.CompletedTask;
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
 
@@ -46,7 +49,7 @@ namespace Application.Module.Family.Master
 
             }
 
-            BroadcastResult(responseCode, fromPlayer.Character.Party, fromPlayer, toPlayer, request.ToName);
+            await BroadcastResult(responseCode, fromPlayer.Character.Party, fromPlayer, toPlayer, request.ToName);
         }
     }
 }

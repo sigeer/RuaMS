@@ -8,7 +8,6 @@ package Config;
 message RegisterServerRequest {
 	string serverName = 1;
 	repeated RegisterChannelConfigDto channels = 2;
-	int32 grpcPort = 3;
 	string serverHost = 4;
 }
 

@@ -1,4 +1,4 @@
-using Application.Core.Game.Invites;
+using Application.Core.Channel.Commands;
 
 namespace Application.Core.Channel.Tasks
 {
@@ -6,14 +6,14 @@ namespace Application.Core.Channel.Tasks
     {
         readonly WorldChannelServer _server;
 
-        public InvitationTask(WorldChannelServer server): base($"ChannelServer:{server.ServerName}_{nameof(InvitationTask)}")
+        public InvitationTask(WorldChannelServer server) : base($"{server.ServerName}_{nameof(InvitationTask)}")
         {
             _server = server;
         }
 
         public override void HandleRun()
         {
-            InviteType.TRADE.CheckExpired(_server.getCurrentTime());
+            _server.Post(new InvitationExpireCheckCommand());
         }
     }
 }

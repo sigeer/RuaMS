@@ -26,44 +26,26 @@ namespace client.inventory;
 public class InventoryProof : Inventory
 {
 
-    public InventoryProof(IPlayer mc) : base(mc, InventoryType.CANHOLD, 0)
+    public InventoryProof(Player mc) : base(mc, InventoryType.CANHOLD, 0)
     {
 
     }
 
     public void cloneContents(Inventory inv)
     {
-        inv.lockInventory();
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.Clear();
-            this.setSlotLimit(inv.getSlotLimit());
+        inventory.Clear();
+        this.setSlotLimit(inv.getSlotLimit());
 
-            foreach (Item it in inv.list())
-            {
-                Item item = new Item(it.getItemId(), it.getPosition(), it.getQuantity());
-                inventory.AddOrUpdate(item.getPosition(), item);
-            }
-        }
-        finally
+        foreach (Item it in inv.list())
         {
-            Monitor.Exit(lockObj);
-            inv.unlockInventory();
+            Item item = new Item(it.getItemId(), it.getPosition(), it.getQuantity());
+            inventory.AddOrUpdate(item.getPosition(), item);
         }
     }
 
     public void flushContents()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.Clear();
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        inventory.Clear();
     }
 
     public override short addSlot(Item item)
@@ -72,48 +54,23 @@ public class InventoryProof : Inventory
         {
             return -1;
         }
-
-        Monitor.Enter(lockObj);
-        try
+        short slotId = getNextFreeSlot();
+        if (slotId < 0)
         {
-            short slotId = getNextFreeSlot();
-            if (slotId < 0)
-            {
-                return -1;
-            }
-            inventory.AddOrUpdate(slotId, item);
+            return -1;
+        }
+        inventory.AddOrUpdate(slotId, item);
 
-            return slotId;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return slotId;
     }
 
     public override void addSlotFromDB(short slot, Item item)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.AddOrUpdate(slot, item);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        inventory.AddOrUpdate(slot, item);
     }
 
     public override void removeSlot(short slot)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.Remove(slot);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        inventory.Remove(slot);
     }
 }

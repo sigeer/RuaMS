@@ -13,6 +13,5 @@ public class PinkbeanCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
         player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PINK_BEAN), player.getPosition());
-
     }
 }

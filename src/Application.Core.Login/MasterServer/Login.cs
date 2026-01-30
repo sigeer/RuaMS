@@ -2,12 +2,18 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Session;
+using Application.EF.Entities;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility.Configs;
+using CreatorProto;
+using Google.Protobuf;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using SystemProto;
+using XmlWzReader;
 
 namespace Application.Core.Login
 {
@@ -101,40 +107,40 @@ namespace Application.Core.Login
         }
 
 
-        private object srvLock = new object();
+        private Lock srvLock = new ();
 
         private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
         public void RegisterLoginState(ILoginClient c)
         {
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 inLoginState[c] = DateTimeOffset.UtcNow.AddMinutes(10);
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
         }
 
         public void UnregisterLoginState(ILoginClient c)
         {
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 inLoginState.Remove(c);
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
         }
 
-        private void DisconnectIdlesOnLoginState()
+        private async Task DisconnectIdlesOnLoginState()
         {
             List<ILoginClient> toDisconnect = new();
 
-            Monitor.Enter(srvLock);
+            srvLock.Enter();
             try
             {
                 var timeNow = DateTimeOffset.UtcNow;
@@ -154,7 +160,7 @@ namespace Application.Core.Login
             }
             finally
             {
-                Monitor.Exit(srvLock);
+                srvLock.Exit();
             }
 
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
@@ -170,11 +176,6 @@ namespace Application.Core.Login
                     sessionCoordinator.closeSession(c, true);
                 }
             }
-        }
-
-        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
-        {
-            Transport.BroadcastMessage(BroadcastType.SendPlayerDisconnectAll, new Google.Protobuf.WellKnownTypes.Empty());
         }
     }
 }

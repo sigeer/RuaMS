@@ -19,9 +19,9 @@ namespace Application.Core.Game
 
         public int ActualChannel => 0;
 
-        public IPlayer? Character => null;
+        public Player? Character => null;
 
-        public IPlayer OnlinedCharacter => throw new BusinessCharacterOfflineException();
+        public Player OnlinedCharacter => throw new BusinessCharacterOfflineException();
 
         public bool IsServerTransition => throw new BusinessCharacterOfflineException();
 
@@ -240,7 +240,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetPlayer(IPlayer? player)
+        public void SetPlayer(Player? player)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -285,11 +285,6 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.ChangeChannel(int channel)
-        {
-            throw new NotImplementedException();
-        }
-
         bool IChannelClient.CheckBirthday(DateTime date)
         {
             throw new NotImplementedException();
@@ -304,33 +299,12 @@ namespace Application.Core.Game
         {
             throw new NotImplementedException();
         }
-
-        void ISocketClient.CloseSession()
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISocketClient.CloseSocket()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IChannelClient.Disconnect(bool isShutdown, bool fromCashShop)
-        {
-            throw new NotImplementedException();
-        }
-
         void IDisposable.Dispose()
         {
             throw new NotImplementedException();
         }
 
         void IChannelClient.enableCSActions()
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISocketClient.ForceDisconnect()
         {
             throw new NotImplementedException();
         }
@@ -361,11 +335,6 @@ namespace Application.Core.Game
         }
 
         string ISocketClient.GetSessionRemoteHost()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IChannelClient.LeaveCashShop()
         {
             throw new NotImplementedException();
         }
@@ -420,7 +389,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.SetPlayer(IPlayer? player)
+        void IChannelClient.SetPlayer(Player? player)
         {
             throw new NotImplementedException();
         }
@@ -431,6 +400,11 @@ namespace Application.Core.Game
         }
 
         void IChannelClient.unlockClient()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ProcessPacket(InPacket packet)
         {
             throw new NotImplementedException();
         }

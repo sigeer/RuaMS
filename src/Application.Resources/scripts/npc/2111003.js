@@ -36,7 +36,7 @@ function start() {
         cm.warp(926120300, "out00");
         cm.dispose();
     } else {
-        cm.sendDefault();
+        cm.sendDefault(3335);
         cm.dispose();
     }
 }

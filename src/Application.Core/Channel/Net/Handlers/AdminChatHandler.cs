@@ -1,3 +1,5 @@
+using Application.Core.Channel.Commands;
+
 namespace Application.Core.Channel.Net.Handlers;
 
 /**
@@ -21,7 +23,7 @@ public class AdminChatHandler : ChannelHandlerBase
             case 0:
                 {
                     // /alertall, /noticeall, /slideall
-                    c.CurrentServerContainer.SendDropMessage(type, message);
+                    c.CurrentServer.NodeService.SendDropMessage(type, message);
                     // ChatLogger.log(c, "Alert All", message);
                     break;
                 }

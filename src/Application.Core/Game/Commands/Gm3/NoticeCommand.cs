@@ -10,6 +10,6 @@ public class NoticeCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.CurrentServerContainer.SendDropMessage(6, "[Notice] " + player.getLastCommandMessage());
+        c.CurrentServer.NodeService.SendDropMessage(6, "[Notice] " + player.getLastCommandMessage());
     }
 }

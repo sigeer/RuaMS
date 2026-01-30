@@ -19,6 +19,7 @@
 */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 
 namespace net.server.services.task.channel;
 
@@ -49,7 +50,7 @@ public class MobMistService : BaseService
         }
     }
 
-    public void registerMobMistCancelAction(int mapid, Action runAction, long delay)
+    public void registerMobMistCancelAction(int mapid, IWorldChannelCommand runAction, long delay)
     {
         mobMistSchedulers[getChannelSchedulerIndex(mapid)].registerMistCancelAction(runAction, delay);
     }
@@ -60,9 +61,9 @@ public class MobMistService : BaseService
         {
         }
 
-        public void registerMistCancelAction(Action runAction, long delay)
+        public void registerMistCancelAction(IWorldChannelCommand runAction, long delay)
         {
-            registerEntry(runAction, TempRunnable.Parse(runAction), delay);
+            registerEntry(runAction, runAction, delay);
         }
 
     }

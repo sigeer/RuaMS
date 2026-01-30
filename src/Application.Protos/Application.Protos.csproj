@@ -19,6 +19,10 @@
 			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Base\IPEndPoint.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Door.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Jail.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Lives\DBLife.proto" GrpcServices="None" />
 		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
@@ -72,20 +76,20 @@
 		</Protobuf>
 		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
 		</Protobuf>
+		<Protobuf Include="Lives\PlayerNPC.proto" GrpcServices="None" />
+		<Protobuf Include="Lives\PlayerNPCPositioner.proto" GrpcServices="None" />
+		<Protobuf Include="Message\MultiChat.proto" GrpcServices="None" />
 		<Protobuf Include="Message\EarnTitleMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Message\YellowTip.proto" GrpcServices="None" />
 		<Protobuf Include="Message\WhisperMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Events\ReloadEvents.proto" GrpcServices="None" />
 		<Protobuf Include="Config\FlySetting.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\MultiChatMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\NewYearCard.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
 		<Protobuf Include="Events\PlayerOnlineChange.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Server\MonitorData.proto" GrpcServices="None" />
-		<Protobuf Include="Services\Buddy.proto" GrpcServices="Both" />
-		<Protobuf Include="Services\Master2Channel.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\PlayerShop.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\Data.proto">
 		  <GrpcServices>Both</GrpcServices>
@@ -144,7 +148,7 @@
 		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Buddy.proto" GrpcServices="None" />
+		<Protobuf Include="Buddy\Buddy.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Character.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\CoolDown.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Event.proto" GrpcServices="None" />

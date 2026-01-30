@@ -37,7 +37,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
         p.readInt();
-        abm.setTimestamp(5, c.CurrentServerContainer.getCurrentTimestamp(), 4);
+        abm.setTimestamp(5, c.CurrentServer.Node.getCurrentTimestamp(), 4);
         p.readShort();
         int itemId = p.readInt();
 
@@ -62,7 +62,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
 
         if (itemTemplate.UseDelay > 0 && abm.getLastSpam(10) > 0)
         {
-            if (abm.getLastSpam(10) + itemTemplate.UseDelay >= c.CurrentServerContainer.getCurrentTime())
+            if (abm.getLastSpam(10) + itemTemplate.UseDelay >= c.CurrentServer.Node.getCurrentTime())
             {
                 if (!string.IsNullOrEmpty(itemTemplate.DelayMsg))
                 {

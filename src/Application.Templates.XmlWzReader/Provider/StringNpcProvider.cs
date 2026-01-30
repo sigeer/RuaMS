@@ -18,10 +18,17 @@ namespace Application.Templates.XmlWzReader.Provider
                 foreach (var propNode in rootNode.Elements())
                 {
                     var infoPropName = propNode.GetName();
+                    if (infoPropName == null)
+                        continue;
+
                     if (infoPropName == "name")
                         template.Name = propNode.GetStringValue() ?? Defaults.WZ_MissingNo;
                     else if (infoPropName == "d0")
-                        template.DefaultTalk = propNode.GetStringValue() ?? "(...)";
+                        template.DefaultTalk0 = propNode.GetStringValue() ?? "(...)";
+                    else if (infoPropName == "d1")
+                        template.DefaultTalk1 = propNode.GetStringValue() ?? "(...)";
+                    else if (infoPropName == "func")
+                        template.Func = propNode.GetStringValue();
                 }
                 InsertItem(template);
                 return template;

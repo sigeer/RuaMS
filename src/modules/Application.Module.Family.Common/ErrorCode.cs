@@ -19,6 +19,7 @@ namespace Application.Module.Family.Common
     public class ErrorCode
     {
         public const int NotLeader = 1;
+        public const int AlreadyInSameFamily = 2;
         public const int OverMaxGenerations = 76;
     }
 }

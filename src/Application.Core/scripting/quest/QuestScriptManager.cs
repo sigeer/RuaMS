@@ -230,7 +230,7 @@ public class QuestScriptManager : AbstractScriptManager
     {
         c.NPCConversationManager = null;
         _scripts.Remove(c);
-        c.OnlinedCharacter.setNpcCooldown(c.CurrentServerContainer.getCurrentTime());
+        c.OnlinedCharacter.setNpcCooldown(c.CurrentServer.Node.getCurrentTime());
         resetContext(GetQuestScriptPath(qm.getQuest().ToString()), c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }

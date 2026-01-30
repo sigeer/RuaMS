@@ -1,5 +1,7 @@
 
+using Application.Core.Login.Commands;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Internal;
 using Application.Core.Login.Models;
 using Application.Core.Login.Modules;
 using Application.Core.Login.Net;
@@ -10,10 +12,12 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
+using Application.Shared.Message;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
+using Application.Utility.Pipeline;
 using Application.Utility.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +31,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer
+    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActor<MasterCommandContext>
     {
         public bool IsRunning { get; private set; }
         public bool IsShuttingdown => isShuttingdown;
@@ -131,6 +135,11 @@ namespace Application.Core.Login
         public DataStorage DataStorage => _dataStorage.Value;
         readonly Lazy<CDKManager> _cdkManager;
         public CDKManager CDKManager => _cdkManager.Value;
+
+        readonly Lazy<DueyManager> _dueyManager;
+        public DueyManager DueyManager => _dueyManager.Value;
+        readonly Lazy<IPlayerNPCManager> _playerNPCManager;
+        public IPlayerNPCManager PlayerNPCManager => _playerNPCManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -144,8 +153,9 @@ namespace Application.Core.Login
 
         public List<AbstractMasterModule> Modules { get; private set; }
         public ITimerManager TimerManager { get; private set; } = null!;
-
-
+        Lazy<MessageDispatcherNew> _messageDispatcher;
+        public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
+        public MasterCommandLoop CommandLoop { get; }
         public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
         {
@@ -203,6 +213,11 @@ namespace Application.Core.Login
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
             _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
+            _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
+            _playerNPCManager = new(() => ServiceProvider.GetRequiredService<IPlayerNPCManager>());
+
+            _messageDispatcher = new(() => new(this));
+            CommandLoop = new (this);
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -245,7 +260,8 @@ namespace Application.Core.Login
                 if (delaySeconds <= 0)
                     await ShutdownServer();
                 else
-                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token).ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token)
+                        .ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
             }
             finally
             {
@@ -255,7 +271,7 @@ namespace Application.Core.Login
 
         AtomicBoolean isShuttingdown = new AtomicBoolean();
 
-        public async Task ShutdownServer()
+        async Task ShutdownServer()
         {
             if (!IsRunning)
             {
@@ -276,19 +292,37 @@ namespace Application.Core.Login
             _logger.LogInformation(SystemMessage.Server_StopListenComplete, ServerName);
 
             _shutdownTcs = new TaskCompletionSource();
-            Transport.BroadcastShutdown();
+
+            await Transport.BroadcastShutdown();
             if (ChannelServerList.Count == 0)
                 _shutdownTcs.SetResult();
 
             await CompleteMasterShutdown();
         }
         TaskCompletionSource _shutdownTcs = new TaskCompletionSource();
-        public void CompleteChannelShutdown(string serverName)
+        public void OnChannelShutdown(string serverName, bool safe = true)
         {
-            RemoveChannel(serverName);
+            _logger.LogInformation("[{ServerName}] 关闭连接", serverName);
 
-            if (ChannelServerList.Count == 0)
-                _shutdownTcs.SetResult();
+            if (serverName != null)
+            {
+                RemoveChannel(serverName);
+
+                if (ChannelServerList.Count == 0 && isShuttingdown)
+                    _shutdownTcs.SetResult();
+
+                if (!safe)
+                    _logger.LogWarning("[{ServerName}] 没有安全的关闭，可能丢失数据", serverName);
+            }
+        }
+
+        public void RemoveChanelServerNode(ChannelServerNode? node, bool safe = true)
+        {
+            var serverName = node?.ServerName;
+            if (serverName != null)
+            {
+                OnChannelShutdown(serverName, safe);
+            }
         }
 
         async Task CompleteMasterShutdown()
@@ -304,6 +338,7 @@ namespace Application.Core.Login
             await InvitationManager.DisposeAsync();
 
             await TimerManager.Stop();
+            await CommandLoop.DisposeAsync();
 
             _logger.LogInformation(SystemMessage.Server_SaveUserDataStart, ServerName);
             await ServerManager.CommitAllImmediately();
@@ -315,48 +350,48 @@ namespace Application.Core.Login
             _logger.LogInformation(SystemMessage.Server_ShutdownComplete, ServerName);
         }
 
-        public async Task StartServer()
+        public async Task StartServer(CancellationToken cancellationToken)
         {
             try
             {
                 Modules = ServiceProvider.GetServices<AbstractMasterModule>().ToList();
                 _logger.LogInformation("[{ServerName}] 共安装了{PluginCount}个额外模块", ServerName, Modules.Count);
 
-                await ServerManager.Setup();
-
                 OpcodeConstants.generateOpcodeNames();
 
+                await ServerManager.Setup(cancellationToken);
                 foreach (var module in Modules)
                 {
                     await module.InitializeAsync();
                 }
+
+                _logger.LogInformation(SystemMessage.Server_Start, ServerName);
+                await NettyServer.Start();
+                _logger.LogInformation(SystemMessage.Server_StartSuccess, ServerName, "成功", Port);
+
+                CommandLoop.Start(ServerName);
+                StartupTime = DateTimeOffset.UtcNow;
+                ForceUpdateServerTime();
+
+                await RegisterTask();
+
+                IsRunning = true;
+                _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+                    ServerName,
+                    DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+                    DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[{ServerName}] 启动{Status}", ServerName, "失败");
                 return;
             }
-
-            _logger.LogInformation(SystemMessage.Server_Start, ServerName);
-            await NettyServer.Start();
-            _logger.LogInformation(SystemMessage.Server_StartSuccess, ServerName, "成功", Port);
-
-            StartupTime = DateTimeOffset.UtcNow;
-            ForceUpdateServerTime();
-
-            await RegisterTask();
-
-            IsRunning = true;
-            _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-                ServerName,
-                DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
-                DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
 
         public int AddChannel(ChannelServerNode channel)
         {
-            if (ChannelServerList.TryAdd(channel.ServerName, channel))
+            if (IsRunning && ChannelServerList.TryAdd(channel.ServerName, channel))
             {
                 var started = Channels.Count;
                 foreach (var item in channel.ServerConfigs)
@@ -375,7 +410,7 @@ namespace Application.Core.Login
             return -1;
         }
 
-        private bool RemoveChannel(string instanceId)
+        bool RemoveChannel(string instanceId)
         {
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {
@@ -414,9 +449,9 @@ namespace Application.Core.Login
             return result;
         }
 
-        public ChannelServerNode GetChannelServer(int channelId)
+        public ChannelServerNode? GetChannelServer(int channelId)
         {
-            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName)!;
+            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName);
         }
 
         public ChannelConfig? GetChannel(int channelId)
@@ -450,7 +485,7 @@ namespace Application.Core.Login
             queuedGuilds.Remove(guildId);
         }
 
-        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public async Task UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             // 修改值
             if (updatePatch.MobRate.HasValue)
@@ -487,7 +522,7 @@ namespace Application.Core.Login
                 ServerMessage = updatePatch.ServerMessage;
             }
             // 通知频道服务器更新
-            Transport.SendWorldConfig(updatePatch);
+            await Transport.BroadcastMessageN(ChannelRecvCode.OnWorldConfigUpdate, updatePatch);
         }
 
         private async Task RegisterTask()
@@ -499,20 +534,20 @@ namespace Application.Core.Login
             TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
-            TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
             TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            await TimerManager.RegisterAsync(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationManager.Register(TimerManager);
             ServerManager.Register(TimerManager);
 
-            TimerManager.register(() =>
+            TimerManager.register(async () =>
             {
-                NewYearCardManager.NotifyNewYearCard();
+                await NewYearCardManager.NotifyNewYearCard();
             }, TimeSpan.FromHours(1), timeLeft);
             foreach (var module in Modules)
             {
@@ -560,7 +595,6 @@ namespace Application.Core.Login
         {
             return serverCurrentTime;
         }
-
         public DateTimeOffset GetCurrentTimeDateTimeOffset()
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime());
@@ -580,6 +614,11 @@ namespace Application.Core.Login
         public ServerStateDto GetServerStats()
         {
             return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
+        }
+
+        public void Post(ICommand<MasterCommandContext> command)
+        {
+            CommandLoop.Register(command);
         }
     }
 }

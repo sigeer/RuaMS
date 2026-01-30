@@ -1,10 +1,10 @@
-﻿namespace Application.Core.Gameplay
+namespace Application.Core.Gameplay
 {
     public abstract class PlayerProcessor<TMessage>
     {
-        protected readonly IPlayer _player;
+        protected readonly Player _player;
 
-        protected PlayerProcessor(IPlayer player)
+        protected PlayerProcessor(Player player)
         {
             _player = player;
         }

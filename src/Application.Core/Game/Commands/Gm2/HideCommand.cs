@@ -14,6 +14,5 @@ public class HideCommand : CommandBase
         var player = c.OnlinedCharacter;
         var hideSkill = SkillFactory.GetSkillTrust(SuperGM.HIDE);
         hideSkill.getEffect(hideSkill.getMaxLevel()).applyTo(player);
-
     }
 }

@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "Guild/Guild.proto";
+import "Guild/Alliance.proto";
 
 package GuildProto;
 
@@ -12,7 +13,10 @@ message JoinGuildRequest {
 message JoinGuildResponse {
 	int32 code = 1;
 	JoinGuildRequest request = 2;
-	GuildMemberDto member = 3;
+	GuildProto.GuildDto guildDto = 3;
+	repeated int32 allMembers = 4;
+	int32 allianceId = 5;
+	AllianceProto.AllianceDto allianceDto = 6;
 }
 
 message LeaveGuildRequest {
@@ -21,8 +25,12 @@ message LeaveGuildRequest {
 
 message LeaveGuildResponse {
 	int32 code = 1;
-	int32 guildId = 2;
-	LeaveGuildRequest request = 3;
+	LeaveGuildRequest request = 2;
+	string masterName = 3;
+	int32 guildId = 4;
+	repeated int32 allLeftMembers = 5;
+	int32 allianceId = 6;
+	AllianceProto.AllianceDto allianceDto = 7;
 }
 
 message ExpelFromGuildRequest {
@@ -32,20 +40,12 @@ message ExpelFromGuildRequest {
 
 message ExpelFromGuildResponse {
 	int32 code = 1;
-	int32 guildId = 2;
-	ExpelFromGuildRequest request = 3;
-}
-
-
-message UpdateMemberRankRequest {
-	int32 masterId = 1;
-	int32 targetPlayerId = 2;
-	int32 toRank = 3;
-}
-
-message UpdateMemberRankRespons {
-	int32 code = 1;
-	UpdateMemberRankRequest request = 2;
+	ExpelFromGuildRequest request = 2;
+	string targetName = 3;
+	int32 guildId = 4;
+	repeated int32 allLeftMembers = 5;
+	int32 allianceId = 6;
+	AllianceProto.AllianceDto allianceDto = 7;
 }
 
 message UpdateGuildNoticeRequest {
@@ -57,6 +57,7 @@ message UpdateGuildNoticeResponse {
 	int32 code = 1;
 	int32 guildId = 2;
 	UpdateGuildNoticeRequest request = 3;
+	repeated int32 guildMembers = 4;
 }
 
 message UpdateGuildRankTitleRequest {
@@ -68,6 +69,7 @@ message UpdateGuildRankTitleResponse {
 	int32 code = 1;
 	int32 guildId = 2;
 	UpdateGuildRankTitleRequest request = 3;
+	repeated int32 guildMembers = 4;
 }
 
 message UpdateGuildGPRequest {
@@ -79,6 +81,8 @@ message UpdateGuildGPResponse {
 	int32 code = 1;
 	int32 guildId = 2;
 	UpdateGuildGPRequest request = 3;
+	repeated int32 guildMembers = 4;
+	int32 guildGP = 5;
 }
 
 message UpdateGuildCapacityRequest {
@@ -90,6 +94,8 @@ message UpdateGuildCapacityResponse {
 	int32 code = 1;
 	int32 guildId = 2;
 	UpdateGuildCapacityRequest request = 3;
+	repeated int32 guildMembers = 4;
+	int32 guildCapacity = 5;
 }
 
 message GuildDisbandRequest{
@@ -98,8 +104,11 @@ message GuildDisbandRequest{
 
 message GuildDisbandResponse {
 	int32 code = 1;
-	int32 guildId = 2;
-	GuildDisbandRequest request = 3;
+	GuildDisbandRequest request = 2;
+	int32 guildId = 3;
+	int32 allianceId = 4;
+	repeated int32 allMembers = 5;
+	AllianceProto.AllianceDto allianceDto = 6;
 }
 
 message UpdateGuildEmblemRequest {
@@ -114,6 +123,9 @@ message UpdateGuildEmblemResponse {
 	int32 code = 1;
 	int32 guildId = 2;
 	UpdateGuildEmblemRequest request = 3;
+	int32 allianceId = 4;
+	repeated int32 allMembers = 5;
+	AllianceProto.AllianceDto allianceDto = 6;
 }
 
 message UpdateGuildMemberRankRequest {
@@ -126,6 +138,7 @@ message UpdateGuildMemberRankResponse {
 	int32 code = 1;
 	int32 guildId =2;
 	UpdateGuildMemberRankRequest request = 3;
+	repeated int32 guildMembers = 4;
 }
 
 
@@ -135,7 +148,28 @@ message CreateGuildRequest {
 	repeated int32 members = 3;
 }
 
-message GuildChatRequest {
-	string name = 1;
-	string text = 2;
+message CreateGuildResponse {
+	int32 code = 1;
+	CreateGuildRequest request = 2;
+	GuildProto.GuildDto guildDto = 3;
+}
+
+
+message GuildMemberServerChangedResponse {
+	int32 guildId = 1;
+	int32 memberId = 2;
+	int32 memberChanel = 3;
+	int32 allianceId = 4;
+	repeated int32 allMembers = 5;
+}
+
+message GuildMemberUpdateResponse {
+	int32 guildId = 1;
+	int32 memberId = 2;
+	string memberName = 3;
+	int32 memberJob = 4;
+	int32 memberLevel = 5;
+	int32 allianceId = 6;
+	repeated int32 allMembers = 7;
+	int32 type = 8;
 }

@@ -33,13 +33,13 @@ namespace Application.Core.Game.Maps.AnimatedObjects;
  */
 public class Summon : AbstractAnimatedMapObject
 {
-    private IPlayer owner;
+    private Player owner;
     private sbyte skillLevel;
     private int skill;
     private int hp;
     private SummonMovementType movementType;
 
-    public Summon(IPlayer owner, int skill, Point pos, SummonMovementType movementType)
+    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType)
     {
         this.owner = owner;
         this.skill = skill;
@@ -60,7 +60,7 @@ public class Summon : AbstractAnimatedMapObject
         client.sendPacket(PacketCreator.removeSummon(this, true));
     }
 
-    public IPlayer getOwner()
+    public Player getOwner()
     {
         return owner;
     }

@@ -12,7 +12,7 @@ public class UptimeCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        var dur = TimeSpan.FromMilliseconds(c.CurrentServerContainer.getCurrentTimestamp());
+        var dur = TimeSpan.FromMilliseconds(c.CurrentServer.Node.getCurrentTimestamp());
 
         c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.UptimeCommand_Message1), dur.Humanize(culture: c.CurrentCulture.CultureInfo));
     }

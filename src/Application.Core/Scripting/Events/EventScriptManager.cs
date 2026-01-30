@@ -83,6 +83,16 @@ public class EventScriptManager : AbstractScriptManager
         return events.GetValueOrDefault(evt);
     }
 
+    public int GetEventMaps()
+    {
+        return events.Values.OfType<AbstractInstancedEventManager>().Sum(x => x.getInstances().Sum(x => x.getMapFactory().getMaps().Count));
+    }
+
+    public int GetEventInstanceCount()
+    {
+        return events.Values.OfType<AbstractInstancedEventManager>().Sum(x => x.getInstances().Count);
+    }
+
     public bool isActive()
     {
         return active;

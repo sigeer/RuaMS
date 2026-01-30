@@ -1,0 +1,35 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    environment:
+      ASPIRE_DASHBOARD_FORWARDEDHEADERS_ENABLED: "true"
+    ports:
+      - "7979:18888"
+    expose:
+      - "18889"
+    networks:
+      - "aspire"
+    restart: "always"
+  ruams-master:
+    image: "ghcr.io/sigeer/ruams-master:latest"
+    command:
+      - "/p:IsStandalone=false"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "ruams-master"
+    expose:
+      - "7878:7878"
+      - "8484:8484"
+      - "7575-7600:7575-7600"
+    volumes:
+      - target: "/app/logs"
+        source: "./logs"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"

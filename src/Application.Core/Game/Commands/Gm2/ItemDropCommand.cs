@@ -51,7 +51,7 @@ public class ItemDropCommand : CommandBase
                 // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddDays(days).ToUnixTimeMilliseconds();
+                long expiration = c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(days).ToUnixTimeMilliseconds();
 
                 var toDropTemp = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
                 toDropTemp.setExpiration(expiration);

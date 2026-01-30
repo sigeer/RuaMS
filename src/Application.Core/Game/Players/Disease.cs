@@ -1,115 +1,52 @@
+using Application.Core.Channel.Commands;
+using Application.Core.Game.Players.PlayerProps;
 using client;
 using server.life;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
         private ScheduledFuture? _diseaseExpireTask = null;
-        private Dictionary<Disease, KeyValuePair<DiseaseValueHolder, MobSkill>> diseases = new();
-        private Dictionary<Disease, long> diseaseExpires = new();
 
+        public Dictionary<Disease, PlayerDisease> Diseases { get; } = new();
         public bool hasDisease(Disease dis)
         {
-            chLock.EnterReadLock();
-            try
-            {
-                return diseases.ContainsKey(dis);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+            return Diseases.ContainsKey(dis);
         }
 
-        public int getDiseasesSize()
+        public int getDiseasesSize() => Diseases.Count;
+
+        public void silentApplyDiseases(IEnumerable<Dto.DiseaseDto> diseaseMap)
         {
-            chLock.EnterReadLock();
-            try
+            foreach (var item in diseaseMap)
             {
-                return diseases.Count;
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
-        }
-
-        public Dictionary<Disease, DiseaseExpiration> getAllDiseases()
-        {
-            chLock.EnterReadLock();
-            try
-            {
-                long curtime = Client.CurrentServerContainer.getCurrentTime();
-                Dictionary<Disease, DiseaseExpiration> ret = new();
-
-                foreach (var de in diseaseExpires)
-                {
-                    KeyValuePair<DiseaseValueHolder, MobSkill> dee = diseases.GetValueOrDefault(de.Key);
-                    DiseaseValueHolder mdvh = dee.Key;
-
-                    ret.AddOrUpdate(de.Key, new(mdvh.length - (curtime - mdvh.startTime), dee.Value));
-                }
-
-                return ret;
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
-        }
-
-        public void silentApplyDiseases(Dictionary<Disease, DiseaseExpiration> diseaseMap)
-        {
-            chLock.EnterReadLock();
-            try
-            {
-                long curTime = Client.CurrentServerContainer.getCurrentTime();
-
-                foreach (var di in diseaseMap)
-                {
-                    long expTime = curTime + di.Value.LeftTime;
-
-                    diseaseExpires.AddOrUpdate(di.Key, expTime);
-                    diseases.AddOrUpdate(di.Key, new(new DiseaseValueHolder(curTime, di.Value.LeftTime), di.Value.MobSkill));
-                }
-            }
-            finally
-            {
-                chLock.ExitReadLock();
+                var disease = Disease.ordinal(item.DiseaseOrdinal);
+                Diseases[disease] = new PlayerDisease(disease, item.StartTime, item.Length, MobSkillFactory.getMobSkillOrThrow((MobSkillType)item.MobSkillId, item.MobSkillLevel));
             }
         }
 
         public void announceDiseases()
         {
-            HashSet<KeyValuePair<Disease, KeyValuePair<DiseaseValueHolder, MobSkill>>> chrDiseases;
-
-            chLock.EnterReadLock();
-            try
+            // Poison damage visibility and diseases status visibility, extended through map transitions thanks to Ronan
+            if (!this.isLoggedinWorld())
             {
-                // Poison damage visibility and diseases status visibility, extended through map transitions thanks to Ronan
-                if (!this.isLoggedinWorld())
-                {
-                    return;
-                }
+                return;
+            }
 
-                chrDiseases = new(diseases);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+            var chrDiseases = Diseases.Values.ToList();
 
             foreach (var di in chrDiseases)
             {
-                Disease disease = di.Key;
-                MobSkill skill = di.Value.Value;
+                Disease disease = di.Disease;
+                MobSkill skill = di.FromMobSkill;
                 List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
 
-                if (disease != Disease.SLOW)
+                if (di.Disease != Disease.SLOW)
                 {
-                    MapModel.broadcastMessage(PacketCreator.giveForeignDebuff(Id, debuff, skill));
+                    MapModel.broadcastMessage(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
                 }
                 else
                 {
@@ -120,14 +57,16 @@ namespace Application.Core.Game.Players
 
         public void collectDiseases()
         {
-            foreach (IPlayer chr in MapModel.getAllPlayers())
+            var chrDiseases = Diseases.Values.ToList();
+
+            foreach (Player chr in MapModel.getAllPlayers())
             {
                 int cid = chr.getId();
 
-                foreach (var di in chr.getAllDiseases())
+                foreach (var di in chrDiseases)
                 {
-                    Disease disease = di.Key;
-                    MobSkill skill = di.Value.MobSkill;
+                    Disease disease = di.Disease;
+                    MobSkill skill = di.FromMobSkill;
                     List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
 
                     if (disease != Disease.SLOW)
@@ -154,17 +93,9 @@ namespace Application.Core.Game.Players
                     }
                 }
 
-                chLock.EnterReadLock();
-                try
-                {
-                    long curTime = Client.CurrentServerContainer.getCurrentTime();
-                    diseaseExpires.AddOrUpdate(disease, curTime + skill.getDuration());
-                    diseases.AddOrUpdate(disease, new(new DiseaseValueHolder(curTime, skill.getDuration()), skill));
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                }
+
+                long curTime = Client.CurrentServer.Node.getCurrentTime();
+                Diseases[disease] = new PlayerDisease(disease, curTime, skill.getDuration(), skill);
 
                 if (disease == Disease.SEDUCE && chair.get() < 0)
                 {
@@ -201,16 +132,7 @@ namespace Application.Core.Game.Players
                     MapModel.broadcastMessage(this, PacketCreator.cancelForeignSlowDebuff(Id), false);
                 }
 
-                chLock.EnterReadLock();
-                try
-                {
-                    diseases.Remove(debuff);
-                    diseaseExpires.Remove(debuff);
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                }
+                Diseases.Remove(debuff);
             }
         }
 
@@ -234,16 +156,7 @@ namespace Application.Core.Game.Players
 
         public void cancelAllDebuffs()
         {
-            chLock.EnterReadLock();
-            try
-            {
-                diseases.Clear();
-                diseaseExpires.Clear();
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+            Diseases.Clear();
         }
 
         public void cancelDiseaseExpireTask()
@@ -255,37 +168,24 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public void ClearExpiredDisease()
+        {
+            long curTime = Client.CurrentServer.Node.getCurrentTime();
+            var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= curTime).Select(x => x.Disease).ToList();
+
+            foreach (var item in expired)
+            {
+                dispelDebuff(item);
+            }
+        }
+
         public void diseaseExpireTask()
         {
             if (_diseaseExpireTask == null)
             {
-                _diseaseExpireTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
+                _diseaseExpireTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
                 {
-                    HashSet<Disease> toExpire = new();
-
-                    chLock.EnterReadLock();
-                    try
-                    {
-                        long curTime = Client.CurrentServerContainer.getCurrentTime();
-
-                        foreach (var de in diseaseExpires)
-                        {
-                            if (de.Value < curTime)
-                            {
-                                toExpire.Add(de.Key);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        chLock.ExitReadLock();
-                    }
-
-                    foreach (Disease d in toExpire)
-                    {
-                        dispelDebuff(d);
-                    }
-
+                    Client.CurrentServer.Post(new PlayerDiseaseExpiredCommand(this));
                 }), 1500);
             }
         }

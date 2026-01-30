@@ -54,7 +54,7 @@ public class AdminCommandHandler : ChannelHandlerBase
         }
         byte mode = p.readByte();
         string victim;
-        IPlayer? target;
+        Player? target;
         switch (mode)
         {
             case 0x00: // Level1~Level8 & Package1~Package2

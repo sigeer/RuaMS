@@ -18,8 +18,8 @@ namespace Application.Core.Game
     [Obsolete]
     public class MockupClient : IClient
     {
-        IPlayer? mockPlayer;
-        public IPlayer? Character => mockPlayer;
+        Player? mockPlayer;
+        public Player? Character => mockPlayer;
 
         public string ClientInfo => "MockupClient";
         int _world;
@@ -297,7 +297,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public IPlayer? getPlayer()
+        public Player? getPlayer()
         {
             throw new NotImplementedException();
         }
@@ -384,7 +384,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public List<IPlayer> loadCharacters(int serverId)
+        public List<Player> loadCharacters(int serverId)
         {
             throw new NotImplementedException();
         }
@@ -499,7 +499,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public void setPlayer(IPlayer? player)
+        public void setPlayer(Player? player)
         {
             mockPlayer = player;
         }

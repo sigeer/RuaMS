@@ -43,7 +43,7 @@ public abstract class AbstractQuestRequirement
      * @param npcid The NPC ID it was called from.
      * @return bool    If the check was passed or not.
      */
-    public abstract bool check(IPlayer chr, int? npcid);
+    public abstract bool check(Player chr, int? npcid);
 
     public QuestRequirementType getType()
     {

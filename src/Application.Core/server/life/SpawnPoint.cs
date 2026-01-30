@@ -71,7 +71,7 @@ public class SpawnPoint
         this.f = f;
         this.hide = hide;
         this.mobInterval = mobInterval;
-        this.nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
+        this.nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
         this.act = act;
     }
 
@@ -97,7 +97,7 @@ public class SpawnPoint
         {
             return false;
         }
-        return nextPossibleSpawn <= _map.ChannelServer.Container.getCurrentTime();
+        return nextPossibleSpawn <= _map.ChannelServer.Node.getCurrentTime();
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public class SpawnPoint
         {
             mob.OnKilled += (sender, args) =>
             {
-                nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
+                nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
                 if (mobTime > 0)
                 {
                     nextPossibleSpawn += mobTime * 1000;
@@ -155,7 +155,7 @@ public class SpawnPoint
         {
             mob.OnLifeCleared += (self, revivedMob) =>
             {
-                nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime();
+                nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
                 if (mobTime > 0)
                 {
                     nextPossibleSpawn += mobTime * 1000;
@@ -170,7 +170,7 @@ public class SpawnPoint
 
         if (mobTime == 0)
         {
-            nextPossibleSpawn = _map.ChannelServer.Container.getCurrentTime() + mobInterval;
+            nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime() + mobInterval;
         }
         return mob;
     }

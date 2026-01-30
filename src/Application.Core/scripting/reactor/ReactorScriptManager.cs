@@ -35,12 +35,11 @@ namespace scripting.reactor;
  */
 public class ReactorScriptManager : AbstractScriptManager
 {
-    private Dictionary<int, List<DropEntry>> drops = new();
 
     public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
-        LoadAllReactorDrops();
+
     }
 
     public void onHit(IChannelClient c, Reactor reactor)
@@ -81,17 +80,12 @@ public class ReactorScriptManager : AbstractScriptManager
 
     public List<DropEntry> getDrops(int reactorId)
     {
-        return drops.GetValueOrDefault(reactorId) ?? [];
-    }
-
-    public void LoadAllReactorDrops()
-    {
-        drops = _channelServer.Service.RequestAllReactorDrops();
+        return _channelServer.NodeService.DataService.GetReactorDrops(reactorId);
     }
 
     public void clearDrops()
     {
-        drops.Clear();
+        _channelServer.NodeService.DataService.ClearReactorDrops();
     }
 
     public void touch(IChannelClient c, Reactor reactor)

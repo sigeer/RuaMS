@@ -33,7 +33,7 @@ public class DoorHandler : ChannelHandlerBase
 {
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int ownerid = p.readInt();
+        int doorOId = p.readInt();
         p.readByte(); // specifies if backwarp or not, 1 town to target, 0 target to town
 
         var chr = c.OnlinedCharacter;
@@ -43,16 +43,10 @@ public class DoorHandler : ChannelHandlerBase
             return;
         }
 
-        foreach (var obj in chr.getMap().getMapObjects())
+        if (chr.getMap().getMapObject(doorOId) is DoorObject door)
         {
-            if (obj is DoorObject door)
-            {
-                if (door.Owner.Id == ownerid)
-                {
-                    door.warp(chr);
-                    return;
-                }
-            }
+            door.warp(chr);
+            return;
         }
 
         c.sendPacket(PacketCreator.BlockMapMessage(6));

@@ -21,9 +21,12 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using client.autoban;
+using Google.Protobuf;
 using Microsoft.Extensions.Logging;
+using static Application.Core.Channel.Internal.Handlers.NoteHandlers;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -45,7 +48,7 @@ public class MultiChatHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
-        if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
+        if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.Node.getCurrentTime())
         {
             return;
         }
@@ -65,29 +68,17 @@ public class MultiChatHandler : ChannelHandlerBase
             c.Disconnect(true, false);
             return;
         }
-        if (type == 0)
-        {
-            _buddyManager.BuddyChat(player, recipients, chattext);
-            // ChatLogger.log(c, "Buddy", chattext);
-        }
-        else if (type == 1 && player.getParty() != null)
-        {
-            c.CurrentServer.Service.SendTeamChat(player.Name, chattext);
-            // ChatLogger.log(c, "Party", chattext);
-        }
-        else if (type == 2 && player.GuildModel != null)
-        {
-            _guildManager.SendGuildChat(c.OnlinedCharacter, chattext);
-            // ChatLogger.log(c, "Guild", chattext);
-        }
-        else if (type == 3 && player.getGuild() != null)
-        {
-            if (player.AllianceModel != null)
-            {
-                _guildManager.SendAllianceChat(c.OnlinedCharacter, chattext);
-                // ChatLogger.log(c, "Ally", chattext);
-            }
-        }
+
+        if (type == 1 && player.Party <= 0)
+            return;
+
+        if (type == 2 && player.GetGuild() == null)
+            return;
+
+        if (type == 3 && player.GetAlliance() == null)
+            return;
+
         player.getAutobanManager().spam(7);
+        _ = c.CurrentServer.Node.Transport.SendMultiChatAsync(type, player.Name, chattext, recipients);
     }
 }

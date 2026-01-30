@@ -8,7 +8,7 @@ namespace Application.Core.Game.Maps.Mists
     {
         private Monster mob;
         private MobSkill skill;
-        public MobMist(Rectangle mistPosition, Monster mob, MobSkill skill) : base(mistPosition, 0)
+        public MobMist(Rectangle mistPosition, Monster mob, MobSkill skill) : base(mob.getMap(), mistPosition, 0)
         {
             this.mob = mob;
             this.skill = skill;

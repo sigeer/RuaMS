@@ -31,7 +31,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendSimple("#L0#进入战斗 #b帕比国王#k 和 #b雪人兄弟#k。#l\r\n#L1#进入战斗 #b总理#k。#l");
+            cm.sendSimple("#L0#进入战斗 #b企鹅王#k 和 #b雪人#k。#l\r\n#L1#进入战斗 #b蘑菇大臣#k。#l");
         } else if (status == 1) {
             if (selection == 0) {
                 var pepe = cm.getEventManager("KingPepeAndYetis");
@@ -44,7 +44,7 @@ function action(mode, type, selection) {
 
                 var party = cm.getPlayer().getParty();
                 if (party != null) {
-                    if (!em.StartPQInstance(party, cm.getMap(), 1)) {
+                    if (!em.StartPQInstance(cm.getPlayer())) {
                         cm.sendOk("另一个队伍已经在这个频道挑战boss了。");
                     }
                 } else {
@@ -65,7 +65,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendSimple("#L1#进入挑战 #b帕普王#k 和 #b雪人兄弟#k。#l");
+            cm.sendSimple("#L1#进入挑战 #b企鹅王#k 和 #b雪人#k。#l");
         } else if (status == 1) {
             if (selection == 1) {
                 var pepe = cm.getEventManager("KingPepeAndYetis");

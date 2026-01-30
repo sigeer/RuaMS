@@ -35,7 +35,7 @@ public class MinTamenessRequirement : AbstractQuestRequirement
         minTameness = data;
     }
 
-    public override bool check(IPlayer chr, int? npcid)
+    public override bool check(Player chr, int? npcid)
     {
         int curTameness = 0;
 

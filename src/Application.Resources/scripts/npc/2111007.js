@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("“嗯...不要怀疑，因为我是一个街头经纪人。和我打交道就是信任...我保持我的信用。”");
+    cm.sendDefault();
     cm.dispose();
 }

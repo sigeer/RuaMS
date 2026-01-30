@@ -12,13 +12,12 @@ public class BossDropRateCommand : CommandBase
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !bossdroprate <newrate>");
-            return;
         }
 
         if (int.TryParse(paramsValue[0], out var d))
         {
             int bossdroprate = Math.Max(d, 1);
-            c.CurrentServerContainer.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
+            _ = c.CurrentServer.Node.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
         }
 
     }

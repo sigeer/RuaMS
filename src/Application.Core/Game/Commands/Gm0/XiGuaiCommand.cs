@@ -33,7 +33,6 @@ namespace Application.Core.Game.Commands.Gm0
 
                 client.OnlinedCharacter.message("已停止吸怪");
             }
-
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Game.Commands;
 
@@ -103,7 +104,7 @@ public class CommandExecutor
         }
 
         command.CurrentCommand = commandName;
-        command.Run(client, paramsValue);
+        command.RunAsync(client, paramsValue);
         log.LogInformation("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }

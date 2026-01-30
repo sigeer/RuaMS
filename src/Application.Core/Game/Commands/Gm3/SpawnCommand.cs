@@ -63,7 +63,7 @@ public class SpawnCommand : CommandBase
         SpawnById(player, mobId, paramsValue);
     }
 
-    private void SpawnById(IPlayer player, int mobId, string[] paramsValue)
+    private void SpawnById(Player player, int mobId, string[] paramsValue)
     {
         int monsterCount = paramsValue.Length != 2 ? 1 : (int.TryParse(paramsValue[1], out var d) ? d : 1);
         if (monsterCount < 1)

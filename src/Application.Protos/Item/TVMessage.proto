@@ -7,7 +7,7 @@ package ItemProto;
 
 message CreateTVMessageRequest {
 	int32 masterId = 1;
-	google.protobuf.StringValue toName = 2;
+	google.protobuf.StringValue partnerName = 2;
 	int32 type = 3;
 	repeated string messageList = 4;
 	bool showEar = 5;
@@ -18,9 +18,7 @@ message CreateTVMessageResponse {
 }
 
 message CreateTVMessageBroadcast {
-    Dto.PlayerViewDto master = 1;
-    Dto.PlayerViewDto masterPartner = 2;
-    int32 type = 3;
-    repeated string messageList = 4;
-	bool showEar = 5;
+	CreateTVMessageRequest request = 1;
+    Dto.PlayerViewDto master = 2;
+    Dto.PlayerViewDto masterPartner = 3;
 }

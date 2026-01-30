@@ -34,7 +34,7 @@ public class AranComboHandler : ChannelHandlerBase
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));
         if (player.JobModel.IsAran() && (skillLevel > 0 || player.JobModel.Id == JobId.LEGEND))
         {
-            long currentTime = c.CurrentServerContainer.getCurrentTime();
+            long currentTime = c.CurrentServer.Node.getCurrentTime();
             short combo = player.getCombo();
             if ((currentTime - player.getLastCombo()) > 3000 && combo > 0)
             {

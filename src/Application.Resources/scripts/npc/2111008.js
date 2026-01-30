@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("搞清楚你的立场！你是泽纳米斯特还是阿尔卡德诺？");
+    cm.sendDefault();
     cm.dispose();
 }

@@ -46,8 +46,8 @@ public class EndDateRequirement : AbstractQuestRequirement
 
         timeStr = new DateTimeOffset(dateTime, TimeSpan.Zero);
     }
-    public override bool check(IPlayer chr, int? npcid)
+    public override bool check(Player chr, int? npcid)
     {
-        return timeStr >= chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
+        return timeStr >= chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
     }
 }

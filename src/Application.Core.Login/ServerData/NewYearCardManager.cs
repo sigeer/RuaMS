@@ -3,13 +3,16 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants;
+using Application.Shared.Message;
 using Application.Shared.NewYear;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using Dto;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -38,24 +41,24 @@ namespace Application.Core.Login.ServerData
             var entityExpression = _mapper.MapExpression<Expression<Func<NewYearCardEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dataFromDB = (from a in dbContext.Newyears.Where(entityExpression)
-                          join b in dbContext.Characters on a.SenderId equals b.Id into bss
-                          from bs in bss.DefaultIfEmpty()
-                          join c in dbContext.Characters on a.ReceiverId equals c.Id into css
-                          from cs in css
-                          select new NewYearCardModel
-                          {
-                              Id = a.Id,
-                              SenderId = a.SenderId,
-                              ReceiverId = a.ReceiverId,
-                              SenderName = bs == null ? StringConstants.CharacterUnknown : bs.Name,
-                              ReceiverName = cs == null ? StringConstants.CharacterUnknown : cs.Name,
-                              SenderDiscard = a.SenderDiscard,
-                              Message = a.Message,
-                              Received = a.Received,
-                              ReceiverDiscard = a.ReceiverDiscard,
-                              TimeReceived = a.TimeReceived,
-                              TimeSent = a.TimeSent
-                          }).ToList();
+                              join b in dbContext.Characters on a.SenderId equals b.Id into bss
+                              from bs in bss.DefaultIfEmpty()
+                              join c in dbContext.Characters on a.ReceiverId equals c.Id into css
+                              from cs in css
+                              select new NewYearCardModel
+                              {
+                                  Id = a.Id,
+                                  SenderId = a.SenderId,
+                                  ReceiverId = a.ReceiverId,
+                                  SenderName = bs == null ? StringConstants.CharacterUnknown : bs.Name,
+                                  ReceiverName = cs == null ? StringConstants.CharacterUnknown : cs.Name,
+                                  SenderDiscard = a.SenderDiscard,
+                                  Message = a.Message,
+                                  Received = a.Received,
+                                  ReceiverDiscard = a.ReceiverDiscard,
+                                  TimeReceived = a.TimeReceived,
+                                  TimeSent = a.TimeSent
+                              }).ToList();
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
@@ -72,20 +75,20 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public void SendNewYearCard(Dto.SendNewYearCardRequest request)
+        public async Task SendNewYearCard(Dto.SendNewYearCardRequest request)
         {
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
 
             var toPlayer = _server.CharacterManager.FindPlayerByName(request.ToName);
             if (toPlayer == null)
             {
-                _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0x13, Request = request });
+                await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0x13, Request = request });
                 return;
             }
 
             if (toPlayer.Character.Id == request.FromId)
             {
-                _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0xF, Request = request });
+                await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0xF, Request = request });
                 return;
             }
 
@@ -102,7 +105,7 @@ namespace Application.Core.Login.ServerData
 
             SetDirty(newCard.Id, new Utility.StoreUnit<NewYearCardModel>(Utility.StoreFlag.AddOrUpdate, newCard));
 
-            _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse
+            await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse
             {
                 Code = 0,
                 Request = request,
@@ -110,24 +113,28 @@ namespace Application.Core.Login.ServerData
             });
         }
 
-        public void ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
+        public async Task ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
         {
+            var res = new Dto.ReceiveNewYearCardResponse { Request = request };
             var card = GetDataById(request.CardId);
             if (card == null || card.SenderDiscard)
             {
-                _server.Transport.SendNewYearCardReceived(new Dto.ReceiveNewYearCardResponse { Request = request, Code = (int)NewYearCardResponseCode.Receive_AlreadyDiscard });
+                res.Code = (int)NewYearCardResponseCode.Receive_AlreadyDiscard;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnNewYearCardReceived, res, [res.Request.MasterId]);
                 return;
             }
 
-            if (card.ReceiverId == request.MasterId)
+            if (card.ReceiverId != request.MasterId)
             {
-                _server.Transport.SendNewYearCardReceived(new Dto.ReceiveNewYearCardResponse { Request = request, Code = (int)NewYearCardResponseCode.Receive_AlreadyDiscard });
+                res.Code = (int)NewYearCardResponseCode.Receive_AlreadyDiscard;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnNewYearCardReceived, res, [res.Request.MasterId]);
                 return;
             }
 
             if (card.Received)
             {
-                _server.Transport.SendNewYearCardReceived(new Dto.ReceiveNewYearCardResponse { Request = request, Code = (int)NewYearCardResponseCode.Receive_AlreadReceived });
+                res.Code = (int)NewYearCardResponseCode.Receive_AlreadReceived;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnNewYearCardReceived, res, [res.Request.MasterId]);
                 return;
             }
 
@@ -135,18 +142,13 @@ namespace Application.Core.Login.ServerData
             card.TimeReceived = _server.getCurrentTime();
 
             SetDirty(card.Id, new Utility.StoreUnit<NewYearCardModel>(Utility.StoreFlag.AddOrUpdate, card));
+            res.Model = _mapper.Map<Dto.NewYearCardDto>(card);
+            res.Code = (int)NewYearCardResponseCode.Success;
 
-            _server.Transport.SendNewYearCardReceived(
-                new Dto.ReceiveNewYearCardResponse
-                {
-                    Request = request,
-                    Code = (int)NewYearCardResponseCode.Success,
-                    Model = _mapper.Map<Dto.NewYearCardDto>(card)
-                });
-            return;
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnNewYearCardReceived, res, [res.Request.MasterId, res.Model.SenderId]);
         }
 
-        internal void NotifyNewYearCard()
+        internal async Task NotifyNewYearCard()
         {
             var allData = Query(
                 x => !x.Received && !x.SenderDiscard && !x.ReceiverDiscard);
@@ -162,10 +164,10 @@ namespace Application.Core.Login.ServerData
                 response.List.Add(item);
             }
 
-            _server.Transport.SendNewYearCardNotify(response);
+           await  _server.Transport.SendNewYearCardNotify(response);
         }
 
-        public void DiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
+        public async Task DiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
         {
             var response = new Dto.DiscardNewYearCardResponse { Code = 0 };
 
@@ -196,7 +198,7 @@ namespace Application.Core.Login.ServerData
                     SetRemoved(item.Id);
                 }
                 response.UpdateList.AddRange(_mapper.Map<Dto.NewYearCardDto[]>(toRemove));
-                _server.Transport.SendNewYearCardDiscard(response);
+                await _server.Transport.SendNewYearCardDiscard(response);
             }
 
         }

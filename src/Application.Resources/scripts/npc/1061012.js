@@ -24,7 +24,7 @@ function start() {
             } else {
                 var eli = em.getEligibleParty(cm.getParty());
                 if (eli.size() > 0) {
-                    if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
+                    if (!em.StartPQInstance(cm.getPlayer(), eli)) {
                         cm.sendOk("以你的名义注册的派对已经在此实例中注册。");
                     }
                 } else {

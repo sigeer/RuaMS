@@ -47,63 +47,71 @@ namespace Application.Core.Login.Modules
             _logger.LogInformation("模块 {Name}：卸载", _moduleName);
             return Task.CompletedTask;
         }
-        /// <summary>
-        /// 首次数据库加载玩家
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="chrModel"></param>
-        public virtual void OnPlayerLoad(DBContext dbContext, CharacterModel chrModel)
-        {
 
+        public virtual async Task OnPlayerServerChanged(CharacterLiveObject obj, int lastChannel)
+        {
+            if (lastChannel == 0 && obj.Channel > 0)
+            {
+                await OnPlayerLogin(obj);
+            }
+            if (lastChannel != 0 && obj.Channel == 0)
+            {
+                await OnPlayerLogoff(obj);
+            }
+            if (obj.Channel == -1)
+            {
+                await OnPlayerEnterCashShop(obj);
+            }
         }
+
         /// <summary>
-        /// 进入频道服务器
+        /// 登录
         /// </summary>
         /// <param name="obj"></param>
-        /// <param name="isNewComer"></param>
-        public virtual void OnPlayerLogin(CharacterLiveObject obj, bool isNewComer)
+        public virtual Task OnPlayerLogin(CharacterLiveObject obj)
         {
-
+            return Task.CompletedTask;
         }
+
         /// <summary>
         /// 离开游戏
         /// </summary>
         /// <param name="obj"></param>
-        public virtual void OnPlayerLogoff(CharacterLiveObject obj)
+        public virtual Task OnPlayerLogoff(CharacterLiveObject obj)
         {
-
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 切换地图
         /// </summary>
         /// <param name="character"></param>
-        public virtual void OnPlayerMapChanged(CharacterLiveObject character)
+        public virtual Task OnPlayerMapChanged(CharacterLiveObject character)
         {
-
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 玩家职业变化
         /// </summary>
         /// <param name="character"></param>
-        public virtual void OnPlayerJobChanged(CharacterLiveObject character)
+        public virtual Task OnPlayerJobChanged(CharacterLiveObject character)
         {
-
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 玩家等级变化
         /// </summary>
         /// <param name="character"></param>
-        public virtual void OnPlayerLevelChanged(CharacterLiveObject character)
+        public virtual Task OnPlayerLevelChanged(CharacterLiveObject character)
         {
-
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 进入商城
         /// </summary>
         /// <param name="character"></param>
-        public virtual void OnPlayerEnterCashShop(CharacterLiveObject character)
+        public virtual Task OnPlayerEnterCashShop(CharacterLiveObject character)
         {
-
+            return Task.CompletedTask;
         }
 
         public virtual int DeleteCharacterCheck(int id)

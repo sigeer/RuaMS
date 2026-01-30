@@ -32,11 +32,6 @@ namespace Application.Core.Login.Servers
             _rankService = rankService;
         }
 
-        public override Task<Empty> AnswerInvitation(AnswerInviteRequest request, ServerCallContext context)
-        {
-            _invitationService.AnswerInvitation(request);
-            return Task.FromResult(new Empty());
-        }
 
         public override Task<CanHiredMerchantResponse> CanHiredMerchant(CanHiredMerchantRequest request, ServerCallContext context)
         {
@@ -63,29 +58,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(_server.PlayerShopManager.CommitRetrieve(request));
         }
 
-        public override Task<Empty> CreateChatRoom(CreateChatRoomRequest request, ServerCallContext context)
-        {
-            _server.ChatRoomManager.CreateChatRoom(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> CreateLife(CreatePLifeRequest request, ServerCallContext context)
-        {
-            _server.ResourceDataManager.CreatePLife(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> DiscardNewyearCard(DiscardNewYearCardRequest request, ServerCallContext context)
-        {
-            _server.NewYearCardManager.DiscardNewYearCard(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<QueryChannelExpedtionResponse> GetExpeditionInfo(Empty request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.Transport.QueryExpeditionInfo(new ExpeditionProto.QueryChannelExpedtionRequest()));
-        }
-
         public override Task<GetPLifeByMapIdResponse> GetLifeByMapId(GetPLifeByMapIdRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.ResourceDataManager.LoadMapPLife(request));
@@ -99,18 +71,6 @@ namespace Application.Core.Login.Servers
         public override Task<GetShopResponse> GetShop(GetShopRequest request, ServerCallContext context)
         {
             return Task.FromResult(new GetShopResponse { Data = _shopService.LoadFromDB(request.Id, request.IsShopId) });
-        }
-
-        public override Task<Empty> JoinChatRoom(JoinChatRoomRequest request, ServerCallContext context)
-        {
-            _server.ChatRoomManager.JoinChatRoom(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> LeaveChatRoom(LeaveChatRoomRequst request, ServerCallContext context)
-        {
-            _server.ChatRoomManager.LeaveChatRoom(request);
-            return Task.FromResult(new Empty());
         }
 
         public override Task<LoadCharacterRankResponse> LoadCharacterRank(LoadCharacterRankRequest request, ServerCallContext context)
@@ -155,74 +115,11 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(req);
         }
 
-        public override Task<Empty> RecevieNewyearCard(ReceiveNewYearCardRequest request, ServerCallContext context)
-        {
-            _server.NewYearCardManager.ReceiveNewYearCard(request);
-            return Task.FromResult(new Empty());
-        }
 
         public override Task<Empty> RegisterExpedition(ExpeditionRegistry request, ServerCallContext context)
         {
             _expeditionService.RegisterExpedition(request);
             return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> ReloadEvents(ReloadEventsRequest request, ServerCallContext context)
-        {
-            _server.Transport.BroadcastMessage(BroadcastType.OnEventsReloaded, new ReloadEventsResponse { Code = 0, Request = request });
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> RemoveLife(RemovePLifeRequest request, ServerCallContext context)
-        {
-            _server.ResourceDataManager.RemovePLife(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SendChatRoomMessage(SendChatRoomMessageRequest request, ServerCallContext context)
-        {
-            _server.ChatRoomManager.SendMessage(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SendInvitation(CreateInviteRequest request, ServerCallContext context)
-        {
-            _invitationService.AddInvitation(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SendNewyearCard(SendNewYearCardRequest request, ServerCallContext context)
-        {
-            _server.NewYearCardManager.SendNewYearCard(request);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<BoolWrapper> SendNote(SendNormalNoteRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new BoolWrapper { Value = _server.NoteManager.SendNormal(request.Message, request.FromId, request.ToName) });
-        }
-
-        public override Task<Empty> SendToggleCoupon(ToggelCouponRequest request, ServerCallContext context)
-        {
-            _server.CouponManager.ToggleCoupon(request.Id);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SendYellowTip(YellowTipRequest request, ServerCallContext context)
-        {
-            _server.DropYellowTip(request.Message, request.OnlyGM);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<Empty> SendEarnTitleMessage(EarnTitleMessageRequest request, ServerCallContext context)
-        {
-            _server.DropEarnTitleMessage(request.Message, request.OnlyGM);
-            return Task.FromResult(new Empty());
-        }
-
-        public override Task<ToggleMonitorPlayerResponse> SetMonitor(ToggleMonitorPlayerRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.SystemManager.ToggleMonitor(request));
         }
 
         public override Task<SetNoteReadResponse> SetNoteRead(SetNoteReadRequest request, ServerCallContext context)
@@ -234,5 +131,40 @@ namespace Application.Core.Login.Servers
         {
             return Task.FromResult(_server.CDKManager.UseCdk(request));
         }
+
+        #region PlayerNPC
+        public override Task<Empty> CreatePlayerNPC(CreatePlayerNPCRequest request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.Create(request);
+            return Task.FromResult(new Empty());
+        }
+
+        public override Task<CreatePlayerNPCPreResponse> CreatePlayerNPCCheck(CreatePlayerNPCPreRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.PreCreate(request));
+        }
+
+        public override Task<GetMapPlayerNPCListResponse> GetMapPlayerNPC(GetMapPlayerNPCListRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.GetMapData(request));
+        }
+
+        public override Task<GetAllPlayerNPCDataResponse> GetAllPlayerNPC(Empty request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.PlayerNPCManager.GetAllData());
+        }
+
+        public override Task<Empty> RemoveAll(Empty request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.RemoveAll();
+            return Task.FromResult(new Empty());
+        }
+
+        public override Task<Empty> RemoveByName(RemovePlayerNPCRequest request, ServerCallContext context)
+        {
+            _server.PlayerNPCManager.Remove(request);
+            return Task.FromResult(new Empty());
+        }
+        #endregion
     }
 }

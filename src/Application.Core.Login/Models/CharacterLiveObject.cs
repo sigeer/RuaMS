@@ -27,8 +27,6 @@ namespace Application.Core.Login.Models
         public EventModel[] Events { get; set; }
 
         public QuestStatusModel[] QuestStatuses { get; set; }
-        public TimerQuestModel[] RunningTimerQuests { get; set; } = [];
-
         public SkillModel[] Skills { get; set; }
         public SkillMacroModel[] SkillMacros { get; set; }
         /// <summary>

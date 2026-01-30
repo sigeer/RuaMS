@@ -1,8 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 package CreatorProto;
 
 message CreateCharRequestDto {
@@ -20,7 +17,8 @@ message CreateCharRequestDto {
 }
 
 message CreateCharResponseDto {
-	int32 code = 1;
+	int32 accountId = 1;
+	int32 code = 2;
 }
 
 message CreateCharCheckRequest {

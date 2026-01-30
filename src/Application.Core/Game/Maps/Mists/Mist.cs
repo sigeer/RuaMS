@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists;
@@ -8,8 +9,9 @@ public abstract class Mist : AbstractMapObject
     protected bool _isMobMist, _isPoisonMist, _isRecoveryMist;
     protected int skillDelay;
 
-    public Mist(Rectangle mistPosition, int skillDelay)
+    public Mist(IMap map, Rectangle mistPosition, int skillDelay)
     {
+        setMap(map);
         this.mistPosition = mistPosition;
         this.skillDelay = skillDelay;
     }

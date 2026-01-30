@@ -21,6 +21,7 @@
 
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.Services;
 using Application.Resources.Messages;
 using Microsoft.Extensions.Logging;
@@ -33,75 +34,9 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class EnterCashShopHandler : ChannelHandlerBase
 {
-    readonly ILogger<EnterCashShopHandler> _logger;
-    readonly DataService _dataService;
-    readonly ItemService _itemService;
-
-    public EnterCashShopHandler(ILogger<EnterCashShopHandler> logger, DataService dataService, ItemService itemService)
-    {
-        _logger = logger;
-        _dataService = dataService;
-        _itemService = itemService;
-    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        try
-        {
-            var mc = c.OnlinedCharacter;
-
-            if (mc.cannotEnterCashShop())
-            {
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            if (mc.getEventInstance() != null)
-            {
-                mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
-            {
-                mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            if (mc.getCashShop().isOpened())
-            {
-                return;
-            }
-
-            mc.closePlayerInteractions();
-            mc.closePartySearchInteractions();
-
-            mc.unregisterChairBuff();
-            _dataService.SaveBuff(mc);
-            mc.setAwayFromChannelWorld();
-
-            mc.cancelAllBuffs(true);
-            mc.cancelAllDebuffs();
-            mc.forfeitExpirableQuests();
-
-            mc.StopPlayerTask();
-
-            c.sendPacket(PacketCreator.openCashShop(c, false));
-            c.sendPacket(PacketCreator.showCashInventory(c));
-            c.sendPacket(PacketCreator.showGifts(_itemService.LoadPlayerGifts(mc)));
-            c.sendPacket(PacketCreator.showWishList(mc, false));
-            c.sendPacket(PacketCreator.showCash(mc));
-
-            c.CurrentServer.removePlayer(mc);
-            mc.getMap().removePlayer(mc);
-            mc.getCashShop().open(true);
-            mc.saveCharToDB(trigger: Shared.Events.SyncCharacterTrigger.ChangeServer);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.ToString());
-        }
+        c.CurrentServer.Post(new PlayerEnterCashShopPreCommand(c.OnlinedCharacter));
     }
 }

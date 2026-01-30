@@ -36,7 +36,7 @@ function start() {
 
         cm.sendNext("这个摆锤隐藏在一个看起来与其他不同的玩偶屋里。");
     } else {
-        cm.sendDefault();
+        cm.sendDefault(3230);
         cm.dispose();
     }
 }

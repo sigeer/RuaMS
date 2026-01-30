@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using server.minigame;
 using static Application.Core.Game.Maps.MiniGame;
 
@@ -45,7 +45,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok)
+        public void setMiniGamePoints(Player visitor, int winnerslot, bool omok)
         {
             if (omok)
             {

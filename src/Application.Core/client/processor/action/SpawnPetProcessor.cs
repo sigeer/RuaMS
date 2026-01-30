@@ -76,7 +76,7 @@ public class SpawnPetProcessor
         }
     }
 
-    public static void TogglePet(IPlayer chr, Pet pet, bool lead)
+    public static void TogglePet(Player chr, Pet pet, bool lead)
     {
         if (chr.getPetIndex(pet) != -1)
         {
@@ -105,7 +105,7 @@ public class SpawnPetProcessor
             chr.Client.sendPacket(PacketCreator.enableActions());
 
             chr.commitExcludedItems();
-            chr.Client.CurrentServerContainer.PetHungerManager.registerPetHunger(chr, chr.getPetIndex(pet));
+            chr.Client.CurrentServer.PetHungerManager.registerPetHunger(chr, chr.getPetIndex(pet));
         }
     }
 }

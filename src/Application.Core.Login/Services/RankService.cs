@@ -3,19 +3,20 @@ using AutoMapper;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Services
 {
     public class RankService
     {
-        readonly IDistributedCache _cache;
+        readonly IMemoryCache _cache;
         readonly IMapper _mapper;
         readonly ILogger<RankService> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;
 
-        public RankService(IDistributedCache cache, IMapper mapper, ILogger<RankService> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
+        public RankService(IMemoryCache cache, IMapper mapper, ILogger<RankService> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
         {
             _cache = cache;
             _mapper = mapper;
@@ -26,13 +27,13 @@ namespace Application.Core.Login.Services
         public RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount = 50, bool ignoreCache = false)
         {
             var cacheKey = "Rank";
-            if (!ignoreCache && _cache.Get(cacheKey) is byte[] cachedBytes)
+            if (!ignoreCache)
             {
-                return RankProto.LoadCharacterRankResponse.Parser.ParseFrom(cachedBytes);
+                return _cache.Get<RankProto.LoadCharacterRankResponse>(cacheKey) ?? new RankProto.LoadCharacterRankResponse();
             }
 
             var data = LoadPlayerRankingFromDB(topCount);
-            _cache.Set(cacheKey, data.ToByteArray());
+            _cache.Set(cacheKey, data);
             return data;
         }
 

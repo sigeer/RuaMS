@@ -1,6 +1,7 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
+using Application.Utility.Performance;
 using scripting.Event;
-using server;
 using System.Collections.Concurrent;
 using tools.exceptions;
 
@@ -24,12 +25,9 @@ namespace Application.Core.Scripting.Events
         private int readyId = 0;
         protected int onLoadInstances = 0;
 
-        protected Lock lobbyLock = new ();
-        protected Lock queueLock = new ();
-
         protected HashSet<int> playerPermit = new();
         protected SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
-        protected object startLock = new object();
+
         public AbstractInstancedEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
         {
         }
@@ -62,7 +60,10 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryAdd(instanceName, eim))
             {
-                cserv.Metrics.EventInstanceCount.Inc();
+                GameMetrics.ChannelEventInstanceCount.Add(1,
+                    new KeyValuePair<string, object?>("Channel", cserv.ServerLogName),
+                    new KeyValuePair<string, object?>("Event", getName()));
+
                 return true;
             }
             return false;
@@ -72,19 +73,20 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryRemove(name, out var eim))
             {
+                GameMetrics.ChannelEventInstanceCount.Add(-1,
+                    new KeyValuePair<string, object?>("Channel", cserv.ServerLogName),
+                    new KeyValuePair<string, object?>("Event", getName()));
+
                 if (eim != null)
                     UnregisterLobby(eim.LobbyId);
-
-                cserv.Metrics.EventInstanceCount.Dec();
             }
         }
 
+        public void ProcessDisposeInstanceInternal(string name) => DisposeInstanceInternal(name);
+
         public void disposeInstance(string name)
         {
-            ess.registerEntry(() =>
-            {
-                DisposeInstanceInternal(name);
-            }, YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
+            ess.registerEntry(new EventDisposeCommand(this, name), YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
         }
 
         /// <summary>
@@ -110,7 +112,6 @@ namespace Application.Core.Scripting.Events
 
         private AbstractEventInstanceManager? getReadyInstance()
         {
-            queueLock.Enter();
             try
             {
                 if (readyInstances.TryDequeue(out var eim))
@@ -121,51 +122,37 @@ namespace Application.Core.Scripting.Events
             finally
             {
                 fillEimQueue();
-                queueLock.Exit();
             }
         }
 
         private void fillEimQueue()
         {
-            ThreadManager.getInstance().newTask(instantiateQueuedInstance);
+            Task.Run(instantiateQueuedInstance);
         }
 
-        private void instantiateQueuedInstance()
+        public void instantiateQueuedInstance()
         {
             int nextEventId;
-            queueLock.Enter();
-            try
-            {
-                if (this.isDisposed() || readyInstances.Count + onLoadInstances >= Math.Ceiling(MaxLobbys / 3.0))
-                {
-                    return;
-                }
 
-                onLoadInstances++;
-                nextEventId = readyId;
-                readyId++;
-            }
-            finally
+            if (this.isDisposed() || readyInstances.Count + onLoadInstances >= Math.Ceiling(MaxLobbys / 3.0))
             {
-                queueLock.Exit();
+                return;
             }
+
+            onLoadInstances++;
+            nextEventId = readyId;
+            readyId++;
+
 
             var eim = CreateNewInstance("sampleName" + nextEventId);
-            queueLock.Enter();
-            try
-            {
-                if (this.isDisposed())
-                {  // EM already disposed
-                    return;
-                }
 
-                readyInstances.Enqueue(eim);
-                onLoadInstances--;
+            if (this.isDisposed())
+            {  // EM already disposed
+                return;
             }
-            finally
-            {
-                queueLock.Exit();
-            }
+
+            readyInstances.Enqueue(eim);
+            onLoadInstances--;
 
             instantiateQueuedInstance();    // keep filling the queue until reach threshold.
         }
@@ -192,39 +179,24 @@ namespace Application.Core.Scripting.Events
         }
         protected void UnregisterLobby(int lobbyId)
         {
-            lobbyLock.Enter();
-            try
-            {
-                openedLobbys[lobbyId] = false;
-            }
-            finally
-            {
-                lobbyLock.Exit();
-            }
+
+            openedLobbys[lobbyId] = false;
         }
 
         protected bool TryRegisterLobby(int lobbyId)
         {
-            lobbyLock.Enter();
-            try
+            if (lobbyId < 0)
             {
-                if (lobbyId < 0)
-                {
-                    lobbyId = 0;
-                }
-
-                if (!openedLobbys.TryGetValue(lobbyId, out var value) || !value)
-                {
-                    openedLobbys[lobbyId] = true;
-                    return true;
-                }
-
-                return false;
+                lobbyId = 0;
             }
-            finally
+
+            if (!openedLobbys.TryGetValue(lobbyId, out var value) || !value)
             {
-                lobbyLock.Exit();
+                openedLobbys[lobbyId] = true;
+                return true;
             }
+
+            return false;
         }
 
         protected int GetAvailableLobbyInstance()
@@ -262,16 +234,10 @@ namespace Application.Core.Scripting.Events
             openedLobbys.Clear();
 
             Queue<AbstractEventInstanceManager> readyEims;
-            queueLock.Enter();
-            try
-            {
-                readyEims = new(readyInstances);
-                readyInstances.Clear();
-            }
-            finally
-            {
-                queueLock.Exit();
-            }
+
+            readyEims = new(readyInstances);
+            readyInstances.Clear();
+
 
             foreach (var eim in readyEims)
             {

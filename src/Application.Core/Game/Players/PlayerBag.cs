@@ -1,9 +1,6 @@
-using Application.Core.Channel.DataProviders;
 using Application.Templates.Item;
 using client.inventory;
 using client.inventory.manipulator;
-using Humanizer;
-using System;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -12,8 +9,8 @@ namespace Application.Core.Game.Players
     {
         readonly Inventory[] _dataSource;
         private bool disposedValue;
-        IPlayer Owner { get; }
-        public PlayerBag(IPlayer owner)
+        Player Owner { get; }
+        public PlayerBag(Player owner)
         {
             Owner = owner;
             var typeList = EnumCache<InventoryType>.Values;
@@ -132,17 +129,9 @@ namespace Application.Core.Game.Players
             if (item.getQuantity() < quantity)
                 return false;
 
-            inv.lockInventory();
-            try
-            {
-                RemoveItemInternal(inv, item, quantity, fromDrop, consume, showMessage);
+            RemoveItemInternal(inv, item, quantity, fromDrop, consume, showMessage);
 
-                return true;
-            }
-            finally
-            {
-                inv.unlockInventory();
-            }
+            return true;
         }
 
         /// <summary>
@@ -162,18 +151,9 @@ namespace Application.Core.Game.Players
 
             if (!inv.Contains(invItem))
                 return false;
+            RemoveItemInternal(inv, invItem, quantity, fromDrop, consume, showMessage);
 
-            inv.lockInventory();
-            try
-            {
-                RemoveItemInternal(inv, invItem, quantity, fromDrop, consume, showMessage);
-
-                return true;
-            }
-            finally
-            {
-                inv.unlockInventory();
-            }
+            return true;
         }
 
         /// <summary>
@@ -190,75 +170,59 @@ namespace Application.Core.Game.Players
         {
             short removeQuantity = quantity;
             Inventory inv = this[type];
+            if (inv.countById(itemId) < quantity)
+                return false;
 
-            inv.lockInventory();
-            try
+            bool allowZero = consume && ItemConstants.isRechargeable(itemId);
+            int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
+
+            List<Item> modifiedItems = [];
+            for (short i = 0; i <= slotLimit; i++)
             {
-                if (inv.countById(itemId) < quantity)
-                    return false;
-
-                bool allowZero = consume && ItemConstants.isRechargeable(itemId);
-                int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
-
-                List<Item> modifiedItems = [];
-                for (short i = 0; i <= slotLimit; i++)
+                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                if (item != null && item.getItemId() == itemId && removeQuantity > 0)
                 {
-                    var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                    if (item != null && item.getItemId() == itemId && removeQuantity > 0)
+                    UnEquip(inv, item);
+
+                    removeQuantity -= inv.removeItem(item.getPosition(), removeQuantity, allowZero);
+                    modifiedItems.Add(item);
+                }
+            }
+
+            InventoryManipulator.AnnounceModifyInventory(Owner.Client, modifiedItems, fromDrop, allowZero);
+
+            if (showMessage)
+                Owner.sendPacket(PacketCreator.getShowItemGain(itemId, (short)-removeQuantity, true));
+
+            return true;
+        }
+
+        void RemoveFromInventory(Inventory inv, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        {
+            int slotLimit = inv.getSlotLimit();
+            var type = inv.getType();
+
+            for (short i = 0; i <= slotLimit; i++)
+            {
+                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                if (item != null)
+                {
+                    if (filter == null || filter(item) || toRemoveCount > 0)
                     {
                         UnEquip(inv, item);
 
-                        removeQuantity -= inv.removeItem(item.getPosition(), removeQuantity, allowZero);
-                        modifiedItems.Add(item);
-                    }
-                }
-
-                InventoryManipulator.AnnounceModifyInventory(Owner.Client, modifiedItems, fromDrop, allowZero);
-
-                if (showMessage)
-                    Owner.sendPacket(PacketCreator.getShowItemGain(itemId, (short)-removeQuantity, true));
-
-                return true;
-            }
-            finally
-            {
-                inv.unlockInventory();
-            }
-        }
-
-        void RemoveFromInventory(Inventory inv, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
-        {
-            inv.lockInventory();
-            try
-            {
-                int slotLimit = inv.getSlotLimit();
-                var type = inv.getType();
-
-                for (short i = 0; i <= slotLimit; i++)
-                {
-                    var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                    if (item != null)
-                    {
-                        if (filter == null || filter(item))
+                        bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
+                        var removedCount = inv.removeItem(i, toRemoveCount > short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
+                        toRemoveCount -= removedCount;
+                        if (type != InventoryType.CANHOLD)
                         {
-                            UnEquip(inv, item);
-
-                            bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                            var removedCount = inv.removeItem(i, item.getQuantity());
-                            if (type != InventoryType.CANHOLD)
-                            {
-                                InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
-                            }
-
-                            if (showMessage)
-                                Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)-removedCount, true));
+                            InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
                         }
+
+                        if (showMessage)
+                            Owner.sendPacket(PacketCreator.getShowItemGain(item.getItemId(), (short)-removedCount, true));
                     }
                 }
-            }
-            finally
-            {
-                inv.unlockInventory();
             }
         }
 
@@ -272,6 +236,7 @@ namespace Application.Core.Game.Players
             foreach (var type in includedInv)
             {
                 RemoveFromInventory(this[type],
+                    int.MaxValue,
                     item => (item.SourceTemplate as ItemTemplateBase)?.PartyQuest ?? false,
                     showMessage: true);
             }
@@ -286,6 +251,7 @@ namespace Application.Core.Game.Players
             foreach (var type in includedInv)
             {
                 RemoveFromInventory(this[type],
+                    int.MaxValue,
                     item => item.SourceTemplate.ExpireOnLogout,
                     showMessage: true);
             }
@@ -295,7 +261,7 @@ namespace Application.Core.Game.Players
         {
             foreach (var type in inventoryTypes)
             {
-                RemoveFromInventory(this[type], filter, fromDrop, consume);
+                RemoveFromInventory(this[type], int.MaxValue, filter, fromDrop, consume);
             }
         }
     }

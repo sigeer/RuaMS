@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
@@ -108,8 +109,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             cserv.addPlayer(player);
 
-            player.setEnteredChannelWorld(c.Channel);
-
             _dataService.RecoverCharacterBuff(player);
 
             c.sendPacket(PacketCreator.getCharInfo(player));
@@ -136,27 +135,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            if (player.getParty() != null)
-            {
-                //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
-                //c.sendPacket(PacketCreator.partyCreated(pchar));
-                _teamManger.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
-                player.updatePartyMemberHP();
-            }
-
             Inventory eqpInv = player.getInventory(InventoryType.EQUIPPED);
-            eqpInv.lockInventory();
-            try
-            {
+
                 foreach (Item it in eqpInv.list())
                 {
                     player.equippedItem((Equip)it);
                 }
-            }
-            finally
-            {
-                eqpInv.unlockInventory();
-            }
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
@@ -174,7 +158,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 {
                     if (pet != null)
                     {
-                        c.CurrentServerContainer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
+                        c.CurrentServer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
                     }
                 }
 
@@ -193,7 +177,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServerContainer.EarnTitleMessage(string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
+                    c.CurrentServer.NodeService.SendDropMessage(-2, string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
                 }
             }
             else
@@ -215,8 +199,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             player.updateCouponRates();
 
-            player.receivePartyMemberHP();
-
             if (newcomer)
             {
                 var eim = c.CurrentServer.EventRecallManager?.recallEventInstance(cid);
@@ -233,7 +215,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.setNPCScriptable(npcsIds));
             }
 
-            _dataService.CompleteLogin(player, playerObject);
+            _dataService.CompleteLogin(c.CurrentServer, player, playerObject);
         }
         catch (Exception e)
         {

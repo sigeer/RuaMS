@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
@@ -671,7 +672,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <param name="vegaItemId"></param>
     /// <param name="isGM"></param>
     /// <returns></returns>
-    public Equip scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
+    public Equip? scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
     {
         bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
 
@@ -1202,7 +1203,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET && ItemConstants.isPet(itemId);
     }
 
-    public ICollection<Item> canWearEquipment(IPlayer chr, ICollection<Item> items)
+    public ICollection<Item> canWearEquipment(Player chr, ICollection<Item> items)
     {
         Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
         if (inv.IsChecked())
@@ -1300,7 +1301,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return itemz;
     }
 
-    public bool canWearEquipment(IPlayer chr, Equip equip, int dst)
+    public bool canWearEquipment(Player chr, Equip equip, int dst)
     {
         int id = equip.getItemId();
 
@@ -1315,7 +1316,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             equip.wear(false);
             var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
 
-            chr.Client.CurrentServerContainer.SendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true);
+            chr.Client.CurrentServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(-1, "[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true));
             _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
             _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;
@@ -1414,7 +1415,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return list;
     }
 
-    private bool canUseSkillBook(IPlayer player, int skillBookId)
+    private bool canUseSkillBook(Player player, int skillBookId)
     {
         var template = GetMasteryItemTemplate(skillBookId);
         if (template == null)
@@ -1433,7 +1434,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             && player.getMasterLevel(skill2) < template.MasterLevel;
     }
 
-    public List<int> usableMasteryBooks(IPlayer player)
+    public List<int> usableMasteryBooks(Player player)
     {
         List<int> masterybook = new();
         for (int i = 2290000; i <= 2290139; i++)
@@ -1447,7 +1448,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return masterybook;
     }
 
-    public List<int> usableSkillBooks(IPlayer player)
+    public List<int> usableSkillBooks(Player player)
     {
         List<int> skillbook = new();
         for (int i = 2280000; i <= 2280019; i++)

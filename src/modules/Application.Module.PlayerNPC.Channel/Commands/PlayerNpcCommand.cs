@@ -33,7 +33,6 @@ public class PlayerNpcCommand : CommandBase
             _service.SpawnPlayerNPCHere(player.getMapId(), player.getPosition(), targetPlayer);
         else
             _service.SpawnPlayerNPCByHonor(targetPlayer);
-
         //if (!)
         //{
         //    player.dropMessage(5, "Could not deploy PlayerNPC. Either there's no room available here or depleted out scriptids to use.");

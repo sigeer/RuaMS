@@ -1,37 +1,53 @@
+using AllianceProto;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using Application.Shared.Team;
 using AutoMapper;
-using constants.game;
-using Dto;
 using Google.Protobuf;
 using GuildProto;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.matchchecker;
 using net.server.guild;
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Application.Core.Channel.ServerData
 {
     public class GuildManager
     {
-        private ConcurrentDictionary<int, Guild?> _localGuilds { get; set; } = new();
-        ConcurrentDictionary<int, Guild.Alliance> _localAlliance;
-
         readonly ILogger<GuildManager> _logger;
         readonly IMapper _mapper;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _serverContainer;
-        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer)
+        readonly IMemoryCache _cache;
+        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer, 
+            IMemoryCache cache)
         {
             _logger = logger;
             _mapper = mapper;
             _transport = transport;
             _serverContainer = serverContainer;
-            _localAlliance = new ();
+            _cache = cache;
+        }
+
+        static string GetGuildCacheKey(int guildId) => $"Guild:{guildId}";
+        static string GetAllianceCacheKey(int allianceId) => $"Alliance:{allianceId}";
+
+        public void StoreGuild(GuildDto? guild)
+        {
+            if (guild == null)
+                return;
+
+            _cache.Set(GetGuildCacheKey(guild.GuildId), guild);
+        }
+        public GuildDto? GetGuild(int guildId)
+        {
+            var cacheKey = GetGuildCacheKey(guildId);
+            return _cache.GetOrCreate<GuildDto>(cacheKey, e =>
+            {
+                return _transport.GetGuild(guildId).Model;
+            });
         }
 
         public bool CheckGuildName(string name)
@@ -60,26 +76,9 @@ namespace Application.Core.Channel.ServerData
             return _transport.CreateAllianceCheck(new AllianceProto.CreateAllianceCheckRequest { Name = name }).IsValid;
         }
 
-        public HashSet<IPlayer> getEligiblePlayersForGuild(IPlayer guildLeader)
-        {
-            HashSet<IPlayer> guildMembers = new();
-            guildMembers.Add(guildLeader);
-
-            MatchCheckerCoordinator mmce = guildLeader.Client.CurrentServer.MatchChecker;
-            foreach (var chr in guildLeader.getMap().getAllPlayers())
-            {
-                if (chr.getParty() == null && chr.getGuild() == null && mmce.getMatchConfirmationLeaderid(chr.getId()) == -1)
-                {
-                    guildMembers.Add(chr);
-                }
-            }
-
-            return guildMembers;
-        }
-
         public void SendInvitation(IChannelClient c, string targetName)
         {
-            _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            _ = _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
                 Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
@@ -87,254 +86,93 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-
-
-        public void AnswerInvitation(IPlayer answer, int guildId, bool operation)
+        public void AnswerInvitation(Player answer, int guildId, bool operation)
         {
-            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            _ =  _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
-        public Guild? CreateGuild(string guildName, int playerId, HashSet<IPlayer> members, Action failCallback)
+        public void CreateGuild(Player leader, string name)
         {
-            var leader = members.FirstOrDefault(x => x.getId() == playerId);
-
-            if (leader == null || !leader.isLoggedinWorld())
+            if (!CheckGuildName(name))
             {
-                failCallback();
-                return null;
+                leader.dropMessage(1, "The Guild name you have chosen is not accepted.");
+                return;
             }
-            members.Remove(leader);
 
             if (leader.getGuildId() > 0)
             {
-                leader.dropMessage(1, "You cannot create a new Guild while in one.");
-                failCallback();
-                return null;
+                leader.Popup("You cannot create a new Guild while in one.");
+                return;
             }
-            int partyid = leader.getPartyId();
-            if (partyid == -1 || !leader.isPartyLeader())
+
+            var party = leader.getParty();
+            if (party == null || !leader.isPartyLeader())
             {
-                leader.dropMessage(1, "You cannot establish the creation of a new Guild without leading a party.");
-                failCallback();
-                return null;
+                leader.Popup("You cannot establish the creation of a new Guild without leading a party.");
+                return;
             }
             if (leader.getMapId() != MapId.GUILD_HQ)
             {
-                leader.dropMessage(1, "You cannot establish the creation of a new Guild outside of the Guild Headquarters.");
-                failCallback();
-                return null;
+                leader.Popup("You cannot establish the creation of a new Guild outside of the Guild Headquarters.");
+                return;
             }
-            foreach (var chr in members)
+
+            var members = party.GetTeamMembers();
+            foreach (var member in members)
             {
-                if (leader.getMap().getCharacterById(chr.getId()) == null)
+                var mapChr = leader.getMap().getCharacterById(member.Id);
+                if (mapChr == null)
                 {
                     leader.dropMessage(1, "You cannot establish the creation of a new Guild if one of the members is not present here.");
-                    failCallback();
-                    return null;
+                    return;
                 }
-            }
-            if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
-            {
-                leader.dropMessage(1, "You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
-                failCallback();
-                return null;
-            }
 
-
-            var remoteData = _transport.CreateGuild(guildName, playerId, members.Select(x => x.Id).ToArray()).Model;
-            if (remoteData == null)
-            {
-                leader.sendPacket(GuildPackets.genericGuildMessage(0x23));
-                failCallback();
-                return null;
-            }
-
-            var guild = new Guild(_serverContainer, remoteData.GuildId)
-            {
-                RankTitles = [remoteData.Rank1Title, remoteData.Rank2Title, remoteData.Rank3Title, remoteData.Rank4Title, remoteData.Rank5Title],
-                Capacity = remoteData.Capacity,
-                GP = remoteData.Gp,
-                Leader = remoteData.Leader,
-                Logo = remoteData.Logo,
-                LogoBg = remoteData.LogoBg,
-                LogoBgColor = (short)remoteData.LogoBgColor,
-                LogoColor = (short)remoteData.LogoColor,
-                Name = remoteData.Name,
-                Notice = remoteData.Notice,
-                Signature = remoteData.Signature,
-                AllianceId = remoteData.AllianceId,
-                Members = new ConcurrentDictionary<int, GuildMember>(remoteData.Members.ToDictionary(x => x.Id, x => _mapper.Map<GuildMember>(x)))
-            };
-            _localGuilds[guild.GuildId] = guild;
-
-            leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
-
-            leader.GuildId = guild.GuildId;
-            guild.OnMemberRankChanged(leader.Id, 1);
-
-            leader.sendPacket(GuildPackets.showGuildInfo(leader));
-            leader.Popup("You have successfully created a Guild.");
-
-            foreach (var chr in members)
-            {
-                bool cofounder = chr.getPartyId() == partyid;
-
-                chr.GuildId = guild.GuildId;
-                chr.GuildRank = cofounder ? 2 : 5;
-                chr.AllianceRank = 5;
-
-                if (chr.isLoggedinWorld())
+                if (mapChr.GuildId > 0)
                 {
-                    chr.sendPacket(GuildPackets.showGuildInfo(chr));
-
-                    if (cofounder)
-                    {
-                        chr.dropMessage(1, "You have successfully cofounded a Guild.");
-                    }
-                    else
-                    {
-                        chr.dropMessage(1, "You have successfully joined the new Guild.");
-                    }
-                }
-            }
-
-            guild.BroadcastDisplay();
-
-
-            return guild;
-        }
-
-        public void OnPlayerJoinGuild(JoinGuildResponse data)
-        {
-            HandleGuildResponse(data.Code, data.Request.GuildId, data.Request.PlayerId,
-                guild =>
-                {
-                    return guild.AddGuildMember(_mapper.Map<GuildMember>(data.Member));
-                },
-                mc =>
-                {
-                    mc.sendPacket(GuildPackets.showGuildInfo(mc));
-                },
-                mc =>
-                {
-                    mc.dropMessage(1, "The guild you are trying to join is already full.");
-                });
-        }
-
-
-        public void LeaveMember(IPlayer fromChr)
-        {
-            _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
-        }
-
-        public void OnPlayerLeaveGuild(LeaveGuildResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.PlayerId,
-                guild =>
-                {
-                    return guild.OnMemberLeftGuild(data.Request.PlayerId);
-                });
-        }
-
-        public Guild? GetGuildById(int id)
-        {
-            if (_localGuilds.TryGetValue(id, out var d) && d != null)
-                return d;
-
-            var remoteData = _transport.GetGuild(id);
-            if (remoteData == null || remoteData.Model == null)
-            {
-                return null;
-            }
-            var localData = new Guild(_serverContainer, id)
-            {
-                RankTitles = [remoteData.Model.Rank1Title, remoteData.Model.Rank2Title, remoteData.Model.Rank3Title, remoteData.Model.Rank4Title, remoteData.Model.Rank5Title],
-                Capacity = remoteData.Model.Capacity,
-                GP = remoteData.Model.Gp,
-                Leader = remoteData.Model.Leader,
-                Logo = remoteData.Model.Logo,
-                LogoBg = remoteData.Model.LogoBg,
-                LogoBgColor = (short)remoteData.Model.LogoBgColor,
-                LogoColor = (short)remoteData.Model.LogoColor,
-                Name = remoteData.Model.Name,
-                Notice = remoteData.Model.Notice,
-                Signature = remoteData.Model.Signature,
-                AllianceId = remoteData.Model.AllianceId,
-                Members = new ConcurrentDictionary<int, GuildMember>(remoteData.Model.Members.ToDictionary(x => x.Id, x => _mapper.Map<GuildMember>(x)))
-            };
-            _localGuilds[localData.GuildId] = localData;
-            return localData;
-        }
-
-        public void ExpelMember(IPlayer fromChr, int toId)
-        {
-            _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
-        }
-
-        public void OnGuildExpelMember(ExpelFromGuildResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
-            {
-                return guild.OnMemberExpelled(data.Request.TargetPlayerId);
-            });
-        }
-
-        public void ChangeRank(IPlayer fromChr, int toId, int toRank)
-        {
-            _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
-        }
-
-        public void OnChangePlayerGuildRank(UpdateGuildMemberRankResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
-            {
-                return guild.OnMemberRankChanged(data.Request.TargetPlayerId, data.Request.NewRank);
-            });
-        }
-
-        private void HandleGuildResponse(int code, int guildId, int masterId, Func<Guild, bool> onGuildAction, Action<IPlayer>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
-        {
-            if (code == 0)
-            {
-                var guild = GetGuildById(guildId);
-                if (guild != null)
-                {
-                    var localResult = onGuildAction(guild);
-
-                    if (!localResult)
-                    {
-                        _logger.LogCritical(
-                            "家族数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerName}, GuildId: {GuildId}, StackTrace: {StackTrace}",
-                            _serverContainer.ServerName, guildId, new StackTrace());
-                        return;
-                    }
-
-                    if (masterSuccessBack != null)
-                    {
-                        var master = _serverContainer.FindPlayerById(masterId);
-                        if (master != null)
-                        {
-                            masterSuccessBack(master);
-                        }
-                    }
+                    leader.dropMessage(1, "Please make sure everyone you are trying to invite is neither on a guild.");
                     return;
                 }
             }
 
-            if (masterFailback != null)
+            if (members.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
             {
-                var master = _serverContainer.FindPlayerById(masterId);
-                if (master != null)
-                {
-                    masterFailback(master);
-                }
+                leader.dropMessage(1, "Your Guild doesn't have enough cofounders present here and therefore cannot be created at this time.");
+                return;
             }
+
+            if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
+            {
+                leader.Pink("You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
+                return;
+            }
+
+            leader.GainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, GainItemShow.ShowInChat);
+
+            var req = new CreateGuildRequest { LeaderId = leader.Id, Name = name };
+            req.Members.AddRange(members.Select(x => x.Id));
+            _ = _serverContainer.Transport.CreateGuild(req);
+
         }
 
 
-        public void SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
+        public void LeaveMember(Player fromChr)
         {
-            _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
+            _ = _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
+        }
+
+        public void ExpelMember(Player fromChr, int toId)
+        {
+            _ = _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
+        }
+
+        public void ChangeRank(Player fromChr, int toId, int toRank)
+        {
+            _ = _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
+        }
+
+        public void SetGuildEmblem(Player chr, short bg, byte bgcolor, short logo, byte logocolor)
+        {
+            _ = _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -343,400 +181,167 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void OnGuildEmblemUpdate(UpdateGuildEmblemResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, (guild) =>
-            {
-                guild.OnEmblemChanged((short)data.Request.LogoBg, (byte)data.Request.LogoBgColor, (short)data.Request.Logo, (byte)data.Request.LogoColor);
-                return true;
-            }, master =>
-            {
-                master.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
-            });
-        }
-
-        public void SetGuildRankTitle(IPlayer chr, string[] titles)
+        public void SetGuildRankTitle(Player chr, string[] titles)
         {
             var request = new GuildProto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
             request.RankTitles.AddRange(titles);
-            _transport.SendUpdateGuildRankTitle(request);
+            _ = _transport.SendUpdateGuildRankTitle(request);
         }
-        public void OnGuildRankTitleUpdate(UpdateGuildRankTitleResponse data)
+
+        public void IncreaseGuildCapacity(Player chr, int cost)
         {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
-            {
-                guild.OnRankTitleChanged(data.Request.RankTitles.ToArray());
-                return true;
-            });
+            chr.GainMeso(-cost, GainItemShow.ShowInChat);
+            _ = _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
-
-        public void IncreaseGuildCapacity(IPlayer chr, int cost)
+        public void SetGuildNotice(Player chr, string notice)
         {
-            _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
+            _ = _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
 
-        public void OnGuildCapacityIncreased(UpdateGuildCapacityResponse data)
+        public void Disband(Player chr)
         {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
-            {
-                guild.OnCapacityChanged();
-                return true;
-            }, master =>
-            {
-                master.GainMeso(-data.Request.Cost, true, false, true);
-            }, master =>
-            {
-                master.Popup("Your guild already reached the maximum capacity of players.");
-            });
+            _ = _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
         }
 
-        public void SetGuildNotice(IPlayer chr, string notice)
-        {
-            _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
-        }
-        public void OnGuildNoticeUpdate(UpdateGuildNoticeResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
-            {
-                guild.OnNoticeChanged(data.Request.Notice);
-                return true;
-            });
-        }
-
-        public void Disband(IPlayer chr)
-        {
-            _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
-        }
-
-        public void OnGuildDisband(GuildProto.GuildDisbandResponse data)
-        {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
-                guild =>
-                {
-                    if (_localGuilds.TryRemove(guild.GuildId, out _))
-                    {
-                        guild.OnGuildDisband();
-
-                        if (guild.AllianceId > 0)
-                        {
-                            var alliance = GetAllianceById(guild.AllianceId);
-                            if (alliance != null)
-                            {
-                                return alliance.RemoveGuildFromAlliance(guild.GuildId, 1);
-                            }
-                        }
-
-                        return true;
-                    }
-                    return false;
-                });
-        }
 
         internal void DropGuildMessage(int guildId, int v, string callout)
         {
             _transport.BroadcastGuildMessage(guildId, v, callout);
         }
 
-        public void GainGP(IPlayer chr, int gp)
+        public void GainGP(Player chr, int gp)
         {
-            _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
+            _ = _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
         }
 
-        internal void OnGuildGPUpdate(GuildProto.UpdateGuildGPResponse data)
+        public void ClearGuildCache(int guildId)
         {
-            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
-                guild =>
-                {
-                    if (data.Request.Gp > 0)
-                    {
-                        guild.OnGPGained(data.Request.Gp);
-                    }
-                    else
-                    {
-                        guild.OnGPLosed(-data.Request.Gp);
-                    }
-                    return true;
-                });
+            _cache.Remove(GetGuildCacheKey(guildId));
         }
 
         #region alliance
-        public Guild.Alliance? CreateAlliance(IPlayer leader, string name)
+
+        public void CreateAlliance(Player leader, string name, int cost)
         {
-            var guilds = leader.getPartyMembersOnSameMap().OrderBy(x => x.isLeader()).Select(x => x.Id).ToArray();
+            leader.GainMeso(-cost, GainItemShow.ShowInChat);
+            var guilds = leader.getPartyMembersOnSameMap().Select(x => x.Id).ToArray();
 
-            var remoteAlliance = _transport.CreateAlliance(guilds, name);
-            if (remoteAlliance.Model == null)
-                return null;
-
-            var alliance = new Guild.Alliance(
-                remoteAlliance.Model.AllianceId,
-                remoteAlliance.Model.Name, guilds.Length,
-                new ConcurrentDictionary<int, Guild>(remoteAlliance.Model.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
-                GameConstants.DefaultAllianceRankTitles,
-                remoteAlliance.Model.Notice
-                );
-            _localAlliance[alliance.AllianceId] = alliance;
-
-            alliance.updateAlliancePackets();
-
-            return alliance;
+            var request = new CreateAllianceRequest { Name = name, Cost = cost };
+            request.Members.AddRange(guilds);
+            _ = _serverContainer.Transport.CreateAlliance(request);
         }
         public void SendAllianceInvitation(IChannelClient c, string targetGuildName)
         {
-            var alliance = c.OnlinedCharacter.AllianceModel;
-            if (alliance == null)
-                return;
-
-            if (alliance.getGuilds().Count == alliance.Capacity)
+            _ = _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
-                c.OnlinedCharacter.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-            }
-            var mg = _localGuilds.Values.FirstOrDefault(x => x.Name == targetGuildName);
-            if (mg == null)
-            {
-                c.OnlinedCharacter.dropMessage(5, "The entered guild does not exist.");
-            }
-            else
-            {
-                if (mg.AllianceId > 0)
-                {
-                    c.OnlinedCharacter.dropMessage(5, "The entered guild is already registered on a guild alliance.");
-                }
-                else
-                {
-                    _transport.SendInvitation(new InvitationProto.CreateInviteRequest
-                    {
-                        Type = InviteTypes.Alliance,
-                        FromId = c.OnlinedCharacter.Id,
-                        ToName = targetGuildName
-                    });
-                }
-            }
+                Type = InviteTypes.Alliance,
+                FromId = c.OnlinedCharacter.Id,
+                ToName = targetGuildName
+            });
         }
 
-        public void AnswerAllianceInvitation(IPlayer chr, int allianceId, bool answer)
+        public void AnswerAllianceInvitation(Player chr, int allianceId, bool answer)
         {
-            _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
-        }
-
-        public Guild.Alliance? SoftGetAlliance(int id) => _localAlliance.GetValueOrDefault(id);
-        public Guild.Alliance? GetAllianceById(int id)
-        {
-            if (_localAlliance.TryGetValue(id, out var d) && d != null)
-                return d;
-
-            var remoteData = _transport.GetAlliance(id).Model;
-            if (remoteData == null)
-                return null;
-
-            var localData = new Guild.Alliance(
-                    remoteData.AllianceId,
-                    remoteData.Name,
-                    remoteData.Capacity,
-                    new ConcurrentDictionary<int, Guild>(remoteData.Guilds.ToDictionary(x => x, x => GetGuildById(x)!)),
-                    GameConstants.DefaultAllianceRankTitles,
-                    remoteData.Notice
-                    );
-            _localAlliance[id] = localData;
-            return localData;
-        }
-
-        public void SendGuildChat(IPlayer chr, string text)
-        {
-            _transport.SendGuildChat(chr.Name, text);
-        }
-        public void SendAllianceChat(IPlayer chr, string text)
-        {
-            _transport.SendAllianceChat(chr.Name, text);
+            _ = _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
 
         #endregion
 
         #region Alliance
-        private void HandleAllianceResponse(int code, int allianceId, int masterId, Func<Guild.Alliance, bool> onGuildAction, Action<IPlayer, Guild.Alliance>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
+        public void StoreAlliance(AllianceDto? alliance)
         {
-            if (code == 0)
-            {
-                var alliance = GetAllianceById(allianceId);
-                if (alliance != null)
-                {
-                    var localResult = onGuildAction(alliance);
-
-                    if (!localResult)
-                    {
-                        _logger.LogCritical(
-                            "联盟数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerName}, AllianceId: {AllianceId}, StackTrace: {StackTrace}",
-                            _serverContainer.ServerName, allianceId, new StackTrace());
-                        return;
-                    }
-
-                    if (masterSuccessBack != null)
-                    {
-                        var master = _serverContainer.FindPlayerById(masterId);
-                        if (master != null)
-                        {
-                            masterSuccessBack(master, alliance);
-                        }
-                    }
-                    return;
-                }
-            }
-
-            if (masterFailback != null)
-            {
-                var master = _serverContainer.FindPlayerById(masterId);
-                if (master != null)
-                {
-                    masterFailback(master);
-                }
-            }
-        }
-        public void GuildLeaveAlliance(IPlayer player, int guildId)
-        {
-            if (player.AllianceModel == null || player.GuildRank != 1)
-            {
+            if (alliance == null)
                 return;
-            }
-            _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
-        }
-
-        public void OnGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    return alliance.RemoveGuildFromAlliance(data.GuildId, 1);
-                });
-        }
-        public void AllianceExpelGuild(IPlayer player, int allianceId, int guildId)
-        {
-            if (player.AllianceModel?.AllianceId != allianceId)
+            _cache.Set(GetAllianceCacheKey(alliance.AllianceId), alliance);
+            foreach (var guild in alliance.Guilds)
             {
-                return;
+                StoreGuild(guild);
             }
-
-            _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
         }
-        public void OnAllianceExpelGuild(AllianceProto.AllianceExpelGuildResponse data)
+        public AllianceDto? GetAlliance(int allianceId)
         {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    return alliance.RemoveGuildFromAlliance(data.GuildId, 2);
-                });
+            var cacheKey = GetGuildCacheKey(allianceId);
+            return _cache.GetOrCreate<AllianceDto>(cacheKey, e =>
+            {
+                return _transport.GetAlliance(allianceId).Model;
+            });
         }
-        public void OnGuildJoinAlliance(AllianceProto.GuildJoinAllianceResponse data)
+        public void AllianceBroadcastPlayerInfo(Player chr)
         {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    var guild = GetGuildById(data.GuildId);
-                    alliance.OnGuildJoinAlliance(guild!);
-                    return true;
-                });
+            _ = _transport.AllianceBroadcastPlayerInfo(new AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });
         }
-        public void ChageLeaderAllianceRank(IPlayer player, int targetPlayerId)
+        public void GuildLeaveAlliance(Player player, int guildId)
         {
             if (player.GuildRank != 1)
             {
                 return;
             }
-            _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+            _ = _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
         }
-        public void OnAllianceLeaderChanged(AllianceProto.AllianceChangeLeaderResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    alliance.OnLeaderChanged(data.Request.PlayerId, _serverContainer);
-                    return true;
-                });
-        }
-        public void ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
-        {
-            _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
-        }
-        public void OnPlayerAllianceRankChanged(AllianceProto.ChangePlayerAllianceRankResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    alliance.OnMemberRankChanged(data.Request.PlayerId, data.NewRank, _serverContainer);
 
-                    return true;
-                });
-        }
-        public void HandleIncreaseAllianceCapacity(IPlayer chr)
+        public void AllianceExpelGuild(Player player, int allianceId, int guildId)
         {
-            _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+            _ = _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
         }
-        public void OnAllianceCapacityIncreased(AllianceProto.IncreaseAllianceCapacityResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    alliance.OnCapacityIncreased(1);
 
-                    return true;
-                },
-                (mc, alliance) =>
-                {
-                    mc.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
-                });
+        public void ChageLeaderAllianceRank(Player player, int targetPlayerId)
+        {
+            if (player.GuildRank != 1)
+            {
+                return;
+            }
+            _ = _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
         }
-        internal void UpdateAllianceRank(IPlayer chr, string[] ranks)
+        public void ChangePlayerAllianceRank(Player player, int targetPlayerId, bool isIncrease)
+        {
+            _ = _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+        }
+        public void HandleIncreaseAllianceCapacity(Player chr)
+        {
+            _ = _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+        }
+
+        internal void UpdateAllianceRank(Player chr, string[] ranks)
         {
             var request = new AllianceProto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
             request.RankTitles.AddRange(ranks);
-            _transport.SendUpdateAllianceRankTitle(request);
+            _ = _transport.SendUpdateAllianceRankTitle(request);
         }
-        public void OnAllianceRankTitleChanged(AllianceProto.UpdateAllianceRankTitleResponse data)
+        internal void UpdateAllianceNotice(Player chr, string notice)
         {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    var newRanks = data.Request.RankTitles.ToArray();
-                    alliance.OnRankTitleChanged(newRanks);
-
-                    return true;
-                });
+            _ = _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
-        internal void UpdateAllianceNotice(IPlayer chr, string notice)
+        internal void DisbandAlliance(Player player, int allianceId)
         {
-            _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+            _ = _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
         }
-        public void OnAllianceNoticeChanged(AllianceProto.UpdateAllianceNoticeResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    alliance.OnNoticeChanged(data.Request.Notice);
-
-                    return true;
-                });
-        }
-
-        internal void DisbandAlliance(IPlayer player, int allianceId)
-        {
-            _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
-        }
-        public void OnAllianceDisband(AllianceProto.DisbandAllianceResponse data)
-        {
-            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
-                alliance =>
-                {
-                    alliance.OnDisband();
-                    return _localAlliance.TryRemove(alliance.AllianceId, out _);
-                });
-        }
-
 
         internal void ShowRankedGuilds(IChannelClient c, int npc)
         {
             var data = _transport.RequestRankedGuilds();
             c.sendPacket(GuildPackets.showGuildRanks(npc, data.Guilds.ToList()));
+        }
+
+        public void ClearAllianceCache(int allianceId, bool deep = true)
+        {
+            if (!deep)
+            {
+                _cache.Remove(GetAllianceCacheKey(allianceId));
+            }
+            else
+            {
+                var data = GetAlliance(allianceId);
+                if (data != null)
+                {
+                    _cache.Remove(GetAllianceCacheKey(allianceId));
+                    foreach (var item in data.Guilds)
+                    {
+                        ClearGuildCache(item.GuildId);
+                    }
+                }
+            }
         }
         #endregion
     }

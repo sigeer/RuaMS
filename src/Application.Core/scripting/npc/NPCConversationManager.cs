@@ -21,17 +21,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using AllianceProto;
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Events;
-using constants.String;
-using Microsoft.Extensions.DependencyInjection;
-using net.server.coordinator.matchchecker;
+using GuildProto;
 using server;
 using server.expeditions;
 using server.partyquest;
@@ -53,16 +54,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public ScriptMeta ScriptMeta { get; }
     private string? _getText;
     private bool itemScript;
-    private List<IPlayer> otherParty;
+    private List<Player> otherParty;
 
     public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
 
-    private string getDefaultTalk(int npcid)
-    {
-        return c.CurrentCulture.GetNpcDefaultTalk(npcid);
-    }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<IPlayer> otherParty, bool test) : base(c)
+
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<Player> otherParty, bool test) : base(c)
     {
         this.c = c;
         this.npc = npc;
@@ -102,10 +100,22 @@ public class NPCConversationManager : AbstractPlayerInteraction
         getClient().sendPacket(PacketCreator.enableActions());
     }
 
-    public void sendDefault()
+    public void sendDefault(int checkQuestId = 0)
     {
-        sendOk(getDefaultTalk(npc));
+        sendOk(GetDefaultTalk(checkQuestId));
     }
+
+    public string GetDefaultTalk(int checkQuestId = 0)
+    {
+        if (checkQuestId > 0)
+            return isQuestCompleted(checkQuestId) ? GetDefault1() : GetDefault0();
+
+        return GetDefaultRandom();
+    }
+
+    public string GetDefault0() => c.CurrentCulture.GetNpcDefaultTalk(npc, 0);
+    public string GetDefault1() => c.CurrentCulture.GetNpcDefaultTalk(npc, 1);
+    public string GetDefaultRandom() => c.CurrentCulture.GetNpcDefaultTalk(npc, -1);
 
     /// <summary>
     /// 
@@ -277,7 +287,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void displayGuildRanks()
     {
-        c.CurrentServerContainer.GuildManager.ShowRankedGuilds(c, npc);
+        c.CurrentServer.NodeService.GuildManager.ShowRankedGuilds(c, npc);
     }
 
     public bool canSpawnPlayerNpc(int mapid)
@@ -285,7 +295,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var chr = getPlayer();
         return chr.getLevel() >= chr.getMaxClassLevel()
                 && !chr.isGM()
-                && c.CurrentServerContainer.PlayerNPCService.CanSpawn(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
+                && c.CurrentServer.NodeService.PlayerNPCService.CanSpawnHonor(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
     }
 
     public IMapObject? getPlayerNPCByScriptid(int scriptId)
@@ -303,10 +313,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public override Team? getParty()
     {
-        return getPlayer().TeamModel;
+        return getPlayer().getParty();
     }
 
-    public List<IPlayer>? GetTeamMembers()
+    public List<Player>? GetTeamMembers()
     {
         return getParty()?.GetChannelMembers(c.CurrentServer);
     }
@@ -410,13 +420,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void openShopNPC(int id)
     {
-        var shop = c.CurrentServerContainer.ShopManager.getShop(id);
+        var shop = c.CurrentServer.NodeService.ShopManager.getShop(id);
 
         if (shop == null)
         {
             // check for missing shopids thanks to resinate
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
-            shop = c.CurrentServerContainer.ShopManager.getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
+            shop = c.CurrentServer.NodeService.ShopManager.getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
         shop.sendShop(c);
     }
@@ -473,7 +483,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
     public GachaponPoolItemDataObject? doGachapon()
     {
-        var reward = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
+        var reward = c.CurrentServer.NodeService.GachaponManager.DoGachapon(npc);
         var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity);
         if (rewardItem == null)
         {
@@ -493,39 +503,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (reward.Level > 1)
         {
             //Uncommon and Rare
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
+            c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
         return reward;
     }
 
-    public void upgradeAlliance()
-    {
-        c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
-    }
-
-    public void disbandAlliance(IChannelClient c, int allianceId)
-    {
-        c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
-    }
-
-    public bool canBeUsedAllianceName(string name)
-    {
-        return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
-    }
-
-    public Guild.Alliance? createAlliance(string name)
-    {
-        return c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name);
-    }
-
-    public int getAllianceCapacity()
-    {
-        return getPlayer().AllianceModel!.Capacity;
-    }
-
     public RemoteHiredMerchantData LoadFredrickRegistry()
     {
-        return c.CurrentServerContainer.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
+        return c.CurrentServer.NodeService.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
     }
 
     public void ShowFredrick(RemoteHiredMerchantData store)
@@ -641,7 +626,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public bool isUsingOldPqNpcStyle()
     {
-        return YamlConfig.config.server.USE_OLD_GMS_STYLED_PQ_NPCS && this.getPlayer().getParty() != null;
+        return YamlConfig.config.server.USE_OLD_GMS_STYLED_PQ_NPCS && this.getPlayer().Party > 0;
     }
 
     public int[] getAvailableMasteryBooks()
@@ -652,9 +637,33 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public int[] getAvailableSkillBooks()
     {
         List<int> ret = ItemInformationProvider.getInstance().usableSkillBooks(this.getPlayer());
-        ret.AddRange(c.CurrentServerContainer.SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
+        ret.AddRange(getTeachableSkills(this.getPlayer()));
 
         return ret.ToArray();
+    }
+
+    public List<int> getTeachableSkills(Player chr)
+    {
+        List<int> list = new();
+
+        foreach (int book in c.CurrentServer.NodeService.SkillbookInformationProvider.GetAllSkills().Keys)
+        {
+            if (book >= 0)
+            {
+                continue;
+            }
+
+            int skillid = -book;
+            if (skillid / 10000 == chr.getJob().getId())
+            {
+                if (chr.getMasterLevel(skillid) == 0)
+                {
+                    list.Add(-skillid);
+                }
+            }
+        }
+
+        return list;
     }
 
     public object[] getNamesWhoDropsItem(int itemId)
@@ -664,7 +673,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getSkillBookInfo(int itemid)
     {
-        var sbe = c.CurrentServerContainer.SkillbookInformationProvider.getSkillbookAvailability(itemid);
+        var sbe = c.CurrentServer.NodeService.SkillbookInformationProvider.getSkillbookAvailability(itemid);
         switch (sbe)
         {
             case SkillBookEntry.UNAVAILABLE:
@@ -687,407 +696,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    // (CPQ + WED wishlist) by -- Drago (Dragohe4rt)
-    public int cpqCalcAvgLvl(int map)
-    {
-        int num = 0;
-        int avg = 0;
-        foreach (var mmo in c.CurrentServer.getMapFactory().getMap(map).getAllPlayers())
-        {
-            avg += mmo.getLevel();
-            num++;
-        }
-        avg /= num;
-        return avg;
-    }
 
-    public bool sendCPQMapLists()
-    {
-        string msg = LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQPickRoom);
-        int msgLen = msg.Length;
-        for (int i = 0; i < 6; i++)
-        {
-            if (fieldTaken(i))
-            {
-                if (fieldLobbied(i))
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (Level: "  // "Carnival field" GMS-like improvement thanks to Jayd (jaydenseah)
-                            + cpqCalcAvgLvl(980000100 + i * 100) + " / "
-                            + getPlayerCount(980000100 + i * 100) + "x"
-                            + getPlayerCount(980000100 + i * 100) + ")  #l\r\n";
-                }
-            }
-            else
-            {
-                if (i >= 0 && i <= 3)
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (2x2) #l\r\n";
-                }
-                else
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (3x3) #l\r\n";
-                }
-            }
-        }
-
-        if (msg.Length > msgLen)
-        {
-            sendSimple(msg);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public bool fieldTaken(int field)
-    {
-        if (!c.CurrentServer.canInitMonsterCarnival(true, field))
-        {
-            return true;
-        }
-        if (c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayers().Count > 0)
-        {
-            return true;
-        }
-        if (c.CurrentServer.getMapFactory().getMap(980000101 + field * 100).getAllPlayers().Count > 0)
-        {
-            return true;
-        }
-        return c.CurrentServer.getMapFactory().getMap(980000102 + field * 100).getAllPlayers().Count > 0;
-    }
-
-    public bool fieldLobbied(int field)
-    {
-        return c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayers().Count > 0;
-    }
-
-    public void cpqLobby(int field)
-    {
-        try
-        {
-            IMap map, mapExit;
-            var cs = c.CurrentServer;
-
-            map = cs.getMapFactory().getMap(980000100 + 100 * field);
-            mapExit = cs.getMapFactory().getMap(980000000);
-            foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
-            {
-                if (mc != null)
-                {
-                    mc.setChallenged(false);
-                    mc.changeMap(map, map.getPortal(0));
-                    mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(3 * 60), 1500);
-
-                    mc.setCpqTimer(c.CurrentServerContainer.TimerManager.schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex.ToString());
-        }
-    }
-
-    public IPlayer? getChrById(int id)
+    public Player? getChrById(int id)
     {
         return c.CurrentServer.getPlayerStorage().getCharacterById(id);
-    }
-
-    public void cancelCPQLobby()
-    {
-        foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
-        {
-            mc.clearCpqTimer();
-        }
-    }
-
-    private void warpoutCPQLobby(IMap lobbyMap)
-    {
-        var outs = lobbyMap.getChannelServer().getMapFactory().getMap((lobbyMap.getId() < 980030000) ? 980000000 : 980030000);
-        foreach (var mc in lobbyMap.getAllPlayers())
-        {
-            mc.resetCP();
-            mc.setTeam(-1);
-            mc.setMonsterCarnival(null);
-            mc.changeMap(outs, outs.getPortal(0));
-        }
-    }
-
-    private int isCPQParty(IMap lobby, Team party)
-    {
-        int cpqMinLvl, cpqMaxLvl;
-
-        if (lobby.isCPQLobby())
-        {
-            cpqMinLvl = 30;
-            cpqMaxLvl = 50;
-        }
-        else
-        {
-            cpqMinLvl = 51;
-            cpqMaxLvl = 70;
-        }
-
-        var partyMembers = party.GetChannelMembers(c.CurrentServer);
-        foreach (var pchr in partyMembers)
-        {
-            if (pchr.getLevel() >= cpqMinLvl && pchr.getLevel() <= cpqMaxLvl)
-            {
-                if (lobby.getCharacterById(pchr.getId()) == null)
-                {
-                    return 1;  // party member detected out of area
-                }
-            }
-            else
-            {
-                return 2;  // party member doesn't fit requirements
-            }
-        }
-
-        return 0;
-    }
-
-    private int canStartCPQ(IMap lobby, Team party, Team challenger)
-    {
-        int ret = isCPQParty(lobby, party);
-        if (ret != 0)
-        {
-            return ret;
-        }
-
-        ret = isCPQParty(lobby, challenger);
-        if (ret != 0)
-        {
-            return -ret;
-        }
-
-        return 0;
-    }
-
-    public void startCPQ(IPlayer? challenger, int field)
-    {
-        try
-        {
-            cancelCPQLobby();
-
-            var lobbyMap = getPlayer().getMap();
-            if (challenger != null)
-            {
-                if (challenger.getParty() == null)
-                {
-                    throw new Exception("No opponent found!");
-                }
-
-                foreach (var mc in challenger.getParty()!.GetChannelMembers(c.CurrentServer))
-                {
-                    mc.changeMap(lobbyMap, lobbyMap.getPortal(0));
-                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(10), 1500);
-                }
-                foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
-                {
-                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(10), 1500);
-                }
-            }
-            int mapid = getPlayer().getMapId() + 1;
-
-            c.CurrentServerContainer.TimerManager.schedule(() =>
-            {
-                Team lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
-                try
-                {
-                    foreach (var mc in lobbyParty.GetChannelMembers(c.CurrentServer))
-                    {
-                        mc.setMonsterCarnival(null);
-                    }
-                    foreach (var mc in challengerParty.GetChannelMembers(c.CurrentServer))
-                    {
-                        mc.setMonsterCarnival(null);
-                    }
-                }
-                catch (NullReferenceException)
-                {
-                    warpoutCPQLobby(lobbyMap);
-                    return;
-                }
-
-                int status = canStartCPQ(lobbyMap, lobbyParty, challengerParty);
-                if (status == 0)
-                {
-                    new MonsterCarnival(c.CurrentServer, lobbyParty, challengerParty, mapid, true, (field / 100) % 10);
-                }
-                else
-                {
-                    warpoutCPQLobby(lobbyMap);
-                }
-            }, 11000);
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
-
-    public void startCPQ2(IPlayer? challenger, int field)
-    {
-        try
-        {
-            cancelCPQLobby();
-
-            var lobbyMap = getPlayer().getMap();
-            if (challenger != null)
-            {
-                if (challenger.getParty() == null)
-                {
-                    throw new Exception("No opponent found!");
-                }
-
-                foreach (var mc in challenger.getParty()!.GetChannelMembers(c.CurrentServer))
-                {
-                    if (mc != null)
-                    {
-                        mc.changeMap(lobbyMap, lobbyMap.getPortal(0));
-                        mapClock(10);
-                    }
-                }
-            }
-            int mapid = getPlayer().getMapId() + 100;
-            c.CurrentServerContainer.TimerManager.schedule(() =>
-            {
-                var lobbyParty = getPlayer().getParty()!;
-                var challengerParty = challenger.getParty()!;
-
-                try
-                {
-                    foreach (var mc in lobbyParty.GetChannelMembers(c.CurrentServer))
-                    {
-                        if (mc != null)
-                        {
-                            mc.setMonsterCarnival(null);
-                        }
-                    }
-                    foreach (var mc in challengerParty.GetChannelMembers(c.CurrentServer))
-                    {
-                        if (mc != null)
-                        {
-                            mc.setMonsterCarnival(null);
-                        }
-                    }
-                }
-                catch (NullReferenceException)
-                {
-                    warpoutCPQLobby(lobbyMap);
-                    return;
-                }
-
-
-                int status = canStartCPQ(lobbyMap, lobbyParty, challengerParty);
-                if (status == 0)
-                {
-                    new MonsterCarnival(c.CurrentServer, lobbyParty, challengerParty, mapid, false, (field / 1000) % 10);
-                }
-                else
-                {
-                    warpoutCPQLobby(lobbyMap);
-                }
-            }, 10000);
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
-
-    public bool sendCPQMapLists2()
-    {
-        string msg = LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQPickRoom);
-        int msgLen = msg.Length;
-        for (int i = 0; i < 3; i++)
-        {
-            if (fieldTaken2(i))
-            {
-                if (fieldLobbied2(i))
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (Level: "  // "Carnival field" GMS-like improvement thanks to Jayd
-                            + cpqCalcAvgLvl(980031000 + i * 1000) + " / "
-                            + getPlayerCount(980031000 + i * 1000) + "x"
-                            + getPlayerCount(980031000 + i * 1000) + ")  #l\r\n";
-                }
-            }
-            else
-            {
-                if (i == 0 || i == 1)
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (2x2) #l\r\n";
-                }
-                else
-                {
-                    msg += "#b#L" + i + "#Carnival Field " + (i + 1) + " (3x3) #l\r\n";
-                }
-            }
-        }
-
-        if (msg.Length > msgLen)
-        {
-            sendSimple(msg);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public bool fieldTaken2(int field)
-    {
-        if (!c.CurrentServer.canInitMonsterCarnival(false, field))
-        {
-            return true;
-        }
-        if (c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayers().Count > 0)
-        {
-            return true;
-        }
-        if (c.CurrentServer.getMapFactory().getMap(980031100 + field * 1000).getAllPlayers().Count > 0)
-        {
-            return true;
-        }
-        return c.CurrentServer.getMapFactory().getMap(980031200 + field * 1000).getAllPlayers().Count > 0;
-    }
-
-    public bool fieldLobbied2(int field)
-    {
-        return c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayers().Count > 0;
-    }
-
-    public void cpqLobby2(int field)
-    {
-        try
-        {
-            IMap map, mapExit;
-            var cs = c.CurrentServer;
-
-            mapExit = cs.getMapFactory().getMap(980030000);
-            map = cs.getMapFactory().getMap(980031000 + 1000 * field);
-            foreach (var mc in c.OnlinedCharacter.getParty()!.GetChannelMembers(c.CurrentServer))
-            {
-                if (mc != null)
-                {
-                    mc.setChallenged(false);
-                    mc.changeMap(map, map.getPortal(0));
-                    mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(3 * 60), 1500);
-
-                    mc.setCpqTimer(c.CurrentServerContainer.TimerManager.schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex.ToString());
-        }
     }
 
     public void mapClock(int time)
@@ -1095,114 +707,17 @@ public class NPCConversationManager : AbstractPlayerInteraction
         getPlayer().getMap().broadcastMessage(PacketCreator.getClock(time));
     }
 
-    private bool sendCPQChallenge(string cpqType, int leaderid)
-    {
-        HashSet<int> cpqLeaders = new();
-        cpqLeaders.Add(leaderid);
-        cpqLeaders.Add(getPlayer().getId());
 
-        return c.CurrentServer.MatchChecker.createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, 0, getPlayer().getId(), cpqLeaders, cpqType);
-    }
-
-    public void answerCPQChallenge(bool accept)
-    {
-        c.CurrentServer.MatchChecker.answerMatchConfirmation(getPlayer().getId(), accept);
-    }
-
-    public void challengeParty2(int field)
-    {
-        IPlayer? leader = null;
-        var map = c.CurrentServer.getMapFactory().getMap(980031000 + 1000 * field);
-        foreach (var mmo in map.getAllPlayers())
-        {
-            var mc = (IPlayer)mmo;
-            if (mc.getParty() == null)
-            {
-                sendOk(LanguageConstants.getMessage(mc, LanguageConstants.CPQFindError));
-                return;
-            }
-            if (mc.getParty()!.getLeaderId() == mc.getId())
-            {
-                leader = mc;
-                break;
-            }
-        }
-        if (leader != null)
-        {
-            if (!leader.isChallenged())
-            {
-                if (!sendCPQChallenge("cpq2", leader.getId()))
-                {
-                    sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQChallengeRoomAnswer));
-                }
-            }
-            else
-            {
-                sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQChallengeRoomAnswer));
-            }
-        }
-        else
-        {
-            sendOk(LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQLeaderNotFound));
-        }
-    }
-
-    public void challengeParty(int field)
-    {
-        IPlayer? leader = null;
-        var map = c.CurrentServer.getMapFactory().getMap(980000100 + 100 * field);
-        if (map.getAllPlayers().Count != getPlayer().getParty()!.GetChannelMembers(c.CurrentServer).Count)
-        {
-            sendOk("An unexpected error regarding the other party has occurred.");
-            return;
-        }
-        foreach (var mc in map.getAllPlayers())
-        {
-            if (mc.getParty() == null)
-            {
-                sendOk(LanguageConstants.getMessage(mc, LanguageConstants.CPQFindError));
-                return;
-            }
-            if (mc.getParty()!.getLeaderId() == mc.getId())
-            {
-                leader = mc;
-                break;
-            }
-        }
-        if (leader != null)
-        {
-            if (!leader.isChallenged())
-            {
-                if (!sendCPQChallenge("cpq1", leader.getId()))
-                {
-                    sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQChallengeRoomAnswer));
-                }
-            }
-            else
-            {
-                sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQChallengeRoomAnswer));
-            }
-        }
-        else
-        {
-            sendOk(LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQLeaderNotFound));
-        }
-    }
-
-    object setupLock = new object();
     private bool setupAriantBattle(Expedition exped, int mapid)
     {
-        lock (setupLock)
+        var arenaMap = this.getMap().getChannelServer().getMapFactory().getMap(mapid + 1);
+        if (arenaMap.getAllPlayers().Count > 0)
         {
-            var arenaMap = this.getMap().getChannelServer().getMapFactory().getMap(mapid + 1);
-            if (arenaMap.getAllPlayers().Count > 0)
-            {
-                return false;
-            }
-
-            new AriantColiseum(arenaMap, exped);
-            return true;
+            return false;
         }
+
+        new AriantColiseum(arenaMap, exped);
+        return true;
     }
 
     public string startAriantBattle(ExpeditionType expedType, int mapid)
@@ -1234,7 +749,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 return "All competing players should be on this area to start the battle.";
             }
 
-            if (mc.getParty() != null)
+            if (mc.Party > 0)
             {
                 return "All competing players must not be on a party to start the battle.";
             }
@@ -1462,4 +977,68 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         return ItemInformationProvider.getInstance().getCardTierSize();
     }
+
+    #region Guild/Alliance Operation
+    public GuildDto? GetGuild() => getPlayer().GetGuild();
+    public AllianceDto? GetAlliance() => getPlayer().GetAlliance();
+
+    public void upgradeAlliance()
+    {
+        c.CurrentServer.NodeService.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
+    }
+
+    public void disbandAlliance(IChannelClient c, int allianceId)
+    {
+        c.CurrentServer.NodeService.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
+    }
+
+    public bool canBeUsedAllianceName(string name)
+    {
+        return c.CurrentServer.NodeService.GuildManager.CheckAllianceName(name);
+    }
+
+    public void CreateAllianceAysnc(string name, int cost)
+    {
+        c.CurrentServer.NodeService.GuildManager.CreateAlliance(getPlayer(), name, cost);
+    }
+
+    public int getAllianceCapacity()
+    {
+        return getPlayer().GetAlliance()?.Capacity ?? 0;
+    }
+
+    public void increaseGuildCapacity()
+    {
+        var guild = GetGuild();
+        if (guild == null)
+            return;
+
+        int cost = GuildManager.getIncreaseGuildCost(guild.Capacity);
+
+        if (getMeso() < cost)
+        {
+            dropMessage(1, "You don't have enough mesos.");
+            return;
+        }
+
+        c.CurrentServer.NodeService.GuildManager.IncreaseGuildCapacity(getPlayer(), cost);
+    }
+
+    public void disbandGuild()
+    {
+        if (getPlayer().GuildId < 1 || getPlayer().GuildRank != 1)
+        {
+            return;
+        }
+        try
+        {
+            c.CurrentServer.NodeService.GuildManager.Disband(getPlayer());
+        }
+        catch (Exception e)
+        {
+            Log.Error(e.ToString());
+        }
+    }
+
+    #endregion
 }

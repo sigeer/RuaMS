@@ -4,12 +4,12 @@ namespace Application.Core.Game.Players.PlayerProps
 {
     public abstract class PlayerPropBase<TDTO> where TDTO : class
     {
-        public PlayerPropBase(IPlayer owner)
+        public PlayerPropBase(Player owner)
         {
             Owner = owner;
         }
 
-        public IPlayer Owner { get; set; }
+        public Player Owner { get; set; }
         public abstract void LoadData(RepeatedField<TDTO> dbContext);
         public abstract TDTO[] ToDto();
     }

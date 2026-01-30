@@ -60,7 +60,7 @@ namespace Application.Core.Game.Maps.Specials
             return DefaultEffectLose;
         }
 
-        public override void startEvent(IPlayer chr)
+        public override void startEvent(Player chr)
         {
             if (this.Id == MapId.EVENT_COCONUT_HARVEST && Coconut == null)
             {

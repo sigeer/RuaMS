@@ -61,7 +61,4 @@ public class CouponCodeHandler : ChannelHandlerBase
             }
         }
     }
-
-
-
 }

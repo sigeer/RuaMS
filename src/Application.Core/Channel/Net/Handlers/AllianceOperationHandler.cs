@@ -44,45 +44,18 @@ public class AllianceOperationHandler : ChannelHandlerBase
 
         var chr = c.OnlinedCharacter;
 
-        var chrGuild = chr.GuildModel;
-        if (chrGuild == null)
+        if (chr.GuildId <= 0)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
-        var alliance = chr.AllianceModel;
-
         byte b = p.readByte();
-        if (alliance == null)
-        {
-            if (b != 4)
-            {
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-        }
-        else
-        {
-            if (b == 4)
-            {
-                chr.dropMessage(5, "Your guild is already registered on a guild alliance.");
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            if (chr.AllianceRank > 2 || !alliance.getGuilds().Contains(chr.getGuildId()))
-            {
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-        }
-
         // "alliance" is only null at case 0x04
         switch (b)
         {
             case 0x01:
-                alliance!.BroadcastPlayerInfo(chr.Id);
+                _guildManager!.AllianceBroadcastPlayerInfo(chr);
                 break;
             case 0x02:
                 {
@@ -99,11 +72,6 @@ public class AllianceOperationHandler : ChannelHandlerBase
             case 0x04:
                 {
                     // Accept Invite
-                    if (chrGuild.AllianceId != 0 || chr.GuildRank != 1)
-                    {
-                        return;
-                    }
-
                     int allianceId = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
 

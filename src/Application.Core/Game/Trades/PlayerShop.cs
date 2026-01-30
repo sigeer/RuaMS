@@ -10,15 +10,14 @@ namespace Application.Core.Game.Trades;
 public class PlayerShop : AbstractMapObject, IPlayerShop
 {
 
-    public IPlayer Owner { get; private set; }
+    public Player Owner { get; private set; }
 
-    private IPlayer?[] visitors = new IPlayer[3];
+    private Player?[] visitors = new Player[3];
 
 
     private int boughtnumber = 0;
-    private List<KeyValuePair<IPlayer, string>> chatLog = new();
+    private List<KeyValuePair<Player, string>> chatLog = new();
     private Dictionary<int, byte> chatSlot = new();
-    private object visitorLock = new object();
 
     public WorldChannel ChannelServer { get; }
     public long StartTime { get; }
@@ -41,12 +40,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public PlayerShop(IPlayer owner, string description, Item item)
+    public PlayerShop(Player owner, string description, Item item)
     {
         setPosition(owner.getPosition());
         Owner = owner;
         ChannelServer = owner.getChannelServer();
-        StartTime = ChannelServer.Container.getCurrentTime();
+        StartTime = ChannelServer.Node.getCurrentTime();
         ExpirationTime = item.getExpiration();
         this.Title = description;
         SourceItem = item;
@@ -67,15 +66,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public int GetFreeSlot()
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            return Array.IndexOf(visitors, null);
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        return Array.IndexOf(visitors, null);
     }
 
     public bool hasFreeSlot()
@@ -85,24 +76,16 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public byte[] getShopRoomInfo()
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            var count = (byte)visitors.Count(x => x != null);
-            return new byte[] { count, (byte)visitors.Length };
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        var count = (byte)visitors.Count(x => x != null);
+        return new byte[] { count, (byte)visitors.Length };
     }
 
-    public bool IsOwner(IPlayer chr)
+    public bool IsOwner(Player chr)
     {
         return Owner!.Equals(chr);
     }
 
-    private void addVisitor(IPlayer visitor)
+    private void addVisitor(Player visitor)
     {
         var freeSlot = GetFreeSlot();
         if (freeSlot != -1)
@@ -114,95 +97,67 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void forceRemoveVisitor(IPlayer visitor)
+    public void forceRemoveVisitor(Player visitor)
     {
-        Monitor.Enter(visitorLock);
-        try
+        for (int i = 0; i < 3; i++)
         {
-            for (int i = 0; i < 3; i++)
+            if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
             {
-                if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
-                {
-                    visitors[i]!.VisitingShop = null;
-                    visitors[i] = null;
+                visitors[i]!.VisitingShop = null;
+                visitors[i] = null;
 
-                    broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
-                    MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
-                    return;
-                }
+                broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
+                MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                return;
             }
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
         }
     }
 
-    public void RemoveVisitor(IPlayer visitor)
+    public void RemoveVisitor(Player visitor)
     {
-        Monitor.Enter(visitorLock);
-        try
+        for (int i = 0; i < 3; i++)
         {
-            for (int i = 0; i < 3; i++)
+            if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
             {
-                if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
+                for (int j = i; j < 2; j++)
                 {
-                    for (int j = i; j < 2; j++)
+                    if (visitors[j] != null)
                     {
-                        if (visitors[j] != null)
-                        {
-                            Owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
-                        }
-                        visitors[j] = visitors[j + 1];
+                        Owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
                     }
-                    visitors[2] = null;
-                    for (int j = i; j < 2; j++)
-                    {
-                        if (visitors[j] != null)
-                        {
-                            Owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
-                        }
-                    }
-
-                    broadcastRestoreToVisitors();
-                    MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
-                    return;
+                    visitors[j] = visitors[j + 1];
                 }
+                visitors[2] = null;
+                for (int j = i; j < 2; j++)
+                {
+                    if (visitors[j] != null)
+                    {
+                        Owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
+                    }
+                }
+
+                broadcastRestoreToVisitors();
+                MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                return;
             }
         }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
-
         MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
     }
 
-    public bool isVisitor(IPlayer visitor)
+    public bool isVisitor(Player visitor)
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            return visitors.Contains(visitor);
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        return visitors.Contains(visitor);
     }
 
     public bool AddCommodity(PlayerShopItem item)
     {
-        lock (Commodity)
+        if (Commodity.Count >= 16)
         {
-            if (Commodity.Count >= 16)
-            {
-                return false;
-            }
-
-            Commodity.Add(item);
-            return true;
+            return false;
         }
+
+        Commodity.Add(item);
+        return true;
     }
 
     private void removeFromSlot(int slot)
@@ -210,37 +165,34 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity.RemoveAt(slot);
     }
 
-    public void takeItemBack(int slot, IPlayer chr)
+    public void takeItemBack(int slot, Player chr)
     {
-        lock (Commodity)
+        var shopItem = Commodity.ElementAt(slot);
+        if (shopItem.isExist())
         {
-            var shopItem = Commodity.ElementAt(slot);
-            if (shopItem.isExist())
+            if (shopItem.getBundles() > 0)
             {
-                if (shopItem.getBundles() > 0)
+                Item iitem = shopItem.getItem().copy();
+                iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
+
+                if (!Inventory.checkSpot(chr, iitem))
                 {
-                    Item iitem = shopItem.getItem().copy();
-                    iitem.setQuantity((short)(shopItem.getItem().getQuantity() * shopItem.getBundles()));
-
-                    if (!Inventory.checkSpot(chr, iitem))
-                    {
-                        chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
-                        chr.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    InventoryManipulator.addFromDrop(chr.Client, iitem, true);
+                    chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    chr.sendPacket(PacketCreator.enableActions());
+                    return;
                 }
 
-                removeFromSlot(slot);
-                chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
+                InventoryManipulator.addFromDrop(chr.Client, iitem, true);
             }
+
+            removeFromSlot(slot);
+            chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         }
     }
 
     public void GainMeso(int meso)
     {
-        Owner.GainMeso(meso, true);
+        Owner.GainMeso(meso, GainItemShow.ShowInMessage);
     }
 
     public string? MesoCheck(int meso)
@@ -270,34 +222,18 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void broadcastToVisitors(Packet packet)
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            InvokeAllVisitor(x => x.sendPacket(packet));
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        InvokeAllVisitor(x => x.sendPacket(packet));
     }
 
     public void broadcastRestoreToVisitors()
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            InvokeAllVisitor((visitor, i) => visitor.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1)));
-            InvokeAllVisitor(visitor => visitor.sendPacket(PacketCreator.getPlayerShop(this, false)));
+        InvokeAllVisitor((visitor, i) => visitor.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1)));
+        InvokeAllVisitor(visitor => visitor.sendPacket(PacketCreator.getPlayerShop(this, false)));
 
-            recoverChatLog();
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        recoverChatLog();
     }
 
-    private void InvokeAllVisitor(Action<IPlayer> action)
+    private void InvokeAllVisitor(Action<Player> action)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -308,7 +244,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    private void InvokeAllVisitor(Action<IPlayer, int> action)
+    private void InvokeAllVisitor(Action<Player, int> action)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -321,30 +257,22 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void removeVisitors()
     {
-        List<IPlayer> visitorList = new(3);
+        List<Player> visitorList = new(3);
 
-        Monitor.Enter(visitorLock);
         try
         {
-            try
+            InvokeAllVisitor(visitor =>
             {
-                InvokeAllVisitor(visitor =>
-                {
-                    visitor.sendPacket(PacketCreator.shopErrorMessage(10, 1));
-                    visitorList.Add(visitor);
-                });
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
+                visitor.sendPacket(PacketCreator.shopErrorMessage(10, 1));
+                visitorList.Add(visitor);
+            });
         }
-        finally
+        catch (Exception e)
         {
-            Monitor.Exit(visitorLock);
+            Log.Logger.Error(e.ToString());
         }
 
-        foreach (IPlayer mc in visitorList)
+        foreach (Player mc in visitorList)
         {
             forceRemoveVisitor(mc);
         }
@@ -370,48 +298,40 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         broadcastToVisitors(packet);
     }
 
-    private byte getVisitorSlot(IPlayer chr)
+    private byte getVisitorSlot(Player chr)
     {
         return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
-    public void sendMessage(IPlayer fromChar, string chat)
+    public void sendMessage(Player fromChar, string chat)
     {
         byte s = getVisitorSlot(fromChar);
 
-        lock (chatLog)
+        chatLog.Add(new(fromChar, chat));
+        if (chatLog.Count > 25)
         {
-            chatLog.Add(new(fromChar, chat));
-            if (chatLog.Count > 25)
-            {
-                chatLog.RemoveAt(0);
-            }
-            chatSlot.AddOrUpdate(fromChar.getId(), s);
+            chatLog.RemoveAt(0);
         }
+        chatSlot.AddOrUpdate(fromChar.getId(), s);
 
         broadcast(PacketCreator.getPlayerShopChat(fromChar, chat, s));
     }
 
     private void recoverChatLog()
     {
-        lock (chatLog)
+        foreach (var it in chatLog)
         {
-            foreach (var it in chatLog)
-            {
-                IPlayer chr = it.Key;
-                var pos = chatSlot.GetValueOrDefault(chr.getId());
+            Player chr = it.Key;
+            var pos = chatSlot.GetValueOrDefault(chr.getId());
 
-                broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
-            }
+            broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
         }
     }
 
     private void clearChatLog()
     {
-        lock (chatLog)
-        {
-            chatLog.Clear();
-        }
+
+        chatLog.Clear();
     }
 
     public void SetOpen()
@@ -419,7 +339,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Status.Set(PlayerShopStatus.Opening);
     }
 
-    public void SetMaintenance(IPlayer chr)
+    public void SetMaintenance(Player chr)
     {
         Status.Set(PlayerShopStatus.Maintenance);
     }
@@ -446,36 +366,17 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void sendShop(IChannelClient c)
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            c.sendPacket(PacketCreator.getPlayerShop(this, IsOwner(c.OnlinedCharacter)));
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        c.sendPacket(PacketCreator.getPlayerShop(this, IsOwner(c.OnlinedCharacter)));
     }
 
-    public IPlayer?[] getVisitors()
+    public Player?[] getVisitors()
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            return visitors.ToArray();
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        return visitors.ToArray();
     }
 
     public List<PlayerShopItem> getItems()
     {
-        lock (Commodity)
-        {
-            return new(Commodity);
-        }
+        return new(Commodity);
     }
 
     public bool hasItem(int itemid)
@@ -500,16 +401,9 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             BlackList.Add(name);
         }
 
-        IPlayer? target = null;
-        Monitor.Enter(visitorLock);
-        try
-        {
-            target = visitors.FirstOrDefault(x => x?.Name == name);
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        Player? target = null;
+
+        target = visitors.FirstOrDefault(x => x?.Name == name);
 
         if (target != null)
         {
@@ -523,47 +417,35 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return BlackList.Contains(name);
     }
 
-    public bool VisitShop(IPlayer chr)
+    public bool VisitShop(Player chr)
     {
-        Monitor.Enter(visitorLock);
-        try
+        if (BlackList.Contains(chr.getName()))
         {
-            if (BlackList.Contains(chr.getName()))
-            {
-                chr.dropMessage(1, "You have been banned from this store.");
-                return false;
-            }
-
-            if (Status.Is(PlayerShopStatus.Opening))
-            {
-                chr.dropMessage(1, "This store is not yet open.");
-                return false;
-            }
-
-            if (hasFreeSlot() && !isVisitor(chr))
-            {
-                addVisitor(chr);
-                chr.VisitingShop = this;
-                sendShop(chr.getClient());
-
-                return true;
-            }
-
+            chr.dropMessage(1, "You have been banned from this store.");
             return false;
         }
-        finally
+
+        if (Status.Is(PlayerShopStatus.Opening))
         {
-            Monitor.Exit(visitorLock);
+            chr.dropMessage(1, "This store is not yet open.");
+            return false;
         }
 
+        if (hasFreeSlot() && !isVisitor(chr))
+        {
+            addVisitor(chr);
+            chr.VisitingShop = this;
+            sendShop(chr.getClient());
+
+            return true;
+        }
+
+        return false;
     }
 
     public List<PlayerShopItem> QueryAvailableBundles(int itemid)
     {
-        lock (Commodity)
-        {
-            return Commodity.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
-        }
+        return Commodity.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
     }
 
     public override void sendDestroyData(IChannelClient client)
@@ -592,17 +474,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    Lock tradeLock = new();
-    public bool TradeLock()
-    {
-        return tradeLock.TryEnter();
-    }
-
-    public void TradeUnlock()
-    {
-        tradeLock.Exit();
-    }
-
     public void ExpiredInvoke()
     {
         Close();
@@ -610,29 +481,24 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    public bool Retrieve(IPlayer owner)
+    public bool Retrieve(Player owner)
     {
         if (owner.Id != this.OwnerId)
             return false;
 
-        lock (Commodity)
+        foreach (var mpsi in Commodity)
         {
-            foreach (var mpsi in Commodity)
+            if (mpsi.getBundles() >= 2)
             {
-                if (mpsi.getBundles() >= 2)
-                {
-                    var iItem = mpsi.getItem().copy();
-                    iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
-                    InventoryManipulator.addFromDrop(Owner.Client, iItem, false);
-                }
-                else if (mpsi.isExist())
-                {
-                    InventoryManipulator.addFromDrop(Owner.Client, mpsi.getItem(), true);
-                }
+                var iItem = mpsi.getItem().copy();
+                iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
+                InventoryManipulator.addFromDrop(Owner.Client, iItem, false);
+            }
+            else if (mpsi.isExist())
+            {
+                InventoryManipulator.addFromDrop(Owner.Client, mpsi.getItem(), true);
             }
         }
-
-
         return true;
     }
 }

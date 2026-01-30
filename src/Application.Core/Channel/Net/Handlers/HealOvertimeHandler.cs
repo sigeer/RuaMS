@@ -45,7 +45,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
         }
 
         AutobanManager abm = chr.getAutobanManager();
-        int timestamp = c.CurrentServerContainer.getCurrentTimestamp();
+        int timestamp = c.CurrentServer.Node.getCurrentTimestamp();
         p.skip(8);
 
         short healHP = p.readShort();
@@ -79,7 +79,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
             if ((abm.getLastSpam(1) + 1500) > timestamp)
             {
                 autoBanDataManager.AddPoint(AutobanFactory.FAST_MP_HEALING, chr, "Fast mp healing");
-                return;     // thanks resinate for noticing mp being gained even after detection
+                return;
             }
             chr.UpdateStatsChunk(() =>
             {

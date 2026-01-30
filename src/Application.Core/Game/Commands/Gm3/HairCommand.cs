@@ -18,7 +18,7 @@ public class HairCommand : CommandBase
             return;
         }
 
-        IPlayer? targetPlayer = c.OnlinedCharacter;
+        Player? targetPlayer = c.OnlinedCharacter;
         string? hairStr;
         if (paramsValue.Length == 1)
         {

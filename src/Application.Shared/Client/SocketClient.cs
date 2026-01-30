@@ -7,7 +7,6 @@ using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 
 namespace Application.Shared.Client
 {
@@ -39,16 +38,13 @@ namespace Application.Shared.Client
 
             this.log = log;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 try
                 {
-                    while (await packetChannel.Reader.WaitToReadAsync())
+                    await foreach (var p in packetChannel.Reader.ReadAllAsync())
                     {
-                        while (packetChannel.Reader.TryRead(out var p))
-                        {
-                            await NettyChannel.WriteAndFlushAsync(p);
-                        }
+                        await NettyChannel.WriteAndFlushAsync(p);
                     }
                 }
                 catch (Exception ex)
@@ -63,15 +59,15 @@ namespace Application.Shared.Client
             return _clientInfo;
         }
 
-        object lockObj = new object();
+        Lock lockObj = new();
         private Semaphore actionsSemaphore = new Semaphore(7, 7);
         public void lockClient()
         {
-            Monitor.Enter(lockObj);
+            lockObj.Enter();
         }
         public void unlockClient()
         {
-            Monitor.Exit(lockObj);
+            lockObj.Exit();
         }
 
         public bool tryacquireClient()
@@ -99,12 +95,12 @@ namespace Application.Shared.Client
                 log.LogError("数据包写入失败");
         }
 
-        public override async void ChannelActive(IChannelHandlerContext ctx)
+        public override void ChannelActive(IChannelHandlerContext ctx)
         {
             var channel = ctx.Channel;
             if (!CurrentServerBase.IsRunning)
             {
-                await channel.CloseAsync();
+                channel.CloseAsync();
                 return;
             }
 
@@ -118,10 +114,9 @@ namespace Application.Shared.Client
             IsActive = false;
         }
 
-        protected abstract void ProcessPacket(InPacket packet);
+        public abstract void ProcessPacket(InPacket packet);
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
-            ProcessPacket(msg);
             LastPacket = DateTimeOffset.UtcNow;
         }
 
@@ -139,7 +134,7 @@ namespace Application.Shared.Client
         {
             var pingedAt = DateTimeOffset.UtcNow;
             sendPacket(PacketCommon.getPing());
-            Task.Delay(15000).ContinueWith(_ =>
+            Task.Delay(15000).ContinueWith(async _ =>
             {
                 try
                 {
@@ -186,7 +181,6 @@ namespace Application.Shared.Client
 
         public void CloseSession()
         {
-
             try
             {
                 CloseSessionInternal();
@@ -217,7 +211,7 @@ namespace Application.Shared.Client
 
         public void CloseSocket()
         {
-            NettyChannel.CloseAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            _ = NettyChannel.CloseAsync();
         }
 
         public virtual void Dispose()

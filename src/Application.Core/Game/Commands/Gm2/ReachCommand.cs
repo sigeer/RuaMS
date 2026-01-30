@@ -17,9 +17,10 @@ public class ReachCommand : CommandBase
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !reach <playername>");
-            return;
+            return ;
         }
 
         _adminService.WarpPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        return;
     }
 }

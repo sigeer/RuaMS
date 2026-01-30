@@ -24,7 +24,7 @@ namespace Application.Core.Game.Players
 
         public void DiscardNewYearRecord(bool isSender)
         {
-            Client.CurrentServerContainer.NewYearCardService.DiscardNewYearCard(this, isSender);
+            Client.CurrentServer.NodeService.NewYearCardService.DiscardNewYearCard(this, isSender);
         }
     }
 }

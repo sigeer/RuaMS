@@ -44,7 +44,7 @@ public class TakeDamageHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        List<IPlayer> banishPlayers = new();
+        List<Player> banishPlayers = new();
 
         var chr = c.OnlinedCharacter;
         p.readInt();
@@ -111,16 +111,9 @@ public class TakeDamageHandler : ChannelHandlerBase
                                         int qty;
 
                                         Inventory inv = chr.getInventory(type);
-                                        inv.lockInventory();
-                                        try
-                                        {
-                                            qty = Math.Min(chr.countItem(loseItem.Id), dropCount);
-                                            InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);
-                                        }
-                                        finally
-                                        {
-                                            inv.unlockInventory();
-                                        }
+
+                                        qty = Math.Min(chr.countItem(loseItem.Id), dropCount);
+                                        InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);
 
                                         if (loseItem.Id == ItemId.ARPQ_SPIRIT_JEWEL)
                                         {
@@ -149,7 +142,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             {
                 //this happens due to mob on last map damaging player just before changing maps
                 _logger.LogWarning(e, "Attack is not a mob-type, rather is a {MapObject} entity", map.getMapObject(oid)?.GetType()?.Name);
-                return;
+                return ;
             }
 
             direction = p.readByte();
@@ -181,8 +174,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                         int id = jobid * 10000 + 1002;
                         var manaReflectSkill = SkillFactory.GetSkillTrust(id);
                         var chrSkillLevel = chr.getSkillLevel(manaReflectSkill);
-                        if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill) 
-                            && chrSkillLevel > 0 
+                        if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill)
+                            && chrSkillLevel > 0
                             && manaReflectSkill.getEffect(chrSkillLevel).makeChanceResult())
                         {
                             int bouncedamage = (damage * manaReflectSkill.getEffect(chrSkillLevel).getX() / 100);

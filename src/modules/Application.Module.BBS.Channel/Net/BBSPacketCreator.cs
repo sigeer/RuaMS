@@ -1,4 +1,3 @@
-using Application.EF.Entities;
 using Application.Shared.Net;
 using BBSProto;
 
@@ -29,7 +28,7 @@ namespace Application.Module.BBS.Channel.Net
             }
             int threadCount = dataList.Count;
             if (dataList[0].Id == 0)
-            { 
+            {
                 //has a notice
                 p.writeByte(1);
                 AddThread(p, dataList[0]);

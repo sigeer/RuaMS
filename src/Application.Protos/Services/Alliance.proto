@@ -1,29 +1,10 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "Base/BoolWrapper.proto";
-
 import "Guild/Alliance.proto";
-import "Guild/UpdateAlliance.proto";
 
 package ServiceProto;
 
 service AllianceService {
 	rpc GetAllianceModel(AllianceProto.GetAllianceRequest) returns(AllianceProto.GetAllianceResponse);
 	rpc CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest) returns(AllianceProto.CreateAllianceCheckResponse);
-	rpc CreateAlliance(AllianceProto.CreateAllianceRequest) returns(AllianceProto.GetAllianceResponse);
-
-	rpc SendAllianceChat(AllianceProto.AllianceChatRequest) returns (google.protobuf.Empty);
-
-
-	rpc AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest) returns (google.protobuf.Empty);
-	rpc ChangeLeader(AllianceProto.AllianceChangeLeaderRequest) returns (google.protobuf.Empty);
-	rpc JoinAlliance(AllianceProto.GuildJoinAllianceRequest) returns (google.protobuf.Empty);
-	rpc LeavelAlliance(AllianceProto.GuildLeaveAllianceRequest) returns (google.protobuf.Empty);
-	rpc ChangeMemberRank(AllianceProto.ChangePlayerAllianceRankRequest) returns (google.protobuf.Empty);
-	rpc IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest) returns (google.protobuf.Empty);
-	rpc UpdateRankTitle(AllianceProto.UpdateAllianceRankTitleRequest) returns (google.protobuf.Empty);
-	rpc UpdateNotice(AllianceProto.UpdateAllianceNoticeRequest) returns (google.protobuf.Empty);
-	rpc DisbandAlliance(AllianceProto.DisbandAllianceRequest) returns (google.protobuf.Empty);
 }

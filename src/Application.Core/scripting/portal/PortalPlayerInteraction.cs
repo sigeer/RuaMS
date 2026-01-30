@@ -59,4 +59,9 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
     {
         c.sendPacket(PacketCreator.playPortalSound());
     }
+
+    public bool CanEnterDeveloperRoom()
+    {
+        return c.CurrentServer.NodeService.AdminService.GetServerStats().IsDevRoomAvailable;
+    }
 }

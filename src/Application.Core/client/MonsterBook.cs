@@ -36,10 +36,10 @@ public class MonsterBook
     private int normalCard = 0;
     private int bookLevel = 1;
     private Dictionary<int, int> cards = new();
-    private object lockObj = new object();
-    public IPlayer Owner { get; }
 
-    public MonsterBook(IPlayer owner)
+    public Player Owner { get; }
+
+    public MonsterBook(Player owner)
     {
         Owner = owner;
     }
@@ -65,15 +65,7 @@ public class MonsterBook
 
     public HashSet<KeyValuePair<int, int>> getCardSet()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return cards.ToHashSet();
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return cards.ToHashSet();
     }
 
     public void addCard(int cardid)
@@ -81,31 +73,24 @@ public class MonsterBook
         Owner.getMap().broadcastMessage(Owner, PacketCreator.showForeignCardEffect(Owner.Id), false);
 
         int qty;
-        Monitor.Enter(lockObj);
-        try
+
+        qty = cards.GetValueOrDefault(cardid);
+
+        if (qty < CardMaxCount)
         {
-            qty = cards.GetValueOrDefault(cardid);
-
-            if (qty < CardMaxCount)
-            {
-                cards.AddOrUpdate(cardid, qty + 1);
-            }
-
-            if (qty == 0)
-            {
-                if (cardid / 1000 >= 2388)
-                {
-                    specialCard++;
-                }
-                else
-                {
-                    normalCard++;
-                }
-            }
+            cards.AddOrUpdate(cardid, qty + 1);
         }
-        finally
+
+        if (qty == 0)
         {
-            Monitor.Exit(lockObj);
+            if (cardid / 1000 >= 2388)
+            {
+                specialCard++;
+            }
+            else
+            {
+                normalCard++;
+            }
         }
 
         if (qty < CardMaxCount)
@@ -127,89 +112,41 @@ public class MonsterBook
 
     private void calculateLevel()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            int collectionExp = (normalCard + specialCard);
+        int collectionExp = (normalCard + specialCard);
 
-            int level = 0, expToNextlevel = 1;
-            do
-            {
-                level++;
-                expToNextlevel += level * 10;
-            } while (collectionExp >= expToNextlevel);
-
-            bookLevel = level;  // thanks IxianMace for noticing book level differing between book UI and character info UI
-        }
-        finally
+        int level = 0, expToNextlevel = 1;
+        do
         {
-            Monitor.Exit(lockObj);
-        }
+            level++;
+            expToNextlevel += level * 10;
+        } while (collectionExp >= expToNextlevel);
+
+        bookLevel = level;  // thanks IxianMace for noticing book level differing between book UI and character info UI
     }
 
     public int getBookLevel()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return bookLevel;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return bookLevel;
     }
 
     public Dictionary<int, int> getCards()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return new(cards);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return new(cards);
     }
 
     public int getTotalCards()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return specialCard + normalCard;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return specialCard + normalCard;
     }
 
     public int getNormalCard()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return normalCard;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return normalCard;
     }
 
     public int getSpecialCard()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return specialCard;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return specialCard;
     }
 
     public Dto.MonsterbookDto[] ToDto()

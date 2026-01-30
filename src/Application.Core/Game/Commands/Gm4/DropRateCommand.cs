@@ -19,7 +19,6 @@ public class DropRateCommand : CommandBase
             return;
 
         int droprate = Math.Max(d, 1);
-        c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { DropRate = droprate });
-
+        _ = c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { DropRate = droprate });
     }
 }

@@ -64,20 +64,9 @@ end
 
 function Event:playerDisconnected(eim, player)
     for _, p in ipairs(eim:getPlayers()) do
-        if p == player then
-            self:removePlayer(eim, p)
-        else
-            self:playerExit(eim, p)
-        end
+        self:playerExit(eim, p)
     end
     eim:dispose()
-end
-
-function Event:removePlayer(eim, player)
-    eim:unregisterPlayer(player)
-    player:getMap():removePlayer(player)
-    player:setMap(self.exitMap)
-    -- player:changeMap(self.exitMap)
 end
 
 Event:new(config)

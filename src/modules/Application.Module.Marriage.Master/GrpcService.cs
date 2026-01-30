@@ -35,11 +35,6 @@ namespace Application.Module.Marriage.Master
             return Task.FromResult(_weddingManager.CompleteWedding(request));
         }
 
-        public override Task<InviteGuestResponse> InviteGuest(InviteGuestRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_weddingManager.InviteGuest(request));
-        }
-
         public override Task<LoadInvitationResponse> LoadInvitationContent(LoadInvitationRequest request, ServerCallContext context)
         {
             return Task.FromResult(_weddingManager.GetInvitationContent(request));
@@ -50,19 +45,9 @@ namespace Application.Module.Marriage.Master
             return Task.FromResult(_weddingManager.QueryWeddings(request));
         }
 
-        public override Task<BreakMarriageResponse> BreakMarriage(BreakMarriageRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_marriageManager.BreakMarriage(request));
-        }
-
         public override Task<LoadMarriageInfoResponse> LoadEffectMarriageInfo(LoadMarriageInfoRequest request, ServerCallContext context)
         {
             return Task.FromResult(_marriageManager.GetEffectMarriageModelRemote(request));
-        }
-
-        public override Task<SendSpouseChatResponse> SpouseChat(SendSpouseChatRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_marriageManager.SpouseChat(request));
         }
     }
 }

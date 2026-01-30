@@ -16,9 +16,6 @@ message UseItemMegaphoneResponse {
 }
 
 message UseItemMegaphoneBroadcast {
-	int32 senderId = 1;
-	int32 senderChannel = 2;
-	Dto.ItemDto item = 3;
-	string message = 4;
-	bool isWishper = 5;
+	UseItemMegaphoneRequest request  = 1;
+	int32 masterChannel = 2;
 }

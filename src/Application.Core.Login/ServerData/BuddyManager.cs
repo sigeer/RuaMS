@@ -8,6 +8,8 @@ using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -29,9 +31,9 @@ namespace Application.Core.Login.ServerData
             _dbContextFactory = dbContextFactory;
         }
 
-        public static Dto.BuddyDto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)
+        public static BuddyProto.BuddyDto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)
         {
-            return new Dto.BuddyDto
+            return new BuddyProto.BuddyDto
             {
                 Channel = buddyChr.BuddyList.ContainsKey(chrId) ? buddyChr.Channel : -1,
                 ActualChannel = buddyChr.BuddyList.ContainsKey(chrId) ? buddyChr.ActualChannel : -1,
@@ -42,117 +44,132 @@ namespace Application.Core.Login.ServerData
             };
         }
 
-        Dto.AddBuddyResponse AddBuddy(CharacterLiveObject masterChr, CharacterLiveObject targetChr, string groupName = StringConstants.Buddy_DefaultGroup)
+        async Task AddBuddy(CharacterLiveObject masterChr, CharacterLiveObject targetChr, string groupName = StringConstants.Buddy_DefaultGroup)
         {
             masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, CharacterId = masterChr.Character.Id, Group = groupName };
 
-            var data = new Dto.AddBuddyBroadcast()
+            var data = new BuddyProto.AddBuddyResponse()
             {
-                ReceiverId = targetChr.Character.Id,
-                Buddy = GetChrBuddyDto(targetChr.Character.Id, masterChr)
+                Code = 1,
+                TargetId = targetChr.Character.Id,
+                MasterId = masterChr.Character.Id,
+                Buddy = GetChrBuddyDto(masterChr.Character.Id, targetChr)
             };
-            _server.Transport.SendMessage(BroadcastType.Buddy_Added, data, [data.ReceiverId]);
-
-            return new Dto.AddBuddyResponse
-            {
-                Buddy = GetChrBuddyDto(masterChr.Character.Id, targetChr, groupName)
-            };
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, data);
         }
 
-        public Dto.AddBuddyResponse AddBuddyByName(Dto.AddBuddyRequest request)
+        public async Task AddBuddyByName(BuddyProto.AddBuddyRequest request)
         {
-            var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
-            if (targetChr == null)
-                return new Dto.AddBuddyResponse() { Code = 1 };
-
+            var res = new BuddyProto.AddBuddyResponse() { MasterId  = request.MasterId, TargetName = request.TargetName };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
-                return new Dto.AddBuddyResponse() { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, res);
+                return;
+            }
+            
 
-            return AddBuddy(masterChr, targetChr, request.GroupName);
+            var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+            {
+                res.Code = 1;
+                await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, res);
+                return;
+            }
+
+            masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, CharacterId = masterChr.Character.Id, Group = request.GroupName };
+
+            res.TargetId = targetChr.Character.Id;
+            res.Buddy = GetChrBuddyDto(res.MasterId, targetChr);
+            await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, res);
         }
 
-        public Dto.AddBuddyResponse AddBuddyById(Dto.AddBuddyByIdRequest request)
+        public async Task AddBuddyById(BuddyProto.AddBuddyByIdRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerById(request.TargetId);
             if (targetChr == null)
-                return new Dto.AddBuddyResponse() { Code = 1 };
+                return;
 
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
-                return new Dto.AddBuddyResponse() { Code = 1 };
+                return;
 
-            return AddBuddy(masterChr, targetChr);
+            await AddBuddy(masterChr, targetChr);
         }
 
-        public void BuddyChat(BuddyChatRequest request)
+        public async Task SendBuddyChatAsync(string fromName, string text, int[] to)
         {
-            var data = new Dto.BuddyChatBroadcast();
-            data.ToIds.AddRange(request.ToIds);
-            data.FromName = _server.CharacterManager.GetPlayerName(request.FromId);
-            data.FromId = request.FromId;
-            data.Text = request.Text;
-            _server.Transport.SendMessage(BroadcastType.Buddy_Chat, data, data.ToIds.ToArray());
+            var targetChr = _server.CharacterManager.FindPlayerByName(fromName);
+            if (targetChr == null)
+                return;
+
+            var tos = to.Select(x => _server.CharacterManager.FindPlayerById(x))
+                .Where(y => y != null && y.Channel > 0).ToList();
+            await _server.Transport.SendMultiChatAsync(3, fromName, tos, text);
         }
 
-        public void BroadcastNotify(CharacterLiveObject obj)
+        public async Task BroadcastNoticeMessage(BuddyProto.SendBuddyNoticeMessageDto data)
         {
-            var data = new Dto.NotifyBuddyWhenLoginoffBroadcast();
-            data.BuddyId.AddRange(obj.BuddyList.Keys);
-            data.Channel = obj.Channel;
-            data.ActualChannel = obj.ActualChannel;
-            data.MasterId = obj.Character.Id;
-            _server.Transport.SendMessage(BroadcastType.Buddy_NotifyChannel, data, data.BuddyId.ToArray());
+            var chr = _server.CharacterManager.FindPlayerById(data.MasterId)!;
+            await _server.DropWorldMessage(data.Type, data.Message, chr.BuddyList.Keys.ToArray());
         }
 
-        public void BroadcastNoticeMessage(SendBuddyNoticeMessageDto data)
+        public async Task DeleteBuddy(BuddyProto.DeleteBuddyRequest request)
         {
-            _server.Transport.SendMessage(BroadcastType.Buddy_NoticeMessage, data, data.BuddyId.ToArray());
-        }
-
-        public Dto.DeleteBuddyResponse DeleteBuddy(Dto.DeleteBuddyRequest request)
-        {
+            var res = new BuddyProto.DeleteBuddyResponse { MasterId = request.MasterId, Buddyid = request.Buddyid };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
-                return new DeleteBuddyResponse() { Code = 1 };
+            {
+                res.Code = 1;
+            }
+            else
+            {
+                masterChr.BuddyList.Remove(request.Buddyid);
+            }
 
-            masterChr.BuddyList.Remove(request.Buddyid);
-            _server.Transport.SendMessage(BroadcastType.Buddy_Delete, new Dto.DeleteBuddyBroadcast { MasterId = request.Buddyid, Buddyid = request.MasterId }, [request.Buddyid]);
-            return new DeleteBuddyResponse();
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnBuddyRemove, res, [request.MasterId, request.Buddyid]);
         }
 
-        public SendWhisperMessageResponse SendWhisper(SendWhisperMessageRequest request)
+        public async Task SendWhisper(MessageProto.SendWhisperMessageRequest request)
         {
+            var res = new MessageProto.SendWhisperMessageResponse() { Request = request  } ;
             var senderChr = _server.CharacterManager.FindPlayerById(request.FromId);
             if (senderChr == null || senderChr.Channel <= 0)
-                return new SendWhisperMessageResponse { Code = 1 };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnWhisper, res, [res.Request.FromId]);
+                return;
+            }
 
             var receiverChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (receiverChr == null || senderChr.Channel <= 0)
-                return new SendWhisperMessageResponse { Code = 1 };
-
-            var data = new Dto.SendWhisperMessageBroadcast
             {
-                FromChannel = senderChr.Channel,
-                FromName = senderChr.Character.Name,
-                ReceiverId = receiverChr.Character.Id,
-                Text = request.Text
-            };
-            _server.Transport.SendMessage(BroadcastType.Whisper_Chat, data, [data.ReceiverId]);
-            return new SendWhisperMessageResponse();
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.OnWhisper, res, [res.Request.FromId]);
+                return;
+            }
+
+            res.FromChannel = senderChr.Channel;
+            res.FromName = senderChr.Character.Name;
+            res.ReceiverId = receiverChr.Character.Id;
+
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnWhisper, res, [res.ReceiverId]);
         }
 
-        public GetLocationResponse GetLocation(GetLocationRequest request)
+        public async Task GetLocation(BuddyProto.GetLocationRequest request)
         {
+            var res = new BuddyProto.GetLocationResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
-                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.NotFound };
-            if (targetChr.Channel == 0)
-                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.NotOnlined };
-            if (targetChr.Channel < 0)
-                return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.AwayWorld };
+                res.Code = (int)WhisperLocationResponseCode.NotFound;
+            else if (targetChr.Channel == 0)
+                res.Code = (int)WhisperLocationResponseCode.NotOnlined;
+            else if (targetChr.Channel < 0)
+                res.Code = (int)WhisperLocationResponseCode.AwayWorld;
 
-            return new GetLocationResponse { Code = (int)WhisperLocationResponseCode.DiffChannel, Field = targetChr.Channel };
+            res.Code = (int)WhisperLocationResponseCode.DiffChannel;
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnBuddyLocation, res, [request.MasterId]);
         }
     }
 }

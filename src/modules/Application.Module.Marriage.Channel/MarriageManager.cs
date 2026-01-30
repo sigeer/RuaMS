@@ -15,33 +15,33 @@ namespace Application.Module.Marriage.Channel
     {
         ConcurrentDictionary<int, MarriageInfo?> _dataSource = new();
         HashSet<int> inProposal = new();
-        readonly IChannelServerTransport _transport;
+        readonly IModuleChannelServerTransport _transport;
         readonly IMapper _mapper;
         readonly WorldChannelServer _server;
 
-        public MarriageManager(IChannelServerTransport transport, IMapper mapper, WorldChannelServer server)
+        public MarriageManager(IModuleChannelServerTransport transport, IMapper mapper, WorldChannelServer server)
         {
             _transport = transport;
             _mapper = mapper;
             _server = server;
         }
 
-        public void SetInProposal(IPlayer chr)
+        public void SetInProposal(Player chr)
         {
             inProposal.Add(chr.Id);
         }
 
-        public void CancelProposal(IPlayer chr)
+        public void CancelProposal(Player chr)
         {
             inProposal.Remove(chr.Id);
         }
 
-        public void CompleteProposal(IPlayer chr)
+        public void CompleteProposal(Player chr)
         {
             inProposal.Remove(chr.Id);
         }
 
-        public bool IsProposalActive(IPlayer from)
+        public bool IsProposalActive(Player from)
         {
             return inProposal.Contains(from.Id);
         }
@@ -79,45 +79,12 @@ namespace Application.Module.Marriage.Channel
             _dataSource.TryRemove(wifeId, out _);
         }
 
-        internal void NotifyPartnerWhenTransfer(PlayerTransferDto dto)
+        public async Task SendSpouseChat(Player chr, string text)
         {
-            var chr = _server.FindPlayerById(dto.ToPlayerId);
-            if (chr != null)
-            {
-                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(dto.PlayerId, dto.MapId));
-            }
+            await _transport.SendSpouseChat(new MarriageProto.SendSpouseChatRequest { SenderId = chr.Id, Text = text });
         }
 
-        public void SendSpouseChat(IPlayer chr, string text)
-        {
-            var res = _transport.SendSpouseChat(new MarriageProto.SendSpouseChatRequest { SenderId = chr.Id, Text = text });
-            if (res.Code == 1)
-            {
-                chr.dropMessage(5, "You don't have a spouse.");
-            }
-
-            if (res.Code == 2)
-            {
-                chr.dropMessage(5, "Your spouse is currently offline.");
-            }
-        }
-
-        public void OnReceivedSpouseChat(MarriageProto.OnSpouseChatCallback data)
-        {
-            var sender = _server.FindPlayerById(data.SenderId);
-            if (sender != null)
-            {
-                sender.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Text, true));
-            }
-
-            var receiver = _server.FindPlayerById(data.SenderPartnerId);
-            if (receiver != null)
-            {
-                receiver.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Text, true));
-            }
-        }
-
-        public void RemoveMarriageItems(IPlayer chr)
+        public void RemoveMarriageItems(Player chr)
         {
             chr.Bag.BatchRemoveFromInventory([InventoryType.ETC], x => ItemId.GetEngagementItems().Contains(x.getItemId()), false);
             var marriageRing = chr.getMarriageRing();
@@ -137,7 +104,7 @@ namespace Application.Module.Marriage.Channel
         /// 检测婚姻数据并修复
         /// </summary>
         /// <param name="chr"></param>
-        public void CheckMarriageData(IPlayer chr)
+        public void CheckMarriageData(Player chr)
         {
             var marriageInfo = GetPlayerMarriageInfo(chr.Id);
             if (marriageInfo == null)

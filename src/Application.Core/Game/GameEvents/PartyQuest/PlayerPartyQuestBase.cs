@@ -16,9 +16,9 @@ namespace Application.Core.Game.GameEvents.PartyQuest
         public int FirstMapId { get; set; }
         public int EndMapId { get; set; }
         public abstract int ClearMapId { get; }
-        public IPlayer Player { get; }
+        public Player Player { get; }
         public PartyQuestEventManager EventManager => Player.getChannelServer().getEventSM().getEventManager(EventName) as PartyQuestEventManager ?? throw new BusinessResException($"{EventName} 对应的脚本没有找到");
-        protected PlayerPartyQuestBase(string name, string evtFamily, IPlayer player)
+        protected PlayerPartyQuestBase(string name, string evtFamily, Player player)
         {
             EventName = name;
             EventFamily = evtFamily;
@@ -48,8 +48,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
                 return;
             }
 
-            Player.TeamModel!.setEligibleMembers(effectTeam);
-            if (!EventManager.StartPQInstance(Player.TeamModel!, Player.MapModel, 1))
+            if (!EventManager.StartPQInstance(Player, effectTeam, 1))
             {
                 Player.dropMessage(1, "当前频道已经有一个队伍正在进行任务");
                 return;
@@ -94,9 +93,9 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             eim.clearPQ();
         }
 
-        protected virtual List<IPlayer> FilterTeam()
+        protected virtual List<Player> FilterTeam()
         {
-            return Player.TeamModel!.GetChannelMembers(Player.Client.CurrentServer).Where(x => x.Level >= MinLevel && x.Level <= MaxLevel).ToList();
+            return Player.getParty()!.GetChannelMembers(Player.Client.CurrentServer).Where(x => x.Level >= MinLevel && x.Level <= MaxLevel).ToList();
         }
 
         public abstract int GetStageFromMap(int mapId);

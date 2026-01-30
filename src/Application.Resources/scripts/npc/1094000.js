@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -29,6 +29,6 @@ No specific function, useless text.
 -- GMS LIKE --
 */
 function start() {
-    cm.sendOk("我需要睁大眼睛寻找敌人，尽管我的海鸥朋友帮了我，所以情况并不那么糟糕。");
+    cm.sendDefault();
     cm.dispose();
 }

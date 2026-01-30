@@ -61,12 +61,12 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c;
     }
 
-    public IPlayer getPlayer()
+    public Player getPlayer()
     {
         return c.OnlinedCharacter;
     }
 
-    public IPlayer getChar()
+    public Player getChar()
     {
         return c.OnlinedCharacter;
     }
@@ -112,7 +112,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public int getHourOfDay()
     {
-        return c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().ToLocalTime().Hour;
+        return c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().ToLocalTime().Hour;
     }
 
     public int getMarketPortalId(int mapId)
@@ -361,7 +361,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         List<List<ItemQuantity>> toRemoveItemList = prepareInventoryItemList(toRemoveItemids, toRemoveQuantity);
 
         InventoryProof prfInv = (InventoryProof)this.getInventory(InventoryType.CANHOLD);
-        prfInv.lockInventory();
+
         try
         {
             for (int i = InventoryType.EQUIP.getType(); i < InventoryType.CASH.getType(); i++)
@@ -393,7 +393,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         finally
         {
             prfInv.flushContents();
-            prfInv.unlockInventory();
         }
 
         return true;
@@ -420,7 +419,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public int getQuestStatus(int id)
     {
-        return (int)c.OnlinedCharacter.getQuest(Quest.getInstance(id)).getStatus();
+        return (int)getQuestStat(id);
     }
 
     private QuestStatus.Status getQuestStat(int id)
@@ -616,7 +615,6 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public Item? evolvePet(byte slot, int afterId)
     {
-        Pet? evolved = null;
         Pet? target;
 
         long period = (long)TimeSpan.FromDays(90).TotalMilliseconds;    //refreshes expiration date: 90 days
@@ -629,7 +627,15 @@ public class AbstractPlayerInteraction : IClientMessenger
             return (null);
         }
 
-        var tmp = gainItem(afterId, 1, false, true, period, target);
+        var pet = getPlayer().EvolvePet(target, period);
+        if (pet != null)
+        {
+            InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
+
+            InventoryManipulator.addFromDrop(getClient(), pet, false);
+            return pet;
+        }
+        return null;
 
         /*
         evolved = Pet.loadFromDb(tmp.getItemId(), tmp.getPosition(), tmp.getPetId());
@@ -652,9 +658,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(evolved));
         */
 
-        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
 
-        return evolved;
     }
     // js使用
     public void gainItem(int id, bool show) => gainItem(id, 1, show);
@@ -665,9 +669,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         gainItem(id, (short)quantity, false, show);
     }
 
-    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
+    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats, showMessage, expires, from);
+        return getPlayer().GainItem(id, quantity, randomStats, showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires);
     }
 
     public void gainFame(int delta)
@@ -736,25 +740,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.sendPacket(PacketCreator.enableActions());
     }
 
-    public void guildMessage(int type, string message)
-    {
-        if (getPlayer().GuildModel != null)
-            c.CurrentServerContainer.GuildManager.DropGuildMessage(getPlayer().GuildModel!.GuildId, type, message);
-    }
-
-    public Guild? getGuild()
-    {
-        try
-        {
-            return getPlayer().getGuild();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-        return null;
-    }
-
     public virtual Team? getParty()
     {
         return getPlayer().getParty();
@@ -785,7 +770,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getEventInstance() != null && getPlayer().getId() == getEventInstance()!.getLeaderId();
     }
 
-    public void giveCharacterExp(int amount, IPlayer chr)
+    public void giveCharacterExp(int amount, Player chr)
     {
         chr.gainExp((int)(amount * chr.getExpRate()), true, true);
     }
@@ -850,7 +835,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void cancelItem(int id)
     {
-        getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false, -1);
+        getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false);
     }
 
     public void teachSkill(int skillid, sbyte level, sbyte masterLevel, long expiration, bool force = false)
@@ -1048,7 +1033,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
         var channelServer = player.getMap().getChannelServer();
         int channel = channelServer.getId();
-        if (!channelServer.Container.ExpeditionService.CanStartExpedition(player.getId(), channel, exped.getType().name()))
+        if (!channelServer.NodeService.ExpeditionService.CanStartExpedition(player.getId(), channel, exped.getType().name()))
         {
             // thanks Conrad for noticing missing expeditions entry limit
             return 1;
@@ -1103,7 +1088,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     {
         List<Pet> list = new();
 
-        long curTime = c.CurrentServerContainer.getCurrentTime();
+        long curTime = c.CurrentServer.Node.getCurrentTime();
         foreach (Item it in getPlayer().getInventory(InventoryType.CASH).list())
         {
             if (it is Pet pet && pet.getExpiration() < curTime)
@@ -1161,7 +1146,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public long getCurrentTime()
     {
-        return c.CurrentServerContainer.getCurrentTime();
+        return c.CurrentServer.Node.getCurrentTime();
     }
 
     public void weakenAreaBoss(int monsterId, string message)
@@ -1278,7 +1263,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     #region Guild
     public void GainGuildGP(int value)
     {
-        c.CurrentServerContainer.GuildManager.GainGP(getPlayer(), value);
+        c.CurrentServer.NodeService.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
 }

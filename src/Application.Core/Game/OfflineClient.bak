@@ -23,7 +23,7 @@ namespace Application.Core.Game
         public int Channel { get; set; } = -1;
         public string ClientInfo => $"OfflineClient";
         public IChannel NettyChannel { get; private set; } = null!;
-        public IPlayer? Character => null;
+        public Player? Character => null;
         public int AccountId { get; set; }
         public string AccountName { get; set; }
         public string Pic { get; set; }
@@ -298,7 +298,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public IPlayer? getPlayer()
+        public Player? getPlayer()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -388,7 +388,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public List<IPlayer> loadCharacters(int serverId)
+        public List<Player> loadCharacters(int serverId)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -503,7 +503,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setPlayer(IPlayer? player)
+        public void setPlayer(Player? player)
         {
             throw new BusinessCharacterOfflineException();
         }

@@ -17,12 +17,12 @@ namespace Application.Core.Scripting.Events
         }
 
         #region Expedition
-        public bool StartInstance(IPlayer leader)
+        public bool StartInstance(Player leader)
         {
             return StartInstance(-1, leader);
         }
 
-        public bool StartInstance(int lobbyId, IPlayer leader, int difficult = 1)
+        public bool StartInstance(int lobbyId, Player leader, int difficult = 1)
         {
             return StartInstance(-1, leader);
         }
@@ -38,7 +38,7 @@ namespace Application.Core.Scripting.Events
         }
 
         //Expedition method: starts an expedition
-        bool StartExpeditionInstance(int lobbyId, Expedition exped, IPlayer leader)
+        bool StartExpeditionInstance(int lobbyId, Expedition exped, Player leader)
         {
             if (this.isDisposed())
             {
@@ -51,7 +51,6 @@ namespace Application.Core.Scripting.Events
                 {
                     playerPermit.Add(leader.getId());
 
-                    Monitor.Enter(startLock);
                     try
                     {
                         try
@@ -101,7 +100,6 @@ namespace Application.Core.Scripting.Events
                     }
                     finally
                     {
-                        Monitor.Exit(startLock);
                         playerPermit.Remove(leader.getId());
                         startSemaphore.Release();
                     }

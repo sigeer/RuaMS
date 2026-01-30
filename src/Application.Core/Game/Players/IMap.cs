@@ -30,7 +30,7 @@ namespace Application.Core.Game.Players
 
         void startMapEffect(string msg, int itemId, int duration = 30000);
 
-        void showMapOwnershipInfo(IPlayer mapOwner);
+        void showMapOwnershipInfo(Player mapOwner);
         void ForcedWarpOut();
     }
 }

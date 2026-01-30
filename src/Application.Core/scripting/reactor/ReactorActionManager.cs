@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -69,7 +70,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         reactor.getMap().destroyNPC(npcId);
     }
 
-    private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
+    private static List<DropEntry> assembleReactorDropEntries(Player chr, List<DropEntry> items)
     {
         DropEntry.ClassifyDropEntries(items, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);
 
@@ -176,7 +177,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, IPlayer chr, short delay)
+    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, Player chr, short delay)
     {
         if (d.ItemId == 0)
         {
@@ -308,17 +309,10 @@ public class ReactorActionManager : AbstractPlayerInteraction
     public void summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
                                   string summonMessage)
     {
-        c.CurrentServerContainer.TimerManager.schedule(() =>
+        c.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            summonBoss(mobId, x, y, bgm, summonMessage);
+            c.CurrentServer.Post(new ReactorSummonBossCommand(reactor, mobId, x, y, bgm, summonMessage));
         }, delayMs);
-    }
-
-    private void summonBoss(int mobId, int x, int y, string bgmName, string summonMessage)
-    {
-        spawnMonster(mobId, x, y);
-        changeMusic(bgmName);
-        mapMessage(6, summonMessage);
     }
 
     public void dispelAllMonsters(int num, int team)

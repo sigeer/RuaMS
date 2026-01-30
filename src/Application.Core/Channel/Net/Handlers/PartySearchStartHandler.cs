@@ -66,12 +66,11 @@ public class PartySearchStartHandler : ChannelHandlerBase
         p.readInt(); // members
         int jobs = p.readInt();
 
-        var party = c.OnlinedCharacter.getParty();
-        if (party == null || !c.OnlinedCharacter.isPartyLeader())
+        if (!c.OnlinedCharacter.isPartyLeader())
         {
             return;
         }
-
+        return;
         // var world = c.getWorldServer();
         // world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
     }

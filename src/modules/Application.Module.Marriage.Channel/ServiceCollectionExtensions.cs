@@ -1,12 +1,14 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
+using Application.Core.ServerTransports;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net.Handlers;
 using Application.Module.Marriage.Channel.Scripting;
 using Application.Scripting;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,8 +19,13 @@ namespace Application.Module.Marriage.Channel
     {
         public static IServiceCollection AddMarriageChannel(this IServiceCollection services)
         {
+            services.AddGrpcClient<MarriageServiceProto.ChannelService.ChannelServiceClient>("MarriageGrpcClient", (sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+
             services.AddAutoMapper(typeof(Mapper));
-            services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
+            services.TryAddSingleton<IModuleChannelServerTransport, DefaultModuleChannelServerTransport>();
 
             services.AddSingleton<MarriageManager>();
             services.AddSingleton<WeddingManager>();

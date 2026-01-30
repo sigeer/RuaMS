@@ -98,7 +98,7 @@ public class WhisperHandler : ChannelHandlerBase
     void HandleSendWhisper(IChannelClient c, string targetName, string message)
     {
         var user = c.OnlinedCharacter;
-        if (user.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
+        if (user.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.Node.getCurrentTime())
             return;
 
         user.getAutobanManager().spam(7);

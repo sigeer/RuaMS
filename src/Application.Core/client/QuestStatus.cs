@@ -21,15 +21,16 @@
 */
 
 
+using Application.Core.Game.Packets;
 using server.quest;
 using tools;
 
 namespace client;
 
 
-/**
- * @author Matze
- */
+/// <summary>
+/// 玩家的任务状态
+/// </summary>
 public class QuestStatus
 {
     private short questID;
@@ -46,8 +47,6 @@ public class QuestStatus
     {
         this.questID = quest.getId();
         this.setStatus(status);
-        this.completionTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        this.expirationTime = 0;
         //this.updated = true;
         if (status == Status.STARTED)
         {
@@ -280,6 +279,7 @@ public class QuestStatus
     {
         return string.Join("", _progress.Values);
     }
+
 
     public enum Status
     {

@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "Item/Ring.proto";
-
 package CashProto;
 
 message MosterSellerInfo {

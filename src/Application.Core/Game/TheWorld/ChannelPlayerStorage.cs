@@ -2,126 +2,62 @@ namespace Application.Core.Game.TheWorld
 {
     public class ChannelPlayerStorage
     {
-        private Dictionary<int, IPlayer> storage = new();
-        private Dictionary<string, IPlayer> nameStorage = new();
-        private ReaderWriterLockSlim locks = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private Dictionary<int, Player> storage = new();
+        private Dictionary<string, Player> nameStorage = new();
 
-        public event EventHandler<IPlayer>? OnChannelAddPlayer;
+        public event EventHandler<Player>? OnChannelAddPlayer;
 
 
-        public void AddPlayer(IPlayer chr)
+        public void AddPlayer(Player chr)
         {
-            locks.EnterWriteLock();
-            try
-            {
-                storage.AddOrUpdate(chr.Id, chr);
-                nameStorage.AddOrUpdate(chr.Name, chr);
-                OnChannelAddPlayer?.Invoke(this, chr);
-            }
-            finally
-            {
-                locks.ExitWriteLock();
-            }
+            storage.AddOrUpdate(chr.Id, chr);
+            nameStorage.AddOrUpdate(chr.Name, chr);
+            OnChannelAddPlayer?.Invoke(this, chr);
         }
 
-        public IPlayer? RemovePlayer(int chr)
+        public Player? RemovePlayer(int chr)
         {
-            locks.EnterWriteLock();
-            try
-            {
-                storage.Remove(chr, out var mc);
-                if (mc != null)
-                    nameStorage.Remove(mc.Name);
+            storage.Remove(chr, out var mc);
+            if (mc != null)
+                nameStorage.Remove(mc.Name);
 
-                return mc;
-            }
-            finally
-            {
-                locks.ExitWriteLock();
-            }
+            return mc;
+
         }
-        public IPlayer? this[string name] => getCharacterByName(name);
-        public IPlayer? getCharacterByName(string name)
+        public Player? this[string name] => getCharacterByName(name);
+        public Player? getCharacterByName(string name)
         {
-            locks.EnterReadLock();
-            try
-            {
-                return nameStorage.GetValueOrDefault(name);
-            }
-            finally
-            {
-                locks.ExitReadLock();
-            }
+            return nameStorage.GetValueOrDefault(name);
         }
-        public IPlayer? this[int id] => getCharacterById(id);
-        public IPlayer? getCharacterById(int id)
+        public Player? this[int id] => getCharacterById(id);
+        public Player? getCharacterById(int id)
         {
-            locks.EnterReadLock();
-            try
-            {
-                return storage.GetValueOrDefault(id);
-            }
-            finally
-            {
-                locks.ExitReadLock();
-            }
+            return storage.GetValueOrDefault(id);
         }
 
-        public ICollection<IPlayer> getAllCharacters()
+        public List<Player> getAllCharacters()
         {
-            locks.EnterReadLock();
-            try
-            {
-                return new List<IPlayer>(storage.Values);
-            }
-            finally
-            {
-                locks.ExitReadLock();
-            }
+            return new List<Player>(storage.Values);
         }
-        public void disconnectAll()
+        public async Task disconnectAll(bool includeGM)
         {
-            List<IPlayer> chrList;
-            locks.EnterReadLock();
-            try
-            {
-                chrList = new(storage.Values);
-            }
-            finally
-            {
-                locks.ExitReadLock();
-            }
+            List<Player> chrList;
 
-            foreach (IPlayer mc in chrList)
+            chrList = new(storage.Values);
+            foreach (Player mc in chrList)
             {
-                if (mc.IsOnlined)
+                if (mc.IsOnlined && (includeGM || !mc.isGM()))
                 {
                     mc.Client.ForceDisconnect();
                 }
             }
 
-            locks.EnterWriteLock();
-            try
-            {
-                storage.Clear();
-            }
-            finally
-            {
-                locks.ExitWriteLock();
-            }
+            storage.Clear();
         }
 
         public int Count()
         {
-            locks.EnterReadLock();
-            try
-            {
-                return storage.Count;
-            }
-            finally
-            {
-                locks.ExitReadLock();
-            }
+            return storage.Count;
         }
     }
 }

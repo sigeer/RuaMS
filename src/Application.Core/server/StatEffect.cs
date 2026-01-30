@@ -38,7 +38,6 @@ using client.status;
 using server.life;
 using server.maps;
 using server.partyquest;
-using System.Text.Json.Serialization;
 using tools;
 
 namespace server;
@@ -131,7 +130,7 @@ public class StatEffect
         return !cardStats.party || partyHunting;
     }
 
-    public bool isActive(IPlayer applyto)
+    public bool isActive(Player applyto)
     {
         return isEffectActive(applyto.getMapId(), applyto.getPartyMembersOnSameMap().Count > 1);
     }
@@ -1600,7 +1599,7 @@ public class StatEffect
      * @param obj
      * @param attack  damage done by the skill
      */
-    public void applyPassive(IPlayer applyto, IMapObject obj, int attack)
+    public void applyPassive(Player applyto, IMapObject obj, int attack)
     {
         if (makeChanceResult())
         {
@@ -1634,12 +1633,12 @@ public class StatEffect
         }
     }
 
-    public bool applyEchoOfHero(IPlayer applyfrom)
+    public bool applyEchoOfHero(Player applyfrom)
     {
         var mapPlayers = applyfrom.getMap().getAllPlayers();
 
         bool hwResult = applyTo(applyfrom);
-        foreach (IPlayer chr in mapPlayers)
+        foreach (Player chr in mapPlayers)
         {
             if (chr == applyfrom)
                 continue;
@@ -1650,23 +1649,23 @@ public class StatEffect
         return hwResult;
     }
 
-    public bool applyTo(IPlayer chr)
+    public bool applyTo(Player chr)
     {
         return applyTo(chr, chr, true, null, false, 1);
     }
 
-    public bool applyTo(IPlayer chr, bool useMaxRange)
+    public bool applyTo(Player chr, bool useMaxRange)
     {
         return applyTo(chr, chr, true, null, useMaxRange, 1);
     }
 
-    public bool applyTo(IPlayer chr, Point? pos)
+    public bool applyTo(Player chr, Point? pos)
     {
         return applyTo(chr, chr, true, pos, false, 1);
     }
 
     // primary: the player caster of the buff
-    private bool applyTo(IPlayer applyfrom, IPlayer applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
+    private bool applyTo(Player applyfrom, Player applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
     {
         if (skill && (sourceid == GM.HIDE || sourceid == SuperGM.HIDE))
         {
@@ -1767,34 +1766,27 @@ public class StatEffect
             short projectileConsume = this.getBulletConsume();  // noticed by shavit
 
             Inventory use = applyto.getInventory(InventoryType.USE);
-            use.lockInventory();
-            try
-            {
-                Item? projectile = null;
-                for (int i = 1; i <= use.getSlotLimit(); i++)
-                { // impose order...
-                    var item = use.getItem((short)i);
-                    if (item != null)
+
+            Item? projectile = null;
+            for (int i = 1; i <= use.getSlotLimit(); i++)
+            { // impose order...
+                var item = use.getItem((short)i);
+                if (item != null)
+                {
+                    if (ItemConstants.isThrowingStar(item.getItemId()) && item.getQuantity() >= projectileConsume)
                     {
-                        if (ItemConstants.isThrowingStar(item.getItemId()) && item.getQuantity() >= projectileConsume)
-                        {
-                            projectile = item;
-                            break;
-                        }
+                        projectile = item;
+                        break;
                     }
                 }
-                if (projectile == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
-                }
             }
-            finally
+            if (projectile == null)
             {
-                use.unlockInventory();
+                return false;
+            }
+            else
+            {
+                InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
             }
         }
         var summonMovementType = getSummonMovementType();
@@ -1857,30 +1849,26 @@ public class StatEffect
                 y = applyto.getMap().getGroundBelow(applyto.getPosition()).Y;    // thanks Lame for pointing out unusual cases of doors sending players on ground below
             }
             Point doorPosition = new Point(applyto.getPosition().X, y);
-            Door door = new Door(applyto, doorPosition);
 
-            if (door.getOwnerId() >= 0)
+            var createDoorCode = Door.TryCreateDoor(applyto, doorPosition, out var door);
+            if (createDoorCode == 0 && door != null)
             {
-                applyto.applyPartyDoor(door, false);
+                applyto.applyPartyDoor(door);
 
                 door.getTarget().spawnDoor(door.getAreaDoor());
                 door.getTown().spawnDoor(door.getTownDoor());
             }
             else
             {
-                InventoryManipulator.addFromDrop(applyto.Client, new Item(ItemId.MAGIC_ROCK, 0, 1), false);
+                applyto.GainItem(ItemId.MAGIC_ROCK, 1, false);
 
-                if (door.getOwnerId() == -3)
+                if (createDoorCode == -2)
                 {
-                    applyto.dropMessage(5, "Mystic Door cannot be cast far from a spawn point. Nearest one is at " + door.getDoorStatus().Value.Value + "pts " + door.getDoorStatus().Value.Key);
+                    applyto.Pink("Mystic Door cannot be cast on a slope, try elsewhere.");
                 }
-                else if (door.getOwnerId() == -2)
+                else if (createDoorCode == -1)
                 {
-                    applyto.dropMessage(5, "Mystic Door cannot be cast on a slope, try elsewhere.");
-                }
-                else
-                {
-                    applyto.dropMessage(5, "There are no door portals available for the town at this moment. Try again later.");
+                    applyto.Pink("There are no door portals available for the town at this moment. Try again later.");
                 }
 
                 applyto.cancelBuffStats(BuffStat.SOULARROW);  // cancel door buff
@@ -1896,7 +1884,7 @@ public class StatEffect
         {
             applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
         }
-        else if (nuffSkill != 0 && applyto.getParty() != null && applyto.getMap().isCPQMap())
+        else if (nuffSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
         {
             // added by Drago (Dragohe4rt)
             var skill = CarnivalFactory.getInstance().getSkill(nuffSkill);
@@ -1906,7 +1894,7 @@ public class StatEffect
                 var opposition = applyfrom.MCTeam!.Enemy!;
                 if (skill.targetsAll)
                 {
-                    foreach (var chrApp in opposition.EligibleMembers)
+                    foreach (var chrApp in opposition.Team.EligibleMembers)
                     {
                         if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
                         {
@@ -1925,7 +1913,7 @@ public class StatEffect
                 else
                 {
 
-                    var chrApp = applyfrom.getMap().getCharacterById(opposition.Team.GetRandomMemberId());
+                    var chrApp = applyfrom.getMap().getCharacterById(opposition.GetRandomMemberId());
                     if (chrApp != null && chrApp.getMap().isCPQMap())
                     {
                         if (dis == null)
@@ -1956,7 +1944,7 @@ public class StatEffect
 
             if (target > 0)
             {
-                foreach (IPlayer chr in applyto.getMap().getAllPlayers())
+                foreach (Player chr in applyto.getMap().getAllPlayers())
                 {
                     if (chr.getId() != applyto.getId())
                     {
@@ -1972,22 +1960,22 @@ public class StatEffect
         return true;
     }
 
-    private int applyBuff(IPlayer applyfrom, bool useMaxRange)
+    private int applyBuff(Player applyfrom, bool useMaxRange)
     {
         int affectedc = 1;
 
-        if (isPartyBuff() && (applyfrom.getParty() != null || isGmBuff()))
+        if (isPartyBuff() && (applyfrom.Party > 0 || isGmBuff()))
         {
             Rectangle bounds = (!useMaxRange)
                 ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft())
                 : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
 
             List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.PLAYER));
-            List<IPlayer> affectedp = new(affecteds.Count);
+            List<Player> affectedp = new(affecteds.Count);
             foreach (var affectedmo in affecteds)
             {
-                IPlayer affected = (IPlayer)affectedmo;
-                if (affected != applyfrom && (isGmBuff() || (applyfrom.getParty()?.Equals(affected.getParty()) ?? false)))
+                Player affected = (Player)affectedmo;
+                if (affected != applyfrom && (isGmBuff() || (applyfrom.getPartyId() == affected.getPartyId())))
                 {
                     if (isResurrection() ^ affected.isAlive())
                     {
@@ -1997,7 +1985,7 @@ public class StatEffect
             }
 
             affectedc += affectedp.Count;   // used for heal
-            foreach (IPlayer affected in affectedp)
+            foreach (Player affected in affectedp)
             {
                 applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
                 affected.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
@@ -2008,7 +1996,7 @@ public class StatEffect
         return affectedc;
     }
 
-    private void applyMonsterBuff(IPlayer applyfrom)
+    private void applyMonsterBuff(Player applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
         List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.MONSTER));
@@ -2067,7 +2055,7 @@ public class StatEffect
         return !YamlConfig.config.server.USE_BUFF_EVERLASTING ? duration : int.MaxValue;
     }
 
-    public void silentApplyBuff(IPlayer chr, long localStartTime)
+    public void silentApplyBuff(Player chr, long localStartTime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(chr, localDuration, false);
@@ -2091,31 +2079,31 @@ public class StatEffect
         }
     }
 
-    public void applyComboBuff(IPlayer applyto, int combo)
+    public void applyComboBuff(Player applyto, int combo)
     {
         applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
-        long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
+        long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
-    public void applyBeaconBuff(IPlayer applyto, int objectid)
+    public void applyBeaconBuff(Player applyto, int objectid)
     {
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
-        long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
+        long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
-    public void updateBuffEffect(IPlayer target, BuffStatValue[] activeStats, long starttime)
+    public void updateBuffEffect(Player target, BuffStatValue[] activeStats, long starttime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
 
-        long leftDuration = (starttime + localDuration) - target.Client.CurrentServerContainer.getCurrentTime();
+        long leftDuration = (starttime + localDuration) - target.Client.CurrentServer.Node.getCurrentTime();
         if (leftDuration > 0)
         {
             if (isDash() || isInfusion())
@@ -2129,11 +2117,11 @@ public class StatEffect
         }
     }
 
-    private void applyBuffEffect(IPlayer applyfrom, IPlayer applyto, bool primary)
+    private void applyBuffEffect(Player applyfrom, Player applyto, bool primary)
     {
         if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
         {     // last mystic door already dispelled if it has been used before.
-            applyto.cancelEffect(this, true, -1);
+            applyto.cancelEffect(this, true);
         }
 
         BuffStatValue[] localstatups = statups.ToArray();
@@ -2177,7 +2165,7 @@ public class StatEffect
 
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
-            givemount.ChannelServer.Container.MountTirednessManager.registerMountHunger(applyto);
+            givemount.ChannelServer.MountTirednessManager.registerMountHunger(applyto);
 
             localDuration = sourceid;
             localsourceid = ridingMountId;
@@ -2282,7 +2270,7 @@ public class StatEffect
                 applyto.sendPacket(buff);
             }
 
-            long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
+            long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
             applyto.registerEffect(this, starttime, starttime + localDuration, false);
@@ -2297,7 +2285,7 @@ public class StatEffect
         }
     }
 
-    private int calcHPChange(IPlayer applyfrom, bool primary, int affectedPlayers)
+    private int calcHPChange(Player applyfrom, bool primary, int affectedPlayers)
     {
         int hpchange = 0;
         if (hp != 0)
@@ -2356,7 +2344,7 @@ public class StatEffect
         return (int)((Randomizer.nextDouble() * ((int)(stat * upperfactor * rate) - (int)(stat * lowerfactor * rate) + 1)) + (int)(stat * lowerfactor * rate));
     }
 
-    private int calcMPChange(IPlayer applyfrom, bool primary)
+    private int calcMPChange(Player applyfrom, bool primary)
     {
         int mpchange = 0;
         if (mp != 0)
@@ -2412,7 +2400,7 @@ public class StatEffect
         return mpchange;
     }
 
-    private int alchemistModifyVal(IPlayer chr, int val, bool withX)
+    private int alchemistModifyVal(Player chr, int val, bool withX)
     {
         if (!skill && (chr.getJob().isA(Job.HERMIT) || chr.getJob().isA(Job.NIGHTWALKER3)))
         {
@@ -2425,7 +2413,7 @@ public class StatEffect
         return val;
     }
 
-    private StatEffect? getAlchemistEffect(IPlayer chr)
+    private StatEffect? getAlchemistEffect(Player chr)
     {
         int id = Hermit.ALCHEMIST;
         if (chr.isCygnus())
@@ -2759,7 +2747,7 @@ public class StatEffect
         return morphId;
     }
 
-    private int getMorph(IPlayer chr)
+    private int getMorph(Player chr)
     {
         if (morphId == 1000 || morphId == 1001 || morphId == 1003)
         { // morph skill
@@ -2828,17 +2816,17 @@ public class StatEffect
      private static class CancelEffectAction : Runnable {
 
      private StatEffect effect;
-     private WeakReference<IPlayer> target;
+     private WeakReference<Player> target;
      private long startTime;
 
-     public CancelEffectAction(IPlayer target, StatEffect effect, long startTime) {
+     public CancelEffectAction(Player target, StatEffect effect, long startTime) {
      this.effect = effect;
      this.target = new WeakReference<>(target);
      this.startTime = startTime;
      }
 
      public override void run() {
-     IPlayer realTarget = target.get();
+     Player realTarget = target.get();
      if (realTarget != null) {
      realTarget.cancelEffect(effect, false, startTime);
      }

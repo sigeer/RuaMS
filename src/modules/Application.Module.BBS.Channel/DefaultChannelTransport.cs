@@ -7,9 +7,9 @@ namespace Application.Module.BBS.Channel
     internal class DefaultChannelTransport : IChannelTransport
     {
         readonly BBSService.ChannelService.ChannelServiceClient _grpcClient;
-        public DefaultChannelTransport(WorldChannelServer server)
+        public DefaultChannelTransport(BBSService.ChannelService.ChannelServiceClient client)
         {
-            _grpcClient = new BBSService.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
+            _grpcClient = client;
         }
         public ShowBBSMainThreadResponse DeleteReply(DeleteReplyRequest deleteReplyRequest)
         {

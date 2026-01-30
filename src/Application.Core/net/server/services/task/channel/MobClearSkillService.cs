@@ -19,6 +19,7 @@
 */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 
 namespace net.server.services.task.channel;
 
@@ -49,7 +50,7 @@ public class MobClearSkillService : BaseService
         }
     }
 
-    public void registerMobClearSkillAction(int mapid, Action runAction, long delay)
+    public void registerMobClearSkillAction(int mapid, IWorldChannelCommand runAction, long delay)
     {
         mobClearSkillSchedulers[getChannelSchedulerIndex(mapid)].registerClearSkillAction(runAction, delay);
     }
@@ -60,11 +61,7 @@ public class MobClearSkillService : BaseService
         {
         }
 
-        public void registerClearSkillAction(Action runAction, long delay)
-        {
-            registerEntry(runAction, TempRunnable.Parse(runAction), delay);
-        }
-        public void registerClearSkillAction(AbstractRunnable runAction, long delay)
+        public void registerClearSkillAction(IWorldChannelCommand runAction, long delay)
         {
             registerEntry(runAction, runAction, delay);
         }

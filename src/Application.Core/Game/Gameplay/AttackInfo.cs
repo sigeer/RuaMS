@@ -15,7 +15,7 @@ namespace Application.Core.Game.Gameplay
         public List<int> explodedMesos = [];
         public short attackDelay;
 
-        public StatEffect? getAttackEffect(IPlayer chr, Skill? theSkill)
+        public StatEffect? getAttackEffect(Player chr, Skill? theSkill)
         {
             var mySkill = theSkill ?? SkillFactory.getSkill(skill);
             if (mySkill == null)
@@ -38,7 +38,7 @@ namespace Application.Core.Game.Gameplay
                 //Hmm
                 if (!mySkill.getAction())
                 {
-                    chr.Client.CurrentServerContainer.AutoBanManager.Autoban(AutobanFactory.GACHA_EXP, chr, "WZ Edit; adding action to a skill: " + display);
+                    chr.Client.CurrentServer.NodeService.AutoBanManager.Autoban(AutobanFactory.GACHA_EXP, chr, "WZ Edit; adding action to a skill: " + display);
                     return null;
                 }
             }

@@ -10,7 +10,7 @@ public class ClearSavedLocationsCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        IPlayer? victim;
+        Player? victim;
 
         if (paramsValue.Length > 0)
         {

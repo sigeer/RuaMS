@@ -129,32 +129,24 @@ public class ScrollHandler : ChannelHandlerBase
                     scrollSuccess = Equip.ScrollResult.SUCCESS;
                 }
 
-                useInventory.lockInventory();
-                try
+                if (scroll.getQuantity() < 1)
                 {
-                    if (scroll.getQuantity() < 1)
+                    announceCannotScroll(c, legendarySpirit);
+                    return;
+                }
+
+                if (whiteScroll && !ItemConstants.isCleanSlate(scroll.getItemId()))
+                {
+                    if (wscroll!.getQuantity() < 1)
                     {
                         announceCannotScroll(c, legendarySpirit);
                         return;
                     }
 
-                    if (whiteScroll && !ItemConstants.isCleanSlate(scroll.getItemId()))
-                    {
-                        if (wscroll!.getQuantity() < 1)
-                        {
-                            announceCannotScroll(c, legendarySpirit);
-                            return;
-                        }
-
-                        c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
-                    }
-
-                    c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
+                    c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
                 }
-                finally
-                {
-                    useInventory.unlockInventory();
-                }
+
+                c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
 
                 List<ModifyInventory> mods = new();
                 if (scrollSuccess == Equip.ScrollResult.CURSE)
@@ -166,30 +158,14 @@ public class ScrollHandler : ChannelHandlerBase
                         {
                             Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
 
-                            inv.lockInventory();
-                            try
-                            {
-                                chr.unequippedItem(toScroll);
-                                inv.removeItem(toScroll.getPosition());
-                            }
-                            finally
-                            {
-                                inv.unlockInventory();
-                            }
+                            chr.unequippedItem(toScroll);
+                            inv.removeItem(toScroll.getPosition());
                         }
                         else
                         {
                             Inventory inv = chr.getInventory(InventoryType.EQUIP);
 
-                            inv.lockInventory();
-                            try
-                            {
-                                inv.removeItem(toScroll.getPosition());
-                            }
-                            finally
-                            {
-                                inv.unlockInventory();
-                            }
+                            inv.removeItem(toScroll.getPosition());
                         }
                     }
                     else

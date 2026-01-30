@@ -47,7 +47,6 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 HandleNpcId(client, npcId, client.CurrentCulture.GetNpcName(npcId));
             }
-
         }
 
         void HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)

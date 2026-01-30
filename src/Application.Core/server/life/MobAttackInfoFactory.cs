@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Game.Life;
 using tools;
 
 namespace server.life;
@@ -44,42 +43,40 @@ public class MobAttackInfoFactory
         {
             return ret;
         }
-        lock (mobAttacks)
+
+        ret = mobAttacks.GetValueOrDefault(mobId + "" + attack);
+        if (ret == null)
         {
-            ret = mobAttacks.GetValueOrDefault(mobId + "" + attack);
-            if (ret == null)
+            var mobData = dataSource.getData(StringUtil.getLeftPaddedStr(mobId + ".img", '0', 11));
+            if (mobData != null)
             {
-                var mobData = dataSource.getData(StringUtil.getLeftPaddedStr(mobId + ".img", '0', 11));
-                if (mobData != null)
+                //					MapleData infoData = mobData.getChildByPath("info");
+                string linkedmob = DataTool.getString("link", mobData) ?? "";
+                if (!linkedmob.Equals(""))
                 {
-                    //					MapleData infoData = mobData.getChildByPath("info");
-                    string linkedmob = DataTool.getString("link", mobData) ?? "";
-                    if (!linkedmob.Equals(""))
-                    {
-                        mobData = dataSource.getData(StringUtil.getLeftPaddedStr(linkedmob + ".img", '0', 11));
-                    }
-                    var attackData = mobData.getChildByPath("attack" + (attack + 1) + "/info");
-
-                    if (attackData == null)
-                    {
-                        return null;
-                    }
-
-                    var deadlyAttack = attackData.getChildByPath("deadlyAttack");
-                    int mpBurn = DataTool.getInt("mpBurn", attackData, 0);
-                    int disease = DataTool.getInt("disease", attackData, 0);
-                    int level = DataTool.getInt("level", attackData, 0);
-                    int mpCon = DataTool.getInt("conMP", attackData, 0);
-                    ret = new MobAttackInfo(mobId, attack);
-                    ret.setDeadlyAttack(deadlyAttack != null);
-                    ret.setMpBurn(mpBurn);
-                    ret.setDiseaseSkill(disease);
-                    ret.setDiseaseLevel(level);
-                    ret.setMpCon(mpCon);
+                    mobData = dataSource.getData(StringUtil.getLeftPaddedStr(linkedmob + ".img", '0', 11));
                 }
-                mobAttacks.AddOrUpdate(mobId + "" + attack, ret);
+                var attackData = mobData.getChildByPath("attack" + (attack + 1) + "/info");
+
+                if (attackData == null)
+                {
+                    return null;
+                }
+
+                var deadlyAttack = attackData.getChildByPath("deadlyAttack");
+                int mpBurn = DataTool.getInt("mpBurn", attackData, 0);
+                int disease = DataTool.getInt("disease", attackData, 0);
+                int level = DataTool.getInt("level", attackData, 0);
+                int mpCon = DataTool.getInt("conMP", attackData, 0);
+                ret = new MobAttackInfo(mobId, attack);
+                ret.setDeadlyAttack(deadlyAttack != null);
+                ret.setMpBurn(mpBurn);
+                ret.setDiseaseSkill(disease);
+                ret.setDiseaseLevel(level);
+                ret.setMpCon(mpCon);
             }
-            return ret;
+            mobAttacks.AddOrUpdate(mobId + "" + attack, ret);
         }
+        return ret;
     }
 }

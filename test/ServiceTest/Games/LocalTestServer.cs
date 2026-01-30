@@ -5,10 +5,8 @@ using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Services;
-using Application.Module.Duey.Master;
 using Application.Module.ExpeditionBossLog.Master;
 using Application.Module.Maker.Master;
-using Application.Module.PlayerNPC.Master;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -50,10 +48,8 @@ namespace ServiceTest.Games
 
             // 需要先启动Master
             builder.Services.AddLoginServer(builder.Configuration);
-            builder.Services.AddDueyMaster();
             builder.Services.AddExpeditionBossLogMaster();
             builder.Services.AddMakerMaster();
-            builder.Services.AddPlayerNPCMaster();
 
             builder.AddChannelServerInProgress();
 
@@ -98,7 +94,7 @@ namespace ServiceTest.Games
             return container.Servers[i];
         }
 
-        public IPlayer? GetPlayer(int cid = 1)
+        public Player? GetPlayer(int cid = 1)
         {
             var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1];
 
@@ -110,6 +106,10 @@ namespace ServiceTest.Games
             acc.CurrentIP = "127.0.0.1";
             mainServer.UpdateAccountState(1, LoginStage.LOGIN_SERVER_TRANSITION);
             var obj = loginService.PlayerLogin("12345678", cid);
+            if (obj == null)
+            {
+                return null;
+            }
             var charSrv = ServiceProvider.GetRequiredService<Application.Core.Channel.Services.DataService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(ServiceProvider, (long)1, channel);
@@ -117,7 +117,7 @@ namespace ServiceTest.Games
             //mockChannel.Setup(x => x.getChannel())
             //    .Returns(1);
             var p = charSrv.Serialize(client, obj);
-            p.setEnteredChannelWorld(channel.getId());
+            channel.addPlayer(p);
             return p;
         }
     }

@@ -2,8 +2,6 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
-        public const string SaveAll = "SaveAll";
-
         public const string Broadcast_SetTimer = "Broadcast_SetTimer";
         public const string Broadcast_RemoveTimer = "Broadcast_RemoveTimer";
         public const string Broadcast_YellowTip = "Broadcast_YellowTip";
@@ -19,7 +17,6 @@ namespace Application.Shared.Message
         public const string Buddy_NotifyChannel = "Buddy_NotifyChannel";
         public const string Buddy_NoticeMessage = "Buddy_NoticeMessage";
 
-        public const string SendPlayerDisconnectAll = "SendPlayerDisconnectAll";
         public const string SendPlayerDisconnect = "SendPlayerDisconnect";
         public const string SendWrapPlayerByName = "SendWrapPlayerByName";
 
@@ -53,8 +50,6 @@ namespace Application.Shared.Message
 
         public const string OnTeamUpdate = "OnTeamUpdate";
 
-
-        public const string OnMultiChat = "OnMultiChat";
 
         public const string OnChatRoomMessageSend = "OnChatRoomMessageSend";
         public const string OnJoinChatRoom = "OnJoinChatRoom";
