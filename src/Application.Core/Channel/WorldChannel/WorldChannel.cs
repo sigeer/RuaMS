@@ -60,7 +60,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     /// <summary>
     /// 处于现金商城
     /// </summary>
-    private Dictionary<int, Player> playersAway = new();
+    public Dictionary<int, Player> PlayersAway { get; set; } = new();
     private Dictionary<ExpeditionType, Expedition> expeditions = new();
     private Dictionary<int, MiniDungeon> dungeons = new();
 
@@ -397,7 +397,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
     public void addPlayer(Player chr)
     {
-        if (playersAway.Remove(chr.Id))
+        if (PlayersAway.Remove(chr.Id))
             GameMetrics.OnlinePlayerCount.Add(-1);
 
         Players.AddPlayer(chr);
@@ -480,7 +480,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public void EnterExtralWorld(Player chr)
     {
         // either they in CS or MTS
-        if (playersAway.TryAdd(chr.Id, chr))
+        if (PlayersAway.TryAdd(chr.Id, chr))
             GameMetrics.OnlinePlayerCount.Add(1);
 
         RemovePlayer(chr.Id);
@@ -488,22 +488,22 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
     public void RemovePlayerDeep(Player chr)
     {
-        if (playersAway.Remove(chr.Id))
+        if (PlayersAway.Remove(chr.Id))
             GameMetrics.OnlinePlayerCount.Add(-1);
 
         RemovePlayer(chr.Id);
     }
 
-    public bool IsAwayFromWorld(int id) => playersAway.ContainsKey(id);
+    public bool IsAwayFromWorld(int id) => PlayersAway.ContainsKey(id);
 
     public bool canUninstall()
     {
-        return Players.Count() == 0 && playersAway.Count == 0;
+        return Players.Count() == 0 && PlayersAway.Count == 0;
     }
 
     private async Task disconnectAwayPlayers()
     {
-        foreach (var chr in playersAway.Values)
+        foreach (var chr in PlayersAway.Values)
         {
             if (chr != null && chr.isLoggedinWorld())
             {

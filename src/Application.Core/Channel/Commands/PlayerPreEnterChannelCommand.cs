@@ -7,21 +7,23 @@ namespace Application.Core.Channel.Commands
     {
         int _chrId;
         IPEndPoint _channelSocket;
-        bool saveBuff;
+        bool fromChannel;
 
-        public PlayerPreEnterChannelCommand(int chrId, IPEndPoint channelSocket, bool saveBuff = false)
+        public PlayerPreEnterChannelCommand(int chrId, IPEndPoint channelSocket, bool fromChannel)
         {
             _chrId = chrId;
             _channelSocket = channelSocket;
-            this.saveBuff = saveBuff;
+            this.fromChannel = fromChannel;
         }
 
         public void Execute(ChannelCommandContext ctx)
         {
-            var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(_chrId);
+            var chr = fromChannel 
+                ? ctx.WorldChannel.getPlayerStorage().getCharacterById(_chrId)
+                : ctx.WorldChannel.PlayersAway.GetValueOrDefault(_chrId);
             if (chr != null)
             {
-                if (saveBuff)
+                if (fromChannel)
                     chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
 
                 chr.Client.SetCharacterOnSessionTransitionState(_chrId);

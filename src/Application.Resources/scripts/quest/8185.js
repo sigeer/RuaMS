@@ -62,7 +62,7 @@ function end(mode, type, selection) {
         } else if (status == 3) {
             qm.sendNextPrev("好的，我们开始吧...！ #rHYAHH!#k");
         } else if (status == 4) {
-            var petSlot = qm.getPlayer().getPetIndex(5000029);
+            var petSlot = qm.getPlayer().getPetIndexByItemId(5000029);
             if (petSlot === -1) {
                 qm.getPlayer().message("宠物无法进化。");
                 qm.dispose();

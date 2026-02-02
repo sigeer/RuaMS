@@ -85,7 +85,7 @@ namespace Application.Core.Channel.ServerData
 
         internal void ChangeLeader(Player player, int newLeader)
         {
-            _ =  UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            _ = UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
         /// <summary>
@@ -94,6 +94,10 @@ namespace Application.Core.Channel.ServerData
         /// <param name="updatePlayer"></param>
         public void ChannelNotify(Player updatePlayer)
         {
+            if (updatePlayer.Party <= 0)
+            {
+                return;
+            }
             var team = GetTeamDto(updatePlayer.Party, false);
             if (team != null)
             {

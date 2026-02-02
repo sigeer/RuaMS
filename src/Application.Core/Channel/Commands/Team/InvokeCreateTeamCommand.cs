@@ -22,6 +22,8 @@ namespace Application.Core.Channel.Commands
             var player = ctx.WorldChannel.getPlayerStorage().getCharacterById(res.Request.LeaderId);
             if (player != null)
             {
+                player.Party = res.TeamDto.Id;
+
                 player.sendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
 
                 player.HandleTeamMemberCountChanged(null);

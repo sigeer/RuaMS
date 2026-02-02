@@ -286,7 +286,7 @@ public class Pet : Item
 
     public override void setExpiration(long expire)
     {
-        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expiration;
+        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
     }
 
     public Pet? EvolvePet(Player owner)

@@ -37,6 +37,21 @@ namespace Application.Core.Game.Players
             return -1;
         }
 
+        public sbyte getPetIndexByItemId(int itemId)
+        {
+            for (sbyte i = 0; i < 3; i++)
+            {
+                if (pets[i] != null)
+                {
+                    if (pets[i]!.getItemId() == itemId)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
         public sbyte getPetIndex(Pet pet)
         {
             return getPetIndex(pet.PetId);

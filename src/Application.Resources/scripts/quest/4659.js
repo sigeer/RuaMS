@@ -9,7 +9,7 @@ function end(mode, type, selection) {
         return;
     }
 
-    var petSlot = qm.getPlayer().getPetIndex(5000048);
+    var petSlot = qm.getPlayer().getPetIndexByItemId(5000048);
     if (petSlot === -1) {
         qm.getPlayer().message("Pet could not be evolved.");
         qm.dispose();

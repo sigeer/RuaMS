@@ -207,7 +207,7 @@ namespace Application.Core.Game.Players
                 var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
                 if (item != null)
                 {
-                    if (filter == null || filter(item) || toRemoveCount > 0)
+                    if ((filter == null || filter(item)) && toRemoveCount > 0)
                     {
                         UnEquip(inv, item);
 

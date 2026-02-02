@@ -394,7 +394,7 @@ namespace Application.Core.Channel.Net
             _ = Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                 .ContinueWith(t =>
                 {
-                    CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket));
+                    CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
                 });
         }
 
