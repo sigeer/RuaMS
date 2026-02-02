@@ -25,13 +25,6 @@ public class ItemDropCommand : CommandBase
         int itemId = int.Parse(paramsValue[0]);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        var abTemplate = ii.GetTemplate(itemId);
-        if (abTemplate == null)
-        {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
-            return;
-        }
-
         short quantity = 1;
         if (paramsValue.Length >= 2)
         {
@@ -44,63 +37,29 @@ public class ItemDropCommand : CommandBase
             return;
         }
 
-        if (abTemplate is PetItemTemplate petTemplate)
+        var item = ii.GenerateVirtualItemById(itemId, quantity);
+        if (item == null)
         {
-            if (paramsValue.Length >= 2)
-            {
-                // thanks to istreety & TacoBell
-                quantity = 1;
-                long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(days).ToUnixTimeMilliseconds();
-
-                var toDropTemp = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-                toDropTemp.setExpiration(expiration);
-
-                toDropTemp.setOwner("");
-                if (player.gmLevel() < 3)
-                {
-                    short f = toDropTemp.getFlag();
-                    f |= ItemConstants.ACCOUNT_SHARING;
-                    f |= ItemConstants.UNTRADEABLE;
-                    f |= ItemConstants.SANDBOX;
-
-                    toDropTemp.setFlag(f);
-                    toDropTemp.setOwner("TRIAL-MODE");
-                }
-
-                c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDropTemp, c.OnlinedCharacter.getPosition(), true, true);
-
-                return;
-            }
-            else
-            {
-                player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_PetSyntax));
-                return;
-            }
+            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), itemId.ToString());
+            return;
         }
 
-        Item toDrop;
-        if (ItemConstants.getInventoryType(itemId) == InventoryType.EQUIP)
+        if (item is Pet pet)
         {
-            toDrop = ii.getEquipById(itemId);
-        }
-        else
-        {
-            toDrop = Item.CreateVirtualItem(itemId, quantity);
+            pet.setExpiration(c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(quantity).ToUnixTimeMilliseconds());
         }
 
-        toDrop.setOwner(player.getName());
         if (player.gmLevel() < 3)
         {
-            short f = toDrop.getFlag();
+            short f = item.getFlag();
             f |= ItemConstants.ACCOUNT_SHARING;
             f |= ItemConstants.UNTRADEABLE;
             f |= ItemConstants.SANDBOX;
 
-            toDrop.setFlag(f);
-            toDrop.setOwner("TRIAL-MODE");
+            item.setFlag(f);
+            item.setOwner("TRIAL-MODE");
         }
 
-        c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDrop, c.OnlinedCharacter.getPosition(), true, true);
+        c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, item, c.OnlinedCharacter.getPosition(), true, true);
     }
 }

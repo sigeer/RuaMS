@@ -4,7 +4,9 @@ using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
 using Application.Templates.Character;
+using Application.Templates.Exceptions;
 using Application.Templates.Item.Pet;
+using Application.Templates.XmlWzReader.Provider;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
@@ -44,20 +46,10 @@ namespace Application.Core.Channel.Services
         }
         public Item CashItem2Item(CashItem cashItem)
         {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId());
-            Item item;
-
-            if (abTemplate is PetItemTemplate petTemplate)
+            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.getItemId(), cashItem.getCount());
+            if (item == null)
             {
-                item = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-            }
-            else if (abTemplate is EquipTemplate equipTemplate)
-            {
-                item = ItemInformationProvider.getInstance().getEquipById(cashItem.getItemId());
-            }
-            else
-            {
-                item = Item.CreateVirtualItem(cashItem.getItemId(), cashItem.getCount());
+                throw new TemplateNotFoundException("Item", cashItem.getItemId()); 
             }
 
             if (cashItem.Period == 1)
@@ -82,8 +74,8 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                if (abTemplate is PetItemTemplate subPet)
-                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.Life).TotalMilliseconds);
+                if (item is Pet subPet)
+                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.SourceTemplate.Life).TotalMilliseconds);
                 else
                     item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
             }

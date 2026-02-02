@@ -49,7 +49,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 {
     private ILogger log = LogFactory.GetLogger(LogType.Conversation);
 
-    private int npc;
+    protected int npc;
     private int npcOid;
     public ScriptMeta ScriptMeta { get; }
     private string? _getText;

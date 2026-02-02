@@ -33,8 +33,6 @@ namespace client.processor.action;
  */
 public class SpawnPetProcessor
 {
-    private static DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.ITEM);
-
     public static void processSpawnPet(IChannelClient c, byte slot, bool lead)
     {
         if (c.tryacquireClient())
@@ -49,7 +47,8 @@ public class SpawnPetProcessor
                 int petItemId = pet.getItemId();
                 if (petItemId == ItemId.DRAGON_PET || petItemId == ItemId.ROBO_PET)
                 {
-                    if (chr.haveItem(petItemId + 1))
+                    var evolveid = pet.SourceTemplate.Evol1;
+                    if (chr.haveItem(evolveid))
                     {
                         chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
                         c.sendPacket(PacketCreator.enableActions());
@@ -57,16 +56,19 @@ public class SpawnPetProcessor
                     }
                     else
                     {
-                        int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petItemId + ".img"));
                         long expiration = item.getExpiration();
-                        InventoryManipulator.removeById(c, InventoryType.CASH, petItemId, 1, false, false);
+                        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
                         InventoryManipulator.addById(c, evolveid, 1, expiration: expiration);
 
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
                 }
-                TogglePet(chr, pet, lead);
+                else
+                {
+                    TogglePet(chr, pet, lead);
+                }
+
 
             }
             finally

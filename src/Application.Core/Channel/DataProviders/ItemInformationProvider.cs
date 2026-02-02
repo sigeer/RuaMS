@@ -830,11 +830,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
-    public Equip? GetEquipByTemplate(EquipTemplate? equipTemplate)
+    public Equip GetEquipByTemplate(EquipTemplate equipTemplate)
     {
-        if (equipTemplate == null)
-            return null;
-
         var nEquip = new Equip(equipTemplate, 0);
         nEquip.setQuantity(1);
 
@@ -873,7 +870,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
-    public Item? GenerateVirtualItemById(int itemId, int quantity, bool randomizeEquip = true)
+    public Item? GenerateVirtualItemById(int itemId, int quantity)
     {
         if (quantity <= 0)
             return null;
@@ -884,29 +881,22 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         if (abTemplate is EquipTemplate equipTemplate)
         {
-            var item = GetEquipByTemplate(equipTemplate);
-            if (item != null)
-            {
-                if (randomizeEquip)
-                {
-                    randomizeStats(item);
-                }
-                return item;
-            }
+            return GetEquipByTemplate(equipTemplate);
         }
 
-        else
+        else if(abTemplate is PetItemTemplate petTemplate)
         {
-            return Item.CreateVirtualItem(itemId, (short)quantity);
+            return new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
         }
+        else
+            return Item.CreateVirtualItem(itemId, (short)quantity);
 
-        return null;
 
     }
 
     public Equip getEquipById(int equipId)
     {
-        return GetEquipByTemplate(GetEquipTemplate(equipId)) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId);
+        return GetEquipByTemplate(GetEquipTemplate(equipId) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId));
     }
 
     /// <summary>

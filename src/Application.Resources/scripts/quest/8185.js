@@ -1,8 +1,8 @@
-﻿/*
-	This file is part of the OdinMS Maple Story Server
+/*
+    This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-		       Matthias Butz <matze@odinms.de>
-		       Jan Christian Meyer <vimes@odinms.de>
+               Matthias Butz <matze@odinms.de>
+               Jan Christian Meyer <vimes@odinms.de>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -20,9 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* 	Author: 		Blue
-	Name:	 		Garnox
-	Map(s): 		New Leaf City : Town Center
-	Description: 		Quest - Pet Evolution2
+    Name:	 		Garnox
+    Map(s): 		New Leaf City : Town Center
+    Description: 		Quest - Pet Evolution2
 */
 
 var status = -1;
@@ -43,6 +43,12 @@ function end(mode, type, selection) {
                 return;
             }
 
+            if (!qm.haveItem(5380000)) {
+                qm.sendOk("若没有进化之石是无法让宠物进化的！难道你没听懂吗？快去拿回来吧！");
+                qm.dispose();
+                return;
+            }
+
             qm.sendNext("#e#b嘿，你成功了！#n#k \r\n#r哇！#k 现在我可以完成对你的宠物的研究了！");
         } else if (status == 1) {
             if (mode == 0) {
@@ -56,48 +62,25 @@ function end(mode, type, selection) {
         } else if (status == 3) {
             qm.sendNextPrev("好的，我们开始吧...！ #rHYAHH!#k");
         } else if (status == 4) {
-            var rand = 1 + Math.floor(Math.random() * 10);
-            var after = 0;
-            var i = 0;
-
-            for (i = 0; i < 3; i++) {
-                if (qm.getPlayer().getPet(i) != null && qm.getPlayer().getPet(i).getItemId() == 5000029) {
-                    var pet = qm.getPlayer().getPet(i);
-                    break;
-                }
-            }
-            if (i == 3) {
+            var petSlot = qm.getPlayer().getPetIndex(5000029);
+            if (petSlot === -1) {
                 qm.getPlayer().message("宠物无法进化。");
                 qm.dispose();
                 return;
             }
+            //qm.unequipPet(qm.getClient());
 
-            if (rand >= 1 && rand <= 3) {
-                after = 5000030;
-            } else if (rand >= 4 && rand <= 6) {
-                after = 5000031;
-            } else if (rand >= 7 && rand <= 9) {
-                after = 5000032;
-            } else if (rand == 10) {
-                after = 5000033;
+            var after = qm.evolvePet(petSlot);
+            if (after != null) {
+                qm.gainItem(5380000, -1);
+                qm.gainMeso(-10000);
+                qm.completeQuest();
+
+                qm.sendOk("#b太棒了！#k 你的龙变得更加美丽！ #r你可以在 '现金' 背包下找到你的新宠物。\r 它曾经是 #b #i5000029##t5000029##k，现在是 \r 一个 #b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
             } else {
-                qm.sendOk("出现了错误。请重试。");
                 qm.dispose();
-                return;
             }
 
-            /* if (name.equals(ItemInformationProvider.getInstance().getName(id))) {
-            name = ItemInformationProvider.getInstance().getName(after);
-            } */
-
-            //qm.unequipPet(qm.getClient());
-            qm.gainItem(5380000, -1);
-            qm.gainMeso(-10000);
-            qm.evolvePet(i, after);
-
-            //SpawnPetHandler.evolve(qm.getPlayer().getClient(), 5000029, after);
-
-            qm.sendOk("#b太棒了！#k 你的龙变得更加美丽！ #r你可以在 '现金' 背包下找到你的新宠物。\r 它曾经是 #b #i5000029##t5000029##k，现在是 \r 一个 #b#i" + after + "##t" + after + "##k！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after + "# #t" + after + "#");
         } else if (status == 5) {
             qm.dispose();
         }

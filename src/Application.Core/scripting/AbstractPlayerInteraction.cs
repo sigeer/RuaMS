@@ -613,28 +613,22 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public Item? evolvePet(byte slot, int afterId)
+    public Item? evolvePet(byte slot)
     {
-        Pet? target;
-
-        long period = (long)TimeSpan.FromDays(90).TotalMilliseconds;    //refreshes expiration date: 90 days
-
-
-        target = getPlayer().getPet(slot);
-        if (target == null)
+        var target = getPlayer().getPet(slot);
+        if (target != null)
         {
-            getPlayer().message("Pet could not be evolved...");
-            return (null);
+            var pet = target.EvolvePet(getPlayer());
+            if (pet != null)
+            {
+                InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
+
+                InventoryManipulator.addFromDrop(getClient(), pet, false);
+                return pet;
+            }
         }
 
-        var pet = getPlayer().EvolvePet(target, period);
-        if (pet != null)
-        {
-            InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
-
-            InventoryManipulator.addFromDrop(getClient(), pet, false);
-            return pet;
-        }
+        getPlayer().message("Pet could not be evolved...");
         return null;
 
         /*

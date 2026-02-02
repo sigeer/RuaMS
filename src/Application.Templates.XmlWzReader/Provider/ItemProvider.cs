@@ -78,6 +78,7 @@ namespace Application.Templates.XmlWzReader.Provider
 
                 var pEntry = new PetItemTemplate(petItemId);
                 PetItemTemplateGenerated.ApplyProperties(pEntry, xDoc);
+                pEntry.Adjust();
                 InsertItem(pEntry);
                 return [pEntry];
             }

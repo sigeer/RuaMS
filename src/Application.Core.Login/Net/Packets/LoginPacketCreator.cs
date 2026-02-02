@@ -451,10 +451,8 @@ namespace Application.Core.Login.Net.Packets
             p.writeString(server.Name);
             p.writeByte(server.Flag);
             p.writeString(server.EventMessage);
-            p.writeByte(100); // rate modifier, don't ask O.O!
-            p.writeByte(0); // event xp * 2.6 O.O!
-            p.writeByte(100); // rate modifier, don't ask O.O!
-            p.writeByte(0); // drop rate * 2.6
+            p.writeShort(100); // event xp
+            p.writeShort(100); // drop rate
             p.writeByte(0);
             p.writeByte(server.Channels.Count);
             for (int i = 0; i < server.Channels.Count; i++)

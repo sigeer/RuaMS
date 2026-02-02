@@ -2,6 +2,8 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Core.tools.RandomUtils;
+using Application.Shared.Constants.Item;
 using Application.Templates.Item.Pet;
 using client.inventory;
 using client.inventory.manipulator;
@@ -91,19 +93,14 @@ namespace Application.Core.Game.Players
                     ItemInformationProvider ii = ItemInformationProvider.getInstance();
                     foreach (Item item in toberemove)
                     {
-                        List<int> toadd = new();
                         var replace = ii.GetReplaceItemTemplate(item.getItemId());
                         if (replace != null)
                         {
-                            toadd.Add(replace.ItemId);
                             if (!string.IsNullOrEmpty(replace.Message))
                             {
                                 Notice(replace.Message);
                             }
-                        }
-                        foreach (int itemid in toadd)
-                        {
-                            InventoryManipulator.addById(Client, itemid, 1);
+                            GainItem(replace.ItemId, 1, false, expires: replace.Period);
                         }
                     }
 
@@ -452,40 +449,35 @@ namespace Application.Core.Game.Players
 
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-                bool addItemResult = false;
+                item = ii.GenerateVirtualItemById(itemId, quantity);
                 if (item == null)
+                    return null;
+
+                if (item is Equip it)
                 {
-                    if (invType == InventoryType.EQUIP)
+                    if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
                     {
-                        item = ii.getEquipById(itemId);
+                        it.setUpgradeSlots(3);
+                    }
 
-                        if (item != null)
+                    // 手工制作时，使用提升属性（通过不消耗升级次数的混沌卷）
+                    if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && getCS() == true)
+                    {
+                        if (!(isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
                         {
-                            Equip it = (Equip)item;
-                            if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
-                            {
-                                it.setUpgradeSlots(3);
-                            }
-
-                            if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && getCS() == true)
-                            {
-                                if (!(isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
-                                {
-                                    it.setUpgradeSlots(it.getUpgradeSlots() + 1);
-                                }
-                                item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
-                            }
-
-                            if (randomStats)
-                            {
-                                ii.randomizeStats(it);
-                            }
+                            it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                         }
+                        item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
                     }
-                    else
+
+                    if (randomStats)
                     {
-                        item = Item.CreateVirtualItem(itemId, quantity);
+                        ii.randomizeStats(it);
                     }
+                }
+                else if (item is Pet pet)
+                {
+                    pet.Name = Client.CurrentCulture.GetItemName(itemId) ?? "";
                 }
 
                 if (expires >= 0)
@@ -493,7 +485,7 @@ namespace Application.Core.Game.Players
                     item!.setExpiration(Client.CurrentServer.Node.getCurrentTime() + expires);
                 }
 
-                addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
+                var addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
                 if (!addItemResult)
                     return null;
             }
@@ -505,35 +497,6 @@ namespace Application.Core.Game.Players
             GainItemShowMessage(itemId, quantity, show);
 
             return item;
-        }
-
-        public Pet? EvolvePet(Pet from, long expires)
-        {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(from.getItemId());
-            if (abTemplate is PetItemTemplate petTemplate)
-            {
-                if (from != null)
-                {
-                    var evolved = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-
-                    Point pos = getPosition();
-                    pos.Y -= 12;
-                    evolved.setPos(pos);
-                    evolved.setFh(getMap().Footholds.FindBelowFoothold(evolved.getPos()).getId());
-                    evolved.setStance(0);
-                    evolved.Summoned = true;
-
-                    var fromDefaultName = Client.CurrentCulture.GetItemName(from.getItemId());
-                    evolved.Name = from.Name != fromDefaultName ? from.Name : fromDefaultName;
-                    evolved.Tameness = from.Tameness;
-                    evolved.Fullness = from.Fullness;
-                    evolved.Level = from.Level;
-                    evolved.setExpiration(Client.CurrentServer.Node.getCurrentTime() + expires);
-
-                    return evolved;
-                }
-            }
-            return null;
         }
 
         public Ring? GetRingFromTotal(RingSourceModel? ring)
