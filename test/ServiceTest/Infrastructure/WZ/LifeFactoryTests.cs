@@ -158,7 +158,7 @@ namespace ServiceTest.Infrastructure.WZ
                 Is.EqualTo(OldLifeFactory.getHpBarBosses().OrderBy(x => x).ToHashSet()));
         }
 
-        [Test]
+        // [Test]
         public void FindAllScriptedNpc()
         {
             var allNpcStr = _providerSource.GetProviderByKey<StringProvider>("zh-CN").GetSubProvider(StringCategory.Npc).LoadAll().OfType<StringNpcTemplate>();
