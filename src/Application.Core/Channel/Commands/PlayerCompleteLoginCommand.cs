@@ -43,7 +43,6 @@ namespace Application.Core.Channel.Commands
                 ctx.WorldChannel.NodeService.RemoteCallService.RunEventAfterLogin(chr, remoteCallDtos);
 
                 chr.CheckJail();
-                chr.ClearExpiredItems();
             }
         }
     }

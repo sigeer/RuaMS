@@ -4085,12 +4085,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet movePet(int cid, int pid, sbyte slot, List<LifeMovementFragment> moves)
+    public static Packet movePet(int cid, sbyte slot, Point pos, List<LifeMovementFragment> moves)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PET);
         p.writeInt(cid);
         p.writeSByte(slot);
-        p.writeInt(pid);
+        p.writePos(pos);
         serializeMovementList(p, moves);
         return p;
     }

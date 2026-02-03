@@ -1245,6 +1245,7 @@ public partial class Player
             {
                 ChangeHP(-MapModel.getHPDec(), false);
             });
+            sendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
         }
     }
 
@@ -3352,47 +3353,11 @@ public partial class Player
             SetMP(nextMp);
         });
 
-        // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
+        //// autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            KeyBinding? autohpPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionHP);
-            if (autohpPot != null)
-            {
-                int autohpItemid = autohpPot.getAction();
-                float autohpAlert = this.getAutopotHpAlert();
-                if (((float)this.HP / this.ActualMaxHP) <= autohpAlert)
-                { // try within user settings... thanks Lame, Optimist, Stealth2800
-                    var autohpItem = this.getInventory(InventoryType.USE).findById(autohpItemid);
-                    if (autohpItem != null)
-                    {
-                        this.setAutopotHpAlert(0.9f * autohpAlert);
-                        PetAutopotProcessor.runAutopotAction(Client, autohpItem.getPosition(), autohpItemid);
-                    }
-                }
-            }
-
             sendPacket(PacketCreator.onNotifyHPDecByField(-hpchange));
         }
-
-        if (mpchange < 0)
-        {
-            KeyBinding? autompPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionMP);
-            if (autompPot != null)
-            {
-                int autompItemid = autompPot.getAction();
-                float autompAlert = this.getAutopotMpAlert();
-                if (((float)this.MP) / this.ActualMaxMP <= autompAlert)
-                {
-                    var autompItem = this.getInventory(InventoryType.USE).findById(autompItemid);
-                    if (autompItem != null)
-                    {
-                        this.setAutopotMpAlert(0.9f * autompAlert); // autoMP would stick to using pots at every depletion in some cases... thanks Rohenn
-                        PetAutopotProcessor.runAutopotAction(Client, autompItem.getPosition(), autompItemid);
-                    }
-                }
-            }
-        }
-
         return true;
     }
 

@@ -45,7 +45,7 @@ public class WarpCommand : ParamsCommandBase
                             var mapItem = findResult.MatchedItems[idx];
                             ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
                             {
-                                if (TryGetMapModel(player, mapFactory, mapId, out var target))
+                                if (TryGetMapModel(player, mapFactory, mapItem.Id, out var target))
                                     player.changeMap(target, target.getRandomPlayerSpawnpoint());
                                 ctx.dispose();
                             });

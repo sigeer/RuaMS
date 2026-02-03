@@ -5,16 +5,9 @@ namespace Application.Core.Login
     public class MasterHost : IHostedService
     {
         readonly MasterServer _server;
-        readonly IHostApplicationLifetime _hostLifetime;
-        public MasterHost(MasterServer server, IHostApplicationLifetime hostApplicationLifetime)
+        public MasterHost(MasterServer server)
         {
             _server = server;
-            _hostLifetime = hostApplicationLifetime;
-
-            _hostLifetime.ApplicationStopping.Register(async () =>
-            {
-                await _server.Shutdown();
-            });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -22,9 +15,9 @@ namespace Application.Core.Login
             await _server.StartServer(cancellationToken);
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            await _server.Shutdown();
         }
     }
 }
