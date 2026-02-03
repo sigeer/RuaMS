@@ -3467,7 +3467,7 @@ public class MapleMap : IMap, INamedInstance
             if (pet != null)
             {
                 pet.setPos(getGroundBelow(chr.getPosition()));
-                chr.sendPacket(PacketCreator.showPet(chr, pet, false, false));
+                chr.sendPacket(PacketCreator.ShowPet(chr, pet));
             }
             else
             {

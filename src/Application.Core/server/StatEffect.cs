@@ -1860,7 +1860,7 @@ public class StatEffect
             }
             else
             {
-                applyto.GainItem(ItemId.MAGIC_ROCK, 1, false);
+                applyto.GainItem(ItemId.MAGIC_ROCK, 1);
 
                 if (createDoorCode == -2)
                 {

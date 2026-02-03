@@ -33,7 +33,7 @@ public class PetCommandHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
-        int petId = p.readInt();
+        var petId = p.readLong();
         sbyte petIndex = chr.getPetIndex(petId);
         Pet? pet;
         if (petIndex == -1)
@@ -47,7 +47,6 @@ public class PetCommandHandler : ChannelHandlerBase
         if (pet == null)
             return;
 
-        p.readInt();
         p.readByte();
         byte command = p.readByte();
         var petCommand = pet.SourceTemplate.InterActsDict.GetValueOrDefault(command);

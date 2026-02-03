@@ -357,7 +357,7 @@ namespace Application.Core.Channel.Net
 
             try
             {
-                _ = Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
+                Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                     .ContinueWith(t =>
                     {
                         CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
@@ -391,7 +391,7 @@ namespace Application.Core.Channel.Net
             }
             Character.getCashShop().open(false);
 
-            _ = Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
+            Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                 .ContinueWith(t =>
                 {
                     CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, false));

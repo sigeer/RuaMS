@@ -58,8 +58,7 @@ public class SpawnPetProcessor
                     {
                         long expiration = item.getExpiration();
                         InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
-                        InventoryManipulator.addById(c, evolveid, 1, expiration: expiration);
-
+                        chr.GainItem(evolveid, 1, nextSetter: i => i.setExpiration(expiration));
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
@@ -95,19 +94,8 @@ public class SpawnPetProcessor
             {
                 chr.shiftPetsRight();
             }
-            Point pos = chr.getPosition();
-            pos.Y -= 12;
-            pet.setPos(pos);
-            pet.setFh(chr.getMap().Footholds.FindBelowFoothold(pet.getPos()).getId());
-            pet.setStance(0);
-            pet.setSummoned(true);
-            chr.addPet(pet);
-            chr.getMap().broadcastMessage(chr, PacketCreator.showPet(chr, pet, false, false), true);
-            chr.Client.sendPacket(PacketCreator.petStatUpdate(chr));
-            chr.Client.sendPacket(PacketCreator.enableActions());
 
-            chr.commitExcludedItems();
-            chr.Client.CurrentServer.PetHungerManager.registerPetHunger(chr, chr.getPetIndex(pet));
+            chr.SummonPet(pet);
         }
     }
 }

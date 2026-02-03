@@ -488,15 +488,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
         foreach (var mpsi in Commodity)
         {
-            if (mpsi.getBundles() >= 2)
+            if (mpsi.isExist())
             {
-                var iItem = mpsi.getItem().copy();
+                Item iItem = mpsi.getItem().copy();
                 iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
-                InventoryManipulator.addFromDrop(Owner.Client, iItem, false);
-            }
-            else if (mpsi.isExist())
-            {
-                InventoryManipulator.addFromDrop(Owner.Client, mpsi.getItem(), true);
+
+                InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
             }
         }
         return true;

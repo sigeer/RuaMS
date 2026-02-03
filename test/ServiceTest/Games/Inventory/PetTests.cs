@@ -19,7 +19,7 @@ namespace ServiceTest.Games.Inventory
             var server = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<MasterServer>();
             var inv = chr.Bag[InventoryType.CASH];
             var old = inv.list();
-            Assert.That(InventoryManipulator.addById(chr.Client, 5000041, 1));
+            Assert.That(chr.GainItem(5000041, 1) != null);
             Assert.That(inv.list().Count == old.Count + 1);
 
             var item = inv.findById(5000041);

@@ -43,6 +43,7 @@ using client.inventory;
 using client.keybind;
 using client.status;
 using constants.game;
+using DotNetty.Common.Utilities;
 using net.server;
 using server;
 using server.events.gm;
@@ -4058,20 +4059,29 @@ public class PacketCreator
         p.writeInt(pet.getFh());
     }
 
-    public static Packet showPet(Player chr, Pet pet, bool remove, bool hunger)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <param name="pet"></param>
+    /// <param name="fromHunger">因为饥饿自动收回</param>
+    /// <returns></returns>
+    public static Packet HidePet(Player chr, Pet pet, bool fromHunger)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
         p.writeInt(chr.getId());
         p.writeByte(chr.getPetIndex(pet));
-        if (remove)
-        {
-            p.writeByte(0);
-            p.writeBool(hunger);
-        }
-        else
-        {
-            addPetInfo(p, pet, true);
-        }
+        p.writeByte(0);
+        p.writeBool(fromHunger);
+        return p;
+    }
+
+    public static Packet ShowPet(Player chr, Pet pet)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
+        p.writeInt(chr.getId());
+        p.writeByte(chr.getPetIndex(pet));
+        addPetInfo(p, pet, true);
         return p;
     }
 
@@ -4105,6 +4115,13 @@ public class PacketCreator
         p.writeByte(1);
         p.writeBool(success);
         p.writeBool(balloonType);
+        return p;
+    }
+
+    public static Packet onNotifyHPDecByField(int change)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ON_NOTIFY_HP_DEC_BY_FIELD);
+        p.writeInt(change);
         return p;
     }
 

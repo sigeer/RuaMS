@@ -41,8 +41,7 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int petId = p.readInt();
-        p.skip(4); // timestamp
+        var petId = p.readLong();
 
         var chr = c.OnlinedCharacter;
         sbyte petIndex = chr.getPetIndex(petId);

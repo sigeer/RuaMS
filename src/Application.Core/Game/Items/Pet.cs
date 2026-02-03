@@ -72,6 +72,7 @@ public class Pet : Item
 
         CopyItemProps(copyPet);
 
+        copyPet.setPos(getPos());
         copyPet.setFh(getFh());
         copyPet.setStance(getStance());
         return copyPet;
@@ -232,21 +233,6 @@ public class Pet : Item
         return Summoned;
     }
 
-    public void setSummoned(bool yes)
-    {
-        Summoned = yes;
-    }
-
-    public int getPetAttribute()
-    {
-        return PetAttribute;
-    }
-
-    public void setPetAttribute(int flag)
-    {
-        PetAttribute = flag;
-    }
-
     public void addPetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute |= (int)flag;
@@ -291,42 +277,26 @@ public class Pet : Item
 
     public Pet? EvolvePet(Player owner)
     {
-        var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(getItemId());
-        if (abTemplate is PetItemTemplate petTemplate)
-        {
-            if (!petTemplate.CanEvol)
-            {
-                return null;
-            }
+        if (!SourceTemplate.CanEvol)
+            return null;
 
-            var nextPet = new LotteryMachine<int>(petTemplate.Evols.Select((x, idx) => new LotteryMachinItem<int>(x, petTemplate.EvolProbs[idx])))
-                .GetRandomItem();
-            var nextPetTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(nextPet) as PetItemTemplate;
-            if (nextPetTemplate == null)
-            {
-                return null;
-            }
+        var nextPet = new LotteryMachine<int>(SourceTemplate.Evols.Select((x, idx) => new LotteryMachinItem<int>(x, SourceTemplate.EvolProbs[idx])))
+            .GetRandomItem();
+        var nextPetTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(nextPet) as PetItemTemplate;
+        if (nextPetTemplate == null)
+            return null;
 
-            var evolved = new Pet(nextPetTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+        var evolved = new Pet(nextPetTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
 
-            Point pos = owner.getPosition();
-            pos.Y -= 12;
-            evolved.setPos(pos);
-            evolved.setFh(owner.getMap().Footholds.FindBelowFoothold(evolved.getPos()).getId());
-            evolved.setStance(0);
-            evolved.Summoned = true;
+        var fromDefaultName = owner.Client.CurrentCulture.GetItemName(getItemId()) ?? Name;
+        var nextDefaultName = owner.Client.CurrentCulture.GetItemName(nextPet) ?? Name;
+        evolved.Name = Name == fromDefaultName ? nextDefaultName : Name;
+        evolved.Tameness = Tameness;
+        evolved.Fullness = Fullness;
+        evolved.Level = Level;
+        evolved.setExpiration(owner.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(nextPetTemplate.Life).ToUnixTimeMilliseconds());
 
-            var fromDefaultName = owner.Client.CurrentCulture.GetItemName(getItemId()) ?? Name;
-            var nextDefaultName = owner.Client.CurrentCulture.GetItemName(nextPet) ?? Name;
-            evolved.Name = Name == fromDefaultName ? nextDefaultName : Name;
-            evolved.Tameness = Tameness;
-            evolved.Fullness = Fullness;
-            evolved.Level = Level;
-            evolved.setExpiration(owner.Client.CurrentServer.Node.getCurrentTime() + (long)TimeSpan.FromDays(nextPetTemplate.Life).TotalMilliseconds);
-
-            return evolved;
-        }
-        return null;
+        return evolved;
     }
 }
 

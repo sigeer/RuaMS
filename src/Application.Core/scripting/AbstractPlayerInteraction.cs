@@ -624,6 +624,7 @@ public class AbstractPlayerInteraction : IClientMessenger
                 InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
 
                 InventoryManipulator.addFromDrop(getClient(), pet, false);
+                getPlayer().SummonPet(pet);
                 return pet;
             }
         }
@@ -665,7 +666,8 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats, showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires);
+        return getPlayer().GainItem(id, quantity, randomStats, 
+            showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires: expires);
     }
 
     public void gainFame(int delta)
@@ -792,6 +794,11 @@ public class AbstractPlayerInteraction : IClientMessenger
                 cl.sendPacket(PacketCreator.getShowItemGain(id, -1, true));
             }
         }
+    }
+
+    public void RemoveFirstSlot(InventoryType type)
+    {
+        InventoryManipulator.removeFromSlot(getClient(), type, 1, 1, true);
     }
 
 

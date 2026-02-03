@@ -31,9 +31,10 @@ public class PetAutoPotHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
+        var petId = p.readLong();
         p.readByte();
-        p.readLong();
-        p.readInt();
+
+        var tick = p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
 

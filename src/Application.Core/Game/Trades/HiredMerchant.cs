@@ -329,19 +329,10 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             {
                 if (mpsi.isExist())
                 {
-                    if (mpsi.getItem().getInventoryType().Equals(InventoryType.EQUIP))
-                    {
-                        InventoryManipulator.addFromDrop(owner.Client, mpsi.getItem(), false);
-                    }
-                    else
-                    {
-                        InventoryManipulator.addById(owner.Client,
-                            mpsi.getItem().getItemId(),
-                            (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()),
-                            mpsi.getItem().getOwner(),
-                            mpsi.getItem().getFlag(),
-                            mpsi.getItem().getExpiration());
-                    }
+                    Item iItem = mpsi.getItem().copy();
+                    iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
+
+                    InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
                 }
             }
 

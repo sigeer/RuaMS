@@ -98,7 +98,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
 
             if (itemTemplate.Create > 0)
             {
-                InventoryManipulator.addById(c, itemTemplate.Create, 1);
+                chr.GainItem(itemTemplate.Create, 1);
 
                 if (itemTemplate.Create == ItemId.ARPQ_SPIRIT_JEWEL)
                     chr.updateAriantScore();

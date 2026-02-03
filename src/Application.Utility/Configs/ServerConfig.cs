@@ -211,7 +211,6 @@ public class ServerConfig
 
     //Pet Auto-Pot Configuration
     public bool USE_COMPULSORY_AUTOPOT;
-    public bool USE_EQUIPS_ON_AUTOPOT;
     public double PET_AUTOHP_RATIO;
     public double PET_AUTOMP_RATIO;
 

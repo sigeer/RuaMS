@@ -104,11 +104,6 @@ namespace Application.Core.Channel.Services
 
                         chr.GainMeso(res.Mesos);
 
-                        var commitRequest = new CommitRetrievedRequest
-                        {
-                            OwnerId = chr.Id,
-                        };
-
                         foreach (var it in items)
                         {
                             InventoryManipulator.addFromDrop(chr.Client, it, false);
@@ -171,7 +166,7 @@ namespace Application.Core.Channel.Services
             if (data.Items.Count > 0)
             {
                 // 消耗道具
-                chr.GainItem(useItemId, -1, false, GainItemShow.ShowInChat);
+                chr.GainItem(useItemId, -1, show: GainItemShow.ShowInChat);
             }
 
             chr.sendPacket(PacketCreator.owlOfMinerva(searchItemId, _mapper.Map<OwlSearchResult>(data)));

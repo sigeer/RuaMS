@@ -213,7 +213,7 @@ namespace Application.Core.Gameplay
 
             else if (mapItem.SourceTemplate is PetItemTemplate petItemTemplate)
             {
-                return InventoryManipulator.addById(_player.Client, mapItem.getItemId(), mapItem.getQuantity(), null);
+                return _player.GainItem(mapItem.getItemId(), 1) != null;
             }
 
             else

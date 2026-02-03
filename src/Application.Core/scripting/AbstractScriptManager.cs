@@ -146,7 +146,6 @@ public abstract class AbstractScriptManager
         if (engine is JintEngine js)
         {
             engine.AddHostedType("Item", typeof(Item));
-            engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
             engine.AddHostedType("BuffStat", typeof(BuffStat));
             engine.AddHostedType("MapId", typeof(MapId));
             engine.AddHostedType("Rectangle", typeof(Rectangle));

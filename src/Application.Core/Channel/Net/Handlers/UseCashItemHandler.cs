@@ -161,7 +161,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (!success)
             {
-                InventoryManipulator.addById(c, itemId, 1);
+                player.GainItem(itemId, 1);
                 c.sendPacket(PacketCreator.enableActions());
             }
         }
@@ -702,7 +702,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             return false;
         }
-        InventoryManipulator.addById(c, id, (short)amount);
+        c.OnlinedCharacter.GainItem(id, (short)amount);
         return true;
     }
 }

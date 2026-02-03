@@ -63,7 +63,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 foreach (var item in itemRequirement.RequiredItems)
                 {
-                    client.OnlinedCharacter.GainItem(item.Key, (short)item.Value, false);
+                    client.OnlinedCharacter.GainItem(item.Key, (short)item.Value);
                 }
             }
 

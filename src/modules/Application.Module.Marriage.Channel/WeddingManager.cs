@@ -74,8 +74,8 @@ namespace Application.Module.Marriage.Channel
 
                 InventoryManipulator.removeById(sender.getClient(), InventoryType.USE, usedItem, 1, false, false);
 
-                InventoryManipulator.addById(sender.Client, newItemId, 1);
-                InventoryManipulator.addById(receiver.Client, (newItemId + 1), 1);
+                sender.GainItem(newItemId, 1);
+                receiver.GainItem(newItemId + 1, 1);
 
                 sender.sendPacket(WeddingPackets.OnMarriageResult(marriageData));
                 receiver.sendPacket(WeddingPackets.OnMarriageResult(marriageData));

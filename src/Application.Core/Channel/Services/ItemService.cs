@@ -412,7 +412,7 @@ namespace Application.Core.Channel.Services
                             }
                             else
                             {
-                                InventoryManipulator.addById(chr.Client, item, qty, "");
+                                chr.GainItem(item, qty); ;
                                 items.Add(new(item, qty));
                             }
                             break;

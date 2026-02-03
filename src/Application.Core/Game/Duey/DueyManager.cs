@@ -46,7 +46,7 @@ namespace Application.Core.Channel.DueyService
                 chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
                 if (quick)
                 {
-                    chr.GainItem(ItemId.QUICK_DELIVERY_TICKET, -1, false);
+                    chr.GainItem(ItemId.QUICK_DELIVERY_TICKET, -1);
                     chr.GainMeso(-costMeso);
                 }
             }

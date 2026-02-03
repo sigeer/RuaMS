@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Models;
 using Application.Resources.Messages;
 using Application.Templates.Item.Pet;
 using tools;
@@ -37,136 +38,9 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
-    /// <summary>
-    /// 尽量使用addByDrop
-    /// </summary>
-    /// <param name="c"></param>
-    /// <param name="itemId"></param>
-    /// <param name="quantity"></param>
-    /// <param name="owner"></param>
-    /// <param name="flag"></param>
-    /// <param name="expiration"></param>
-    /// <returns></returns>
-    public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, short flag = 0, long expiration = -1)
-    {
-        Player chr = c.OnlinedCharacter;
-        InventoryType type = ItemConstants.getInventoryType(itemId);
-
-        Inventory inv = chr.getInventory(type);
-        return addByIdInternal(c, chr, type, inv, itemId, quantity, owner, flag, expiration);
-    }
-
-    private static bool addByIdInternal(IChannelClient c, Player chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, short flag, long expiration)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (!type.Equals(InventoryType.EQUIP))
-        {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(itemId);
-            short slotMax = ii.getSlotMax(c, itemId);
-            List<Item> existing = inv.listById(itemId);
-            if (!ItemConstants.isRechargeable(itemId) && abTemplate is not PetItemTemplate)
-            {
-                if (existing.Count > 0)
-                { // first update all existing slots to slotMax
-                    foreach (var eItem in existing)
-                    {
-                        if (quantity <= 0)
-                            break;
-
-                        short oldQ = eItem.getQuantity();
-                        if (oldQ < slotMax && ((eItem.getOwner().Equals(owner) || owner == null) && eItem.getFlag() == flag))
-                        {
-                            short newQ = (short)Math.Min(oldQ + quantity, slotMax);
-                            quantity -= (short)(newQ - oldQ);
-                            eItem.setQuantity(newQ);
-                            eItem.setExpiration(expiration);
-                            c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(1, eItem))));
-                        }
-                    }
-                }
-                while (quantity > 0)
-                {
-                    short newQ = Math.Min(quantity, slotMax);
-                    if (newQ != 0)
-                    {
-                        quantity -= newQ;
-                        Item nItem = Item.CreateVirtualItem(itemId, newQ);
-                        nItem.setFlag(flag);
-                        nItem.setExpiration(expiration);
-                        short newSlot = inv.addItem(nItem);
-                        if (newSlot == -1)
-                        {
-                            c.sendPacket(PacketCreator.getInventoryFull());
-                            c.sendPacket(PacketCreator.getShowInventoryFull());
-                            return false;
-                        }
-                        if (owner != null)
-                        {
-                            nItem.setOwner(owner);
-                        }
-                        c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                        if (isSandboxItem(flag))
-                        {
-                            chr.setHasSandboxItem();
-                        }
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.enableActions());
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                Item nItem = abTemplate is PetItemTemplate petTemplate ? new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemId, quantity);
-                nItem.setFlag(flag);
-                nItem.setExpiration(expiration);
-                short newSlot = inv.addItem(nItem);
-                if (newSlot == -1)
-                {
-                    c.sendPacket(PacketCreator.getInventoryFull());
-                    c.sendPacket(PacketCreator.getShowInventoryFull());
-                    return false;
-                }
-                c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                if (isSandboxItem(nItem))
-                {
-                    chr.setHasSandboxItem();
-                }
-            }
-        }
-        else if (quantity == 1)
-        {
-            Item nEquip = ii.getEquipById(itemId);
-            nEquip.setFlag(flag);
-            nEquip.setExpiration(expiration);
-            if (owner != null)
-            {
-                nEquip.setOwner(owner);
-            }
-            short newSlot = inv.addItem(nEquip);
-            if (newSlot == -1)
-            {
-                c.sendPacket(PacketCreator.getInventoryFull());
-                c.sendPacket(PacketCreator.getShowInventoryFull());
-                return false;
-            }
-            c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nEquip))));
-            if (isSandboxItem(nEquip))
-            {
-                chr.setHasSandboxItem();
-            }
-        }
-        else
-        {
-            throw new Exception("Trying to create equip with non-one quantity");
-        }
-        return true;
-    }
 
     /// <summary>
-    /// 有背包空间验证，但是如果物品数量大于1时，可能返回false但是会获取到一部分物品
+    /// 如果物品数量大于1时，可能返回false但是会获取到一部分物品
     /// </summary>
     /// <param name="c"></param>
     /// <param name="item"></param>
@@ -193,84 +67,61 @@ public class InventoryManipulator
             c.sendPacket(PacketCreator.showItemUnavailable());
             return false;
         }
+
         short quantity = item.getQuantity();
+        short slotMax = ii.getSlotMax(c, itemid);
 
-        if (!type.Equals(InventoryType.EQUIP))
+        // 可叠加（飞镖子弹虽然有数量，但是不可叠加）
+        if (slotMax > 1 && !ItemConstants.isRechargeable(itemid))
         {
-            short slotMax = ii.getSlotMax(c, itemid);
             List<Item> existing = inv.listById(itemid);
-            if (!ItemConstants.isRechargeable(itemid) && item is not Pet)
+            if (existing.Count > 0)
             {
-                if (existing.Count > 0)
+                // first update all existing slots to slotMax
+                foreach (var eItem in existing)
                 {
-                    // first update all existing slots to slotMax
-                    foreach (var eItem in existing)
-                    {
-                        if (quantity <= 0)
-                            break;
+                    if (quantity <= 0)
+                        break;
 
-                        short oldQ = eItem.getQuantity();
-                        if (oldQ < slotMax && item.getFlag() == eItem.getFlag() && item.getOwner().Equals(eItem.getOwner()))
-                        {
-                            short newQ = (short)Math.Min(oldQ + quantity, slotMax);
-                            quantity -= (short)(newQ - oldQ);
-                            eItem.setQuantity(newQ);
-                            item.setPosition(eItem.getPosition());
-                            c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(1, eItem))));
-                        }
-                    }
-                }
-                while (quantity > 0)
-                {
-                    short newQ = Math.Min(quantity, slotMax);
-                    quantity -= newQ;
-                    Item nItem = Item.CreateVirtualItem(itemid, newQ);
-                    nItem.setExpiration(item.getExpiration());
-                    nItem.setOwner(item.getOwner());
-                    nItem.setFlag(item.getFlag());
-                    short newSlot = inv.addItem(nItem);
-                    if (newSlot == -1)
+                    short oldQ = eItem.getQuantity();
+                    // 相同属性才能叠加
+                    if (oldQ < slotMax 
+                        && item.getFlag() == eItem.getFlag() 
+                        && item.getOwner().Equals(eItem.getOwner()) 
+                        && item.getExpiration() == eItem.getExpiration())
                     {
-                        c.sendPacket(PacketCreator.getInventoryFull());
-                        c.sendPacket(PacketCreator.getShowInventoryFull());
-                        // Q.没有修改过item的数量，这里操作失败后为什么要修改？--一部分数量已经被获取，这里的修改成剩余的数量
-                        item.setQuantity((short)(quantity + newQ));
-                        return false;
-                    }
-                    // 是否有意义？
-                    item.setPosition(newSlot);
-                    c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                    if (isSandboxItem(nItem))
-                    {
-                        chr.setHasSandboxItem();
+                        short newQ = (short)Math.Min(oldQ + quantity, slotMax);
+                        quantity -= (short)(newQ - oldQ);
+                        eItem.setQuantity(newQ);
+                        item.setPosition(eItem.getPosition());
+                        c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(1, eItem))));
                     }
                 }
             }
-            else
+            while (quantity > 0)
             {
-                // 飞镖 或 宠物 没有宠物会通过这种方式获取
-
-                // 这里为什么要new Item？--不需要，可以和装备一样直接加入到背包
-                //Item nItem = item is Pet ? new Pet(itemid, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemid, quantity);
-                //nItem.setExpiration(item.getExpiration());
-                //nItem.setFlag(item.getFlag());
-                //nItem.setOwner(item.getOwner());
-
-                short newSlot = inv.addItem(item);
+                short newQ = Math.Min(quantity, slotMax);
+                quantity -= newQ;
+                // 装备、宠物都不可叠加，这里必定是Item
+                Item nItem = Item.CreateVirtualItem(itemid, newQ);
+                nItem.setExpiration(item.getExpiration());
+                nItem.setOwner(item.getOwner());
+                nItem.setFlag(item.getFlag());
+                short newSlot = inv.addItem(nItem);
                 if (newSlot == -1)
                 {
                     c.sendPacket(PacketCreator.getInventoryFull());
                     c.sendPacket(PacketCreator.getShowInventoryFull());
+                    // Q.没有修改过item的数量，这里操作失败后为什么要修改？--一部分数量已经被获取，这里的修改成剩余的数量
+                    item.setQuantity((short)(quantity + newQ));
                     return false;
                 }
-                item.setPosition(newSlot);
-                c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, item))));
-                if (isSandboxItem(item))
+
+                c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
+                if (isSandboxItem(nItem))
                 {
                     chr.setHasSandboxItem();
                 }
-                // 为什么这里会有 enableActions，其他的不用调用？，addById也没调用，似乎可以移除
-                // c.sendPacket(PacketCreator.enableActions());
             }
         }
         else if (quantity == 1)
@@ -282,7 +133,9 @@ public class InventoryManipulator
                 c.sendPacket(PacketCreator.getShowInventoryFull());
                 return false;
             }
-            item.setPosition(newSlot);
+            item.setExpiration(item.getExpiration());
+            item.setFlag(item.getFlag());
+            item.setOwner(item.getOwner());
             c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, item))));
             if (isSandboxItem(item))
             {
@@ -291,7 +144,7 @@ public class InventoryManipulator
         }
         else
         {
-            Log.Logger.Warning("Tried to pickup Equip id {ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
+            Log.Logger.Warning("Tried to pickup Id={ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
             c.sendPacket(PacketCreator.getInventoryFull());
             c.sendPacket(PacketCreator.showItemUnavailable());
             return false;
@@ -510,13 +363,15 @@ public class InventoryManipulator
         }
     }
 
-    public static void AnnounceModifyInventory(IChannelClient c, List<Item> items, bool fromDrop, bool allowZero)
+    public static void AnnounceModifyInventory(IChannelClient c, List<ItemRemovedRecord> items, bool fromDrop)
     {
         c.sendPacket(PacketCreator.modifyInventory(fromDrop,
-            items.Where(x => x.getInventoryType() != InventoryType.CANHOLD)
-            .Select(x => new ModifyInventory(x.getQuantity() == 0 && !allowZero ? 3 : 1, x))
+            items.Where(x => x.Item.getInventoryType() != InventoryType.CANHOLD)
+            .Select(x => new ModifyInventory(x.Item.getQuantity() == 0 && !x.AllowZero ? 3 : 1, x.Item))
             .ToList()));
     }
+
+
 
     public static void removeById(IChannelClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
     {

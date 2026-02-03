@@ -126,7 +126,7 @@ namespace Application.Core.Channel.Services
                     player.Bag[item.InventoryType].addItemFromDB(itemObj);
                     if (itemObj is Pet petObj)
                     {
-                        if (petObj.isSummoned())
+                        if (petObj.Summoned)
                         {
                             player.addPet(petObj);
                         }

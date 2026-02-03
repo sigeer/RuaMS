@@ -2497,10 +2497,7 @@ public partial class Player
         if (YamlConfig.config.server.USE_PERFECT_PITCH && Level >= 30)
         {
             //milestones?
-            if (InventoryManipulator.checkSpace(Client, ItemId.PERFECT_PITCH, 1, ""))
-            {
-                InventoryManipulator.addById(Client, ItemId.PERFECT_PITCH, 1, "");
-            }
+            GainItem(ItemId.PERFECT_PITCH, 1);
         }
         else if (Level == 10)
         {
@@ -3373,6 +3370,8 @@ public partial class Player
                     }
                 }
             }
+
+            sendPacket(PacketCreator.onNotifyHPDecByField(-hpchange));
         }
 
         if (mpchange < 0)

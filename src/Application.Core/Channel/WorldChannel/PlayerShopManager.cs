@@ -214,13 +214,13 @@ namespace Application.Core.Channel
                 return;
             }
 
-                    if (buyer.getMeso() >= price)
-                    {
-                        if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
-                            && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
-                        {
-                            buyer.GainMeso(-price);
-                            price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
+            if (buyer.getMeso() >= price)
+            {
+                if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
+                    && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
+                {
+                    buyer.GainMeso(-price);
+                    price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
 
                     shop.GainMeso(price);
 

@@ -100,7 +100,8 @@ namespace Application.Core.Game.Players
                             {
                                 Notice(replace.Message);
                             }
-                            GainItem(replace.ItemId, 1, false, expires: replace.Period);
+                            GainItem(replace.ItemId, 1, 
+                                expires: (long)TimeSpan.FromMinutes(replace.Period).TotalMilliseconds);
                         }
                     }
 
@@ -386,7 +387,7 @@ namespace Application.Core.Game.Players
         }
         #endregion
 
-        void GainItemShowMessage(int itemId, short quantity, GainItemShow d = GainItemShow.NotShown)
+        public void GainItemShowMessage(int itemId, short quantity, GainItemShow d = GainItemShow.NotShown)
         {
             switch (d)
             {
@@ -424,12 +425,13 @@ namespace Application.Core.Game.Players
         /// 
         /// </summary>
         /// <param name="itemId">道具Id</param>
-        /// <param name="quantity">数量，可负数</param>
-        /// <param name="randomStats">item为装备时有效：随机属性</param>
-        /// <param name="show">显示</param>
-        /// <param name="expires">道具过期时间。单位ms，-1不会过期</param>
+        /// <param name="quantity">数量，负数表示移除</param>
+        /// <param name="randomStats">随机属性，仅在item为装备时有效</param>
+        /// <param name="show">显示方式</param>
+        /// <param name="expires">道具有效时长。单位ms， -1不会过期</param>
+        /// <param name="nextSetter">设置其他道具属性，不能对返回值修改属性（要在传客户端前修改）</param>
         /// <returns>获得的道具</returns>
-        public Item? GainItem(int itemId, short quantity, bool randomStats, GainItemShow show = GainItemShow.NotShown, long expires = -1)
+        public Item? GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
         {
             if (quantity == 0)
             {
@@ -467,7 +469,7 @@ namespace Application.Core.Game.Players
                         {
                             it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                         }
-                        item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
+                        item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM())!;
                     }
 
                     if (randomStats)
@@ -480,9 +482,14 @@ namespace Application.Core.Game.Players
                     pet.Name = Client.CurrentCulture.GetItemName(itemId) ?? "";
                 }
 
-                if (expires >= 0)
+                if (expires > 0)
                 {
-                    item!.setExpiration(Client.CurrentServer.Node.getCurrentTime() + expires);
+                    item.setExpiration(Client.CurrentServer.Node.getCurrentTime() + expires);
+                }
+
+                if (nextSetter != null)
+                {
+                    nextSetter(item);
                 }
 
                 var addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
@@ -491,7 +498,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                InventoryManipulator.removeById(Client, invType, itemId, -quantity, true, false);
+                Bag.RemoveFromInventory(invType, quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
             }
 
             GainItemShowMessage(itemId, quantity, show);
