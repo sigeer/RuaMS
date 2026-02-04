@@ -92,6 +92,7 @@ namespace Application.Core.Login.Servers
             }
             catch (Exception ex)
             {
+                _server.RemoveChanelServerNode(serverNode, false);
                 _logger.LogError(ex.ToString());
             }
         }
