@@ -70,10 +70,10 @@ function action(mode, type, selection) {
                 cm.dispose();
             } else if (cm.getPlayer().getGuildId() > 0 && cm.getPlayer().getGuildRank() == 1) {
                 if (sel == 1) {
-                    cm.getPlayer().disbandGuild();
+                    cm.disbandGuild();
                     cm.dispose();
                 } else if (sel == 2) {
-                    cm.getPlayer().increaseGuildCapacity();
+                    cm.increaseGuildCapacity();
                     cm.dispose();
                 }
             }

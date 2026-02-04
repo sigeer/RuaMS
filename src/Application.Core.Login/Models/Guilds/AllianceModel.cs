@@ -35,7 +35,7 @@ namespace Application.Core.Login.Models.Guilds
 
             if (Guilds.Contains(guild))
             {
-                code = AllianceUpdateResult.GuildAlreadyInAlliance;
+                code = AllianceUpdateResult.AlreadyInAlliance;
                 return false;
             }
                 

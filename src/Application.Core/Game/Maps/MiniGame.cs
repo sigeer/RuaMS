@@ -31,8 +31,8 @@ namespace Application.Core.Game.Maps;
  */
 public class MiniGame : AbstractMapObject
 {
-    private IPlayer owner;
-    private IPlayer? visitor;
+    private Player owner;
+    private Player? visitor;
     private string password;
     private MiniGameType GameType = MiniGameType.UNDEFINED;
     private int piecetype;
@@ -57,7 +57,7 @@ public class MiniGame : AbstractMapObject
         WIN, LOSS, TIE
     }
 
-    public MiniGame(IPlayer owner, string description, string password, byte gameType, int pieceType)
+    public MiniGame(Player owner, string description, string password, byte gameType, int pieceType)
     {
         this.owner = owner;
         this.description = description;
@@ -81,12 +81,12 @@ public class MiniGame : AbstractMapObject
         return visitor == null;
     }
 
-    public bool isOwner(IPlayer chr)
+    public bool isOwner(Player chr)
     {
         return owner.Equals(chr);
     }
 
-    public void addVisitor(IPlayer challenger)
+    public void addVisitor(Player challenger)
     {
         visitor = challenger;
         if (lastvisitor != challenger.getId())
@@ -132,7 +132,7 @@ public class MiniGame : AbstractMapObject
         owner = null;
     }
 
-    public void removeVisitor(bool forceClose, IPlayer challenger)
+    public void removeVisitor(bool forceClose, Player challenger)
     {
         if (visitor == challenger)
         {
@@ -160,7 +160,7 @@ public class MiniGame : AbstractMapObject
         }
     }
 
-    public bool isVisitor(IPlayer challenger)
+    public bool isVisitor(Player challenger)
     {
         return visitor == challenger;
     }
@@ -197,20 +197,16 @@ public class MiniGame : AbstractMapObject
         getOwner().getMap().broadcastMessage(PacketCreator.addOmokBox(owner, visitor != null ? 2 : 1, inprogress));
     }
 
-    object finishCheckLock = new object();
     private bool minigameMatchFinish()
     {
-        lock (finishCheckLock)
+        if (isMatchInProgress())
         {
-            if (isMatchInProgress())
-            {
-                inprogress = 0;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            inprogress = 0;
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -235,7 +231,7 @@ public class MiniGame : AbstractMapObject
         visitorquit = false;
     }
 
-    public void setQuitAfterGame(IPlayer player, bool quit)
+    public void setQuitAfterGame(Player player, bool quit)
     {
         if (isOwner(player))
         {
@@ -252,7 +248,7 @@ public class MiniGame : AbstractMapObject
         return inprogress != 0;
     }
 
-    public void denyTie(IPlayer chr)
+    public void denyTie(Player chr)
     {
         if (isOwner(chr))
         {
@@ -264,7 +260,7 @@ public class MiniGame : AbstractMapObject
         }
     }
 
-    public bool isTieDenied(IPlayer chr)
+    public bool isTieDenied(Player chr)
     {
         if (isOwner(chr))
         {
@@ -333,7 +329,7 @@ public class MiniGame : AbstractMapObject
 
         owner.setMiniGamePoints(visitor, 3, isOmok());
 
-        long timeNow = owner.Client.CurrentServerContainer.getCurrentTime();
+        long timeNow = owner.Client.CurrentServer.Node.getCurrentTime();
         if (nextavailabletie <= timeNow)
         {
             visitorscore += 10;
@@ -558,17 +554,17 @@ public class MiniGame : AbstractMapObject
         c.sendPacket(PacketCreator.getMatchCard(c, this, isOwner(c.OnlinedCharacter), type));
     }
 
-    public IPlayer getOwner()
+    public Player getOwner()
     {
         return owner;
     }
 
-    public IPlayer getVisitor()
+    public Player getVisitor()
     {
         return visitor;
     }
 
-    public void setPiece(int move1, int move2, int type, IPlayer chr)
+    public void setPiece(int move1, int move2, int type, Player chr)
     {
         int slot = move2 * 15 + move1 + 1;
         if (piece[slot] == 0)

@@ -136,7 +136,6 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
         engine.AddHostedType("Point", typeof(Point));
         engine.AddHostedType("RandomPoint", typeof(RandomPoint));
-        engine.AddHostedObject("Server", _channelServer.Container);
 
         foreach (var item in _addtionalRegistries)
         {
@@ -147,20 +146,19 @@ public abstract class AbstractScriptManager
         if (engine is JintEngine js)
         {
             engine.AddHostedType("Item", typeof(Item));
-            engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
             engine.AddHostedType("BuffStat", typeof(BuffStat));
             engine.AddHostedType("MapId", typeof(MapId));
             engine.AddHostedType("Rectangle", typeof(Rectangle));
             engine.AddHostedType("CommonManager", typeof(CommonManager));
             engine.AddHostedObject("CommandExecutor", _commandExecutor);
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
-            engine.AddHostedObject("GachaponManager", _channelServer.Container.GachaponManager);
+            engine.AddHostedObject("GachaponManager", _channelServer.NodeService.GachaponManager);
             engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
             engine.AddHostedType("MonsterBook", typeof(MonsterBook));
             engine.AddHostedType("ExpTable", typeof(ExpTable));
             engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
-            engine.AddHostedObject("PlayerNPC", _channelServer.Container.PlayerNPCService);
+            engine.AddHostedObject("PlayerNPC", _channelServer.NodeService.PlayerNPCService);
             engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));

@@ -3,6 +3,7 @@ using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -22,105 +23,36 @@ namespace Application.Core.Channel.ServerData
             _server = server;
         }
 
-        public void CreateChatRoom(IPlayer chr)
+        public void CreateChatRoom(Player chr)
         {
-            _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
+            _ = _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
         }
 
 
-        public void JoinChatRoom(IPlayer chr, int roomId)
+        public void JoinChatRoom(Player chr, int roomId)
         {
-            _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
+            _ = _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
         }
 
-        public void OnPlayerJoinChatRoom(Dto.JoinChatRoomResponse data)
+
+        public void LeftChatRoom(Player chr)
         {
-            var code = (JoinChatRoomResult)data.Code;
-            if (code == JoinChatRoomResult.Success)
-            {
-                var newComer = data.Room.Members[data.NewComerPosition];
-                foreach (var member in data.Room.Members)
-                {
-                    if (member.PlayerInfo == null)
-                        continue;
-                    var chr = _server.FindPlayerById(member.PlayerInfo.Character.Id);
-                    if (chr != null)
-                    {
-                        if (chr.Id != newComer.PlayerInfo.Character.Id)
-                        {
-                            chr.sendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
-                        }
-                    }
-                }
-
-                var newComerChr = _server.FindPlayerById(newComer.PlayerInfo.Character.Id);
-                if (newComerChr != null)
-                {
-                    newComerChr.ChatRoomId = data.Room.RoomId;
-                    foreach (var member in data.Room.Members)
-                    {
-                        if (member.PlayerInfo == null)
-                            continue;
-
-                        if (newComerChr.Id != member.PlayerInfo.Character.Id)
-                            newComerChr.sendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
-                        else
-                            newComerChr.sendPacket(ChatRoomPacket.joinMessenger(member.Position));
-                    }
-                }
-            }
+            _ = _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
         }
 
-        public void LeftChatRoom(IPlayer chr)
+        public void SendMessage(Player chr, string text)
         {
-            _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
+            _ = _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
 
-        public void OnPlayerLeaveChatRoom(Dto.LeaveChatRoomResponse data)
+        internal void CreateInvite(Player player, string input)
         {
-            var leftPlayer = _server.FindPlayerById(data.LeftPlayerID);
-            if (leftPlayer != null)
-            {
-                leftPlayer.ChatRoomId = 0;
-            }
-            foreach (var member in data.Room.Members)
-            {
-                if (member.PlayerInfo == null)
-                    continue;
-
-                var chr = _server.FindPlayerById(member.PlayerInfo.Character.Id);
-                if (chr != null && chr.isLoggedinWorld())
-                {
-                    chr.sendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
-                }
-            }
+            _ = _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
-        public void SendMessage(IPlayer chr, string text)
+        internal void AnswerInvite(Player player, int roomId, bool v)
         {
-            _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
-        }
-
-        public void OnReceiveMessage(Dto.SendChatRoomMessageResponse data)
-        {
-            foreach (var member in data.Members)
-            {
-                var chr = _server.FindPlayerById(member);
-                if (chr != null && chr.isLoggedinWorld())
-                {
-                    chr.sendPacket(PacketCreator.messengerChat(data.Text));
-                }
-            }
-        }
-
-        internal void CreateInvite(IPlayer player, string input)
-        {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
-        }
-
-        internal void AnswerInvite(IPlayer player, int roomId, bool v)
-        {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            _ =  _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

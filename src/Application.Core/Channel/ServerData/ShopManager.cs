@@ -22,6 +22,7 @@
 using Application.Core.ServerTransports;
 using AutoMapper;
 using server;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Channel.ServerData;
 
@@ -31,8 +32,8 @@ namespace Application.Core.Channel.ServerData;
 public class ShopManager
 {
 
-    private Dictionary<int, Shop?> shops = new();
-    private Dictionary<int, Shop?> npcShops = new();
+    private ConcurrentDictionary<int, Shop?> shops = new();
+    private ConcurrentDictionary<int, Shop?> npcShops = new();
 
     readonly IMapper _mapper;
     readonly IChannelServerTransport _transport;

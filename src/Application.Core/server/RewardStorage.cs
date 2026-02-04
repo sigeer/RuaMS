@@ -6,7 +6,7 @@ namespace Application.Core.Server
 {
     public class RewardStorage : AbstractStorage
     {
-        public RewardStorage(IPlayer owner, int meso, Item[] items) : base(owner, Limits.MaxStorageSlots, meso, items)
+        public RewardStorage(Player owner, int meso, Item[] items) : base(owner, Limits.MaxStorageSlots, meso, items)
         {
         }
 

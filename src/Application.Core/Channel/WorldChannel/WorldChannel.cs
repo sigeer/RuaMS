@@ -1,13 +1,19 @@
+using Application.Core.Channel.Commands;
+using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
-using Application.Core.Channel.Performance;
+using Application.Core.Channel.ServerData;
+using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
+using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using Application.Shared.Servers;
+using Application.Utility.Performance;
+using Application.Utility.Pipeline;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
-using net.server.coordinator.matchchecker;
 using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
@@ -18,17 +24,17 @@ using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
-using System;
 using System.Net;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger
+public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<ChannelCommandContext>
 {
     public int Id => channel;
     public string ServerName { get; }
-    string _serverLogName;
+    public string ServerLogName { get; }
     private ILogger log;
     public bool IsRunning { get; private set; }
 
@@ -51,7 +57,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
 
     private Dictionary<int, int> storedVars = new();
-    private HashSet<int> playersAway = new();
+    /// <summary>
+    /// 处于现金商城
+    /// </summary>
+    public Dictionary<int, Player> PlayersAway { get; set; } = new();
     private Dictionary<ExpeditionType, Expedition> expeditions = new();
     private Dictionary<int, MiniDungeon> dungeons = new();
 
@@ -60,9 +69,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public DojoInstance DojoInstance { get; }
 
-
-    private object lockObj = new object();
-    public MatchCheckerCoordinator MatchChecker { get; set; }
 
     // public IWorld WorldModel { get; set; }
     public event Action? OnWorldMobRateChanged;
@@ -102,32 +108,46 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public ChannelConfig ChannelConfig { get; }
     public PlayerShopManager PlayerShopManager { get; }
-    public GameMetrics Metrics { get; private set; } = null!;
-
     public IServiceScope LifeScope { get; }
 
 
     #region
-    public EventService EventService { get; }
-    public MobAnimationService MobAnimationService { get; }
     public MobClearSkillService MobClearSkillService { get; }
     public MobMistService MobMistService { get; }
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
+    public WorldChannelCommandLoop CommandLoop { get; }
     public EventRecallManager? EventRecallManager { get; private set; }
 
     RespawnTask? _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
-    public WorldChannelServer Container { get; }
-    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config)
+    public IServerBase<IChannelServerTransport> Node { get; }
+    public IActor<ChannelNodeCommandContext> NodeActor { get; }
+    public IServiceCenter NodeService { get; }
+    public IMapper Mapper { get; }
+
+    public CharacterDiseaseManager CharacterDiseaseManager { get; }
+    public PetHungerManager PetHungerManager { get; }
+
+    public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
+    public MapObjectManager MapObjectManager { get; }
+    public MountTirednessManager MountTirednessManager { get; }
+    public MapOwnershipManager MapOwnershipManager { get; }
+    public ServerMessageManager ServerMessageManager { get; }
+    public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
+    public Dictionary<int, Door?> PlayerDoors { get; }
+    public WorldChannel(int channelId, WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config, NettyChannelServer nettyServer)
     {
-        Container = serverContainer;
+        channel = channelId;
+        NodeActor = serverContainer;
+        Node = serverContainer;
+        NodeService = serverContainer;
         LifeScope = scope;
-        ServerName = $"{serverContainer.ServerName}_{config.Port}";
-        _serverLogName = $"频道服务器 - {ServerName}";
+        ServerName = $"频道{channel}";
+        ServerLogName = $"{ServerName}（{serverContainer.ServerName}_{config.Port}）";
         ChannelConfig = config;
         WorldServerMessage = "";
 
@@ -137,23 +157,20 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         this.world = 0;
 
         Players = new ChannelPlayerStorage();
+        PlayerDoors = new();
 
         this.mapManager = new MapManager(null, this);
         this.Port = config.Port;
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(serverHost), Port);
 
-        NettyServer = new NettyChannelServer(this);
-        log = LogFactory.GetLogger(ServerName);
-
-        MatchChecker = new MatchCheckerCoordinator(this);
+        NettyServer = nettyServer;
+        log = LogFactory.GetLogger(ServerLogName);
 
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
 
 
         DojoInstance = new DojoInstance(this);
 
-        EventService = new EventService(this);
-        MobAnimationService = new MobAnimationService(this);
         MobClearSkillService = new MobClearSkillService(this);
         MobMistService = new MobMistService(this);
         MobStatusService = new MobStatusService(this);
@@ -166,6 +183,19 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
+        Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();
+
+        CharacterDiseaseManager = new CharacterDiseaseManager(this);
+        PetHungerManager = new PetHungerManager(this);
+
+        CharacterHpDecreaseManager = new CharacterHpDecreaseManager(this);
+        MapObjectManager = new MapObjectManager(this);
+        MountTirednessManager = new MountTirednessManager(this);
+        MapOwnershipManager = new MapOwnershipManager(this);
+        ServerMessageManager = new ServerMessageManager(this);
+
+        CommandLoop = new WorldChannelCommandLoop(this);
+        InviteChannelHandlerRegistry = new();
     }
 
     public int getTransportationTime(double travelTime)
@@ -230,81 +260,63 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     }
 
 
-    object loadEvetScriptLock = new object();
     public void reloadEventScriptManager()
     {
-        lock (loadEvetScriptLock)
+        if (!IsRunning)
         {
-            if (!IsRunning)
-            {
-                return;
-            }
-
-            eventSM.dispose();
-            eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-            eventSM.ReloadEventScript();
-        }
-    }
-    public void Register(int channel)
-    {
-        this.channel = channel;
-
-        log.Information("[{ServerName}] 注册成功：频道号{Channel}", _serverLogName, channel);
-        _serverLogName = $"频道服务器 - {ServerName} - 频道{channel}";
-    }
-    public void Initialize()
-    {
-        if (this.channel <= 0)
-        {
-            throw new Exception("频道服务器需要先向中心服务器注册才能初始化");
+            return;
         }
 
-        log.Information("[{ServerName}] 初始化...", _serverLogName);
+        eventSM.dispose();
+        eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
+        eventSM.ReloadEventScript();
+    }
+    public void Initialize(Config.RegisterServerResult config)
+    {
+        log.Information("[{ServerName}] 初始化...", ServerLogName);
 
+        UpdateWorldConfig(config.Config);
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
-            _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+            ServerLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        Metrics = new GameMetrics(this);
-
-        log.Information("[{ServerName}] 初始化事件...", _serverLogName);
+        log.Information("[{ServerName}] 初始化事件...", ServerLogName);
         var loadedEventsCount = eventSM.ReloadEventScript();
-        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", _serverLogName, loadedEventsCount);
+        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", ServerLogName, loadedEventsCount);
 
         _respawnTask = new RespawnTask(this);
-        _respawnTask.Register(Container.TimerManager);
+        _respawnTask.Register(Node.TimerManager);
 
         EventRecallManager = new EventRecallManager(this);
-        EventRecallManager.Register(Container.TimerManager);
+        EventRecallManager.Register(Node.TimerManager);
 
-        log.Information("[{ServerName}] 初始化完成", _serverLogName);
+        var inviteHandlerLogger = LifeScope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<InviteChannelHandler>>();
+        InviteChannelHandlerRegistry.Register(new PartyInviteChannelHandler(this, inviteHandlerLogger));
+        InviteChannelHandlerRegistry.Register(new GuildInviteChannelHandler(this, inviteHandlerLogger));
+        InviteChannelHandlerRegistry.Register(new AllianceInviteChannelHandler(this, inviteHandlerLogger));
+        InviteChannelHandlerRegistry.Register(new MessengerInviteChannelHandler(this, inviteHandlerLogger));
+
+        log.Information("[{ServerName}] 初始化完成", ServerLogName);
 
         log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-            _serverLogName,
-            DateTimeOffset.FromUnixTimeMilliseconds(Container.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            ServerLogName,
+            DateTimeOffset.FromUnixTimeMilliseconds(Node.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
-    public async Task StartServer()
+    public Task StartServer(CancellationToken cancellationToken)
     {
-        try
-        {
-            IsRunning = false;
-            log.Information("[{ServerName}] 启动中...", _serverLogName);
-            await NettyServer.Start();
-            log.Information("[{ServerName}] 启动成功：监听端口{Port}", _serverLogName, Port);
-            IsRunning = true;
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "[{ServerName}] 启动失败", _serverLogName);
-        }
+        IsRunning = true;
+        log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
+
+        CommandLoop.Start(ServerLogName);
+        return Task.CompletedTask;
     }
 
 
     bool isShuttingDown = false;
 
 
-    public async Task ShutdownServer()
+    public async Task Shutdown(int delaySeconds = -1)
     {
         try
         {
@@ -314,17 +326,20 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             }
 
             isShuttingDown = true;
-            log.Information("[{ServerName}] 停止中...", _serverLogName);
+            log.Information("[{ServerName}] 停止中...", ServerLogName);
 
-            log.Information("[{ServerName}] 停止定时任务...", _serverLogName);
+            log.Information("[{ServerName}] 停止定时任务...", ServerLogName);
 
-            await _respawnTask.StopAsync();
+            if (_respawnTask != null)
+            {
+                await _respawnTask.StopAsync();
+            }
 
-            log.Information("[{ServerName}] 停止定时任务>>>完成", _serverLogName);
+            log.Information("[{ServerName}] 停止定时任务>>>完成", ServerLogName);
 
-            disconnectAwayPlayers();
-            Players.disconnectAll();
-            PlayerShopManager.Dispose();
+            await disconnectAwayPlayers();
+            await Players.disconnectAll(true);
+            await PlayerShopManager.DisposeAsync();
 
             eventSM.dispose();
 
@@ -333,16 +348,16 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             await closeChannelSchedules();
 
             await NettyServer.Stop();
-            log.Information("[{ServerName}] 停止监听", _serverLogName);
-
+            log.Information("[{ServerName}] 停止监听", ServerLogName);
+            await CommandLoop.DisposeAsync();
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("[{ServerName}] 已停止", _serverLogName);
+            log.Information("[{ServerName}] 已停止", ServerLogName);
         }
         catch (Exception e)
         {
-            log.Error(e, "[{ServerName}] 停止失败", _serverLogName);
+            log.Error(e, "[{ServerName}] 停止失败", ServerLogName);
         }
         finally
         {
@@ -352,8 +367,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     private void closeChannelServices()
     {
-        EventService.dispose();
-        MobAnimationService.dispose();
         MobClearSkillService.dispose();
         MobMistService.dispose();
         MobStatusService.dispose();
@@ -372,17 +385,24 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return mapManager;
     }
 
+    public int GetActiveMapCount()
+    {
+        return getMapFactory().getMaps().Count + getEventSM().GetEventMaps();
+    }
+
     public int getWorld()
     {
         return world;
     }
 
-    public void addPlayer(IPlayer chr)
+    public void addPlayer(Player chr)
     {
+        if (PlayersAway.Remove(chr.Id))
+            GameMetrics.OnlinePlayerCount.Add(-1);
+
         Players.AddPlayer(chr);
-        Container.PlayerStorage.AddPlayer(chr);
+        GameMetrics.OnlinePlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ServerLogName));
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
-        Metrics.ChannelPlayers.Inc();
     }
 
     public string getServerMessage()
@@ -395,16 +415,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         return Players;
     }
 
-    public bool removePlayer(IPlayer chr)
-    {
-        return RemovePlayer(chr.Id);
-    }
-
     public bool RemovePlayer(int chrId)
     {
-        if (Players.RemovePlayer(chrId) != null)
+        var chr = Players.RemovePlayer(chrId);
+        if (chr != null)
         {
-            Metrics.ChannelPlayers.Dec();
+            chr.getMap().removePlayer(chr);
+
+            GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ServerLogName));
             return true;
         }
 
@@ -459,28 +477,35 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
             }
         }
     }
-    public void insertPlayerAway(int chrId)
+    public void EnterExtralWorld(Player chr)
     {
         // either they in CS or MTS
-        playersAway.Add(chrId);
+        if (PlayersAway.TryAdd(chr.Id, chr))
+            GameMetrics.OnlinePlayerCount.Add(1);
+
+        RemovePlayer(chr.Id);
     }
 
-    public void removePlayerAway(int chrId)
+    public void RemovePlayerDeep(Player chr)
     {
-        playersAway.Remove(chrId);
+        if (PlayersAway.Remove(chr.Id))
+            GameMetrics.OnlinePlayerCount.Add(-1);
+
+        RemovePlayer(chr.Id);
     }
+
+    public bool IsAwayFromWorld(int id) => PlayersAway.ContainsKey(id);
 
     public bool canUninstall()
     {
-        return Players.Count() == 0 && playersAway.Count == 0;
+        return Players.Count() == 0 && PlayersAway.Count == 0;
     }
 
-    private void disconnectAwayPlayers()
+    private async Task disconnectAwayPlayers()
     {
-        foreach (var cid in playersAway)
+        foreach (var chr in PlayersAway.Values)
         {
-            var chr = Players.getCharacterById(cid);
-            if (chr != null && chr.isLoggedin())
+            if (chr != null && chr.isLoggedinWorld())
             {
                 chr.getClient().ForceDisconnect();
             }
@@ -489,23 +514,17 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public bool addExpedition(Expedition exped)
     {
-        lock (expeditions)
+        if (expeditions.TryAdd(exped.getType(), exped))
         {
-            if (expeditions.TryAdd(exped.getType(), exped))
-            {
-                exped.beginRegistration();
-                return true;
-            }
-            return false;
+            exped.beginRegistration();
+            return true;
         }
+        return false;
     }
 
     public void removeExpedition(Expedition exped)
     {
-        lock (expeditions)
-        {
-            expeditions.Remove(exped.getType());
-        }
+        expeditions.Remove(exped.getType());
     }
 
     public Expedition? getExpedition(ExpeditionType type)
@@ -515,10 +534,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public List<Expedition> getExpeditions()
     {
-        lock (expeditions)
-        {
-            return new(expeditions.Values);
-        }
+        return new(expeditions.Values);
     }
 
 
@@ -532,7 +548,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
     {
         this.WorldServerMessage = message;
         broadcastPacket(PacketCreator.serverMessage(message));
-        Container.ServerMessageManager.resetDisabledServerMessages();
+        ServerMessageManager.resetDisabledServerMessages();
     }
 
     public int getStoredVar(int key)
@@ -594,50 +610,26 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
 
     public bool addMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
-        try
+        if (dungeons.ContainsKey(dungeonid))
         {
-            if (dungeons.ContainsKey(dungeonid))
-            {
-                return false;
-            }
-
-            MiniDungeonInfo mmdi = MiniDungeonInfo.getDungeon(dungeonid);
-            MiniDungeon mmd = new MiniDungeon(this, mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
-
-            dungeons.Add(dungeonid, mmd);
-            return true;
+            return false;
         }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+
+        MiniDungeonInfo mmdi = MiniDungeonInfo.getDungeon(dungeonid);
+        MiniDungeon mmd = new MiniDungeon(this, mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
+
+        dungeons.Add(dungeonid, mmd);
+        return true;
     }
 
     public MiniDungeon? getMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return dungeons.GetValueOrDefault(dungeonid);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return dungeons.GetValueOrDefault(dungeonid);
     }
 
     public void removeMiniDungeon(int dungeonid)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            dungeons.Remove(dungeonid);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        dungeons.Remove(dungeonid);
     }
 
     #region wedding
@@ -716,7 +708,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         if (channel == getId())
             return getIP();
 
-        return Container.GetChannelEndPoint(channel);
+        return NodeService.GetChannelEndPoint(channel);
     }
 
     public void TypedMessage(int type, string messageKey, params string[] param)
@@ -777,5 +769,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger
         {
             chr.Yellow(key, param);
         }
+    }
+
+    public void Post(ICommand<ChannelCommandContext> command)
+    {
+        CommandLoop.Register(command);
     }
 }

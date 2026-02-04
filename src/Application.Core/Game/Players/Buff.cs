@@ -1,3 +1,4 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Skills;
 using Application.Core.model;
@@ -33,23 +34,14 @@ namespace Application.Core.Game.Players
         /// </summary>
         private Dictionary<int, long> buffExpires = new();
 
+        public bool hasBuffFromSourceid(int sourceid)
+        {
+            return buffEffects.ContainsKey(sourceid);
+        }
+
         private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                if (effects.TryGetValue(effect, out var mbsvh))
-                {
-                    return mbsvh;
-                }
-                return null;
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return effects.GetValueOrDefault(effect);
         }
         public long? getBuffedStarttime(BuffStat effect)
         {
@@ -58,19 +50,9 @@ namespace Application.Core.Game.Players
 
         public void setBuffedValue(BuffStat effect, int value)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            if (effects.TryGetValue(effect, out var mbsvh))
             {
-                if (effects.TryGetValue(effect, out var mbsvh))
-                {
-                    mbsvh.value = value;
-                }
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                mbsvh.value = value;
             }
         }
 
@@ -91,118 +73,82 @@ namespace Application.Core.Game.Players
 
         public bool HasBuff(BuffStat stat)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                return effects.ContainsKey(stat);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return effects.ContainsKey(stat);
         }
 
         private List<BuffStatValueHolder> getAllStatups()
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                return buffEffects.Values.SelectMany(x => x.Values).ToList();
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return buffEffects.Values.SelectMany(x => x.Values).ToList();
         }
 
         public List<PlayerBuffValueHolder> getAllBuffs()
         {
             // buff values will be stored in an arbitrary order
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                long curtime = Client.CurrentServerContainer.getCurrentTime();
 
-                Dictionary<int, PlayerBuffValueHolder> ret = new();
-                foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
+            long curtime = Client.CurrentServer.Node.getCurrentTime();
+
+            Dictionary<int, PlayerBuffValueHolder> ret = new();
+            foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
+            {
+                foreach (BuffStatValueHolder mbsvh in bel.Values)
                 {
-                    foreach (BuffStatValueHolder mbsvh in bel.Values)
+                    int srcid = mbsvh.effect.getBuffSourceId();
+                    if (!ret.ContainsKey(srcid))
                     {
-                        int srcid = mbsvh.effect.getBuffSourceId();
-                        if (!ret.ContainsKey(srcid))
-                        {
-                            ret.Add(srcid, new PlayerBuffValueHolder((int)(curtime - mbsvh.startTime), mbsvh.effect));
-                        }
+                        ret.Add(srcid, new PlayerBuffValueHolder((int)(curtime - mbsvh.startTime), mbsvh.effect));
                     }
                 }
-                return new(ret.Values);
             }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return new(ret.Values);
         }
 
         private void extractBuffValue(int sourceid, BuffStat stat)
         {
-            chLock.EnterReadLock();
-            try
-            {
-                removeEffectFromItemEffectHolder(sourceid, stat);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+            removeEffectFromItemEffectHolder(sourceid, stat);
         }
 
         public void debugListAllBuffs()
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                Log.Debug("-------------------");
-                Log.Debug("CACHED BUFF COUNT: {CachedBuffCount}", string.Join(", ", buffEffectsCount
-                        .Select(entry => entry.Key + ": " + entry.Value)));
+            Log.Debug("-------------------");
+            Log.Debug("CACHED BUFF COUNT: {CachedBuffCount}", string.Join(", ", buffEffectsCount
+                    .Select(entry => entry.Key + ": " + entry.Value)));
 
-                Log.Debug("-------------------");
-                Log.Debug("CACHED BUFFS: {CachedBuff}", string.Join(", ", buffEffects
-                        .Select(entry => entry.Key + ": (" + string.Join(", ", entry.Value
-                                .Select(innerEntry => innerEntry.Key.name() + innerEntry.Value.value)) + ")"))
-                );
+            Log.Debug("-------------------");
+            Log.Debug("CACHED BUFFS: {CachedBuff}", string.Join(", ", buffEffects
+                    .Select(entry => entry.Key + ": (" + string.Join(", ", entry.Value
+                            .Select(innerEntry => innerEntry.Key.name() + innerEntry.Value.value)) + ")"))
+            );
 
-                Log.Debug("-------------------");
-                Log.Debug("IN ACTION: {InAction}", string.Join(", ", effects
-                        .Select(entry => entry.Key.name() + " -> " + Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId())))
-                );
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            Log.Debug("-------------------");
+            Log.Debug("IN ACTION: {InAction}", string.Join(", ", effects
+                    .Select(entry => entry.Key.name() + " -> " + Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId())))
+            );
         }
 
         public void debugListAllBuffsCount()
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            Log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value)));
+        }
+
+        public void ClearExpiredBuffs()
+        {
+            HashSet<KeyValuePair<int, long>> es;
+            List<BuffStatValueHolder> toCancel = new();
+
+            es = new(buffExpires);
+
+            long curTime = Client.CurrentServer.Node.getCurrentTime();
+            foreach (var bel in es)
             {
-                Log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value))
-                );
+                if (curTime >= bel.Value)
+                {
+                    toCancel.AddRange(buffEffects.GetValueOrDefault(bel.Key)!.Values);    //rofl
+                }
             }
-            finally
+
+            foreach (var item in toCancel)
             {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                cancelEffect(item.effect, false);
             }
         }
 
@@ -210,37 +156,9 @@ namespace Application.Core.Game.Players
         {
             if (_buffExpireTask == null)
             {
-                _buffExpireTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
+                _buffExpireTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
                 {
-                    HashSet<KeyValuePair<int, long>> es;
-                    List<BuffStatValueHolder> toCancel = new();
-
-                    Monitor.Enter(effLock);
-                    chLock.EnterReadLock();
-                    try
-                    {
-                        es = new(buffExpires);
-
-                        long curTime = Client.CurrentServerContainer.getCurrentTime();
-                        foreach (var bel in es)
-                        {
-                            if (curTime >= bel.Value)
-                            {
-                                toCancel.AddRange(buffEffects.GetValueOrDefault(bel.Key)!.Values);    //rofl
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        chLock.ExitReadLock();
-                        Monitor.Exit(effLock);
-                    }
-
-                    foreach (BuffStatValueHolder mbsvh in toCancel)
-                    {
-                        cancelEffect(mbsvh.effect, false, mbsvh.startTime);
-                    }
-
+                    Client.CurrentServer.Post(new PlayerBuffExpiredCommand(this));
                 }), 1500);
             }
         }
@@ -259,52 +177,32 @@ namespace Application.Core.Game.Players
         {
             if (softcancel)
             {
-                Monitor.Enter(effLock);
-                chLock.EnterReadLock();
-                try
-                {
-                    cancelEffectFromBuffStat(BuffStat.SUMMON);
-                    cancelEffectFromBuffStat(BuffStat.PUPPET);
-                    cancelEffectFromBuffStat(BuffStat.COMBO);
+                cancelEffectFromBuffStat(BuffStat.SUMMON);
+                cancelEffectFromBuffStat(BuffStat.PUPPET);
+                cancelEffectFromBuffStat(BuffStat.COMBO);
 
-                    effects.Clear();
+                effects.Clear();
 
-                    foreach (int srcid in buffEffects.Keys)
-                    {
-                        removeItemEffectHolder(srcid);
-                    }
-                }
-                finally
+                foreach (int srcid in buffEffects.Keys)
                 {
-                    chLock.ExitReadLock();
-                    Monitor.Exit(effLock);
+                    removeItemEffectHolder(srcid);
                 }
             }
             else
             {
                 Dictionary<StatEffect, long> mseBuffs = new();
 
-                Monitor.Enter(effLock);
-                chLock.EnterReadLock();
-                try
+                foreach (var bpl in buffEffects)
                 {
-                    foreach (var bpl in buffEffects)
+                    foreach (var mbse in bpl.Value)
                     {
-                        foreach (var mbse in bpl.Value)
-                        {
-                            mseBuffs.AddOrUpdate(mbse.Value.effect, mbse.Value.startTime);
-                        }
+                        mseBuffs.AddOrUpdate(mbse.Value.effect, mbse.Value.startTime);
                     }
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                    Monitor.Exit(effLock);
                 }
 
                 foreach (var mse in mseBuffs)
                 {
-                    cancelEffect(mse.Key, false, mse.Value);
+                    cancelEffect(mse.Key, false);
                 }
             }
         }
@@ -315,22 +213,15 @@ namespace Application.Core.Game.Players
             {
                 //bool nestedCancel = false;
 
-                chLock.EnterReadLock();
-                try
-                {
-                    /*
-                    if (buffExpires.get(cancelEffectCancelTasks.getRight().effect.getBuffSourceId()) != null) {
-                        nestedCancel = true;
-                    }*/
 
-                    if (cancelEffectCancelTasks.ValueHolder.bestApplied)
-                    {
-                        fetchBestEffectFromItemEffectHolder(cancelEffectCancelTasks.BuffStat);
-                    }
-                }
-                finally
+                /*
+                if (buffExpires.get(cancelEffectCancelTasks.getRight().effect.getBuffSourceId()) != null) {
+                    nestedCancel = true;
+                }*/
+
+                if (cancelEffectCancelTasks.ValueHolder.bestApplied)
                 {
-                    chLock.ExitReadLock();
+                    fetchBestEffectFromItemEffectHolder(cancelEffectCancelTasks.BuffStat);
                 }
 
                 /*
@@ -342,142 +233,113 @@ namespace Application.Core.Game.Players
 
         private List<BuffStateValuePair> deregisterBuffStats(Dictionary<BuffStat, BuffStatValueHolder> stats)
         {
-            chLock.EnterReadLock();
-            try
+
+            List<BuffStateValuePair> effectsToCancel = new(stats.Count);
+            foreach (var stat in stats)
             {
-                List<BuffStateValuePair> effectsToCancel = new(stats.Count);
-                foreach (var stat in stats)
+                int sourceid = stat.Value.effect.getBuffSourceId();
+
+                if (!buffEffects.ContainsKey(sourceid))
                 {
-                    int sourceid = stat.Value.effect.getBuffSourceId();
+                    buffExpires.Remove(sourceid);
+                }
 
-                    if (!buffEffects.ContainsKey(sourceid))
+                BuffStat mbs = stat.Key;
+                effectsToCancel.Add(new(mbs, stat.Value));
+
+                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
+                if (mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
+                {
+                    mbsvh.bestApplied = true;
+                    effects.Remove(mbs);
+
+                    if (mbs == BuffStat.RECOVERY)
                     {
-                        buffExpires.Remove(sourceid);
+                        if (recoveryTask != null)
+                        {
+                            recoveryTask.cancel(false);
+                            recoveryTask = null;
+                        }
                     }
-
-                    BuffStat mbs = stat.Key;
-                    effectsToCancel.Add(new(mbs, stat.Value));
-
-                    BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
-                    if (mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
+                    else if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
                     {
-                        mbsvh.bestApplied = true;
-                        effects.Remove(mbs);
+                        int summonId = mbsvh.effect.getSourceId();
 
-                        if (mbs == BuffStat.RECOVERY)
+                        var summon = summons.GetValueOrDefault(summonId);
+                        if (summon != null)
                         {
-                            if (recoveryTask != null)
+                            MapModel.broadcastMessage(PacketCreator.removeSummon(summon, true), summon.getPosition());
+                            MapModel.removeMapObject(summon);
+                            removeVisibleMapObject(summon);
+
+                            summons.Remove(summonId);
+                            if (summon.isPuppet())
                             {
-                                recoveryTask.cancel(false);
-                                recoveryTask = null;
+                                MapModel.removePlayerPuppet(this);
                             }
-                        }
-                        else if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
-                        {
-                            int summonId = mbsvh.effect.getSourceId();
-
-                            var summon = summons.GetValueOrDefault(summonId);
-                            if (summon != null)
+                            else if (summon.getSkill() == DarkKnight.BEHOLDER)
                             {
-                                MapModel.broadcastMessage(PacketCreator.removeSummon(summon, true), summon.getPosition());
-                                MapModel.removeMapObject(summon);
-                                removeVisibleMapObject(summon);
-
-                                summons.Remove(summonId);
-                                if (summon.isPuppet())
+                                if (beholderHealingSchedule != null)
                                 {
-                                    MapModel.removePlayerPuppet(this);
+                                    beholderHealingSchedule.cancel(false);
+                                    beholderHealingSchedule = null;
                                 }
-                                else if (summon.getSkill() == DarkKnight.BEHOLDER)
+                                if (beholderBuffSchedule != null)
                                 {
-                                    if (beholderHealingSchedule != null)
-                                    {
-                                        beholderHealingSchedule.cancel(false);
-                                        beholderHealingSchedule = null;
-                                    }
-                                    if (beholderBuffSchedule != null)
-                                    {
-                                        beholderBuffSchedule.cancel(false);
-                                        beholderBuffSchedule = null;
-                                    }
+                                    beholderBuffSchedule.cancel(false);
+                                    beholderBuffSchedule = null;
                                 }
                             }
                         }
-                        else if (mbs == BuffStat.DRAGONBLOOD)
+                    }
+                    else if (mbs == BuffStat.DRAGONBLOOD)
+                    {
+                        dragonBloodSchedule?.cancel(false);
+                        dragonBloodSchedule = null;
+                    }
+                    else if (mbs == BuffStat.HPREC || mbs == BuffStat.MPREC)
+                    {
+                        if (mbs == BuffStat.HPREC)
                         {
-                            dragonBloodSchedule?.cancel(false);
-                            dragonBloodSchedule = null;
+                            extraHpRec = 0;
                         }
-                        else if (mbs == BuffStat.HPREC || mbs == BuffStat.MPREC)
+                        else
                         {
-                            if (mbs == BuffStat.HPREC)
-                            {
-                                extraHpRec = 0;
-                            }
-                            else
-                            {
-                                extraMpRec = 0;
-                            }
+                            extraMpRec = 0;
+                        }
 
-                            if (extraRecoveryTask != null)
-                            {
-                                extraRecoveryTask.cancel(false);
-                                extraRecoveryTask = null;
-                            }
+                        if (extraRecoveryTask != null)
+                        {
+                            extraRecoveryTask.cancel(false);
+                            extraRecoveryTask = null;
+                        }
 
-                            if (extraHpRec != 0 || extraMpRec != 0)
-                            {
-                                startExtraTaskInternal(extraHpRec, extraMpRec, extraRecInterval);
-                            }
+                        if (extraHpRec != 0 || extraMpRec != 0)
+                        {
+                            startExtraTaskInternal(extraHpRec, extraMpRec, extraRecInterval);
                         }
                     }
                 }
+            }
 
-                return effectsToCancel;
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+            return effectsToCancel;
         }
 
         public void cancelEffect(int itemId)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            cancelEffect(ii.GetItemEffectTrust(itemId), false, -1);
+            cancelEffect(ii.GetItemEffectTrust(itemId), false);
         }
 
-        public bool cancelEffect(StatEffect effect, bool overwrite, long startTime)
+        public bool cancelEffect(StatEffect effect, bool overwrite)
         {
-            bool ret;
-
-            Monitor.Enter(prtLock);
-            Monitor.Enter(effLock);
-            try
-            {
-                ret = cancelEffect(effect, overwrite, true);
-            }
-            finally
-            {
-                Monitor.Exit(effLock);
-                Monitor.Exit(prtLock);
-            }
+            var ret = cancelEffect(effect, overwrite, true);
 
             if (effect.isMagicDoor() && ret)
             {
-                Monitor.Enter(prtLock);
-                Monitor.Enter(effLock);
-                try
+                if (!hasBuffFromSourceid(Priest.MYSTIC_DOOR))
                 {
-                    if (!hasBuffFromSourceid(Priest.MYSTIC_DOOR))
-                    {
-                        Door.attemptRemoveDoor(this);
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(effLock);
-                    Monitor.Exit(prtLock);
+                    Door.attemptRemoveDoor(this);
                 }
             }
 
@@ -517,71 +379,53 @@ namespace Application.Core.Game.Players
 
         public void updateActiveEffects()
         {
-            Monitor.Enter(effLock);     // thanks davidlafriniere, maple006, RedHat for pointing a deadlock occurring here
-            try
+            HashSet<BuffStat> updatedBuffs = new();
+            HashSet<StatEffect> activeEffects = new();
+
+            foreach (BuffStatValueHolder mse in effects.Values)
             {
-                HashSet<BuffStat> updatedBuffs = new();
-                HashSet<StatEffect> activeEffects = new();
+                activeEffects.Add(mse.effect);
+            }
 
-                foreach (BuffStatValueHolder mse in effects.Values)
+            foreach (var buff in buffEffects.Values)
+            {
+                StatEffect? mse = getEffectFromBuffSource(buff);
+                if (isUpdatingEffect(activeEffects, mse))
                 {
-                    activeEffects.Add(mse.effect);
-                }
-
-                foreach (var buff in buffEffects.Values)
-                {
-                    StatEffect? mse = getEffectFromBuffSource(buff);
-                    if (isUpdatingEffect(activeEffects, mse))
+                    foreach (var p in mse!.getStatups())
                     {
-                        foreach (var p in mse!.getStatups())
-                        {
-                            updatedBuffs.Add(p.BuffState);
-                        }
+                        updatedBuffs.Add(p.BuffState);
                     }
                 }
-
-                foreach (BuffStat mbs in updatedBuffs)
-                {
-                    effects.Remove(mbs);
-                }
-
-                updateEffects(updatedBuffs);
             }
-            finally
+
+            foreach (BuffStat mbs in updatedBuffs)
             {
-                Monitor.Exit(effLock);
+                effects.Remove(mbs);
             }
+
+            updateEffects(updatedBuffs);
         }
 
         private void updateEffects(HashSet<BuffStat> removedStats)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            HashSet<BuffStat> retrievedStats = new();
+
+            foreach (BuffStat mbs in removedStats)
             {
-                HashSet<BuffStat> retrievedStats = new();
+                fetchBestEffectFromItemEffectHolder(mbs);
 
-                foreach (BuffStat mbs in removedStats)
+                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
+                if (mbsvh != null)
                 {
-                    fetchBestEffectFromItemEffectHolder(mbs);
-
-                    BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
-                    if (mbsvh != null)
+                    foreach (var statup in mbsvh.effect.getStatups())
                     {
-                        foreach (var statup in mbsvh.effect.getStatups())
-                        {
-                            retrievedStats.Add(statup.BuffState);
-                        }
+                        retrievedStats.Add(statup.BuffState);
                     }
                 }
+            }
 
-                propagateBuffEffectUpdates(new(), retrievedStats, removedStats);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            propagateBuffEffectUpdates(new(), retrievedStats, removedStats);
         }
 
         private bool cancelEffect(StatEffect effect, bool overwrite, bool firstCancel)
@@ -624,7 +468,7 @@ namespace Application.Core.Game.Players
             List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
-                Client.CurrentServerContainer.MountTirednessManager.unregisterMountHunger(this);
+                Client.CurrentServer.MountTirednessManager.unregisterMountHunger(this);
                 this.getMount()?.setActive(false);
             }
 
@@ -638,60 +482,36 @@ namespace Application.Core.Game.Players
 
         public void cancelEffectFromBuffStat(BuffStat stat)
         {
-            BuffStatValueHolder? effect;
+            BuffStatValueHolder? effect = effects.GetValueOrDefault(stat);
 
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                effect = effects.GetValueOrDefault(stat);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
             if (effect != null)
             {
-                cancelEffect(effect.effect, false, -1);
+                cancelEffect(effect.effect, false);
             }
         }
 
         public void cancelBuffStats(BuffStat stat)
         {
-            Monitor.Enter(effLock);
-            try
+
+            List<KeyValuePair<int, BuffStatValueHolder>> cancelList = new();
+
+
+            foreach (var bel in this.buffEffects)
             {
-                List<KeyValuePair<int, BuffStatValueHolder>> cancelList = new();
-
-                chLock.EnterReadLock();
-                try
+                BuffStatValueHolder? beli = bel.Value.GetValueOrDefault(stat);
+                if (beli != null)
                 {
-                    foreach (var bel in this.buffEffects)
-                    {
-                        BuffStatValueHolder? beli = bel.Value.GetValueOrDefault(stat);
-                        if (beli != null)
-                        {
-                            cancelList.Add(new(bel.Key, beli));
-                        }
-                    }
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                }
-
-                Dictionary<BuffStat, BuffStatValueHolder> buffStatList = new();
-                foreach (var p in cancelList)
-                {
-                    buffStatList.AddOrUpdate(stat, p.Value);
-                    extractBuffValue(p.Key, stat);
-                    dropBuffStats(deregisterBuffStats(buffStatList));
+                    cancelList.Add(new(bel.Key, beli));
                 }
             }
-            finally
+
+
+            Dictionary<BuffStat, BuffStatValueHolder> buffStatList = new();
+            foreach (var p in cancelList)
             {
-                Monitor.Exit(effLock);
+                buffStatList.AddOrUpdate(stat, p.Value);
+                extractBuffValue(p.Key, stat);
+                dropBuffStats(deregisterBuffStats(buffStatList));
             }
 
             cancelPlayerBuffs(Arrays.asList(stat));
@@ -732,89 +552,74 @@ namespace Application.Core.Game.Players
 
         private Dictionary<BuffStat, BuffStatValueHolder> extractCurrentBuffStats(StatEffect effect)
         {
-            chLock.EnterReadLock();
-            try
-            {
-                Dictionary<BuffStat, BuffStatValueHolder> stats = new();
-                buffEffects.Remove(effect.getBuffSourceId(), out var buffList);
-                if (buffList != null)
-                {
-                    foreach (var stateffect in buffList)
-                    {
-                        stats.AddOrUpdate(stateffect.Key, stateffect.Value);
-                        buffEffectsCount.AddOrUpdate(stateffect.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(stateffect.Key) - 1));
-                    }
-                }
 
-                return stats;
-            }
-            finally
+            Dictionary<BuffStat, BuffStatValueHolder> stats = new();
+            buffEffects.Remove(effect.getBuffSourceId(), out var buffList);
+            if (buffList != null)
             {
-                chLock.ExitReadLock();
+                foreach (var stateffect in buffList)
+                {
+                    stats.AddOrUpdate(stateffect.Key, stateffect.Value);
+                    buffEffectsCount.AddOrUpdate(stateffect.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(stateffect.Key) - 1));
+                }
             }
+
+            return stats;
         }
 
         private Dictionary<BuffStat, BuffStatValueHolder> extractLeastRelevantStatEffectsIfFull(StatEffect effect)
         {
             Dictionary<BuffStat, BuffStatValueHolder> extractedStatBuffs = new();
 
-            chLock.EnterReadLock();
-            try
+            Dictionary<BuffStat, Byte> stats = new();
+            Dictionary<BuffStat, BuffStatValueHolder> minStatBuffs = new();
+
+            foreach (var mbsvhi in buffEffects)
             {
-                Dictionary<BuffStat, Byte> stats = new();
-                Dictionary<BuffStat, BuffStatValueHolder> minStatBuffs = new();
-
-                foreach (var mbsvhi in buffEffects)
+                foreach (var mbsvhe in mbsvhi.Value)
                 {
-                    foreach (var mbsvhe in mbsvhi.Value)
-                    {
-                        BuffStat mbs = mbsvhe.Key;
+                    BuffStat mbs = mbsvhe.Key;
 
-                        if (stats.TryGetValue(mbs, out var b))
+                    if (stats.TryGetValue(mbs, out var b))
+                    {
+                        stats.AddOrUpdate(mbs, (byte)(b + 1));
+                        if (mbsvhe.Value.value < (minStatBuffs.GetValueOrDefault(mbs)?.value ?? 0))
                         {
-                            stats.AddOrUpdate(mbs, (byte)(b + 1));
-                            if (mbsvhe.Value.value < (minStatBuffs.GetValueOrDefault(mbs)?.value ?? 0))
-                            {
-                                minStatBuffs.AddOrUpdate(mbs, mbsvhe.Value);
-                            }
-                        }
-                        else
-                        {
-                            stats.AddOrUpdate(mbs, (byte)1);
                             minStatBuffs.AddOrUpdate(mbs, mbsvhe.Value);
                         }
                     }
-                }
-
-                HashSet<BuffStat> effectStatups = new();
-                foreach (var efstat in effect.getStatups())
-                {
-                    effectStatups.Add(efstat.BuffState);
-                }
-
-                foreach (var it in stats)
-                {
-                    bool uniqueBuff = isSingletonStatup(it.Key);
-
-                    if (it.Value >= (!uniqueBuff ? YamlConfig.config.server.MAX_MONITORED_BUFFSTATS : 1) && effectStatups.Contains(it.Key))
+                    else
                     {
-                        var mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
-
-                        var lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
-                        lpbe?.Remove(it.Key);
-                        buffEffectsCount.AddOrUpdate(it.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(it.Key) - 1));
-
-                        if (lpbe == null || lpbe.Count == 0)
-                        {
-                            buffEffects.Remove(mbsvh.effect.getBuffSourceId());
-                        }
-                        extractedStatBuffs.AddOrUpdate(it.Key, mbsvh);
+                        stats.AddOrUpdate(mbs, (byte)1);
+                        minStatBuffs.AddOrUpdate(mbs, mbsvhe.Value);
                     }
                 }
             }
-            finally
+
+            HashSet<BuffStat> effectStatups = new();
+            foreach (var efstat in effect.getStatups())
             {
-                chLock.ExitReadLock();
+                effectStatups.Add(efstat.BuffState);
+            }
+
+            foreach (var it in stats)
+            {
+                bool uniqueBuff = isSingletonStatup(it.Key);
+
+                if (it.Value >= (!uniqueBuff ? YamlConfig.config.server.MAX_MONITORED_BUFFSTATS : 1) && effectStatups.Contains(it.Key))
+                {
+                    var mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
+
+                    var lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
+                    lpbe?.Remove(it.Key);
+                    buffEffectsCount.AddOrUpdate(it.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(it.Key) - 1));
+
+                    if (lpbe == null || lpbe.Count == 0)
+                    {
+                        buffEffects.Remove(mbsvh.effect.getBuffSourceId());
+                    }
+                    extractedStatBuffs.AddOrUpdate(it.Key, mbsvh);
+                }
             }
 
             return extractedStatBuffs;
@@ -1289,21 +1094,9 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect healEffect = bHealing.getEffect(bHealingLvl);
                     var healInterval = TimeSpan.FromSeconds(healEffect.getX());
-                    beholderHealingSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
+                    beholderHealingSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
                     {
-                        if (awayFromWorld.Get())
-                        {
-                            return;
-                        }
-
-                        UpdateStatsChunk(() =>
-                        {
-                            ChangeHP(healEffect.getHp());
-                        });
-                        sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
-                        MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), beholder, 5), true);
-                        MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(beholder, 2), false);
-
+                        Client.CurrentServer.Post(new PlayerBeholdHealBuffCommand(Id, healEffect));
                     }, healInterval, healInterval);
                 }
                 Skill bBuff = SkillFactory.GetSkillTrust(DarkKnight.HEX_OF_BEHOLDER);
@@ -1311,17 +1104,9 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect buffEffect = bBuff.getEffect(getSkillLevel(bBuff));
                     var buffInterval = TimeSpan.FromSeconds(buffEffect.getX());
-                    beholderBuffSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
+                    beholderBuffSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
                     {
-                        if (awayFromWorld.Get())
-                        {
-                            return;
-                        }
-
-                        buffEffect.applyTo(this);
-                        sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
-                        MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), beholder, (int)(Randomizer.nextDouble() * 3) + 6), true);
-                        MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), beholder, 2), false);
+                        Client.CurrentServer.Post(new PlayerBeholdHexBuffCommand(Id, buffEffect));
 
                     }, buffInterval, buffInterval);
                 }
@@ -1331,48 +1116,17 @@ namespace Application.Core.Game.Players
                 int healInterval = (YamlConfig.config.server.USE_ULTRA_RECOVERY) ? 2000 : 5000;
                 var heal = (sbyte)effect.getX();
 
-                chLock.EnterReadLock();
-                try
+                if (recoveryTask != null)
                 {
-                    if (recoveryTask != null)
-                    {
-                        recoveryTask.cancel(false);
-                    }
-
-                    recoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
-                    {
-                        if (getBuffSource(BuffStat.RECOVERY) == -1)
-                        {
-                            chLock.EnterReadLock();
-                            try
-                            {
-                                if (recoveryTask != null)
-                                {
-                                    recoveryTask.cancel(false);
-                                    recoveryTask = null;
-                                }
-                            }
-                            finally
-                            {
-                                chLock.ExitReadLock();
-                            }
-
-                            return;
-                        }
-
-                        UpdateStatsChunk(() =>
-                        {
-                            ChangeHP(heal);
-                        });
-                        sendPacket(PacketCreator.showOwnRecovery(heal));
-                        MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, heal), false);
-
-                    }, healInterval, healInterval);
+                    recoveryTask.cancel(false);
                 }
-                finally
+
+                recoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
                 {
-                    chLock.ExitReadLock();
-                }
+                    Client.CurrentServer.Post(new PlayerBuffHealCommand(this, effect));
+
+                }, healInterval, healInterval);
+
             }
             else if (effect.getHpRRate() > 0 || effect.getMpRRate() > 0)
             {
@@ -1388,16 +1142,10 @@ namespace Application.Core.Game.Players
                     extraRecInterval = effect.getMpRRate();
                 }
 
-                chLock.EnterReadLock();
-                try
-                {
-                    stopExtraTask();
-                    startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                }
+
+                stopExtraTask();
+                startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
+
 
             }
             else if (effect.isMapChair())
@@ -1405,106 +1153,95 @@ namespace Application.Core.Game.Players
                 startChairTask();
             }
 
-            Monitor.Enter(prtLock);
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            int sourceid = effect.getBuffSourceId();
+            Dictionary<BuffStat, BuffStatValueHolder> toDeploy;
+            Dictionary<BuffStat, BuffStatValueHolder> appliedStatups = new();
+
+            foreach (var ps in effect.getStatups())
             {
-                int sourceid = effect.getBuffSourceId();
-                Dictionary<BuffStat, BuffStatValueHolder> toDeploy;
-                Dictionary<BuffStat, BuffStatValueHolder> appliedStatups = new();
+                appliedStatups.AddOrUpdate(ps.BuffState, new BuffStatValueHolder(effect, starttime, ps.Value));
+            }
 
-                foreach (var ps in effect.getStatups())
+            bool active = effect.isActive(this);
+            if (YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
+            {
+                toDeploy = new();
+                Dictionary<int, KeyValuePair<StatEffect, long>> retrievedEffects = new();
+                HashSet<BuffStat> retrievedStats = new();
+                foreach (var statup in appliedStatups)
                 {
-                    appliedStatups.AddOrUpdate(ps.BuffState, new BuffStatValueHolder(effect, starttime, ps.Value));
-                }
+                    BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(statup.Key);
+                    BuffStatValueHolder statMbsvh = statup.Value;
 
-                bool active = effect.isActive(this);
-                if (YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
-                {
-                    toDeploy = new();
-                    Dictionary<int, KeyValuePair<StatEffect, long>> retrievedEffects = new();
-                    HashSet<BuffStat> retrievedStats = new();
-                    foreach (var statup in appliedStatups)
+                    if (active)
                     {
-                        BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(statup.Key);
-                        BuffStatValueHolder statMbsvh = statup.Value;
-
-                        if (active)
+                        if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.effect.getStatups().Count <= statMbsvh.effect.getStatups().Count))
                         {
-                            if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.effect.getStatups().Count <= statMbsvh.effect.getStatups().Count))
-                            {
-                                toDeploy.AddOrUpdate(statup.Key, statMbsvh);
-                            }
-                            else
-                            {
-                                if (!isSingletonStatup(statup.Key))
-                                {
-                                    foreach (var mbs in mbsvh.effect.getStatups())
-                                    {
-                                        retrievedStats.Add(mbs.BuffState);
-                                    }
-                                }
-                            }
+                            toDeploy.AddOrUpdate(statup.Key, statMbsvh);
                         }
-
-                        addItemEffectHolderCount(statup.Key);
-                    }
-
-                    // should also propagate update from buffs shared with priority sourceids
-                    var updated = appliedStatups.Keys;
-                    foreach (BuffStatValueHolder mbsvh in this.getAllStatups())
-                    {
-                        if (isPriorityBuffSourceid(mbsvh.effect.getBuffSourceId()))
+                        else
                         {
-                            foreach (var p in mbsvh.effect.getStatups())
+                            if (!isSingletonStatup(statup.Key))
                             {
-                                if (updated.Contains(p.BuffState))
+                                foreach (var mbs in mbsvh.effect.getStatups())
                                 {
-                                    retrievedStats.Add(p.BuffState);
+                                    retrievedStats.Add(mbs.BuffState);
                                 }
                             }
                         }
                     }
 
-                    if (!isSilent)
-                    {
-                        addItemEffectHolder(sourceid, expirationtime, appliedStatups);
-                        foreach (var statup in toDeploy)
-                        {
-                            effects.AddOrUpdate(statup.Key, statup.Value);
-                        }
-
-                        if (active)
-                        {
-                            retrievedEffects.AddOrUpdate(sourceid, new(effect, starttime));
-                        }
-
-                        propagateBuffEffectUpdates(retrievedEffects, retrievedStats, new());
-                    }
-                }
-                else
-                {
-                    foreach (var statup in appliedStatups)
-                    {
-                        addItemEffectHolderCount(statup.Key);
-                    }
-
-                    toDeploy = (active ? appliedStatups : new());
+                    addItemEffectHolderCount(statup.Key);
                 }
 
-                addItemEffectHolder(sourceid, expirationtime, appliedStatups);
-                foreach (var statup in toDeploy)
+                // should also propagate update from buffs shared with priority sourceids
+                var updated = appliedStatups.Keys;
+                foreach (BuffStatValueHolder mbsvh in this.getAllStatups())
                 {
-                    effects.AddOrUpdate(statup.Key, statup.Value);
+                    if (isPriorityBuffSourceid(mbsvh.effect.getBuffSourceId()))
+                    {
+                        foreach (var p in mbsvh.effect.getStatups())
+                        {
+                            if (updated.Contains(p.BuffState))
+                            {
+                                retrievedStats.Add(p.BuffState);
+                            }
+                        }
+                    }
+                }
+
+                if (!isSilent)
+                {
+                    addItemEffectHolder(sourceid, expirationtime, appliedStatups);
+                    foreach (var statup in toDeploy)
+                    {
+                        effects.AddOrUpdate(statup.Key, statup.Value);
+                    }
+
+                    if (active)
+                    {
+                        retrievedEffects.AddOrUpdate(sourceid, new(effect, starttime));
+                    }
+
+                    propagateBuffEffectUpdates(retrievedEffects, retrievedStats, new());
                 }
             }
-            finally
+            else
             {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-                Monitor.Exit(prtLock);
+                foreach (var statup in appliedStatups)
+                {
+                    addItemEffectHolderCount(statup.Key);
+                }
+
+                toDeploy = (active ? appliedStatups : new());
             }
+
+            addItemEffectHolder(sourceid, expirationtime, appliedStatups);
+            foreach (var statup in toDeploy)
+            {
+                effects.AddOrUpdate(statup.Key, statup.Value);
+            }
+
 
             UpdateLocalStats();
         }
@@ -1516,45 +1253,15 @@ namespace Application.Core.Game.Players
                 dragonBloodSchedule.cancel(false);
                 dragonBloodSchedule = null;
             }
-            dragonBloodSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
+            dragonBloodSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
             {
-                if (awayFromWorld.Get())
-                {
-                    return;
-                }
-
-                UpdateStatsChunk(() =>
-                {
-                    if (ChangeHP(-bloodEffect.getX()))
-                    {
-                        sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-                        MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
-                    }
-                    else
-                    {
-                        dragonBloodSchedule!.cancel(false);
-                        dragonBloodSchedule = null;
-                    }
-                });
-
+                Client.CurrentServer.Post(new PlayerBuffDragonBloodCommand(Id, bloodEffect));
             }, 4000, 4000);
         }
 
         public bool hasActiveBuff(int sourceid)
         {
-            LinkedList<BuffStatValueHolder> allBuffs;
-
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                allBuffs = new(effects.Values);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            var allBuffs = effects.Values.ToList();
 
             foreach (BuffStatValueHolder mbsvh in allBuffs)
             {
@@ -1564,6 +1271,108 @@ namespace Application.Core.Game.Players
                 }
             }
             return false;
+        }
+        /// <summary>
+        /// 灵魂治愈
+        /// </summary>
+        /// <param name="healValue"></param>
+        /// <param name="skillId"></param>
+        public void ApplyBeholderHeal(StatEffect statEffect)
+        {
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(statEffect.getHp());
+            });
+
+            sendPacket(PacketCreator.showOwnBuffEffect(statEffect.getSourceId(), 2));
+            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), statEffect.getSourceId(), 5), true);
+            MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(statEffect.getSourceId(), 2), false);
+        }
+
+        public void ApplyBeholderHex(StatEffect buffEffect)
+        {
+            buffEffect.applyTo(this);
+
+            var skillId = buffEffect.getSourceId();
+            sendPacket(PacketCreator.showOwnBuffEffect(skillId, 2));
+            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), skillId, (int)(Randomizer.nextDouble() * 3) + 6), true);
+            MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), skillId, 2), false);
+        }
+
+        public void ApplyBuffHeal(StatEffect statEffect)
+        {
+            if (getBuffSource(BuffStat.RECOVERY) == -1)
+            {
+                if (recoveryTask != null)
+                {
+                    recoveryTask.cancel(false);
+                    recoveryTask = null;
+                }
+
+                return;
+            }
+
+            var heal = (sbyte)statEffect.getX();
+
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(heal);
+            });
+            sendPacket(PacketCreator.showOwnRecovery(heal));
+            MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, heal), false);
+        }
+
+        public void ApplyDragonBlood(StatEffect bloodEffect)
+        {
+            UpdateStatsChunk(() =>
+            {
+                if (ChangeHP(-bloodEffect.getX()))
+                {
+                    sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
+                    MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
+                }
+                else
+                {
+                    dragonBloodSchedule!.cancel(false);
+                    dragonBloodSchedule = null;
+                }
+            });
+        }
+
+        public void checkBerserk(bool isHidden)
+        {
+            berserkSchedule?.cancel(false);
+
+            IPlayerStats chr = this;
+            if (JobModel.Equals(Job.DARKKNIGHT))
+            {
+                Skill BerserkX = SkillFactory.GetSkillTrust(DarkKnight.BERSERK);
+                int skilllevel = getSkillLevel(BerserkX);
+                if (skilllevel > 0)
+                {
+                    var buffEffect = BerserkX.getEffect(skilllevel);
+                    var berserk = (this.HP * 100 / this.ActualMaxHP) < buffEffect.getX();
+                    berserkSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
+                    {
+                        Client.CurrentServer.Post(new PlayerBerserkBuffCommand(isHidden, Id, buffEffect, berserk));
+                    }
+                    , 5000, 3000);
+                }
+            }
+        }
+
+        public void ApplyBerserkBuff(bool isHidden, StatEffect buffEffect, bool berserk)
+        {
+
+            sendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
+            if (!isHidden)
+            {
+                MapModel.broadcastMessage(this, PacketCreator.showBerserk(Id, buffEffect.SkillLevel, berserk), false);
+            }
+            else
+            {
+                MapModel.broadcastGMMessage(this, PacketCreator.showBerserk(Id, buffEffect.SkillLevel, berserk), false);
+            }
         }
     }
 }

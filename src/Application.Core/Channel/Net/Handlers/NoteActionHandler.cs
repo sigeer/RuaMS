@@ -50,7 +50,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
+            bool sendNoteSuccess = c.CurrentServer.Node.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
             if (sendNoteSuccess)
             {
                 c.OnlinedCharacter.getCashShop().decreaseNotes();
@@ -68,7 +68,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 int id = p.readInt();
                 p.readByte(); //Fame, but we read it from the database :)
 
-                var discardedNote = c.CurrentServerContainer.Transport.DeleteNoteMessage(id);
+                var discardedNote = c.CurrentServer.Node.Transport.DeleteNoteMessage(id);
                 if (discardedNote == null)
                 {
                     _logger.LogWarning("Note with id {NoteId} not able to be discarded. Already discarded?", id);

@@ -30,7 +30,7 @@ public class AutoAggroHandler : ChannelHandlerBase
         var player = c.OnlinedCharacter;
         if (player.isHidden())
         {
-            return; // Don't auto aggro GM's in hide...
+            return;
         }
 
         var map = player.getMap();

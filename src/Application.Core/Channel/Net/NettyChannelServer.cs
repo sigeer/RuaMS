@@ -8,10 +8,12 @@ namespace Application.Core.Channel.Net;
 public class NettyChannelServer : AbstractNettyServer
 {
     private IChannel? nettyChannel;
-    readonly WorldChannel worldChannel;
-    public NettyChannelServer(WorldChannel worldChannel) : base(worldChannel.Port)
+    WorldChannelServer _server;
+    ChannelConfig _channelConfig;
+    public NettyChannelServer(WorldChannelServer server, ChannelConfig channelConfig) : base(channelConfig.Port)
     {
-        this.worldChannel = worldChannel;
+        _server = server;
+        _channelConfig = channelConfig;
     }
 
     public override async Task Start()
@@ -21,7 +23,7 @@ public class NettyChannelServer : AbstractNettyServer
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
-                .ChildHandler(new ChannelServerInitializer(worldChannel));
+                .ChildHandler(new ChannelServerInitializer(_server, _channelConfig));
 
         this.nettyChannel = await bootstrap.BindAsync(port);
     }
@@ -36,3 +38,5 @@ public class NettyChannelServer : AbstractNettyServer
         await nettyChannel.CloseAsync();
     }
 }
+
+public record ChannelServerRecord(ChannelConfig Config, NettyChannelServer NettyServer);

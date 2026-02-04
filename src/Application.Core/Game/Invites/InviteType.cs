@@ -1,5 +1,6 @@
 using Application.Shared.Invitations;
 using System.Collections.Concurrent;
+using ZLinq;
 
 namespace Application.Core.Game.Invites
 {

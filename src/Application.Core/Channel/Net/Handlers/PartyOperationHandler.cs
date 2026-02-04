@@ -31,55 +31,45 @@ public class PartyOperationHandler : ChannelHandlerBase
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;
-        var party = player.getParty();
         switch (operation)
         {
             case 1:
                 { // create
-                    c.CurrentServerContainer.TeamManager.CreateParty(player, false);
+                    c.CurrentServer.NodeService.TeamManager.CreateTeam(player);
                     break;
                 }
             case 2:
-                { // leave/disband
-                    if (party != null)
-                    {
-                        var partymembers = player.getPartyMembersOnline();
-
-                        c.CurrentServerContainer.TeamManager.LeaveParty(player);
-                        player.partyOperationUpdate(party, partymembers);
-                    }
+                { 
+                    // leave/disband
+                    c.CurrentServer.NodeService.TeamManager.LeaveParty(player);
                     break;
                 }
             case 3:
                 { // join
                     int partyid = p.readInt();
 
-                    c.CurrentServerContainer.TeamManager.AnswerInvite(player, partyid, true);
+                    c.CurrentServer.NodeService.TeamManager.AnswerInvite(player, partyid, true);
                     break;
                 }
             case 4:
                 {
                     // invite
                     string name = p.readString();
-                    c.CurrentServerContainer.TeamManager.CreateInvite(player, name);
+                    c.CurrentServer.NodeService.TeamManager.CreateInvite(player, name);
                     break;
                 }
             case 5:
                 {
                     // expel
                     int cid = p.readInt();
-                    c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
+                    c.CurrentServer.NodeService.TeamManager.ExpelFromParty(player, cid);
                     break;
                 }
             case 6:
                 {
                     // change leader
-                    if (party == null)
-                    {
-                        return;
-                    }
                     int newLeader = p.readInt();
-                    c.CurrentServerContainer.TeamManager.ChangeLeader(player, newLeader);
+                    c.CurrentServer.NodeService.TeamManager.ChangeLeader(player, newLeader);
                     break;
                 }
         }

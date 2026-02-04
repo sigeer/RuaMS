@@ -44,7 +44,6 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 pq.CompleteStage();
             }
-
         }
 
     }

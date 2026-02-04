@@ -381,8 +381,8 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         if (chr.canHold(itemId))
                         {
-                            chr.gainMeso(-itemPrice, false);
-                            InventoryManipulator.addById(c, itemId, 1, "");
+                            chr.GainMeso(-itemPrice);
+                            chr.GainItem(itemId, 1);
                             c.sendPacket(PacketCreator.showBoughtQuestItem(itemId));
                         }
                     }
@@ -468,7 +468,7 @@ public class CashOperationHandler : ChannelHandlerBase
         }
     }
 
-    private bool canBuy(IPlayer chr, CashItem? item, int cash)
+    private bool canBuy(Player chr, CashItem? item, int cash)
     {
         if (item != null && item.isOnSale() && item.getPrice() <= cash)
         {

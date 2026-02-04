@@ -1,9 +1,10 @@
+using Application.Core.Login.Mappers.Resolvers;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
+using Application.EF.Entities;
 using Application.Shared.Items;
-using Application.Shared.NewYear;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
@@ -30,7 +31,12 @@ namespace Application.Core.Login.Mappers
             CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
 
             CreateMap<CharacterModel, Dto.CharacterDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(dest => dest.Party, src => src.Ignore())
+                .ForMember(dest => dest.GuildId, src => src.Ignore())
+                .ForMember(dest => dest.GuildRank, src => src.Ignore())
+                .ForMember(dest => dest.AllianceRank, src => src.Ignore())
+                .ForMember(dest => dest.Jailexpire, src => src.Ignore());
 
             CreateMap<FameLogModel, Dto.FameLogRecordDto>().ReverseMap();
             CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();
@@ -44,7 +50,8 @@ namespace Application.Core.Login.Mappers
                 .ReverseMap();
             CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
-            CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
+            CreateMap<AccountCtrl, Dto.AccountCtrlDto>()
+                .ReverseMap();
             CreateMap<AccountGame, Dto.AccountGameDto>().ReverseMap();
             CreateMap<StorageModel, Dto.StorageDto>().ReverseMap();
 
@@ -56,7 +63,6 @@ namespace Application.Core.Login.Mappers
             CreateMap<QuestStatusModel, Dto.QuestStatusDto>().ReverseMap();
             CreateMap<QuestProgressModel, Dto.QuestProgressDto>().ReverseMap();
             CreateMap<MedalMapModel, Dto.MedalMapDto>().ReverseMap();
-            CreateMap<TimerQuestModel, SyncProto.PlayerTimerQuestDto>().ReverseMap();
 
             CreateMap<SkillModel, Dto.SkillDto>().ReverseMap();
             CreateMap<SkillMacroModel, Dto.SkillMacroDto>().ReverseMap();
@@ -66,17 +72,17 @@ namespace Application.Core.Login.Mappers
             CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
 
             CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
-            CreateMap<BuddyModel, Dto.BuddyDto>()
+            CreateMap<BuddyModel, BuddyProto.BuddyDto>()
                 .ConvertUsing<BuddyConverter>();
 
-            CreateMap<Dto.BuddyDto, BuddyModel>();
+            CreateMap<BuddyProto.BuddyDto, BuddyModel>();
 
             CreateMap<PlayerBuffSaveModel, SyncProto.PlayerBuffDto>().ReverseMap();
             CreateMap<BuffModel, Dto.BuffDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
             CreateMap<CharacterLiveObject, SyncProto.PlayerGetterDto>()
-                .ForMember(dest=> dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
+                .ForMember(dest => dest.BuddyList, src => src.MapFrom(x => x.BuddyList.Values));
             CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
             CreateMap<CharacterLiveObject, TeamProto.TeamMemberDto>()
@@ -84,8 +90,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
                 .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
-                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
-                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Character.Map));
+                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level));
 
             CreateMap<CharacterLiveObject, GuildProto.GuildMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
@@ -116,7 +121,7 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
 
-            CreateMap<ItemModel, ItemModel>(); 
+            CreateMap<ItemModel, ItemModel>();
             CreateMap<PlayerShopItemModel, ItemModel>()
                 .IncludeMembers(src => src.Item)
                 .ForMember(dest => dest.Quantity, src => src.MapFrom(x => x.Bundles * x.Item.Quantity));
@@ -133,6 +138,13 @@ namespace Application.Core.Login.Mappers
             CreateMap<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
 
             CreateMap<CdkItemModel, ItemProto.CdkRewordPackageDto>();
+
+            CreateMap<DueyPackageEntity, DueyPackageModel>()
+                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.PackageId));
+
+            CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()
+                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
+                .ForMember(dest => dest.SenderName, src => src.MapFrom<DueyPackageValueResolver>());
         }
     }
 }

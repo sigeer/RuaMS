@@ -1,4 +1,5 @@
 using Application.Core.Channel.Events;
+using Application.Shared.Servers;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.Modules
@@ -38,8 +39,26 @@ namespace Application.Core.Channel.Modules
         }
         public virtual void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg) { }
         public virtual void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg) { }
-        public virtual void OnPlayerLogin(Dto.PlayerOnlineChange data) { }
-        public virtual void OnPlayerEnterGame(IPlayer chr, bool isNewComer) { }
+        public virtual void OnPlayerServerChanged(SyncProto.PlayerFieldChange arg) 
+        {
+            if (arg.FromChannel == 0 && arg.Channel > 0)
+            {
+                var chr = _server.GetChannel(arg.Channel)?.getPlayerStorage()?.getCharacterById(arg.Id);
+                if (chr != null)
+                {
+                    OnPlayerLogin(chr);
+                }
+            }
+            //if (arg.FromChannel != 0 && arg.Channel == 0)
+            //{
+            //    await OnPlayerLogoff(obj);
+            //}
+            //if (arg.Channel == -1)
+            //{
+            //    await OnPlayerEnterCashShop(obj);
+            //}
+        }
+        public virtual void OnPlayerLogin(Player chr) { }
         public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

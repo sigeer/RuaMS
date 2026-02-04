@@ -1,6 +1,6 @@
 using Application.Core.Channel;
-using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 
@@ -32,29 +32,32 @@ namespace Application.Core.Scripting.Events
 
         protected override bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
         {
-            var room = Rooms.FirstOrDefault(x => x.InstanceName == instanceName);
-            if (room == null)
-                return false;
+            if (base.RegisterInstanceInternal(instanceName, eim))
+            {
+                var room = Rooms.FirstOrDefault(x => x.InstanceName == instanceName);
+                if (room == null)
+                    return false;
 
-            if (room.Instance != null)
-                return false;
+                if (room.Instance != null)
+                    return false;
 
-            room.Instance = eim as MonsterCarnivalEventInstanceManager;
-            cserv.Metrics.EventInstanceCount.Inc();
+                room.Instance = eim as MonsterCarnivalEventInstanceManager;
+                return true;
+            }
             return true;
         }
 
         protected override void DisposeInstanceInternal(string name)
         {
+            base.DisposeInstanceInternal(name);
             var room = Rooms.FirstOrDefault(x => x.InstanceName == name);
             if (room != null)
             {
                 room.Instance = null;
-                cserv.Metrics.EventInstanceCount.Dec();
             }
         }
 
-        public List<IPlayer> GetPreparationParty(int roomIndex, Team party)
+        public List<Player> GetPreparationParty(int roomIndex, Team party)
         {
             if (party == null)
             {
@@ -64,8 +67,7 @@ namespace Application.Core.Scripting.Events
             {
                 var room = Rooms[roomIndex];
                 var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv), room, 0);
-                var eligibleParty = result.ToObject<List<IPlayer>>() ?? [];
-                party.setEligibleMembers(eligibleParty);
+                var eligibleParty = result.ToObject<List<Player>>() ?? [];
                 return eligibleParty;
             }
             catch (Exception ex)
@@ -77,87 +79,81 @@ namespace Application.Core.Scripting.Events
         }
 
 
-        public List<IPlayer> GetRoomEligibleParty(MonsterCarnivalEventInstanceManager eim, Team party)
+        public bool Check2(MonsterCarnivalEventInstanceManager eim)
         {
-            if (party == null)
-            {
-                return new();
-            }
             try
             {
-                var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv), eim.Room, 1);
-                var eligibleParty = result.ToObject<List<IPlayer>>() ?? [];
-                party.setEligibleMembers(eligibleParty);
-                return eligibleParty;
+                var t0 = iv.CallFunction("getEligibleParty", eim.Team0.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+                var t1 = iv.CallFunction("getEligibleParty", eim.Team1.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+
+                return t0.Count == t1.Count && t0.Count >= eim.Room.MinCount;
             }
             catch (Exception ex)
             {
                 log.Error(ex, "Script: {Script}", _name);
-            }
-
-            return new();
-        }
-
-
-        public bool StartInstance(IPlayer chr, IMap map, int roomIndex)
-        {
-            lock (startLock)
-            {
-                if (roomIndex < 0 || roomIndex >= Rooms.Count)
-                    return false;
-
-                if (chr.TeamModel == null)
-                    return false;
-
-                var room = Rooms[roomIndex];
-                if (room.Instance != null)
-                    return false;
-
-                var eim = createInstance<MonsterCarnivalEventInstanceManager>("setup", roomIndex);
-                eim.Initialize(chr.TeamModel, room);
-                eim.registerParty(chr.TeamModel, map);
-
-                eim.setLeader(chr);
-
-                eim.startEvent();
-                registerEventInstance(eim, roomIndex);
-                return true;
+                return false;
             }
         }
 
-        public int JoinInstance(IPlayer chr, IMap map, int roomIndex)
+
+        public bool StartInstance(Player chr, List<Player> eligiMembers, int roomIndex)
         {
-            lock (startLock)
+            if (roomIndex < 0 || roomIndex >= Rooms.Count)
+                return false;
+
+            if (chr.Party == 0)
+                return false;
+
+            var room = Rooms[roomIndex];
+            if (room.Instance != null)
+                return false;
+
+            var eim = createInstance<MonsterCarnivalEventInstanceManager>("setup", roomIndex);
+            eim.Initialize(new TeamRegistry(chr.Party, eligiMembers), room);
+
+            foreach (var item in eligiMembers)
             {
-                if (roomIndex < 0 || roomIndex >= Rooms.Count)
-                    return 1;
+                eim.registerPlayer(item);
+            }
 
-                var room = Rooms[roomIndex];
-                if (room.Instance == null || room.Instance.getLeader() == null)
-                    return 3;
+            eim.setLeader(chr);
 
-                if (chr.TeamModel == null || chr.TeamModel.getEligibleMembers().Count != room.Instance.Team0.getEligibleMembers().Count)
-                    return 2;
+            eim.startEvent();
+            registerEventInstance(eim, roomIndex);
+            return true;
+        }
 
-                if (room.Instance.Team1 != null)
-                    return 4;
+        public int JoinInstance(Player chr, List<Player> eligibleMembers, int roomIndex)
+        {
+            if (roomIndex < 0 || roomIndex >= Rooms.Count)
+                return 1;
 
-                if (room.Instance.getLeader()!.Client.NPCConversationManager != null)
-                    return 4;
+            var room = Rooms[roomIndex];
+            if (room.Instance == null || room.Instance.getLeader() == null || room.Instance.Team0 == null)
+                return 3;
 
-                room.Instance.Team1 = chr.TeamModel;
-                // send challenge
-                if (getChannelServer().NPCScriptManager.start(
-                    room.Instance.getLeader()!.Client,
-                    2042001,
-                    "mc_enter1",
-                    null))
-                {
-                    return 0;
-                }
-                room.Instance.Team1 = null;
+            var chrParty = chr.getParty();
+            if (chrParty == null || eligibleMembers.Count != room.Instance.Team0.EligibleMembers.Count)
+                return 2;
+
+            if (room.Instance.Team1 != null)
                 return 4;
+
+            if (room.Instance.getLeader()!.Client.NPCConversationManager != null)
+                return 4;
+
+            room.Instance.Team1 = new TeamRegistry(chr.Party, eligibleMembers);
+            // send challenge
+            if (getChannelServer().NPCScriptManager.start(
+                room.Instance.getLeader()!.Client,
+                2042001,
+                "mc_enter1",
+                null))
+            {
+                return 0;
             }
+            room.Instance.Team1 = null;
+            return 4;
         }
     }
 

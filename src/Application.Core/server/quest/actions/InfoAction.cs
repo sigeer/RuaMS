@@ -35,7 +35,7 @@ public class InfoAction : AbstractQuestAction
         info = data;
     }
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         chr.getAbstractPlayerInteraction().setQuestProgress(questID, info);
     }

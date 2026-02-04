@@ -58,30 +58,14 @@ public class ItemRewardHandler : ChannelHandlerBase
             }
             if (Randomizer.nextInt(rewards.Key) < reward.prob)
             {
-                //Is it even possible to get an item with prob 1?
-                Item item;
-                if (ItemConstants.getInventoryType(reward.itemid) == InventoryType.EQUIP)
-                {
-                    item = ii.getEquipById(reward.itemid);
-                }
-                else
-                {
-                    item = Item.CreateVirtualItem(reward.itemid, reward.quantity);
-                }
-
-                if (reward.period > 0)
-                {
-                    // TODO is this a bug, meant to be 60 * 60 * 1000?
-                    item.setExpiration(c.CurrentServerContainer.getCurrentTime() + reward.period * 60 * 60 * 10);
-                }
-                InventoryManipulator.addFromDrop(c, item, false);
+                c.OnlinedCharacter.GainItem(reward.itemid, reward.quantity, expires: reward.period * 60 * 60 * 10);
                 InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, false, false);
                 if (reward.worldmsg != null)
                 {
                     string msg = reward.worldmsg;
                     msg = msg.Replace("/name", c.OnlinedCharacter.getName());
                     msg = msg.Replace("/item", c.CurrentCulture.GetItemName(reward.itemid));
-                    c.CurrentServerContainer.SendDropMessage(6, msg);
+                    c.CurrentServer.NodeService.SendDropMessage(6, msg);
                 }
                 break;
             }

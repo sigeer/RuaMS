@@ -1,9 +1,11 @@
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -22,11 +24,16 @@ namespace Application.Core.Login.Services
             _server = server;
         }
 
-        public SendReportResponse AddReport(SendReportRequest request)
+        public async Task AddReport(SendReportRequest request)
         {
+            var res = new SendReportResponse() { MasterId = request.MasterId };
             var target = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (target == null)
-                return new SendReportResponse { IsSuccess = false };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.HandleReportReceived, res, [res.MasterId]);
+                return;
+            }
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             dbContext.Reports.Add(new Report
@@ -40,11 +47,8 @@ namespace Application.Core.Login.Services
             });
             dbContext.SaveChanges();
 
-            var data = new SendReportBroadcast();
-            data.GmId.AddRange(_server.CharacterManager.GetOnlinedGMs());
-            data.Text = $"{request.Victim} 被举报：{request.Text}";
-            _server.Transport.BroadcastReportNotify(data);
-            return new SendReportResponse { IsSuccess = true };
+            await _server.DropWorldMessage(6, $"{request.Victim} 被举报：{request.Text}", true);
+            await _server.Transport.SendMessageN(ChannelRecvCode.HandleReportReceived, res, [res.MasterId]);
         }
     }
 }

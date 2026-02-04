@@ -31,7 +31,6 @@ public class EnterMTSHandler : ChannelHandlerBase
         if (!YamlConfig.config.server.USE_MTS)
         {
             c.sendPacket(PacketCreator.enableActions());
-            return;
         }
     }
 }

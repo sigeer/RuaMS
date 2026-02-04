@@ -30,7 +30,7 @@ public class LootInventory
 {
     Dictionary<int, int> items = new(50);
 
-    public LootInventory(IPlayer from)
+    public LootInventory(Player from)
     {
         foreach (InventoryType values in EnumCache<InventoryType>.Values)
         {

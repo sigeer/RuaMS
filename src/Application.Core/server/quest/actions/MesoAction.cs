@@ -37,12 +37,12 @@ public class MesoAction : AbstractQuestAction
     }
 
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         runAction(chr, mesos);
     }
 
-    public static void runAction(IPlayer chr, int gain)
+    public static void runAction(Player chr, int gain)
     {
         if (gain < 0)
         {

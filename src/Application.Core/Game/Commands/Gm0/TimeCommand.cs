@@ -13,6 +13,6 @@ public class TimeCommand : CommandBase
     {
         client.OnlinedCharacter.yellowMessage(
             client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ServerTime)) 
-            + client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().Humanize(culture: client.CurrentCulture.CultureInfo));
+            + client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().Humanize(culture: client.CurrentCulture.CultureInfo));
     }
 }

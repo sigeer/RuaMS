@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using constants.game;
+using Application.Core.Game.Maps;
 using tools;
 
 namespace server.maps;
@@ -38,7 +38,7 @@ public class GenericPortal : Portal
     private int id;
     private string? scriptName;
     private bool portalState;
-    private object? scriptLock = null;
+
 
     public GenericPortal(int type)
     {
@@ -118,18 +118,6 @@ public class GenericPortal : Portal
     public void setScriptName(string? scriptName)
     {
         this.scriptName = scriptName;
-
-        if (scriptName != null)
-        {
-            if (scriptLock == null)
-            {
-                scriptLock = new object();
-            }
-        }
-        else
-        {
-            scriptLock = null;
-        }
     }
 
     public void enterPortal(IChannelClient c)
@@ -139,15 +127,7 @@ public class GenericPortal : Portal
         {
             try
             {
-                Monitor.Enter(scriptLock!);
-                try
-                {
-                    changed = c.CurrentServer.PortalScriptManager.executePortalScript(this, c);
-                }
-                finally
-                {
-                    Monitor.Exit(scriptLock!);
-                }
+                changed = c.CurrentServer.PortalScriptManager.executePortalScript(this, c);
             }
             catch (NullReferenceException npe)
             {
@@ -188,4 +168,13 @@ public class GenericPortal : Portal
     {
         return portalState;
     }
+}
+
+public class MysticDoorPortal : GenericPortal
+{
+    public DoorObject? Door { get; set; }
+    public MysticDoorPortal() : base(PortalConstants.DOOR_PORTAL)
+    {
+    }
+
 }

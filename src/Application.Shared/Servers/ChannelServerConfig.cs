@@ -9,12 +9,6 @@ namespace Application.Shared.Servers
 
     public class ChannelServerConfig
     {
-        /// <summary>
-        /// 单进程部署可忽略
-        /// 用于服务器内部交流的地址，建议使用内网IP
-        /// </summary>
-        public string MasterServerGrpcAddress { get; set; } = "http://192.168.0.1:7878";
-        public int GrpcPort { get; set; } = 7879;
         public string ServerName { get; set; } = "Channel_Local";
         /// <summary>
         /// 供客户端使用的Host

@@ -6,19 +6,10 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private object petLock = new object();
         private Pet?[] pets = new Pet?[3];
         public Pet?[] getPets()
         {
-            Monitor.Enter(petLock);
-            try
-            {
-                return Arrays.copyOf(pets, pets.Length);
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return Arrays.copyOf(pets, pets.Length);
         }
 
         public Pet? getPet(int index)
@@ -28,103 +19,106 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            Monitor.Enter(petLock);
-            try
-            {
-                return pets[index];
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return pets[index];
         }
 
         public sbyte getPetIndex(long petId)
         {
-            Monitor.Enter(petLock);
-            try
+            for (sbyte i = 0; i < 3; i++)
             {
-                for (sbyte i = 0; i < 3; i++)
+                if (pets[i] != null)
                 {
-                    if (pets[i] != null)
+                    if (pets[i]!.getUniqueId() == petId)
                     {
-                        if (pets[i]!.getUniqueId() == petId)
-                        {
-                            return i;
-                        }
+                        return i;
                     }
                 }
-                return -1;
             }
-            finally
+            return -1;
+        }
+
+        public sbyte getPetIndexByItemId(int itemId)
+        {
+            for (sbyte i = 0; i < 3; i++)
             {
-                Monitor.Exit(petLock);
+                if (pets[i]?.getItemId() == itemId)
+                {
+                    return i;
+                }
             }
+            return -1;
         }
 
         public sbyte getPetIndex(Pet pet)
         {
             return getPetIndex(pet.PetId);
         }
-        public void addPet(Pet pet)
+        public sbyte addPet(Pet pet)
         {
-            Monitor.Enter(petLock);
-            try
+            for (sbyte i = 0; i < 3; i++)
             {
-                for (int i = 0; i < 3; i++)
+                if (pets[i] == null)
                 {
-                    if (pets[i] == null)
-                    {
-                        pets[i] = pet;
-                        return;
-                    }
+                    pets[i] = pet;
+                    return i;
                 }
             }
-            finally
+            return -1;
+        }
+
+        public void SummonPet(Pet pet)
+        {
+            var petIndex = addPet(pet);
+            if (petIndex != -1)
             {
-                Monitor.Exit(petLock);
+                pet.Summoned = true;
+
+                Point pos = getPosition();
+                pos.Y -= 12;
+                pet.setPos(pos);
+                pet.setFh(getMap().Footholds.FindBelowFoothold(pet.getPos()).getId());
+                pet.setStance(0);
+
+                getMap().broadcastMessage(this, PacketCreator.ShowPet(this, pet), true);
+                sendPacket(PacketCreator.petStatUpdate(this));
+                sendPacket(PacketCreator.enableActions());
+
+                commitExcludedItems();
+                Client.CurrentServer.PetHungerManager.registerPetHunger(this, petIndex);
             }
         }
 
         public void removePet(Pet pet, bool shift_left)
         {
-            Monitor.Enter(petLock);
-            try
+            int slot = -1;
+            for (int i = 0; i < 3; i++)
             {
-                int slot = -1;
-                for (int i = 0; i < 3; i++)
+                if (pets[i] != null)
                 {
-                    if (pets[i] != null)
+                    if (pets[i]!.getUniqueId() == pet.getUniqueId())
                     {
-                        if (pets[i]!.getUniqueId() == pet.getUniqueId())
-                        {
-                            pets[i] = null;
-                            slot = i;
-                            break;
-                        }
-                    }
-                }
-                if (shift_left)
-                {
-                    if (slot > -1)
-                    {
-                        for (int i = slot; i < 3; i++)
-                        {
-                            if (i != 2)
-                            {
-                                pets[i] = pets[i + 1];
-                            }
-                            else
-                            {
-                                pets[i] = null;
-                            }
-                        }
+                        pets[i] = null;
+                        slot = i;
+                        break;
                     }
                 }
             }
-            finally
+            if (shift_left)
             {
-                Monitor.Exit(petLock);
+                if (slot > -1)
+                {
+                    for (int i = slot; i < 3; i++)
+                    {
+                        if (i != 2)
+                        {
+                            pets[i] = pets[i + 1];
+                        }
+                        else
+                        {
+                            pets[i] = null;
+                        }
+                    }
+                }
             }
         }
 
@@ -147,17 +141,19 @@ namespace Application.Core.Game.Players
 
             if (chrPet != null)
             {
-                chrPet.setSummoned(false);
+                chrPet.Summoned = false;
+
+                Client.CurrentServer.PetHungerManager.unregisterPetHunger(this, petIdx);
+                MapModel.broadcastMessage(this, PacketCreator.HidePet(this, pet, hunger), true);
+
+                removePet(pet, shift_left);
+                commitExcludedItems();
+
+                sendPacket(PacketCreator.petStatUpdate(this));
+                sendPacket(PacketCreator.enableActions());
             }
 
-            Client.CurrentServerContainer.PetHungerManager.unregisterPetHunger(this, petIdx);
-            MapModel.broadcastMessage(this, PacketCreator.showPet(this, pet, true, hunger), true);
 
-            removePet(pet, shift_left);
-            commitExcludedItems();
-
-            sendPacket(PacketCreator.petStatUpdate(this));
-            sendPacket(PacketCreator.enableActions());
         }
 
         public void runFullnessSchedule(int petSlot)
@@ -172,7 +168,7 @@ namespace Application.Core.Game.Players
             if (newFullness <= 5)
             {
                 pet.Fullness = 15;
-                unequipPet(pet, true);
+                unequipPet(pet, true, true);
                 dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
             }
             else
@@ -183,6 +179,21 @@ namespace Application.Core.Game.Players
                 {
                     forceUpdateItem(petz);
                 }
+            }
+        }
+
+        public int getNoPets()
+        {
+            return pets.Count(x => x != null);
+        }
+
+        public void shiftPetsRight()
+        {
+            if (pets[2] == null)
+            {
+                pets[2] = pets[1];
+                pets[1] = pets[0];
+                pets[0] = null;
             }
         }
 

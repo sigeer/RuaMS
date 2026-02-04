@@ -1,10 +1,8 @@
 using Application.Core.Login;
 using Application.Host.Middlewares;
 using Application.Host.Services;
-using Application.Module.Duey.Master;
 using Application.Module.ExpeditionBossLog.Master;
 using Application.Module.Maker.Master;
-using Application.Module.PlayerNPC.Master;
 using Application.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +24,8 @@ try
 
     // 支持GBK
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    Console.OutputEncoding = Encoding.UTF8;
+
     YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
 
     // 日志配置
@@ -57,40 +57,14 @@ try
     builder.Logging.AddSerilog();
 
     builder.Services.AddLoginServer(builder.Configuration);
-    builder.Services.AddDueyMaster();
     builder.Services.AddExpeditionBossLogMaster();
     builder.Services.AddMakerMaster();
-    builder.Services.AddPlayerNPCMaster();
 
 #if IsStandalone
     builder.AddChannelServerInProgress();
 #endif
 
-    builder.WebHost.ConfigureKestrel(options =>
-    {
-        if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
-        {
-            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort), listenOptions =>
-            {
-                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
-            });
-        }
-
-        options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.MetricsPort), listenOptions =>
-        {
-            listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
-        });
-
-        if (builder.Configuration.GetValue<bool>(AppSettingKeys.UseExtraChannel))
-        {
-            options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
-            {
-                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-            });
-        }
-    });
-
-    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
+    if (builder.Configuration.GetSection(AppSettingKeys.OpenApiEndpoint).Exists())
     {
         builder.Services.AddCors(options =>
         {
@@ -157,12 +131,14 @@ try
         builder.Services.AddOpenApi();
     }
 
+    builder.AddServiceDefaults();
+
     var app = builder.Build();
 #if IsStandalone
     app.UseChannelServer();
 #endif
 
-    if (builder.Configuration.GetValue<bool>(AppSettingKeys.EnableOpenApi))
+    if (builder.Configuration.GetSection(AppSettingKeys.OpenApiEndpoint).Exists())
     {
         var authCode = AuthService.GetAuthCode();
         Log.Logger.Information("授权码>>：[" + authCode + "]");
@@ -172,7 +148,7 @@ try
         {
             app.MapScalarApiReference(options =>
             {
-                options.AddServer($"http://localhost:{builder.Configuration.GetValue<int>(AppSettingKeys.OpenApiPort)}");
+                options.AddServer(builder.Configuration.GetValue<string>(AppSettingKeys.OpenApiEndpoint));
             });
             app.MapOpenApi();
         }

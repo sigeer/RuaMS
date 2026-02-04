@@ -21,9 +21,11 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using tools;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace server.events.gm;
 
@@ -45,7 +47,7 @@ public class OxQuiz
         this.question = 1;
     }
 
-    private bool isCorrectAnswer(IPlayer chr, int answer)
+    private bool isCorrectAnswer(Player chr, int answer)
     {
         double x = chr.getPosition().X;
         double y = chr.getPosition().Y;
@@ -59,6 +61,15 @@ public class OxQuiz
 
     public void sendQuestion()
     {
+        map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
+        map.ChannelServer.Node.TimerManager.schedule(() =>
+        {
+            map.ChannelServer.Post(new EventOxQuizRunningCommand(this));
+        }, 30_000); // Time to answer = 30 seconds ( Ox Quiz packet shows a 30 second timer.
+    }
+
+    public void ProcessSendQuestion()
+    {
         int gm = 0;
         foreach (var mc in map.getAllPlayers())
         {
@@ -68,47 +79,44 @@ public class OxQuiz
             }
         }
         int number = gm;
-        map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-        map.ChannelServer.Container.TimerManager.schedule(() =>
-        {
-            map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-            List<IPlayer> chars = new(map.getAllPlayers());
 
-            foreach (var chr in chars)
+        map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
+        List<Player> chars = new(map.getAllPlayers());
+
+        foreach (var chr in chars)
+        {
+            if (chr != null) // make sure they aren't null... maybe something can happen in 12 seconds.
             {
-                if (chr != null) // make sure they aren't null... maybe something can happen in 12 seconds.
+                if (!isCorrectAnswer(chr, getOXAnswer(round, question)) && !chr.isGM())
                 {
-                    if (!isCorrectAnswer(chr, getOXAnswer(round, question)) && !chr.isGM())
-                    {
-                        chr.changeMap(chr.getMap().getReturnMap());
-                    }
-                    else
-                    {
-                        chr.gainExp(expGain, true, true);
-                    }
+                    chr.changeMap(chr.getMap().getReturnMap());
+                }
+                else
+                {
+                    chr.gainExp(expGain, true, true);
                 }
             }
-            //do question
-            if ((round == 1 && question == 29) || ((round == 2 || round == 3) && question == 17) || ((round == 4 || round == 8) && question == 12) || (round == 5 && question == 26) || (round == 9 && question == 44) || ((round == 6 || round == 7) && question == 16))
-            {
-                question = 100;
-            }
-            else
-            {
-                question++;
-            }
-            //send question
-            if (map.getAllPlayers().Count - number <= 2)
-            {
-                map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
-                map.getPortal("join00")!.setPortalStatus(true);
-                map.Ox = null;
-                map.setOxQuiz(false);
-                //prizes here
-                return;
-            }
-            sendQuestion();
-        }, 30000); // Time to answer = 30 seconds ( Ox Quiz packet shows a 30 second timer.
+        }
+        //do question
+        if ((round == 1 && question == 29) || ((round == 2 || round == 3) && question == 17) || ((round == 4 || round == 8) && question == 12) || (round == 5 && question == 26) || (round == 9 && question == 44) || ((round == 6 || round == 7) && question == 16))
+        {
+            question = 100;
+        }
+        else
+        {
+            question++;
+        }
+        //send question
+        if (map.getAllPlayers().Count - number <= 2)
+        {
+            map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
+            map.getPortal("join00")!.setPortalStatus(true);
+            map.Ox = null;
+            map.setOxQuiz(false);
+            //prizes here
+            return;
+        }
+        sendQuestion();
     }
 
     private static int getOXAnswer(int imgdir, int id)

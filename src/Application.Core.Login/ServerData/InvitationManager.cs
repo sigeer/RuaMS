@@ -1,12 +1,16 @@
+using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
+using Application.Shared.Constants;
 using Application.Shared.Invitations;
+using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -63,21 +67,34 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        internal void RemovePlayerInvitation(int masterId, string enumType)
+        internal async Task RemovePlayerInvitation(int masterId, string enumType)
         {
             if (_allRequests.TryGetValue(enumType, out var type))
             {
                 if (type.TryRemove(masterId, out var d))
-                    _inviteMasterHandlerRegistry.GetHandler(enumType)?.OnInvitationExpired(d);
+                {
+                    var handler = _inviteMasterHandlerRegistry.GetHandler(enumType);
+                    if (handler != null)
+                    {
+                        await handler.OnInvitationExpired(d);
+                    }
+                }
             }
         }
 
-        internal void RemovePlayerInvitation(int masterId)
+        internal async Task RemovePlayerInvitation(int masterId)
         {
             foreach (var it in _allRequests)
             {
                 if (it.Value.TryRemove(masterId, out var d))
-                    _inviteMasterHandlerRegistry.GetHandler(it.Key)?.OnInvitationExpired(d);
+                {
+                    var handler = _inviteMasterHandlerRegistry.GetHandler(it.Key);
+                    if (handler != null)
+                    {
+                        await handler.OnInvitationExpired(d);
+
+                    }
+                }
             }
         }
 
@@ -115,12 +132,12 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            _server.TeamManager.UpdateParty(request.Key, PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
+            await _server.TeamManager.UpdateParty(request.Key, PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
         }
 
-        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
 
@@ -142,7 +159,23 @@ namespace Application.Core.Login.ServerData
             {
                 responseCode = InviteResponseCode.Team_AlreadyInTeam;
             }
-            BroadcastResult(responseCode, fromPlayer.Character.Party, fromPlayer, toPlayer, request.ToName);
+
+            var team = _server.TeamManager.GetTeamModel(fromPlayer.Character.Party);
+            if (team == null)
+            {
+                var res = _server.TeamManager.CreateTeam(new TeamProto.CreateTeamRequest { LeaderId = fromPlayer.Character.Id });
+                if (res.Code == 0)
+                    await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamCreated, res, [res.Request.LeaderId]);
+            }
+            else
+            {
+                if (team.GetMembers().Length >= Limits.MaxTeamMember)
+                {
+                    responseCode = InviteResponseCode.Team_CapacityFull;
+                }
+            }
+
+            await BroadcastResult(responseCode, fromPlayer.Character.Party, fromPlayer, toPlayer, request.ToName);
         }
     }
 
@@ -152,12 +185,12 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            _server.GuildManager.PlayerJoinGuild(new GuildProto.JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
+            await _server.GuildManager.PlayerJoinGuild(new GuildProto.JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
         }
 
-        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -170,7 +203,7 @@ namespace Application.Core.Login.ServerData
             {
                 responseCode = InviteResponseCode.Guild_AlreadInGuild;
             }
-            BroadcastResult(responseCode, fromPlayer.Character.GuildId, fromPlayer, toPlayer, request.ToName);
+            await BroadcastResult(responseCode, fromPlayer.Character.GuildId, fromPlayer, toPlayer, request.ToName);
         }
     }
 
@@ -180,28 +213,33 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            _server.GuildManager.GuildJoinAlliance(new AllianceProto.GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
+            await _server.GuildManager.GuildJoinAlliance(new AllianceProto.GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
         }
 
-        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
+            CharacterLiveObject? toPlayer = null;
             var toGuild = _server.GuildManager.FindGuildByName(request.ToName);
             if (toGuild == null)
             {
                 responseCode = InviteResponseCode.Alliance_GuildNotFound;
             }
-            var toPlayer = _server.CharacterManager.FindPlayerById(toGuild.Leader);
-            if (toPlayer == null || toPlayer.Channel <= 0)
+            else
             {
-                responseCode = InviteResponseCode.Alliance_GuildLeaderNotFound;
-            }
-            if (toGuild.AllianceId > 0)
-            {
-                responseCode = InviteResponseCode.Alliance_AlreadyInAlliance;
+                toPlayer = _server.CharacterManager.FindPlayerById(toGuild.Leader);
+                if (toPlayer == null || toPlayer.Channel <= 0)
+                {
+                    responseCode = InviteResponseCode.Alliance_GuildLeaderNotFound;
+                }
+
+                if (toGuild.AllianceId > 0)
+                {
+                    responseCode = InviteResponseCode.Alliance_AlreadyInAlliance;
+                }
             }
 
             var fromGuild = _server.GuildManager.GetLocalGuild(fromPlayer.Character.GuildId);
@@ -220,7 +258,7 @@ namespace Application.Core.Login.ServerData
                 {
                     responseCode = InviteResponseCode.Alliance_CapacityFull;
                 }
-                BroadcastResult(responseCode, fromGuild.AllianceId, fromPlayer, toPlayer, request.ToName);
+                await BroadcastResult(responseCode, fromGuild.AllianceId, fromPlayer, toPlayer, request.ToName);
             }
 
         }
@@ -232,12 +270,12 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            _server.ChatRoomManager.JoinChatRoom(new JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
+            await _server.ChatRoomManager.JoinChatRoom(new JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
         }
 
-        public override void HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -257,7 +295,7 @@ namespace Application.Core.Login.ServerData
             {
                 responseCode = InviteResponseCode.ChatRoom_CapacityFull;
             }
-            BroadcastResult(responseCode, room.Id, fromPlayer, toPlayer, request.ToName);
+            await BroadcastResult(responseCode, room.Id, fromPlayer, toPlayer, request.ToName);
         }
     }
 }

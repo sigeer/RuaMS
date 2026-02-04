@@ -23,6 +23,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using tools;
@@ -79,15 +80,19 @@ public class Pyramid : PartyQuest
         {
             gauge = 100;
             count = 0;
-            gaugeSchedule = worldChannel.Container.TimerManager.register(() =>
+            gaugeSchedule = worldChannel.Node.TimerManager.register(() =>
             {
-                gauge -= decrease;
-                if (gauge <= 0)
-                {
-                    warp(MapId.NETTS_PYRAMID);
-                }
-
+                worldChannel.Post(new EventPyramidGaugeCommand(this));
             }, 1000);
+        }
+    }
+
+    public void ProcessGauge()
+    {
+        gauge -= decrease;
+        if (gauge <= 0)
+        {
+            warp(MapId.NETTS_PYRAMID);
         }
     }
 
@@ -146,10 +151,9 @@ public class Pyramid : PartyQuest
             value = 120;
         }
 
-        _timer = worldChannel.Container.TimerManager.schedule(() =>
+        _timer = worldChannel.Node.TimerManager.schedule(() =>
         {
-            stage++;
-            warp(map + (stage * 100));//Should work :D
+            worldChannel.Post(new EventPyramidTimeoutCommand(this));
         }, TimeSpan.FromSeconds(value));//, 4000
         broadcastInfo("party", getParticipants().Count > 1 ? 1 : 0);
         broadcastInfo("hit", _kill);
@@ -159,6 +163,12 @@ public class Pyramid : PartyQuest
         broadcastInfo("laststage", stage);
         startGaugeSchedule();
         return value;
+    }
+
+    public void ProcessTimeout()
+    {
+        stage++;
+        warp(map + (stage * 100));//Should work :D
     }
 
     public void warp(int mapid)
@@ -264,7 +274,7 @@ public class Pyramid : PartyQuest
         }
     }
 
-    public void sendScore(IPlayer chr)
+    public void sendScore(Player chr)
     {
         if (_exp == 0)
         {

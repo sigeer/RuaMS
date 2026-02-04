@@ -77,21 +77,13 @@ public class SkillBookHandler : ChannelHandlerBase
                     if ((player.getSkillLevel(skill2) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
                         && player.getMasterLevel(skill2) < template.MasterLevel)
                     {
-                        inv.lockInventory();
-                        try
-                        {
-                            var used = inv.getItem(slot);
-                            if (used != toUse || toUse.getQuantity() < 1)
-                            {    // thanks ClouD for noticing skillbooks not being usable when stacked
-                                return;
-                            }
+                        var used = inv.getItem(slot);
+                        if (used != toUse || toUse.getQuantity() < 1)
+                        {    // thanks ClouD for noticing skillbooks not being usable when stacked
+                            return;
+                        }
 
-                            InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-                        }
-                        finally
-                        {
-                            inv.unlockInventory();
-                        }
+                        InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
 
                         canuse = true;
                         if (ItemInformationProvider.rollSuccessChance(template.SuccessRate))

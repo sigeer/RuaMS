@@ -1,58 +1,38 @@
+using Application.Core.Game.Maps;
+
 namespace Application.Core.Channel.ServerData
 {
-
-    public class MapObjectManager : TaskBase
+    public class MapObjectManager
     {
-        private Dictionary<Action, DateTime> registeredTimedMapObjects = new();
-        private object timedMapObjectLock = new object();
+        readonly WorldChannel _server;
 
-        public MapObjectManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(MapObjectManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        PriorityQueue<AbstractMapObject, long> _objects = new();
+        public MapObjectManager(WorldChannel server)
         {
+            _server = server;
         }
 
-        public void RegisterTimedMapObject(Action r, long duration)
+        public void RegisterTimedMapObject(AbstractMapObject mapObj, long duration)
         {
-            Monitor.Enter(timedMapObjectLock);
-            try
-            {
-                registeredTimedMapObjects[r] = DateTime.UtcNow.AddMilliseconds(duration);
-            }
-            finally
-            {
-                Monitor.Exit(timedMapObjectLock);
-            }
+            _objects.Enqueue(mapObj, _server.Node.getCurrentTime() + duration);
         }
 
-        protected override void HandleRun()
+        public void HandleRun()
         {
-            List<Action> toRemove = new();
-
-            Monitor.Enter(timedMapObjectLock);
-            try
+            var timeNow = _server.Node.getCurrentTime();
+            List<AbstractMapObject> items = [];
+            while (_objects.TryPeek(out var mapObj, out var expiredAt) && expiredAt <= timeNow)
             {
-                var timeNow = DateTime.UtcNow;
-
-                foreach (var rtmo in registeredTimedMapObjects)
-                {
-                    if (rtmo.Value <= timeNow)
-                    {
-                        toRemove.Add(rtmo.Key);
-                    }
-                }
-
-                foreach (Action r in toRemove)
-                {
-                    registeredTimedMapObjects.Remove(r);
-                }
-            }
-            finally
-            {
-                Monitor.Exit(timedMapObjectLock);
+                _objects.TryDequeue(out mapObj, out expiredAt);
+                items.Add(mapObj!);
             }
 
-            foreach (Action r in toRemove)
+            if (items.Count > 0)
             {
-                r.Invoke();
+                foreach (var obj in items)
+                {
+                    obj.MapRemove();
+                }
             }
         }
     }

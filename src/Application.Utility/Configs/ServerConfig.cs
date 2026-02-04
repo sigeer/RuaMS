@@ -68,7 +68,6 @@ public class ServerConfig
     public bool USE_ENFORCE_UNMERCHABLE_CASH;
     public bool USE_ENFORCE_UNMERCHABLE_PET;
     public bool USE_ENFORCE_MERCHANT_SAVE;
-    public bool USE_ENFORCE_MDOOR_POSITION;
     public bool USE_SPAWN_CLEAN_MDOOR;
     public bool USE_SPAWN_RELEVANT_LOOT;
     public bool USE_ERASE_PERMIT_ON_OPENSHOP;
@@ -212,7 +211,6 @@ public class ServerConfig
 
     //Pet Auto-Pot Configuration
     public bool USE_COMPULSORY_AUTOPOT;
-    public bool USE_EQUIPS_ON_AUTOPOT;
     public double PET_AUTOHP_RATIO;
     public double PET_AUTOMP_RATIO;
 

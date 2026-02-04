@@ -39,7 +39,7 @@ public class WeddingHandler : ChannelHandlerBase
         _config = options.Value;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
 
         if (c.tryacquireClient())
@@ -114,7 +114,7 @@ public class WeddingHandler : ChannelHandlerBase
                                         {
                                             if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
                                             {
-                                                chr.saveCharToDB();
+                                                await chr.SyncCharAsync();
                                             }
                                             _weddingManager.StoreGifts(marriage, groomWishlist);
                                         }

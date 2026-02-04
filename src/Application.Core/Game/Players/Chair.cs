@@ -1,7 +1,7 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using client;
 using Microsoft.Extensions.DependencyInjection;
 using server;
 using tools;
@@ -21,7 +21,7 @@ namespace Application.Core.Game.Players
             {
                 if (ItemConstants.isFishingChair(chairid))
                 {
-                    Client.CurrentServerContainer.ServiceProvider.GetRequiredService<IFishingService>().StopFishing(this);
+                    Client.CurrentServer.NodeService.FishingService.StopFishing(this);
                 }
 
                 setChair(-1);
@@ -81,66 +81,32 @@ namespace Application.Core.Game.Players
             }
 
             int healInterval;
-            Monitor.Enter(effLock);
-            try
+
+            updateChairHealStats();
+            healInterval = localchairrate;
+
+
+
+            if (chairRecoveryTask != null)
             {
-                updateChairHealStats();
-                healInterval = localchairrate;
+                stopChairTask();
             }
-            finally
+
+            chairRecoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
             {
-                Monitor.Exit(effLock);
-            }
+                Client.CurrentServer.Post(new PlayerChairBuffCommand(this));
+            }, healInterval, healInterval);
 
-            chLock.EnterReadLock();
-            try
-            {
-                if (chairRecoveryTask != null)
-                {
-                    stopChairTask();
-                }
-
-                chairRecoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
-                {
-                    updateChairHealStats();
-                    int healHP = localchairhp;
-                    int healMP = localchairmp;
-
-                    if (HP < ActualMaxHP)
-                    {
-                        var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
-
-                        sendPacket(PacketCreator.showOwnRecovery(recHP));
-                        MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
-                    }
-
-                    UpdateStatsChunk(() =>
-                    {
-                        ChangeHP(healHP);
-                        ChangeMP(healMP);
-                    });
-                }, healInterval, healInterval);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
         }
         private void stopChairTask()
         {
-            chLock.EnterReadLock();
-            try
+
+            if (chairRecoveryTask != null)
             {
-                if (chairRecoveryTask != null)
-                {
-                    chairRecoveryTask.cancel(false);
-                    chairRecoveryTask = null;
-                }
+                chairRecoveryTask.cancel(false);
+                chairRecoveryTask = null;
             }
-            finally
-            {
-                chLock.ExitReadLock();
-            }
+
         }
 
         private static ChairHealStats getChairTaskIntervalRate(int maxhp, int maxmp)
@@ -190,34 +156,18 @@ namespace Application.Core.Game.Players
 
         private void updateChairHealStats()
         {
-            statLock.EnterReadLock();
-            try
+
+            if (localchairrate != -1)
             {
-                if (localchairrate != -1)
-                {
-                    return;
-                }
-            }
-            finally
-            {
-                statLock.ExitReadLock();
+                return;
             }
 
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                var p = getChairTaskIntervalRate(ActualMaxHP, ActualMaxMP);
 
-                localchairrate = p.Rate;
-                localchairhp = p.Hp;
-                localchairmp = p.Mp;
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+            var p = getChairTaskIntervalRate(ActualMaxHP, ActualMaxMP);
+
+            localchairrate = p.Rate;
+            localchairhp = p.Hp;
+            localchairmp = p.Mp;
         }
 
         public bool unregisterChairBuff()
@@ -232,7 +182,7 @@ namespace Application.Core.Game.Players
             if (skillLv > 0)
             {
                 StatEffect mapChairSkill = SkillFactory.getSkill(skillId)!.getEffect(skillLv);
-                return cancelEffect(mapChairSkill, false, -1);
+                return cancelEffect(mapChairSkill, false);
             }
 
             return false;
@@ -255,6 +205,27 @@ namespace Application.Core.Game.Players
             }
 
             return false;
+        }
+
+        public void ApplayChairBuff()
+        {
+            updateChairHealStats();
+            int healHP = localchairhp;
+            int healMP = localchairmp;
+
+            if (HP < ActualMaxHP)
+            {
+                var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
+
+                sendPacket(PacketCreator.showOwnRecovery(recHP));
+                MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
+            }
+
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(healHP);
+                ChangeMP(healMP);
+            });
         }
     }
 }

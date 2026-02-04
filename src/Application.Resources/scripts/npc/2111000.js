@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -33,7 +33,7 @@ function start() {
     if (cm.isQuestStarted(3310) && !cm.haveItem(4031709, 1)) {
         cm.warp(926120100, "out00");
     } else {
-        cm.sendNext("炼金术……还有炼金术士……它们两者都很重要。但更重要的是，是马加提亚容忍了一切。马加提亚的荣誉应该由我来保护。");
+        cm.sendDefault(3310);
     }
 
     cm.dispose();

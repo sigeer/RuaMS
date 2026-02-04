@@ -42,7 +42,7 @@ public class QuestAction : AbstractQuestAction
         quests = data.ToDictionary(x => x.QuestId, x => x.State);
     }
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         foreach (int questID in quests.Keys)
         {

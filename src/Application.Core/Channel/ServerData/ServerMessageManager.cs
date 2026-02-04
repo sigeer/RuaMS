@@ -1,95 +1,63 @@
+using Application.Core.Channel.Commands;
 using tools;
 
 namespace Application.Core.Channel.ServerData
 {
-    public class ServerMessageManager : TaskBase
+    public class ServerMessageManager
     {
         private Dictionary<int, int> disabledServerMessages = new();
-        private object srvMessagesLock = new object();
 
-        readonly WorldChannelServer _server;
+        readonly WorldChannel _server;
 
-        public ServerMessageManager(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(ServerMessageManager)}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+        public ServerMessageManager(WorldChannel server)
         {
             this._server = server;
         }
 
         public void resetDisabledServerMessages()
         {
-            Monitor.Enter(srvMessagesLock);
-            try
-            {
-                disabledServerMessages.Clear();
-            }
-            finally
-            {
-                Monitor.Exit(srvMessagesLock);
-            }
+            disabledServerMessages.Clear();
         }
 
         public bool registerDisabledServerMessage(int chrid)
         {
-            Monitor.Enter(srvMessagesLock);
-            try
-            {
-                bool alreadyDisabled = disabledServerMessages.ContainsKey(chrid);
-                disabledServerMessages.AddOrUpdate(chrid, 0);
+            bool alreadyDisabled = disabledServerMessages.ContainsKey(chrid);
+            disabledServerMessages.AddOrUpdate(chrid, 0);
 
-                return alreadyDisabled;
-            }
-            finally
-            {
-                Monitor.Exit(srvMessagesLock);
-            }
+            return alreadyDisabled;
         }
 
         public bool unregisterDisabledServerMessage(int chrid)
         {
-            Monitor.Enter(srvMessagesLock);
-            try
-            {
-                return disabledServerMessages.Remove(chrid, out var d);
-            }
-            finally
-            {
-                Monitor.Exit(srvMessagesLock);
-            }
+            return disabledServerMessages.Remove(chrid, out var d);
         }
 
-        protected override void HandleRun()
+        public void HandleRun()
         {
             List<int> toRemove = new();
 
-            Monitor.Enter(srvMessagesLock);
-            try
+            foreach (var dsm in disabledServerMessages)
             {
-                foreach (var dsm in disabledServerMessages)
+                int b = dsm.Value;
+                if (b >= 4)
                 {
-                    int b = dsm.Value;
-                    if (b >= 4)
-                    {
-                        // ~35sec duration, 10sec update
-                        toRemove.Add(dsm.Key);
-                    }
-                    else
-                    {
-                        disabledServerMessages[dsm.Key] = ++b;
-                    }
+                    // ~35sec duration, 10sec update
+                    toRemove.Add(dsm.Key);
                 }
-
-                foreach (int chrid in toRemove)
+                else
                 {
-                    disabledServerMessages.Remove(chrid);
+                    disabledServerMessages[dsm.Key] = ++b;
                 }
-            }
-            finally
-            {
-                Monitor.Exit(srvMessagesLock);
             }
 
             foreach (int chrid in toRemove)
             {
-                var chr = _server.FindPlayerById(chrid);
+                disabledServerMessages.Remove(chrid);
+            }
+
+            foreach (int chrid in toRemove)
+            {
+                var chr = _server.getPlayerStorage().getCharacterById(chrid);
 
                 if (chr != null && chr.isLoggedinWorld())
                 {

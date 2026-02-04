@@ -126,13 +126,13 @@ public class Quest
         return ir != null && ir.getInterval() < TimeSpan.FromHours(YamlConfig.config.server.QUEST_POINT_REPEATABLE_INTERVAL).TotalMilliseconds;
     }
 
-    public bool canStartQuestByStatus(IPlayer chr)
+    public bool canStartQuestByStatus(Player chr)
     {
         QuestStatus mqs = chr.getQuest(this);
         return !(!mqs.getStatus().Equals(Status.NOT_STARTED) && !(mqs.getStatus().Equals(Status.COMPLETED) && repeatable));
     }
 
-    public bool canQuestByInfoProgress(IPlayer chr)
+    public bool canQuestByInfoProgress(Player chr)
     {
         QuestStatus mqs = chr.getQuest(this);
         List<string> ix = mqs.getInfoEx();
@@ -161,7 +161,7 @@ public class Quest
         return true;
     }
 
-    public bool canStart(IPlayer chr, int npcid)
+    public bool canStart(Player chr, int npcid)
     {
         if (!canStartQuestByStatus(chr))
         {
@@ -179,7 +179,7 @@ public class Quest
         return canQuestByInfoProgress(chr);
     }
 
-    public bool canComplete(IPlayer chr, int? npcid)
+    public bool canComplete(Player chr, int? npcid)
     {
         QuestStatus mqs = chr.getQuest(this);
         if (!mqs.getStatus().Equals(Status.STARTED))
@@ -198,7 +198,7 @@ public class Quest
         return canQuestByInfoProgress(chr);
     }
 
-    public void start(IPlayer chr, int npc)
+    public void start(Player chr, int npc)
     {
         if (autoStart || canStart(chr, npc))
         {
@@ -219,7 +219,7 @@ public class Quest
     }
 
 
-    public void complete(IPlayer chr, int npc, int? selection = null)
+    public void complete(Player chr, int npc, int? selection = null)
     {
         if (autoPreComplete || canComplete(chr, npc))
         {
@@ -243,13 +243,13 @@ public class Quest
         }
     }
 
-    public void reset(IPlayer chr)
+    public void reset(Player chr)
     {
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.NOT_STARTED);
         chr.updateQuestStatus(newStatus);
     }
 
-    public bool forfeit(IPlayer chr)
+    public bool forfeit(Player chr)
     {
         if (!chr.getQuest(this).getStatus().Equals(Status.STARTED))
         {
@@ -265,7 +265,7 @@ public class Quest
         return true;
     }
 
-    public bool forceStart(IPlayer chr, int npc)
+    public bool forceStart(Player chr, int npc)
     {
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.STARTED, npc);
 
@@ -294,12 +294,12 @@ public class Quest
 
         if (timeLimit > 0)
         {
-            newStatus.setExpirationTime(chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddSeconds(timeLimit).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit).ToUnixTimeMilliseconds());
             chr.questTimeLimit(this, timeLimit);
         }
         if (timeLimit2 > 0)
         {
-            newStatus.setExpirationTime(chr.Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMilliseconds(timeLimit2).ToUnixTimeMilliseconds());
             chr.questTimeLimit2(this, newStatus.getExpirationTime());
         }
 
@@ -311,7 +311,7 @@ public class Quest
         return true;
     }
 
-    public bool forceComplete(IPlayer chr, int npc)
+    public bool forceComplete(Player chr, int npc)
     {
         if (timeLimit > 0)
         {
@@ -321,7 +321,7 @@ public class Quest
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.COMPLETED, npc);
         newStatus.setForfeited(chr.getQuest(this).getForfeited());
         newStatus.setCompleted(chr.getQuest(this).getCompleted());
-        newStatus.setCompletionTime(chr.Client.CurrentServerContainer.getCurrentTime());
+        newStatus.setCompletionTime(chr.Client.CurrentServer.Node.getCurrentTime());
         chr.updateQuestStatus(newStatus);
 
         chr.sendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
@@ -489,7 +489,7 @@ public class Quest
         return dict;
     }
 
-    public bool restoreLostItem(IPlayer chr, int itemid)
+    public bool restoreLostItem(Player chr, int itemid)
     {
         if (chr.getQuest(this).getStatus().Equals(QuestStatus.Status.STARTED))
         {

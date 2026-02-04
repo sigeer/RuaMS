@@ -14,7 +14,6 @@ message TeamMemberDto {
 	int32 level = 3;
 	int32 job = 4;
 	int32 channel = 5;
-	int32 mapId = 6;
 }
 
 message GetTeamRequest {
@@ -27,4 +26,11 @@ message GetTeamResponse {
 
 message CreateTeamRequest {
 	int32 leaderId = 1;
+	int32 method = 2;
+}
+
+message CreateTeamResponse{
+	int32 code = 1;
+	CreateTeamRequest request = 2;
+	TeamDto teamDto = 3;
 }

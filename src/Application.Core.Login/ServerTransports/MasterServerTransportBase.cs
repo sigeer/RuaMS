@@ -1,4 +1,4 @@
-using Application.Core.Login.Models;
+using Application.Shared.Message;
 using Google.Protobuf;
 
 namespace Application.Core.Login.ServerTransports
@@ -11,14 +11,7 @@ namespace Application.Core.Login.ServerTransports
             this._server = masterServer;
         }
 
-        /// <summary>
-        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
-        /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="messageType"></param>
-        /// <param name="message"></param>
-        /// <param name="playerIdArray"></param>
-        public void SendMessage<TMessage>(string messageType, TMessage message, IEnumerable<int> playerIdArray) where TMessage : IMessage
+        public async Task SendMessageN<TMessage>(int messageType, TMessage message, IEnumerable<int> playerIdArray) where TMessage : IMessage
         {
             if (playerIdArray.Count() == 0)
                 return;
@@ -26,30 +19,32 @@ namespace Application.Core.Login.ServerTransports
             var serverGroups = _server.GroupPlayer(playerIdArray);
             foreach (var group in serverGroups)
             {
-                group.BroadcastMessage(messageType, message);
+                await group.SendMessage(messageType, message);
             }
         }
 
-        public void SendMessage<TMessage>(string messageType, TMessage message, IEnumerable<CharacterLiveObject> playerIdArray) where TMessage : IMessage
-        {
-            if (playerIdArray.Count() == 0)
-                return;
+        public Task SendMessageN<TMessage>(ChannelRecvCode messageType, TMessage message, IEnumerable<int> playerIdArray) where TMessage : IMessage
+                => SendMessageN<TMessage>((int)messageType, message, playerIdArray);
 
-            var serverGroups = _server.GroupPlayer(playerIdArray);
-            foreach (var group in serverGroups)
-            {
-                group.BroadcastMessage(messageType, message);
-            }
-        }
-
-
-        public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : IMessage
+        public async Task BroadcastMessageN<TMessage>(int messageType, TMessage message) where TMessage : IMessage
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastMessage(messageType, message);
+                await server.SendMessage(messageType, message);
             }
         }
 
+        public Task BroadcastMessageN<TMessage>(ChannelRecvCode messageType, TMessage message) where TMessage : IMessage
+            => BroadcastMessageN((int)messageType, message);
+        public async Task BroadcastMessageN(int messageType)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                await server.SendMessage(messageType);
+            }
+        }
+
+        public Task BroadcastMessageN(ChannelRecvCode messageType)
+            => BroadcastMessageN((int)messageType);
     }
 }

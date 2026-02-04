@@ -103,7 +103,7 @@ public class MapFactory : IStaticService
 
     private void loadLifeFromDb(IMap map)
     {
-        var dataList = map.ChannelServer.Container.DataService.LoadPLife(map.Id);
+        var dataList = map.ChannelServer.NodeService.DataService.LoadPLife(map.Id);
 
         foreach (var rs in dataList)
         {
@@ -213,7 +213,7 @@ public class MapFactory : IStaticService
 
         if (evt == null)
         {
-            map.ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(map);
+            map.ChannelServer.NodeService.PlayerNPCService.LoadPlayerNpc(map);
         }
 
         loadLifeFromWz(map, mapData);

@@ -36,11 +36,11 @@ public class BuffAction : AbstractQuestAction
         itemEffect = data;
     }
 
-    public override bool check(IPlayer chr, int? extSelection)
+    public override bool check(Player chr, int? extSelection)
     {
         return true;
     }
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         ItemInformationProvider.getInstance().getItemEffect(itemEffect)?.applyTo(chr);
     }

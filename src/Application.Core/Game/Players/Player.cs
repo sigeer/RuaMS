@@ -1,20 +1,21 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Net;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
+using Application.Shared.Objects;
 using client;
 using client.autoban;
 using server;
 using server.events;
 using server.maps;
+using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IPlayer
+    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
@@ -32,13 +33,7 @@ namespace Application.Core.Game.Players
         public MapManager MapManager => Client.CurrentServer.getMapFactory();
 
         public List<FameLogObject> FameLogs { get; set; }
-        public Lock ResourceLock { get; } = new Lock();
 
-        public object SaveToDBLock { get; set; } = new object();
-
-        public event EventHandler<IPlayer>? OnLevelUp;
-        public event EventHandler<IPlayer>? OnJobUpdate;
-        public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         public Player(int world, int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
         {
@@ -85,7 +80,6 @@ namespace Application.Core.Game.Players
 
             setStance(0);
 
-            quests = new();
             setPosition(new Point(0, 0));
 
             if (Client is not OfflineClient)
@@ -141,6 +135,14 @@ namespace Application.Core.Game.Players
 
         public void TypedMessage(int type, string messageKey, params string[] param)
         {
+            if (type == -1)
+            {
+                Yellow(messageKey, param);
+            }
+            else if (type == -2)
+            {
+                sendPacket(PacketCreator.earnTitleMessage(GetMessageByKey(messageKey, param)));
+            }
             sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
         }
         public void Notice(string key, params string[] param)

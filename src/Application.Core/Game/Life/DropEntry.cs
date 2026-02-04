@@ -97,7 +97,7 @@ namespace Application.Core.Game.Life
             return Randomizer.nextInt(1000000) < Chance;
         }
 
-        public static void ClassifyDropEntries(List<DropEntry> allData, out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, IPlayer chr)
+        public static void ClassifyDropEntries(List<DropEntry> allData, out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, Player chr)
         {
             item = [];
             visibleQuest = [];

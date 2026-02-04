@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
-    <ProjectReference Include="..\modules\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj" />
+    <ProjectReference Include="..\app\RuaMS.ServiceDefaults\RuaMS.ServiceDefaults.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Maker.Channel\Application.Module.Maker.Channel.csproj" />
     <ProjectReference Include="..\modules\Application.Module.PlayerNPC.Channel\Application.Module.PlayerNPC.Channel.csproj" />
   </ItemGroup>
@@ -28,6 +28,10 @@
 	  <Content Remove="logs\**" />
 	  <EmbeddedResource Remove="logs\**" />
 	  <None Remove="logs\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Servers\" />
 	</ItemGroup>
 	<Target Name="DeleteFile" BeforeTargets="Clean">
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />

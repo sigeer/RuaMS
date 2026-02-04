@@ -1,4 +1,3 @@
-using constants.game;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -9,126 +8,33 @@ namespace Application.Core.Game.Players
 
         protected Dictionary<Stat, int> statUpdates = new();
 
-        protected object effLock = new object();
-        protected ReaderWriterLockSlim statLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 
-        public int getStr()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return Str;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
+        public int getStr() => Str;
 
-        public int getDex()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return Dex;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
+        public int getDex() => Dex;
 
-        public int getInt()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return Int;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
+        public int getInt() => Int;
+        public int getLuk() => Luk;
 
-        public int getLuk()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return Luk;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
-
-        public int getRemainingAp()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return Ap;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
+        public int getRemainingAp() => Ap;
 
         protected int getRemainingSp(int jobid)
         {
-            statLock.EnterReadLock();
-            try
-            {
-                return RemainingSp[GameConstants.getSkillBook(jobid)];
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
+            return RemainingSp[GameConstants.getSkillBook(jobid)];
         }
 
         public int[] getRemainingSps()
         {
-            statLock.EnterReadLock();
-            try
-            {
-                return Arrays.copyOf(RemainingSp, RemainingSp.Length);
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
+            return Arrays.copyOf(RemainingSp, RemainingSp.Length);
         }
 
         public int getHpMpApUsed()
         {
-            statLock.EnterReadLock();
-            try
-            {
-                return HpMpUsed;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
+            return HpMpUsed;
         }
 
-        public bool isAlive()
-        {
-            statLock.EnterReadLock();
-            try
-            {
-                return HP > 0;
-            }
-            finally
-            {
-                statLock.ExitReadLock();
-            }
-        }
+        public bool isAlive() => HP > 0;
 
 
         private void setHpMpApUsed(int mpApUsed)
@@ -176,80 +82,72 @@ namespace Application.Core.Game.Players
 
         private void changeStatPool(long? strDexIntLuk, long? newSp, int newAp, bool silent)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
+
+            statUpdates.Clear();
+            bool statUpdate = false;
+
+            if (strDexIntLuk != null)
             {
-                statUpdates.Clear();
-                bool statUpdate = false;
+                short newStr = (short)(strDexIntLuk >> 48);
+                short newDex = (short)(strDexIntLuk >> 32);
+                short newInt = (short)(strDexIntLuk >> 16);
+                short newLuk = (short)strDexIntLuk;
 
-                if (strDexIntLuk != null)
+                if (newStr >= 4)
                 {
-                    short newStr = (short)(strDexIntLuk >> 48);
-                    short newDex = (short)(strDexIntLuk >> 32);
-                    short newInt = (short)(strDexIntLuk >> 16);
-                    short newLuk = (short)strDexIntLuk;
-
-                    if (newStr >= 4)
-                    {
-                        setStr(newStr);
-                        statUpdates.AddOrUpdate(Stat.STR, Str);
-                    }
-
-                    if (newDex >= 4)
-                    {
-                        setDex(newDex);
-                        statUpdates.AddOrUpdate(Stat.DEX, Dex);
-                    }
-
-                    if (newInt >= 4)
-                    {
-                        setInt(newInt);
-                        statUpdates.AddOrUpdate(Stat.INT, Int);
-                    }
-
-                    if (newLuk >= 4)
-                    {
-                        setLuk(newLuk);
-                        statUpdates.AddOrUpdate(Stat.LUK, Luk);
-                    }
-
-                    if (newAp >= 0)
-                    {
-                        setRemainingAp(newAp);
-                        statUpdates.AddOrUpdate(Stat.AVAILABLEAP, Ap);
-                    }
-
-                    statUpdate = true;
+                    setStr(newStr);
+                    statUpdates.AddOrUpdate(Stat.STR, Str);
                 }
 
-                if (newSp != null)
+                if (newDex >= 4)
                 {
-                    short sp = (short)(newSp >> 16);
-                    short skillbook = (short)newSp;
-
-                    this.RemainingSp[skillbook] = sp;
-                    statUpdates.AddOrUpdate(Stat.AVAILABLESP, sp);
+                    setDex(newDex);
+                    statUpdates.AddOrUpdate(Stat.DEX, Dex);
                 }
 
-                if (statUpdates.Count > 0)
+                if (newInt >= 4)
                 {
-                    if (statUpdate)
-                    {
-                        UpdateLocalStats();
-                    }
+                    setInt(newInt);
+                    statUpdates.AddOrUpdate(Stat.INT, Int);
+                }
 
-                    if (!silent)
-                    {
-                        SendStats();
-                    }
+                if (newLuk >= 4)
+                {
+                    setLuk(newLuk);
+                    statUpdates.AddOrUpdate(Stat.LUK, Luk);
+                }
+
+                if (newAp >= 0)
+                {
+                    setRemainingAp(newAp);
+                    statUpdates.AddOrUpdate(Stat.AVAILABLEAP, Ap);
+                }
+
+                statUpdate = true;
+            }
+
+            if (newSp != null)
+            {
+                short sp = (short)(newSp >> 16);
+                short skillbook = (short)newSp;
+
+                this.RemainingSp[skillbook] = sp;
+                statUpdates.AddOrUpdate(Stat.AVAILABLESP, sp);
+            }
+
+            if (statUpdates.Count > 0)
+            {
+                if (statUpdate)
+                {
+                    UpdateLocalStats();
+                }
+
+                if (!silent)
+                {
+                    SendStats();
                 }
             }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+
         }
 
         public void healHpMp()
@@ -263,27 +161,16 @@ namespace Application.Core.Game.Players
 
         public int safeAddHP(int delta)
         {
-
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
+            if (HP + delta <= 0)
             {
-                if (HP + delta <= 0)
-                {
-                    delta = -HP + 1;
-                }
+                delta = -HP + 1;
+            }
 
-                UpdateStatsChunk(() =>
-                {
-                    ChangeHP(delta);
-                });
-                return delta;
-            }
-            finally
+            UpdateStatsChunk(() =>
             {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+                ChangeHP(delta);
+            });
+            return delta;
         }
 
 
@@ -329,46 +216,28 @@ namespace Application.Core.Game.Players
 
         public bool assignHP(int deltaHP, int deltaAp)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                if (Ap - deltaAp < 0 || HpMpUsed + deltaAp < 0 || MaxHP >= 30000)
-                {
-                    return false;
-                }
 
-                ChangeMaxHP(deltaHP);
-                setHpMpApUsed(HpMpUsed + deltaAp);
-                return true;
-            }
-            finally
+            if (Ap - deltaAp < 0 || HpMpUsed + deltaAp < 0 || MaxHP >= 30000)
             {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                return false;
             }
+
+            ChangeMaxHP(deltaHP);
+            setHpMpApUsed(HpMpUsed + deltaAp);
+            return true;
         }
 
         public bool assignMP(int deltaMP, int deltaAp)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                if (Ap - deltaAp < 0 || HpMpUsed + deltaAp < 0 || MaxMP >= 30000)
-                {
-                    return false;
-                }
 
-                ChangeMaxMP(deltaMP);
-                setHpMpApUsed(HpMpUsed + deltaAp);
-                return true;
-            }
-            finally
+            if (Ap - deltaAp < 0 || HpMpUsed + deltaAp < 0 || MaxMP >= 30000)
             {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                return false;
             }
+
+            ChangeMaxMP(deltaMP);
+            setHpMpApUsed(HpMpUsed + deltaAp);
+            return true;
         }
 
         private static int apAssigned(int? x)
@@ -378,63 +247,53 @@ namespace Application.Core.Game.Players
 
         public bool assignStrDexIntLuk(int? deltaStr, int? deltaDex, int? deltaInt, int? deltaLuk)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
+            int apUsed = apAssigned(deltaStr) + apAssigned(deltaDex) + apAssigned(deltaInt) + apAssigned(deltaLuk);
+            if (apUsed > Ap)
             {
-                int apUsed = apAssigned(deltaStr) + apAssigned(deltaDex) + apAssigned(deltaInt) + apAssigned(deltaLuk);
-                if (apUsed > Ap)
-                {
-                    return false;
-                }
-
-                int newStr = Str, newDex = Dex, newInt = Int, newLuk = Luk;
-                if (deltaStr != null)
-                {
-                    newStr += deltaStr.Value;   // thanks Rohenn for noticing an NPE case after "null" started being used
-                }
-                if (deltaDex != null)
-                {
-                    newDex += deltaDex.Value;
-                }
-                if (deltaInt != null)
-                {
-                    newInt += deltaInt.Value;
-                }
-                if (deltaLuk != null)
-                {
-                    newLuk += deltaLuk.Value;
-                }
-
-                if (newStr < 4 || newStr > YamlConfig.config.server.MAX_AP)
-                {
-                    return false;
-                }
-
-                if (newDex < 4 || newDex > YamlConfig.config.server.MAX_AP)
-                {
-                    return false;
-                }
-
-                if (newInt < 4 || newInt > YamlConfig.config.server.MAX_AP)
-                {
-                    return false;
-                }
-
-                if (newLuk < 4 || newLuk > YamlConfig.config.server.MAX_AP)
-                {
-                    return false;
-                }
-
-                int newAp = Ap - apUsed;
-                updateStrDexIntLuk(newStr, newDex, newInt, newLuk, newAp);
-                return true;
+                return false;
             }
-            finally
+
+            int newStr = Str, newDex = Dex, newInt = Int, newLuk = Luk;
+            if (deltaStr != null)
             {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
+                newStr += deltaStr.Value;   // thanks Rohenn for noticing an NPE case after "null" started being used
             }
+            if (deltaDex != null)
+            {
+                newDex += deltaDex.Value;
+            }
+            if (deltaInt != null)
+            {
+                newInt += deltaInt.Value;
+            }
+            if (deltaLuk != null)
+            {
+                newLuk += deltaLuk.Value;
+            }
+
+            if (newStr < 4 || newStr > YamlConfig.config.server.MAX_AP)
+            {
+                return false;
+            }
+
+            if (newDex < 4 || newDex > YamlConfig.config.server.MAX_AP)
+            {
+                return false;
+            }
+
+            if (newInt < 4 || newInt > YamlConfig.config.server.MAX_AP)
+            {
+                return false;
+            }
+
+            if (newLuk < 4 || newLuk > YamlConfig.config.server.MAX_AP)
+            {
+                return false;
+            }
+
+            int newAp = Ap - apUsed;
+            updateStrDexIntLuk(newStr, newDex, newInt, newLuk, newAp);
+            return true;
         }
 
         public void updateStrDexIntLuk(int x)
@@ -444,32 +303,14 @@ namespace Application.Core.Game.Players
 
         public void changeRemainingAp(int x, bool silent)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                changeStrDexIntLuk(Str, Dex, Int, Luk, x, silent);
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+            changeStrDexIntLuk(Str, Dex, Int, Luk, x, silent);
         }
 
         public void gainAp(int deltaAp, bool silent)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                changeRemainingAp(Math.Max(0, Ap + deltaAp), silent);
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+
+            changeRemainingAp(Math.Max(0, Ap + deltaAp), silent);
+
         }
 
         protected void updateStrDexIntLuk(int str, int dex, int int_, int luk, int remainingAp)
@@ -508,17 +349,8 @@ namespace Application.Core.Game.Players
 
         public void gainSp(int deltaSp, int skillbook, bool silent)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                changeRemainingSp(Math.Max(0, RemainingSp[skillbook] + deltaSp), skillbook, silent);
-            }
-            finally
-            {
-                statLock.ExitWriteLock();
-                Monitor.Exit(effLock);
-            }
+
+            changeRemainingSp(Math.Max(0, RemainingSp[skillbook] + deltaSp), skillbook, silent);
         }
 
         public void SendStats()
@@ -543,27 +375,15 @@ namespace Application.Core.Game.Players
 
         public void UpdateStatsChunk(Action action)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
-            try
-            {
-                statUpdates.Clear();
+            statUpdates.Clear();
 
-                action();
+            action();
 
-                SendStats();
-            }
-            finally
-            {
-                Monitor.Exit(effLock);
-                statLock.ExitWriteLock();
-            }
+            SendStats();
         }
 
         public TOut UpdateStatsChunk<TOut>(Func<TOut> action)
         {
-            Monitor.Enter(effLock);
-            statLock.EnterWriteLock();
             try
             {
                 statUpdates.Clear();
@@ -573,9 +393,6 @@ namespace Application.Core.Game.Players
             finally
             {
                 SendStats();
-
-                Monitor.Exit(effLock);
-                statLock.ExitWriteLock();
             }
         }
 

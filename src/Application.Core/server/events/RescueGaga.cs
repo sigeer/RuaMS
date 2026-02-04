@@ -37,7 +37,7 @@ public class RescueGaga : Events
         return getCompleted();
     }
 
-    public void giveSkill(IPlayer chr)
+    public void giveSkill(Player chr)
     {
         int skillid = 0;
         switch (chr.getJobType())
@@ -51,7 +51,7 @@ public class RescueGaga : Events
                 break;
         }
 
-        long expiration = chr.getChannelServer().Container.GetCurrentTimeDateTimeOffSet().AddDays(20).ToUnixTimeMilliseconds(); //20 days
+        long expiration = chr.getChannelServer().Node.GetCurrentTimeDateTimeOffset().AddDays(20).ToUnixTimeMilliseconds(); //20 days
         if (completed < 20)
         {
             chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 1, 1, expiration);

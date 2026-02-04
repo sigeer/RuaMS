@@ -1,6 +1,6 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
-using constants.game;
 using net.server;
 using server;
 using tools;
@@ -121,36 +121,16 @@ namespace Application.Core.Game.Players
         {
             List<PlayerCoolDownValueHolder> ret = new();
 
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            foreach (CooldownValueHolder mcdvh in coolDowns.Values)
             {
-                foreach (CooldownValueHolder mcdvh in coolDowns.Values)
-                {
-                    ret.Add(new PlayerCoolDownValueHolder(mcdvh.skillId, mcdvh.startTime, mcdvh.length));
-                }
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
+                ret.Add(new PlayerCoolDownValueHolder(mcdvh.skillId, mcdvh.startTime, mcdvh.length));
             }
 
             return ret;
         }
         public bool skillIsCooling(int skillId)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                return coolDowns.ContainsKey(skillId);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return coolDowns.ContainsKey(skillId);
         }
 
         public void cancelSkillCooldownTask()
@@ -166,89 +146,54 @@ namespace Application.Core.Game.Players
         {
             if (_skillCooldownTask == null)
             {
-                _skillCooldownTask = Client.CurrentServerContainer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
+                _skillCooldownTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
                 {
-                    HashSet<KeyValuePair<int, CooldownValueHolder>> es;
-
-                    Monitor.Enter(effLock);
-                    chLock.EnterReadLock();
-                    try
-                    {
-                        es = new(coolDowns);
-                    }
-                    finally
-                    {
-                        chLock.ExitReadLock();
-                        Monitor.Exit(effLock);
-                    }
-
-                    long curTime = Client.CurrentServerContainer.getCurrentTime();
-                    foreach (var bel in es)
-                    {
-                        CooldownValueHolder mcdvh = bel.Value;
-                        if (curTime >= mcdvh.startTime + mcdvh.length)
-                        {
-                            removeCooldown(mcdvh.skillId);
-                            sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
-                        }
-                    }
+                    Client.CurrentServer.Post(new PlayerSkillCooldownExpiredCommand(this));
                 }), 1500);
+            }
+        }
+
+        public void ClearExpiredSkillCooldown()
+        {
+            HashSet<KeyValuePair<int, CooldownValueHolder>> es;
+
+            es = new(coolDowns);
+
+            long curTime = Client.CurrentServer.Node.getCurrentTime();
+            foreach (var bel in es)
+            {
+                CooldownValueHolder mcdvh = bel.Value;
+                if (curTime >= mcdvh.startTime + mcdvh.length)
+                {
+                    removeCooldown(mcdvh.skillId);
+                    sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
+                }
             }
         }
 
         public void removeAllCooldownsExcept(int id, bool packet)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
+            List<CooldownValueHolder> list = new(coolDowns.Values);
+            foreach (CooldownValueHolder mcvh in list)
             {
-                List<CooldownValueHolder> list = new(coolDowns.Values);
-                foreach (CooldownValueHolder mcvh in list)
+                if (mcvh.skillId != id)
                 {
-                    if (mcvh.skillId != id)
+                    coolDowns.Remove(mcvh.skillId);
+                    if (packet)
                     {
-                        coolDowns.Remove(mcvh.skillId);
-                        if (packet)
-                        {
-                            sendPacket(PacketCreator.skillCooldown(mcvh.skillId, 0));
-                        }
+                        sendPacket(PacketCreator.skillCooldown(mcvh.skillId, 0));
                     }
                 }
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
             }
         }
 
         public void removeCooldown(int skillId)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                this.coolDowns.Remove(skillId);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            this.coolDowns.Remove(skillId);
         }
         public void addCooldown(int skillId, long startTime, long length)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                this.coolDowns.AddOrUpdate(skillId, new CooldownValueHolder(skillId, startTime, length));
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            this.coolDowns.AddOrUpdate(skillId, new CooldownValueHolder(skillId, startTime, length));
         }
         public void giveCoolDowns(int skillid, long starttime, long length)
         {
@@ -259,7 +204,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                long timeNow = Client.CurrentServerContainer.getCurrentTime();
+                long timeNow = Client.CurrentServer.Node.getCurrentTime();
                 int time = (int)((length + starttime) - timeNow);
                 addCooldown(skillid, timeNow, time);
             }

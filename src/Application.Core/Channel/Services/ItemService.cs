@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ResourceTransaction;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
@@ -7,13 +6,13 @@ using Application.Core.ServerTransports;
 using Application.Templates.Character;
 using Application.Templates.Exceptions;
 using Application.Templates.Item.Pet;
+using Application.Templates.XmlWzReader.Provider;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using server;
-using System.Transactions;
 using tools;
 using static server.CashShop;
 
@@ -47,20 +46,10 @@ namespace Application.Core.Channel.Services
         }
         public Item CashItem2Item(CashItem cashItem)
         {
-            var abTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(cashItem.getItemId()) ;
-            Item item;
-
-            if (abTemplate is PetItemTemplate petTemplate)
+            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.getItemId(), cashItem.getCount());
+            if (item == null)
             {
-                item = new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-            }
-            else if (abTemplate is EquipTemplate equipTemplate)
-            {
-                item = ItemInformationProvider.getInstance().getEquipById(cashItem.getItemId());
-            }
-            else
-            {
-                item = Item.CreateVirtualItem(cashItem.getItemId(), cashItem.getCount());
+                throw new TemplateNotFoundException("Item", cashItem.getItemId()); 
             }
 
             if (cashItem.Period == 1)
@@ -85,8 +74,8 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                if (abTemplate is PetItemTemplate subPet)
-                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.Life).TotalMilliseconds);
+                if (item is Pet subPet)
+                    item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(subPet.SourceTemplate.Life).TotalMilliseconds);
                 else
                     item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
             }
@@ -105,7 +94,7 @@ namespace Application.Core.Channel.Services
             return _mapper.Map<List<SpecialCashItem>>(_transport.RequestSpecialCashItems().Items);
         }
 
-        public List<ItemMessagePair> LoadPlayerGifts(IPlayer chr)
+        public List<ItemMessagePair> LoadPlayerGifts(Player chr)
         {
             var cashShop = chr.getCashShop();
             if (cashShop == null)
@@ -199,44 +188,18 @@ namespace Application.Core.Channel.Services
         }
 
 
-        internal void UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
+        internal bool UseCash_TV(Player player, string? victim, List<string> messages, int tvType, bool showEar)
         {
             var request = new ItemProto.CreateTVMessageRequest
             {
                 MasterId = player.Id,
-                ToName = victim,
+                PartnerName = victim,
                 Type = tvType,
                 ShowEar = showEar,
             };
             request.MessageList.AddRange(messages);
-
-            new ResourceConsumeBuilder().ConsumeItem(item, 1).Execute(player, ct =>
-            {
-                var res = _transport.BroadcastTV(request);
-                if (res.Code == 0)
-                    return true;
-
-                player.Popup("MapleTV is already in use.");
-                return false;
-            });
-        }
-
-        public void OnBroadcastTV(ItemProto.CreateTVMessageBroadcast data)
-        {
-            var noticeMsg = string.Join(" ", data.MessageList);
-            foreach (var ch in _server.Servers.Values)
-            {
-                foreach (var chr in ch.Players.getAllCharacters())
-                {
-                    chr.sendPacket(PacketCreator.enableTV());
-                    chr.sendPacket(PacketCreator.sendTV(data.Master, data.MessageList.ToArray(), data.Type <= 2 ? data.Type : data.Type - 3, data.MasterPartner));
-
-                    if (data.Type >= 3)
-                    {
-                        chr.sendPacket(PacketCreator.serverNotice(3, data.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Master) + " : " + noticeMsg, data.ShowEar));
-                    }
-                }
-            }
+            var r = _transport.BroadcastTV(request);
+            return r.Code == 0;
         }
 
         public void OnBroadcastTVFinished(Empty data)
@@ -247,7 +210,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        internal void UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
+        internal bool UseCash_ItemMegaphone(Player player, Item? item, string message, bool isWishper)
         {
             var request = new ItemProto.UseItemMegaphoneRequest
             {
@@ -256,23 +219,11 @@ namespace Application.Core.Channel.Services
                 Item = _mapper.Map<Dto.ItemDto>(item),
                 IsWishper = isWishper,
             };
-
-            new ResourceConsumeBuilder().ConsumeItem(costItem, 1).Execute(player, ct =>
-            {
-                var res = _transport.SendItemMegaphone(request);
-                return res.Code == 0;
-            });
+            var r = _transport.SendItemMegaphone(request);
+            return r.Code == 0;
         }
 
-        public void OnItemMegaphon(ItemProto.UseItemMegaphoneBroadcast data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                ch.broadcastPacket(PacketCreator.itemMegaphone(data.Message, data.IsWishper, data.SenderChannel, _mapper.Map<Item>(data.Item)));
-            }
-        }
-
-        public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)
+        public void BuyCashItem(Player chr, int cashType, CashItem cItem)
         {
             chr.BuyCashItem(cashType, cItem, () =>
             {
@@ -293,7 +244,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        void BuyCashItemCallback(IPlayer chr, CashItem cItem, CashProto.BuyCashItemResponse data)
+        void BuyCashItemCallback(Player chr, CashItem cItem, CashProto.BuyCashItemResponse data)
         {
             if (data.GiftInfo != null)
             {
@@ -336,7 +287,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void BuyCashItemForGift(IPlayer chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
+        public void BuyCashItemForGift(Player chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
         {
             chr.BuyCashItem(cashType, cItem, () =>
             {
@@ -363,7 +314,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public bool RegisterNameChange(IPlayer chr, string newName)
+        public bool RegisterNameChange(Player chr, string newName)
         {
             Dto.NameChangeResponse res = _transport.ReigsterNameChange(new Dto.NameChangeRequest { MasterId = chr.Id, NewName = newName });
             if (res.Code == 0)
@@ -375,7 +326,7 @@ namespace Application.Core.Channel.Services
             return false;
         }
 
-        internal void UseCdk(IPlayer chr, string cdk)
+        internal void UseCdk(Player chr, string cdk)
         {
             UseCdkResponseCode code = UseCdkResponseCode.Success;
             if (!chr.Client.attemptCsCoupon())
@@ -461,7 +412,7 @@ namespace Application.Core.Channel.Services
                             }
                             else
                             {
-                                InventoryManipulator.addById(chr.Client, item, qty, "");
+                                chr.GainItem(item, qty); ;
                                 items.Add(new(item, qty));
                             }
                             break;

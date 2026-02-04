@@ -17,6 +17,7 @@ namespace Application.Utility.Tasks
         Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null);
         ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay);
         ScheduledFuture schedule(Action r, TimeSpan delay);
+        Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay);
         ScheduledFuture schedule(Action r, long delay);
         ScheduledFuture scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time);
         ScheduledFuture scheduleAtTimestamp(Action r, DateTimeOffset time);

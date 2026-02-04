@@ -32,22 +32,7 @@ public class PortalFactory
 
     public PortalFactory()
     {
-        nextDoorPortal = 0x80;
-    }
-
-    public Portal makePortal(int type, Data portal)
-    {
-        GenericPortal? ret = null;
-        if (type == PortalConstants.MAP_PORTAL)
-        {
-            ret = new MapPortal();
-        }
-        else
-        {
-            ret = new GenericPortal(type);
-        }
-        loadPortal(ret, portal);
-        return ret;
+        nextDoorPortal = 0x80 + 1;
     }
 
     public Portal makePortal(int type, MapPortalTemplate portal)
@@ -57,6 +42,8 @@ public class PortalFactory
         {
             myPortal = new MapPortal();
         }
+        else if (type == PortalConstants.DOOR_PORTAL)
+            myPortal = new MysticDoorPortal();
         else
         {
             myPortal = new GenericPortal(type);
@@ -76,29 +63,5 @@ public class PortalFactory
             myPortal.setId(portal.nIndex);
         }
         return myPortal;
-    }
-
-    private void loadPortal(GenericPortal myPortal, Data portal)
-    {
-        myPortal.setName(DataTool.getString(portal.getChildByPath("pn")));
-        myPortal.setTarget(DataTool.getString(portal.getChildByPath("tn")));
-        myPortal.setTargetMapId(DataTool.getInt(portal.getChildByPath("tm")));
-        int x = DataTool.getInt(portal.getChildByPath("x"));
-        int y = DataTool.getInt(portal.getChildByPath("y"));
-        myPortal.setPosition(new Point(x, y));
-        string? script = DataTool.getString("script", portal);
-        if (string.IsNullOrEmpty(script))
-            script = null;
-
-        myPortal.setScriptName(script);
-        if (myPortal.getType() == PortalConstants.DOOR_PORTAL)
-        {
-            myPortal.setId(nextDoorPortal);
-            nextDoorPortal++;
-        }
-        else
-        {
-            myPortal.setId(int.Parse(portal.getName()));
-        }
     }
 }

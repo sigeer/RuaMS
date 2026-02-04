@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using net.server.services.task.channel;
 using server.partyquest;
@@ -47,11 +48,9 @@ public class Reactor : AbstractMapObject
     private bool shouldCollect;
     private bool attackHit;
     private ScheduledFuture? timeoutTask = null;
-    private Action? delayedRespawnRun = null;
+    private IWorldChannelCommand? delayedRespawnRun = null;
     private GuardianSpawnPoint? guardian = null;
     private sbyte facingDirection = 0;
-    private object reactorLock = new object();
-    private object hitLock = new object();
 
     public Reactor(ReactorStats stats, int rid)
     {
@@ -69,28 +68,6 @@ public class Reactor : AbstractMapObject
     public bool getShouldCollect()
     {
         return shouldCollect;
-    }
-
-    public void lockReactor()
-    {
-        Monitor.Enter(reactorLock);
-    }
-
-    public void unlockReactor()
-    {
-        Monitor.Exit(reactorLock);
-    }
-
-    public void hitLockReactor()
-    {
-        Monitor.Enter(hitLock);
-        Monitor.Enter(reactorLock);
-    }
-
-    public void hitUnlockReactor()
-    {
-        Monitor.Exit(reactorLock);
-        Monitor.Exit(hitLock);
     }
 
     public void setState(sbyte state)
@@ -206,34 +183,15 @@ public class Reactor : AbstractMapObject
 
     public void forceHitReactor(sbyte newState)
     {
-        this.lockReactor();
-        try
-        {
-            this.resetReactorActions(newState);
-            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
-        }
-        finally
-        {
-            this.unlockReactor();
-        }
+        this.resetReactorActions(newState);
+        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
     }
 
-    private void tryForceHitReactor(sbyte newState)
+    public void tryForceHitReactor(sbyte newState)
     {  // weak hit state signal, if already changed reactor state before timeout then drop this
-        if (!Monitor.TryEnter(reactorLock))
-        {
-            return;
-        }
 
-        try
-        {
-            this.resetReactorActions(newState);
-            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
-        }
-        finally
-        {
-            Monitor.Exit(reactorLock);
-        }
+        this.resetReactorActions(newState);
+        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
     }
 
     public void cancelReactorTimeout()
@@ -252,19 +210,21 @@ public class Reactor : AbstractMapObject
         {
             sbyte nextState = stats.getTimeoutState(state);
 
-            timeoutTask = MapModel.ChannelServer.Container.TimerManager.schedule(() =>
+            timeoutTask = MapModel.ChannelServer.Node.TimerManager.schedule(() =>
             {
                 timeoutTask = null;
-                tryForceHitReactor(nextState);
+
+                MapModel.ChannelServer.Post(new ReactorSetStateCommand(this, nextState));
+
             }, timeOut);
         }
     }
 
     public void delayedHitReactor(IChannelClient c, long delay)
     {
-        c.CurrentServerContainer.TimerManager.schedule(() =>
+        c.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            hitReactor(c);
+            c.CurrentServer.Post(new ReactorHitCommand(this, c));
         }, delay);
     }
 
@@ -282,110 +242,101 @@ public class Reactor : AbstractMapObject
                 return;
             }
 
-            if (Monitor.TryEnter(hitLock))
+
+            cancelReactorTimeout();
+            attackHit = wHit;
+
+            if (YamlConfig.config.server.USE_DEBUG)
             {
-                this.lockReactor();
-                try
+                c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
+            }
+            c.CurrentServer.ReactorScriptManager.onHit(c, this);
+
+            int reactorType = stats.getType(state);
+            if (reactorType < 999 && reactorType != -1)
+            {
+                //type 2 = only hit from right (kerning swamp plants), 00 is air left 02 is ground left
+                if (!(reactorType == 2 && (stance == 0 || stance == 2)))
                 {
-                    cancelReactorTimeout();
-                    attackHit = wHit;
-
-                    if (YamlConfig.config.server.USE_DEBUG)
+                    //get next state
+                    for (byte b = 0; b < stats.getStateSize(state); b++)
                     {
-                        c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
-                    }
-                    c.CurrentServer.ReactorScriptManager.onHit(c, this);
-
-                    int reactorType = stats.getType(state);
-                    if (reactorType < 999 && reactorType != -1)
-                    {
-                        //type 2 = only hit from right (kerning swamp plants), 00 is air left 02 is ground left
-                        if (!(reactorType == 2 && (stance == 0 || stance == 2)))
+                        //YAY?
+                        var activeSkills = stats.getActiveSkills(state, b);
+                        if (activeSkills != null)
                         {
-                            //get next state
-                            for (byte b = 0; b < stats.getStateSize(state); b++)
+                            if (!activeSkills.Contains(skillid))
                             {
-                                //YAY?
-                                var activeSkills = stats.getActiveSkills(state, b);
-                                if (activeSkills != null)
-                                {
-                                    if (!activeSkills.Contains(skillid))
-                                    {
-                                        continue;
-                                    }
-                                }
+                                continue;
+                            }
+                        }
 
-                                this.state = stats.getNextState(state, b);
-                                sbyte nextState = stats.getNextState(state, b);
-                                bool isInEndState = nextState < this.state;
-                                if (isInEndState)
+                        this.state = stats.getNextState(state, b);
+                        sbyte nextState = stats.getNextState(state, b);
+                        bool isInEndState = nextState < this.state;
+                        if (isInEndState)
+                        {
+                            //end of reactor
+                            if (reactorType < 100)
+                            {
+                                //reactor broken
+                                if (delay > 0)
                                 {
-                                    //end of reactor
-                                    if (reactorType < 100)
-                                    {
-                                        //reactor broken
-                                        if (delay > 0)
-                                        {
-                                            MapModel.destroyReactor(getObjectId());
-                                        }
-                                        else
-                                        {
-                                            //trigger as normal
-                                            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
-                                        }
-                                    }
-                                    else
-                                    {
-                                        //item-triggered on step
-                                        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
-                                    }
-
-                                    c.CurrentServer.ReactorScriptManager.act(c, this);
+                                    MapModel.destroyReactor(getObjectId());
                                 }
                                 else
                                 {
-                                    //reactor not broken yet
+                                    //trigger as normal
                                     MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
-                                    if (state == stats.getNextState(state, b))
-                                    {
-                                        //current state = next state, looping reactor
-                                        c.CurrentServer.ReactorScriptManager.act(c, this);
-                                    }
-
-                                    setShouldCollect(true);     // refresh collectability on item drop-based reactors
-                                    refreshReactorTimeout();
-                                    if (stats.getType(state) == 100)
-                                    {
-                                        MapModel.searchItemReactors(this);
-                                    }
                                 }
-                                break;
                             }
-                        }
-                    }
-                    else
-                    {
-                        state++;
-                        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
-                        if (this.getId() != 9980000 && this.getId() != 9980001)
-                        {
+                            else
+                            {
+                                //item-triggered on step
+                                MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                            }
+
                             c.CurrentServer.ReactorScriptManager.act(c, this);
                         }
-
-                        setShouldCollect(true);
-                        refreshReactorTimeout();
-                        if (stats.getType(state) == 100)
+                        else
                         {
-                            MapModel.searchItemReactors(this);
+                            //reactor not broken yet
+                            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                            if (state == stats.getNextState(state, b))
+                            {
+                                //current state = next state, looping reactor
+                                c.CurrentServer.ReactorScriptManager.act(c, this);
+                            }
+
+                            setShouldCollect(true);     // refresh collectability on item drop-based reactors
+                            refreshReactorTimeout();
+                            if (stats.getType(state) == 100)
+                            {
+                                MapModel.searchItemReactors(this);
+                            }
                         }
+                        break;
                     }
                 }
-                finally
+            }
+            else
+            {
+                state++;
+                MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                if (this.getId() != 9980000 && this.getId() != 9980001)
                 {
-                    this.unlockReactor();
-                    Monitor.Exit(hitLock);   // non-encapsulated unlock found thanks to MiLin
+                    c.CurrentServer.ReactorScriptManager.act(c, this);
+                }
+
+                setShouldCollect(true);
+                refreshReactorTimeout();
+                if (stats.getType(state) == 100)
+                {
+                    MapModel.searchItemReactors(this);
                 }
             }
+
+
         }
         catch (Exception e)
         {
@@ -399,60 +350,47 @@ public class Reactor : AbstractMapObject
     /// <returns></returns>
     public bool destroy()
     {
-        if (Monitor.TryEnter(reactorLock))
+        bool alive = this.isAlive();
+        // reactor neither alive nor in delayed respawn, remove map object allowed
+        if (alive)
         {
-            try
-            {
-                bool alive = this.isAlive();
-                // reactor neither alive nor in delayed respawn, remove map object allowed
-                if (alive)
-                {
-                    this.setAlive(false);
-                    this.cancelReactorTimeout();
+            this.setAlive(false);
+            this.cancelReactorTimeout();
 
-                    if (this.getDelay() > 0)
-                    {
-                        this.delayedRespawn();
-                    }
-                }
-                else
-                {
-                    return delayedRespawnRun == null;
-                }
-            }
-            finally
+            if (this.getDelay() > 0)
             {
-                Monitor.Exit(reactorLock);
+                this.delayedRespawn();
             }
         }
+        else
+        {
+            return delayedRespawnRun == null;
+        }
+
 
         MapModel.broadcastMessage(PacketCreator.destroyReactor(this));
         return false;
     }
 
-    private void respawn()
+    public void respawn(bool fromDestroyed = true)
     {
-        this.lockReactor();
-        try
+        this.resetReactorActions(0);
+        this.setAlive(true);
+
+        if (fromDestroyed)
         {
-            this.resetReactorActions(0);
-            this.setAlive(true);
+            MapModel.broadcastMessage(this.makeSpawnData());
         }
-        finally
+        else
         {
-            this.unlockReactor();
+            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
         }
 
-        MapModel.broadcastMessage(this.makeSpawnData());
     }
 
     public void delayedRespawn()
     {
-        delayedRespawnRun = () =>
-        {
-            delayedRespawnRun = null;
-            respawn();
-        };
+        delayedRespawnRun = new ReactorRespawnCommand(this, true);
 
         OverallService service = MapModel.getChannelServer().OverallService;
         service.registerOverallAction(MapModel.getId(), delayedRespawnRun, this.getDelay());
@@ -460,12 +398,10 @@ public class Reactor : AbstractMapObject
 
     public bool forceDelayedRespawn()
     {
-        Action? r = delayedRespawnRun;
-
-        if (r != null)
+        if (delayedRespawnRun != null)
         {
             OverallService service = MapModel.getChannelServer().OverallService;
-            service.forceRunOverallAction(MapModel.getId(), r);
+            service.forceRunOverallAction(MapModel.getId(), delayedRespawnRun);
             return true;
         }
         else
@@ -517,5 +453,41 @@ public class Reactor : AbstractMapObject
     public override string GetName()
     {
         return getName();
+    }
+
+    public void HitByMapItem(MapItem mapItem)
+    {
+        if (getReactorType() == 100)
+        {
+            if (getShouldCollect() == true && mapItem != null && mapItem == MapModel.getMapObject(mapItem.getObjectId()))
+            {
+                    if (mapItem.isPickedUp())
+                    {
+                        return;
+                    }
+
+                    var ownerClient = mapItem.getOwnerClient();
+                    if (ownerClient == null)
+                    {
+                        return;
+                    }
+                    mapItem.setPickedUp(true);
+                    MapModel.unregisterItemDrop(mapItem);
+
+                    setShouldCollect(false);
+                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapItem.getPosition());
+
+                    hitReactor(ownerClient);
+
+                    if (getDelay() > 0)
+                    {
+                        var reactorMap = getMap();
+
+                        OverallService service = reactorMap.getChannelServer().OverallService;
+                        service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
+                    }
+  
+            }
+        }
     }
 }

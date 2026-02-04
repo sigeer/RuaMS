@@ -56,5 +56,6 @@ public class FaceExpressionHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
+        return;
     }
 }

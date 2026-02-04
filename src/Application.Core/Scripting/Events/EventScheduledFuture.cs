@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using scripting.Event.scheduler;
 
 namespace scripting.Event;
@@ -28,10 +29,10 @@ namespace scripting.Event;
  */
 public class EventScheduledFuture
 {
-    Action r;
+    IWorldChannelCommand r;
     EventScriptScheduler ess;
 
-    public EventScheduledFuture(Action r, EventScriptScheduler ess)
+    public EventScheduledFuture(IWorldChannelCommand r, EventScriptScheduler ess)
     {
         this.r = r;
         this.ess = ess;

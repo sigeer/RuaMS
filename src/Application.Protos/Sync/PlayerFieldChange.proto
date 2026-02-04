@@ -13,4 +13,6 @@ message PlayerFieldChange {
   int32 teamId = 8;
   int32 familyId = 9;
   int32 medalItemId = 10;
+  int32 fromChannel = 11;
+  repeated int32 buddies = 12;
 }

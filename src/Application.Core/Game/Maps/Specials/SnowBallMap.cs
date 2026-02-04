@@ -62,7 +62,7 @@ namespace Application.Core.Game.Maps.Specials
             }
         }
 
-        public override void startEvent(IPlayer chr)
+        public override void startEvent(Player chr)
         {
             if (this.Id == MapId.EVENT_SNOWBALL && getSnowball(chr.getTeam()) == null)
             {

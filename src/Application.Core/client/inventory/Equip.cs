@@ -79,7 +79,7 @@ public class Equip : Item
         IsElemental = SourceTemplate.IsElemental;
         MaxLevel = Math.Min(30,
             Math.Max(
-                (SourceTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1, 
+                (SourceTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1,
                 YamlConfig.config.server.USE_EQUIPMNT_LVLUP
                 )
             );
@@ -733,59 +733,55 @@ public class Equip : Item
         }
     }
 
-    object gainExpLock = new object();
     public void gainItemExp(IChannelClient c, int gain)
     {
-        lock (gainExpLock)
+        // Ronan's Equip Exp gain method
+        if (!SourceTemplate.IsUpgradeable())
         {
-            // Ronan's Equip Exp gain method
-            if (!SourceTemplate.IsUpgradeable())
-            {
-                return;
-            }
-
-            if (itemLevel >= MaxLevel)
-            {
-                return;
-            }
-
-            int reqLevel = SourceTemplate.ReqLevel;
-
-            float masteryModifier = (float)(YamlConfig.config.server.EQUIP_EXP_RATE * ExpTable.getExpNeededForLevel(1)) / (float)normalizedMasteryExp(reqLevel);
-            float elementModifier = (IsElemental) ? 0.85f : 0.6f;
-
-            float baseExpGain = gain * elementModifier * masteryModifier;
-
-            itemExp += baseExpGain;
-            int expNeeded = ExpTable.getEquipExpNeededForLevel(itemLevel);
-
-            if (YamlConfig.config.server.USE_DEBUG_SHOW_INFO_EQPEXP)
-            {
-                log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {Mastery}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {0}",
-                    ClientCulture.SystemCulture.GetItemName(getItemId()),
-                        gain, masteryModifier, baseExpGain, itemExp, expNeeded, expNeeded / (baseExpGain / c.OnlinedCharacter.getExpRate()));
-            }
-
-            if (itemExp >= expNeeded)
-            {
-                while (itemExp >= expNeeded)
-                {
-                    itemExp -= expNeeded;
-                    gainLevel(c);
-
-                    if (itemLevel >= MaxLevel)
-                    {
-                        itemExp = 0.0f;
-                        break;
-                    }
-
-                    expNeeded = ExpTable.getEquipExpNeededForLevel(itemLevel);
-                }
-            }
-
-            c.OnlinedCharacter.forceUpdateItem(this);
-            //if(YamlConfig.config.server.USE_DEBUG) c.getPlayer().dropMessage("'" + ii.getName(this.getItemId()) + "': " + itemExp + " / " + expNeeded);
+            return;
         }
+
+        if (itemLevel >= MaxLevel)
+        {
+            return;
+        }
+
+        int reqLevel = SourceTemplate.ReqLevel;
+
+        float masteryModifier = (float)(YamlConfig.config.server.EQUIP_EXP_RATE * ExpTable.getExpNeededForLevel(1)) / (float)normalizedMasteryExp(reqLevel);
+        float elementModifier = (IsElemental) ? 0.85f : 0.6f;
+
+        float baseExpGain = gain * elementModifier * masteryModifier;
+
+        itemExp += baseExpGain;
+        int expNeeded = ExpTable.getEquipExpNeededForLevel(itemLevel);
+
+        if (YamlConfig.config.server.USE_DEBUG_SHOW_INFO_EQPEXP)
+        {
+            log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {Mastery}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {0}",
+                ClientCulture.SystemCulture.GetItemName(getItemId()),
+                    gain, masteryModifier, baseExpGain, itemExp, expNeeded, expNeeded / (baseExpGain / c.OnlinedCharacter.getExpRate()));
+        }
+
+        if (itemExp >= expNeeded)
+        {
+            while (itemExp >= expNeeded)
+            {
+                itemExp -= expNeeded;
+                gainLevel(c);
+
+                if (itemLevel >= MaxLevel)
+                {
+                    itemExp = 0.0f;
+                    break;
+                }
+
+                expNeeded = ExpTable.getEquipExpNeededForLevel(itemLevel);
+            }
+        }
+
+        c.OnlinedCharacter.forceUpdateItem(this);
+        //if(YamlConfig.config.server.USE_DEBUG) c.getPlayer().dropMessage("'" + ii.getName(this.getItemId()) + "': " + itemExp + " / " + expNeeded);
     }
 
     public bool ReachedMaxLevel()

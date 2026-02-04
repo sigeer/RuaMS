@@ -51,7 +51,7 @@ public class PetAutopotProcessor
         private int maxHp, maxMp, curHp, curMp;
         private double incHp, incMp;
 
-        private bool cursorOnNextAvailablePot(IPlayer chr)
+        private bool cursorOnNextAvailablePot(Player chr)
         {
             if (toUseList == null)
             {
@@ -95,106 +95,99 @@ public class PetAutopotProcessor
             curMp = chr.MP;
 
             Inventory useInv = chr.getInventory(InventoryType.USE);
-            useInv.lockInventory();
-            try
+
+            toUse = useInv.getItem(slot);
+            if (toUse != null)
             {
-                toUse = useInv.getItem(slot);
-                if (toUse != null)
+                if (toUse.getItemId() != itemId)
                 {
-                    if (toUse.getItemId() != itemId)
+                    c.sendPacket(PacketCreator.enableActions());
+                    return;
+                }
+
+                toUseList = null;
+
+                // from now on, toUse becomes the "cursor" for the current pot being used
+                if (toUse.getQuantity() <= 0)
+                {
+                    if (!cursorOnNextAvailablePot(chr))
                     {
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
+                }
 
-                    toUseList = null;
+                stat = ItemInformationProvider.getInstance().GetItemEffectTrust(toUse.getItemId());
+                hasHpGain = stat.getHp() > 0 || stat.getHpRate() > 0.0;
+                hasMpGain = stat.getMp() > 0 || stat.getMpRate() > 0.0;
 
-                    // from now on, toUse becomes the "cursor" for the current pot being used
-                    if (toUse.getQuantity() <= 0)
+                incHp = stat.getHp();
+                if (incHp <= 0 && hasHpGain)
+                {
+                    incHp = Math.Ceiling(maxHp * stat.getHpRate());
+                }
+
+                incMp = stat.getMp();
+                if (incMp <= 0 && hasMpGain)
+                {
+                    incMp = Math.Ceiling(maxMp * stat.getMpRate());
+                }
+
+                if (YamlConfig.config.server.USE_COMPULSORY_AUTOPOT)
+                {
+                    if (hasHpGain)
                     {
+                        double hpRatio = (YamlConfig.config.server.PET_AUTOHP_RATIO * maxHp) - curHp;
+                        if (hpRatio > 0.0)
+                        {
+                            qtyCount = (int)Math.Ceiling(hpRatio / incHp);
+                        }
+                    }
+
+                    if (hasMpGain)
+                    {
+                        double mpRatio = ((YamlConfig.config.server.PET_AUTOMP_RATIO * maxMp) - curMp);
+                        if (mpRatio > 0.0)
+                        {
+                            qtyCount = Math.Max(qtyCount, (int)Math.Ceiling(mpRatio / incMp));
+                        }
+                    }
+
+                    if (qtyCount < 0)
+                    { // thanks Flint, Kevs for noticing an issue where negative counts were getting achieved
+                        qtyCount = 0;
+                    }
+                }
+                else
+                {
+                    qtyCount = 1;   // non-compulsory autopot concept thanks to marcuswoon
+                }
+
+                while (true)
+                {
+                    short qtyToUse = (short)Math.Min(qtyCount, toUse.getQuantity());
+                    InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, qtyToUse, false);
+
+                    curHp += (int)(incHp * qtyToUse);
+                    curMp += (int)(incMp * qtyToUse);
+
+                    useCount += qtyToUse;
+                    qtyCount -= qtyToUse;
+
+                    if (toUse.getQuantity() == 0 && qtyCount > 0)
+                    {
+                        // depleted out the current slot, fetch for more
+
                         if (!cursorOnNextAvailablePot(chr))
                         {
-                            c.sendPacket(PacketCreator.enableActions());
-                            return;
-                        }
-                    }
-
-                    stat = ItemInformationProvider.getInstance().GetItemEffectTrust(toUse.getItemId());
-                    hasHpGain = stat.getHp() > 0 || stat.getHpRate() > 0.0;
-                    hasMpGain = stat.getMp() > 0 || stat.getMpRate() > 0.0;
-
-                    incHp = stat.getHp();
-                    if (incHp <= 0 && hasHpGain)
-                    {
-                        incHp = Math.Ceiling(maxHp * stat.getHpRate());
-                    }
-
-                    incMp = stat.getMp();
-                    if (incMp <= 0 && hasMpGain)
-                    {
-                        incMp = Math.Ceiling(maxMp * stat.getMpRate());
-                    }
-
-                    if (YamlConfig.config.server.USE_COMPULSORY_AUTOPOT)
-                    {
-                        if (hasHpGain)
-                        {
-                            double hpRatio = (YamlConfig.config.server.PET_AUTOHP_RATIO * maxHp) - curHp;
-                            if (hpRatio > 0.0)
-                            {
-                                qtyCount = (int)Math.Ceiling(hpRatio / incHp);
-                            }
-                        }
-
-                        if (hasMpGain)
-                        {
-                            double mpRatio = ((YamlConfig.config.server.PET_AUTOMP_RATIO * maxMp) - curMp);
-                            if (mpRatio > 0.0)
-                            {
-                                qtyCount = Math.Max(qtyCount, (int)Math.Ceiling(mpRatio / incMp));
-                            }
-                        }
-
-                        if (qtyCount < 0)
-                        { // thanks Flint, Kevs for noticing an issue where negative counts were getting achieved
-                            qtyCount = 0;
+                            break;    // no more pots available
                         }
                     }
                     else
                     {
-                        qtyCount = 1;   // non-compulsory autopot concept thanks to marcuswoon
-                    }
-
-                    while (true)
-                    {
-                        short qtyToUse = (short)Math.Min(qtyCount, toUse.getQuantity());
-                        InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, qtyToUse, false);
-
-                        curHp += (int)(incHp * qtyToUse);
-                        curMp += (int)(incMp * qtyToUse);
-
-                        useCount += qtyToUse;
-                        qtyCount -= qtyToUse;
-
-                        if (toUse.getQuantity() == 0 && qtyCount > 0)
-                        {
-                            // depleted out the current slot, fetch for more
-
-                            if (!cursorOnNextAvailablePot(chr))
-                            {
-                                break;    // no more pots available
-                            }
-                        }
-                        else
-                        {
-                            break;    // gracefully finished it's job, quit the loop
-                        }
+                        break;    // gracefully finished it's job, quit the loop
                     }
                 }
-            }
-            finally
-            {
-                useInv.unlockInventory();
             }
 
             if (stat != null)

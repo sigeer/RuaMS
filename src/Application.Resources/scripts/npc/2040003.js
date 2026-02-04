@@ -1,9 +1,9 @@
-﻿var status = 0;
+var status = 0;
 var em;
 var eim;
 
 function sendBaseText() {
-    cm.sendOk("访问仅限于公众。");
+    cm.sendDefault(3239);
     cm.dispose();
 }
 

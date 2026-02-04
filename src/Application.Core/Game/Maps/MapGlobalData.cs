@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Application.Core.Game.Maps
 {
     public class MapGlobalData
@@ -10,6 +12,6 @@ namespace Application.Core.Game.Maps
             MapObjectType.DOOR,
             MapObjectType.SUMMON,
             MapObjectType.REACTOR];
-        public static Dictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(100);
+        public static ConcurrentDictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(-1, 100);
     }
 }

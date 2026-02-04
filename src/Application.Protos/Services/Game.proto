@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 import "Base/BoolWrapper.proto";
 
 import "Base/MonsterCardData.proto";
@@ -9,30 +8,24 @@ import "Dto/Drop.proto";
 import "Dto/Note.proto";
 import "Dto/Shop.proto";
 
-import "ChatRoom/ChatRoom.proto";
-
-import "Invitation/AnswerInvite.proto";
-import "Invitation/CreateInvite.proto";
-
 import "Expedition/ExpeditionRegistry.proto";
 import "Expedition/ExpeditionEntry.proto";
-import "Expedition/ExpeditionInfo.proto";
 
-import "Dto/NewYearCard.proto";
 import "Item/Gachapon.proto";
 import "Item/SkillBook.proto";
 
 import "Dto/NameChange.proto";
-import "Message/YellowTip.proto";
-import "Message/EarnTitleMessage.proto";
 import "Item/CDK.proto";
-import "Events/ReloadEvents.proto";
 import "Rank/RankCharacter.proto";
 import "Item/HiredMerchant.proto";
-import "Dto/Report.proto";
 import "Config/MonitorConfig.proto";
-import "Config/CouponConfig.proto";
 import "Lives/DBLife.proto";
+import "Lives/PlayerNPC.proto";
+
+import "Duey/CreatePackageRequest.proto";
+import "Duey/RemovePackageRequest.proto";
+import "Duey/TakeDueyPackage.proto";
+import "Duey/DueyPackage.proto";
 
 
 package ServiceProto;
@@ -52,42 +45,30 @@ service GameService {
 
 	rpc GetShop(Dto.GetShopRequest) returns(Dto.GetShopResponse);
 
-	rpc JoinChatRoom(Dto.JoinChatRoomRequest) returns(google.protobuf.Empty);
-	rpc LeaveChatRoom(Dto.LeaveChatRoomRequst) returns(google.protobuf.Empty);
-	rpc SendChatRoomMessage(Dto.SendChatRoomMessageRequest) returns(google.protobuf.Empty);
-	rpc CreateChatRoom(Dto.CreateChatRoomRequest) returns(google.protobuf.Empty);
-
-	rpc SendInvitation(InvitationProto.CreateInviteRequest) returns (google.protobuf.Empty);
-	rpc AnswerInvitation(InvitationProto.AnswerInviteRequest) returns (google.protobuf.Empty);
-
 	rpc RegisterExpedition(ExpeditionProto.ExpeditionRegistry) returns (google.protobuf.Empty);
 	rpc CheckExpedition(ExpeditionProto.ExpeditionCheckRequest) returns (ExpeditionProto.ExpeditionCheckResponse);
-	rpc GetExpeditionInfo(google.protobuf.Empty) returns(ExpeditionProto.QueryChannelExpedtionResponse);
 
-	rpc SendNewyearCard(Dto.SendNewYearCardRequest) returns (google.protobuf.Empty);
-	rpc RecevieNewyearCard(Dto.ReceiveNewYearCardRequest) returns (google.protobuf.Empty);
-	rpc DiscardNewyearCard(Dto.DiscardNewYearCardRequest) returns (google.protobuf.Empty);
-
-	rpc SendYellowTip(MessageProto.YellowTipRequest) returns (google.protobuf.Empty);
-	rpc SendEarnTitleMessage(MessageProto.EarnTitleMessageRequest) returns (google.protobuf.Empty);
 	rpc UseCDK(ItemProto.UseCdkRequest) returns(ItemProto.UseCdkResponse);
 
-	rpc ReloadEvents(Dto.ReloadEventsRequest) returns(google.protobuf.Empty);
 	rpc LoadCharacterRank(RankProto.LoadCharacterRankRequest) returns(RankProto.LoadCharacterRankResponse);
 
 	rpc LoadPlayerHiredMerchant(ItemProto.GetPlayerHiredMerchantRequest) returns(ItemProto.RemoteHiredMerchantDto);
 	rpc CommitRetrievedFromFredrick(ItemProto.CommitRetrievedRequest) returns(ItemProto.CommitRetrievedResponse);
 	rpc CanHiredMerchant (ItemProto.CanHiredMerchantRequest) returns(ItemProto.CanHiredMerchantResponse);
 
-	rpc SetMonitor(Config.ToggleMonitorPlayerRequest) returns(Config.ToggleMonitorPlayerResponse);
 	rpc LoadMonitor(google.protobuf.Empty) returns(Config.MonitorDataWrapper);
-
-	rpc SendToggleCoupon(Config.ToggelCouponRequest) returns (google.protobuf.Empty);
 
 	rpc GetAllPLife(LifeProto.GetAllPLifeRequest) returns(LifeProto.GetAllPLifeResponse);
 	rpc GetLifeByMapId(LifeProto.GetPLifeByMapIdRequest) returns(LifeProto.GetPLifeByMapIdResponse);
-	rpc CreateLife(LifeProto.CreatePLifeRequest) returns(google.protobuf.Empty);
-	rpc RemoveLife(LifeProto.RemovePLifeRequest) returns(google.protobuf.Empty);
+
+	rpc CreatePlayerNPCCheck(LifeProto.CreatePlayerNPCPreRequest)returns(LifeProto.CreatePlayerNPCPreResponse);
+	rpc CreatePlayerNPC(LifeProto.CreatePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc RemoveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
+	rpc RemoveByName(LifeProto.RemovePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc GetMapPlayerNPC(LifeProto.GetMapPlayerNPCListRequest) returns(LifeProto.GetMapPlayerNPCListResponse);
+	rpc GetAllPlayerNPC(google.protobuf.Empty) returns(LifeProto.GetAllPlayerNPCDataResponse);
+
+	rpc CreateDueyPackage (DueyDto.CreatePackageRequest) returns(DueyDto.CreatePackageResponse);
 }
 
 message CheckCharacterNameRequest {

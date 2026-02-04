@@ -4,6 +4,7 @@ using Application.Core.Game.Relation;
 using scripting.Event;
 using Serilog;
 using server;
+using System.IO;
 using System.Runtime.ConstrainedExecution;
 using tools.exceptions;
 
@@ -17,24 +18,9 @@ namespace Application.Core.Scripting.Events
 
 
         #region StartInstance
-        //PQ method: starts a PQ
-        public bool StartPQInstance(Team party, IMap map)
-        {
-            return StartPQInstance(party, map, 0);
-        }
-
-        public bool StartPQInstance(int lobbyId, Team party, IMap map)
-        {
-            return StartPQInstance(lobbyId, party, map, 0, party.GetChannelLeader(cserv));
-        }
-
-        //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
-        public bool StartPQInstance(Team party, IMap map, int difficulty)
-        {
-            return StartPQInstance(-1, party, map, difficulty, party.GetChannelLeader(cserv));
-        }
-
-        bool StartPQInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer? leader)
+        public bool StartPQInstance(Player leader, List<Player> eligibleMembers, int difficulty = 1)
+            => StartPQInstance(-1, leader, eligibleMembers, difficulty);
+        public bool StartPQInstance(int lobbyId, Player leader, List<Player>? eligibleMembers = null, int difficulty = 1)
         {
             if (leader == null)
             {
@@ -46,13 +32,23 @@ namespace Application.Core.Scripting.Events
                 return false;
             }
 
+            eligibleMembers ??= leader.getPartyMembersOnSameMap();
+            if (eligibleMembers.Count == 0 || !eligibleMembers.Contains(leader))
+            {
+                return false;
+            }
+
+            if (eligibleMembers.Any(x => x.Map != leader.Map))
+            {
+                return false;
+            }
+
             try
             {
                 if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
                 {
                     playerPermit.Add(leader.getId());
 
-                    Monitor.Enter(startLock);
                     try
                     {
                         try
@@ -76,7 +72,7 @@ namespace Application.Core.Scripting.Events
                             EventInstanceManager? eim = null;
                             try
                             {
-                                eim = createInstance<EventInstanceManager>("setup", difficulty, (lobbyId > -1) ? lobbyId : party.getLeaderId());
+                                eim = createInstance<EventInstanceManager>("setup", difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
                                 registerEventInstance(eim, lobbyId);
                                 eim.Type = Application.Shared.Events.EventInstanceType.PartyQuest;
                             }
@@ -88,8 +84,10 @@ namespace Application.Core.Scripting.Events
 
                             eim.setLeader(leader);
 
-                            eim.registerParty(party, map);
-                            party.setEligibleMembers([]);
+                            foreach (var item in eligibleMembers)
+                            {
+                                eim.registerPlayer(item);
+                            }
 
                             eim.startEvent();
                         }
@@ -103,7 +101,6 @@ namespace Application.Core.Scripting.Events
                     }
                     finally
                     {
-                        Monitor.Exit(startLock);
                         playerPermit.Remove(leader.getId());
                         startSemaphore.Release();
                     }

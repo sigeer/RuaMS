@@ -36,11 +36,11 @@ public class SpouseChatHandler : ChannelHandlerBase
         _marriageManager = marriageManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readString();//recipient
         string msg = p.readString();
 
-        _marriageManager.SendSpouseChat(c.OnlinedCharacter, msg);
+        await _marriageManager.SendSpouseChat(c.OnlinedCharacter, msg);
     }
 }

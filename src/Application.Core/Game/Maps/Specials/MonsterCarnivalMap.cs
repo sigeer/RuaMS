@@ -193,7 +193,7 @@ namespace Application.Core.Game.Maps.Specials
                 this.spawnReactor(reactor);
                 reactor.setGuardian(pt);
                 this.buffMonsters(team, skill);
-                getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayers().get(0)).getClient());
+                getReactorByOid(reactor.getObjectId())!.hitReactor(((Player)this.getAllPlayers().get(0)).getClient());
             }
             catch (Exception e)
             {

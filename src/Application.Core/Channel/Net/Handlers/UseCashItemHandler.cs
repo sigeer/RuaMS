@@ -21,7 +21,9 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
@@ -42,15 +44,13 @@ public class UseCashItemHandler : ChannelHandlerBase
 {
 
     readonly ILogger<UseCashItemHandler> _logger;
-    readonly IDueyService _dueyService;
     readonly ItemService _itemService;
     readonly ShopManager _shopManager;
     readonly PlayerShopService _playerShopService;
 
-    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService, ShopManager shopManager, PlayerShopService playerShopService)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, ItemService itemService, ShopManager shopManager, PlayerShopService playerShopService)
     {
         _logger = logger;
-        _dueyService = dueyService;
         _itemService = itemService;
         _shopManager = shopManager;
         _playerShopService = playerShopService;
@@ -60,7 +60,7 @@ public class UseCashItemHandler : ChannelHandlerBase
     {
         var player = c.OnlinedCharacter;
 
-        long timeNow = c.CurrentServerContainer.getCurrentTime();
+        long timeNow = c.CurrentServer.Node.getCurrentTime();
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
             player.dropMessage(1, "You have used a cash item recently. Wait a moment, then try again.");
@@ -161,7 +161,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (!success)
             {
-                InventoryManipulator.addById(c, itemId, 1);
+                player.GainItem(itemId, 1);
                 c.sendPacket(PacketCreator.enableActions());
             }
         }
@@ -242,7 +242,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                 if (period > 0)
                 {
-                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServerContainer.getCurrentTime();
+                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServer.Node.getCurrentTime();
                     eq.setExpiration(expiration + 24 * 3600 * 1000 * (period));
                 }
 
@@ -289,7 +289,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     break;
                 case 2:
                     // Super megaphone
-                    c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -319,8 +319,9 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     var v = p.readInt();
 
-                    _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
-                    return;
+                    if (!_itemService.UseCash_TV(player, victim, messages, tvType, ear))
+                        return;
+                    break;
                 case 6: //道具喇叭
                     string msg = medal + player.getName() + " : " + p.readString();
                     whisper = p.readByte() == 1;
@@ -336,8 +337,9 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, toUse, item, msg, whisper);
-                    return;
+                    if (!_itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, item, msg, whisper))
+                        return;
+                    break;
                 case 7: //缤纷喇叭
                     int lines = p.ReadSByte();
                     if (lines < 1 || lines > 3) //hack
@@ -350,7 +352,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
+                    c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -373,7 +375,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             string sendTo = p.readString();
             string msg = p.readString();
-            bool sendSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(player.Id, sendTo, msg);
+            bool sendSuccess = c.CurrentServer.Node.Transport.SendNormalNoteMessage(player.Id, sendTo, msg);
             if (sendSuccess)
             {
                 remove(c, position, itemId);
@@ -420,7 +422,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 520)
         {
-            if (player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, true, false, true))
+            if (player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, GainItemShow.ShowInChat))
             {
                 remove(c, position, itemId);
             }
@@ -464,7 +466,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 533)
         {
-            _dueyService.DueyTalk(c, true);
+            c.sendPacket(DueyPacketCreator.SendQuickly());
         }
         else if (itemType == 537)
         {
@@ -488,8 +490,10 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            c.CurrentServerContainer.TimerManager.schedule(() => c.CurrentServerContainer.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            c.CurrentServer.Node.TimerManager.schedule(
+                () => c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
+                TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)
@@ -525,7 +529,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             int jobid = p.readInt();
             int improveSp = p.readInt();
 
-            int newPlayerId = c.CurrentServerContainer.DataService.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
+            int newPlayerId = c.CurrentServer.NodeService.DataService.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
 
             if (newPlayerId > 0)
             {
@@ -564,7 +568,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
         }
         else if (itemType == 550)
-        { 
+        {
             //Extend item expiration
             c.sendPacket(PacketCreator.enableActions());
         }
@@ -606,14 +610,15 @@ public class UseCashItemHandler : ChannelHandlerBase
             player.forceUpdateItem(equip);
         }
         else if (itemType == 561)
-        { //VEGA'S SPELL
+        { 
+            //VEGA'S SPELL
             if (p.readInt() != 1)
             {
                 return;
             }
 
-            byte eSlot = (byte)p.readInt();
-            var eitem = player.getInventory(InventoryType.EQUIP).getItem(eSlot);
+            sbyte eSlot = (sbyte)p.readInt();
+            var toScroll = player.getInventory(InventoryType.EQUIP).getItem(eSlot) as Equip;
 
             if (p.readInt() != 2)
             {
@@ -622,12 +627,11 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             byte uSlot = (byte)p.readInt();
             var uitem = player.getInventory(InventoryType.USE).getItem(uSlot);
-            if (eitem == null || uitem == null)
+            if (toScroll == null || uitem == null)
             {
                 return;
             }
 
-            Equip toScroll = (Equip)eitem;
             if (toScroll.getUpgradeSlots() < 1)
             {
                 c.sendPacket(PacketCreator.getInventoryFull());
@@ -645,7 +649,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             int curlevel = toScroll.getLevel();
             c.sendPacket(PacketCreator.sendVegaScroll(0x40));
 
-            Equip scrolled = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
+            var scrolled = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
             c.sendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 
@@ -653,28 +657,9 @@ public class UseCashItemHandler : ChannelHandlerBase
             remove(c, position, itemId);
 
             IChannelClient client = c;
-            c.CurrentServerContainer.TimerManager.schedule(() =>
+            c.CurrentServer.Node.TimerManager.schedule(() =>
             {
-                if (!player.isLoggedin())
-                {
-                    return;
-                }
-
-                player.toggleBlockCashShop();
-
-                List<ModifyInventory> mods = new();
-                mods.Add(new ModifyInventory(3, scrolled));
-                mods.Add(new ModifyInventory(0, scrolled));
-                client.sendPacket(PacketCreator.modifyInventory(true, mods));
-
-                var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
-                player.getMap().broadcastMessage(PacketCreator.getScrollEffect(player.getId(), scrollResult, false, false));
-                if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
-                {
-                    player.equipChanged();
-                }
-
-                client.sendPacket(PacketCreator.enableActions());
+                c.CurrentServer.Post(new DelayedShowVegaSpellCommand(player, scrolled, curlevel));
             }, TimeSpan.FromSeconds(3));
         }
         else
@@ -687,9 +672,7 @@ public class UseCashItemHandler : ChannelHandlerBase
     private static void remove(IChannelClient c, short position, int itemid)
     {
         Inventory cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
-        cashInv.lockInventory();
-        try
-        {
+
             var it = cashInv.getItem(position);
             if (it == null || it.getItemId() != itemid)
             {
@@ -701,11 +684,6 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             InventoryManipulator.removeFromSlot(c, InventoryType.CASH, position, 1, true, false);
-        }
-        finally
-        {
-            cashInv.unlockInventory();
-        }
     }
 
     private static bool getIncubatedItem(IChannelClient c, int id)
@@ -724,7 +702,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             return false;
         }
-        InventoryManipulator.addById(c, id, (short)amount);
+        c.OnlinedCharacter.GainItem(id, (short)amount);
         return true;
     }
 }

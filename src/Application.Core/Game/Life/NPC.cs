@@ -39,12 +39,12 @@ public class NPC : AbstractLifeObject
 
     public bool hasShop(IChannelClient c)
     {
-        return c.CurrentServerContainer.ShopManager.getShopForNPC(getId()) != null;
+        return c.CurrentServer.NodeService.ShopManager.getShopForNPC(getId()) != null;
     }
 
     public void sendShop(IChannelClient c)
     {
-        c.CurrentServerContainer.ShopManager.getShopForNPC(getId())?.sendShop(c);
+        c.CurrentServer.NodeService.ShopManager.getShopForNPC(getId())?.sendShop(c);
     }
 
     public override void sendSpawnData(IChannelClient client)

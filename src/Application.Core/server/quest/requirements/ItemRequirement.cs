@@ -42,7 +42,7 @@ public class ItemRequirement : AbstractQuestRequirement
     {
         RequiredItems = data.ToDictionary(x => x.ItemID, x => x.Count);
     }
-    public override bool check(IPlayer chr, int? npcid)
+    public override bool check(Player chr, int? npcid)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         foreach (int itemId in RequiredItems.Keys)

@@ -41,7 +41,7 @@ public class Storage : AbstractStorage
     public int AccountId { get; set; }
 
     NpcTemplate? NpcTemplate { get; set; }
-    public Storage(IPlayer chr, int id, byte slots, int meso, Item[] items) : base(chr, slots, meso, items)
+    public Storage(Player chr, int id, byte slots, int meso, Item[] items) : base(chr, slots, meso, items)
     {
         log = LogFactory.GetLogger(LogType.Storage);
         this.AccountId = id;
@@ -50,21 +50,13 @@ public class Storage : AbstractStorage
 
     public bool TryGainSlots(int slots)
     {
-        lockObj.Enter();
-        try
+        if (CanGainSlots(Slots))
         {
-            if (CanGainSlots(Slots))
-            {
-                this.Slots += (byte)slots;
-                return true;
-            }
+            this.Slots += (byte)slots;
+            return true;
+        }
 
-            return false;
-        }
-        finally
-        {
-            lockObj.Exit();
-        }
+        return false;
     }
 
     public override bool TakeOutItemCheck(Item item)
@@ -93,14 +85,14 @@ public class Storage : AbstractStorage
 
     public override void OnTakeOutSuccess(Item item)
     {
-        if (NpcTemplate != null)
-            Owner.GainMeso(-NpcTemplate.TrunkGet, false, true, false);
+        if (NpcTemplate != null && NpcTemplate.TrunkGet > 0)
+            Owner.GainMeso(-NpcTemplate.TrunkGet.Value, enableActions: true);
     }
 
     public override void OnStoreSuccess(short slot, int itemId, short quantity)
     {
-        if (NpcTemplate != null)
-            Owner.GainMeso(-NpcTemplate.TrunkPut, false, true, false);
+        if (NpcTemplate != null && NpcTemplate.TrunkPut > 0)
+            Owner.GainMeso(-NpcTemplate.TrunkPut.Value, enableActions: true);
     }
 
     public override void OpenStorage(int npcId)

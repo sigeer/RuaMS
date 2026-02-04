@@ -32,7 +32,7 @@ public class MesoRequirement : AbstractQuestRequirement
         meso = data;
     }
 
-    public override bool check(IPlayer chr, int? npcid)
+    public override bool check(Player chr, int? npcid)
     {
         if (chr.getMeso() >= meso)
         {

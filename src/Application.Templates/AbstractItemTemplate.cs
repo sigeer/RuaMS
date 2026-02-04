@@ -56,6 +56,7 @@ namespace Application.Templates
         public int ItemId { get; set; }
         [WZPath("info/replace/msg")]
         public string Message { get; set; } = string.Empty;
-        public int Period { get; set; }
+        [WZPath("info/replace/period")]
+        public int Period { get; set; } = -1;
     }
 }

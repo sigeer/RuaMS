@@ -53,7 +53,7 @@ public class GeneralChatHandler : ChannelHandlerBase
     {
         string s = p.readString();
         var chr = c.OnlinedCharacter;
-        if (chr.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTime())
+        if (chr.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.Node.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;

@@ -8,7 +8,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
 {
     public class EllinPQ : PlayerPartyQuestBase
     {
-        public EllinPQ(IPlayer player) : base("EllinPQ", "", player)
+        public EllinPQ(Player player) : base("EllinPQ", "", player)
         {
             EntryNpcId = 2133000;
         }
@@ -37,14 +37,14 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             // 第4关抓20个怪，NPC过关 2133001 需要道具 4001169 * 20
             if (curMapId == 930000400)
             {
-                InventoryManipulator.addFromDrop(Player.Client, new Item(4001169, 0, 20));
+                Player.GainItem(4001169, 20);
                 // 也可以直接传送过关
                 // eim.warpEventTeam(930000500);
             }
             // 第5关跳跳，NPC对话过关 2133004 需要道具 4001163 * 1
             if (curMapId == 930000500)
             {
-                InventoryManipulator.addFromDrop(Player.Client, new Item(4001163, 0, 1));
+                Player.GainItem(4001163, 20);
             }
             // 第6关放置物品后，触发reactor=3001000，召唤BOSS并击杀，传送点过关 party6_out
             if (curMapId == 930000600)

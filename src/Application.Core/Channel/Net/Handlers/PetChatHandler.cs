@@ -41,8 +41,7 @@ public class PetChatHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int petId = p.readInt();
-        p.readInt();
+        var petId = p.readLong();
         p.readByte();
         int act = p.ReadSByte();
         sbyte pet = c.OnlinedCharacter.getPetIndex(petId);

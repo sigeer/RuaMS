@@ -1,4 +1,4 @@
-using server.maps;
+using Application.Core.Channel.Commands;
 
 namespace Application.Core.Channel.Tasks
 {
@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Tasks
         readonly WorldChannel _worldChannel;
 
         public RespawnTask(WorldChannel worldChannel)
-            : base($"Channel:{worldChannel.Id}_{nameof(RespawnTask)}",
+            : base($"{worldChannel.ServerLogName}_{nameof(RespawnTask)}",
                   TimeSpan.FromMilliseconds(YamlConfig.config.server.RESPAWN_INTERVAL),
                   TimeSpan.FromMilliseconds(YamlConfig.config.server.RESPAWN_INTERVAL))
         {
@@ -16,19 +16,7 @@ namespace Application.Core.Channel.Tasks
 
         protected override void HandleRun()
         {
-            var ps = _worldChannel.getPlayerStorage();
-            if (ps != null)
-            {
-                if (ps.getAllCharacters().Count() > 0)
-                {
-                    MapManager mapManager = _worldChannel.getMapFactory();
-                    if (mapManager != null)
-                    {
-                        mapManager.updateMaps();
-                    }
-                }
-            }
+            _worldChannel.Post(new RespawnCommand());
         }
     }
-
 }

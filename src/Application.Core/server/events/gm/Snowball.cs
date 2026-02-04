@@ -21,14 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using tools;
 
 namespace server.events.gm;
-/**
- * @author kevintjuh93
- */
+
+
+/// <summary>
+/// TODO: 待重构，让其与WorldChannel关联而不是Map
+/// </summary>
 public class Snowball
 {
     private ISnowBallMap map;
@@ -38,7 +41,7 @@ public class Snowball
     private bool hittable = false;
     private int team;
     private bool winner = false;
-    List<IPlayer> characters = new();
+    List<Player> characters = new();
 
     public Snowball(int team, IMap map)
     {
@@ -72,37 +75,42 @@ public class Snowball
             }
         }
         hittable = true;
-        map.ChannelServer.Container.TimerManager.schedule(() =>
+        map.ChannelServer.Node.TimerManager.schedule(() =>
         {
-            var ball0 = map.getSnowball(0)!;
-            var ball1 = map.getSnowball(1)!;
-            var teamBall = team == 0 ? ball0 : ball1;
-            var anotherTeamBall = team == 0 ? ball0 : ball1;
-            if (teamBall.getPosition() > anotherTeamBall.getPosition())
-            {
-                foreach (var chr in characters)
-                {
-                    if (chr != null)
-                    {
-                        chr.sendPacket(PacketCreator.rollSnowBall(false, 3, ball0, ball0));
-                    }
-                }
-                winner = true;
-            }
-            else if (anotherTeamBall.getPosition() > teamBall.getPosition())
-            {
-                foreach (var chr in characters)
-                {
-                    if (chr != null)
-                    {
-                        chr.sendPacket(PacketCreator.rollSnowBall(false, 4, ball0, ball0));
-                    }
-                }
-                winner = true;
-            } //Else
-            warpOut();
-        }, 600000);
+            map.ChannelServer.Post(new EventSnowballTimeoutCommand(this));
+        }, 600_000);
 
+    }
+
+    public void ProcessTimeout()
+    {
+        var ball0 = map.getSnowball(0)!;
+        var ball1 = map.getSnowball(1)!;
+        var teamBall = team == 0 ? ball0 : ball1;
+        var anotherTeamBall = team == 0 ? ball0 : ball1;
+        if (teamBall.getPosition() > anotherTeamBall.getPosition())
+        {
+            foreach (var chr in characters)
+            {
+                if (chr != null)
+                {
+                    chr.sendPacket(PacketCreator.rollSnowBall(false, 3, ball0, ball0));
+                }
+            }
+            winner = true;
+        }
+        else if (anotherTeamBall.getPosition() > teamBall.getPosition())
+        {
+            foreach (var chr in characters)
+            {
+                if (chr != null)
+                {
+                    chr.sendPacket(PacketCreator.rollSnowBall(false, 4, ball0, ball0));
+                }
+            }
+            winner = true;
+        } //Else
+        warpOut();
     }
 
     public bool isHittable()
@@ -146,11 +154,10 @@ public class Snowball
                 {
                     this.snowmanhp = 0;
 
-                    map.ChannelServer.Container.TimerManager.schedule(() =>
+                    map.ChannelServer.Node.TimerManager.schedule(() =>
                     {
-                        setSnowmanHP(map.SnowManHP);
-                        message(5);
-                    }, 10000);
+                        map.ChannelServer.Post(new EventSnowballRespawnCommand(this));
+                    }, 10_000);
                 }
                 else
                 {
@@ -183,6 +190,12 @@ public class Snowball
         map.broadcastMessage(PacketCreator.hitSnowBall(what, damage));
     }
 
+    public void SnowmanRespawn()
+    {
+        setSnowmanHP(map.SnowManHP);
+        message(5);
+    }
+
     public void message(int message)
     {
         foreach (var chr in characters)
@@ -196,18 +209,23 @@ public class Snowball
 
     public void warpOut()
     {
-        map.ChannelServer.Container.TimerManager.schedule(() =>
+        map.ChannelServer.Node.TimerManager.schedule(() =>
         {
-            if (winner)
-            {
-                map.warpOutByTeam(team, MapId.EVENT_WINNER);
-            }
-            else
-            {
-                map.warpOutByTeam(team, MapId.EVENT_EXIT);
-            }
-
-            map.setSnowball(team, null);
+            map.ChannelServer.Post(new EventSnowballWarpOutCommand(this));
         }, 10000);
+    }
+
+    public void ProcessWarpOut()
+    {
+        if (winner)
+        {
+            map.warpOutByTeam(team, MapId.EVENT_WINNER);
+        }
+        else
+        {
+            map.warpOutByTeam(team, MapId.EVENT_EXIT);
+        }
+
+        map.setSnowball(team, null);
     }
 }

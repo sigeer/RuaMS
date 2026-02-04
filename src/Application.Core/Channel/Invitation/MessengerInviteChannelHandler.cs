@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Invitation
 {
     internal class MessengerInviteChannelHandler : InviteChannelHandler
     {
-        public MessengerInviteChannelHandler(WorldChannelServer server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Messenger, logger)
+        public MessengerInviteChannelHandler(WorldChannel server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Messenger, logger)
         {
         }
 
@@ -16,12 +16,12 @@ namespace Application.Core.Channel.Invitation
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 receiver?.message("Could not verify your Maple Messenger accept since the invitation rescinded.");
 
                 if (result == InviteResultType.DENIED)
                 {
-                    var sender = _server.FindPlayerById(data.SenderPlayerId);
+                    var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                     sender?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 5, 0));
                 }
             }
@@ -32,14 +32,14 @@ namespace Application.Core.Channel.Invitation
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
                     receiver.sendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
 
                 }
 
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     sender.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 1));
@@ -47,7 +47,7 @@ namespace Application.Core.Channel.Invitation
             }
             else
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     switch (code)

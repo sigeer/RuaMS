@@ -1,22 +1,20 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "Base/BoolWrapper.proto";
-
-import "Item/ItemMegaphone.proto";
-import "Item/TVMessage.proto";
 import "Item/OwlSearch.proto";
 import "Item/ItemStorage.proto";
+import "Item/TVMessage.proto";
+import "Item/ItemMegaphone.proto";
 
 package ServiceProto;
 
 service ItemService {
-	rpc UseItemMegaphone(ItemProto.UseItemMegaphoneRequest) returns(ItemProto.UseItemMegaphoneResponse);
-	rpc UseTV(ItemProto.CreateTVMessageRequest) returns(ItemProto.CreateTVMessageResponse);
 	rpc LoadOwlSearchRecords(google.protobuf.Empty) returns(ItemProto.OwlSearchRecordResponse);
 	rpc UseOwlSearch(ItemProto.OwlSearchRequest) returns(ItemProto.OwlSearchResponse);
 
 	rpc SaveItems(ItemProto.StoreItemsRequest) returns(ItemProto.StoreItemsResponse);
 	rpc LoadItemFromStore(ItemProto.LoadItemsFromStoreRequest) returns(ItemProto.LoadItemsFromStoreResponse);
+
+	rpc UseTVMessage(ItemProto.CreateTVMessageRequest) returns (ItemProto.CreateTVMessageResponse);
+	rpc UseMegaPhone(ItemProto.UseItemMegaphoneRequest) returns (ItemProto.UseItemMegaphoneResponse);
 }

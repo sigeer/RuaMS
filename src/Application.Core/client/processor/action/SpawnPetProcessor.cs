@@ -33,8 +33,6 @@ namespace client.processor.action;
  */
 public class SpawnPetProcessor
 {
-    private static DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.ITEM);
-
     public static void processSpawnPet(IChannelClient c, byte slot, bool lead)
     {
         if (c.tryacquireClient())
@@ -49,7 +47,8 @@ public class SpawnPetProcessor
                 int petItemId = pet.getItemId();
                 if (petItemId == ItemId.DRAGON_PET || petItemId == ItemId.ROBO_PET)
                 {
-                    if (chr.haveItem(petItemId + 1))
+                    var evolveid = pet.SourceTemplate.Evol1;
+                    if (chr.haveItem(evolveid))
                     {
                         chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
                         c.sendPacket(PacketCreator.enableActions());
@@ -57,16 +56,18 @@ public class SpawnPetProcessor
                     }
                     else
                     {
-                        int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petItemId + ".img"));
                         long expiration = item.getExpiration();
-                        InventoryManipulator.removeById(c, InventoryType.CASH, petItemId, 1, false, false);
-                        InventoryManipulator.addById(c, evolveid, 1, expiration: expiration);
-
+                        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
+                        chr.GainItem(evolveid, 1, nextSetter: i => i.setExpiration(expiration));
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
                 }
-                TogglePet(chr, pet, lead);
+                else
+                {
+                    TogglePet(chr, pet, lead);
+                }
+
 
             }
             finally
@@ -76,7 +77,7 @@ public class SpawnPetProcessor
         }
     }
 
-    public static void TogglePet(IPlayer chr, Pet pet, bool lead)
+    public static void TogglePet(Player chr, Pet pet, bool lead)
     {
         if (chr.getPetIndex(pet) != -1)
         {
@@ -93,19 +94,8 @@ public class SpawnPetProcessor
             {
                 chr.shiftPetsRight();
             }
-            Point pos = chr.getPosition();
-            pos.Y -= 12;
-            pet.setPos(pos);
-            pet.setFh(chr.getMap().Footholds.FindBelowFoothold(pet.getPos()).getId());
-            pet.setStance(0);
-            pet.setSummoned(true);
-            chr.addPet(pet);
-            chr.getMap().broadcastMessage(chr, PacketCreator.showPet(chr, pet, false, false), true);
-            chr.Client.sendPacket(PacketCreator.petStatUpdate(chr));
-            chr.Client.sendPacket(PacketCreator.enableActions());
 
-            chr.commitExcludedItems();
-            chr.Client.CurrentServerContainer.PetHungerManager.registerPetHunger(chr, chr.getPetIndex(pet));
+            chr.SummonPet(pet);
         }
     }
 }

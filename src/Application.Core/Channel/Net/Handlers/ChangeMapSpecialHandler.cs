@@ -34,7 +34,7 @@ public class ChangeMapSpecialHandler : ChannelHandlerBase
         string startwp = p.readString();
         p.readShort();
         var portal = c.OnlinedCharacter.getMap().getPortal(startwp);
-        if (portal == null || c.OnlinedCharacter.portalDelay() > c.CurrentServerContainer.getCurrentTime() || c.OnlinedCharacter.getBlockedPortals().Contains(portal.getScriptName()))
+        if (portal == null || c.OnlinedCharacter.portalDelay() > c.CurrentServer.Node.getCurrentTime() || c.OnlinedCharacter.getBlockedPortals().Contains(portal.getScriptName()))
         {
             c.sendPacket(PacketCreator.enableActions());
             return;

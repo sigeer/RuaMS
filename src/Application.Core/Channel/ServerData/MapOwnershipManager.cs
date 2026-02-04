@@ -2,20 +2,21 @@ using Application.Core.Game.Maps;
 
 namespace Application.Core.Channel.ServerData;
 
-public class MapOwnershipManager : TaskBase
+public class MapOwnershipManager
 {
-
     private HashSet<IMap> ownedMaps = new();
+    readonly WorldChannel _server;
 
-    public MapOwnershipManager(WorldChannelServer server)
-        : base($"ChannelServer:{server.ServerName}_{nameof(MapOwnershipManager)}",
-              TimeSpan.FromSeconds(20),
-              TimeSpan.FromSeconds(20))
+    public MapOwnershipManager(WorldChannel server)
     {
+        _server = server;
     }
-    protected override void HandleRun()
+    public void HandleRun()
     {
-        RunCheckOwnedMapsSchedule();
+        foreach (var map in ownedMaps)
+        {
+            map.checkMapOwnerActivity();
+        }
     }
 
     public void RegisterOwnedMap(IMap map)
@@ -27,23 +28,4 @@ public class MapOwnershipManager : TaskBase
     {
         ownedMaps.Remove(map);
     }
-
-    public void RunCheckOwnedMapsSchedule()
-    {
-        if (ownedMaps.Count > 0)
-        {
-            List<IMap> ownedMapsList;
-
-            lock (ownedMaps)
-            {
-                ownedMapsList = new(ownedMaps);
-            }
-
-            foreach (var map in ownedMapsList)
-            {
-                map.checkMapOwnerActivity();
-            }
-        }
-    }
-
 }

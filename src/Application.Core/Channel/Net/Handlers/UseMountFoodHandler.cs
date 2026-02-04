@@ -50,37 +50,29 @@ public class UseMountFoodHandler : ChannelHandlerBase
             {
                 bool? mountLevelup = null;
 
-                useInv.lockInventory();
-                try
+                var item = useInv.getItem(pos);
+                if (item != null && item.getItemId() == itemid && mount != null)
                 {
-                    var item = useInv.getItem(pos);
-                    if (item != null && item.getItemId() == itemid && mount != null)
+                    int curTiredness = mount.getTiredness();
+                    int healedTiredness = Math.Min(curTiredness, 30);
+
+                    float healedFactor = (float)healedTiredness / 30;
+                    mount.setTiredness(curTiredness - healedTiredness);
+
+                    if (healedFactor > 0.0f)
                     {
-                        int curTiredness = mount.getTiredness();
-                        int healedTiredness = Math.Min(curTiredness, 30);
-
-                        float healedFactor = (float)healedTiredness / 30;
-                        mount.setTiredness(curTiredness - healedTiredness);
-
-                        if (healedFactor > 0.0f)
+                        mount.setExp(mount.getExp() + (int)Math.Ceiling(healedFactor * (2 * mount.getLevel() + 6)));
+                        int level = mount.getLevel();
+                        bool levelup = mount.getExp() >= ExpTable.getMountExpNeededForLevel(level) && level < 31;
+                        if (levelup)
                         {
-                            mount.setExp(mount.getExp() + (int)Math.Ceiling(healedFactor * (2 * mount.getLevel() + 6)));
-                            int level = mount.getLevel();
-                            bool levelup = mount.getExp() >= ExpTable.getMountExpNeededForLevel(level) && level < 31;
-                            if (levelup)
-                            {
-                                mount.setLevel(level + 1);
-                            }
-
-                            mountLevelup = levelup;
+                            mount.setLevel(level + 1);
                         }
 
-                        InventoryManipulator.removeById(c, InventoryType.USE, itemid, 1, true, false);
+                        mountLevelup = levelup;
                     }
-                }
-                finally
-                {
-                    useInv.unlockInventory();
+
+                    InventoryManipulator.removeById(c, InventoryType.USE, itemid, 1, true, false);
                 }
 
                 if (mountLevelup != null)

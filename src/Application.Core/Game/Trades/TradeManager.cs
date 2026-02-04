@@ -43,12 +43,12 @@ namespace Application.Core.Game.Trades
             return (int)fee;
         }
 
-        public static void CancelTrade(IPlayer chr, TradeResult result)
+        public static void CancelTrade(Player chr, TradeResult result)
         {
             chr.getTrade()?.CancelTrade(result);
         }
 
-        public static bool StartTrade(IPlayer chr)
+        public static bool StartTrade(Player chr)
         {
             if (chr.getTrade() == null)
             {
@@ -58,7 +58,7 @@ namespace Application.Core.Game.Trades
             return false;
         }
 
-        private static bool hasTradeInviteBack(IPlayer c1, IPlayer c2)
+        private static bool hasTradeInviteBack(Player c1, Player c2)
         {
             var other = c2.getTrade();
             if (other != null)
@@ -73,7 +73,7 @@ namespace Application.Core.Game.Trades
             return false;
         }
 
-        public static void InviteTrade(IPlayer c1, IPlayer c2)
+        public static void InviteTrade(Player c1, Player c2)
         {
 
             if (c1.isGM() && !c2.isGM() && c1.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
@@ -131,7 +131,7 @@ namespace Application.Core.Game.Trades
             }
         }
 
-        public static bool JoinTrade(Trade trade, IPlayer player)
+        public static bool JoinTrade(Trade trade, Player player)
         {
             if (player.getTrade() == null)
             {
@@ -146,7 +146,7 @@ namespace Application.Core.Game.Trades
             return false;
         }
 
-        public static void VisitTrade(IPlayer c1, IPlayer c2)
+        public static void VisitTrade(Player c1, Player c2)
         {
             var inviteRes = InviteType.TRADE.AnswerInvite(c1.getId(), c2.getId(), true);
 
@@ -172,14 +172,14 @@ namespace Application.Core.Game.Trades
             }
         }
 
-        public static void DeclineTrade(IPlayer chr)
+        public static void DeclineTrade(Player chr)
         {
             var trade = chr.getTrade();
             if (trade != null)
             {
                 if (trade.PartnerTrade != null)
                 {
-                    IPlayer other = trade.PartnerTrade.getChr();
+                    Player other = trade.PartnerTrade.getChr();
                     if (InviteType.TRADE.AnswerInvite(chr.Id, other.Id, false).Result == InviteResultType.DENIED)
                     {
                         other.message(chr.getName() + " has declined your trade request.");
@@ -216,7 +216,7 @@ namespace Application.Core.Game.Trades
             return string.Join(", ", items.Select(x => $"[{x.getQuantity()} {ClientCulture.SystemCulture.GetItemName(x.getItemId())} ({x.getItemId()})]"));
         }
 
-        public static void CompleteTrade(IPlayer chr)
+        public static void CompleteTrade(Player chr)
         {
             var local = chr.getTrade();
             if (local == null || local.PartnerTrade == null)

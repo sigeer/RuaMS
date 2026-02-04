@@ -27,7 +27,7 @@ function enter(pi) {
         if (party != null) {
             var eli = em.getEligibleParty(pi.getParty());   // thanks Conrad for pointing out missing eligible party declaration here
             if (eli.size() > 0) {
-                if (em.StartPQInstance(party, pi.getMap(), 1)) {
+                if (em.StartPQInstance(cm.getPlayer(), eli)) {
                     pi.playPortalSound();
                     return true;
                 } else {
@@ -51,7 +51,7 @@ function enter(pi) {
         if (party != null) {
             var eli = em.getEligibleParty(pi.getParty());
             if (eli.size() > 0) {
-                if (em.StartPQInstance(party, pi.getMap(), 1)) {
+                if (em.StartPQInstance(cm.getPlayer(), eli)) {
                     pi.playPortalSound();
                     return true;
                 } else {

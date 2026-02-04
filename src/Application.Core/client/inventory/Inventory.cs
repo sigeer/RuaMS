@@ -22,10 +22,10 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using client.inventory.manipulator;
-using server;
 using System.Collections;
 using ZLinq;
 
@@ -42,13 +42,12 @@ public class Inventory : IEnumerable<Item>
     /// </summary>
     protected Dictionary<short, Item> inventory;
     protected InventoryType type;
-    protected object lockObj = new object();
 
-    protected IPlayer owner;
+    protected Player owner;
     protected byte slotLimit;
     protected bool isChecked = false;
 
-    public Inventory(IPlayer mc, InventoryType type, byte slotLimit)
+    public Inventory(Player mc, InventoryType type, byte slotLimit)
     {
         this.owner = mc;
         this.inventory = new();
@@ -68,58 +67,34 @@ public class Inventory : IEnumerable<Item>
 
     public byte getSlotLimit()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return slotLimit;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return slotLimit;
     }
 
     public void setSlotLimit(int newLimit)
     {
-        Monitor.Enter(lockObj);
-        try
+        if (newLimit < slotLimit)
         {
-            if (newLimit < slotLimit)
+            List<short> toRemove = new();
+            foreach (Item it in list())
             {
-                List<short> toRemove = new();
-                foreach (Item it in list())
+                if (it.getPosition() > newLimit)
                 {
-                    if (it.getPosition() > newLimit)
-                    {
-                        toRemove.Add(it.getPosition());
-                    }
-                }
-
-                foreach (short slot in toRemove)
-                {
-                    removeSlot(slot);
+                    toRemove.Add(it.getPosition());
                 }
             }
 
-            slotLimit = (byte)newLimit;
+            foreach (short slot in toRemove)
+            {
+                removeSlot(slot);
+            }
         }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+
+        slotLimit = (byte)newLimit;
     }
 
     public IList<Item> list()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return inventory.Values.ToList();
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return inventory.Values.ToList();
     }
 
     public Item? findById(int itemId)
@@ -251,47 +226,39 @@ public class Inventory : IEnumerable<Item>
 
     public void move(short sSlot, short dSlot, short slotMax)
     {
-        Monitor.Enter(lockObj);
-        try
+        Item? source = inventory.GetValueOrDefault(sSlot);
+        Item? target = inventory.GetValueOrDefault(dSlot);
+        if (source == null)
         {
-            Item? source = inventory.GetValueOrDefault(sSlot);
-            Item? target = inventory.GetValueOrDefault(dSlot);
-            if (source == null)
-            {
-                return;
-            }
-            if (target == null)
-            {
-                source.setPosition(dSlot);
-                inventory.AddOrUpdate(dSlot, source);
-                inventory.Remove(sSlot);
-            }
-            else if (target.getItemId() == source.getItemId() && !ItemConstants.isRechargeable(source.getItemId()) && isSameOwner(source, target))
-            {
-                if (type.getType() == InventoryType.EQUIP.getType() || type.getType() == InventoryType.CASH.getType())
-                {
-                    swap(target, source);
-                }
-                else if (source.getQuantity() + target.getQuantity() > slotMax)
-                {
-                    short rest = (short)((source.getQuantity() + target.getQuantity()) - slotMax);
-                    source.setQuantity(rest);
-                    target.setQuantity(slotMax);
-                }
-                else
-                {
-                    target.setQuantity((short)(source.getQuantity() + target.getQuantity()));
-                    inventory.Remove(sSlot);
-                }
-            }
-            else
+            return;
+        }
+        if (target == null)
+        {
+            source.setPosition(dSlot);
+            inventory.AddOrUpdate(dSlot, source);
+            inventory.Remove(sSlot);
+        }
+        else if (target.getItemId() == source.getItemId() && !ItemConstants.isRechargeable(source.getItemId()) && isSameOwner(source, target))
+        {
+            if (type.getType() == InventoryType.EQUIP.getType() || type.getType() == InventoryType.CASH.getType())
             {
                 swap(target, source);
             }
+            else if (source.getQuantity() + target.getQuantity() > slotMax)
+            {
+                short rest = (short)((source.getQuantity() + target.getQuantity()) - slotMax);
+                source.setQuantity(rest);
+                target.setQuantity(slotMax);
+            }
+            else
+            {
+                target.setQuantity((short)(source.getQuantity() + target.getQuantity()));
+                inventory.Remove(sSlot);
+            }
         }
-        finally
+        else
         {
-            Monitor.Exit(lockObj);
+            swap(target, source);
         }
     }
 
@@ -308,15 +275,7 @@ public class Inventory : IEnumerable<Item>
 
     public Item? getItem(short slot)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return inventory.GetValueOrDefault(slot);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return inventory.GetValueOrDefault(slot);
     }
 
     /// <summary>
@@ -335,6 +294,11 @@ public class Inventory : IEnumerable<Item>
             return 0;
         }
 
+        if (quantity < 0)
+        {
+            return 0;
+        }
+
         var original = item.getQuantity();
         var left = original - quantity;
         short removed = 0;
@@ -348,7 +312,7 @@ public class Inventory : IEnumerable<Item>
             item.setQuantity((short)left);
             removed = quantity;
         }
-        if (left <= 0 && allowZero)
+        if (left <= 0 && !allowZero)
             removeSlot(slot);
         return removed;
 
@@ -362,26 +326,20 @@ public class Inventory : IEnumerable<Item>
         }
 
         short slotId;
-        Monitor.Enter(lockObj);
-        try
-        {
-            slotId = getNextFreeSlot();
-            if (slotId < 0)
-            {
-                return -1;
-            }
 
-            inventory.AddOrUpdate(slotId, item);
-        }
-        finally
+        slotId = getNextFreeSlot();
+        if (slotId < 0)
         {
-            Monitor.Exit(lockObj);
+            return -1;
         }
+
+        inventory.AddOrUpdate(slotId, item);
+
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
             // deadlocks with coupons rates found thanks to GabrielSin & Masterrulax
-            ThreadManager.getInstance().newTask(() => owner.updateCouponRates());
+            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
         }
 
         return slotId;
@@ -389,80 +347,44 @@ public class Inventory : IEnumerable<Item>
 
     public virtual void addSlotFromDB(short slot, Item item)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.AddOrUpdate(slot, item);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+
+        inventory.AddOrUpdate(slot, item);
+
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
-            ThreadManager.getInstance().newTask(() => owner.updateCouponRates());
+            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
         }
     }
 
     public virtual void removeSlot(short slot)
     {
         Item? item;
-        Monitor.Enter(lockObj);
-        try
-        {
-            inventory.Remove(slot, out item);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+
+        inventory.Remove(slot, out item);
+
 
         if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
         {
-            ThreadManager.getInstance().newTask(() => owner.updateCouponRates());
+            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
         }
     }
 
     public bool isFull()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return inventory.Count >= slotLimit;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return inventory.Count >= slotLimit;
     }
 
     public bool isFull(int margin)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + ")");
-            return inventory.Count + margin >= slotLimit;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + ")");
+        return inventory.Count + margin >= slotLimit;
     }
 
     public bool isFullAfterSomeItems(int margin, int used)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + " -" + used + ")");
-            return inventory.Count + margin >= slotLimit - used;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        //System.out.print("(" + inventory.Count + " " + margin + " <> " + slotLimit + " -" + used + ")");
+        return inventory.Count + margin >= slotLimit - used;
     }
 
     public short getNextFreeSlot()
@@ -472,22 +394,14 @@ public class Inventory : IEnumerable<Item>
             return -1;
         }
 
-        Monitor.Enter(lockObj);
-        try
+        for (short i = 1; i <= slotLimit; i++)
         {
-            for (short i = 1; i <= slotLimit; i++)
+            if (!inventory.ContainsKey(i))
             {
-                if (!inventory.ContainsKey(i))
-                {
-                    return i;
-                }
+                return i;
             }
-            return -1;
         }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return -1;
     }
 
     public short getNumFreeSlot()
@@ -497,23 +411,15 @@ public class Inventory : IEnumerable<Item>
             return 0;
         }
 
-        Monitor.Enter(lockObj);
-        try
+        short free = 0;
+        for (short i = 1; i <= slotLimit; i++)
         {
-            short free = 0;
-            for (short i = 1; i <= slotLimit; i++)
+            if (!inventory.ContainsKey(i))
             {
-                if (!inventory.ContainsKey(i))
-                {
-                    free++;
-                }
+                free++;
             }
-            return free;
         }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return free;
     }
 
     private static bool checkItemRestricted(List<ItemInventoryType> items)
@@ -535,26 +441,26 @@ public class Inventory : IEnumerable<Item>
         return true;
     }
 
-    public static bool checkSpot(IPlayer chr, Item item)
+    public static bool checkSpot(Player chr, Item item)
     {
         // thanks Vcoc for noticing pshops not checking item stacks when taking item back
         return checkSpot(chr, [item]);
     }
 
-    public static bool checkSpot(IPlayer chr, List<Item> items)
+    public static bool checkSpot(Player chr, List<Item> items)
     {
         return checkSpotsAndOwnership(chr, items.Select(x => new ItemInventoryType(x, x.getInventoryType())).ToList());
     }
 
 
-    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpots(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
         List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
 
         return checkSpots(chr, items, zeroedList, useProofInv);
     }
 
-    static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpots(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
@@ -634,14 +540,14 @@ public class Inventory : IEnumerable<Item>
     }
 
 
-    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpotsAndOwnership(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
         List<int> zeroedList = Enumerable.Repeat(0, 5).ToList();
 
         return checkSpotsAndOwnership(chr, items, zeroedList, useProofInv);
     }
 
-    static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpotsAndOwnership(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         //assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0 and item list to be checked is a legal one.
 
@@ -733,38 +639,12 @@ public class Inventory : IEnumerable<Item>
 
     public bool IsChecked()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return isChecked;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return isChecked;
     }
 
     public void SetChecked(bool yes)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            isChecked = yes;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-    }
-
-    public void lockInventory()
-    {
-        Monitor.Enter(lockObj);
-    }
-
-    public void unlockInventory()
-    {
-        Monitor.Exit(lockObj);
+        isChecked = yes;
     }
 
     public void dispose()

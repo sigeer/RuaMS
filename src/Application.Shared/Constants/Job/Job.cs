@@ -167,7 +167,7 @@ namespace Application.Shared.Constants.Job
                     MaxLevel = 120;   // 3rd job
                     break;
                 default:
-                    MaxLevel = Type == JobType.Cygnus ? 120 : 200;
+                    MaxLevel = Type == JobType.Cygnus ? 120 : NumericConfig.MaxLevel;
                     break;
             }
         }
@@ -180,6 +180,11 @@ namespace Application.Shared.Constants.Job
         public int GetJobNiche()
         {
             return Id / 100 % 10;
+        }
+
+        public int GetSlackMaxLevel ()
+        {
+            return Type == JobType.Cygnus ? 120 : NumericConfig.MaxLevel; 
         }
 
         public bool IsBeginningJob()

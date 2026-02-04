@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Dto;
@@ -8,7 +9,7 @@ namespace Application.Core.Channel.Invitation
 {
     internal class PartyInviteChannelHandler : InviteChannelHandler
     {
-        public PartyInviteChannelHandler(WorldChannelServer server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Party, logger)
+        public PartyInviteChannelHandler(WorldChannel server, ILogger<InviteChannelHandler> logger) : base(server, InviteTypes.Party, logger)
         {
         }
 
@@ -18,16 +19,16 @@ namespace Application.Core.Channel.Invitation
 
             if (result == InviteResultType.DENIED)
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
-                    sender.sendPacket(PacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
+                    sender.sendPacket(TeamPacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
                 }
             }
 
             if (result == InviteResultType.NOT_FOUND)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
                     receiver.Pink(nameof(ClientMessage.Team_InvitationExpired));
@@ -40,30 +41,30 @@ namespace Application.Core.Channel.Invitation
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)
             {
-                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
-                    receiver.sendPacket(PacketCreator.partyInvite(data.Key, data.SenderPlayerName));
+                    receiver.sendPacket(TeamPacketCreator.partyInvite(data.Key, data.SenderPlayerName));
                 }
             }
             else
             {
-                var sender = _server.FindPlayerById(data.SenderPlayerId);
+                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
                 if (sender != null)
                 {
                     switch (code)
                     {
                         case InviteResponseCode.MANAGING_INVITE:
-                            sender.sendPacket(PacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
+                            sender.sendPacket(TeamPacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
                             break;
                         case InviteResponseCode.InviteesNotFound:
-                            sender.sendPacket(PacketCreator.partyStatusMessage(19));
+                            sender.sendPacket(TeamPacketCreator.partyStatusMessage(19));
                             break;
                         case InviteResponseCode.Team_AlreadyInTeam:
-                            sender.sendPacket(PacketCreator.partyStatusMessage(16));
+                            sender.sendPacket(TeamPacketCreator.AlreadInTeam());
                             break;
                         case InviteResponseCode.Team_CapacityFull:
-                            sender.sendPacket(PacketCreator.partyStatusMessage(17));
+                            sender.sendPacket(TeamPacketCreator.TeamFullCapacity());
                             break;
                         case InviteResponseCode.Team_BeginnerLimit:
                             sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));

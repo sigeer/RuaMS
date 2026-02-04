@@ -5,7 +5,7 @@ namespace Application.Core.Game.Players.PlayerProps
     public class PlayerSavedLocation : PlayerPropBase<Dto.SavedLocationDto>
     {
         public SavedLocationType[] AllType { get; set; }
-        public PlayerSavedLocation(IPlayer owner) : base(owner)
+        public PlayerSavedLocation(Player owner) : base(owner)
         {
             AllType = Enum.GetValues<SavedLocationType>();
             _dataSource = new SavedLocation[AllType.Length];

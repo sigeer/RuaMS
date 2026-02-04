@@ -4,12 +4,12 @@ namespace Application.Core.Game.Players
     {
         public long getJailExpirationTimeLeft()
         {
-            return Jailexpire - Client.CurrentServerContainer.getCurrentTime();
+            return Jailexpire - Client.CurrentServer.Node.getCurrentTime();
         }
 
         private void setFutureJailExpiration(long time)
         {
-            Jailexpire = Client.CurrentServerContainer.getCurrentTime() + time;
+            Jailexpire = Client.CurrentServer.Node.getCurrentTime() + time;
         }
 
         public void addJailExpirationTime(long time)
@@ -23,6 +23,24 @@ namespace Application.Core.Game.Players
             else
             {
                 setFutureJailExpiration(timeLeft + time);
+            }
+
+            if (getMapId() != MapId.JAIL)
+            {
+                saveLocationOnWarp();
+                changeMap(MapId.JAIL);
+            }
+        }
+
+        public void CheckJail()
+        {
+            if (Jailexpire > Client.CurrentServer.Node.getCurrentTime())
+            {
+                if (getMapId() != MapId.JAIL)
+                {
+                    saveLocationOnWarp();
+                    changeMap(MapId.JAIL);
+                }
             }
         }
 

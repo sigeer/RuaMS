@@ -8,7 +8,7 @@ namespace Application.Core.Game.Trades
         /// <summary>
         /// 店主（雇佣商人时仅在店主访问时存在）
         /// </summary>
-        IPlayer? Owner { get; }
+        Player? Owner { get; }
         WorldChannel ChannelServer { get; }
         long StartTime { get; }
         long ExpirationTime { get; }
@@ -28,16 +28,11 @@ namespace Application.Core.Game.Trades
         /// </summary>
         /// <param name="chr"></param>
         /// <returns></returns>
-        bool IsOwner(IPlayer chr);
-        bool VisitShop(IPlayer chr);
-        void RemoveVisitor(IPlayer visitor);
+        bool IsOwner(Player chr);
+        bool VisitShop(Player chr);
+        void RemoveVisitor(Player visitor);
         bool hasItem(int itemid);
         bool AddCommodity(PlayerShopItem item);
-
-
-        bool TradeLock();
-        void TradeUnlock();
-
         void GainMeso(int meso);
         string? MesoCheck(int meso);
         void InsertSoldHistory(int idx, SoldItem soldItem);
@@ -48,7 +43,7 @@ namespace Application.Core.Game.Trades
         /// </summary>
         void BroadcastShopItemUpdate();
 
-        void takeItemBack(int slotIndex, IPlayer chr);
+        void takeItemBack(int slotIndex, Player chr);
 
         List<PlayerShopItem> QueryAvailableBundles(int itemid);
         /// <summary>
@@ -56,11 +51,11 @@ namespace Application.Core.Game.Trades
         /// </summary>
         /// <param name="chr"></param>
         /// <returns></returns>
-        bool Retrieve(IPlayer owner);
+        bool Retrieve(Player owner);
         void Close();
         void SetOpen();
-        void SetMaintenance(IPlayer chr);
+        void SetMaintenance(Player chr);
 
-        void sendMessage(IPlayer fromChr, string msg);
+        void sendMessage(Player fromChr, string msg);
     }
 }

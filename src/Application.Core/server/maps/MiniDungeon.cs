@@ -20,6 +20,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using tools;
 
 namespace server.maps;
@@ -29,9 +30,8 @@ namespace server.maps;
  */
 public class MiniDungeon
 {
-    List<IPlayer> players = new();
+    List<Player> players = new();
     ScheduledFuture? timeoutTask = null;
-    object lockObj = new object();
 
     int baseMap;
     long expireTime;
@@ -43,54 +43,46 @@ public class MiniDungeon
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
-        timeoutTask = worldChannel.Container.TimerManager.schedule(() => close(), expireTime);
-        expireTime += worldChannel.Container.getCurrentTime();
+        timeoutTask = worldChannel.Node.TimerManager.schedule(() =>
+        {
+            worldChannel.Post(new MiniDungeonTimeoutCommand(this));
+        }, expireTime);
+        expireTime += worldChannel.Node.getCurrentTime();
     }
 
-    public bool registerPlayer(IPlayer chr)
+    public void ProcessTimeout()
     {
-        int time = (int)((expireTime - _worldChannel.Container.getCurrentTime()) / 1000);
+        close();
+    }
+
+    public bool registerPlayer(Player chr)
+    {
+        int time = (int)((expireTime - _worldChannel.Node.getCurrentTime()) / 1000);
         if (time > 0)
         {
             chr.sendPacket(PacketCreator.getClock(time));
         }
 
-        Monitor.Enter(lockObj);
-        try
+        if (timeoutTask == null)
         {
-            if (timeoutTask == null)
-            {
-                return false;
-            }
+            return false;
+        }
 
-            players.Add(chr);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        players.Add(chr);
 
         return true;
     }
 
-    public bool unregisterPlayer(IPlayer chr)
+    public bool unregisterPlayer(Player chr)
     {
         chr.sendPacket(PacketCreator.removeClock());
 
-        Monitor.Enter(lockObj);
-        try
-        {
-            players.Remove(chr);
+        players.Remove(chr);
 
-            if (players.Count == 0)
-            {
-                dispose();
-                return false;
-            }
-        }
-        finally
+        if (players.Count == 0)
         {
-            Monitor.Exit(lockObj);
+            dispose();
+            return false;
         }
 
         if (chr.isPartyLeader())
@@ -103,41 +95,25 @@ public class MiniDungeon
 
     public void close()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            List<IPlayer> lchr = new(players);
+        List<Player> lchr = new(players);
 
-            foreach (IPlayer chr in lchr)
-            {
-                chr.changeMap(baseMap);
-            }
-
-            dispose();
-            timeoutTask = null;
-        }
-        finally
+        foreach (Player chr in lchr)
         {
-            Monitor.Exit(lockObj);
+            chr.changeMap(baseMap);
         }
+
+        dispose();
+        timeoutTask = null;
     }
 
     public void dispose()
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            players.Clear();
+        players.Clear();
 
-            if (timeoutTask != null)
-            {
-                timeoutTask.cancel(false);
-                timeoutTask = null;
-            }
-        }
-        finally
+        if (timeoutTask != null)
         {
-            Monitor.Exit(lockObj);
+            timeoutTask.cancel(false);
+            timeoutTask = null;
         }
     }
 }

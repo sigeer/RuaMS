@@ -5,7 +5,6 @@ namespace Application.Core.Login.Client
 {
     public interface ILoginClient : IClientBase
     {
-        AccountCtrl? AccountEntity { get; protected set; }
         MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();

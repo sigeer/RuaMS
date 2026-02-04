@@ -21,15 +21,14 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
-using Application.Templates.Mob;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
@@ -49,7 +48,7 @@ public class Monster : AbstractLifeObject
     private AtomicInteger hp = new AtomicInteger(1);
     private AtomicLong maxHpPlusHeal = new AtomicLong(1);
     private int mp;
-    private WeakReference<IPlayer?> controller = new(null);
+    private WeakReference<Player?> controller = new(null);
     private bool controllerHasAggro, controllerKnowsAboutAggro, controllerHasPuppet;
 
     private Dictionary<MonsterStatus, MonsterStatusEffect> stati = new();
@@ -68,18 +67,12 @@ public class Monster : AbstractLifeObject
     private int spawnEffect = 0;
     private Dictionary<int, AtomicLong> takenDamage = new();
     private ScheduledFuture? monsterItemDrop = null;
-    private Action? removeAfterAction = null;
+    private IWorldChannelCommand? removeAfterAction = null;
     private bool availablePuppetUpdate = true;
     /// <summary>
     /// 有值时，不走默认的drop_data
     /// </summary>
     public List<DropEntry>? CustomeDrops { get; set; }
-
-    private object externalLock = new object();
-    private object monsterLock = new object();
-    private object statiLock = new object();
-    private object animationLock = new object();
-    private object aggroUpdateLock = new object();
 
     /// <summary>
     /// 地图上生成
@@ -129,16 +122,6 @@ public class Monster : AbstractLifeObject
     {
         base.setMap(map);
         DispatchMonsterSpawned();
-    }
-
-    public void lockMonster()
-    {
-        Monitor.Enter(externalLock);
-    }
-
-    public void unlockMonster()
-    {
-        Monitor.Exit(externalLock);
     }
 
     public void setSpawnEffect(int effect)
@@ -209,12 +192,12 @@ public class Monster : AbstractLifeObject
         this.calledMobOids = null;
     }
 
-    public void pushRemoveAfterAction(Action run)
+    public void pushRemoveAfterAction(IWorldChannelCommand run)
     {
         this.removeAfterAction = run;
     }
 
-    public Action? popRemoveAfterAction()
+    public IWorldChannelCommand? popRemoveAfterAction()
     {
         var r = this.removeAfterAction;
         this.removeAfterAction = null;
@@ -227,29 +210,19 @@ public class Monster : AbstractLifeObject
         return hp.get();
     }
 
-    object addHpLock = new object();
     public void addHp(int hp)
     {
-        lock (addHpLock)
+        if (this.hp.get() <= 0)
         {
-            if (this.hp.get() <= 0)
-            {
-                return;
-            }
-            this.hp.addAndGet(hp);
+            return;
         }
-
+        this.hp.addAndGet(hp);
     }
 
-    Object setHpLock = new object();
     public void setStartingHp(int hp)
     {
-        lock (setHpLock)
-        {
-            stats.setHp(hp);    // refactored mob stats after non-static HP pool suggestion thanks to twigs
-            this.hp.set(hp);
-        }
-
+        stats.setHp(hp);    // refactored mob stats after non-static HP pool suggestion thanks to twigs
+        this.hp.set(hp);
     }
 
     public int getMaxHp()
@@ -379,55 +352,48 @@ public class Monster : AbstractLifeObject
     //    }
     //}
 
-    object applyHpDamageLock = new object();
     public int? applyAndGetHpDamage(int delta, bool stayAlive)
     {
-        lock (applyHpDamageLock)
+        int curHp = hp.get();
+        if (curHp <= 0)
+        {       // this monster is already dead
+            return null;
+        }
+
+        if (delta >= 0)
         {
-            int curHp = hp.get();
-            if (curHp <= 0)
-            {       // this monster is already dead
-                return null;
-            }
-
-            if (delta >= 0)
+            if (stayAlive)
             {
-                if (stayAlive)
-                {
-                    curHp--;
-                }
-                int trueDamage = Math.Min(curHp, delta);
-
-                hp.addAndGet(-trueDamage);
-                return trueDamage;
+                curHp--;
             }
-            else
+            int trueDamage = Math.Min(curHp, delta);
+
+            hp.addAndGet(-trueDamage);
+            return trueDamage;
+        }
+        else
+        {
+            int trueHeal = -delta;
+            int hp2Heal = curHp + trueHeal;
+            int maxHp = getMaxHp();
+
+            if (hp2Heal > maxHp)
             {
-                int trueHeal = -delta;
-                int hp2Heal = curHp + trueHeal;
-                int maxHp = getMaxHp();
-
-                if (hp2Heal > maxHp)
-                {
-                    trueHeal -= (hp2Heal - maxHp);
-                }
-
-                hp.addAndGet(trueHeal);
-                return trueHeal;
+                trueHeal -= (hp2Heal - maxHp);
             }
+
+            hp.addAndGet(trueHeal);
+            return trueHeal;
         }
     }
 
-    object disposeMapLock = new object();
     public void disposeMapObject()
     {     // mob is no longer associated with the map it was in
-        lock (disposeMapLock)
-        {
-            hp.set(-1);
-        }
+
+        hp.set(-1);
     }
 
-    public void broadcastMobHpBar(IPlayer from)
+    public void broadcastMobHpBar(Player from)
     {
         if (hasBossHPBar())
         {
@@ -438,11 +404,13 @@ public class Monster : AbstractLifeObject
         {
             int remainingHP = (int)Math.Max(1, hp.get() * 100f / getMaxHp());
             Packet packet = PacketCreator.showMonsterHP(getObjectId(), remainingHP);
-            if (from.getParty() != null)
+
+            var team = from.getParty();
+            if (team != null)
             {
-                foreach (var mpc in from.getParty()!.GetChannelMembers(from.Client.CurrentServer))
+                foreach (var mpc in team.GetTeamMembers())
                 {
-                    var member = from.getMap().getCharacterById(mpc.getId()); // god bless
+                    var member = from.getMap().getCharacterById(mpc.Id); // god bless
                     if (member != null)
                     {
                         member.sendPacket(packet);
@@ -456,55 +424,46 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public bool damage(IPlayer attacker, int damage, bool stayAlive)
+    public bool damage(Player attacker, int damage, bool stayAlive)
     {
         bool lastHit = false;
 
-        this.lockMonster();
-        try
+        if (!this.isAlive())
         {
-            if (!this.isAlive())
-            {
-                return false;
-            }
+            return false;
+        }
 
-            /* pyramid not implemented
-            Pair<int, int> cool = this.getStats().getCool();
-            if (cool != null) {
-                Pyramid pq = (Pyramid) chr.getPartyQuest();
-                if (pq != null) {
-                    if (damage > 0) {
-                        if (damage >= cool.getLeft()) {
-                            if ((Randomizer.nextDouble() * 100) < cool.getRight()) {
-                                pq.cool();
-                            } else {
-                                pq.kill();
-                            }
+        /* pyramid not implemented
+        Pair<int, int> cool = this.getStats().getCool();
+        if (cool != null) {
+            Pyramid pq = (Pyramid) chr.getPartyQuest();
+            if (pq != null) {
+                if (damage > 0) {
+                    if (damage >= cool.getLeft()) {
+                        if ((Randomizer.nextDouble() * 100) < cool.getRight()) {
+                            pq.cool();
                         } else {
                             pq.kill();
                         }
                     } else {
-                        pq.miss();
+                        pq.kill();
                     }
-                    killed = true;
+                } else {
+                    pq.miss();
                 }
-            }
-            */
-
-            if (damage > 0)
-            {
-                this.applyDamage(attacker, damage, stayAlive, false);
-                if (!this.isAlive())
-                {  // monster just died
-                    lastHit = true;
-                }
+                killed = true;
             }
         }
-        finally
+        */
+
+        if (damage > 0)
         {
-            this.unlockMonster();
+            this.applyDamage(attacker, damage, stayAlive, false);
+            if (!this.isAlive())
+            {  // monster just died
+                lastHit = true;
+            }
         }
-
         return lastHit;
     }
 
@@ -513,7 +472,7 @@ public class Monster : AbstractLifeObject
      * @param damage
      * @param stayAlive
      */
-    private void applyDamage(IPlayer from, int damage, bool stayAlive, bool fake)
+    public void applyDamage(Player from, int damage, bool stayAlive, bool fake)
     {
         var trueDamage = applyAndGetHpDamage(damage, stayAlive);
         if (trueDamage == null)
@@ -543,7 +502,7 @@ public class Monster : AbstractLifeObject
         broadcastMobHpBar(from);
     }
 
-    public void applyFakeDamage(IPlayer from, int damage, bool stayAlive)
+    public void applyFakeDamage(Player from, int damage, bool stayAlive)
     {
         applyDamage(from, damage, stayAlive, true);
     }
@@ -574,12 +533,12 @@ public class Monster : AbstractLifeObject
         OnHealed?.Invoke(this, hpHealed.Value);
     }
 
-    public bool isAttackedBy(IPlayer chr)
+    public bool isAttackedBy(Player chr)
     {
         return takenDamage.ContainsKey(chr.getId());
     }
 
-    private static bool isWhiteExpGain(IPlayer chr, Dictionary<int, float> personalRatio, double sdevRatio)
+    private static bool isWhiteExpGain(Player chr, Dictionary<int, float> personalRatio, double sdevRatio)
     {
         return personalRatio.TryGetValue(chr.getId(), out var pr) && pr >= sdevRatio;
     }
@@ -605,7 +564,7 @@ public class Monster : AbstractLifeObject
         return avgExpReward + Math.Sqrt(varExpReward);
     }
 
-    private void distributePlayerExperience(IPlayer chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
+    private void distributePlayerExperience(Player chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
     {
         float playerExp = (YamlConfig.config.server.EXP_SPLIT_COMMON_MOD * chr.getLevel()) / totalPartyLevel;
         if (highestPartyDamager)
@@ -617,19 +576,19 @@ public class Monster : AbstractLifeObject
         float bonusExp = partyBonusMod * playerExp;
 
         this.giveExpToCharacter(chr, playerExp, bonusExp, whiteExpGain, hasPartySharers);
-        foreach (var module in MapModel.ChannelServer.Container.Modules)
+        foreach (var module in MapModel.ChannelServer.NodeService.Modules)
         {
             module.OnMonsterReward(new MonsterRewardEvent(chr, this));
         }
     }
 
-    private void distributePartyExperience(Dictionary<IPlayer, long> partyParticipation, float expPerDmg, HashSet<IPlayer> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
+    private void distributePartyExperience(Dictionary<Player, long> partyParticipation, float expPerDmg, HashSet<Player> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
     {
         IntervalBuilder leechInterval = new IntervalBuilder();
         leechInterval.addInterval(this.getLevel() - YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL, this.getLevel() + YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL);
 
         long maxDamage = 0, partyDamage = 0;
-        IPlayer? participationMvp = null;
+        Player? participationMvp = null;
         foreach (var e in partyParticipation)
         {
             long entryDamage = e.Value;
@@ -646,13 +605,13 @@ public class Monster : AbstractLifeObject
             leechInterval.addInterval(chrLevel - YamlConfig.config.server.EXP_SPLIT_LEECH_INTERVAL, chrLevel + YamlConfig.config.server.EXP_SPLIT_LEECH_INTERVAL);
         }
 
-        List<IPlayer> expMembers = new();
+        List<Player> expMembers = new();
         int totalPartyLevel = 0;
 
         // thanks G h o s t, Alfred, Vcoc, BHB for poiting out a bug in detecting party members after membership transactions in a party took place
         if (YamlConfig.config.server.USE_ENFORCE_MOB_LEVEL_RANGE)
         {
-            foreach (IPlayer member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
+            foreach (Player member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
             {
                 if (!leechInterval.inInterval(member.getLevel()))
                 {
@@ -666,7 +625,7 @@ public class Monster : AbstractLifeObject
         }
         else
         {    // thanks Ari for noticing unused server flag after EXP system overhaul
-            foreach (IPlayer member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
+            foreach (Player member in partyParticipation.Keys.First().getPartyMembersOnSameMap())
             {
                 totalPartyLevel += member.getLevel();
                 expMembers.Add(member);
@@ -680,10 +639,10 @@ public class Monster : AbstractLifeObject
         bool hasPartySharers = membersSize > 1;
         float partyBonusMod = hasPartySharers ? 0.05f * membersSize : 0.0f;
 
-        foreach (IPlayer mc in expMembers)
+        foreach (Player mc in expMembers)
         {
             distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
-            foreach (var module in MapModel.ChannelServer.Container.Modules)
+            foreach (var module in MapModel.ChannelServer.NodeService.Modules)
             {
                 module.OnMonsterReward(new MonsterRewardEvent(mc, this));
             }
@@ -697,10 +656,10 @@ public class Monster : AbstractLifeObject
             return;
         }
 
-        Dictionary<Team, Dictionary<IPlayer, long>> partyExpDist = new();
-        Dictionary<IPlayer, long> soloExpDist = new();
+        Dictionary<int, Dictionary<Player, long>> partyExpDist = new();
+        Dictionary<Player, long> soloExpDist = new();
 
-        Dictionary<int, IPlayer> mapPlayers = MapModel.getMapPlayers();
+        Dictionary<int, Player> mapPlayers = MapModel.getMapPlayers();
 
         int totalEntries = 0;   // counts "participant parties", players who no longer are available in the map is an "independent party"
         foreach (var e in takenDamage)
@@ -710,8 +669,8 @@ public class Monster : AbstractLifeObject
             {
                 long damage = e.Value;
 
-                var p = chr.getParty();
-                if (p != null)
+                var p = chr.getPartyId();
+                if (p > 0)
                 {
                     var partyParticipation = partyExpDist.GetValueOrDefault(p);
                     if (partyParticipation == null)
@@ -750,7 +709,7 @@ public class Monster : AbstractLifeObject
             entryExpRatio.Add(ratio);
         }
 
-        foreach (Dictionary<IPlayer, long> m in partyExpDist.Values)
+        foreach (Dictionary<Player, long> m in partyExpDist.Values)
         {
             float ratio = 0.0f;
             foreach (var e in m)
@@ -767,16 +726,16 @@ public class Monster : AbstractLifeObject
         double sdevRatio = calcExperienceStandDevThreshold(entryExpRatio, totalEntries);
 
         // GMS-like player and party Split calculations found thanks to Russt, KaidaTan, Dusk, AyumiLove - src: https://ayumilovemaple.wordpress.com/maplestory_calculator_formula/
-        HashSet<IPlayer> underleveled = new();
+        HashSet<Player> underleveled = new();
         foreach (var chrParticipation in soloExpDist)
         {
             float exp = chrParticipation.Value * expPerDmg;
-            IPlayer chr = chrParticipation.Key;
+            Player chr = chrParticipation.Key;
 
             distributePlayerExperience(chr, exp, 0.0f, chr.getLevel(), true, isWhiteExpGain(chr, personalRatio, sdevRatio), false);
         }
 
-        foreach (Dictionary<IPlayer, long> partyParticipation in partyExpDist.Values)
+        foreach (Dictionary<Player, long> partyParticipation in partyExpDist.Values)
         {
             distributePartyExperience(partyParticipation, expPerDmg, underleveled, personalRatio, sdevRatio);
         }
@@ -791,14 +750,14 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        foreach (IPlayer mc in underleveled)
+        foreach (Player mc in underleveled)
         {
             mc.showUnderleveledInfo(this);
         }
 
     }
 
-    private float getStatusExpMultiplier(IPlayer attacker, bool hasPartySharers)
+    private float getStatusExpMultiplier(Player attacker, bool hasPartySharers)
     {
         float multiplier = 1.0f;
 
@@ -816,18 +775,10 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        Monitor.Enter(statiLock);
-        try
+        var mse = stati.GetValueOrDefault(MonsterStatus.SHOWDOWN);
+        if (mse != null)
         {
-            var mse = stati.GetValueOrDefault(MonsterStatus.SHOWDOWN);
-            if (mse != null)
-            {
-                multiplier *= (1.0f + (mse.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN, 0) / 100.0f));
-            }
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
+            multiplier *= (1.0f + (mse.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN, 0) / 100.0f));
         }
 
         return multiplier;
@@ -847,7 +798,7 @@ public class Monster : AbstractLifeObject
         return (int)Math.Round(exp);    // operations on float point are not point-precise... thanks IxianMace for noticing -1 EXP gains
     }
 
-    private void giveExpToCharacter(IPlayer attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
+    private void giveExpToCharacter(Player attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
     {
         if (attacker.isAlive())
         {
@@ -913,9 +864,9 @@ public class Monster : AbstractLifeObject
             return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         }
 
-        Dictionary<int, IPlayer> pchars = MapModel.getMapPlayers();
+        Dictionary<int, Player> pchars = MapModel.getMapPlayers();
 
-        List<IPlayer> lootChars = new();
+        List<Player> lootChars = new();
         foreach (int cid in takenDamage.Keys)
         {
             var chr = pchars.GetValueOrDefault(cid);
@@ -928,7 +879,7 @@ public class Monster : AbstractLifeObject
         return LootManager.retrieveRelevantDrops(this.getId(), lootChars);
     }
 
-    public IPlayer? killBy(IPlayer? killer)
+    public Player? killBy(Player? killer)
     {
         distributeExperience(killer != null ? killer.getId() : 0);
 
@@ -956,67 +907,9 @@ public class Monster : AbstractLifeObject
                 reviveMap.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
 
-            var eim = this.getMap().getEventInstance();
-
-            MapModel.ChannelServer.Container.TimerManager.schedule(() =>
+            MapModel.ChannelServer.Node.TimerManager.schedule(() =>
             {
-                var controller = lastController.Key;
-                bool aggro = lastController.Value;
-
-                foreach (var mob in RevivingMonsters)
-                {
-                    mob.setPosition(curMob.getPosition());
-                    mob.setFh(curMob.getFh());
-                    mob.setParentMobOid(curMob.getObjectId());
-
-                    if (dropsDisabled())
-                    {
-                        mob.disableDrops();
-                    }
-                    reviveMap.spawnMonster(mob);
-                    OnRevive?.Invoke(curMob, mob);
-                    mob.RevivedFrom = curMob;
-
-                    if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
-                    {
-                        bool htKilled = false;
-                        var ht = reviveMap.getMonsterById(MobId.HORNTAIL);
-
-                        if (ht != null)
-                        {
-                            ht.lockMonster();
-                            try
-                            {
-                                htKilled = ht.isAlive();
-                                ht.setHpZero();
-                            }
-                            finally
-                            {
-                                ht.unlockMonster();
-                            }
-
-                            if (htKilled)
-                            {
-                                reviveMap.killMonster(ht, killer, true);
-                            }
-                        }
-
-                        // reviveMap.isHorntailDefeated()表示已经击杀，这里重复击杀目的是为了解决什么问题？
-                        for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
-                        {
-                            reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
-                        }
-                    }
-                    else if (controller != null)
-                    {
-                        mob.aggroSwitchController(controller, aggro);
-                    }
-
-                    if (eim != null)
-                    {
-                        eim.reviveMonster(mob);
-                    }
-                }
+                MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer));
             }, getAnimationTime("die1"));
         }
 
@@ -1026,33 +919,38 @@ public class Monster : AbstractLifeObject
     public void dropFromFriendlyMonster(long delay)
     {
         Monster m = this;
-        monsterItemDrop = MapModel.ChannelServer.Container.TimerManager.register(() =>
+        monsterItemDrop = MapModel.ChannelServer.Node.TimerManager.register(() =>
         {
-            if (!m.isAlive())
-            {
-                if (monsterItemDrop != null)
-                {
-                    monsterItemDrop.cancel(false);
-                }
-
-                return;
-            }
-
-            var map = m.getMap();
-            List<IPlayer> chrList = map.getAllPlayers();
-            if (chrList.Count > 0)
-            {
-                IPlayer chr = chrList.get(0);
-
-                var eim = map.getEventInstance();
-                if (eim != null)
-                {
-                    eim.friendlyItemDrop(m);
-                }
-
-                map.dropFromFriendlyMonster(chr, m);
-            }
+            MapModel.ChannelServer.Post(new MonsterFriendlyDropCommand(m));
         }, delay, delay);
+    }
+
+    public void FriendlyDrop()
+    {
+        if (!isAlive())
+        {
+            if (monsterItemDrop != null)
+            {
+                monsterItemDrop.cancel(false);
+            }
+
+            return;
+        }
+
+        var map = getMap();
+        List<Player> chrList = map.getAllPlayers();
+        if (chrList.Count > 0)
+        {
+            Player chr = chrList.get(0);
+
+            var eim = map.getEventInstance();
+            if (eim != null)
+            {
+                eim.friendlyItemDrop(this);
+            }
+
+            map.dropFromFriendlyMonster(chr, this);
+        }
     }
 
     private void dispatchRaiseQuestMobCount()
@@ -1060,7 +958,7 @@ public class Monster : AbstractLifeObject
         var attackerChrids = takenDamage.Keys;
         if (attackerChrids.Count > 0)
         {
-            Dictionary<int, IPlayer> mapChars = MapModel.getMapPlayers();
+            Dictionary<int, Player> mapChars = MapModel.getMapPlayers();
             if (mapChars.Count > 0)
             {
                 int mobid = getId();
@@ -1078,7 +976,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void dispatchMonsterKilled(IPlayer? killer)
+    public void dispatchMonsterKilled(Player? killer)
     {
         processMonsterKilled(killer);
 
@@ -1107,34 +1005,20 @@ public class Monster : AbstractLifeObject
         getMap().dismissRemoveAfter(this);
     }
 
-    object monsterKilledLock = new object();
-    private void processMonsterKilled(IPlayer? killer)
+    private void processMonsterKilled(Player? killer)
     {
-        lock (monsterKilledLock)
-        {
-
-            if (killer == null)
-            {    // players won't gain EXP from a mob that has no killer, but a quest count they should
-                dispatchRaiseQuestMobCount();
-            }
-
-            this.aggroClearDamages();
-            this.dispatchClearSummons();
-
-            OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
-
-            Monitor.Enter(statiLock);
-            try
-            {
-                stati.Clear();
-                alreadyBuffed.Clear();
-            }
-            finally
-            {
-                Monitor.Exit(statiLock);
-            }
-
+        if (killer == null)
+        {    // players won't gain EXP from a mob that has no killer, but a quest count they should
+            dispatchRaiseQuestMobCount();
         }
+
+        this.aggroClearDamages();
+        this.dispatchClearSummons();
+
+        OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
+
+        stati.Clear();
+        alreadyBuffed.Clear();
     }
 
 
@@ -1159,12 +1043,12 @@ public class Monster : AbstractLifeObject
     }
 
 
-    public IPlayer? getController()
+    public Player? getController()
     {
         return controller.TryGetTarget(out var d) ? d : null;
     }
 
-    private void setController(IPlayer? controller)
+    private void setController(Player? controller)
     {
         this.controller = new(controller);
     }
@@ -1260,36 +1144,19 @@ public class Monster : AbstractLifeObject
 
     public ElementalEffectiveness getElementalEffectiveness(Element e)
     {
-        Monitor.Enter(statiLock);
-        try
+        if (stati.GetValueOrDefault(MonsterStatus.DOOM) != null)
         {
-            if (stati.GetValueOrDefault(MonsterStatus.DOOM) != null)
-            {
-                return ElementalEffectiveness.NORMAL; // like blue snails
-            }
+            return ElementalEffectiveness.NORMAL; // like blue snails
         }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
-
         return getMonsterEffectiveness(e);
     }
 
     private ElementalEffectiveness getMonsterEffectiveness(Element e)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            return stats.getEffectiveness(e);
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        return stats.getEffectiveness(e);
     }
 
-    private IPlayer? getActiveController()
+    private Player? getActiveController()
     {
         var chr = getController();
 
@@ -1303,7 +1170,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private void broadcastMonsterStatusMessage(Packet packet)
+    public void broadcastMonsterStatusMessage(Packet packet)
     {
         MapModel.broadcastMessage(packet, getPosition());
 
@@ -1323,7 +1190,7 @@ public class Monster : AbstractLifeObject
         return animationTime;
     }
 
-    public bool applyStatus(IPlayer from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
+    public bool applyStatus(Player from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
     {
         var effectSkill = status.getSkill()!;
         switch (getMonsterEffectiveness(effectSkill.getElement()))
@@ -1387,53 +1254,26 @@ public class Monster : AbstractLifeObject
         int mapid = MapModel.getId();
         if (statis.Count > 0)
         {
-            Monitor.Enter(statiLock);
-            try
+            foreach (MonsterStatus stat in statis.Keys)
             {
-                foreach (MonsterStatus stat in statis.Keys)
+                var oldEffect = stati.GetValueOrDefault(stat);
+                if (oldEffect != null)
                 {
-                    var oldEffect = stati.GetValueOrDefault(stat);
-                    if (oldEffect != null)
+                    oldEffect.removeActiveStatus(stat);
+                    if (oldEffect.getStati().Count == 0)
                     {
-                        oldEffect.removeActiveStatus(stat);
-                        if (oldEffect.getStati().Count == 0)
-                        {
-                            MobStatusService serviced = MapModel.getChannelServer().MobStatusService;
-                            serviced.interruptMobStatus(mapid, oldEffect);
-                        }
+                        MobStatusService serviced = MapModel.getChannelServer().MobStatusService;
+                        serviced.interruptMobStatus(mapid, oldEffect);
                     }
                 }
-            }
-            finally
-            {
-                Monitor.Exit(statiLock);
             }
         }
 
         Action cancelTask = () =>
         {
-            if (isAlive())
-            {
-                Packet packet = PacketCreator.cancelMonsterStatus(getObjectId(), status.getStati());
-                broadcastMonsterStatusMessage(packet);
-            }
-
-            Monitor.Enter(statiLock);
-            try
-            {
-                foreach (MonsterStatus stat in status.getStati().Keys)
-                {
-                    stati.Remove(stat);
-                }
-            }
-            finally
-            {
-                Monitor.Exit(statiLock);
-            }
-
-            setVenomMulti(0);
+            MapModel.ChannelServer.Post(new MonsterStatusRemoveCommand(this, status));
         };
-        AbstractRunnable? overtimeAction = null;
+        IWorldChannelCommand? overtimeAction = null;
         int overtimeDelay = -1;
 
         int animationTime;
@@ -1444,7 +1284,7 @@ public class Monster : AbstractLifeObject
             status.setValue(MonsterStatus.POISON, poisonDamage);
             animationTime = broadcastStatusEffect(status);
 
-            overtimeAction = new DamageTask(this, poisonDamage, from, status, 0);
+            overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
             overtimeDelay = 1000;
         }
         else if (venom)
@@ -1478,7 +1318,7 @@ public class Monster : AbstractLifeObject
                 status.setValue(MonsterStatus.POISON, poisonDamage);
                 animationTime = broadcastStatusEffect(status);
 
-                overtimeAction = new DamageTask(this, poisonDamage, from, status, 0);
+                overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
                 overtimeDelay = 1000;
             }
             else
@@ -1505,7 +1345,7 @@ public class Monster : AbstractLifeObject
             status.setValue(MonsterStatus.NINJA_AMBUSH, damage);
             animationTime = broadcastStatusEffect(status);
 
-            overtimeAction = new DamageTask(this, damage, from, status, 2);
+            overtimeAction = new MonsterApplyDamageCommand(this, from, status, damage, 2);
             overtimeDelay = 1000;
         }
         else
@@ -1513,22 +1353,14 @@ public class Monster : AbstractLifeObject
             animationTime = broadcastStatusEffect(status);
         }
 
-        Monitor.Enter(statiLock);
-        try
+        foreach (MonsterStatus stat in status.getStati().Keys)
         {
-            foreach (MonsterStatus stat in status.getStati().Keys)
-            {
-                stati.AddOrUpdate(stat, status);
-                alreadyBuffed.Add(stat);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
+            stati.AddOrUpdate(stat, status);
+            alreadyBuffed.Add(stat);
         }
 
         MobStatusService service = MapModel.getChannelServer().MobStatusService;
-        service.registerMobStatus(mapid, status, cancelTask, duration + animationTime - 100, overtimeAction, overtimeDelay);
+        service.registerMobStatus(mapid, status, new MonsterStatusRemoveCommand(this, status), duration + animationTime - 100, overtimeAction, overtimeDelay);
         return true;
     }
 
@@ -1552,47 +1384,18 @@ public class Monster : AbstractLifeObject
 
     public void applyMonsterBuff(Dictionary<MonsterStatus, int> stats, int x, long duration, MobSkill skill, List<int> reflection)
     {
-        Action cancelTask = () =>
-        {
-            if (isAlive())
-            {
-                Packet packet = PacketCreator.cancelMonsterStatus(getObjectId(), stats);
-                broadcastMonsterStatusMessage(packet);
-
-                Monitor.Enter(statiLock);
-                try
-                {
-                    foreach (MonsterStatus stat in stats.Keys)
-                    {
-                        stati.Remove(stat);
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(statiLock);
-                }
-            }
-        };
         MonsterStatusEffect effect = new MonsterStatusEffect(stats, skill);
         Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), effect, reflection);
         broadcastMonsterStatusMessage(packet);
 
-        Monitor.Enter(statiLock);
-        try
+        foreach (MonsterStatus stat in stats.Keys)
         {
-            foreach (MonsterStatus stat in stats.Keys)
-            {
-                stati.AddOrUpdate(stat, effect);
-                alreadyBuffed.Add(stat);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
+            stati.AddOrUpdate(stat, effect);
+            alreadyBuffed.Add(stat);
         }
 
         MobStatusService service = MapModel.getChannelServer().MobStatusService;
-        service.registerMobStatus(MapModel.getId(), effect, cancelTask, duration);
+        service.registerMobStatus(MapModel.getId(), effect, new MonsterBuffRemoveCommand(this, stats), duration);
     }
 
     public void refreshMobPosition()
@@ -1615,15 +1418,8 @@ public class Monster : AbstractLifeObject
     private void debuffMobStat(MonsterStatus stat)
     {
         MonsterStatusEffect? oldEffect;
-        Monitor.Enter(statiLock);
-        try
-        {
-            stati.Remove(stat, out oldEffect);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
+
+        stati.Remove(stat, out oldEffect);
 
         if (oldEffect != null)
         {
@@ -1635,99 +1431,68 @@ public class Monster : AbstractLifeObject
     public void debuffMob(int skillid)
     {
         MonsterStatus[] statups = { MonsterStatus.WEAPON_ATTACK_UP, MonsterStatus.WEAPON_DEFENSE_UP, MonsterStatus.MAGIC_ATTACK_UP, MonsterStatus.MAGIC_DEFENSE_UP };
-        Monitor.Enter(statiLock);
-        try
-        {
-            if (skillid == Hermit.SHADOW_MESO)
-            {
-                debuffMobStat(statups[1]);
-                debuffMobStat(statups[3]);
-            }
-            else if (skillid == Priest.DISPEL)
-            {
-                foreach (MonsterStatus ms in statups)
-                {
-                    debuffMobStat(ms);
-                }
-            }
-            else
-            {    // is a crash skill
-                int i = (skillid == Crusader.ARMOR_CRASH ? 1 : (skillid == WhiteKnight.MAGIC_CRASH ? 2 : 0));
-                debuffMobStat(statups[i]);
 
-                if (YamlConfig.config.server.USE_ANTI_IMMUNITY_CRASH)
-                {
-                    if (skillid == Crusader.ARMOR_CRASH)
-                    {
-                        if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
-                        {
-                            debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
-                        }
-                        if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
-                        {
-                            debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
-                        }
-                    }
-                    else if (skillid == WhiteKnight.MAGIC_CRASH)
-                    {
-                        if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
-                        {
-                            debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
-                        }
-                    }
-                    else
-                    {
-                        if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
-                        {
-                            debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
-                        }
-                    }
-                }
+        if (skillid == Hermit.SHADOW_MESO)
+        {
+            debuffMobStat(statups[1]);
+            debuffMobStat(statups[3]);
+        }
+        else if (skillid == Priest.DISPEL)
+        {
+            foreach (MonsterStatus ms in statups)
+            {
+                debuffMobStat(ms);
             }
         }
-        finally
-        {
-            Monitor.Exit(statiLock);
+        else
+        {    // is a crash skill
+            int i = (skillid == Crusader.ARMOR_CRASH ? 1 : (skillid == WhiteKnight.MAGIC_CRASH ? 2 : 0));
+            debuffMobStat(statups[i]);
+
+            if (YamlConfig.config.server.USE_ANTI_IMMUNITY_CRASH)
+            {
+                if (skillid == Crusader.ARMOR_CRASH)
+                {
+                    if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
+                    {
+                        debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                    }
+                    if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
+                    {
+                        debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                    }
+                }
+                else if (skillid == WhiteKnight.MAGIC_CRASH)
+                {
+                    if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
+                    {
+                        debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                    }
+                }
+                else
+                {
+                    if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
+                    {
+                        debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                    }
+                }
+            }
         }
     }
 
     public bool isBuffed(MonsterStatus status)
     {
-        Monitor.Enter(statiLock);
-        try
-        {
-            return stati.ContainsKey(status);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
+        return stati.ContainsKey(status);
     }
 
     public void setFake(bool fake)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            this.fake = fake;
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        this.fake = fake;
     }
 
     public bool isFake()
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            return fake;
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        return fake;
     }
 
     public MonsterAggroCoordinator getMapAggroCoordinator()
@@ -1760,36 +1525,27 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        Monitor.Enter(monsterLock);
-        try
+        if (usedSkills.Contains(toUse.getId()))
         {
-            if (usedSkills.Contains(toUse.getId()))
-            {
-                return false;
-            }
-
-            int mpCon = toUse.getMpCon();
-            if (mp < mpCon)
-            {
-                return false;
-            }
-
-            /*
-            if (!this.applyAnimationIfRoaming(-1, toUse)) {
-                return false;
-            }
-            */
-
-            if (apply)
-            {
-                this.usedSkill(toUse);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
+            return false;
         }
 
+        int mpCon = toUse.getMpCon();
+        if (mp < mpCon)
+        {
+            return false;
+        }
+
+        /*
+        if (!this.applyAnimationIfRoaming(-1, toUse)) {
+            return false;
+        }
+        */
+
+        if (apply)
+        {
+            this.usedSkill(toUse);
+        }
         return true;
     }
 
@@ -1806,108 +1562,68 @@ public class Monster : AbstractLifeObject
     private void usedSkill(MobSkill skill)
     {
         MobSkillId msId = skill.getId();
-        Monitor.Enter(monsterLock);
-        try
-        {
-            mp -= skill.getMpCon();
 
-            this.usedSkills.Add(msId);
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        mp -= skill.getMpCon();
+
+        this.usedSkills.Add(msId);
 
         Monster mons = this;
         var mmap = mons.getMap();
-        var r = () => mons.clearSkill(skill.getId());
 
         MobClearSkillService service = MapModel.getChannelServer().MobClearSkillService;
-        service.registerMobClearSkillAction(mmap.getId(), r, skill.getCoolTime());
+        service.registerMobClearSkillAction(mmap.getId(), new MonsterClearSkillCommand(this, skill), skill.getCoolTime());
     }
 
-    private void clearSkill(MobSkillId msId)
+    public void clearSkill(MobSkillId msId)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            usedSkills.Remove(msId);
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        usedSkills.Remove(msId);
     }
 
     public int canUseAttack(int attackPos, bool isSkill)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            /*
-            if (usedAttacks.Contains(attackPos)) {
-                return -1;
-            }
-            */
 
-            var attackInfo = AttackInfoHolders.GetValueOrDefault(attackPos);
-            if (attackInfo == null)
-            {
-                return -1;
-            }
-
-            if (mp < attackInfo.ConMP)
-            {
-                return -1;
-            }
-
-            /*
-            if (!this.applyAnimationIfRoaming(attackPos, null)) {
-                return -1;
-            }
-            */
-
-            usedAttack(attackPos, attackInfo.ConMP, attackInfo.AttackAfter);
-            return 1;
+        /*
+        if (usedAttacks.Contains(attackPos)) {
+            return -1;
         }
-        finally
+        */
+
+        var attackInfo = AttackInfoHolders.GetValueOrDefault(attackPos);
+        if (attackInfo == null)
         {
-            Monitor.Exit(monsterLock);
+            return -1;
         }
+
+        if (mp < attackInfo.ConMP)
+        {
+            return -1;
+        }
+
+        /*
+        if (!this.applyAnimationIfRoaming(attackPos, null)) {
+            return -1;
+        }
+        */
+
+        usedAttack(attackPos, attackInfo.ConMP, attackInfo.AttackAfter);
+        return 1;
     }
 
     private void usedAttack(int attackPos, int mpCon, int cooltime)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            mp -= mpCon;
-            usedAttacks.Add(attackPos);
+        mp -= mpCon;
+        usedAttacks.Add(attackPos);
 
-            Monster mons = this;
-            var mmap = mons.getMap();
-            var r = () => mons.clearAttack(attackPos);
+        Monster mons = this;
+        var mmap = mons.getMap();
 
-            MobClearSkillService service = MapModel.getChannelServer().MobClearSkillService;
-            service.registerMobClearSkillAction(mmap.getId(), r, cooltime);
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        MobClearSkillService service = MapModel.getChannelServer().MobClearSkillService;
+        service.registerMobClearSkillAction(mmap.getId(), new MonsterClearAttackCommand(this, attackPos), cooltime);
     }
 
-    private void clearAttack(int attackPos)
+    public void clearAttack(int attackPos)
     {
-        Monitor.Enter(monsterLock);
-        try
-        {
-            usedAttacks.Remove(attackPos);
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
-        }
+        usedAttacks.Remove(attackPos);
     }
 
     public bool hasAnySkill()
@@ -1941,13 +1657,13 @@ public class Monster : AbstractLifeObject
     {
 
         private int dealDamage;
-        private IPlayer chr;
+        private Player chr;
         private MonsterStatusEffect status;
         private int type;
         private IMap map;
         readonly Monster _monster;
 
-        public DamageTask(Monster mapleMonster, int dealDamage, IPlayer chr, MonsterStatusEffect status, int type)
+        public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
         {
             _monster = mapleMonster;
             this.dealDamage = dealDamage;
@@ -1959,48 +1675,7 @@ public class Monster : AbstractLifeObject
 
         public override void HandleRun()
         {
-            int curHp = _monster.hp.get();
-            if (curHp <= 1)
-            {
-                MobStatusService service = map.getChannelServer().MobStatusService;
-                service.interruptMobStatus(map.getId(), status);
-                return;
-            }
-
-            int damage = dealDamage;
-            if (damage >= curHp)
-            {
-                damage = curHp - 1;
-                if (type == 1 || type == 2)
-                {
-                    MobStatusService service = map.getChannelServer().MobStatusService;
-                    service.interruptMobStatus(map.getId(), status);
-                }
-            }
-            if (damage > 0)
-            {
-                _monster.lockMonster();
-                try
-                {
-                    _monster.applyDamage(chr, damage, true, false);
-                }
-                finally
-                {
-                    _monster.unlockMonster();
-                }
-
-                if (type == 1)
-                {
-                    map.broadcastMessage(PacketCreator.damageMonster(_monster.getObjectId(), damage), _monster.getPosition());
-                }
-                else if (type == 2)
-                {
-                    if (damage < dealDamage)
-                    {    // ninja ambush (type 2) is already displaying DOT to the caster
-                        map.broadcastMessage(PacketCreator.damageMonster(_monster.getObjectId(), damage), _monster.getPosition());
-                    }
-                }
-            }
+            chr.Client.CurrentServer.Post(new MonsterApplyDamageCommand(_monster, chr, status, dealDamage, type));
         }
     }
 
@@ -2021,51 +1696,21 @@ public class Monster : AbstractLifeObject
 
     public void setTempEffectiveness(Element e, ElementalEffectiveness ee, long milli)
     {
-        Monitor.Enter(monsterLock);
-        try
+        Element fE = e;
+        ElementalEffectiveness fEE = stats.getEffectiveness(e);
+        if (!fEE.Equals(ElementalEffectiveness.WEAK))
         {
-            Element fE = e;
-            ElementalEffectiveness fEE = stats.getEffectiveness(e);
-            if (!fEE.Equals(ElementalEffectiveness.WEAK))
-            {
-                stats.setEffectiveness(e, ee);
+            stats.setEffectiveness(e, ee);
 
-                var mmap = this.getMap();
-                var r = () =>
-                {
-                    Monitor.Enter(monsterLock);
-                    try
-                    {
-                        stats.removeEffectiveness(fE);
-                        stats.setEffectiveness(fE, fEE);
-                    }
-                    finally
-                    {
-                        Monitor.Exit(monsterLock);
-                    }
-                };
-
-                MobClearSkillService service = mmap.getChannelServer().MobClearSkillService;
-                service.registerMobClearSkillAction(mmap.getId(), r, milli);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(monsterLock);
+            var mmap = this.getMap();
+            MobClearSkillService service = mmap.getChannelServer().MobClearSkillService;
+            service.registerMobClearSkillAction(mmap.getId(), new MonsterClearEffectCommand(this, e), milli);
         }
     }
 
     public ICollection<MonsterStatus> alreadyBuffedStats()
     {
-        Monitor.Enter(statiLock);
-        try
-        {
-            return new List<MonsterStatus>(alreadyBuffed);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
+        return new List<MonsterStatus>(alreadyBuffed);
     }
 
     public BanishInfo? getBanish()
@@ -2090,28 +1735,12 @@ public class Monster : AbstractLifeObject
 
     public Dictionary<MonsterStatus, MonsterStatusEffect> getStati()
     {
-        Monitor.Enter(statiLock);
-        try
-        {
-            return new(stati);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
+        return new(stati);
     }
 
     public MonsterStatusEffect? getStati(MonsterStatus ms)
     {
-        Monitor.Enter(statiLock);
-        try
-        {
-            return stati.GetValueOrDefault(ms);
-        }
-        finally
-        {
-            Monitor.Exit(statiLock);
-        }
+        return stati.GetValueOrDefault(ms);
     }
 
     // ---- one can always have fun trying these pieces of codes below in-game rofl ----
@@ -2184,7 +1813,7 @@ public class Monster : AbstractLifeObject
         return summon.getPosition().distanceSq(this.getPosition()) < 177777;
     }
 
-    public bool isCharacterPuppetInVicinity(IPlayer chr)
+    public bool isCharacterPuppetInVicinity(Player chr)
     {
         var mse = chr.getBuffEffect(BuffStat.PUPPET);
         if (mse != null)
@@ -2207,7 +1836,7 @@ public class Monster : AbstractLifeObject
 
     public bool isLeadingPuppetInVicinity()
     {
-        IPlayer? chrController = this.getActiveController();
+        Player? chrController = this.getActiveController();
 
         if (chrController != null)
         {
@@ -2217,17 +1846,17 @@ public class Monster : AbstractLifeObject
         return false;
     }
 
-    private IPlayer? getNextControllerCandidate()
+    private Player? getNextControllerCandidate()
     {
         int mincontrolled = int.MaxValue;
-        IPlayer? newController = null;
+        Player? newController = null;
 
         int mincontrolleddead = int.MaxValue;
-        IPlayer? newControllerDead = null;
+        Player? newControllerDead = null;
 
-        IPlayer? newControllerWithPuppet = null;
+        Player? newControllerWithPuppet = null;
 
-        foreach (IPlayer chr in getMap().getAllPlayers())
+        foreach (Player chr in getMap().getAllPlayers())
         {
             if (!chr.isHidden())
             {
@@ -2274,25 +1903,17 @@ public class Monster : AbstractLifeObject
     /**
      * Removes controllability status from the current controller of this mob.
      */
-    public KeyValuePair<IPlayer?, bool> aggroRemoveController()
+    public KeyValuePair<Player?, bool> aggroRemoveController()
     {
-        IPlayer? chrController;
+        Player? chrController;
         bool hadAggro;
 
-        Monitor.Enter(aggroUpdateLock);
-        try
-        {
-            chrController = getActiveController();
-            hadAggro = isControllerHasAggro();
+        chrController = getActiveController();
+        hadAggro = isControllerHasAggro();
 
-            this.setController(null);
-            this.setControllerHasAggro(false);
-            this.setControllerKnowsAboutAggro(false);
-        }
-        finally
-        {
-            Monitor.Exit(aggroUpdateLock);
-        }
+        this.setController(null);
+        this.setControllerHasAggro(false);
+        this.setControllerKnowsAboutAggro(false);
 
         if (chrController != null)
         {
@@ -2311,41 +1932,33 @@ public class Monster : AbstractLifeObject
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
      */
-    public void aggroSwitchController(IPlayer? newController, bool immediateAggro)
+    public void aggroSwitchController(Player? newController, bool immediateAggro)
     {
-        if (Monitor.TryEnter(aggroUpdateLock))
+
+        var prevController = getController();
+        if (prevController == newController)
         {
-            try
-            {
-                var prevController = getController();
-                if (prevController == newController)
-                {
-                    return;
-                }
-
-                aggroRemoveController();
-                if (!(newController != null && newController.isLoggedinWorld() && newController.getMap() == this.getMap()))
-                {
-                    return;
-                }
-
-                this.setController(newController);
-                this.setControllerHasAggro(immediateAggro);
-                this.setControllerKnowsAboutAggro(false);
-                this.setControllerHasPuppet(false);
-            }
-            finally
-            {
-                Monitor.Exit(aggroUpdateLock);
-            }
-
-            this.aggroUpdatePuppetVisibility();
-            aggroMonsterControl(newController.getClient(), this, immediateAggro);
-            newController.controlMonster(this);
+            return;
         }
+
+        aggroRemoveController();
+        if (!(newController != null && newController.isLoggedinWorld() && newController.getMap() == this.getMap()))
+        {
+            return;
+        }
+
+        this.setController(newController);
+        this.setControllerHasAggro(immediateAggro);
+        this.setControllerKnowsAboutAggro(false);
+        this.setControllerHasPuppet(false);
+
+        this.aggroUpdatePuppetVisibility();
+        aggroMonsterControl(newController.getClient(), this, immediateAggro);
+        newController.controlMonster(this);
+
     }
 
-    public void aggroAddPuppet(IPlayer player)
+    public void aggroAddPuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.addPuppetAggro(player);
@@ -2358,7 +1971,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void aggroRemovePuppet(IPlayer player)
+    public void aggroRemovePuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.removePuppetAggro(player.getId());
@@ -2377,13 +1990,13 @@ public class Monster : AbstractLifeObject
      */
     public void aggroUpdateController()
     {
-        IPlayer? chrController = this.getActiveController();
+        Player? chrController = this.getActiveController();
         if (chrController != null && chrController.isAlive())
         {
             return;
         }
 
-        IPlayer? newController = getNextControllerCandidate();
+        Player? newController = getNextControllerCandidate();
         if (newController == null)
         {
             // was a new controller found? (if not no one is on the map)
@@ -2397,7 +2010,7 @@ public class Monster : AbstractLifeObject
      * Finds a new controller for the given monster from the chars with deployed
      * puppet nearby on the map it is from...
      */
-    private void aggroUpdatePuppetController(IPlayer? newController)
+    private void aggroUpdatePuppetController(Player? newController)
     {
         var chrController = this.getActiveController();
         bool updateController = false;
@@ -2476,7 +2089,7 @@ public class Monster : AbstractLifeObject
      * Returns the current aggro status on the specified player, or null if the
      * specified player is currently not this mob's controller.
      */
-    public bool? aggroMoveLifeUpdate(IPlayer player)
+    public bool? aggroMoveLifeUpdate(Player player)
     {
         var chrController = getController();
         if (chrController != null && player.getId() == chrController.getId())
@@ -2499,7 +2112,7 @@ public class Monster : AbstractLifeObject
      * Refreshes auto aggro for the player passed as parameter, does nothing if
      * there is already an active controller for this mob.
      */
-    public void aggroAutoAggroUpdate(IPlayer player)
+    public void aggroAutoAggroUpdate(Player player)
     {
         var chrController = this.getActiveController();
 
@@ -2522,7 +2135,7 @@ public class Monster : AbstractLifeObject
      * Applied damage input for this mob, enough damage taken implies an aggro
      * target update for the attacker shortly.
      */
-    public void aggroMonsterDamage(IPlayer attacker, int damage)
+    public void aggroMonsterDamage(Player attacker, int damage)
     {
         MonsterAggroCoordinator mmac = this.getMapAggroCoordinator();
         mmac.addAggroDamage(this, attacker.getId(), damage);
@@ -2562,7 +2175,7 @@ public class Monster : AbstractLifeObject
         c.sendPacket(PacketCreator.controlMonster(mob, false, immediateAggro));
     }
 
-    private void aggroRefreshPuppetVisibility(IPlayer chrController, Summon puppet)
+    private void aggroRefreshPuppetVisibility(Player chrController, Summon puppet)
     {
         // lame patch for client to redirect all aggro to the puppet
 
@@ -2598,46 +2211,46 @@ public class Monster : AbstractLifeObject
         }
 
         availablePuppetUpdate = false;
-        Action r = () =>
-        {
-            try
-            {
-                var chrController = this.getActiveController();
-                if (chrController == null)
-                {
-                    return;
-                }
-
-                var puppetEffect = chrController.getBuffEffect(BuffStat.PUPPET);
-                if (puppetEffect != null)
-                {
-                    var puppet = chrController.getSummonByKey(puppetEffect.getSourceId());
-
-                    if (puppet != null && isPuppetInVicinity(puppet))
-                    {
-                        controllerHasPuppet = true;
-                        aggroRefreshPuppetVisibility(chrController, puppet);
-                        return;
-                    }
-                }
-
-                if (controllerHasPuppet)
-                {
-                    controllerHasPuppet = false;
-
-                    chrController.sendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
-                    aggroMonsterControl(chrController.getClient(), this, this.isControllerHasAggro());
-                }
-            }
-            finally
-            {
-                availablePuppetUpdate = true;
-            }
-        };
-
         // had to schedule this since mob wouldn't stick to puppet aggro who knows why
         OverallService service = this.getMap().getChannelServer().OverallService;
-        service.registerOverallAction(this.getMap().getId(), r, YamlConfig.config.server.UPDATE_INTERVAL);
+        service.registerOverallAction(this.getMap().getId(), new MonsterPuppetAggroCommand(this), YamlConfig.config.server.UPDATE_INTERVAL);
+    }
+
+    public void ApplyPuppetAggro()
+    {
+        try
+        {
+            var chrController = this.getActiveController();
+            if (chrController == null)
+            {
+                return;
+            }
+
+            var puppetEffect = chrController.getBuffEffect(BuffStat.PUPPET);
+            if (puppetEffect != null)
+            {
+                var puppet = chrController.getSummonByKey(puppetEffect.getSourceId());
+
+                if (puppet != null && isPuppetInVicinity(puppet))
+                {
+                    controllerHasPuppet = true;
+                    aggroRefreshPuppetVisibility(chrController, puppet);
+                    return;
+                }
+            }
+
+            if (controllerHasPuppet)
+            {
+                controllerHasPuppet = false;
+
+                chrController.sendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
+                aggroMonsterControl(chrController.getClient(), this, this.isControllerHasAggro());
+            }
+        }
+        finally
+        {
+            availablePuppetUpdate = true;
+        }
     }
 
     /**
@@ -2654,16 +2267,8 @@ public class Monster : AbstractLifeObject
      */
     public void aggroResetAggro()
     {
-        Monitor.Enter(aggroUpdateLock);
-        try
-        {
-            this.setControllerHasAggro(false);
-            this.setControllerKnowsAboutAggro(false);
-        }
-        finally
-        {
-            Monitor.Exit(aggroUpdateLock);
-        }
+        this.setControllerHasAggro(false);
+        this.setControllerKnowsAboutAggro(false);
     }
 
     public int getRemoveAfter()
@@ -2715,5 +2320,65 @@ public class Monster : AbstractLifeObject
     void DispatchMonsterAllKilled()
     {
         OnLifeCleared?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Revive(Player? killer)
+    {
+        var lastController = aggroRemoveController();
+
+        var curMob = this;
+
+        var reviveMap = MapModel;
+        var eim = reviveMap.getEventInstance();
+
+        var controller = lastController.Key;
+        bool aggro = lastController.Value;
+
+        foreach (var mob in RevivingMonsters)
+        {
+            mob.setPosition(curMob.getPosition());
+            mob.setFh(curMob.getFh());
+            mob.setParentMobOid(curMob.getObjectId());
+
+            if (dropsDisabled())
+            {
+                mob.disableDrops();
+            }
+            reviveMap.spawnMonster(mob);
+            OnRevive?.Invoke(curMob, mob);
+            mob.RevivedFrom = curMob;
+
+            if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
+            {
+                bool htKilled = false;
+                var ht = reviveMap.getMonsterById(MobId.HORNTAIL);
+
+                if (ht != null)
+                {
+                    htKilled = ht.isAlive();
+                    ht.setHpZero();
+
+                    if (htKilled)
+                    {
+                        reviveMap.killMonster(ht, killer, true);
+                    }
+                }
+
+                // reviveMap.isHorntailDefeated()表示已经击杀，这里重复击杀目的是为了解决什么问题？
+                for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
+                {
+                    reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
+                }
+            }
+            else if (controller != null)
+            {
+                mob.aggroSwitchController(controller, aggro);
+            }
+
+            if (eim != null)
+            {
+                eim.reviveMonster(mob);
+            }
+        }
     }
 }

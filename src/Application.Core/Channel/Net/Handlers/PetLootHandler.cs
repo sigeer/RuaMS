@@ -37,15 +37,15 @@ public class PetLootHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
 
-        int petIndex = chr.getPetIndex(p.readInt());
+        var petIndex = chr.getPetIndex(p.readLong());
         var pet = chr.getPet(petIndex);
-        if (pet == null || !pet.isSummoned())
+        if (pet == null || !pet.Summoned)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
-        p.skip(13);
+        p.skip(9);
         int oid = p.readInt();
         var ob = chr.getMap().getMapObject(oid)!;
         try

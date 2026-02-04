@@ -15,7 +15,6 @@ import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
 import "Dto/QuickSlot.proto";
 import "Dto/Storage.proto";
-import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
@@ -42,6 +41,16 @@ message PlayerSaveDto {
   repeated int32 wishItems = 19;
   repeated Dto.FameLogRecordDto fameLogs = 20;
   repeated PlayerTimerQuestDto runningTimerQuests = 21;
-  int32 Trigger = 22;
   Dto.StorageDto gachaponStorage = 23;
+}
+
+message SyncPlayerRequest {
+	PlayerSaveDto data = 1;
+	int32 Trigger = 2;
+	bool saveDb = 3;
+}
+
+message BatchSyncPlayerRequest {
+	repeated PlayerSaveDto list = 1;
+	bool saveDb = 2;
 }

@@ -23,10 +23,7 @@
 
 using Application.Core.Channel.Net;
 using Application.Core.Client;
-using Application.Core.Managers;
-using Application.EF;
 using Application.Shared.Net;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Module.BBS.Channel.Net.Handlers;
 
@@ -45,11 +42,11 @@ public class BBSOperationHandler : ChannelHandlerBase
         return inValue.Length > maxSize ? inValue.Substring(0, maxSize) : inValue;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.OnlinedCharacter.getGuildId() < 1)
         {
-            return;
+            return Task.CompletedTask;
         }
         byte mode = p.readByte();
         int localthreadid = 0;
@@ -69,12 +66,12 @@ public class BBSOperationHandler : ChannelHandlerBase
                 {
                     if (!c.OnlinedCharacter.haveItemWithId(5290000 + icon - 0x64, false))
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
                 }
                 else if (icon < 0 || icon > 3)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
                 if (!bEdit)
                 {
@@ -103,7 +100,7 @@ public class BBSOperationHandler : ChannelHandlerBase
                 _manager.PostReply(c.OnlinedCharacter, localthreadid, text);
                 break;
             case 5: // delete reply
-                int unknown1 =  p.readInt(); // we don't use this
+                int unknown1 = p.readInt(); // we don't use this
                 int replyid = p.readInt();
                 _manager.deleteBBSReply(c.OnlinedCharacter, replyid);
                 break;
@@ -111,6 +108,7 @@ public class BBSOperationHandler : ChannelHandlerBase
                 //Console.WriteLine("Unhandled BBS mode: " + slea.ToString());
                 break;
         }
+        return Task.CompletedTask;
     }
 
 

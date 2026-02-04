@@ -7,6 +7,7 @@ using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData;
 
@@ -37,7 +38,7 @@ public class NoteManager : StorageBase<int, NoteModel>
      *
      * @return Send success
      */
-    public bool SendNormal(string message, int sender, string receiverName)
+    public async Task<bool> SendNormal(string message, int sender, string receiverName)
     {
         var chr = _server.CharacterManager.FindPlayerByName(receiverName);
         if (chr == null)
@@ -51,11 +52,11 @@ public class NoteManager : StorageBase<int, NoteModel>
             Message = message,
             Timestamp = _server.getCurrentTime()
         };
-        SendNote(chr);
+        await SendNote(chr);
         return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
     }
 
-    public bool SendNormal(string message, int sender, int reciverId)
+    public async Task<bool> SendNormal(string message, int sender, int reciverId)
     {
         var chr = _server.CharacterManager.FindPlayerById(reciverId);
         if (chr == null)
@@ -69,7 +70,7 @@ public class NoteManager : StorageBase<int, NoteModel>
             Message = message,
             Timestamp = _server.getCurrentTime()
         };
-        SendNote(chr);
+        await SendNote(chr);
         return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
     }
 
@@ -78,7 +79,7 @@ public class NoteManager : StorageBase<int, NoteModel>
      *
      * @return Send success
      */
-    public bool SendWithFame(string message, int sender, string receiverName)
+    public async Task<bool> SendWithFame(string message, int sender, string receiverName)
     {
         var chr = _server.CharacterManager.FindPlayerByName(receiverName);
         if (chr == null)
@@ -93,7 +94,7 @@ public class NoteManager : StorageBase<int, NoteModel>
             Timestamp = _server.getCurrentTime(),
             Fame = 1
         };
-        SendNote(chr);
+        await SendNote(chr);
         return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
     }
 
@@ -102,14 +103,14 @@ public class NoteManager : StorageBase<int, NoteModel>
      *
      * @param chr Note recipient
      */
-    public void SendNote(CharacterLiveObject liveObject)
+    public async Task SendNote(CharacterLiveObject liveObject)
     {
         if (liveObject.Channel <= 0)
             return;
 
         var notes = _mapper.Map<Dto.NoteDto[]>(Query(x => x.ToId == liveObject.Character.Id && !x.IsDeleted));
         if (notes.Length > 0)
-            _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
+            await _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
     }
 
     public Dto.NoteDto? SetRead(int id)

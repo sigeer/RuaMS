@@ -35,7 +35,7 @@ public class CharInfoRequestHandler : ChannelHandlerBase
         var target = c.OnlinedCharacter.getMap().getMapObject(cid);
         if (target != null)
         {
-            if (target is IPlayer player)
+            if (target is Player player)
             {
                 if (c.OnlinedCharacter.getId() != player.getId())
                 {
@@ -44,5 +44,6 @@ public class CharInfoRequestHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.charInfo(player));
             }
         }
+        return;
     }
 }

@@ -50,11 +50,6 @@ public class ProItemCommand : CommandBase
             spdjmp = Math.Max((short)0, spdjmp);
 
         var it = ii.GetEquipByTemplate(equipTemplate);
-        if (it == null)
-        {
-            player.YellowMessageI18N(nameof(ClientMessage.EquipNotFound));
-            return;
-        }
         it.setOwner(player.getName());
 
         ItemManager.SetEquipStat((Equip)it, stat, spdjmp);

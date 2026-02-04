@@ -28,5 +28,6 @@ public class AdminLogHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         //harhar
+        
     }
 }

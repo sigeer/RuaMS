@@ -1,8 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 package SystemProto;
 
 message BanRequest {
@@ -16,16 +13,11 @@ message BanRequest {
 
 message BanResponse {
 	int32 code = 1;
-}
-
-message BanBroadcast {
-	int32 targetId = 1;
-	string targetName = 2;
+	BanRequest request = 2;
 	string operatorName = 3;
-
-	int32 reason = 4;
-	string reasonDesc = 5;
+	int32 victimId = 4;
 }
+
 
 message UnbanRequest {
 	int32 operatorId = 1;
@@ -34,6 +26,7 @@ message UnbanRequest {
 
 message UnbanResponse {
 	int32 code = 1;
+	UnbanRequest request = 2;
 }
 
 message SetGmLevelRequest {
@@ -44,13 +37,8 @@ message SetGmLevelRequest {
 
 message SetGmLevelResponse {
 	int32 code = 1;
-}
-
-message SetGmLevelBroadcast {
-	int32 targetId = 1;
-	string targetName = 2;
-	string operatorName = 3;
-	int32 level = 4;
+	SetGmLevelRequest request = 2;
+	int32 targetId = 3;
 }
 
 message OnlinedPlayerInfoDto {
@@ -71,7 +59,8 @@ message WrapPlayerByNameRequest {
 
 message WrapPlayerByNameResponse {
 	int32 code = 1;
-	int32 targetChannel = 2;
+	WrapPlayerByNameRequest request = 2;
+	int32 targetChannel = 3;
 }
 
 message SummonPlayerByNameRequest {
@@ -81,12 +70,13 @@ message SummonPlayerByNameRequest {
 
 message SummonPlayerByNameResponse {
 	int32 code = 1;
+	SummonPlayerByNameRequest request = 2;
+	int32 victimId = 3;
+	string warpToName = 4;
+	int32 warpToChannel = 5;
 }
 
-message SummonPlayerByNameBroadcast {
-	string warpToName = 1;
-	int32 masterId = 2;
-}
+
 
 message DisconnectPlayerByNameRequest {
 	int32 masterId = 1;
@@ -95,10 +85,8 @@ message DisconnectPlayerByNameRequest {
 
 message DisconnectPlayerByNameResponse {
 	int32 code = 1;
-}
-
-message DisconnectPlayerByNameBroadcast {
-	int32 masterId = 1;
+	DisconnectPlayerByNameRequest request =2;
+	int32 targetId = 3;
 }
 
 message DisconnectAllRequest {

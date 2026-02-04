@@ -22,7 +22,9 @@
 
 
 using Application.Core.Channel.DataProviders;
+using client.inventory.manipulator;
 using client.processor.action;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -31,27 +33,13 @@ public class PetAutoPotHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
+        var petId = p.readLong();
         p.readByte();
-        p.readLong();
-        p.readInt();
+
+        var tick = p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        var chr = c.OnlinedCharacter;
-        var stat = ItemInformationProvider.getInstance().getItemEffect(itemId);
-        if (stat.getHp() > 0 || stat.getHpRate() > 0.0)
-        {
-            float estimatedHp = ((float)chr.HP) / chr.MaxHP;
-            chr.setAutopotHpAlert(estimatedHp + 0.05f);
-        }
-
-        if (stat.getMp() > 0 || stat.getMpRate() > 0.0)
-        {
-            float estimatedMp = ((float)chr.MP) / chr.MaxMP;
-            chr.setAutopotMpAlert(estimatedMp + 0.05f);
-        }
-
         PetAutopotProcessor.runAutopotAction(c, slot, itemId);
     }
-
 }

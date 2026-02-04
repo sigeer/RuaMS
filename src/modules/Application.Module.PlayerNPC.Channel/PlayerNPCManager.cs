@@ -1,22 +1,20 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
-using Application.Module.PlayerNPC.Channel.Models;
-using Application.Module.PlayerNPC.Channel.Net;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
-using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
 using Application.Shared.MapObjects;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
 using AutoMapper;
 using client.inventory;
-using Microsoft.Extensions.Caching.Memory;
+using LifeProto;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PlayerNPCProto;
 using Serilog;
 using server.life;
 using System.Drawing;
@@ -45,7 +43,7 @@ namespace Application.Module.PlayerNPC.Channel
 
         public void LoadAllData()
         {
-            _cache = _mapper.Map<List<PlayerNpc>>(_transport.GetAllPlayerNPCList(new GetAllPlayerNPCDataRequest()).List).GroupBy(x => x.Map).ToDictionary(x => x.Key, x=>x.ToList());
+            _cache = _mapper.Map<List<PlayerNpc>>(_transport.GetAllPlayerNPCList().List).GroupBy(x => x.Map).ToDictionary(x => x.Key, x => x.ToList());
         }
 
         public List<PlayerNpc> GetMapPlayerNPCList(int mapId)
@@ -54,13 +52,13 @@ namespace Application.Module.PlayerNPC.Channel
 
         }
 
-        public void SpawnPlayerNPCByHonor(IPlayer chr)
+        public void SpawnPlayerNPCByHonor(Player chr)
         {
             var mapId = GameConstants.getHallOfFameMapid(chr.getJob());
             CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), null, chr, true);
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, IPlayer chr)
+        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
             CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), position, chr, false);
         }
@@ -137,7 +135,7 @@ namespace Application.Module.PlayerNPC.Channel
         Lock proLock = new Lock();
 
 
-        internal void CreatePlayerNPCInternal(IMap map, Point? pos, IPlayer chr, bool createByHonor)
+        internal void CreatePlayerNPCInternal(IMap map, Point? pos, Player chr, bool createByHonor)
         {
             lock (proLock)
             {
@@ -147,7 +145,7 @@ namespace Application.Module.PlayerNPC.Channel
                 int branchLen = (branch < 26) ? 100 : 400;
                 int branchSid = NpcId.PLAYER_NPC_BASE + (branch * 100);
                 int nextBranchSid = branchSid + branchLen;
-                var request = new PlayerNPCProto.CreatePlayerNPCPreRequest
+                var request = new LifeProto.CreatePlayerNPCPreRequest
                 {
                     MapId = mapId,
                     BranchSidStart = branchSid,
@@ -267,11 +265,11 @@ namespace Application.Module.PlayerNPC.Channel
                     foreach (var pn in updatedList)
                     {
                         map.addPlayerNPCMapObject(pn);
-                        map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPC(pn));
+                        map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
                         map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(pn));
                     }
                     map.addPlayerNPCMapObject(newData);
-                    map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPC(newData));
+                    map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
                     map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(newData));
                 }
             }
@@ -330,6 +328,21 @@ namespace Application.Module.PlayerNPC.Channel
                 }
             }
             LoadAllData();
+        }
+
+        public void SpawnPlayerNPCList(IMap map, List<PlayerNpc> dataList)
+        {
+            foreach (var pn in dataList)
+            {
+                SpawnPlayerNPC(map, pn);
+            }
+        }
+
+        public void SpawnPlayerNPC(IMap map, PlayerNpc pn)
+        {
+            map.addPlayerNPCMapObject(pn);
+            map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+            map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(pn));
         }
     }
 }

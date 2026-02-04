@@ -2,14 +2,12 @@ using Application.Core.Managers;
 using Application.Core.ServerTransports;
 using client.autoban;
 using Microsoft.Extensions.Logging;
-using tools;
 
 namespace Application.Core.Channel.ServerData
 {
     public class AutoBanDataManager
     {
         private Dictionary<int, string>? _ignoredData;
-        private readonly object _dataLock = new object();
 
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
@@ -30,14 +28,11 @@ namespace Application.Core.Channel.ServerData
                 return snapshot;
 
             // 慢路径：首次加载
-            lock (_dataLock)
+            if (_ignoredData == null)
             {
-                if (_ignoredData == null)
-                {
-                    _ignoredData = GetDataFromRemote();
-                }
-                return _ignoredData;
+                _ignoredData = GetDataFromRemote();
             }
+            return _ignoredData;
         }
 
         public void ReloadData()
@@ -53,38 +48,18 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void ToggleIgnore(IPlayer chr, string name)
+        public void ToggleIgnore(Player chr, string name)
         {
-            Config.ToggleAutoBanIgnoreResponse res = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
-            if (res.IsSuccess)
-            {
-                chr.yellowMessage(name + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored."));
-            }
-            else
-            {
-                chr.dropMessage($"未找到玩家：{name}");
-            }
+            _ = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
-        public void OnIgoreDataChanged(Config.AutoBanIgnoredChangedNotifyDto data)
-        {
-            foreach (var gmId in data.GmId)
-            {
-                var gmChr = _server.FindPlayerById(gmId);
-                if (gmChr != null)
-                {
-                    gmChr.dropMessage(5, data.OperatorName + (data.IsIgnored ? " has started ignoring " : " has stopped ignoring ") + data.TargetName + ".");
-                }
-            }
-        }
-
-        public void AddPoint(AutobanFactory type, IPlayer chr, string reason)
+        public void AddPoint(AutobanFactory type, Player chr, string reason)
         {
             chr.getAutobanManager().addPoint(type, reason);
         }
 
 
-        public void Autoban(AutobanFactory type, IPlayer chr, string value)
+        public void Autoban(AutobanFactory type, Player chr, string value)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
@@ -93,7 +68,7 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void Alert(AutobanFactory type, IPlayer chr, string reason)
+        public void Alert(AutobanFactory type, Player chr, string reason)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
@@ -101,7 +76,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     return;
                 }
-                chr.Client.CurrentServerContainer.SendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason, true);
+                chr.Client.CurrentServer.NodeService.SendDropMessage(-1, (chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + type.name() + " " + reason, true);
             }
             if (YamlConfig.config.server.USE_AUTOBAN_LOG)
             {

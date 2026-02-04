@@ -12,9 +12,9 @@ namespace Application.Templates.Npc
 
 
         [WZPath("info/trunkPut")]
-        public int TrunkPut { get; set; }
+        public int? TrunkPut { get; set; }
         [WZPath("info/trunkGet")]
-        public int TrunkGet { get; set; }
+        public int? TrunkGet { get; set; }
         public NpcTemplate(int templateId)
             : base(templateId)
         {

@@ -18,7 +18,7 @@ public class FaceCommand : CommandBase
             return;
         }
 
-        IPlayer? targetPlayer = c.OnlinedCharacter;
+        Player? targetPlayer = c.OnlinedCharacter;
         string? faceStr;
         if (paramsValue.Length == 1)
         {

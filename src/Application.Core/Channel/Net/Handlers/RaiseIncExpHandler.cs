@@ -46,9 +46,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
 
                 int consId;
                 Inventory inv = chr.getInventory(InventoryTypeUtils.getByType(inventorytype));
-                inv.lockInventory();
-                try
-                {
+
                     consId = inv.getItem(slot)!.getItemId();
                     if (!consumables.ContainsKey(consId) || !chr.haveItem(consId))
                     {
@@ -56,11 +54,6 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                     }
 
                     InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
-                }
-                finally
-                {
-                    inv.unlockInventory();
-                }
 
                 int questid = quest.getId();
                 int nextValue = Math.Min(consumables.GetValueOrDefault(consId) + c.getAbstractPlayerInteraction().getQuestProgressInt(questid, infoNumber), consItem.exp * consItem.grade);

@@ -1,4 +1,8 @@
+using Application.Shared.Message;
 using Config;
+using System.Threading.Tasks;
+using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login.ServerData
 {
@@ -12,30 +16,39 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        public ToggleMonitorPlayerResponse ToggleMonitor(ToggleMonitorPlayerRequest request)
+        public async Task ToggleMonitor(ToggleMonitorPlayerRequest request)
         {
+            var res = new ToggleMonitorPlayerResponse { Request = request };
             var chr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (chr == null)
-                return new ToggleMonitorPlayerResponse { IsSuccess = false };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeMonitor, res, [request.MasterId]);
+                return;
+            }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
-                return new ToggleMonitorPlayerResponse();
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeMonitor, res, [request.MasterId]);
+                return;
+            }
 
-            bool isMonitored = false;
+
             if (_monitored.Contains(chr.Character.Id))
             {
                 _monitored.Remove(chr.Character.Id);
-                isMonitored = false;
+                res.IsMonitored = false;
             }
             else
             {
                 _monitored.Add(chr.Character.Id);
-                isMonitored = true;
+                res.IsMonitored = true;
             }
 
-            _server.Transport.MonitorChangedNotify(new MonitorDataChangedNotifyDto { OperatorName = master.Character.Name, TargetName = request.TargetName, IsMonitored = isMonitored });
-            return new ToggleMonitorPlayerResponse { IsMonitored = isMonitored, IsSuccess = true };
+            await _server.Transport.SendMessageN(ChannelRecvCode.InvokeMonitor, res, [request.MasterId]);
+            await _server.DropWorldMessage(5, master.Character.Name + (res.IsMonitored ? " has started monitoring " : " has stopped monitoring ") + request.TargetName + ".", true);
         }
 
         public MonitorDataWrapper LoadMonitorData()
@@ -51,30 +64,39 @@ namespace Application.Core.Login.ServerData
 
 
         HashSet<int> _autoBanIgnores = new();
-        public ToggleAutoBanIgnoreResponse ToggleAutoBanIgnored(ToggleAutoBanIgnoreRequest request)
+        public async Task ToggleAutoBanIgnored(ToggleAutoBanIgnoreRequest request)
         {
+            var res = new ToggleAutoBanIgnoreResponse() {Request = request };
             var chr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (chr == null)
-                return new ToggleAutoBanIgnoreResponse { IsSuccess = false };
+            {
+                res.Code = 1;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeAutoBanIgnore, res, [request.MasterId]);
+                    return;
+            }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
-                return new ToggleAutoBanIgnoreResponse();
+            {
+                res.Code = 2;
+                await _server.Transport.SendMessageN(ChannelRecvCode.InvokeAutoBanIgnore, res, [request.MasterId]);
+                return;
+            }
 
-            bool isIgnore = false;
             if (_autoBanIgnores.Contains(chr.Character.Id))
             {
                 _autoBanIgnores.Remove(chr.Character.Id);
-                isIgnore = false;
+                res.IsIgnored = false;
             }
             else
             {
                 _autoBanIgnores.Add(chr.Character.Id);
-                isIgnore = true;
+                res.IsIgnored = true;
             }
 
-            _server.Transport.AutobanIgnoresChangedNotify(new AutoBanIgnoredChangedNotifyDto { OperatorName = master.Character.Name, TargetName = request.TargetName, IsIgnored = isIgnore });
-            return new ToggleAutoBanIgnoreResponse { IsIgnored = isIgnore, IsSuccess = true };
+            await _server.Transport.SendMessageN(ChannelRecvCode.InvokeAutoBanIgnore, res, [request.MasterId, chr.Character.Id]);
+
+            await _server.DropWorldMessage(5, master.Character.Name + (res.IsIgnored ? " has started ignoring " : " has stopped ignoring ") + request.TargetName + ".", true);
         }
 
         public AutoBanIgnoredWrapper LoadAutobanIgnoreData()

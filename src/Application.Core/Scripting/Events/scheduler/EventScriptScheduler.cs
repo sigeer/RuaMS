@@ -20,6 +20,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 
 namespace scripting.Event.scheduler;
 /**
@@ -30,10 +31,9 @@ public class EventScriptScheduler
 
     private bool disposed = false;
     private int idleProcs = 0;
-    private Dictionary<Action, long> registeredEntries = new();
+    private Dictionary<IWorldChannelCommand, long> registeredEntries = new();
 
     private Task? schedulerTask = null;
-    private object schedulerLock = new object();
 
     CancellationTokenSource? cancellationTokenSource;
 
@@ -46,116 +46,84 @@ public class EventScriptScheduler
 
     private void runBaseSchedule()
     {
-        List<Action> toRemove;
-        Dictionary<Action, long> registeredEntriesCopy;
+        List<IWorldChannelCommand> toRemove;
+        Dictionary<IWorldChannelCommand, long> registeredEntriesCopy;
 
-        Monitor.Enter(schedulerLock);
-        try
+        if (registeredEntries.Count == 0)
         {
-            if (registeredEntries.Count == 0)
+            idleProcs++;
+
+            if (idleProcs >= YamlConfig.config.server.MOB_STATUS_MONITOR_LIFE)
             {
-                idleProcs++;
-
-                if (idleProcs >= YamlConfig.config.server.MOB_STATUS_MONITOR_LIFE)
+                if (schedulerTask != null)
                 {
-                    if (schedulerTask != null)
-                    {
-                        cancellationTokenSource?.Cancel();
-                        schedulerTask = null;
-                    }
-                }
-
-                return;
-            }
-
-            idleProcs = 0;
-            registeredEntriesCopy = new(registeredEntries);
-
-
-            long timeNow = _channelServer.Container.getCurrentTime();
-            toRemove = new();
-            foreach (var rmd in registeredEntriesCopy)
-            {
-                if (rmd.Value < timeNow)
-                {
-                    var r = rmd.Key;
-
-                    r.Invoke();  // runs the scheduled action
-                    toRemove.Add(r);
+                    cancellationTokenSource?.Cancel();
+                    schedulerTask = null;
                 }
             }
 
-            if (toRemove.Count > 0)
+            return;
+        }
+
+        idleProcs = 0;
+        registeredEntriesCopy = new(registeredEntries);
+
+
+        long timeNow = _channelServer.Node.getCurrentTime();
+        toRemove = new();
+        foreach (var rmd in registeredEntriesCopy)
+        {
+            if (rmd.Value < timeNow)
             {
-                foreach (Action r in toRemove)
-                {
-                    registeredEntries.Remove(r);
-                }
+                var r = rmd.Key;
+
+                _channelServer.Post(r);
+                toRemove.Add(r);
             }
         }
-        finally
+
+        if (toRemove.Count > 0)
         {
-            Monitor.Exit(schedulerLock);
+            foreach (var r in toRemove)
+            {
+                registeredEntries.Remove(r);
+            }
         }
     }
 
-    public void registerEntry(Action scheduledAction, long duration)
+    public void registerEntry(IWorldChannelCommand scheduledAction, long duration)
     {
-        Monitor.Enter(schedulerLock);
-        try
+        idleProcs = 0;
+        if (schedulerTask == null && !disposed)
         {
-            idleProcs = 0;
-            if (schedulerTask == null && !disposed)
+            cancellationTokenSource = new CancellationTokenSource();
+            schedulerTask = Task.Run(async () =>
             {
-                cancellationTokenSource = new CancellationTokenSource();
-                schedulerTask = Task.Run(async () =>
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    while (!cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-                        runBaseSchedule();
-                    }
-                }, cancellationTokenSource.Token);
-            }
+                    await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                    runBaseSchedule();
+                }
+            }, cancellationTokenSource.Token);
+        }
 
-            registeredEntries.Add(scheduledAction, _channelServer.Container.getCurrentTime() + duration);
-        }
-        finally
-        {
-            Monitor.Exit(schedulerLock);
-        }
+        registeredEntries.Add(scheduledAction, _channelServer.Node.getCurrentTime() + duration);
     }
 
-    public void cancelEntry(Action scheduledAction)
+    public void cancelEntry(IWorldChannelCommand scheduledAction)
     {
-        Monitor.Enter(schedulerLock);
-        try
-        {
-            registeredEntries.Remove(scheduledAction);
-        }
-        finally
-        {
-            Monitor.Exit(schedulerLock);
-        }
+        registeredEntries.Remove(scheduledAction);
     }
 
     public void dispose()
     {
-        Monitor.Enter(schedulerLock);
-        try
+        cancellationTokenSource?.Cancel();
+        if (schedulerTask != null)
         {
-            cancellationTokenSource?.Cancel();
-            if (schedulerTask != null)
-            {
-                schedulerTask = null;
-            }
+            schedulerTask = null;
+        }
 
-            registeredEntries.Clear();
-            disposed = true;
-        }
-        finally
-        {
-            Monitor.Exit(schedulerLock);
-        }
+        registeredEntries.Clear();
+        disposed = true;
     }
 }

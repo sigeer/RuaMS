@@ -32,9 +32,9 @@ namespace server.maps;
 /// </summary>
 public class Dragon : AbstractAnimatedMapObject
 {
-    private IPlayer owner;
+    private Player owner;
 
-    public Dragon(IPlayer chr) : base()
+    public Dragon(Player chr) : base()
     {
         this.owner = chr;
         this.setPosition(chr.getPosition());
@@ -62,7 +62,7 @@ public class Dragon : AbstractAnimatedMapObject
         c.sendPacket(PacketCreator.removeDragon(owner.getId()));
     }
 
-    public IPlayer getOwner()
+    public Player getOwner()
     {
         return owner;
     }

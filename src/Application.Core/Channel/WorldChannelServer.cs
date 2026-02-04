@@ -1,45 +1,39 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Invitation;
+using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
+using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
-using Application.Core.Game;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
-using Application.Resources.Messages;
 using Application.Shared.Login;
-using Application.Shared.Message;
 using Application.Shared.Servers;
-using Application.Templates.Providers;
+using Application.Utility.Pipeline;
 using Config;
-using constants.game;
-using Dto;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
+using ItemProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using net.server.guild;
-using net.server.task;
-using Polly;
-using Serilog;
-using server;
-using server.quest;
+using SyncProto;
 using System.Diagnostics;
 using System.Net;
-using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer : IServerBase<IChannelServerTransport>
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActor<ChannelNodeCommandContext>, IServiceCenter
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
+        public DistributeSession<int, SyncProto.PlayerSaveDto>? SyncPlayerSession { get; set; }
+        public DistributeSession<int, ItemProto.SyncPlayerShopRequest>? SyncPlayerShopSession { get; set; }
+        public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
+
         public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
@@ -69,8 +63,7 @@ namespace Application.Core.Channel
         public ChatRoomService ChatRoomService => _chatRoomService.Value;
         readonly Lazy<NewYearCardService> _newYearService;
         public NewYearCardService NewYearCardService => _newYearService.Value;
-        readonly Lazy<NoteService> _noteService;
-        public NoteService NoteService => _noteService.Value;
+
         readonly Lazy<DataService> _dataService;
         public DataService DataService => _dataService.Value;
         readonly Lazy<IPlayerNPCService> _playerNPCService;
@@ -93,16 +86,25 @@ namespace Application.Core.Channel
 
         readonly Lazy<GachaponManager> _gachaponManager;
         public GachaponManager GachaponManager => _gachaponManager.Value;
+
+        readonly Lazy<DueyManager> _dueyManager;
+        public DueyManager DueyManager => _dueyManager.Value;
+
+        Lazy<IItemDistributeService> _itemDistributeService;
+        public IItemDistributeService ItemDistributeService => _itemDistributeService.Value;
+        Lazy<IFishingService> _fishingService;
+        public IFishingService FishingService => _fishingService.Value;
         #endregion
 
         #region Task
-        public CharacterDiseaseManager CharacterDiseaseManager { get; }
-        public PetHungerManager PetHungerManager { get; }
-        public ServerMessageManager ServerMessageManager { get; }
-        public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
-        public MapObjectManager MapObjectManager { get; }
-        public MountTirednessManager MountTirednessManager { get; }
-        public MapOwnershipManager MapOwnershipManager { get; }
+        public ServerMessageTask ServerMessageTask { get; }
+
+        public MountTirednessTask MountTirednessTask { get; }
+        public MapObjectTask MapObjectTask { get; }
+        public CharacterDiseaseTask CharacterDiseaseTask { get; }
+        public CharacterHpDecreaseTask CharacterHpDecreaseTask { get; }
+        public PetHungerTask PetHungerTask { get; }
+        public MapOwnershipTask MapOwnershipTask { get; }
         #endregion
 
         #region GameConfig
@@ -122,10 +124,12 @@ namespace Application.Core.Channel
 
         #endregion
         public List<AbstractChannelModule> Modules { get; private set; }
-        public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
 
         public ExpeditionService ExpeditionService { get; }
         public ChannelPlayerStorage PlayerStorage { get; }
+        Lazy<MessageDispatcherNew> _messageDispatcher;
+        public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
+
 
         ScheduledFuture? invitationTask;
         ScheduledFuture? playerShopTask;
@@ -134,6 +138,8 @@ namespace Application.Core.Channel
 
         public BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
+
+        public ChannelNodeCommandLoop CommandLoop { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -147,23 +153,23 @@ namespace Application.Core.Channel
 
             Modules = new();
             Servers = new();
+            ServerConfigMapping = new();
             ServerConfig = serverConfigOptions.Value;
             PlayerStorage = new();
 
             _skillbookInformationProvider = new(() => ServiceProvider.GetRequiredService<SkillbookInformationProvider>());
             CashItemProvider = cashItemProvider;
 
-            CharacterDiseaseManager = new CharacterDiseaseManager(this);
-            PetHungerManager = new PetHungerManager(this);
-            ServerMessageManager = new ServerMessageManager(this);
-            CharacterHpDecreaseManager = new CharacterHpDecreaseManager(this);
-            MapObjectManager = new MapObjectManager(this);
-            MountTirednessManager = new MountTirednessManager(this);
-            MapOwnershipManager = new MapOwnershipManager(this);
+
+            ServerMessageTask = new ServerMessageTask(this);
+            MountTirednessTask = new MountTirednessTask(this);
+            MapObjectTask = new MapObjectTask(this);
+            CharacterDiseaseTask = new CharacterDiseaseTask(this);
+            CharacterHpDecreaseTask = new CharacterHpDecreaseTask(this);
+            PetHungerTask = new(this);
+            MapOwnershipTask = new(this);
 
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
-
-            InviteChannelHandlerRegistry = ServiceProvider.GetRequiredService<InviteChannelHandlerRegistry>();
 
             _buddyManager = new(() => ServiceProvider.GetRequiredService<BuddyManager>());
             _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
@@ -172,20 +178,25 @@ namespace Application.Core.Channel
             _monitorManager = new(() => ServiceProvider.GetRequiredService<MonitorManager>());
             _autoBanManager = new(() => ServiceProvider.GetRequiredService<AutoBanDataManager>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
+            _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
 
             _adminService = new(() => ServiceProvider.GetRequiredService<AdminService>());
             _marriageService = new(() => ServiceProvider.GetRequiredService<IMarriageService>());
             _chatRoomService = new Lazy<ChatRoomService>(() => ServiceProvider.GetRequiredService<ChatRoomService>());
             _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>());
-            _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
             _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
             _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
             _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
+            _itemDistributeService = new(() => ServiceProvider.GetRequiredService<IItemDistributeService>());
+            _fishingService = new(() => ServiceProvider.GetRequiredService<IFishingService>());
 
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
+
+            _messageDispatcher = new(() => new(this));
+            CommandLoop = new ChannelNodeCommandLoop(this);
         }
 
         #region 时间
@@ -202,18 +213,13 @@ namespace Application.Core.Channel
             return serverCurrentTime;
         }
 
-        public DateTimeOffset GetCurrentTimeDateTimeOffSet()
+        public DateTimeOffset GetCurrentTimeDateTimeOffset()
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(serverCurrentTime);
         }
         public void UpdateServerTime()
         {
             serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
-        }
-
-        public bool canEnterDeveloperRoom()
-        {
-            return AdminService.GetServerStats().IsDevRoomAvailable;
         }
 
         public void ForceUpdateServerTime()
@@ -231,15 +237,10 @@ namespace Application.Core.Channel
         {
             ActiveCoupons = config.ActiveCoupons.ToList();
             CouponRates = config.CouponRates.ToDictionary();
-
-            foreach (var ch in Servers.Values)
-            {
-                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
-                {
-                    chr.updateCouponRates();
-                }
-            }
         }
+
+        public List<int> GetActiveCoupons() => ActiveCoupons;
+        public Dictionary<int, int> GetCouponRates() => CouponRates;
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         public async Task Shutdown(int delaySeconds = -1)
@@ -255,13 +256,13 @@ namespace Application.Core.Channel
                 }
                 _logger.LogInformation("[{ServerName}] 正在停止...", ServerName);
 
-                await CharacterDiseaseManager.StopAsync();
-                await PetHungerManager.StopAsync();
-                await MapOwnershipManager.StopAsync();
-                await ServerMessageManager.StopAsync();
-                await CharacterHpDecreaseManager.StopAsync();
-                await MapObjectManager.StopAsync();
-                await MountTirednessManager.StopAsync();
+                await CharacterDiseaseTask.StopAsync();
+                await PetHungerTask.StopAsync();
+                await MapOwnershipTask.StopAsync();
+                await ServerMessageTask.StopAsync();
+                await CharacterHpDecreaseTask.StopAsync();
+                await MapObjectTask.StopAsync();
+                await MountTirednessTask.StopAsync();
 
                 if (invitationTask != null)
                     await invitationTask.CancelAsync(false);
@@ -272,24 +273,21 @@ namespace Application.Core.Channel
                 if (checkMapActiveTask != null)
                     await checkMapActiveTask.CancelAsync(false);
 
-                InviteChannelHandlerRegistry.Dispose();
-
                 foreach (var module in Modules)
                 {
                     await module.UninstallAsync();
                 }
 
-                foreach (var channel in Servers.Values)
-                {
-                    await channel.ShutdownServer();
-                }
-                // 有些玩家在CashShop
-                PlayerStorage.disconnectAll();
+                PushChannelCommand(new InvokeChannelShutdownCommand());
 
                 await TimerManager.Stop();
-                ThreadManager.getInstance().stop();
+                await CommandLoop.DisposeAsync();
                 _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
-                Transport.CompleteChannelShutdown(ServerName);
+
+                // 有些玩家在CashShop
+                await PlayerStorage.disconnectAll(true);
+
+                await Transport.CompleteChannelShutdown();
                 IsRunning = false;
             }
             catch (Exception ex)
@@ -302,15 +300,8 @@ namespace Application.Core.Channel
             }
         }
 
-        public async Task StartServer()
-        {
-            await Start();
-            StartupTime = DateTimeOffset.UtcNow;
-            ForceUpdateServerTime();
-        }
-
-
-        private async Task Start()
+        Dictionary<ChannelConfig, NettyChannelServer> effectChannels = new();
+        public async Task StartServer(CancellationToken cancellationToken)
         {
             if (IsRunning)
                 return;
@@ -318,15 +309,65 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
-            if (ServerConfig.ChannelConfig.Count == 0)
-                throw new BusinessFatalException("必须包含频道");
+            CommandLoop.Start(ServerName);
+
+            foreach (var item in ServerConfig.ChannelConfig)
+            {
+                var nettyServer = new NettyChannelServer(this, item);
+                try
+                {
+                    await nettyServer.Start();
+                    effectChannels[item] = nettyServer;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "频道服务器监听失败，已跳过端口{Port}", item.Port);
+                }
+            }
+
+            if (effectChannels.Count == 0)
+                throw new BusinessFatalException("必须包含有效的频道");
+
+            await Transport.RegisterServer(effectChannels.Keys.ToList());
+        }
+
+        public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
+        {
+            if (configs.StartChannel <= 0)
+            {
+                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                return false;
+            }
+
+            IsRunning = true;
+            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
+
+            OpcodeConstants.generateOpcodeNames();
+            ForceUpdateServerTime();
+
+            var channel = configs.StartChannel;
+            foreach (var server in effectChannels)
+            {
+                var scope = ServiceProvider.CreateScope();
+                var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
+                worldChannel.Initialize(configs);
+
+                Servers[channel] = worldChannel;
+                ServerConfigMapping[server.Key] = worldChannel;
+
+                channel++;
+                await worldChannel.StartServer(cancellationToken);
+            }
+
+            DataService.LoadAllPLife();
+            DataService.LoadAllReactorDrops();
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>
                 {
                     item.LoadData();
-                });
+                }, cancellationToken);
             }
 
             _ = Task.Run(() =>
@@ -336,25 +377,16 @@ namespace Application.Core.Channel
                 SkillFactory.LoadAllSkills();
                 sw.Stop();
                 _logger.LogDebug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
-            });
+            }, cancellationToken);
 
 
-            DataService.LoadAllPLife();
-
-            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
-
-            OpcodeConstants.generateOpcodeNames();
-
-
-            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
-
-            CharacterDiseaseManager.Register(TimerManager);
-            PetHungerManager.Register(TimerManager);
-            ServerMessageManager.Register(TimerManager);
-            CharacterHpDecreaseManager.Register(TimerManager);
-            MapObjectManager.Register(TimerManager);
-            MountTirednessManager.Register(TimerManager);
-            MapOwnershipManager.Register(TimerManager);
+            CharacterDiseaseTask.Register(TimerManager);
+            PetHungerTask.Register(TimerManager);
+            ServerMessageTask.Register(TimerManager);
+            CharacterHpDecreaseTask.Register(TimerManager);
+            MapObjectTask.Register(TimerManager);
+            MountTirednessTask.Register(TimerManager);
+            MapOwnershipTask.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
             playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -363,11 +395,9 @@ namespace Application.Core.Channel
                 checkMapActiveTask = TimerManager.register(new DisposeCheckTask(this), TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
             }
 #if !DEBUG
-            timeoutTask = TimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+            timeoutTask = TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
 
-            InviteChannelHandlerRegistry.Register(ServiceProvider.GetServices<InviteChannelHandler>());
-            InitializeMessage();
 
             foreach (var module in Modules)
             {
@@ -375,78 +405,10 @@ namespace Application.Core.Channel
                 module.RegisterTask(TimerManager);
             }
 
-            List<WorldChannel> localServers = [];
-            foreach (var config in ServerConfig.ChannelConfig)
-            {
-                var scope = ServiceProvider.CreateScope();
-                var channel = new WorldChannel(this, scope, ServerConfig.ServerHost, config);
-                await channel.StartServer();
-                if (channel.IsRunning)
-                {
-                    localServers.Add(channel);
-                }
-            }
-
-            var registerPolicy = Policy.HandleResult<RegisterServerResult>(x => x.StartChannel <= 0)
-                .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(2000),
-                onRetry: (result, timespan, retryCount, context) =>
-                {
-                    _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
-                });
-            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(localServers));
-
-            if (configs.StartChannel > 0)
-            {
-                ForceUpdateServerTime();
-
-                foreach (var server in localServers)
-                {
-                    var channel = configs.StartChannel++;
-                    server.Register(channel);
-                    Servers[channel] = server;
-                }
-
-                UpdateWorldConfig(configs.Config);
-                UpdateCouponConfig(configs.Coupon);
-
-                foreach (var server in Servers.Values)
-                {
-                    server.Initialize();
-                }
-
-                IsRunning = true;
-            }
-            else
-            {
-                _logger.LogError("注册服务器失败, {Message}", configs.Message);
-                IsRunning = false;
-            }
-
+            return true;
         }
 
-
-        public void RemovePlayer(int chrId)
-        {
-            if (chrId <= 0)
-                return;
-
-            PlayerStorage.RemovePlayer(chrId);
-            foreach (var ch in Servers.Values)
-            {
-                if (ch.RemovePlayer(chrId))
-                    return;
-            }
-        }
-
-        public IPlayer? FindPlayerById(int cid)
-        {
-            if (cid <= 0)
-                return null;
-
-            return PlayerStorage.getCharacterById(cid);
-        }
-
-        public IPlayer? FindPlayerById(int channel, int cid)
+        public Player? FindPlayerById(int channel, int cid)
         {
             if (cid <= 0)
                 return null;
@@ -457,7 +419,7 @@ namespace Application.Core.Channel
             return null;
         }
 
-        internal WorldChannel? GetChannel(int channel)
+        public WorldChannel? GetChannel(int channel)
         {
             return Servers.GetValueOrDefault(channel);
         }
@@ -478,75 +440,36 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        void BroadcastPacket(Packet p)
+        public void InvokeBroadcastPacket(Packet p)
         {
-            foreach (var ch in Servers.Values)
-            {
-                ch.broadcastPacket(p);
-            }
+            PushChannelCommand(new InvokeChannelBroadcastCommand([-1], p));
         }
 
 
-        void BroadcastSetTimer(MessageProto.SetTimer data)
+        public void SendBroadcastWorldPacket(Packet p, bool onGM = false)
         {
-            BroadcastPacket(PacketCreator.getClock(data.Seconds));
-        }
-
-        void BroadcastRemoveTimer(MessageProto.RemoveTimer data)
-        {
-            BroadcastPacket(PacketCreator.removeClock());
-        }
-
-        public void SendBroadcastWorldPacket(Packet p)
-        {
-            Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()) });
-        }
-
-        void OnReceivedPacket(MessageProto.PacketBroadcast data)
-        {
-            var packet = new ByteBufOutPacket(data.Data.ToByteArray());
-            foreach (var ch in Servers.Values)
-            {
-                if (data.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.sendPacket(packet);
-                    }
-                }
-                else
-                {
-                    foreach (var id in data.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.sendPacket(packet);
-                    }
-
-                }
-            }
+            _ = Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
         }
 
 
-        public void SendDropMessage(int type, string message)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type">-1. yellow, -2. earntitle, 1. popup 2.</param>
+        /// <param name="message"></param>
+        /// <param name="onlyGM"></param>
+        /// <returns></returns>
+        public void SendDropMessage(int type, string message, bool onlyGM = false)
         {
-            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message });
-        }
-
-        public void SendDropGMMessage(int type, string message)
-        {
-            Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = true });
-        }
-
-        public void SendYellowTip(string message, bool onlyGM)
-        {
-            Transport.SendYellowTip(new MessageProto.YellowTipRequest { Message = message, OnlyGM = onlyGM });
+            _ = Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
         }
 
         public void EarnTitleMessage(string message, bool onlyGM)
         {
-            Transport.SendEarnTitleMessage(new MessageProto.EarnTitleMessageRequest { Message = message, OnlyGM = onlyGM });
+            SendDropMessage(-2, message, onlyGM);
         }
 
-        private void UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             if (updatePatch.MobRate.HasValue)
             {
@@ -584,10 +507,6 @@ namespace Application.Core.Channel
             {
                 WorldServerMessage = updatePatch.ServerMessage;
             }
-            foreach (var server in Servers.Values)
-            {
-                server.UpdateWorldConfig(updatePatch);
-            }
         }
 
 
@@ -601,262 +520,32 @@ namespace Application.Core.Channel
             return Transport.CheckCharacterName(name);
         }
 
-        void OnDropMessage(DropMessageBroadcast msg)
+        public void SendReloadEvents(Player chr)
         {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.dropMessage(msg.Type, msg.Message);
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.dropMessage(msg.Type, msg.Message);
-                    }
+            _ = Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
+        }
 
-                }
+        public void PushChannelCommand(IWorldChannelCommand command)
+        {
+            foreach (var item in Servers.Values)
+            {
+                item.Post(command);
             }
         }
 
-        void OnYellowTip(YellowTipBroadcast msg)
+        public void Post(ICommand<ChannelNodeCommandContext> command)
         {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.yellowMessage(msg.Message);
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.yellowMessage(msg.Message);
-                    }
-
-                }
-            }
+            CommandLoop.Register(command);
         }
 
-        void OnEarnTitleMessage(EarnTitleMessageBroadcast msg)
+        internal DistributeSession<int, PlayerSaveDto> CreateSyncPlayerSession()
         {
-            foreach (var ch in Servers.Values)
-            {
-                if (msg.Receivers.Contains(-1))
-                {
-                    foreach (var player in ch.Players.getAllCharacters())
-                    {
-                        player.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
-                    }
-                }
-                else
-                {
-                    foreach (var id in msg.Receivers)
-                    {
-                        ch.Players.getCharacterById(id)?.sendPacket(PacketCreator.earnTitleMessage(msg.Message));
-                    }
-
-                }
-            }
+            return new DistributeSession<int, PlayerSaveDto>(Servers.Values.Select(x => x.Id));
         }
 
-
-        private void OnPlayerJobChanged(SyncProto.PlayerFieldChange data)
+        internal DistributeSession<int, SyncPlayerShopRequest> CreateSyncPlayerShopSession()
         {
-            foreach (var module in Modules)
-            {
-                module.OnPlayerChangeJob(data);
-            }
-        }
-
-        private void OnPlayerLevelChanged(SyncProto.PlayerFieldChange data)
-        {
-            foreach (var module in Modules)
-            {
-                module.OnPlayerLevelUp(data);
-            }
-        }
-
-        private void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
-        {
-            // 切换频道也会被调用
-            bool isLogin = data.IsNewComer;
-            bool isLogoff = data.Channel == 0;
-            if (data.GuildId > 0)
-            {
-                var guild = GuildManager.GetGuildById(data.GuildId);
-                if (guild != null)
-                {
-                    guild.OnMemberChannelChanged(data.Id, data.Channel);
-                }
-            }
-
-            foreach (var module in Modules)
-            {
-                if (isLogin)
-                    module.OnPlayerLogin(data);
-            }
-        }
-
-        /// <summary>
-        /// 成功：向受邀者发送请求，失败：向邀请者发送失败原因
-        /// </summary>
-        /// <param name="data"></param>
-        private void OnSendInvitation(InvitationProto.CreateInviteResponse data)
-        {
-            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
-        }
-
-
-        private void OnAnswerInvitation(InvitationProto.AnswerInviteResponse data)
-        {
-            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
-        }
-
-
-        private void InitializeMessage()
-        {
-            MessageDispatcher.Register<MessageProto.SetTimer>(BroadcastType.Broadcast_SetTimer, BroadcastSetTimer);
-            MessageDispatcher.Register<MessageProto.RemoveTimer>(BroadcastType.Broadcast_RemoveTimer, BroadcastRemoveTimer);
-            MessageDispatcher.Register<MessageProto.DropMessageBroadcast>(BroadcastType.Broadcast_DropMessage, OnDropMessage);
-            MessageDispatcher.Register<MessageProto.PacketBroadcast>(BroadcastType.Broadcast_Packet, OnReceivedPacket);
-            MessageDispatcher.Register<MessageProto.YellowTipBroadcast>(BroadcastType.Broadcast_YellowTip, OnYellowTip);
-            MessageDispatcher.Register<MessageProto.EarnTitleMessageBroadcast>(BroadcastType.Broadcast_EarnTitleMessage, OnEarnTitleMessage);
-
-            MessageDispatcher.Register<Dto.SendWhisperMessageBroadcast>(BroadcastType.Whisper_Chat, BuddyManager.OnWhisperReceived);
-
-            MessageDispatcher.Register<Dto.AddBuddyBroadcast>(BroadcastType.Buddy_Added, BuddyManager.OnAddBuddyBroadcast);
-            MessageDispatcher.Register<Dto.BuddyChatBroadcast>(BroadcastType.Buddy_Chat, BuddyManager.OnBuddyChatReceived);
-            MessageDispatcher.Register<Dto.NotifyBuddyWhenLoginoffBroadcast>(BroadcastType.Buddy_NotifyChannel, BuddyManager.OnBuddyNotifyChannel);
-            MessageDispatcher.Register<Dto.SendBuddyNoticeMessageDto>(BroadcastType.Buddy_NoticeMessage, BuddyManager.OnBuddyNoticeMessageReceived);
-            MessageDispatcher.Register<Dto.DeleteBuddyBroadcast>(BroadcastType.Buddy_Delete, BuddyManager.OnBuddyDeleted);
-
-            MessageDispatcher.Register<Dto.MultiChatMessage>(BroadcastType.OnMultiChat, OnMulitiChat);
-
-            var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
-            MessageDispatcher.Register<Empty>(BroadcastType.SaveAll, adminSrv.OnSaveAll);
-            MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
-            MessageDispatcher.Register<SystemProto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
-            MessageDispatcher.Register<SystemProto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
-            MessageDispatcher.Register<SystemProto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
-            MessageDispatcher.Register<SystemProto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
-
-            MessageDispatcher.Register<Config.AutoBanIgnoredChangedNotifyDto>(BroadcastType.OnAutoBanIgnoreChangedNotify, AutoBanManager.OnIgoreDataChanged);
-            MessageDispatcher.Register<Config.MonitorDataChangedNotifyDto>(BroadcastType.OnMonitorChangedNotify, MonitorManager.OnMonitorDataChanged);
-
-            var reportSrv = ServiceProvider.GetRequiredService<ReportService>();
-            MessageDispatcher.Register<Dto.SendReportBroadcast>(BroadcastType.OnReportReceived, reportSrv.OnGMReceivedReport);
-
-            var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
-
-            MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
-            MessageDispatcher.Register<ItemProto.UseItemMegaphoneBroadcast>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
-            MessageDispatcher.Register<ItemProto.CreateTVMessageBroadcast>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
-            MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
-            MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
-            MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);
-            MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
-
-            MessageDispatcher.Register<InvitationProto.CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
-            MessageDispatcher.Register<InvitationProto.AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
-
-            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
-            MessageDispatcher.Register<SyncProto.PlayerFieldChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
-            MessageDispatcher.Register<PlayerOnlineChange>(BroadcastType.OnPlayerLoginOff, OnPlayerLoginOff);
-
-            #region Guild
-            MessageDispatcher.Register<GuildProto.UpdateGuildNoticeResponse>(BroadcastType.OnGuildNoticeUpdate, GuildManager.OnGuildNoticeUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildGPResponse>(BroadcastType.OnGuildGpUpdate, GuildManager.OnGuildGPUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildCapacityResponse>(BroadcastType.OnGuildCapacityUpdate, GuildManager.OnGuildCapacityIncreased);
-            MessageDispatcher.Register<GuildProto.UpdateGuildEmblemResponse>(BroadcastType.OnGuildEmblemUpdate, GuildManager.OnGuildEmblemUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildRankTitleResponse>(BroadcastType.OnGuildRankTitleUpdate, GuildManager.OnGuildRankTitleUpdate);
-            MessageDispatcher.Register<GuildProto.UpdateGuildMemberRankResponse>(BroadcastType.OnGuildRankChanged, GuildManager.OnChangePlayerGuildRank);
-            MessageDispatcher.Register<GuildProto.JoinGuildResponse>(BroadcastType.OnPlayerJoinGuild, GuildManager.OnPlayerJoinGuild);
-            MessageDispatcher.Register<GuildProto.LeaveGuildResponse>(BroadcastType.OnPlayerLeaveGuild, GuildManager.OnPlayerLeaveGuild);
-            MessageDispatcher.Register<GuildProto.ExpelFromGuildResponse>(BroadcastType.OnGuildExpelMember, GuildManager.OnGuildExpelMember);
-            MessageDispatcher.Register<GuildProto.GuildDisbandResponse>(BroadcastType.OnGuildDisband, GuildManager.OnGuildDisband);
-            #endregion
-
-            #region Alliance
-            MessageDispatcher.Register<AllianceProto.GuildJoinAllianceResponse>(BroadcastType.OnGuildJoinAlliance, GuildManager.OnGuildJoinAlliance);
-            MessageDispatcher.Register<AllianceProto.GuildLeaveAllianceResponse>(BroadcastType.OnGuildLeaveAlliance, GuildManager.OnGuildLeaveAlliance);
-            MessageDispatcher.Register<AllianceProto.AllianceExpelGuildResponse>(BroadcastType.OnAllianceExpelGuild, GuildManager.OnAllianceExpelGuild);
-            MessageDispatcher.Register<AllianceProto.IncreaseAllianceCapacityResponse>(BroadcastType.OnAllianceCapacityUpdate, GuildManager.OnAllianceCapacityIncreased);
-            MessageDispatcher.Register<AllianceProto.DisbandAllianceResponse>(BroadcastType.OnAllianceDisband, GuildManager.OnAllianceDisband);
-            MessageDispatcher.Register<AllianceProto.UpdateAllianceNoticeResponse>(BroadcastType.OnAllianceNoticeUpdate, GuildManager.OnAllianceNoticeChanged);
-            MessageDispatcher.Register<AllianceProto.ChangePlayerAllianceRankResponse>(BroadcastType.OnAllianceRankChange, GuildManager.OnPlayerAllianceRankChanged);
-            MessageDispatcher.Register<AllianceProto.UpdateAllianceRankTitleResponse>(BroadcastType.OnAllianceRankTitleUpdate, GuildManager.OnAllianceRankTitleChanged);
-            MessageDispatcher.Register<AllianceProto.AllianceChangeLeaderResponse>(BroadcastType.OnAllianceChangeLeader, GuildManager.OnAllianceLeaderChanged);
-            #endregion
-
-            #region ChatRoom
-            MessageDispatcher.Register<SendChatRoomMessageResponse>(BroadcastType.OnChatRoomMessageSend, ChatRoomService.OnReceiveMessage);
-            MessageDispatcher.Register<JoinChatRoomResponse>(BroadcastType.OnJoinChatRoom, ChatRoomService.OnPlayerJoinChatRoom);
-            MessageDispatcher.Register<LeaveChatRoomResponse>(BroadcastType.OnLeaveChatRoom, ChatRoomService.OnPlayerLeaveChatRoom);
-            #endregion
-
-            #region NewYearCard
-            MessageDispatcher.Register<Dto.SendNewYearCardResponse>(BroadcastType.OnNewYearCardSend, NewYearCardService.OnNewYearCardSend);
-            MessageDispatcher.Register<Dto.ReceiveNewYearCardResponse>(BroadcastType.OnNewYearCardReceived, NewYearCardService.OnNewYearCardReceived);
-            MessageDispatcher.Register<Dto.NewYearCardNotifyDto>(BroadcastType.OnNewYearCardNotify, NewYearCardService.OnNewYearCardNotify);
-            MessageDispatcher.Register<Dto.DiscardNewYearCardResponse>(BroadcastType.OnNewYearCardDiscard, NewYearCardService.OnNewYearCardDiscard);
-            #endregion
-
-            MessageDispatcher.Register<TeamProto.UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
-
-            MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
-
-            MessageDispatcher.Register<LifeProto.CreatePLifeRequest>(BroadcastType.OnPLifeCreated, DataService.OnPLifeCreated);
-            MessageDispatcher.Register<LifeProto.RemovePLifeResponse>(BroadcastType.OnPLifeRemoved, DataService.OnPLifeRemoved);
-        }
-
-        public void OnMessageReceived(BaseProto.MessageWrapper message)
-        {
-            MessageDispatcher.Dispatch(message);
-        }
-
-        public void OnMessageReceived(string type, IMessage message)
-        {
-            MessageDispatcher.Dispatch(type, message);
-        }
-
-        internal void SendReloadEvents(IPlayer chr)
-        {
-            Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
-        }
-
-        private void OnEventsReloaded(Dto.ReloadEventsResponse data)
-        {
-            IPlayer? sender = null;
-            foreach (var ch in Servers.Values)
-            {
-                ch.reloadEventScriptManager();
-
-                if (sender == null)
-                {
-                    sender = ch.Players.getCharacterById(data.Request.MasterId);
-                    sender?.dropMessage(5, "Reloaded Events");
-                }
-            }
-        }
-
-        void OnMulitiChat(MultiChatMessage data)
-        {
-            foreach (var cid in data.Receivers)
-            {
-                var chr = FindPlayerById(cid);
-                if (chr != null && !chr.isAwayFromWorld())
-                {
-                    chr.sendPacket(PacketCreator.multiChat(data.FromName, data.Text, data.Type));
-                }
-            }
+            return new DistributeSession<int, SyncPlayerShopRequest>(Servers.Values.Select(x => x.Id));
         }
     }
 }

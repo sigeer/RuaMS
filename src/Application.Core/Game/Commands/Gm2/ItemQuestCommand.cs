@@ -63,7 +63,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 foreach (var item in itemRequirement.RequiredItems)
                 {
-                    InventoryManipulator.addById(client, item.Key, (short)item.Value, client.OnlinedCharacter.Name);
+                    client.OnlinedCharacter.GainItem(item.Key, (short)item.Value);
                 }
             }
 

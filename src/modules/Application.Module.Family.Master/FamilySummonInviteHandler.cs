@@ -3,6 +3,7 @@ using Application.Core.Login.Models.Invitations;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Dto;
+using InvitationProto;
 
 namespace Application.Module.Family.Master
 {
@@ -15,9 +16,9 @@ namespace Application.Module.Family.Master
             _familyManager = familyManager;
         }
 
-        protected override void OnInvitationAccepted(InviteRequest request)
+        protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            _familyManager.UseEntitlement(new UseEntitlementRequest
+            await _familyManager.UseEntitlement(new UseEntitlementRequest
             {
                 MatserId = request.FromPlayerId,
                 TargetPlayerId = request.ToPlayerId,
@@ -25,17 +26,17 @@ namespace Application.Module.Family.Master
             });
         }
 
-        protected override void OnInvitationDeclined(InviteRequest request)
+        protected override async Task OnInvitationDeclined(InviteRequest request)
         {
-            _familyManager.Refund(request.FromPlayerId);
+            await _familyManager.Refund(request.FromPlayerId);
         }
 
-        public override void OnInvitationExpired(InviteRequest request)
+        public override async Task OnInvitationExpired(InviteRequest request)
         {
-            _familyManager.Refund(request.FromPlayerId);
+            await _familyManager.Refund(request.FromPlayerId);
         }
 
-        public override void HandleInvitationCreated(CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -46,7 +47,7 @@ namespace Application.Module.Family.Master
             }
 
             // cost检测
-            BroadcastResult(responseCode, fromPlayer.Character.Id, fromPlayer, toPlayer, request.ToName);
+            await BroadcastResult(responseCode, fromPlayer.Character.Id, fromPlayer, toPlayer, request.ToName);
         }
     }
 }

@@ -22,6 +22,7 @@ public class DevtestCommand : CommandBase
         {
             log.Information(e, "devtest.js run() threw an exception");
         }
+        return;
     }
 }
 

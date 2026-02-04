@@ -107,11 +107,11 @@ public class SummonDamageHandler : AbstractDealDamageHandler
 
         if (summon.getSkill() == Outlaw.GAVIOTA)
         {  // thanks Periwinks for noticing Gaviota not cancelling after grenade toss
-            player.cancelEffect(summonEffect, false, -1);
+            player.cancelEffect(summonEffect, false);
         }
     }
 
-    private static int calcMaxDamage(StatEffect summonEffect, IPlayer player, bool magic)
+    private static int calcMaxDamage(StatEffect summonEffect, Player player, bool magic)
     {
         double maxDamage;
 

@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "Dto/Item.proto";
-import "google/protobuf/wrappers.proto";
 
 package ItemProto;
 

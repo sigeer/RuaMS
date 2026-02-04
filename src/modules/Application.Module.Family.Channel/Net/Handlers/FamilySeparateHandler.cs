@@ -37,12 +37,12 @@ public class FamilySeparateHandler : ChannelHandlerBase
         _familyManager = familyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var oldFamily = _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id);
         if (oldFamily == null)
         {
-            return;
+            return Task.CompletedTask;
         }
         var chrFamilyEntry = oldFamily.getEntryByID(c.OnlinedCharacter.Id);
         if (chrFamilyEntry == null)
@@ -58,8 +58,7 @@ public class FamilySeparateHandler : ChannelHandlerBase
             forkOn = oldFamily.getEntryByID(p.readInt());
             if (!chrFamilyEntry.isJunior(forkOn))
             {
-                return; //packet editing?
-            }
+                return Task.CompletedTask;            }
             isSenior = true;
         }
         else
@@ -69,13 +68,13 @@ public class FamilySeparateHandler : ChannelHandlerBase
         }
         if (forkOn == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var senior = forkOn.getSenior();
         if (senior == null)
         {
-            return;
+            return Task.CompletedTask;
         }
         int levelDiff = Math.Abs(c.OnlinedCharacter.getLevel() - senior.Level);
         int cost = 2500 * levelDiff;
@@ -83,9 +82,9 @@ public class FamilySeparateHandler : ChannelHandlerBase
         if (c.OnlinedCharacter.getMeso() < cost)
         {
             c.sendPacket(FamilyPacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
-            return;
+            return Task.CompletedTask;
         }
         _familyManager.Fork(forkOn.Id, cost);
-
+        return Task.CompletedTask;
     }
 }

@@ -26,6 +26,7 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
+using System.Threading.Tasks;
 using tools;
 
 namespace client.processor.stat;
@@ -37,7 +38,7 @@ namespace client.processor.stat;
 public class AssignAPProcessor
 {
 
-    public static void APAutoAssignAction(InPacket inPacket, IChannelClient c)
+    public static async Task APAutoAssignAction(InPacket inPacket, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)
@@ -423,7 +424,7 @@ public class AssignAPProcessor
             {
                 if (inPacket.available() < 16)
                 {
-                    c.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
+                    c.CurrentServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
 
                     c.Disconnect(true, false);
                     return;
@@ -670,7 +671,7 @@ public class AssignAPProcessor
         }
     }
 
-    private static bool addStat(IPlayer chr, int apTo, bool usedAPReset)
+    private static bool addStat(Player chr, int apTo, bool usedAPReset)
     {
         switch (apTo)
         {
@@ -735,7 +736,7 @@ public class AssignAPProcessor
         return true;
     }
 
-    private static int calcHpChange(IPlayer player, bool usedAPReset)
+    private static int calcHpChange(Player player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxHP = 0;
@@ -889,7 +890,7 @@ public class AssignAPProcessor
         return MaxHP;
     }
 
-    private static int calcMpChange(IPlayer player, bool usedAPReset)
+    private static int calcMpChange(Player player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxMP = 0;

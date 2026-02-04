@@ -43,6 +43,7 @@ using client.inventory;
 using client.keybind;
 using client.status;
 using constants.game;
+using DotNetty.Common.Utilities;
 using net.server;
 using server;
 using server.events.gm;
@@ -79,7 +80,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addRemainingSkillInfo(OutPacket p, IPlayer chr)
+    private static void addRemainingSkillInfo(OutPacket p, Player chr)
     {
         int[] remainingSp = chr.getRemainingSps();
         int effectiveLength = 0;
@@ -102,7 +103,7 @@ public class PacketCreator
         }
     }
 
-    private static void addCharStats(OutPacket p, IPlayer chr)
+    private static void addCharStats(OutPacket p, Player chr)
     {
         p.writeInt(chr.getId()); // character id
         p.writeFixedString(chr.getName());
@@ -151,7 +152,7 @@ public class PacketCreator
         p.writeInt(0);
     }
 
-    protected static void addCharLook(OutPacket p, IPlayer chr, bool mega)
+    protected static void addCharLook(OutPacket p, Player chr, bool mega)
     {
         p.writeByte(chr.getGender());
         p.writeByte((int)chr.getSkinColor()); // skin color
@@ -161,7 +162,7 @@ public class PacketCreator
         addCharEquips(p, chr);
     }
 
-    public static void addCharacterInfo(OutPacket p, IPlayer chr)
+    public static void addCharacterInfo(OutPacket p, Player chr)
     {
         p.writeLong(-1);
         p.writeByte(0);
@@ -191,7 +192,7 @@ public class PacketCreator
         p.writeShort(0);
     }
 
-    private static void addNewYearInfo(OutPacket p, IPlayer chr)
+    private static void addNewYearInfo(OutPacket p, Player chr)
     {
         var received = chr.getReceivedNewYearRecords();
 
@@ -202,7 +203,7 @@ public class PacketCreator
         }
     }
 
-    private static void addTeleportInfo(OutPacket p, IPlayer chr)
+    private static void addTeleportInfo(OutPacket p, Player chr)
     {
         var tele = chr.getTrockMaps();
         var viptele = chr.getVipTrockMaps();
@@ -216,7 +217,7 @@ public class PacketCreator
         }
     }
 
-    private static void addMiniGameInfo(OutPacket p, IPlayer chr)
+    private static void addMiniGameInfo(OutPacket p, Player chr)
     {
         p.writeShort(0);
         /*foreach(int m = size; m > 0; m--) {//nexon does this in P
@@ -228,7 +229,7 @@ public class PacketCreator
          }*/
     }
 
-    private static void addAreaInfo(OutPacket p, IPlayer chr)
+    private static void addAreaInfo(OutPacket p, Player chr)
     {
         Dictionary<short, string> areaInfos = chr.getAreaInfos();
         p.writeShort(areaInfos.Count);
@@ -239,7 +240,7 @@ public class PacketCreator
         }
     }
 
-    private static void addCharEquips(OutPacket p, IPlayer chr)
+    private static void addCharEquips(OutPacket p, Player chr)
     {
         Inventory equip = chr.getInventory(InventoryType.EQUIPPED);
         var ii = ItemInformationProvider.getInstance().canWearEquipment(chr, equip.list());
@@ -301,7 +302,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addCharEntry(OutPacket p, IClientBase playerClient, IPlayer chr, bool viewall)
+    private static void addCharEntry(OutPacket p, IClientBase playerClient, Player chr, bool viewall)
     {
         addCharStats(p, chr);
         addCharLook(p, chr, false);
@@ -431,7 +432,7 @@ public class PacketCreator
 
     }
 
-    private static void addInventoryInfo(OutPacket p, IPlayer chr)
+    private static void addInventoryInfo(OutPacket p, Player chr)
     {
         for (sbyte i = 1; i <= 5; i++)
         {
@@ -489,7 +490,7 @@ public class PacketCreator
         }
     }
 
-    private static void addSkillInfo(OutPacket p, IPlayer chr)
+    private static void addSkillInfo(OutPacket p, Player chr)
     {
         p.writeByte(0); // start of skills
         var skills = chr.getSkills();
@@ -521,12 +522,12 @@ public class PacketCreator
         foreach (PlayerCoolDownValueHolder cooling in chr.getAllCooldowns())
         {
             p.writeInt(cooling.skillId);
-            int timeLeft = (int)(cooling.length + cooling.startTime - chr.Client.CurrentServerContainer.getCurrentTime());
+            int timeLeft = (int)(cooling.length + cooling.startTime - chr.Client.CurrentServer.Node.getCurrentTime());
             p.writeShort(timeLeft / 1000);
         }
     }
 
-    private static void addMonsterBookInfo(OutPacket p, IPlayer chr)
+    private static void addMonsterBookInfo(OutPacket p, Player chr)
     {
         p.writeInt(chr.Monsterbookcover); // cover
         p.writeByte(0);
@@ -537,47 +538,6 @@ public class PacketCreator
             p.writeShort(all.Key % 10000); // Id
             p.writeByte(all.Value); // Level
         }
-    }
-
-
-
-
-
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="reason">
-    /// The reason logging in failed.
-    /// <para>Possible values for <paramref name="reason"/>:</para>
-    /// <para>3: ID deleted or blocked</para>
-    /// <para>4: Incorrect password</para>
-    /// <para>5: Not a registered id</para>
-    /// <para>6: System error</para>
-    /// <para>7: Already logged in</para>
-    /// <para>8: System error</para>
-    /// <para>9: System error</para>
-    /// <para>10: Cannot process so many connections</para>
-    /// <para>11: Only users older than 20 can use this channel</para>
-    /// <para>13: Unable to log on as master at this ip</para>
-    /// <para>14: Wrong gateway or personal info and weird korean button</para>
-    /// <para>15: Processing request with that korean button!</para>
-    /// <para>16: Please verify your account through email...</para>
-    /// <para>17: Wrong gateway or personal info</para>
-    /// <para>21: Please verify your account through email...</para>
-    /// <para>23: License agreement</para>
-    /// <para>25: Maple Europe notice =[ FUCK YOU NEXON</para>
-    /// <para>27: Some weird full client  notice, probably for trial versions</para>
-    /// </param>
-    /// <returns>The login failed packet.</returns>
-    public static Packet getLoginFailed(int reason)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-        p.writeByte(reason);
-        p.writeByte(0);
-        p.writeInt(0);
-        return p;
     }
 
     /// <summary>
@@ -625,94 +585,6 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.DATA_CRC_CHECK_FAILED);
         p.writeString(text);
-        return p;
-    }
-
-    public static Packet getPermBan(byte reason)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-        p.writeByte(2); // Account is banned
-        p.writeByte(0);
-        p.writeInt(0);
-        p.writeByte(reason);
-        p.writeLong(PacketCommon.getTime(-1));
-        return p;
-    }
-
-    public static Packet getTempBan(long timestampTill, byte reason)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-        p.writeByte(2);
-        p.writeByte(0);
-        p.writeInt(0);
-        p.writeByte(reason);
-        p.writeLong(PacketCommon.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
-        return p;
-    }
-
-
-
-
-
-
-
-    /// <summary>
-    /// Gets a packet detailing a server and its channels.
-    /// </summary>
-    /// <param name="serverId"></param>
-    /// <param name="serverName">The name of the server.</param>
-    /// <param name="flag"></param>
-    /// <param name="eventmsg"></param>
-    /// <param name="channelLoad">Load of the channel - 1200 seems to be max.</param>
-    /// <returns>The server info packet.</returns>
-    public static Packet getServerList(int serverId, string serverName, int flag, string eventmsg, List<WorldChannel> channelLoad)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
-        p.writeByte(serverId);
-        p.writeString(serverName);
-        p.writeByte(flag);
-        p.writeString(eventmsg);
-        p.writeByte(100); // rate modifier, don't ask O.O!
-        p.writeByte(0); // event xp * 2.6 O.O!
-        p.writeByte(100); // rate modifier, don't ask O.O!
-        p.writeByte(0); // drop rate * 2.6
-        p.writeByte(0);
-        p.writeByte(channelLoad.Count);
-        foreach (var ch in channelLoad)
-        {
-            p.writeString(serverName + "-" + ch.getId());
-            p.writeInt(ch.getChannelCapacity());
-
-            // thanks GabrielSin for this channel packet structure part
-            p.writeByte(1);// nWorldID
-            p.writeByte(ch.getId() - 1);// nChannelID
-            p.writeBool(false);// bAdultChannel
-        }
-        p.writeShort(0);
-        return p;
-    }
-
-
-
-
-
-
-    /// <summary>
-    /// Gets a packet telling the client the IP of the channel server.
-    /// </summary>
-    /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
-    /// <param name="port">The port the channel is on.</param>
-    /// <param name="clientId">The ID of the client.</param>
-    /// <returns>The server IP packet.</returns>
-    public static Packet getServerIP(IPEndPoint iPEndPoint, int clientId)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SERVER_IP);
-        p.writeShort(0);
-        byte[] addr = iPEndPoint.Address.GetAddressBytes();
-        p.writeBytes(addr);
-        p.writeShort(iPEndPoint.Port);
-        p.writeInt(clientId);
-        p.writeBytes(new byte[] { 0, 0, 0, 0, 0 });
         return p;
     }
 
@@ -803,7 +675,7 @@ public class PacketCreator
     /// </summary>
     /// <param name="chr">The character to get info about.</param>
     /// <returns>The character info packet.</returns>
-    public static Packet getCharInfo(IPlayer chr)
+    public static Packet getCharInfo(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
@@ -815,7 +687,7 @@ public class PacketCreator
             p.writeInt(Randomizer.nextInt());
         }
         addCharacterInfo(p, chr);
-        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.Node.getCurrentTime()));
         return p;
     }
 
@@ -835,7 +707,7 @@ public class PacketCreator
     /// <param name="enableActions">Allows actions after the update.</param>
     /// <param name="chr">The update target.</param>
     /// <returns>The stat update packet.</returns>
-    public static Packet updatePlayerStats(ICollection<KeyValuePair<Stat, int>> stats, bool enableActions, IPlayer? chr)
+    public static Packet updatePlayerStats(ICollection<KeyValuePair<Stat, int>> stats, bool enableActions, Player? chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.STAT_CHANGED);
         p.writeBool(enableActions);
@@ -898,7 +770,7 @@ public class PacketCreator
     /// <param name="spawnPoint">The spawn portal number to spawn at.</param>
     /// <param name="chr">The character warping to <paramref name="to"/></param>
     /// <returns>The map change packet.</returns>
-    public static Packet getWarpToMap(IMap to, int spawnPoint, IPlayer chr)
+    public static Packet getWarpToMap(IMap to, int spawnPoint, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
@@ -914,11 +786,11 @@ public class PacketCreator
             p.writeInt(chr.getPosition().X);
             p.writeInt(chr.getPosition().Y);
         }
-        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.Node.getCurrentTime()));
         return p;
     }
 
-    public static Packet getWarpToMap(IMap to, int spawnPoint, Point spawnPosition, IPlayer chr)
+    public static Packet getWarpToMap(IMap to, int spawnPoint, Point spawnPosition, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
@@ -930,7 +802,7 @@ public class PacketCreator
         p.writeBool(true);
         p.writeInt(spawnPosition.X);    // spawn position placement thanks to Arnah (Vertisy)
         p.writeInt(spawnPosition.Y);
-        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.Node.getCurrentTime()));
         return p;
     }
 
@@ -1106,7 +978,7 @@ public class PacketCreator
     /// <param name="message">The message sent.</param>
     /// <param name="ear">Whether or not the ear is shown for whisper.</param>
     /// <returns></returns>
-    public static Packet getAvatarMega(IPlayer chr, string medal, int channel, int itemId, List<string> message, bool ear)
+    public static Packet getAvatarMega(Player chr, string medal, int channel, int itemId, List<string> message, bool ear)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_AVATAR_MEGAPHONE);
         p.writeInt(itemId);
@@ -1141,7 +1013,7 @@ public class PacketCreator
     /// <param name="town"></param>
     /// <param name="player"></param>
     /// <returns></returns>
-    public static Packet gachaponMessage(Item item, string town, IPlayer player)
+    public static Packet gachaponMessage(Item item, string town, Player player)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERMESSAGE);
         p.writeByte(0x0B);
@@ -1643,7 +1515,7 @@ public class PacketCreator
     /// </param>
     /// <param name="delay"></param>
     /// <returns></returns>
-    public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
+    public static Packet dropItemFromMapObject(Player player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
     {
         int dropType = drop.getDropType();
         if (drop.hasClientsideOwnership(player) && dropType < 3)
@@ -1674,7 +1546,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void writeForeignBuffs(OutPacket p, IPlayer chr)
+    private static void writeForeignBuffs(OutPacket p, Player chr)
     {
         p.writeInt(0);
         p.writeShort(0); //v83
@@ -1788,33 +1660,26 @@ public class PacketCreator
      * @param enteringField Whether the character to spawn is not yet present in the map or already is.
      * @return The spawn player packet.
      */
-    public static Packet spawnPlayerMapObject(IChannelClient target, IPlayer chr, bool enteringField)
+    public static Packet spawnPlayerMapObject(IChannelClient target, Player chr, bool enteringField)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PLAYER);
         p.writeInt(chr.getId());
         p.writeByte(chr.getLevel()); //v83
         p.writeString(chr.getName());
-        if (chr.getGuildId() < 1)
+
+        var gs = chr.GetGuild();
+        if (gs != null)
         {
-            p.writeString("");
-            p.skip(6);
+            p.writeString(gs.Name);
+            p.writeShort(gs.LogoBg);
+            p.writeByte(gs.LogoBgColor);
+            p.writeShort(gs.Logo);
+            p.writeByte(gs.LogoColor);
         }
         else
         {
-            var gs = chr.GuildModel;
-            if (gs != null)
-            {
-                p.writeString(gs.Name);
-                p.writeShort(gs.LogoBg);
-                p.writeByte(gs.LogoBgColor);
-                p.writeShort(gs.Logo);
-                p.writeByte(gs.LogoColor);
-            }
-            else
-            {
-                p.writeString("");
-                p.skip(6);
-            }
+            p.writeString("");
+            p.skip(6);
         }
 
         writeForeignBuffs(p, chr);
@@ -1922,7 +1787,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void encodeNewYearCardInfo(OutPacket p, IPlayer chr)
+    private static void encodeNewYearCardInfo(OutPacket p, Player chr)
     {
         HashSet<NewYearCardObject> newyears = chr.getReceivedNewYearRecords();
         if (newyears.Count > 0)
@@ -1942,7 +1807,7 @@ public class PacketCreator
     }
 
 
-    public static Packet onNewYearCardRes(IPlayer user, NewYearCardObject? newyear, int mode, int msg)
+    public static Packet onNewYearCardRes(Player user, NewYearCardObject? newyear, int mode, int msg)
     {
         OutPacket p = OutPacket.create(SendOpcode.NEW_YEAR_CARD_RES);
         p.writeByte(mode);
@@ -2019,7 +1884,7 @@ public class PacketCreator
         p.writeString(newyear.Message);
     }
 
-    private static void addRingLook(OutPacket p, IPlayer chr, bool crush)
+    private static void addRingLook(OutPacket p, Player chr, bool crush)
     {
         List<Ring> rings;
         if (crush)
@@ -2051,7 +1916,7 @@ public class PacketCreator
         }
     }
 
-    private static void addMarriageRingLook(IChannelClient target, OutPacket p, IPlayer chr)
+    private static void addMarriageRingLook(IChannelClient target, OutPacket p, Player chr)
     {
         var ring = chr.getMarriageRing();
 
@@ -2159,7 +2024,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet facialExpression(IPlayer from, int expression)
+    public static Packet facialExpression(Player from, int expression)
     {
         OutPacket p = OutPacket.create(SendOpcode.FACIAL_EXPRESSION);
         p.writeInt(from.getId());
@@ -2275,14 +2140,14 @@ public class PacketCreator
     }
     */
 
-    public static Packet closeRangeAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
+    public static Packet closeRangeAttack(Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.CLOSE_RANGE_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
         return p;
     }
 
-    public static Packet rangedAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
+    public static Packet rangedAttack(Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.RANGED_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, projectile, damage, speed, direction, display);
@@ -2290,7 +2155,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet magicAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int charge, int speed, int direction, int display)
+    public static Packet magicAttack(Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int charge, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.MAGIC_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
@@ -2301,7 +2166,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addAttackBody(OutPacket p, IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
+    private static void addAttackBody(OutPacket p, Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         p.writeInt(chr.getId());
         p.writeByte(numAttackedAndDamage);
@@ -2513,15 +2378,15 @@ public class PacketCreator
         return OutPacket.create(SendOpcode.ARIANT_ARENA_SHOW_RESULT);
     }
 
-    public static Packet updateAriantPQRanking(IPlayer chr, int score)
+    public static Packet updateAriantPQRanking(Player chr, int score)
     {
         return updateAriantPQRanking(
-            new Dictionary<IPlayer, int>() {
+            new Dictionary<Player, int>() {
                 { chr, score  }
             });
     }
 
-    public static Packet updateAriantPQRanking(Dictionary<IPlayer, int> playerScore)
+    public static Packet updateAriantPQRanking(Dictionary<Player, int> playerScore)
     {
         OutPacket p = OutPacket.create(SendOpcode.ARIANT_ARENA_USER_SCORE);
         p.writeByte(playerScore.Count);
@@ -2585,7 +2450,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateCharLook(IChannelClient target, IPlayer chr)
+    public static Packet updateCharLook(IChannelClient target, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_LOOK);
         p.writeInt(chr.getId());
@@ -2664,7 +2529,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addNewCharEntry(IClientBase client, IPlayer chr)
+    public static Packet addNewCharEntry(IClientBase client, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
         p.writeByte(0);
@@ -2680,7 +2545,7 @@ public class PacketCreator
      * @param isSelf
      * @return
      */
-    public static Packet charInfo(IPlayer chr)
+    public static Packet charInfo(Player chr)
     {
         //3D 00 0A 43 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
         OutPacket p = OutPacket.create(SendOpcode.CHAR_INFO);
@@ -2689,19 +2554,8 @@ public class PacketCreator
         p.writeShort(chr.getJob().getId());
         p.writeShort(chr.getFame());
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
-        string guildName = "";
-        string allianceName = "";
-        if (chr.getGuildId() > 0)
-        {
-            guildName = chr.GuildModel?.Name ?? "";
-
-            if (chr.AllianceModel != null)
-            {
-                allianceName = chr.AllianceModel.Name;
-            }
-        }
-        p.writeString(guildName);
-        p.writeString(allianceName);  // does not seem to work
+        p.writeString(chr.GetGuild()?.Name ?? "");
+        p.writeString(chr.GetAlliance()?.Name ?? "");  // does not seem to work
         p.writeByte(0); // pMedalInfo, thanks to Arnah (Vertisy)
 
         var pets = chr.getPets();
@@ -3088,7 +2942,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getPlayerShopChat(IPlayer chr, string chat, bool owner)
+    public static Packet getPlayerShopChat(Player chr, string chat, bool owner)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.CHAT.getCode());
@@ -3098,7 +2952,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getPlayerShopNewVisitor(IPlayer chr, int slot)
+    public static Packet getPlayerShopNewVisitor(Player chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.VISIT.getCode());
@@ -3119,7 +2973,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getTradePartnerAdd(IPlayer chr)
+    public static Packet getTradePartnerAdd(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.VISIT.getCode());
@@ -3129,7 +2983,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet tradeInvite(IPlayer chr)
+    public static Packet tradeInvite(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.INVITE.getCode());
@@ -3647,266 +3501,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet partyCreated(Team party, int partycharid)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(8);
-        p.writeInt(party.getId());
-
-        Dictionary<int, Door> partyDoors = party.getDoors();
-        if (partyDoors.Count > 0)
-        {
-            var door = partyDoors.GetValueOrDefault(partycharid);
-
-            if (door != null)
-            {
-                DoorObject mdo = door.getAreaDoor();
-                p.writeInt(mdo.getTo().getId());
-                p.writeInt(mdo.getFrom().getId());
-                p.writeInt(mdo.getPosition().X);
-                p.writeInt(mdo.getPosition().Y);
-            }
-            else
-            {
-                p.writeInt(MapId.NONE);
-                p.writeInt(MapId.NONE);
-                p.writeInt(0);
-                p.writeInt(0);
-            }
-        }
-        else
-        {
-            p.writeInt(MapId.NONE);
-            p.writeInt(MapId.NONE);
-            p.writeInt(0);
-            p.writeInt(0);
-        }
-        return p;
-    }
-
-    public static Packet partyInvite(IPlayer from)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(4);
-        p.writeInt(from.getParty()!.getId());
-        p.writeString(from.getName());
-        p.writeByte(0);
-        return p;
-    }
-
-    public static Packet partyInvite(int fromTeamId, string fromPlayerName)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(4);
-        p.writeInt(fromTeamId);
-        p.writeString(fromPlayerName);
-        p.writeByte(0);
-        return p;
-    }
-
-    public static Packet partySearchInvite(IPlayer from)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(4);
-        p.writeInt(from.getParty()!.getId());
-        p.writeString("PS: " + from.getName());
-        p.writeByte(0);
-        return p;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="message">
-    /// <para>10: A beginner can't create a party.</para>
-    /// <para>1/5/6/11/14/19: Your request for a party didn't work due to an unexpected error.</para>
-    /// <para>12: Quit as leader of the party. </para>
-    /// <para>13: You have yet to join a party.</para>
-    /// <para>16: Already have joined a party.</para>
-    /// <para>17: The party you're trying to join is already in full capacity. </para>
-    /// <para>19: Unable to find the requested character in this channel.</para>
-    /// <para>25: Cannot kick another user in this map.</para>
-    /// <para>28/29: Leadership can only be given to a party member in the vicinity.</para>
-    /// <para>30: Change leadership only on same channel.</para>
-    /// </param>
-    /// <returns></returns>
-    public static Packet partyStatusMessage(int message)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(message);
-        return p;
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="message">
-    /// <para>21: Player is blocking any party invitations</para>
-    /// <para>22: Player is taking care of another invitation</para>
-    /// <para>23: Player have denied request to the party.</para>
-    /// </param>
-    /// <param name="charname"></param>
-    /// <returns></returns>
-    public static Packet partyStatusMessage(int message, string charname)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeByte(message);
-        p.writeString(charname);
-        return p;
-    }
-
-    private static void addPartyStatus(int forchannel, Team party, OutPacket p, bool leaving)
-    {
-        var partymembers = party.GetTeamMembers();
-        while (partymembers.Count < 6)
-        {
-            partymembers.Add(new TeamMember());
-        }
-        foreach (var partychar in partymembers)
-        {
-            p.writeInt(partychar.Id);
-        }
-        foreach (var partychar in partymembers)
-        {
-            p.writeFixedString(partychar.Name);
-        }
-        foreach (var partychar in partymembers)
-        {
-            p.writeInt(partychar.JobId);
-        }
-        foreach (var partychar in partymembers)
-        {
-            p.writeInt(partychar.Level);
-        }
-        foreach (var partychar in partymembers)
-        {
-            if (partychar.Channel > 0)
-                p.writeInt(partychar.Channel - 1);
-            else
-                p.writeInt(-2);
-        }
-        p.writeInt(party.getLeaderId());
-        foreach (var partychar in partymembers)
-        {
-            if (partychar.Channel == forchannel)
-                p.writeInt(partychar.MapId);
-            else
-                p.writeInt(0);
-        }
-
-        Dictionary<int, Door> partyDoors = party.getDoors();
-        foreach (var partychar in partymembers)
-        {
-            if (partychar.Channel == forchannel && !leaving)
-            {
-                if (partyDoors.Count > 0)
-                {
-                    var door = partyDoors.GetValueOrDefault(partychar.Id);
-                    if (door != null)
-                    {
-                        DoorObject mdo = door.getTownDoor();
-                        p.writeInt(mdo.getTown().getId());
-                        p.writeInt(mdo.getArea().getId());
-                        p.writeInt(mdo.getPosition().X);
-                        p.writeInt(mdo.getPosition().Y);
-                    }
-                    else
-                    {
-                        p.writeInt(MapId.NONE);
-                        p.writeInt(MapId.NONE);
-                        p.writeInt(0);
-                        p.writeInt(0);
-                    }
-                }
-                else
-                {
-                    p.writeInt(MapId.NONE);
-                    p.writeInt(MapId.NONE);
-                    p.writeInt(0);
-                    p.writeInt(0);
-                }
-            }
-            else
-            {
-                p.writeInt(MapId.NONE);
-                p.writeInt(MapId.NONE);
-                p.writeInt(0);
-                p.writeInt(0);
-            }
-        }
-    }
-
-    public static Packet updateParty(int forChannel, Team party, PartyOperation op, int targetId, string targetName)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        switch (op)
-        {
-            case PartyOperation.DISBAND:
-            case PartyOperation.EXPEL:
-            case PartyOperation.LEAVE:
-                p.writeByte(0x0C);
-                p.writeInt(party.getId());
-                p.writeInt(targetId);
-                if (op == PartyOperation.DISBAND)
-                {
-                    p.writeByte(0);
-                    p.writeInt(party.getId());
-                }
-                else
-                {
-                    p.writeByte(1);
-                    if (op == PartyOperation.EXPEL)
-                    {
-                        p.writeByte(1);
-                    }
-                    else
-                    {
-                        p.writeByte(0);
-                    }
-                    p.writeString(targetName);
-                    addPartyStatus(forChannel, party, p, false);
-                }
-                break;
-            case PartyOperation.JOIN:
-                p.writeByte(0xF);
-                p.writeInt(party.getId());
-                p.writeString(targetName);
-                addPartyStatus(forChannel, party, p, false);
-                break;
-            case PartyOperation.SILENT_UPDATE:
-            case PartyOperation.LOG_ONOFF:
-                p.writeByte(0x7);
-                p.writeInt(party.getId());
-                addPartyStatus(forChannel, party, p, false);
-                break;
-            case PartyOperation.CHANGE_LEADER:
-                p.writeByte(0x1B);
-                p.writeInt(targetId);
-                p.writeByte(0);
-                break;
-        }
-        return p;
-    }
-
-    public static Packet partyPortal(int townId, int targetId, Point position)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
-        p.writeShort(0x23);
-        p.writeInt(townId);
-        p.writeInt(targetId);
-        p.writePos(position);
-        return p;
-    }
-
-    public static Packet updatePartyMemberHP(int cid, int curhp, int maxhp)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_PARTYMEMBER_HP);
-        p.writeInt(cid);
-        p.writeInt(curhp);
-        p.writeInt(maxhp);
-        return p;
-    }
+    
 
     /// <summary>
     /// 
@@ -4299,7 +3894,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet skillEffect(IPlayer from, int skillId, int level, byte flags, int speed, byte direction)
+    public static Packet skillEffect(Player from, int skillId, int level, byte flags, int speed, byte direction)
     {
         OutPacket p = OutPacket.create(SendOpcode.SKILL_EFFECT);
         p.writeInt(from.getId());
@@ -4311,7 +3906,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet skillCancel(IPlayer from, int skillId)
+    public static Packet skillCancel(Player from, int skillId)
     {
         OutPacket p = OutPacket.create(SendOpcode.CANCEL_SKILL_EFFECT);
         p.writeInt(from.getId());
@@ -4379,7 +3974,7 @@ public class PacketCreator
     }
 
     /*
-    public static Packet sendSpouseChat(IPlayer partner, string msg) {
+    public static Packet sendSpouseChat(Player partner, string msg) {
             OutPacket p = OutPacket.create(SendOpcode);
             SPOUSE_CHAT);
             p.writeString(partner.getName());
@@ -4389,7 +3984,7 @@ public class PacketCreator
     */
 
 
-    public static Packet addMessengerPlayer(string from, IPlayer chr, int position, int channel)
+    public static Packet addMessengerPlayer(string from, Player chr, int position, int channel)
     {
         OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
         p.writeByte(0x00);
@@ -4418,7 +4013,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateMessengerPlayer(string from, IPlayer chr, int position, int channel)
+    public static Packet updateMessengerPlayer(string from, Player chr, int position, int channel)
     {
         OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
         p.writeByte(0x07);
@@ -4464,29 +4059,38 @@ public class PacketCreator
         p.writeInt(pet.getFh());
     }
 
-    public static Packet showPet(IPlayer chr, Pet pet, bool remove, bool hunger)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <param name="pet"></param>
+    /// <param name="fromHunger">因为饥饿自动收回</param>
+    /// <returns></returns>
+    public static Packet HidePet(Player chr, Pet pet, bool fromHunger)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
         p.writeInt(chr.getId());
         p.writeByte(chr.getPetIndex(pet));
-        if (remove)
-        {
-            p.writeByte(0);
-            p.writeBool(hunger);
-        }
-        else
-        {
-            addPetInfo(p, pet, true);
-        }
+        p.writeByte(0);
+        p.writeBool(fromHunger);
         return p;
     }
 
-    public static Packet movePet(int cid, int pid, sbyte slot, List<LifeMovementFragment> moves)
+    public static Packet ShowPet(Player chr, Pet pet)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
+        p.writeInt(chr.getId());
+        p.writeByte(chr.getPetIndex(pet));
+        addPetInfo(p, pet, true);
+        return p;
+    }
+
+    public static Packet movePet(int cid, sbyte slot, Point pos, List<LifeMovementFragment> moves)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PET);
         p.writeInt(cid);
         p.writeSByte(slot);
-        p.writeInt(pid);
+        p.writePos(pos);
         serializeMovementList(p, moves);
         return p;
     }
@@ -4514,6 +4118,13 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet onNotifyHPDecByField(int change)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ON_NOTIFY_HP_DEC_BY_FIELD);
+        p.writeInt(change);
+        return p;
+    }
+
     public static Packet commandResponse(int cid, sbyte index, bool talk, int animation, bool balloonType)
     {
         OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
@@ -4535,7 +4146,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showPetLevelUp(IPlayer chr, sbyte index)
+    public static Packet showPetLevelUp(Player chr, sbyte index)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
         p.writeInt(chr.getId());
@@ -4545,7 +4156,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet changePetName(IPlayer chr, string newname, int slot)
+    public static Packet changePetName(Player chr, string newname, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
         p.writeInt(chr.getId());
@@ -4569,7 +4180,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet petStatUpdate(IPlayer chr)
+    public static Packet petStatUpdate(Player chr)
     {
         // this actually does nothing... packet structure and stats needs to be uncovered
 
@@ -4621,7 +4232,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet skillBookResult(IPlayer chr, int skillid, int maxlevel, bool canuse, bool success)
+    public static Packet skillBookResult(Player chr, int skillid, int maxlevel, bool canuse, bool success)
     {
         OutPacket p = OutPacket.create(SendOpcode.SKILL_LEARN_ITEM_RESULT);
         p.writeInt(chr.getId());
@@ -4701,7 +4312,7 @@ public class PacketCreator
         p.writeString(minigame.getOwner().getName());
         if (minigame.getVisitor() != null)
         {
-            IPlayer visitor = minigame.getVisitor();
+            Player visitor = minigame.getVisitor();
             p.writeByte(1);
             addCharLook(p, visitor, false);
             p.writeString(visitor.getName());
@@ -4715,7 +4326,7 @@ public class PacketCreator
         p.writeInt(minigame.getOwnerScore());
         if (minigame.getVisitor() != null)
         {
-            IPlayer visitor = minigame.getVisitor();
+            Player visitor = minigame.getVisitor();
             p.writeByte(1);
             p.writeInt(1);
             p.writeInt(visitor.getMiniGamePoints(MiniGameResult.WIN, true));
@@ -4825,7 +4436,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getMiniGameNewVisitor(MiniGame minigame, IPlayer chr, int slot)
+    public static Packet getMiniGameNewVisitor(MiniGame minigame, Player chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.VISIT.getCode());
@@ -4940,7 +4551,7 @@ public class PacketCreator
         p.writeString(minigame.getOwner().getName());
         if (minigame.getVisitor() != null)
         {
-            IPlayer visitor = minigame.getVisitor();
+            Player visitor = minigame.getVisitor();
             p.writeByte(1);
             addCharLook(p, visitor, false);
             p.writeString(visitor.getName());
@@ -4956,7 +4567,7 @@ public class PacketCreator
         p.writeInt(minigame.getOwnerScore());
         if (minigame.getVisitor() != null)
         {
-            IPlayer visitor = minigame.getVisitor();
+            Player visitor = minigame.getVisitor();
             p.writeByte(1);
             p.writeInt(2);
             p.writeInt(visitor.getMiniGamePoints(MiniGameResult.WIN, false));
@@ -4999,7 +4610,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getMatchCardNewVisitor(MiniGame minigame, IPlayer chr, int slot)
+    public static Packet getMatchCardNewVisitor(MiniGame minigame, Player chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.VISIT.getCode());
@@ -5119,7 +4730,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet AddMiniGameBox(IPlayer chr, int amount, int type)
+    public static Packet AddMiniGameBox(Player chr, int amount, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
@@ -5127,7 +4738,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addOmokBox(IPlayer chr, int amount, int type)
+    public static Packet addOmokBox(Player chr, int amount, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
@@ -5135,7 +4746,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addMatchCardBox(IPlayer chr, int amount, int type)
+    public static Packet addMatchCardBox(Player chr, int amount, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
@@ -5143,7 +4754,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet removeMinigameBox(IPlayer chr)
+    public static Packet removeMinigameBox(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
@@ -5151,7 +4762,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getPlayerShopChat(IPlayer chr, string chat, byte slot)
+    public static Packet getPlayerShopChat(Player chr, string chat, byte slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.CHAT.getCode());
@@ -5161,7 +4772,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getTradeChat(IPlayer chr, string chat, bool owner)
+    public static Packet getTradeChat(Player chr, string chat, bool owner)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.CHAT.getCode());
@@ -5264,7 +4875,7 @@ public class PacketCreator
      * 0x11 = You cannot sell any items when managing.. blabla
      * 0x12 = FKING POPUP LOL
      */
-    public static Packet getHiredMerchant(IPlayer chr, HiredMerchant hm, bool firstTime)
+    public static Packet getHiredMerchant(Player chr, HiredMerchant hm, bool firstTime)
     {
         //Thanks Dustin
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
@@ -5340,7 +4951,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateHiredMerchant(HiredMerchant hm, IPlayer chr)
+    public static Packet updateHiredMerchant(HiredMerchant hm, Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.UPDATE_MERCHANT.getCode());
@@ -5443,7 +5054,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet hiredMerchantVisitorAdd(IPlayer chr, int slot)
+    public static Packet hiredMerchantVisitorAdd(Player chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.VISIT.getCode());
@@ -5460,7 +5071,7 @@ public class PacketCreator
         p.writeInt(hm.SourceItemId);
         p.writeShort(hm.getPosition().X);
         p.writeShort(hm.getPosition().Y);
-        p.writeShort(0);
+        p.writeShort(0); // fh
         p.writeString(hm.OwnerName);
         p.writeByte(0x05);
         p.writeInt(hm.getObjectId());
@@ -5549,7 +5160,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet useChalkboard(IPlayer chr, bool close)
+    public static Packet useChalkboard(Player chr, bool close)
     {
         OutPacket p = OutPacket.create(SendOpcode.CHALKBOARD);
         p.writeInt(chr.getId());
@@ -5565,7 +5176,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet trockRefreshMapList(IPlayer chr, bool delete, bool vip)
+    public static Packet trockRefreshMapList(Player chr, bool delete, bool vip)
     {
         OutPacket p = OutPacket.create(SendOpcode.MAP_TRANSFER_RESULT);
         p.writeByte(delete ? 2 : 3);
@@ -5727,7 +5338,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showCash(IPlayer mc)
+    public static Packet showCash(Player mc)
     {
         OutPacket p = OutPacket.create(SendOpcode.QUERY_CASH_RESULT);
         p.writeInt(mc.getCashShop().getCash(CashShop.NX_CREDIT));
@@ -5736,12 +5347,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet enableCSUse(IPlayer mc)
+    public static Packet enableCSUse(Player mc)
     {
         return showCash(mc);
     }
 
-    public static Packet GetSameChannelFindResult(IPlayer target, byte flag)
+    public static Packet GetSameChannelFindResult(Player target, byte flag)
     {
         OutPacket p = OutPacket.create(SendOpcode.WHISPER);
 
@@ -5809,7 +5420,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateGender(IPlayer chr)
+    public static Packet updateGender(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_GENDER);
         p.writeByte(chr.getGender());
@@ -6116,11 +5727,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showForeignEffect(int effect)
-    {
-        return showForeignEffect(-1, effect);
-    }
-
     public static Packet showForeignEffect(int chrId, int effect)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
@@ -6367,7 +5973,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateDojoStats(IPlayer chr, int belt)
+    public static Packet updateDojoStats(Player chr, int belt)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
         p.writeByte(10);
@@ -6479,7 +6085,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addRingInfo(OutPacket p, IPlayer chr)
+    private static void addRingInfo(OutPacket p, Player chr)
     {
         p.writeShort(chr.getCrushRings().Count);
         foreach (Ring ring in chr.getCrushRings())
@@ -6499,7 +6105,7 @@ public class PacketCreator
             p.writeInt(ring.getItemId());
         }
 
-        chr.Client.CurrentServerContainer.MarriageService.WriteMarriageRing(p, chr);
+        chr.Client.CurrentServer.NodeService.MarriageService.WriteMarriageRing(p, chr);
     }
 
     public static Packet finishedSort(int inv)
@@ -6696,7 +6302,7 @@ public class PacketCreator
         p.writeLong(0);
     }
 
-    public static Packet showWishList(IPlayer mc, bool update)
+    public static Packet showWishList(Player mc, bool update)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
@@ -6943,7 +6549,7 @@ public class PacketCreator
         else
         {
             p.writeInt(0);
-            List<SpecialCashItem> lsci = c.CurrentServerContainer.CashItemProvider.getSpecialCashItems();
+            List<SpecialCashItem> lsci = c.CurrentServer.NodeService.CashItemProvider.getSpecialCashItems();
             p.writeShort(lsci.Count);//Guess what
             foreach (SpecialCashItem sci in lsci)
             {
@@ -7046,7 +6652,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet startMonsterCarnival(IPlayer chr)
+    public static Packet startMonsterCarnival(Player chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.MONSTER_CARNIVAL_START);
         p.writeByte(chr.MCTeam!.TeamFlag); // team
@@ -7073,7 +6679,7 @@ public class PacketCreator
     public static Packet sheepRanchClothes(int id, byte clothes)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHEEP_RANCH_CLOTHES);
-        p.writeInt(id); //IPlayer id
+        p.writeInt(id); //Player id
         p.writeByte(clothes); //0 = sheep, 1 = wolf, 2 = Spectator (wolf without wool)
         return p;
     }
@@ -7127,7 +6733,7 @@ public class PacketCreator
     /**
      * Sends a request to remove Mir<br>
      *
-     * @param charid - Needs the specific IPlayer ID
+     * @param charid - Needs the specific Player ID
      * @return The packet
      */
     public static Packet removeDragon(int chrId)

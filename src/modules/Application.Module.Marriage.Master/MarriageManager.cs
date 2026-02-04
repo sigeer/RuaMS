@@ -12,6 +12,8 @@ using AutoMapper.Extensions.ExpressionMapping;
 using MarriageProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+using YamlDotNet.Core;
 
 namespace Application.Module.Marriage.Master
 {
@@ -74,46 +76,40 @@ namespace Application.Module.Marriage.Master
             return new MarriageProto.CreateMarriageRelationResponse { Data = _mapper.Map<MarriageProto.MarriageDto>(newModel) };
         }
 
-        public MarriageProto.BreakMarriageResponse BreakMarriage(MarriageProto.BreakMarriageRequest request)
+        public async Task BreakMarriage(MarriageProto.BreakMarriageRequest request)
         {
+            var res = new MarriageProto.BreakMarriageResponse() { Request = request };
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null)
-                return new MarriageProto.BreakMarriageResponse { Code = (int)BreakErrorCode.CharacterNotFound };
+            {
+                res.Code = (int)BreakErrorCode.CharacterNotFound;
+                await _transport.SendBreakMarriageCallback(res);
+                return;
+            }
 
             var wedding = GetEffectMarriageModel(chr.Character.Id);
             if (wedding == null)
             {
-                return new MarriageProto.BreakMarriageResponse { Code = (int)BreakErrorCode.Single };
+                res.Code = (int)BreakErrorCode.Single;
+                await _transport.SendBreakMarriageCallback(res);
+                return;
             }
 
-            if (wedding != null)
+            var partnerId = wedding.Wifeid == request.MasterId ? wedding.Husbandid : wedding.Wifeid;
+            var partner = _server.CharacterManager.FindPlayerById(partnerId);
+            if (partner == null)
             {
-                var partnerId = wedding.Wifeid == request.MasterId ? wedding.Husbandid : wedding.Wifeid;
-                var partner = _server.CharacterManager.FindPlayerById(partnerId);
-                if (partner == null)
-                {
-                    return new MarriageProto.BreakMarriageResponse { Code = (int)BreakErrorCode.CharacterNotFound };
-                }
-
-                _transport.SendBreakMarriageCallback(new MarriageProto.BreakMarriageCallback
-                {
-                    Code = 0,
-                    MasterId = request.MasterId,
-                    MasterName = chr.Character.Name,
-                    Type = wedding.Status,
-                    MasterPartnerId = wedding.Wifeid == request.MasterId ? wedding.Husbandid : wedding.Wifeid,
-                    MasterPartnerName = partner.Character.Name
-                });
-
-                wedding.Status = wedding.Status == (int)MarriageStatusEnum.Engaged ? (int)MarriageStatusEnum.EngagementCanceled :(int)MarriageStatusEnum.Divorced;
-                wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
-                wedding.RingSourceId = 0;
-
-                SetDirty(wedding.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, wedding));
-
-                return new MarriageProto.BreakMarriageResponse { Code = 0 };
+                res.Code = (int)BreakErrorCode.CharacterNotFound;
+                await _transport.SendBreakMarriageCallback(res);
+                return;
             }
-            return new MarriageProto.BreakMarriageResponse() { Code = 2 };
+
+            wedding.Status = wedding.Status == (int)MarriageStatusEnum.Engaged ? (int)MarriageStatusEnum.EngagementCanceled : (int)MarriageStatusEnum.Divorced;
+            wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+            wedding.RingSourceId = 0;
+
+            SetDirty(wedding.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, wedding));
+            await _transport.SendBreakMarriageCallback(res);
         }
 
         protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<MarriageModel>> updateData)
@@ -160,35 +156,36 @@ namespace Application.Module.Marriage.Master
             SetDirty(model.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, model));
         }
 
-        internal void NotifyPartner(int to, int chrId, int chrMap)
+        internal async Task NotifyPartner(int to, int chrId, int chrMap)
         {
-            _transport.SendPlayerTransfter(new PlayerTransferDto { ToPlayerId = to, PlayerId = chrId, MapId = chrMap });
+            await _transport.SendPlayerTransfter(new PlayerTransferDto { ToPlayerId = to, PlayerId = chrId, MapId = chrMap });
         }
 
-        public MarriageProto.SendSpouseChatResponse SpouseChat(MarriageProto.SendSpouseChatRequest request)
+        public async Task SpouseChat(MarriageProto.SendSpouseChatRequest request)
         {
+            var res = new SendSpouseChatResponse { Request = request };
             var marriageInfo = GetEffectMarriageModel(request.SenderId);
             if (marriageInfo == null)
             {
-                return new SendSpouseChatResponse { Code = 1 };
+                res.Code = 1;
+                await _transport.SendSpouseChat(res);
+                return;
             }
             else
             {
                 var partnerId = marriageInfo.GetPartnerId(request.SenderId);
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner == null || partner.Channel <= 0)
-                    return new SendSpouseChatResponse { Code = 2 };
+                {
+                    res.Code = 2;
+                    await _transport.SendSpouseChat(res);
+                    return;
+                }
 
                 var chr = _server.CharacterManager.FindPlayerById(request.SenderId)!;
-                _transport.SendSpouseChat(new MarriageProto.OnSpouseChatCallback
-                {
-                    SenderId = chr.Character.Id,
-                    SenderName = chr.Character.Name,
-                    Text = request.Text,
-                    SenderPartnerId = partnerId
-                });
-
-                return new SendSpouseChatResponse();
+                res.SenderPartnerId = partnerId;
+                res.SenderName = chr.Character.Name;
+                await _transport.SendSpouseChat(res);
             }
         }
     }

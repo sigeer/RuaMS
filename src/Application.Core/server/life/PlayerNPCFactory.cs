@@ -27,13 +27,9 @@ public class PlayerNPCFactory
 {
     private static DataProvider npcData = DataProviderFactory.getDataProvider(WZFiles.NPC);
 
-    static object checkLock = new object();
     public static bool isExistentScriptid(int scriptid)
     {
-        lock (checkLock)
-        {
-            return npcData.getData(scriptid + ".img") != null;
-        }
+        return npcData.getData(scriptid + ".img") != null;
 
     }
 }

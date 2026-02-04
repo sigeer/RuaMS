@@ -54,7 +54,7 @@ function playerDisconnected(eim, player) {
 
     for (var i = 0; i < party.size(); i++) {
         if (party.get(i).equals(player)) {
-            removePlayer(eim, player);
+            playerExit(eim, player);
         } else {
             playerExit(eim, party.get(i));
         }
@@ -79,15 +79,9 @@ function playerExit(eim, player) {
 
 function changedMap(eim, chr, mapid) {
     if (mapid == exitMap) {
-        removePlayer(eim, chr);
+        playerExit(eim, chr);
         eim.dispose();
     }
-}
-
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getMap().removePlayer(player);
-    player.setMap(entryMap);
 }
 
 function cancelSchedule() {}

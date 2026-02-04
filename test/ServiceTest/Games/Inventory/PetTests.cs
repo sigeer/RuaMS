@@ -19,13 +19,13 @@ namespace ServiceTest.Games.Inventory
             var server = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<MasterServer>();
             var inv = chr.Bag[InventoryType.CASH];
             var old = inv.list();
-            Assert.That(InventoryManipulator.addById(chr.Client, 5000041, 1));
+            Assert.That(chr.GainItem(5000041, 1) != null);
             Assert.That(inv.list().Count == old.Count + 1);
 
             var item = inv.findById(5000041);
             Assert.That(item is Pet);
 
-            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.ChangeServer);
+            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
             var storageSerivce = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<ServerManager>();
             await storageSerivce.CommitAllImmediately();
             //模拟重新登录
@@ -42,7 +42,7 @@ namespace ServiceTest.Games.Inventory
             Assert.That(item2 is Pet);
 
             InventoryManipulator.removeById(chr.Client, InventoryType.CASH, 5000041, 1, false, false);
-            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.ChangeServer);
+            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
             await storageSerivce.CommitAllImmediately();
         }
     }

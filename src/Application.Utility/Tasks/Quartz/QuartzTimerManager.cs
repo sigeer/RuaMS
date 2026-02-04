@@ -1,5 +1,6 @@
 using Quartz;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Utility.Tasks;
 
@@ -114,6 +115,23 @@ public class QuartzTimerManager : ITimerManager
     public ScheduledFuture schedule(Action r, TimeSpan delay)
     {
         return schedule(TempRunnable.Parse(r), delay);
+    }
+
+    public async Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
+    {
+        taskName = $"{taskName}_{r.GetHashCode()}";
+        var job = JobBuilder.Create<QuartzJob>()
+            .WithIdentity(taskName)
+            .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, false } })
+            .Build();
+
+        var trigger = TriggerBuilder.Create()
+            .WithIdentity("T_" + taskName)
+            .StartAt(DateTimeOffset.UtcNow.Add(delay))
+            .Build();
+
+        await Scheduler.ScheduleJob(job, trigger);
+        return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
     public ScheduledFuture schedule(Action r, long delay) => schedule(TempRunnable.Parse(r), TimeSpan.FromMilliseconds(delay));

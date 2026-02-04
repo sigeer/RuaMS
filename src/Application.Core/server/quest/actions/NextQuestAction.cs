@@ -39,7 +39,7 @@ public class NextQuestAction : AbstractQuestAction
     }
 
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         chr.sendPacket(QuestPacket.UpdateQuestFinish((short)questID, status.getNpc(), (short)nextQuest));

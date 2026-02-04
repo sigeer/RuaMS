@@ -38,9 +38,8 @@ public class MovePetHandler : AbstractMovementPacketHandler
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int petId = p.readInt();
-        p.readLong();
-        //        Point startPos = StreamUtil.readShortPoint(slea);
+        var petId = p.readLong();
+        var pos = p.readPos();
         List<LifeMovementFragment> res;
 
         try
@@ -59,6 +58,6 @@ public class MovePetHandler : AbstractMovementPacketHandler
             return;
         }
         player.getPet(slot)?.updatePosition(res);
-        player.getMap().broadcastMessage(player, PacketCreator.movePet(player.getId(), petId, slot, res), false);
+        player.getMap().broadcastMessage(player, PacketCreator.movePet(player.getId(), slot, pos, res), false);
     }
 }

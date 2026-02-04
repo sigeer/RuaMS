@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "Guild/Guild.proto";
+
 package AllianceProto;
 
 message AllianceDto {
@@ -8,7 +10,7 @@ message AllianceDto {
   string name = 3;
   string notice = 4;
   repeated string rankTitles = 5;
-  repeated int32 guilds = 6;
+  repeated GuildProto.GuildDto guilds = 6;
 }
 
 message GetAllianceRequest {
@@ -30,4 +32,11 @@ message CreateAllianceCheckResponse {
 message CreateAllianceRequest {
 	string name = 1;
 	repeated int32 members = 2;
+	int32 cost = 3;
+}
+
+message CreateAllianceResponse {
+	int32 code = 1;
+	CreateAllianceRequest request = 2;
+	AllianceDto model = 3;
 }

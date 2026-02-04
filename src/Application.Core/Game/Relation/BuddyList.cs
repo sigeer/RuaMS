@@ -2,7 +2,7 @@ namespace Application.Core.Game.Relation;
 
 public class BuddyList
 {
-    public IPlayer Owner { get; set; }
+    public Player Owner { get; set; }
     public int Capacity { get; set; }
     /// <summary>
     /// 好友变动不太可能会并发，使用原始Dictionary
@@ -10,7 +10,7 @@ public class BuddyList
     private Dictionary<int, BuddyCharacter> buddies = new();
     public int Count => buddies.Count;
 
-    public BuddyList(IPlayer owner)
+    public BuddyList(Player owner)
     {
         Owner = owner;
         Capacity = Owner.BuddyCapacity;
@@ -31,12 +31,7 @@ public class BuddyList
         return buddies.Values.FirstOrDefault(x => x.Name.Equals(characterName, StringComparison.OrdinalIgnoreCase));
     }
 
-    public void Update(BuddyCharacter entry)
-    {
-        buddies[entry.Id] = entry;
-    }
-
-    public void Add(BuddyCharacter entry)
+    public void Set(BuddyCharacter entry)
     {
         buddies[entry.Id] = entry;
     }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("尽管炼金术士和仙灵彼此之间有敌意，但我仍然可以留在这个城镇，因为泽努米斯总统一直在保护我们。");
+    cm.sendDefault();
     cm.dispose();
 }

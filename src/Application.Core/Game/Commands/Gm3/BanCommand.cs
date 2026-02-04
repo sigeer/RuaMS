@@ -25,7 +25,7 @@ public class BanCommand : CommandBase
         string ign = paramsValue[0];
         if (int.TryParse(paramsValue[1], out var day))
         {
-            TempConversation.Create(c)?.RegisterInput(player.GetMessageByKey(nameof(ClientMessage.BanReason)), (evt, conversation) =>
+            TempConversation.Create(c)?.RegisterInput(player.GetMessageByKey(nameof(ClientMessage.BanReason)), async (evt, conversation) =>
             {
                 _adminService.Ban(c.OnlinedCharacter, paramsValue[0], (int)BanReason.GM, evt, day);
             });

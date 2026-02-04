@@ -18,7 +18,7 @@ namespace Application.Module.BBS.Channel
             _server = server;
         }
 
-        public void listBBSThreads(IPlayer chr, int start)
+        public void listBBSThreads(Player chr, int start)
         {
             var res = _transport.ListThreads(new BBSProto.ListBBSRequest { MasterId = chr.Id });
             if (res.Code == 0)
@@ -28,12 +28,12 @@ namespace Application.Module.BBS.Channel
         }
 
 
-        public void PostReply(IPlayer chr, int threadId, string text)
+        public void PostReply(Player chr, int threadId, string text)
         {
             _transport.PostReply(new BBSProto.PostReplyRequest { MasterId = chr.Id, Text = text, ThreadId = threadId });
         }
 
-        void ProcessThreadResponse(IPlayer chr, BBSProto.ShowBBSMainThreadResponse data)
+        void ProcessThreadResponse(Player chr, BBSProto.ShowBBSMainThreadResponse data)
         {
             if (data.Code == 0)
                 chr.sendPacket(BBSPacketCreator.showThread(data.Data));
@@ -43,7 +43,7 @@ namespace Application.Module.BBS.Channel
             }
         }
 
-        public void editBBSThread(IPlayer chr, string title, string text, int icon, int localthreadid)
+        public void editBBSThread(Player chr, string title, string text, int icon, int localthreadid)
         {
             if (chr.getGuildId() < 1)
             {
@@ -54,7 +54,7 @@ namespace Application.Module.BBS.Channel
             ProcessThreadResponse(chr, res);
         }
 
-        public void newBBSThread(IPlayer chr, string title, string text, int icon, bool bNotice)
+        public void newBBSThread(Player chr, string title, string text, int icon, bool bNotice)
         {
             if (chr.GuildId <= 0)
             {
@@ -66,7 +66,7 @@ namespace Application.Module.BBS.Channel
             ProcessThreadResponse(chr, res);
         }
 
-        public void deleteBBSThread(IPlayer chr, int localthreadid)
+        public void deleteBBSThread(Player chr, int localthreadid)
         {
             if (chr.getGuildId() <= 0)
             {
@@ -76,7 +76,7 @@ namespace Application.Module.BBS.Channel
             _transport.DeleteThread(new BBSProto.DeleteThreadRequest { MasterId = chr.Id, ThreadId = localthreadid });
         }
 
-        public void deleteBBSReply(IPlayer chr, int replyid)
+        public void deleteBBSReply(Player chr, int replyid)
         {
             if (chr.getGuildId() <= 0)
             {
@@ -87,7 +87,7 @@ namespace Application.Module.BBS.Channel
             ProcessThreadResponse(chr, res);
         }
 
-        internal void ShowThread(IPlayer chr, int threadId)
+        internal void ShowThread(Player chr, int threadId)
         {
             var data = _transport.ShowThread(new BBSProto.ShowThreadRequest { MasterId = chr.Id, ThreadId = threadId });
             ProcessThreadResponse(chr, data);

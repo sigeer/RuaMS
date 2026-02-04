@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -27,12 +27,12 @@ var item;
 
 function start() {
     if (cm.isQuestCompleted(2013)) {
-        cm.sendNext("是你啊...多亏了你，我才能完成了很多事情。最近我一直在制作各种物品。如果你需要什么，告诉我一声。");
+        cm.sendNext(cm.GetDefault1());
     } else {
         if (cm.isQuestCompleted(2010)) {
             cm.sendNext("你似乎不够强大，无法购买我的药水……");
         } else {
-            cm.sendOk("我的梦想是到处旅行，就像你一样。然而，我的父亲不允许我这样做，因为他认为这太危险了。不过，如果我能向他证明我并不是他所认为的软弱女孩，他也许会同意...");
+            cm.sendOk(cm.GetDefault0());
         }
         cm.dispose();
     }

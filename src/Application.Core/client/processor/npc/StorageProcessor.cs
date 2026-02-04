@@ -28,7 +28,6 @@ using Application.Core.Server;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
-using ZLinq;
 
 /**
  * @author Matze
@@ -37,7 +36,7 @@ using ZLinq;
 public class StorageProcessor
 {
     static ILogger _logger = LogFactory.GetLogger(LogType.Storage);
-    public static bool hasGMRestrictions(IPlayer character)
+    public static bool hasGMRestrictions(Player character)
     {
         return character.isGM() && character.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE;
     }
@@ -82,37 +81,29 @@ public class StorageProcessor
 
         Item? item;
 
-        inv.lockInventory(); // thanks imbee for pointing a dupe within storage
-        try
+        item = inv.getItem(slot);
+        if (item != null && item.getItemId() == itemId
+                && (item.getQuantity() >= quantity || ItemConstants.isRechargeable(itemId)))
         {
-            item = inv.getItem(slot);
-            if (item != null && item.getItemId() == itemId
-                    && (item.getQuantity() >= quantity || ItemConstants.isRechargeable(itemId)))
-            {
-                if (ItemId.isWeddingRing(itemId) || ItemId.isWeddingToken(itemId))
-                {
-                    storage.Owner.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                if (ItemConstants.isRechargeable(itemId))
-                {
-                    quantity = item.getQuantity();
-                }
-
-                item = item.copy();
-                item.setQuantity(quantity);
-                InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
-            }
-            else
+            if (ItemId.isWeddingRing(itemId) || ItemId.isWeddingToken(itemId))
             {
                 storage.Owner.sendPacket(PacketCreator.enableActions());
                 return;
             }
+
+            if (ItemConstants.isRechargeable(itemId))
+            {
+                quantity = item.getQuantity();
+            }
+
+            item = item.copy();
+            item.setQuantity(quantity);
+            InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
         }
-        finally
+        else
         {
-            inv.unlockInventory();
+            storage.Owner.sendPacket(PacketCreator.enableActions());
+            return;
         }
 
         storage.OnStoreSuccess(slot, itemId, quantity);
@@ -162,7 +153,7 @@ public class StorageProcessor
             }
             storage.Meso -= meso;
 
-            storage.Owner.GainMeso(meso, false, true, false);
+            storage.Owner.GainMeso(meso, enableActions: true);
             _logger.Debug("Chr {CharacterName} {0} {meso} mesos", storage.Owner.Name, meso > 0 ? "took out" : "stored", Math.Abs(meso));
             storage.UpdateMeso();
         }

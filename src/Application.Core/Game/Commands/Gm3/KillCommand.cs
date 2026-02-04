@@ -22,7 +22,7 @@ public class KillCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.KilledBy(player);
-            c.CurrentServerContainer.SendDropGMMessage(5, player.getName() + " used !kill on " + victim.getName());
+            c.CurrentServer.NodeService.SendDropMessage(5, player.getName() + " used !kill on " + victim.getName(), true);
         }
         else
         {

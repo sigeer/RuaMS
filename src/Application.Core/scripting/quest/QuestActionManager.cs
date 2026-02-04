@@ -94,4 +94,9 @@ public class QuestActionManager : NPCConversationManager
         // usable only for medal quests (id 299XX)
         return c.CurrentCulture.GetItemName(QuestFactory.Instance.GetMedalRequirement((short)quest));
     }
+
+    public bool CanCompleteQuest()
+    {
+        return QuestFactory.Instance.GetInstance(quest).canComplete(getPlayer(), npc);
+    }
 }

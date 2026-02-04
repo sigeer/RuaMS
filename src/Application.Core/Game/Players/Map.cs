@@ -1,6 +1,6 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
-using Application.Shared.Team;
 using Application.Shared.WzEntity;
 using server.maps;
 using tools;
@@ -13,19 +13,6 @@ namespace Application.Core.Game.Players
         private int newWarpMap = -1;
         private bool canWarpMap = true;  //only one "warp" must be used per call, and this will define the right one.
         private int canWarpCounter = 0;     //counts how many times "inner warps" have been called.
-
-        /// <summary>
-        /// js在调用
-        /// </summary>
-        /// <param name="PmapId"></param>
-        public void setMap(int PmapId)
-        {
-            // this.Map = PmapId;
-            if (PmapId != getMapId())
-            {
-                Log.Fatal("MapId 不一致, {MapId}, {MapModelId}", PmapId, getMapId());
-            }
-        }
 
         public override void setMap(IMap map)
         {
@@ -97,70 +84,25 @@ namespace Application.Core.Game.Players
 
         public void changeMap(int map)
         {
-            IMap warpMap;
-            var eim = getEventInstance();
-
-            if (eim != null)
-            {
-                warpMap = eim.getMapInstance(map);
-            }
-            else
-            {
-                warpMap = Client.getChannelServer().getMapFactory().getMap(map);
-            }
-
+            IMap warpMap = getWarpMap(map);
             changeMap(warpMap, warpMap.getRandomPlayerSpawnpoint());
         }
 
         public void changeMap(int map, int portal)
         {
-            IMap warpMap;
-            var eim = getEventInstance();
-
-            if (eim != null)
-            {
-                warpMap = eim.getMapInstance(map);
-            }
-            else
-            {
-                warpMap = Client.getChannelServer().getMapFactory().getMap(map);
-            }
-
+            IMap warpMap = getWarpMap(map);
             changeMap(warpMap, warpMap.getPortal(portal));
         }
 
         public void changeMap(int map, string portal)
         {
-            IMap warpMap;
-            var eim = getEventInstance();
-
-            if (eim != null)
-            {
-                warpMap = eim.getMapInstance(map);
-            }
-            else
-            {
-                warpMap = Client.getChannelServer().getMapFactory().getMap(map);
-            }
-
+            IMap warpMap = getWarpMap(map);
             changeMap(warpMap, warpMap.getPortal(portal));
         }
 
         public void changeMap(int map, Portal portal)
         {
-            IMap warpMap;
-            var eim = getEventInstance();
-
-            if (eim != null)
-            {
-                warpMap = eim.getMapInstance(map);
-            }
-            else
-            {
-                warpMap = Client.getChannelServer().getMapFactory().getMap(map);
-            }
-
-            changeMap(warpMap, portal);
+            changeMap(getWarpMap(map), portal);
         }
 
         public void changeMap(IMap to, int portal = 0)
@@ -168,12 +110,11 @@ namespace Application.Core.Game.Players
             changeMap(to, to.getPortal(portal));
         }
 
-        public void changeMap(IMap target, Portal? pto)
+        public void changeMap(IMap to, Portal? pto)
         {
             canWarpCounter++;
 
-            eventChangedMap(target.getId());    // player can be dropped from an event here, hence the new warping target.
-            IMap to = getWarpMap(target.getId());
+            eventChangedMap(to.getId());    // player can be dropped from an event here, hence the new warping target.
             if (pto == null)
             {
                 pto = to.getPortal(0)!;
@@ -190,12 +131,11 @@ namespace Application.Core.Game.Players
             eventAfterChangedMap(this.getMapId());
         }
 
-        public void changeMap(IMap target, Point pos)
+        public void changeMap(IMap to, Point pos)
         {
             canWarpCounter++;
 
-            eventChangedMap(target.getId());
-            IMap to = getWarpMap(target.getId());
+            eventChangedMap(to.getId());
             changeMapInternal(to, pos, PacketCreator.getWarpToMap(to, 0x80, pos, this));
             canWarpMap = false;
 
@@ -225,25 +165,11 @@ namespace Application.Core.Game.Players
             MapModel.removePlayer(this);
             if (isLoggedinWorld())
             {
-                setMap(to);
                 setPosition(pos);
-                MapModel.addPlayer(this);
+                to.addPlayer(this);
                 visitMap(base.MapModel);
 
-                Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
-
-                Monitor.Enter(prtLock);
-                try
-                {
-                    if (TeamModel != null)
-                    {
-                        updatePartyMemberHP();
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(prtLock);
-                }
+                Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
             }
             else
             {
@@ -350,31 +276,23 @@ namespace Application.Core.Game.Players
 
         public void visitMap(IMap map)
         {
-            Monitor.Enter(petLock);
-            try
-            {
-                int idx = getVisitedMapIndex(map);
+            int idx = getVisitedMapIndex(map);
 
-                if (idx == -1)
-                {
-                    if (lastVisitedMaps.Count == YamlConfig.config.server.MAP_VISITED_SIZE)
-                    {
-                        lastVisitedMaps.RemoveAt(0);
-                    }
-                }
-                else
-                {
-                    var mapRef = lastVisitedMaps.remove(idx);
-                    lastVisitedMaps.Add(mapRef);
-                    return;
-                }
-
-                lastVisitedMaps.Add(new(map));
-            }
-            finally
+            if (idx == -1)
             {
-                Monitor.Exit(petLock);
+                if (lastVisitedMaps.Count == YamlConfig.config.server.MAP_VISITED_SIZE)
+                {
+                    lastVisitedMaps.RemoveAt(0);
+                }
             }
+            else
+            {
+                var mapRef = lastVisitedMaps.remove(idx);
+                lastVisitedMaps.Add(mapRef);
+                return;
+            }
+
+            lastVisitedMaps.Add(new(map));
         }
 
         public void setOwnedMap(IMap? map)
@@ -396,16 +314,16 @@ namespace Application.Core.Game.Players
         {
             MapEffect mapEffect = new MapEffect(msg, itemId);
             sendPacket(mapEffect.makeStartData());
-            Client.CurrentServerContainer.TimerManager.schedule(() =>
-            {
-                sendPacket(mapEffect.makeDestroyData());
 
+            Client.CurrentServer.Node.TimerManager.schedule(() =>
+            {
+                Client.CurrentServer.Post(new PlayerMapEffectRemoveCommand(this, mapEffect));
             }, duration);
         }
 
-        public void showMapOwnershipInfo(IPlayer mapOwner)
+        public void showMapOwnershipInfo(Player mapOwner)
         {
-            long curTime = Client.CurrentServerContainer.getCurrentTime();
+            long curTime = Client.CurrentServer.Node.getCurrentTime();
             if (nextWarningTime < curTime)
             {
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute

@@ -9,10 +9,4 @@
 		<PackageReference Include="Grpc.AspNetCore" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Protobuf Include="Protos\Service.proto" GrpcServices="Both" />
-	  <Protobuf Include="Protos\PlayerNPCPositioner.proto" GrpcServices="None" />
-	  <Protobuf Include="Protos\PlayerNPC.proto" GrpcServices="None" />
-	</ItemGroup>
-
 </Project>

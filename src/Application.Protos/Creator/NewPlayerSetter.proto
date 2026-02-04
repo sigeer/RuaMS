@@ -1,25 +1,10 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 import "Dto/Character.proto";
 import "Dto/Item.proto";
-import "Dto/Monsterbook.proto";
-import "Dto/PetIgnore.proto";
-import "Dto/TrockLocation.proto";
-import "Dto/Area.proto";
 import "Dto/Event.proto";
-import "Dto/QuestStatus.proto";
 import "Dto/Skill.proto";
-import "Dto/SkillMacro.proto";
-import "Dto/CoolDown.proto";
 import "Dto/KeyMap.proto";
-import "Dto/SavedLocation.proto";
-import "Dto/QuickSlot.proto";
-import "Dto/Storage.proto";
-import "Dto/Buddy.proto";
-import "Dto/AccountGame.proto";
 
 package CreatorProto;
 

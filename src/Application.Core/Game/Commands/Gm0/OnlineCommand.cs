@@ -43,7 +43,7 @@ public class OnlineCommand : CommandBase
             }
             else
             {
-                ctx.RegisterYesOrNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name), ctx =>
+                ctx.RegisterYesOrNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name), async ctx =>
                 {
                     _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
                     list.Clear();

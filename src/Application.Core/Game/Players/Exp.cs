@@ -66,65 +66,64 @@ namespace Application.Core.Game.Players
             sendPacket(PacketCreator.getShowExpGain((int)gain, equip, party, inChat, white));
         }
 
-        object gainExpLock = new object();
+
         private void gainExpInternal(long gain, int equip, int party, bool show, bool inChat, bool white)
-        {   // need of method synchonization here detected thanks to MedicOP
-            lock (gainExpLock)
+        {
+            // need of method synchonization here detected thanks to MedicOP
+            long total = Math.Max(gain + equip + party, -ExpValue.get());
+
+            if (Level < getMaxLevel() && (allowExpGain || this.getEventInstance() != null))
             {
-                long total = Math.Max(gain + equip + party, -ExpValue.get());
+                long leftover = 0;
+                long nextExp = ExpValue.get() + total;
 
-                if (Level < getMaxLevel() && (allowExpGain || this.getEventInstance() != null))
+                if (nextExp > int.MaxValue)
                 {
-                    long leftover = 0;
-                    long nextExp = ExpValue.get() + total;
-
-                    if (nextExp > int.MaxValue)
+                    total = int.MaxValue - ExpValue.get();
+                    leftover = nextExp - int.MaxValue;
+                }
+                updateSingleStat(Stat.EXP, ExpValue.addAndGet((int)total));
+                totalExpGained += total;
+                if (show)
+                {
+                    announceExpGain(gain, equip, party, inChat, white);
+                }
+                while (ExpValue.get() >= ExpTable.getExpNeededForLevel(Level))
+                {
+                    levelUp(true);
+                    if (Level == getMaxLevel())
                     {
-                        total = int.MaxValue - ExpValue.get();
-                        leftover = nextExp - int.MaxValue;
-                    }
-                    updateSingleStat(Stat.EXP, ExpValue.addAndGet((int)total));
-                    totalExpGained += total;
-                    if (show)
-                    {
-                        announceExpGain(gain, equip, party, inChat, white);
-                    }
-                    while (ExpValue.get() >= ExpTable.getExpNeededForLevel(Level))
-                    {
-                        levelUp(true);
-                        if (Level == getMaxLevel())
-                        {
-                            setExp(0);
-                            updateSingleStat(Stat.EXP, 0);
-                            break;
-                        }
-                    }
-
-                    if (leftover > 0)
-                    {
-                        gainExpInternal(leftover, equip, party, false, inChat, white);
-                    }
-                    else
-                    {
-                        LastExpGainTime = Client.CurrentServerContainer.GetCurrentTimeDateTimeOffSet();
-
-                        //if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
-                        //{
-                        //    ExpLogRecord expLogRecord = new ExpLogRecord(
-                        //        Id,
-                        //        getChannelServer().WorldExpRate,
-                        //        expCoupon,
-                        //        totalExpGained,
-                        //        ExpValue.get(),
-                        //        LastExpGainTime
-                        //    );
-                        //    ExpLogger.putExpLogRecord(expLogRecord);
-                        //}
-
-                        totalExpGained = 0;
+                        setExp(0);
+                        updateSingleStat(Stat.EXP, 0);
+                        break;
                     }
                 }
+
+                if (leftover > 0)
+                {
+                    gainExpInternal(leftover, equip, party, false, inChat, white);
+                }
+                else
+                {
+                    LastExpGainTime = Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
+
+                    //if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
+                    //{
+                    //    ExpLogRecord expLogRecord = new ExpLogRecord(
+                    //        Id,
+                    //        getChannelServer().WorldExpRate,
+                    //        expCoupon,
+                    //        totalExpGained,
+                    //        ExpValue.get(),
+                    //        LastExpGainTime
+                    //    );
+                    //    ExpLogger.putExpLogRecord(expLogRecord);
+                    //}
+
+                    totalExpGained = 0;
+                }
             }
+
 
         }
     }

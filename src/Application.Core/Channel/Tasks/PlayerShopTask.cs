@@ -1,20 +1,19 @@
+using Application.Core.Channel.Commands;
+
 namespace Application.Core.Channel.Tasks
 {
     public class PlayerShopTask : AbstractRunnable
     {
         readonly WorldChannelServer _server;
 
-        public PlayerShopTask(WorldChannelServer server) : base($"ChannelServer:{server.ServerName}_{nameof(PlayerShopTask)}")
+        public PlayerShopTask(WorldChannelServer server) : base($"{server.ServerName}_{nameof(PlayerShopTask)}")
         {
             _server = server;
         }
 
         public override void HandleRun()
         {
-            foreach (var ch in _server.Servers.Values)
-            {
-                ch.PlayerShopManager.CheckExpired();
-            }
+            _server.PushChannelCommand(new SyncPlayerShopCommand());
         }
     }
 }

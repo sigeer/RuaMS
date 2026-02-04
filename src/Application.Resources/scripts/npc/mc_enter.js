@@ -166,6 +166,14 @@ function startInstance(cpqEvent) {
         return;
     }
 
+    if (cm.getParty() == null) {
+        cm.sendOkLevel("在你加入战斗之前，你需要先创建一个队伍！");
+        return;
+    } else if (!cm.isLeader()) {
+        cm.sendOkLevel("如果你想开始战斗，让#b队长#k和我对话。");
+        return;
+    }
+
     let msg = cm.GetClientMessage("CPQ_PickRoom") + "#b";
     let o = msg.length;
     const roomName = cm.GetClientMessage("CPQ_Room");
@@ -204,27 +212,25 @@ function levelSelectRoom(roomIndex) {
     }
 
     if (room.Instance == null) {
-        if (!em.StartInstance(cm.getPlayer(), cm.getMap(), roomIndex)) {
+        if (!em.StartInstance(cm.getPlayer(), team, roomIndex)) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
             return;
         } else {
             cm.Pink("CPQ_EntryLobby");
+            return;
         }
     } else {
-        const joinResult = em.JoinInstance(cm.getPlayer(), cm.getMap(), roomIndex);
+        const joinResult = em.JoinInstance(cm.getPlayer(), team, roomIndex);
         if (joinResult == 0) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_ChallengeRoomSent"));
-            return;
         } else if (joinResult == 2) {
             cm.sendOkLevel("队伍不满足条件。需要与被挑战的队伍人数一致！");
         } else if (joinResult == 3) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_FindError"));
         } else if (joinResult == 4) {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_ChallengeRoomAnswer"));
-        }
-        else {
+        } else {
             cm.sendOkLevel(cm.GetClientMessage("CPQ_Error"));
-            return;
         }
     }
 }

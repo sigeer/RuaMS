@@ -8,7 +8,7 @@ namespace Application.Core.Game.Gameplay
     /// </summary>
     public class XiGuai
     {
-        public XiGuai(IMap mapModel, IPlayer controller)
+        public XiGuai(IMap mapModel, Player controller)
         {
             MapModel = mapModel;
             Controller = controller;
@@ -16,7 +16,7 @@ namespace Application.Core.Game.Gameplay
         }
 
         public IMap MapModel { get; set; }
-        public IPlayer Controller { get; set; }
+        public Player Controller { get; set; }
         public Point Position { get; private set; }
 
         public void RestPosition()

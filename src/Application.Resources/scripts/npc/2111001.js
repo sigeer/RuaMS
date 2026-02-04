@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
                        Matthias Butz <matze@odinms.de>
@@ -31,6 +31,6 @@
 */
 
 function start() {
-    cm.sendOk("泽纳米斯特……我知道他们在说什么。他们不喜欢将生命与机器结合。但这只是对机器的恐惧。追求纯粹的炼金术不会取得任何成就。");
+    cm.sendDefault(3315);
     cm.dispose();
 }

@@ -25,6 +25,7 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
 using Application.EF;
 using Application.Utility.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Net.Handlers;

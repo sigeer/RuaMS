@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel.DataProviders;
 using Application.Templates.Item.Consume;
 using client.inventory;
 using client.inventory.manipulator;
@@ -49,33 +48,26 @@ public class UseSolomonHandler : ChannelHandlerBase
             {
                 var chr = c.OnlinedCharacter;
                 Inventory inv = chr.getInventory(InventoryType.USE);
-                inv.lockInventory();
-                try
-                {
-                    var slotItem = inv.getItem(slot);
-                    if (slotItem == null)
-                    {
-                        return;
-                    }
 
-                    if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate)
-                        return;
-
-                    if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
-                    {
-                        return;
-                    }
-                    if (itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
-                    {
-                        return;
-                    }
-                    chr.addGachaExp(itemTemplate.Exp);
-                    InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-                }
-                finally
+                var slotItem = inv.getItem(slot);
+                if (slotItem == null)
                 {
-                    inv.unlockInventory();
+                    return;
                 }
+
+                if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate)
+                    return;
+
+                if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
+                {
+                    return;
+                }
+                if (itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
+                {
+                    return;
+                }
+                chr.addGachaExp(itemTemplate.Exp);
+                InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
             }
             finally
             {

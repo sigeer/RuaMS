@@ -35,7 +35,7 @@ public class InventoryMergeHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(2, c.CurrentServerContainer.getCurrentTimestamp(), 4);
+        chr.getAutobanManager().setTimestamp(2, c.CurrentServer.Node.getCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {
@@ -52,81 +52,74 @@ public class InventoryMergeHandler : ChannelHandlerBase
 
         InventoryType inventoryType = InventoryTypeUtils.getByType(invType);
         Inventory inventory = c.OnlinedCharacter.getInventory(inventoryType);
-        inventory.lockInventory();
-        try
+
+        //------------------- RonanLana's SLOT MERGER -----------------
+
+        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+        Item? srcItem, dstItem;
+
+        for (short dst = 1; dst <= inventory.getSlotLimit(); dst++)
         {
-            //------------------- RonanLana's SLOT MERGER -----------------
-
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            Item? srcItem, dstItem;
-
-            for (short dst = 1; dst <= inventory.getSlotLimit(); dst++)
+            dstItem = inventory.getItem(dst);
+            if (dstItem == null)
             {
-                dstItem = inventory.getItem(dst);
-                if (dstItem == null)
+                continue;
+            }
+
+            for (short src = (short)(dst + 1); src <= inventory.getSlotLimit(); src++)
+            {
+                srcItem = inventory.getItem(src);
+                if (srcItem == null)
                 {
                     continue;
                 }
 
-                for (short src = (short)(dst + 1); src <= inventory.getSlotLimit(); src++)
+                if (dstItem.getItemId() != srcItem.getItemId())
                 {
-                    srcItem = inventory.getItem(src);
-                    if (srcItem == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
+                if (dstItem.getQuantity() == ii.getSlotMax(c, inventory.getItem(dst).getItemId()))
+                {
+                    break;
+                }
 
-                    if (dstItem.getItemId() != srcItem.getItemId())
+                InventoryManipulator.move(c, inventoryType, src, dst);
+            }
+        }
+
+        //------------------------------------------------------------
+
+        inventory = c.OnlinedCharacter.getInventory(inventoryType);
+        bool sorted = false;
+
+        while (!sorted)
+        {
+            short freeSlot = inventory.getNextFreeSlot();
+
+            if (freeSlot != -1)
+            {
+                short itemSlot = -1;
+                for (short i = (short)(freeSlot + 1); i <= inventory.getSlotLimit(); i = (short)(i + 1))
+                {
+                    if (inventory.getItem(i) != null)
                     {
-                        continue;
-                    }
-                    if (dstItem.getQuantity() == ii.getSlotMax(c, inventory.getItem(dst).getItemId()))
-                    {
+                        itemSlot = i;
                         break;
                     }
-
-                    InventoryManipulator.move(c, inventoryType, src, dst);
                 }
-            }
-
-            //------------------------------------------------------------
-
-            inventory = c.OnlinedCharacter.getInventory(inventoryType);
-            bool sorted = false;
-
-            while (!sorted)
-            {
-                short freeSlot = inventory.getNextFreeSlot();
-
-                if (freeSlot != -1)
+                if (itemSlot > 0)
                 {
-                    short itemSlot = -1;
-                    for (short i = (short)(freeSlot + 1); i <= inventory.getSlotLimit(); i = (short)(i + 1))
-                    {
-                        if (inventory.getItem(i) != null)
-                        {
-                            itemSlot = i;
-                            break;
-                        }
-                    }
-                    if (itemSlot > 0)
-                    {
-                        InventoryManipulator.move(c, inventoryType, itemSlot, freeSlot);
-                    }
-                    else
-                    {
-                        sorted = true;
-                    }
+                    InventoryManipulator.move(c, inventoryType, itemSlot, freeSlot);
                 }
                 else
                 {
                     sorted = true;
                 }
             }
-        }
-        finally
-        {
-            inventory.unlockInventory();
+            else
+            {
+                sorted = true;
+            }
         }
 
         c.sendPacket(PacketCreator.finishedSort(inventoryType.getType()));

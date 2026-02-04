@@ -2,17 +2,17 @@ namespace Application.Core.Channel.Services
 {
     public interface IFishingService
     {
-        bool AttemptCatchFish(IPlayer chr, int baitLevel);
-        void StopFishing(IPlayer chr);
+        bool AttemptCatchFish(Player chr, int baitLevel);
+        void StopFishing(Player chr);
     }
     public class DefaultFishingService : IFishingService
     {
-        public bool AttemptCatchFish(IPlayer chr, int baitLevel)
+        public bool AttemptCatchFish(Player chr, int baitLevel)
         {
             return false;
         }
 
-        public void StopFishing(IPlayer chr)
+        public void StopFishing(Player chr)
         {
 
         }

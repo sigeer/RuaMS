@@ -7,6 +7,7 @@ using Application.Shared.Net;
 using AutoMapper;
 using Dto;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Module.Family.Channel
@@ -105,42 +106,42 @@ namespace Application.Module.Family.Channel
             _transport.Fork(new Dto.CreateForkRequest { MasterId = masterId, Cost = cost });
         }
 
-        public void OnForked(Dto.CreateForkResponse data)
-        {
-            if (data.Code == 0)
-            {
-                var newFamily = _mapper.Map<Models.Family>(data.NewFamily);
-                _dataSource[newFamily.Id] = newFamily;
+        //public void OnForked(Dto.CreateForkResponse data)
+        //{
+        //    if (data.Code == 0)
+        //    {
+        //        var newFamily = _mapper.Map<Models.Family>(data.NewFamily);
+        //        _dataSource[newFamily.Id] = newFamily;
 
-                var oldFamily = GetFamily(data.OldFamilyId)!;
-                var rootMember = newFamily.getLeader();
+        //        var oldFamily = GetFamily(data.OldFamilyId)!;
+        //        var rootMember = newFamily.getLeader();
                 
-                int repCost = separateRepCost(rootMember);
-                var oldSenior = oldFamily.getEntryByID(data.OldSeniorId);
-                oldSenior?.gainReputation(-repCost, false);
+        //        int repCost = separateRepCost(rootMember);
+        //        var oldSenior = oldFamily.getEntryByID(data.OldSeniorId);
+        //        oldSenior?.gainReputation(-repCost, false);
 
-                var oldSeniorChr = _server.FindPlayerById(data.OldSeniorId);
-                oldSeniorChr?.sendPacket(PacketCreator.serverNotice(5, rootMember.Name + " has left the family."));
-                oldSeniorChr?.sendPacket(FamilyPacketCreator.getFamilyInfo(oldSenior));
+        //        var oldSeniorChr = _server.FindPlayerById(data.OldSeniorId);
+        //        oldSeniorChr?.sendPacket(PacketCreator.serverNotice(5, rootMember.Name + " has left the family."));
+        //        oldSeniorChr?.sendPacket(FamilyPacketCreator.getFamilyInfo(oldSenior));
 
-                var oldSupperSenior = oldFamily.getEntryByID(data.OldSeniorId);
-                oldSupperSenior?.gainReputation(-(repCost / 2), false);
-                var oldSupperSeniorChr = _server.FindPlayerById(data.OldSupperSeniorId);
-                oldSupperSeniorChr?.sendPacket(PacketCreator.serverNotice(5, rootMember.Name + " has left the family."));
-                oldSupperSeniorChr?.sendPacket(FamilyPacketCreator.getFamilyInfo(oldSupperSenior));
+        //        var oldSupperSenior = oldFamily.getEntryByID(data.OldSeniorId);
+        //        oldSupperSenior?.gainReputation(-(repCost / 2), false);
+        //        var oldSupperSeniorChr = _server.FindPlayerById(data.OldSupperSeniorId);
+        //        oldSupperSeniorChr?.sendPacket(PacketCreator.serverNotice(5, rootMember.Name + " has left the family."));
+        //        oldSupperSeniorChr?.sendPacket(FamilyPacketCreator.getFamilyInfo(oldSupperSenior));
 
-                var chr = _server.FindPlayerById(data.Request.MasterId);
-                if (chr != null)
-                {
-                    chr.gainMeso(-data.Request.Cost, inChat: true);
+        //        var chr = _server.FindPlayerById(data.Request.MasterId);
+        //        if (chr != null)
+        //        {
+        //            chr.gainMeso(-data.Request.Cost, inChat: true);
 
-                    chr.sendPacket(FamilyPacketCreator.getFamilyInfo(rootMember)); //pedigree info will be requested from the client if the window is open
+        //            chr.sendPacket(FamilyPacketCreator.getFamilyInfo(rootMember)); //pedigree info will be requested from the client if the window is open
 
-                    chr.sendPacket(FamilyPacketCreator.sendFamilyMessage(1, 0));
-                }
+        //            chr.sendPacket(FamilyPacketCreator.sendFamilyMessage(1, 0));
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
         private static int separateRepCost(FamilyEntry junior)
         {
@@ -152,21 +153,21 @@ namespace Application.Module.Family.Channel
             return ret;
         }
 
-        internal void CreateInvite(IPlayer chr, string toAdd)
+        internal async Task CreateInvite(Player chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
+            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
         }
-        internal void AnswerInvite(IPlayer chr, int familyId, bool accept)
+        internal async Task AnswerInvite(Player chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+           await  _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
-        internal void CreateSummonInvite(IPlayer chr, string toAdd)
+        internal async Task CreateSummonInvite(Player chr, string toAdd)
         {
-            _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
+            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
         }
-        internal void AnswerSummonInvite(IPlayer chr, int familyId, bool accept)
+        internal async Task AnswerSummonInvite(Player chr, int familyId, bool accept)
         {
-            _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+            await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
         public void OnJoinFamily(Dto.JoinFamilyResponse data)
@@ -197,22 +198,22 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public void UseEntitlement(IPlayer player, FamilyEntitlement entitlement)
+        public void UseEntitlement(Player player, FamilyEntitlement entitlement)
         {
             _transport.UseEntitlement(new UseEntitlementRequest { MatserId = player.Id, EntitlementId = entitlement.ordinal() });
         }
 
-        public void OnUseEntitlement(UseEntitlementResponse data)
-        {
-            var entitlement = FamilyEntitlement.Parse(data.Request.EntitlementId);
+        //public void OnUseEntitlement(UseEntitlementResponse data)
+        //{
+        //    var entitlement = FamilyEntitlement.Parse(data.Request.EntitlementId);
 
-            var family = GetFamily(data.FamilyId)!;
+        //    var family = GetFamily(data.FamilyId)!;
 
-            var newEnty = _mapper.Map<FamilyEntry>(data.UpdatedMember);
-            family.UpdateMember(newEnty);
-            var chr = _server.FindPlayerById(data.Request.MatserId);
-            chr?.sendPacket(FamilyPacketCreator.getFamilyInfo(newEnty));
-        }
+        //    var newEnty = _mapper.Map<FamilyEntry>(data.UpdatedMember);
+        //    family.UpdateMember(newEnty);
+        //    var chr = _server.FindPlayerById(data.Request.MatserId);
+        //    chr?.sendPacket(FamilyPacketCreator.getFamilyInfo(newEnty));
+        //}
 
 
     }

@@ -2,13 +2,13 @@ namespace Application.Templates.Exceptions
 {
     public class TemplateNotFoundException : Exception
     {
-        public TemplateNotFoundException(string provider, int templateId): base($"没有在 {provider} 下找到 Id={templateId}。")
+        public TemplateNotFoundException(string type, int templateId): base($"没有找到 {type} 类型的Template： Id={templateId}。")
         {
-            ProviderName = provider;
+            Type = type;
             TemplateId = templateId;
         }
 
-        public string ProviderName { get; set; }
+        public string Type { get; set; }
         public int TemplateId { get; set; }
     }
 

@@ -43,7 +43,7 @@ public class SkillAction : AbstractQuestAction
         skillData = data.ToDictionary(x => x.SkillID, x => new SkillData(x.SkillID, x.SkillLevel, x.MasterLevel, x.Job.ToList()));
     }
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         foreach (SkillData skill in skillData.Values)
         {

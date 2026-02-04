@@ -16,7 +16,7 @@ public class AutobanManager
 {
     private ILogger log = LogFactory.GetLogger("AutobanManager");
 
-    private IPlayer chr;
+    private Player chr;
     private Dictionary<AutobanFactory, int> points = new();
     private Dictionary<AutobanFactory, long> lastTime = new();
     private int misses = 0;
@@ -27,7 +27,7 @@ public class AutobanManager
     private byte[] timestampcounter = new byte[20];
 
 
-    public AutobanManager(IPlayer chr)
+    public AutobanManager(Player chr)
     {
         this.chr = chr;
     }
@@ -43,14 +43,14 @@ public class AutobanManager
 
             if (lastTime.TryGetValue(fac, out var value))
             {
-                if (value < (chr.Client.CurrentServerContainer.getCurrentTime() - fac.getExpire()))
+                if (value < (chr.Client.CurrentServer.Node.getCurrentTime() - fac.getExpire()))
                 {
                     points.AddOrUpdate(fac, points.GetValueOrDefault(fac) / 2); //So the points are not completely gone.
                 }
             }
             if (fac.getExpire() != -1)
             {
-                lastTime.AddOrUpdate(fac, chr.Client.CurrentServerContainer.getCurrentTime());
+                lastTime.AddOrUpdate(fac, chr.Client.CurrentServer.Node.getCurrentTime());
             }
 
             points.AddOrUpdate(fac, points.GetValueOrDefault(fac) + 1);
@@ -93,7 +93,7 @@ public class AutobanManager
     //Don't use the same type for more than 1 thing
     public void spam(int type)
     {
-        this._spam[type] = chr.Client.CurrentServerContainer.getCurrentTime();
+        this._spam[type] = chr.Client.CurrentServer.Node.getCurrentTime();
     }
 
     public void spam(int type, int timestamp)

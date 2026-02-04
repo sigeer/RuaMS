@@ -3,6 +3,7 @@ using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -45,16 +46,17 @@ namespace Application.Core.Login.Services
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
+            var banInfo = _masterServer.AccountBanManager.GetAccountBanInfo(characterObj.Character.AccountId);
+            if (banInfo != null)
+                return null;
+
             var data = _mapper.Map<SyncProto.PlayerGetterDto>(characterObj);
             data.LoginInfo = new SyncProto.LoginInfo { 
                 IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION ,
                 Language = accountModel.Language
             };
 
-
             using var dbContext = _dbContextFactory.CreateDbContext();
-
-
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
                 .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
@@ -64,9 +66,9 @@ namespace Application.Core.Login.Services
             return data;
         }
 
-        public void SetPlayerLogedIn(int playerId, int channel)
+        public async Task SetPlayerLogedIn(int playerId, int channel)
         {
-            _masterServer.CharacterManager.CompleteLogin(playerId, channel, out var accId);
+            var accId = await _masterServer.CharacterManager.CompleteLogin(playerId, channel);
             _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
     }

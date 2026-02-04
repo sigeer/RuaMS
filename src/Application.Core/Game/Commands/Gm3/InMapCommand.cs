@@ -15,6 +15,5 @@ public class InMapCommand : CommandBase
 
         string st = string.Join("\r\n", player.getMap().getAllPlayers());
         TempConversation.Create(c)?.RegisterTalk(st);
-
     }
 }

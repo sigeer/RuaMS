@@ -31,7 +31,7 @@ public class UseMapleLifeHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
-        long timeNow = c.CurrentServerContainer.getCurrentTime();
+        long timeNow = c.CurrentServer.Node.getCurrentTime();
 
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
@@ -43,7 +43,7 @@ public class UseMapleLifeHandler : ChannelHandlerBase
         player.setLastUsedCashItem(timeNow);
 
         string name = p.readString();
-        if (c.CurrentServerContainer.CheckCharacterName(name))
+        if (c.CurrentServer.NodeService.CheckCharacterName(name))
         {
             c.sendPacket(PacketCreator.sendMapleLifeCharacterInfo());
         }

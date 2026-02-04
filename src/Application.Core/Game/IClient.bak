@@ -42,9 +42,9 @@ namespace Application.Core.Game
         /// <summary>
         /// 客户端未登录：建立了连接~选择角色
         /// </summary>
-        public IPlayer? Character { get; }
+        public Player? Character { get; }
         public bool IsGameOnlined => Character != null;
-        public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+        public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
         public string ClientInfo { get; }
         public int World { get; set; }
         public int Channel { get; set; }
@@ -104,7 +104,7 @@ namespace Application.Core.Game
         HashSet<string> getMacs();
         string getPic();
         string getPin();
-        IPlayer? getPlayer();
+        Player? getPlayer();
         string getRemoteAddress();
         IEngine? getScriptEngine(string name);
         long getSessionId();
@@ -119,7 +119,7 @@ namespace Application.Core.Game
         bool hasBeenBanned();
         bool isInTransition();
         bool isLoggedIn();
-        List<IPlayer> loadCharacters(int serverId);
+        List<Player> loadCharacters(int serverId);
         void lockClient();
         int login(string login, string pwd, Hwid nibbleHwid);
         void pongReceived();
@@ -142,7 +142,7 @@ namespace Application.Core.Game
         void setLanguage(int lingua);
         void setPic(string pic);
         void setPin(string pin);
-        void setPlayer(IPlayer? player);
+        void setPlayer(Player? player);
         void setScriptEngine(string name, IEngine e);
         void setWorld(int world);
         bool tryacquireClient();

@@ -20,17 +20,16 @@ namespace Application.Core.Channel.ServerData
         private static bool isRecvBlocked(RecvOpcode op)
         {
             return new RecvOpcode[] {
-            RecvOpcode.MOVE_PLAYER ,
-            RecvOpcode.GENERAL_CHAT ,
-            RecvOpcode.TAKE_DAMAGE ,
-            RecvOpcode.MOVE_PET ,
-            RecvOpcode.MOVE_LIFE ,
-            RecvOpcode.NPC_ACTION ,
-            RecvOpcode.FACE_EXPRESSION
+                RecvOpcode.MOVE_PLAYER ,
+                RecvOpcode.GENERAL_CHAT ,
+                RecvOpcode.TAKE_DAMAGE ,
+                RecvOpcode.MOVE_PET ,
+                RecvOpcode.MOVE_LIFE ,
+                RecvOpcode.NPC_ACTION ,
+                RecvOpcode.FACE_EXPRESSION
             }.Contains(op);
         }
         private Dictionary<int, string>? _monitoredChrIds;
-        private readonly object _monitorLock = new object();
 
         public Dictionary<int, string> GetMonitor()
         {
@@ -40,14 +39,11 @@ namespace Application.Core.Channel.ServerData
                 return snapshot;
 
             // 慢路径：首次加载
-            lock (_monitorLock)
+            if (_monitoredChrIds == null)
             {
-                if (_monitoredChrIds == null)
-                {
-                    _monitoredChrIds = LoadMonitorSet();
-                }
-                return _monitoredChrIds;
+                _monitoredChrIds = LoadMonitorSet();
             }
+            return _monitoredChrIds;
         }
 
         public void ReloadMonitor()
@@ -83,29 +79,9 @@ namespace Application.Core.Channel.ServerData
             _logger.LogInformation("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountEntity!.Id, chr.getName(), packetId, packet);
         }
 
-        public void ToggleMonitor(IPlayer chr, string name)
+        public void ToggleMonitor(Player chr, string name)
         {
-            Config.ToggleMonitorPlayerResponse res = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
-            if (res.IsSuccess)
-            {
-                chr.yellowMessage(name + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored."));
-            }
-            else
-            {
-                chr.dropMessage($"未找到玩家：{name}");
-            }
-        }
-
-        public void OnMonitorDataChanged(Config.MonitorDataChangedNotifyDto data)
-        {
-            foreach (var gmId in data.GmId)
-            {
-                var gmChr = _server.FindPlayerById(gmId);
-                if (gmChr != null)
-                {
-                    gmChr.dropMessage(5, data.OperatorName + (data.IsMonitored ? " has started monitoring " : " has stopped monitoring ") + data.TargetName + ".");
-                }
-            }
+            _ = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
         }
     }
 }

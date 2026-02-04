@@ -174,7 +174,7 @@ public class RingActionHandler : ChannelHandlerBase
     }
 
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte mode = p.readByte();
         string name;
@@ -234,7 +234,7 @@ public class RingActionHandler : ChannelHandlerBase
                 var removedItem = p.readInt();
                 var unknown = p.available();
 
-                _weddingManager.BreakMarriageRing(c.OnlinedCharacter);
+                await _weddingManager.BreakMarriageRing(c.OnlinedCharacter);
                 break;
 
             case 5:
@@ -258,7 +258,7 @@ public class RingActionHandler : ChannelHandlerBase
                         return;
                     }
 
-                    _weddingManager.TryInviteGuest(c.OnlinedCharacter, item, marriageId, name);
+                    await _weddingManager.TryInviteGuest(c.OnlinedCharacter, item, marriageId, name);
                     break;
                 }
 

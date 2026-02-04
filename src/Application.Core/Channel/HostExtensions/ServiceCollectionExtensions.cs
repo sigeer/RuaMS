@@ -1,4 +1,6 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.DueyService;
+using Application.Core.Channel.Internal;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
@@ -6,17 +8,12 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
-using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
-using Application.Resources;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using net.server.coordinator.matchchecker;
-using Prometheus;
 using server.life;
 using server.maps;
 
@@ -24,17 +21,6 @@ namespace Application.Core.Channel.HostExtensions
 {
     public static class ServiceCollectionExtensions
     {
-        static IServiceCollection AddInvitationService(this IServiceCollection services)
-        {
-            services.AddSingleton<InviteChannelHandlerRegistry>();
-
-            services.AddSingleton<InviteChannelHandler, PartyInviteChannelHandler>();
-            services.AddSingleton<InviteChannelHandler, GuildInviteChannelHandler>();
-            services.AddSingleton<InviteChannelHandler, AllianceInviteChannelHandler>();
-            services.AddSingleton<InviteChannelHandler, MessengerInviteChannelHandler>();
-            return services;
-        }
-
         private static IServiceCollection AddChannelHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
@@ -103,6 +89,8 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<DataBootstrap, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
             services.AddSingleton<GachaponManager>();
 
+            services.AddSingleton<DueyManager>();
+
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();
             services.AddSingleton<ReportService>();
@@ -116,20 +104,61 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<ChatRoomService>();
             services.AddSingleton<ExpeditionService>();
             services.AddSingleton<NewYearCardService>();
-            services.AddSingleton<NoteService>();
             services.AddSingleton<PlayerShopService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
-            services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
             services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
             services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
 
-            services.AddSingleton<MatchCheckerGuildCreationListener>();
-            services.AddSingleton<MatchCheckerCPQChallengeListener>();
-
-            services.AddInvitationService();
+            services.AddInternalSessionHandlers();
 
             services.AddMemoryCache();
+            return services;
+        }
+
+        static IServiceCollection AddChannelGrpcClient(this IServiceCollection services)
+        {
+            services.AddSingleton<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.SystemService.SystemServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.GameService.GameServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.SyncService.SyncServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.GuildService.GuildServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.AllianceService.AllianceServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.DataService.DataServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.ItemService.ItemServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.CashService.CashServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.TeamService.TeamServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ServiceProto.PlayerShopService.PlayerShopServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
             return services;
         }
 
@@ -140,6 +169,8 @@ namespace Application.Core.Channel.HostExtensions
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();
 
+            builder.Services.AddMemoryCache();
+            builder.Services.AddChannelGrpcClient();
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();
 
@@ -158,11 +189,6 @@ namespace Application.Core.Channel.HostExtensions
         public static void UseChannelServer(this WebApplication app)
         {
             app.UseDataSource();
-
-            MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
-                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
-                app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
-
             var staticServices = app.Services.GetServices<IStaticService>();
             foreach (var srv in staticServices)
             {
@@ -174,8 +200,6 @@ namespace Application.Core.Channel.HostExtensions
             {
                 item.ConfigureHost(app);
             }
-
-            app.UseMetricServer();
         }
     }
 }

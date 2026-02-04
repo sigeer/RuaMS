@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Items;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using Application.Templates.Item.Pet;
@@ -66,10 +67,9 @@ public class ItemCommand : CommandBase
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        var abTemplate = ii.GetTemplate(itemId);
-        if (abTemplate == null)
+        if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
+            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
             return;
         }
 
@@ -80,29 +80,17 @@ public class ItemCommand : CommandBase
         }
 
 
-        if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
+        var item = ii.GenerateVirtualItemById(itemId, quantity);
+        if (item == null)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
+            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), itemId.ToString());
             return;
         }
 
-        if (abTemplate is PetItemTemplate petTemplate)
+        item.setExpiration(-1);
+        if (item is Pet pet)
         {
-            if (paramsValue.Length >= 2)
-            {
-                // thanks to istreety & TacoBell
-                quantity = 1;
-                long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = c.CurrentServerContainer.GetCurrentTimeDateTimeOffSet().AddDays(days).ToUnixTimeMilliseconds();
-
-                InventoryManipulator.addById(c, itemId, quantity, player.getName(), expiration: expiration);
-                return;
-            }
-            else
-            {
-                player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_PetSyntax));
-                return;
-            }
+            pet.setExpiration(c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(quantity).ToUnixTimeMilliseconds());
         }
 
         short flag = 0;
@@ -112,6 +100,9 @@ public class ItemCommand : CommandBase
             flag |= ItemConstants.UNTRADEABLE;
         }
 
-        InventoryManipulator.addById(c, itemId, quantity, player.getName(), flag: flag, expiration: -1);
+        item.setFlag(flag);
+        item.setOwner(player.getName());
+
+        InventoryManipulator.addFromDrop(c, item, false);
     }
 }

@@ -52,7 +52,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
             return;
         }
 
-        var res = c.CurrentServerContainer.Transport.FindPlayerShopChannel(new ItemProto.SearchHiredMerchantChannelRequest { MasterId = chr.Id });
+        var res = c.CurrentServer.Node.Transport.FindPlayerShopChannel(new ItemProto.SearchHiredMerchantChannelRequest { MasterId = chr.Id });
         if (res.Channel > 0)
         {
             if (res.Channel == chr.getClient().getChannel())

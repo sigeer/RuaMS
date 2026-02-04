@@ -18,6 +18,7 @@ message CreatePackageRequest {
 
 message CreatePackageResponse {
 	int32 code = 1;
+	DueyPackageDto package = 2;
 }
 
 message CreatePackageBroadcast {

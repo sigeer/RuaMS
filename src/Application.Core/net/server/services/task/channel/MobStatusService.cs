@@ -20,6 +20,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Life.Monsters;
 
 namespace net.server.services.task.channel;
@@ -52,12 +53,12 @@ public class MobStatusService : BaseService
         }
     }
 
-    public void registerMobStatus(int mapid, MonsterStatusEffect mse, Action cancelAction, long duration)
+    public void registerMobStatus(int mapid, MonsterStatusEffect mse, IWorldChannelCommand cancelAction, long duration)
     {
         registerMobStatus(mapid, mse, cancelAction, duration, null, -1);
     }
 
-    public void registerMobStatus(int mapid, MonsterStatusEffect mse, Action cancelAction, long duration, AbstractRunnable? overtimeAction, int overtimeDelay)
+    public void registerMobStatus(int mapid, MonsterStatusEffect mse, IWorldChannelCommand cancelAction, long duration, IWorldChannelCommand? overtimeAction, int overtimeDelay)
     {
         mobStatusSchedulers[getChannelSchedulerIndex(mapid)].registerMobStatus(mse, cancelAction, duration, overtimeAction, overtimeDelay);
     }
@@ -71,22 +72,21 @@ public class MobStatusService : BaseService
     {
 
         private Dictionary<MonsterStatusEffect, MobStatusOvertimeEntry> registeredMobStatusOvertime = new();
-        private object overtimeStatusLock = new object();
 
         public class MobStatusOvertimeEntry
         {
             private int procCount;
             private int procLimit;
-            private AbstractRunnable r;
+            private IWorldChannelCommand r;
 
-            public MobStatusOvertimeEntry(int delay, AbstractRunnable run)
+            public MobStatusOvertimeEntry(int delay, IWorldChannelCommand run)
             {
                 procCount = 0;
                 procLimit = (int)Math.Ceiling((float)delay / YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
                 r = run;
             }
 
-            public void update(List<AbstractRunnable> toRun)
+            public void update(List<IWorldChannelCommand> toRun)
             {
                 procCount++;
                 if (procCount >= procLimit)
@@ -102,58 +102,43 @@ public class MobStatusService : BaseService
 
             base.addListener((List<object> toRemove, bool update) =>
                 {
-                    List<AbstractRunnable> toRun = new();
+                    List<IWorldChannelCommand> toRun = new();
 
-                    Monitor.Enter(overtimeStatusLock);
-                    try
+                    foreach (object mseo in toRemove)
                     {
-                        foreach (object mseo in toRemove)
-                        {
-                            MonsterStatusEffect mse = (MonsterStatusEffect)mseo;
-                            registeredMobStatusOvertime.Remove(mse);
-                        }
-
-                        if (update)
-                        {
-                            // it's probably ok to use one thread for both management & overtime actions
-                            List<MobStatusOvertimeEntry> mdoeList = new(registeredMobStatusOvertime.Values);
-                            foreach (MobStatusOvertimeEntry mdoe in mdoeList)
-                            {
-                                mdoe.update(toRun);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        Monitor.Exit(overtimeStatusLock);
+                        MonsterStatusEffect mse = (MonsterStatusEffect)mseo;
+                        registeredMobStatusOvertime.Remove(mse);
                     }
 
-                    foreach (AbstractRunnable r in toRun)
+                    if (update)
                     {
-                        r.run();
+                        // it's probably ok to use one thread for both management & overtime actions
+                        List<MobStatusOvertimeEntry> mdoeList = new(registeredMobStatusOvertime.Values);
+                        foreach (MobStatusOvertimeEntry mdoe in mdoeList)
+                        {
+                            mdoe.update(toRun);
+                        }
+                    }
+
+
+                    foreach (var r in toRun)
+                    {
+                        worldChannel.Post(r);
                     }
                 }
             );
         }
 
-        public void registerMobStatus(MonsterStatusEffect mse, Action cancelStatus, long duration, AbstractRunnable? overtimeStatus, int overtimeDelay)
+        public void registerMobStatus(MonsterStatusEffect mse, IWorldChannelCommand cancelStatus, long duration, IWorldChannelCommand? overtimeStatus, int overtimeDelay)
         {
             if (overtimeStatus != null)
             {
                 MobStatusOvertimeEntry mdoe = new MobStatusOvertimeEntry(overtimeDelay, overtimeStatus);
 
-                Monitor.Enter(overtimeStatusLock);
-                try
-                {
-                    registeredMobStatusOvertime.AddOrUpdate(mse, mdoe);
-                }
-                finally
-                {
-                    Monitor.Exit(overtimeStatusLock);
-                }
+                registeredMobStatusOvertime.AddOrUpdate(mse, mdoe);
             }
 
-            registerEntry(mse, TempRunnable.Parse(cancelStatus), duration);
+            registerEntry(mse, cancelStatus, duration);
         }
 
         public void interruptMobStatus(MonsterStatusEffect mse)

@@ -126,4 +126,22 @@ public class TaskTimerManager : ITimerManager
         return schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
     }
 
+    public Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
+    {
+        taskName = $"{taskName}_{r.GetHashCode()}";
+        var ctx = new TimerTaskStatus();
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(delay, ctx.LinkedCts.Token);
+            await r();
+        }, ctx.ImmediateCts.Token)
+            .ContinueWith(t =>
+            {
+                if (TaskScheduler.Remove(taskName, out var p))
+                    Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
+            });
+        var m = new TaskScheduledFuture(taskName, ctx); ;
+        TaskScheduler[taskName] = m;
+        return Task.FromResult(m as ScheduledFuture);
+    }
 }

@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
 using tools;
 
@@ -29,34 +30,39 @@ namespace server.events.gm;
 
 
 
-/**
- * @author kevintjuh93
- */
+/// <summary>
+/// TODO: 待重构，让其与WorldChannel关联或EventInstance
+/// </summary>
 public class Fitness
 {
-    private IPlayer chr;
+    private Player chr;
     private long time = 0;
     private long timeStarted = 0;
     private ScheduledFuture? schedule = null;
     private ScheduledFuture? schedulemsg = null;
 
-    public Fitness(IPlayer chr)
+    public Fitness(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServerContainer.TimerManager.schedule(() =>
+        this.schedule = chr.Client.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            if (MapId.isPhysicalFitness(chr.getMapId()))
-            {
-                chr.changeMap(chr.getMap().getReturnMap());
-            }
+            chr.Client.CurrentServer.Post(new EventFitnessTimeoutCommand(this));
         }, 900_000);
+    }
+
+    public void ProcessTimeout()
+    {
+        if (MapId.isPhysicalFitness(chr.getMapId()))
+        {
+            chr.changeMap(chr.getMap().getReturnMap());
+        }
     }
 
     public void startFitness()
     {
         chr.getMap().startEvent();
         chr.getClient().sendPacket(PacketCreator.getClock(900));
-        this.timeStarted = chr.getChannelServer().Container.getCurrentTime();
+        this.timeStarted = chr.getChannelServer().Node.getCurrentTime();
         this.time = 900_000;
         checkAndMessage();
 
@@ -84,73 +90,78 @@ public class Fitness
 
     public long getTimeLeft()
     {
-        return time - (chr.getChannelServer().Container.getCurrentTime() - timeStarted);
+        return time - (chr.getChannelServer().Node.getCurrentTime() - timeStarted);
     }
 
     public void checkAndMessage()
     {
-        this.schedulemsg = chr.Client.CurrentServerContainer.TimerManager.register(() =>
+        this.schedulemsg = chr.Client.CurrentServer.Node.TimerManager.register(() =>
         {
-            if (chr.Fitness == null)
-            {
-                resetTimes();
-            }
-            if (MapId.isPhysicalFitness(chr.getMapId()))
-            {
-                if (getTimeLeft() > 9000 && getTimeLeft() < 11000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_10sec));
-                }
-                else if (getTimeLeft() > 99000 && getTimeLeft() < 101000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_100sec));
-                }
-                else if (getTimeLeft() > 239000 && getTimeLeft() < 241000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_4min));
-                }
-                else if (getTimeLeft() > 299000 && getTimeLeft() < 301000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_5min));
-                }
-                else if (getTimeLeft() > 359000 && getTimeLeft() < 361000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_6min));
-                }
-                else if (getTimeLeft() > 499000 && getTimeLeft() < 501000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_500sec));
-                }
-                else if (getTimeLeft() > 599000 && getTimeLeft() < 601000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_600sec));
-                }
-                else if (getTimeLeft() > 659000 && getTimeLeft() < 661000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_660sec));
-                }
-                else if (getTimeLeft() > 699000 && getTimeLeft() < 701000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_700sec));
-                }
-                else if (getTimeLeft() > 779000 && getTimeLeft() < 781000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_780sec));
-                }
-                else if (getTimeLeft() > 839000 && getTimeLeft() < 841000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_840sec));
-                }
-                else if (getTimeLeft() > 869000 && getTimeLeft() < 871000)
-                {
-                    chr.Notice(nameof(ClientMessage.Fitness_Left_870sec));
-                }
-            }
-            else
-            {
-                resetTimes();
-            }
+            chr.Client.CurrentServer.Post(new EventFitnessNoticeCommand(this));
         }, 5000, 29500);
+    }
+
+    public void CheckMessage()
+    {
+        if (chr.Fitness == null)
+        {
+            resetTimes();
+        }
+        if (MapId.isPhysicalFitness(chr.getMapId()))
+        {
+            if (getTimeLeft() > 9000 && getTimeLeft() < 11000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_10sec));
+            }
+            else if (getTimeLeft() > 99000 && getTimeLeft() < 101000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_100sec));
+            }
+            else if (getTimeLeft() > 239000 && getTimeLeft() < 241000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_4min));
+            }
+            else if (getTimeLeft() > 299000 && getTimeLeft() < 301000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_5min));
+            }
+            else if (getTimeLeft() > 359000 && getTimeLeft() < 361000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_6min));
+            }
+            else if (getTimeLeft() > 499000 && getTimeLeft() < 501000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_500sec));
+            }
+            else if (getTimeLeft() > 599000 && getTimeLeft() < 601000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_600sec));
+            }
+            else if (getTimeLeft() > 659000 && getTimeLeft() < 661000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_660sec));
+            }
+            else if (getTimeLeft() > 699000 && getTimeLeft() < 701000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_700sec));
+            }
+            else if (getTimeLeft() > 779000 && getTimeLeft() < 781000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_780sec));
+            }
+            else if (getTimeLeft() > 839000 && getTimeLeft() < 841000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_840sec));
+            }
+            else if (getTimeLeft() > 869000 && getTimeLeft() < 871000)
+            {
+                chr.Notice(nameof(ClientMessage.Fitness_Left_870sec));
+            }
+        }
+        else
+        {
+            resetTimes();
+        }
     }
     // 14:30 [Notice][MapleStory Physical Fitness Test] consists of 4 stages, and if you happen to die during the game, you'll be eliminated from the game, so please be careful of that.
     // 14:00 [Notice]There may be a heavy lag due to many users at stage 1 all at once. It won't be difficult, so please make sure not to fall down because of heavy lag.

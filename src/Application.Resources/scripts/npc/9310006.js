@@ -45,7 +45,7 @@ function levelEnter() {
     } else {
         var eli = em.getEligibleParty(cm.getParty());
         if (eli.size() > 0) {
-            if (!em.StartPQInstance(cm.getParty(), cm.getPlayer().getMap(), EventLevel)) {
+            if (!em.StartPQInstance(cm.getPlayer(), eli, EventLevel)) {
                 msg = '已经有其他人员在执行#b秘密任务#k了，请稍后再试。';
             }
         } else {

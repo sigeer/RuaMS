@@ -9,7 +9,7 @@ namespace Application.Core.Server
 {
     public abstract class AbstractStorage
     {
-        protected AbstractStorage(IPlayer owner, byte slots, int meso, IEnumerable<Item> items)
+        protected AbstractStorage(Player owner, byte slots, int meso, IEnumerable<Item> items)
         {
             Meso = meso;
             Slots = slots;
@@ -24,18 +24,13 @@ namespace Application.Core.Server
         public int Meso { get; set; }
         public byte Slots { get; set; }
 
-        public IPlayer Owner { get; }
+        public Player Owner { get; }
         protected List<Item> Items { get; set; }
         protected Dictionary<InventoryType, List<Item>> _typedItems;
 
-        protected Lock lockObj = new Lock();
-
         public bool IsFull()
         {
-            lock (lockObj)
-            {
-                return Items.Count >= Slots;
-            }
+            return Items.Count >= Slots;
         }
 
         public bool CanGainItem(int count)
@@ -50,36 +45,17 @@ namespace Application.Core.Server
 
         public Item? GetItemBySlot(int slot)
         {
-            lockObj.Enter();
-            try
-            {
-                return Items.ElementAtOrDefault(slot);
-            }
-            finally
-            {
-                lockObj.Exit();
-            }
+            return Items.ElementAtOrDefault(slot);
         }
 
         public Item? GetItemByTypedSlot(InventoryType type, int typedSlot)
         {
-            lock (lockObj)
-            {
-                return _typedItems.GetValueOrDefault(type)?.ElementAt(typedSlot);
-            }
+            return _typedItems.GetValueOrDefault(type)?.ElementAt(typedSlot);
         }
 
         public List<Item> GetItems()
         {
-            lockObj.Enter();
-            try
-            {
-                return Items.ToList();
-            }
-            finally
-            {
-                lockObj.Exit();
-            }
+            return Items.ToList();
         }
 
 
@@ -138,26 +114,18 @@ namespace Application.Core.Server
 
         public virtual void OpenStorage(int npcId)
         {
-            lockObj.Enter();
-            try
+            Items.Sort((o1, o2) =>
             {
-                Items.Sort((o1, o2) =>
-                {
-                    return o1.getInventoryType().getType().CompareTo(o2.getInventoryType().getType());
-                });
+                return o1.getInventoryType().getType().CompareTo(o2.getInventoryType().getType());
+            });
 
-                foreach (var inv in EnumCache<InventoryType>.Values)
-                {
-                    _typedItems[inv] = Items.ToList();
-                }
-
-                Owner.sendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
-                Owner.CurrentStorage = this;
-            }
-            finally
+            foreach (var inv in EnumCache<InventoryType>.Values)
             {
-                lockObj.Exit();
+                _typedItems[inv] = Items.ToList();
             }
+
+            Owner.sendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
+            Owner.CurrentStorage = this;
         }
 
         public void UpdateMeso()
@@ -167,18 +135,10 @@ namespace Application.Core.Server
 
         public virtual void ArrangeItems()
         {
-            lockObj.Enter();
-            try
-            {
-                StorageInventory msi = new StorageInventory(Owner.Client, Items);
-                msi.mergeItems();
-                Items = msi.sortItems();
-                Owner.sendPacket(StoragePacketCreator.arrangeStorage(Slots, Items));
-            }
-            finally
-            {
-                lockObj.Exit();
-            }
+            StorageInventory msi = new StorageInventory(Owner.Client, Items);
+            msi.mergeItems();
+            Items = msi.sortItems();
+            Owner.sendPacket(StoragePacketCreator.arrangeStorage(Slots, Items));
         }
 
         public void AddItem(Item item)

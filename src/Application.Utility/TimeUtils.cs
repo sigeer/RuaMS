@@ -8,6 +8,13 @@ namespace Application.Utility
             return (nextHour - DateTimeOffset.UtcNow);
         }
 
+        public static TimeSpan GetTimeLeftForNextHour(long now)
+        {
+            var nowTime = DateTimeOffset.FromUnixTimeMilliseconds(now);
+            var nextHour = nowTime.Date.AddHours(nowTime.Hour + 1);
+            return (nextHour - nowTime);
+        }
+
         public static TimeSpan GetTimeLeftForNextDay()
         {
             return (DateTimeOffset.UtcNow.AddDays(1).Date - DateTimeOffset.UtcNow);

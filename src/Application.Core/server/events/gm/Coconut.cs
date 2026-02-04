@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using tools;
@@ -29,10 +30,10 @@ using tools;
 namespace server.events.gm;
 
 
-/**
- * @author kevintjuh93
- */
-//Make them better :)
+
+/// <summary>
+/// TODO: 待重构，让其与WorldChannel关联或EventInstance
+/// </summary>
 public class Coconut 
 {
     public ICoconutMap Map { get; }
@@ -60,12 +61,21 @@ public class Coconut
         }
         Map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
         setCoconutsHittable(true);
-        Map.broadcastMessage(PacketCreator.getClock(Map.TimeDefault));
 
-        Map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(Map.TimeDefault));
+        StartTimer(Map.TimeDefault);
     }
 
-    private void Check()
+    public void StartTimer(int time)
+    {
+        Map.broadcastMessage(PacketCreator.getClock(time));
+
+        Map.ChannelServer.Node.TimerManager.schedule(() =>
+        {
+            Map.ChannelServer.Post(new EventCoconutTimeoutCommand(this));
+        }, TimeSpan.FromSeconds(time));
+    }
+
+    public void Check()
     {
         if (Map.getId() == MapId.EVENT_COCONUT_HARVEST)
         {
@@ -95,31 +105,34 @@ public class Coconut
     }
     public void bonusTime()
     {
-        Map.broadcastMessage(PacketCreator.getClock(Map.TimeExpand));
-        Map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(Map.TimeExpand));
-
+        StartTimer(Map.TimeExpand);
     }
 
     public void warpOut()
     {
         setCoconutsHittable(false);
-        Map.ChannelServer.Container.TimerManager.schedule(() =>
+        Map.ChannelServer.Node.TimerManager.schedule(() =>
         {
-            List<IPlayer> chars = new(Map.getAllPlayers());
-
-            foreach (var chr in chars)
-            {
-                if ((getMapleScore() > getStoryScore() && chr.getTeam() == 0) || (getStoryScore() > getMapleScore() && chr.getTeam() == 1))
-                {
-                    chr.changeMap(MapId.EVENT_WINNER);
-                }
-                else
-                {
-                    chr.changeMap(Map.getForcedReturnId());
-                }
-            }
-            Map.Coconut = null;
+            Map.ChannelServer.Post(new EventCoconutDelayWarpoutCommand(this));
         }, TimeSpan.FromSeconds(Map.TimeFinish));
+    }
+
+    public void ProcessWarpOut()
+    {
+        List<Player> chars = new(Map.getAllPlayers());
+
+        foreach (var chr in chars)
+        {
+            if ((getMapleScore() > getStoryScore() && chr.getTeam() == 0) || (getStoryScore() > getMapleScore() && chr.getTeam() == 1))
+            {
+                chr.changeMap(MapId.EVENT_WINNER);
+            }
+            else
+            {
+                chr.changeMap(Map.getForcedReturnId());
+            }
+        }
+        Map.Coconut = null;
     }
 
     public int getMapleScore()

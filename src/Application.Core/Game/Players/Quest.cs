@@ -1,7 +1,9 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Packets;
 using client;
 using server.quest;
+using ZLinq;
 
 namespace Application.Core.Game.Players
 {
@@ -10,20 +12,12 @@ namespace Application.Core.Game.Players
         private List<KeyValuePair<DelayedQuestUpdate, object[]>> npcUpdateQuests = new();
 
         private ScheduledFuture? questExpireTask = null;
-        public Dictionary<Quest, long> QuestExpirations { get; set; } = new();
-        private Dictionary<short, QuestStatus> quests;
-        public Dictionary<short, QuestStatus> Quests
-        {
-            get => quests;
-            set => quests = value;
-        }
+        public Dictionary<short, QuestStatus> Quests { get; set; } = new Dictionary<short, QuestStatus>();
+        public bool HasExpireableQuest => Quests.Values.AsValueEnumerable().Any(x => x.getExpirationTime() > 0);
 
         public List<QuestStatus> getQuests()
         {
-            lock (quests)
-            {
-                return new(quests.Values);
-            }
+            return new(Quests.Values);
         }
         public List<QuestStatus> getStartedQuests()
         {
@@ -35,17 +29,14 @@ namespace Application.Core.Game.Players
         }
         public sbyte getQuestStatus(int quest)
         {
-            lock (quests)
+            QuestStatus? mqs = Quests.GetValueOrDefault((short)quest);
+            if (mqs != null)
             {
-                QuestStatus? mqs = quests.GetValueOrDefault((short)quest);
-                if (mqs != null)
-                {
-                    return (sbyte)mqs.getStatus();
-                }
-                else
-                {
-                    return 0;
-                }
+                return (sbyte)mqs.getStatus();
+            }
+            else
+            {
+                return 0;
             }
         }
 
@@ -56,11 +47,8 @@ namespace Application.Core.Game.Players
 
         public QuestStatus getQuest(Quest quest)
         {
-            lock (quests)
-            {
-                short questid = quest.getId();
-                return quests.GetOrAdd(questid, new QuestStatus(quest, QuestStatus.Status.NOT_STARTED));
-            }
+            short questid = quest.getId();
+            return Quests.GetOrAdd(questid, new QuestStatus(quest, QuestStatus.Status.NOT_STARTED));
         }
 
         public void setQuestProgress(int id, int infoNumber, string progress)
@@ -92,14 +80,10 @@ namespace Application.Core.Game.Players
             }
 
             int delta;
-            lock (quests)
-            {
-                Fquest += awardedPoints;
+            Fquest += awardedPoints;
 
-                delta = Fquest / YamlConfig.config.server.QUEST_POINT_REQUIREMENT;
-                Fquest %= YamlConfig.config.server.QUEST_POINT_REQUIREMENT;
-            }
-
+            delta = Fquest / YamlConfig.config.server.QUEST_POINT_REQUIREMENT;
+            Fquest %= YamlConfig.config.server.QUEST_POINT_REQUIREMENT;
             if (delta > 0)
             {
                 gainFame(delta);
@@ -110,47 +94,35 @@ namespace Application.Core.Game.Players
 
         public void setQuestAdd(Quest quest, byte status, string customData)
         {
-            lock (quests)
+            if (!Quests.ContainsKey(quest.getId()))
             {
-                if (!quests.ContainsKey(quest.getId()))
-                {
-                    QuestStatus stat = new QuestStatus(quest, (QuestStatus.Status)(status));
-                    stat.setCustomData(customData);
-                    quests.AddOrUpdate(quest.getId(), stat);
-                }
+                QuestStatus stat = new QuestStatus(quest, (QuestStatus.Status)(status));
+                stat.setCustomData(customData);
+                Quests.AddOrUpdate(quest.getId(), stat);
             }
         }
 
         public QuestStatus? getQuestNAdd(Quest quest)
         {
-            lock (quests)
+            if (!Quests.ContainsKey(quest.getId()))
             {
-                if (!quests.ContainsKey(quest.getId()))
-                {
-                    QuestStatus status = new QuestStatus(quest, QuestStatus.Status.NOT_STARTED);
-                    quests.AddOrUpdate(quest.getId(), status);
-                    return status;
-                }
-                return quests.GetValueOrDefault(quest.getId());
+                QuestStatus status = new QuestStatus(quest, QuestStatus.Status.NOT_STARTED);
+                Quests.AddOrUpdate(quest.getId(), status);
+                return status;
             }
+            return Quests.GetValueOrDefault(quest.getId());
         }
 
         public QuestStatus? getQuestNoAdd(Quest quest)
         {
-            lock (quests)
-            {
-                return quests.GetValueOrDefault(quest.getId());
-            }
+            return Quests.GetValueOrDefault(quest.getId());
         }
 
         public QuestStatus? getQuestRemove(Quest quest)
         {
-            lock (quests)
-            {
-                if (quests.Remove(quest.getId(), out var d))
-                    return d;
-                return null;
-            }
+            if (Quests.Remove(quest.getId(), out var d))
+                return d;
+            return null;
         }
 
         //---- /\ /\ /\ /\ /\ /\ /\  NOT TESTED  /\ /\ /\ /\ /\ /\ /\ /\ /\ ----
@@ -175,34 +147,31 @@ namespace Application.Core.Game.Players
             int lastQuestProcessed = 0;
             try
             {
-                lock (quests)
+                foreach (QuestStatus qs in getQuests())
                 {
-                    foreach (QuestStatus qs in getQuests())
+                    lastQuestProcessed = qs.getQuest().getId();
+                    if (qs.getStatus() == QuestStatus.Status.COMPLETED || qs.getQuest().canComplete(this, null))
                     {
-                        lastQuestProcessed = qs.getQuest().getId();
-                        if (qs.getStatus() == QuestStatus.Status.COMPLETED || qs.getQuest().canComplete(this, null))
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        if (qs.progress(id))
+                    if (qs.progress(id))
+                    {
+                        announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
+                        if (qs.getInfoNumber() > 0)
                         {
-                            announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
-                            if (qs.getInfoNumber() > 0)
-                            {
-                                announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-                            }
+                            announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                Log.Warning(e, "IPlayer.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
+                Log.Warning(e, "Player.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
             }
         }
 
-        private void announceUpdateQuestInternal(IPlayer chr, KeyValuePair<DelayedQuestUpdate, object[]> questUpdate)
+        private void announceUpdateQuestInternal(Player chr, KeyValuePair<DelayedQuestUpdate, object[]> questUpdate)
         {
             object[] objs = questUpdate.Value;
 
@@ -233,10 +202,7 @@ namespace Application.Core.Game.Players
             var c = this.getClient();
             if (c.NPCConversationManager != null)
             {
-                lock (npcUpdateQuests)
-                {
-                    npcUpdateQuests.Add(p);
-                }
+                npcUpdateQuests.Add(p);
             }
             else
             {
@@ -248,11 +214,8 @@ namespace Application.Core.Game.Players
         {
             List<KeyValuePair<DelayedQuestUpdate, object[]>> qmQuestUpdateList;
 
-            lock (npcUpdateQuests)
-            {
-                qmQuestUpdateList = new(npcUpdateQuests);
-                npcUpdateQuests.Clear();
-            }
+            qmQuestUpdateList = new(npcUpdateQuests);
+            npcUpdateQuests.Clear();
 
             foreach (var q in qmQuestUpdateList)
             {
@@ -262,10 +225,7 @@ namespace Application.Core.Game.Players
 
         public void updateQuestStatus(QuestStatus qs)
         {
-            lock (quests)
-            {
-                quests.AddOrUpdate(qs.getQuestID(), qs);
-            }
+            Quests.AddOrUpdate(qs.getQuestID(), qs);
             if (qs.getStatus().Equals(QuestStatus.Status.STARTED))
             {
                 announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
@@ -299,7 +259,25 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private void expireQuest(Quest quest)
+        public void ClearExpiredQuests()
+        {
+            long timeNow = Client.CurrentServer.Node.getCurrentTime();
+            var quests = Quests.AsValueEnumerable()
+                .Where(x => x.Value.getExpirationTime() > 0 && x.Value.getExpirationTime() <= timeNow)
+                .Select(x => x.Value.getQuest())
+                .ToList();
+            foreach (var item in quests)
+            {
+                expireQuest(item);
+            }
+
+            if (!HasExpireableQuest)
+            {
+                cancelQuestExpirationTask();
+            }
+        }
+
+        public void expireQuest(Quest quest)
         {
             if (quest.forfeit(this))
             {
@@ -309,127 +287,61 @@ namespace Application.Core.Game.Players
 
         public void cancelQuestExpirationTask()
         {
-            Monitor.Enter(evtLock);
-            try
+
+            if (questExpireTask != null && !HasExpireableQuest)
             {
-                if (questExpireTask != null)
-                {
-                    questExpireTask.cancel(false);
-                    questExpireTask = null;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(evtLock);
+                questExpireTask.cancel(false);
+                questExpireTask = null;
             }
         }
 
         public void forfeitExpirableQuests()
         {
-            Monitor.Enter(evtLock);
-            try
+            var expirableQuests = Quests.Values.Where(x => x.getExpirationTime() > 0).ToArray();
+            foreach (var quest in expirableQuests)
             {
-                foreach (Quest quest in QuestExpirations.Keys)
-                {
-                    quest.forfeit(this);
-                }
-
-                QuestExpirations.Clear();
-            }
-            finally
-            {
-                Monitor.Exit(evtLock);
+                quest.getQuest().forfeit(this);
             }
         }
 
         public void questExpirationTask()
         {
-            Monitor.Enter(evtLock);
-            try
-            {
-                if (QuestExpirations.Count > 0)
-                {
-                    if (questExpireTask == null)
-                    {
-                        questExpireTask = Client.CurrentServerContainer.TimerManager.register(
-                            new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", runQuestExpireTask), TimeSpan.FromSeconds(10));
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(evtLock);
-            }
-        }
-
-        private void runQuestExpireTask()
-        {
-            Monitor.Enter(evtLock);
-            try
-            {
-                long timeNow = Client.CurrentServerContainer.getCurrentTime();
-                List<Quest> expireList = new();
-
-                foreach (var qe in QuestExpirations)
-                {
-                    if (qe.Value <= timeNow)
-                    {
-                        expireList.Add(qe.Key);
-                    }
-                }
-
-                if (expireList.Count > 0)
-                {
-                    foreach (Quest quest in expireList)
-                    {
-                        expireQuest(quest);
-                        QuestExpirations.Remove(quest);
-                    }
-
-                    if (QuestExpirations.Count == 0)
-                    {
-                        questExpireTask?.cancel(false);
-                        questExpireTask = null;
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(evtLock);
-            }
-        }
-
-        private void registerQuestExpire(Quest quest, TimeSpan time)
-        {
-            Monitor.Enter(evtLock);
-            try
+            if (HasExpireableQuest)
             {
                 if (questExpireTask == null)
                 {
-                    questExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
-                    {
-                        runQuestExpireTask();
-
-                    }, TimeSpan.FromSeconds(10));
+                    questExpireTask = Client.CurrentServer.Node.TimerManager.register(
+                        new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
+                        {
+                            Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));
+                        }), TimeSpan.FromSeconds(10));
                 }
-
-                QuestExpirations.AddOrUpdate(quest, (long)(Client.CurrentServerContainer.getCurrentTime() + time.TotalMilliseconds));
             }
-            finally
+
+        }
+
+
+        private void registerQuestExpire(Quest quest)
+        {
+            if (questExpireTask == null)
             {
-                Monitor.Exit(evtLock);
+                questExpireTask = Client.CurrentServer.Node.TimerManager.register(
+                    new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
+                    {
+                        Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));
+                    }), TimeSpan.FromSeconds(10));
             }
         }
 
         public void questTimeLimit(Quest quest, int seconds)
         {
-            registerQuestExpire(quest, TimeSpan.FromSeconds(seconds));
+            registerQuestExpire(quest);
             sendPacket(QuestPacket.AddQuestTimeLimit(quest.getId(), seconds * 1000));
         }
 
         public void questTimeLimit2(Quest quest, long expires)
         {
-            long timeLeft = expires - Client.CurrentServerContainer.getCurrentTime();
+            long timeLeft = expires - Client.CurrentServer.Node.getCurrentTime();
 
             if (timeLeft <= 0)
             {
@@ -437,7 +349,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                registerQuestExpire(quest, TimeSpan.FromMilliseconds(timeLeft));
+                registerQuestExpire(quest);
             }
         }
 

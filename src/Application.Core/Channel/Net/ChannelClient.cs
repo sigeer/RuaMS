@@ -1,16 +1,13 @@
-using Application.Core.Channel.ResourceTransaction;
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;
-using Application.Shared.Languages;
-using Application.Shared.Login;
 using Application.Shared.Net.Logging;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting;
-using scripting.Event;
 using scripting.npc;
 using tools;
 
@@ -30,12 +27,11 @@ namespace Application.Core.Channel.Net
 
         public override bool IsOnlined => Character != null;
 
-        public IPlayer? Character { get; private set; }
+        public Player? Character { get; private set; }
 
-        public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+        public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
         public WorldChannel CurrentServer { get; }
-        public WorldChannelServer CurrentServerContainer => CurrentServer.Container;
 
         public int Channel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
@@ -89,7 +85,7 @@ namespace Application.Core.Channel.Net
                 }
                 finally
                 {
-                    CurrentServerContainer.RemovePlayer(Character.Id);
+                    CurrentServer.RemovePlayerDeep(Character);
 
                     if (!IsServerTransition)
                         Character.logOff();
@@ -106,14 +102,14 @@ namespace Application.Core.Channel.Net
             // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
             if (!IsServerTransition && IsOnlined)
             {
-                CurrentServerContainer.Transport.SendAccountLogout(AccountEntity.Id);
+                CurrentServer.Node.Transport.SendAccountLogout(AccountEntity.Id);
             }
             else
             {
                 //比如切换频道  但是还没有成功进入新频道
-                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServerContainer.HasCharacteridInTransition(GetSessionRemoteHost()))
+                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServer.Node.HasCharacteridInTransition(GetSessionRemoteHost()))
                 {
-                    CurrentServerContainer.Transport.SendAccountLogout(AccountEntity.Id);
+                    CurrentServer.Node.Transport.SendAccountLogout(AccountEntity.Id);
                     IsServerTransition = false;
                 }
             }
@@ -127,18 +123,15 @@ namespace Application.Core.Channel.Net
         /// </summary>
         /// <param name="player"></param>
         /// <param name="serverTransition"></param>
-        private static void RemovePlayer(IPlayer player, bool serverTransition)
+        private static void RemovePlayer(Player player, bool serverTransition)
         {
             player.cancelMagicDoor();
-            player.setDisconnectedFromChannelWorld();
             player.cancelAllBuffs(true);
             player.cancelAllDebuffs();
             player.unregisterChairBuff();
 
             player.closePlayerInteractions();
             player.closePartySearchInteractions();
-
-            ResourceManager.Cancel(player);
 
             if (!serverTransition)
             {
@@ -160,7 +153,7 @@ namespace Application.Core.Channel.Net
 
                 if (player.getMap().getHPDec() > 0)
                 {
-                    player.getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(player);
+                    player.getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(player);
                 }
             }
         }
@@ -197,7 +190,12 @@ namespace Application.Core.Channel.Net
             Disconnect(false);
         }
 
-        protected override void ProcessPacket(InPacket packet)
+        protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
+        {
+            base.ChannelRead0(ctx, msg);
+            CurrentServer.Post(new HandleChannelPacketCommand(this, msg));
+        }
+        public override void ProcessPacket(InPacket packet)
         {
             short opcode = packet.readShort();
             var handler = _packetProcessor.GetPacketHandler(opcode);
@@ -211,7 +209,7 @@ namespace Application.Core.Channel.Net
             {
                 if (handler.ValidateState(this))
                 {
-                    CurrentServerContainer.MonitorManager.LogPacketIfMonitored(this, opcode, packet.getBytes());
+                    CurrentServer.NodeService.MonitorManager.LogPacketIfMonitored(this, opcode, packet.getBytes());
                     handler.HandlePacket(packet, this);
                 }
             }
@@ -236,12 +234,12 @@ namespace Application.Core.Channel.Net
         long lastNpcClick;
         public bool canClickNPC()
         {
-            return lastNpcClick + 500 < CurrentServerContainer.getCurrentTime();
+            return lastNpcClick + 500 < CurrentServer.Node.getCurrentTime();
         }
 
         public void setClickedNPC()
         {
-            lastNpcClick = CurrentServerContainer.getCurrentTime();
+            lastNpcClick = CurrentServer.Node.getCurrentTime();
         }
 
         public void removeClickedNPC()
@@ -265,7 +263,7 @@ namespace Application.Core.Channel.Net
 
         private void announceDisableServerMessage()
         {
-            if (!this.getChannelServer().Container.ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
+            if (!this.getChannelServer().ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
             {
                 sendPacket(PacketCreator.serverMessage(""));
             }
@@ -281,35 +279,32 @@ namespace Application.Core.Channel.Net
             sendPacket(PacketCreator.enableActions());
         }
 
-        object announceBossHPLock = new object();
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
-            lock (announceBossHPLock)
+            long timeNow = CurrentServer.Node.getCurrentTime();
+            int targetHash = OnlinedCharacter.getTargetHpBarHash();
+
+            if (mobHash != targetHash)
             {
-                long timeNow = CurrentServerContainer.getCurrentTime();
-                int targetHash = OnlinedCharacter.getTargetHpBarHash();
-
-                if (mobHash != targetHash)
+                if (timeNow - OnlinedCharacter.getTargetHpBarTime() >= 5 * 1000)
                 {
-                    if (timeNow - OnlinedCharacter.getTargetHpBarTime() >= 5 * 1000)
-                    {
-                        // is there a way to INTERRUPT this annoying thread running on the client that drops the boss bar after some time at every attack?
-                        announceDisableServerMessage();
-                        sendPacket(packet);
-
-                        OnlinedCharacter.setTargetHpBarHash(mobHash);
-                        OnlinedCharacter.setTargetHpBarTime(timeNow);
-                    }
-                }
-                else
-                {
+                    // is there a way to INTERRUPT this annoying thread running on the client that drops the boss bar after some time at every attack?
                     announceDisableServerMessage();
                     sendPacket(packet);
 
+                    OnlinedCharacter.setTargetHpBarHash(mobHash);
                     OnlinedCharacter.setTargetHpBarTime(timeNow);
                 }
             }
+            else
+            {
+                announceDisableServerMessage();
+                sendPacket(packet);
+
+                OnlinedCharacter.setTargetHpBarTime(timeNow);
+            }
         }
+
 
         public void setScriptEngine(string name, IEngine e)
         {
@@ -327,7 +322,7 @@ namespace Application.Core.Channel.Net
         }
         public bool GainCharacterSlot()
         {
-            return CurrentServerContainer.Transport.GainCharacterSlot(AccountId);
+            return CurrentServer.Node.Transport.GainCharacterSlot(AccountId);
         }
 
         public void ChangeChannel(int channel)
@@ -359,12 +354,14 @@ namespace Application.Core.Channel.Net
                 sendPacket(PacketCreator.enableActions());
                 return;
             }
+
             try
             {
-                CurrentServer.Container.DataService.SaveBuff(Character);
-                SetCharacterOnSessionTransitionState(Character.getId());
-                Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
-                sendPacket(PacketCreator.getChannelChange(socket));
+                Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
+                    .ContinueWith(t =>
+                    {
+                        CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
+                    });
             }
             catch (IOException e)
             {
@@ -394,9 +391,11 @@ namespace Application.Core.Channel.Net
             }
             Character.getCashShop().open(false);
 
-            SetCharacterOnSessionTransitionState(Character.getId());
-            Character.saveCharToDB(trigger: SyncCharacterTrigger.ChangeServer);
-            sendPacket(PacketCreator.getChannelChange(socket));
+            Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
+                .ContinueWith(t =>
+                {
+                    CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
+                });
         }
 
         int csattempt = 0;
@@ -417,7 +416,7 @@ namespace Application.Core.Channel.Net
             csattempt = 0;
         }
 
-        public void SetPlayer(IPlayer? player)
+        public void SetPlayer(Player? player)
         {
             Character = player;
         }

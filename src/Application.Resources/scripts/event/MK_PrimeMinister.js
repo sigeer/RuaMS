@@ -142,12 +142,6 @@ function changedMap(eim, player, mapid) {
     }
 }
 
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getMap().removePlayer(player);
-    player.setMap(entryMap);
-}
-
 function cancelSchedule() {}
 
 function dispose() {}

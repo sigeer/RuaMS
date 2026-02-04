@@ -54,19 +54,25 @@ jobs:
     - name: Publish Channel linux-x64
       run: dotnet publish "./src/Application.Host.Channel/Application.Host.Channel.csproj" -c Release -r linux-x64 -o ./app/channel-linux-x64 --self-contained true
 
-    - name: get latest version
+    - name: Get latest version
       run: |
           VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-    - name: Zip
+    - name: Compress
+      working-directory: app
       run: |
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip ./app/master-standalone-win-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip ./app/master-standalone-linux-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip ./app/master-win-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip ./app/master-linux-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip ./app/channel-win-x64
-          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.zip ./app/channel-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip master-standalone-win-x64
+          tar -czvf ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.tar.gz master-standalone-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip master-win-x64
+          tar -czvf ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.tar.gz master-linux-x64
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip channel-win-x64
+          tar -czvf ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.tar.gz channel-linux-x64
+
+    - name: Compress WZ resources
+      working-directory: src/Application.Resources
+      run: |
+          zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-WZ.zip wz*
 
     - name: Create Release and Upload Release Asset
       uses: softprops/action-gh-release@v1
@@ -79,8 +85,9 @@ jobs:
         prerelease: false
         files: |
           ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-win-x64.zip
-          ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-standalone-linux-x64.tar.gz
           ${{env.ReleaseName}}-v${{env.VERSION}}-master-win-x64.zip
-          ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-master-linux-x64.tar.gz
           ${{env.ReleaseName}}-v${{env.VERSION}}-channel-win-x64.zip
-          ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-channel-linux-x64.tar.gz
+          ${{env.ReleaseName}}-v${{env.VERSION}}-WZ.zip

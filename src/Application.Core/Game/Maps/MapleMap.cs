@@ -22,12 +22,12 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
@@ -35,6 +35,7 @@ using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Utility.Performance;
 using client.autoban;
 using client.inventory;
 using client.status;
@@ -51,7 +52,7 @@ using ZLinq;
 
 namespace Application.Core.Game.Maps;
 
-public class MapleMap : IMap
+public class MapleMap : IMap, INamedInstance
 {
     public string InstanceName { get; }
 
@@ -84,7 +85,7 @@ public class MapleMap : IMap
 
     private string mapName;
     private string streetName;
-    private MapEffect? mapEffect = null;
+    public MapEffect? MapEffect { get; set; }
 
     private bool dropsOn = true;
     private string onFirstUserEnter;
@@ -96,7 +97,7 @@ public class MapleMap : IMap
     private short itemMonitorTimeout;
     public TimeMob? TimeMob { get; set; }
     private bool _allowSummons = true; // All maps should have this true at the beginning
-    private IPlayer? mapOwner = null;
+    private Player? mapOwner = null;
     private long mapOwnerLastActivityTime = long.MaxValue;
 
     // events
@@ -117,13 +118,6 @@ public class MapleMap : IMap
     }
     public float ActualMonsterRate { get; private set; }
     public int Id { get; }
-
-    //locks
-    ReaderWriterLockSlim chrLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-    ReaderWriterLockSlim objectLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
-    private static object bndLock = new object();
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
     public MapTemplate SourceTemplate { get; }
@@ -144,9 +138,9 @@ public class MapleMap : IMap
         log = LogFactory.GetLogger($"Map/{range}");
 
         if (EventInstanceManager == null)
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:None_Map:{Id}";
+            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:None_Map:{Id}({GetHashCode()})";
         else
-            InstanceName = $"Channel:{worldChannel.getId()}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}_{GetHashCode()}";
+            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}({GetHashCode()})";
 
         #region portals
         portals = new();
@@ -213,30 +207,22 @@ public class MapleMap : IMap
         return mapArea;
     }
 
-    public void broadcastPacket(IPlayer source, Packet packet)
+    public void broadcastPacket(Player source, Packet packet)
     {
         broadcastPacket(packet, chr => chr != source);
     }
 
-    public void broadcastGMPacket(IPlayer source, Packet packet)
+    public void broadcastGMPacket(Player source, Packet packet)
     {
         broadcastPacket(packet, chr => chr != source && chr.gmLevel() >= source.gmLevel());
     }
 
-    private void broadcastPacket(Packet packet, Func<IPlayer, bool> chrFilter)
+    private void broadcastPacket(Packet packet, Func<Player, bool> chrFilter)
     {
-        chrLock.EnterReadLock();
-        try
+        foreach (var item in getAllPlayers())
         {
-            foreach (var item in getAllPlayers())
-            {
-                if (chrFilter(item))
-                    item.sendPacket(packet);
-            }
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
+            if (chrFilter(item))
+                item.sendPacket(packet);
         }
     }
 
@@ -290,16 +276,8 @@ public class MapleMap : IMap
             {
                 if (mr.getState() < 1)
                 {
-                    mr.lockReactor();
-                    try
-                    {
-                        mr.resetReactorActions(1);
-                        broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
-                    }
-                    finally
-                    {
-                        mr.unlockReactor();
-                    }
+                    mr.resetReactorActions(1);
+                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
                 }
             }
         }
@@ -319,31 +297,15 @@ public class MapleMap : IMap
 
     public void addPlayerNPCMapObject(IMapObject pnpcobject)
     {
-        objectLock.EnterWriteLock();
-        try
-        {
-            this.mapobjects.AddOrUpdate(pnpcobject.getObjectId(), pnpcobject);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        this.mapobjects.AddOrUpdate(pnpcobject.getObjectId(), pnpcobject);
     }
 
     public void addMapObject(IMapObject mapobject)
     {
         int curOID = getUsableOID();
 
-        objectLock.EnterWriteLock();
-        try
-        {
-            mapobject.setObjectId(curOID);
-            this.mapobjects.AddOrUpdate(curOID, mapobject);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        mapobject.setObjectId(curOID);
+        this.mapobjects.AddOrUpdate(curOID, mapobject);
     }
 
     public void addSelfDestructive(Monster mob)
@@ -359,36 +321,26 @@ public class MapleMap : IMap
         return this.selfDestructives.Remove(mapobjectid);
     }
 
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<IPlayer, bool>? condition = null)
+    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<Player, bool>? condition = null)
     {
-        List<IPlayer> inRangeCharacters = new();
+        List<Player> inRangeCharacters = new();
         int curOID = getUsableOID();
 
-        chrLock.EnterReadLock();
-        objectLock.EnterWriteLock();
-        try
+        mapobject.setObjectId(curOID);
+        this.mapobjects.AddOrUpdate(curOID, mapobject);
+        foreach (Player chr in getAllPlayers())
         {
-            mapobject.setObjectId(curOID);
-            this.mapobjects.AddOrUpdate(curOID, mapobject);
-            foreach (IPlayer chr in getAllPlayers())
+            if (condition == null || condition.Invoke(chr))
             {
-                if (condition == null || condition.Invoke(chr))
+                if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
                 {
-                    if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
-                    {
-                        inRangeCharacters.Add(chr);
-                        chr.addVisibleMapObject(mapobject);
-                    }
+                    inRangeCharacters.Add(chr);
+                    chr.addVisibleMapObject(mapobject);
                 }
             }
         }
-        finally
-        {
-            objectLock.ExitWriteLock();
-            chrLock.ExitReadLock();
-        }
 
-        foreach (IPlayer chr in inRangeCharacters)
+        foreach (Player chr in inRangeCharacters)
         {
             packetbakery?.Invoke(chr.Client);
         }
@@ -396,14 +348,14 @@ public class MapleMap : IMap
 
     //private void spawnRangedMapObject(IMapObject mapobject, DelayedPacketCreation packetbakery, SpawnCondition condition)
     //{
-    //    List<IPlayer> inRangeCharacters = new();
+    //    List<Player> inRangeCharacters = new();
 
     //    chrLock.EnterReadLock();
     //    try
     //    {
     //        int curOID = getUsableOID();
     //        mapobject.setObjectId(curOID);
-    //        foreach (IPlayer chr in characters)
+    //        foreach (Player chr in characters)
     //        {
     //            if (condition == null || (condition.canSpawn?.Invoke(chr) ?? false))
     //            {
@@ -420,7 +372,7 @@ public class MapleMap : IMap
     //        chrLock.ExitReadLock();
     //    }
 
-    //    foreach (IPlayer chr in inRangeCharacters)
+    //    foreach (Player chr in inRangeCharacters)
     //    {
     //        packetbakery.sendPackets?.Invoke(chr.getClient());
     //    }
@@ -428,54 +380,30 @@ public class MapleMap : IMap
 
     private int getUsableOID()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            int curOid;
+        int curOid;
 
-            // clashes with playernpc on curOid >= 2147000000, developernpc uses >= 2147483000
-            do
+        // clashes with playernpc on curOid >= 2147000000, developernpc uses >= 2147483000
+        do
+        {
+            if ((curOid = ++runningOid) >= 2147000000)
             {
-                if ((curOid = ++runningOid) >= 2147000000)
-                {
-                    runningOid = curOid = 1000000001;
-                }
-            } while (mapobjects.ContainsKey(curOid));
+                runningOid = curOid = 1000000001;
+            }
+        } while (mapobjects.ContainsKey(curOid));
 
-            return curOid;
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return curOid;
     }
 
     public void removeMapObject(int objectId)
     {
-        objectLock.EnterWriteLock();
-        try
-        {
-            mapobjects.Remove(objectId);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        mapobjects.Remove(objectId, out var mapObj);
     }
 
     void RemoveMapObjects(IEnumerable<int> objectIds)
     {
-        objectLock.EnterWriteLock();
-        try
+        foreach (var objectId in objectIds)
         {
-            foreach (var objectId in objectIds)
-            {
-                mapobjects.Remove(objectId);
-            }
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
+            mapobjects.Remove(objectId);
         }
     }
 
@@ -491,32 +419,24 @@ public class MapleMap : IMap
 
     public void generateMapDropRangeCache()
     {
-        Monitor.Enter(bndLock);
-        try
+        var bounds = MapGlobalData.dropBoundsCache.GetValueOrDefault(Id);
+
+        if (bounds != null)
         {
-            var bounds = MapGlobalData.dropBoundsCache.GetValueOrDefault(Id);
-
-            if (bounds != null)
-            {
-                xLimits = bounds.Value;
-            }
-            else
-            {
-                // assuming MINIMAP always have an equal-greater picture representation of the map area (players won't walk beyond the area known by the minimap).
-                Point lp = new Point(mapArea.X, mapArea.Y);
-                Point rp = new Point(mapArea.X + mapArea.Width, mapArea.Y);
-                Point fallback = new Point(mapArea.X + (mapArea.Width / 2), mapArea.Y);
-
-                lp = bsearchDropPos(lp, fallback);  // approximated leftmost fh node position
-                rp = bsearchDropPos(rp, fallback);  // approximated rightmost fh node position
-
-                xLimits = new(lp.X + 14, rp.X - 14);
-                MapGlobalData.dropBoundsCache.Add(Id, xLimits);
-            }
+            xLimits = bounds.Value;
         }
-        finally
+        else
         {
-            Monitor.Exit(bndLock);
+            // assuming MINIMAP always have an equal-greater picture representation of the map area (players won't walk beyond the area known by the minimap).
+            Point lp = new Point(mapArea.X, mapArea.Y);
+            Point rp = new Point(mapArea.X + mapArea.Width, mapArea.Y);
+            Point fallback = new Point(mapArea.X + (mapArea.Width / 2), mapArea.Y);
+
+            lp = bsearchDropPos(lp, fallback);  // approximated leftmost fh node position
+            rp = bsearchDropPos(rp, fallback);  // approximated rightmost fh node position
+
+            xLimits = new(lp.X + 14, rp.X - 14);
+            MapGlobalData.dropBoundsCache.TryAdd(Id, xLimits);
         }
     }
 
@@ -581,66 +501,22 @@ public class MapleMap : IMap
         return toStep != null && toStep.Value.distance(pos) <= 42;
     }
 
-    /**
-     * Fetches angle relative between spawn and door points where 3 O'Clock is 0
-     * and 12 O'Clock is 270 degrees
-     *
-     * @param spawnPoint
-     * @param doorPoint
-     * @return angle in degress from 0-360.
-     */
-    private static double getAngle(Point doorPoint, Point spawnPoint)
+
+    public bool TryGetEffectiveDoorPortal(out MysticDoorPortal? portal)
     {
-        double dx = doorPoint.X - spawnPoint.X;
-        // Minus to correct for coord re-mapping
-        double dy = -(doorPoint.Y - spawnPoint.Y);
-
-        double inRads = Math.Atan2(dy, dx);
-
-        // We need to map to coord system when 0 degree is at 3 O'clock, 270 at 12 O'clock
-        if (inRads < 0)
+        portal = null;
+        foreach (var item in portals.Values)
         {
-            inRads = Math.Abs(inRads);
+            if (item is MysticDoorPortal p && p.Door == null)
+            {
+                portal = p;
+                return true;
+            }
         }
-        else
-        {
-            inRads = 2 * Math.PI - inRads;
-        }
-
-        return (180 / Math.PI) * inRads;
+        return false;
     }
 
-    /**
-     * Converts angle in degrees to rounded cardinal coordinate.
-     *
-     * @param angle
-     * @return correspondent coordinate.
-     */
-    public static string getRoundedCoordinate(double angle)
-    {
-        string[] directions = { "E", "SE", "S", "SW", "W", "NW", "N", "NE", "E" };
-        return directions[(int)Math.Round(((angle % 360) / 45))];
-    }
-
-    public KeyValuePair<string, int>? getDoorPositionStatus(Point pos)
-    {
-        var portal = findClosestPlayerSpawnpoint(pos);
-        if (portal == null)
-            return null;
-
-        double angle = getAngle(portal.getPosition(), pos);
-        double distn = pos.distanceSq(portal.getPosition());
-
-        if (distn <= 777777.7)
-        {
-            return null;
-        }
-
-        distn = Math.Sqrt(distn);
-        return new(getRoundedCoordinate(angle), (int)distn);
-    }
-
-    private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, IPlayer chr, Monster mob, short dropDelay)
+    private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, Player chr, Monster mob, short dropDelay)
     {
         if (dropEntry.Count == 0)
         {
@@ -707,7 +583,7 @@ public class MapleMap : IMap
         return dIndex;
     }
 
-    private void dropFromMonster(IPlayer chr, Monster mob, bool useBaseRate, short dropDelay)
+    private void dropFromMonster(Player chr, Monster mob, bool useBaseRate, short dropDelay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -719,7 +595,7 @@ public class MapleMap : IMap
             dropType = DropType.FreeForAll_Explosive;
         else if (mob.getStats().isFfaLoot())
             dropType = DropType.FreeForAll;
-        else if (chr.getParty() != null)
+        else if (chr.Party > 0)
             dropType = DropType.OnwerWithTeam;
 
         float chrRate = 1;
@@ -761,28 +637,28 @@ public class MapleMap : IMap
     /// <param name="chr"></param>
     /// <param name="mob"></param>
     /// <param name="dropDelay"></param>
-    public void DropItemFromMonsterBySteal(List<DropEntry> list, IPlayer chr, Monster mob, short dropDelay)
+    public void DropItemFromMonsterBySteal(List<DropEntry> list, Player chr, Monster mob, short dropDelay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
             return;
         }
 
-        DropType droptype = (DropType)(chr.getParty() != null ? 1 : 0);
+        DropType droptype = (chr.Party > 0 ? DropType.OnwerWithTeam : DropType.OnlyOwner);
         int chRate = 1000000;   // 偷窃成功概率已经计算
         byte d = 1;
 
         dropItemsFromMonsterOnMap(list, d, chRate, droptype, chr, mob, dropDelay);
     }
 
-    public void dropFromFriendlyMonster(IPlayer chr, Monster mob)
+    public void dropFromFriendlyMonster(Player chr, Monster mob)
     {
         dropFromMonster(chr, mob, true, 0);
     }
 
-    public void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short dropDelay = 0)
+    public void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short dropDelay = 0)
     {
-        spawnDrop(drop, dropPos, reactor, chr, false, (DropType)(chr.getParty() != null ? 1 : 0), questid, dropDelay);
+        spawnDrop(drop, dropPos, reactor, chr, false, (chr.Party > 0 ? DropType.OnwerWithTeam : DropType.OnlyOwner), questid, dropDelay);
     }
 
     private void stopItemMonitor()
@@ -799,121 +675,83 @@ public class MapleMap : IMap
 
     private void cleanItemMonitor()
     {
-        objectLock.EnterWriteLock();
-        try
-        {
-            registeredDrops = new(registeredDrops.Where(x => x != null));
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        registeredDrops = new(registeredDrops.Where(x => x != null));
     }
 
     private void startItemMonitor()
     {
-        chrLock.EnterWriteLock();
-        try
+        if (itemMonitor != null)
         {
-            if (itemMonitor != null)
+            return;
+        }
+
+        itemMonitor = ChannelServer.Node.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
+        {
+            ChannelServer.Post(new MapItemMonitorCommand(this));
+        }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
+
+        expireItemsTask = ChannelServer.Node.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", () =>
+        {
+            ChannelServer.Post(new MapItemExpiredCommand(this));
+        }),
+            YamlConfig.config.server.ITEM_EXPIRE_CHECK,
+            YamlConfig.config.server.ITEM_EXPIRE_CHECK);
+
+        itemMonitorTimeout = 1;
+    }
+
+    public void ProcessItemMonitor()
+    {
+        if (characters.Count == 0)
+        {
+            if (itemMonitorTimeout == 0)
             {
+                if (itemMonitor != null)
+                {
+                    stopItemMonitor();
+                    aggroMonitor.stopAggroCoordinator();
+                }
+
                 return;
             }
-
-            itemMonitor = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
+            else
             {
-                chrLock.EnterWriteLock();
-                try
-                {
-                    if (characters.Count == 0)
-                    {
-                        if (itemMonitorTimeout == 0)
-                        {
-                            if (itemMonitor != null)
-                            {
-                                stopItemMonitor();
-                                aggroMonitor.stopAggroCoordinator();
-                            }
-
-                            return;
-                        }
-                        else
-                        {
-                            itemMonitorTimeout--;
-                        }
-                    }
-                    else
-                    {
-                        itemMonitorTimeout = 1;
-                    }
-                }
-                finally
-                {
-                    chrLock.ExitWriteLock();
-                }
-
-                bool tryClean;
-                objectLock.EnterReadLock();
-                try
-                {
-                    tryClean = registeredDrops.Count > 70;
-                }
-                finally
-                {
-                    objectLock.ExitReadLock();
-                }
-
-                if (tryClean)
-                {
-                    cleanItemMonitor();
-                }
-            }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
-
-            expireItemsTask = ChannelServer.Container.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", makeDisappearExpiredItemDrops),
-                YamlConfig.config.server.ITEM_EXPIRE_CHECK,
-                YamlConfig.config.server.ITEM_EXPIRE_CHECK);
-
+                itemMonitorTimeout--;
+            }
+        }
+        else
+        {
             itemMonitorTimeout = 1;
         }
-        finally
+
+        bool tryClean;
+
+        tryClean = registeredDrops.Count > 70;
+
+
+        if (tryClean)
         {
-            chrLock.ExitWriteLock();
+            cleanItemMonitor();
         }
     }
 
     private bool hasItemMonitor()
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return itemMonitor != null;
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return itemMonitor != null;
     }
 
-    private void makeDisappearExpiredItemDrops()
+    public void makeDisappearExpiredItemDrops()
     {
         List<MapItem> toDisappear = new();
 
-        objectLock.EnterReadLock();
-        try
-        {
-            long timeNow = ChannelServer.Container.getCurrentTime();
+        long timeNow = ChannelServer.Node.getCurrentTime();
 
-            foreach (var it in getDroppedItems())
-            {
-                if (it.ExpiredTime < timeNow)
-                {
-                    toDisappear.Add(it);
-                }
-            }
-        }
-        finally
+        foreach (var it in getDroppedItems())
         {
-            objectLock.ExitReadLock();
+            if (it.ExpiredTime < timeNow)
+            {
+                toDisappear.Add(it);
+            }
         }
 
         foreach (MapItem mmi in toDisappear)
@@ -922,7 +760,7 @@ public class MapleMap : IMap
         }
     }
 
-    public List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<IPlayer> partyMembers, IPlayer? partyLeaver)
+    public List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<Player> partyMembers, Player? partyLeaver)
     {
         List<MapItem> partyDrops = new();
 
@@ -930,48 +768,40 @@ public class MapleMap : IMap
         {
             if (mdrop.getOwnerId() == charid)
             {
-                mdrop.lockItem();
-                try
+                if (mdrop.isPickedUp())
                 {
-                    if (mdrop.isPickedUp())
+                    continue;
+                }
+
+                mdrop.setPartyOwnerId(partyid);
+
+                Packet removePacket = PacketCreator.silentRemoveItemFromMap(mdrop.getObjectId());
+                Packet updatePacket = PacketCreator.updateMapItemObject(mdrop, partyLeaver == null);
+
+                foreach (Player mc in partyMembers)
+                {
+                    if (this.Equals(mc.getMap()))
                     {
-                        continue;
-                    }
+                        mc.sendPacket(removePacket);
 
-                    mdrop.setPartyOwnerId(partyid);
-
-                    Packet removePacket = PacketCreator.silentRemoveItemFromMap(mdrop.getObjectId());
-                    Packet updatePacket = PacketCreator.updateMapItemObject(mdrop, partyLeaver == null);
-
-                    foreach (IPlayer mc in partyMembers)
-                    {
-                        if (this.Equals(mc.getMap()))
+                        if (mc.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
                         {
-                            mc.sendPacket(removePacket);
-
-                            if (mc.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
-                            {
-                                mc.sendPacket(updatePacket);
-                            }
-                        }
-                    }
-
-                    if (partyLeaver != null)
-                    {
-                        if (this.Equals(partyLeaver.getMap()))
-                        {
-                            partyLeaver.sendPacket(removePacket);
-
-                            if (partyLeaver.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
-                            {
-                                partyLeaver.sendPacket(PacketCreator.updateMapItemObject(mdrop, true));
-                            }
+                            mc.sendPacket(updatePacket);
                         }
                     }
                 }
-                finally
+
+                if (partyLeaver != null)
                 {
-                    mdrop.unlockItem();
+                    if (this.Equals(partyLeaver.getMap()))
+                    {
+                        partyLeaver.sendPacket(removePacket);
+
+                        if (partyLeaver.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
+                        {
+                            partyLeaver.sendPacket(PacketCreator.updateMapItemObject(mdrop, true));
+                        }
+                    }
                 }
             }
             else if (partyid != -1 && mdrop.getPartyOwnerId() == partyid)
@@ -983,42 +813,34 @@ public class MapleMap : IMap
         return partyDrops;
     }
 
-    public void updatePartyItemDropsToNewcomer(IPlayer newcomer, List<MapItem> partyItems)
+    public void updatePartyItemDropsToNewcomer(Player newcomer, List<MapItem> partyItems)
     {
         foreach (MapItem mdrop in partyItems)
         {
-            mdrop.lockItem();
-            try
+            if (mdrop.isPickedUp())
             {
-                if (mdrop.isPickedUp())
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                Packet removePacket = PacketCreator.silentRemoveItemFromMap(mdrop.getObjectId());
-                Packet updatePacket = PacketCreator.updateMapItemObject(mdrop, true);
+            Packet removePacket = PacketCreator.silentRemoveItemFromMap(mdrop.getObjectId());
+            Packet updatePacket = PacketCreator.updateMapItemObject(mdrop, true);
 
-                if (newcomer != null)
+            if (newcomer != null)
+            {
+                if (this.Equals(newcomer.getMap()))
                 {
-                    if (this.Equals(newcomer.getMap()))
+                    newcomer.sendPacket(removePacket);
+
+                    if (newcomer.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
                     {
-                        newcomer.sendPacket(removePacket);
-
-                        if (newcomer.needQuestItem(mdrop.getQuest(), mdrop.getItemId()))
-                        {
-                            newcomer.sendPacket(updatePacket);
-                        }
+                        newcomer.sendPacket(updatePacket);
                     }
                 }
-            }
-            finally
-            {
-                mdrop.unlockItem();
             }
         }
     }
 
-    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
+    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, Player chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
     {
         var validPos = calcDropPos(dropPos, dropper.getPosition());
 
@@ -1029,15 +851,7 @@ public class MapleMap : IMap
 
             if (chr1.needQuestItem(questid, idrop.getItemId()))
             {
-                mdrop.lockItem();
-                try
-                {
-                    c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
-                }
-                finally
-                {
-                    mdrop.unlockItem();
-                }
+                c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
             }
         }, null);
 
@@ -1045,57 +859,33 @@ public class MapleMap : IMap
         activateItemReactors(mdrop, chr.getClient());
     }
 
-    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, DropType droptype, short dropDelay = 0)
+    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
     {
         var validPos = calcDropPos(position, dropper.getPosition());
 
         MapItem mdrop = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
         spawnAndAddRangedMapObject(mdrop, c =>
         {
-            mdrop.lockItem();
-            try
-            {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
-            }
-            finally
-            {
-                mdrop.unlockItem();
-            }
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
         }, null);
 
         instantiateItemDrop(mdrop);
     }
 
-    public void disappearingItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos)
+    public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
     {
         Point droppos = calcDropPos(pos, dropper.getPosition());
         MapItem mdrop = new MapItem(item, droppos, dropper, owner, DropType.OnwerWithTeam, false);
 
-        mdrop.lockItem();
-        try
-        {
-            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
-        }
-        finally
-        {
-            mdrop.unlockItem();
-        }
+        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
     }
 
-    public void disappearingMesoDrop(int meso, IMapObject dropper, IPlayer owner, Point pos)
+    public void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos)
     {
         Point droppos = calcDropPos(pos, dropper.getPosition());
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, DropType.OnwerWithTeam, false);
 
-        mdrop.lockItem();
-        try
-        {
-            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
-        }
-        finally
-        {
-            mdrop.unlockItem();
-        }
+        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
     }
 
     public Monster? getMonsterById(int id)
@@ -1138,7 +928,7 @@ public class MapleMap : IMap
         return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
     }
 
-    public bool damageMonster(IPlayer chr, Monster monster, int damage, short dropDelay = 0)
+    public bool damageMonster(Player chr, Monster monster, int damage, short dropDelay = 0)
     {
         if (monster.getId() == MobId.ZAKUM_1)
         {
@@ -1170,56 +960,48 @@ public class MapleMap : IMap
 
     public void broadcastBalrogVictory(string leaderName)
     {
-        ChannelServer.Container.SendDropMessage(6,
-            "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.");
+        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
+            "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive."));
     }
 
     public void broadcastHorntailVictory()
     {
-        ChannelServer.Container.SendDropMessage(6,
-            "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
+        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
+            "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!"));
     }
 
     public void broadcastZakumVictory()
     {
-        ChannelServer.Container.SendDropMessage(6,
-            "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!");
+        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
+            "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!"));
     }
 
     public void broadcastPinkBeanVictory(int channel)
     {
-        ChannelServer.Container.SendDropMessage(6,
-            "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!");
+        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
+            "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!"));
     }
 
     public bool removeKilledMonsterObject(Monster monster)
     {
-        monster.lockMonster();
-        try
+        if (monster.getHp() < 0)
         {
-            if (monster.getHp() < 0)
-            {
-                return false;
-            }
-
-            spawnedMonstersOnMap.decrementAndGet();
-            removeMapObject(monster);
-            monster.disposeMapObject();
-            if (monster.hasBossHPBar())
-            {
-                // thanks resinate for noticing boss HPbar not clearing after mob defeat in certain scenarios
-                broadcastBossHpMessage(monster, monster.GetHashCode(), monster.makeBossHPBarPacket(), monster.getPosition());
-            }
-
-            return true;
+            return false;
         }
-        finally
+
+        spawnedMonstersOnMap.decrementAndGet();
+        removeMapObject(monster);
+        monster.disposeMapObject();
+        if (monster.hasBossHPBar())
         {
-            monster.unlockMonster();
+            // thanks resinate for noticing boss HPbar not clearing after mob defeat in certain scenarios
+            broadcastBossHpMessage(monster, monster.GetHashCode(), monster.makeBossHPBarPacket(), monster.getPosition());
         }
+
+        return true;
     }
-    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, short dropDelay = 0) => killMonster(monster, chr, withDrops, 1, dropDelay);
-    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation, short dropDelay)
+    public void killMonster(Monster? monster, Player? chr, bool withDrops, short dropDelay = 0) => killMonster(monster, chr, withDrops, 1, dropDelay);
+    public void killMonster(Monster? monster, Player? chr, bool withDrops, int animation, short dropDelay)
     {
         if (monster == null)
         {
@@ -1243,7 +1025,7 @@ public class MapleMap : IMap
                 {
                     if (monster.getStats().getLevel() >= chr.getLevel() + 30 && !chr.isGM())
                     {
-                        ChannelServer.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
+                        ChannelServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
                     }
 
                     /*if (chr.getQuest(Quest.getInstance(29400)).getStatus().Equals(QuestStatus.Status.STARTED)) {
@@ -1259,7 +1041,7 @@ public class MapleMap : IMap
                         ItemInformationProvider mii = ItemInformationProvider.getInstance();
                         foreach (IMapObject mmo in getAllPlayers())
                         {
-                            IPlayer character = (IPlayer)mmo;
+                            Player character = (Player)mmo;
                             if (character.isAlive())
                             {
                                 var statEffect = mii.getItemEffect(buff)!;
@@ -1317,7 +1099,7 @@ public class MapleMap : IMap
 
                     if (monster.hasBossHPBar())
                     {
-                        foreach (IPlayer mc in this.getAllPlayers())
+                        foreach (Player mc in this.getAllPlayers())
                         {
                             if (mc.getTargetHpBarHash() == monster.GetHashCode())
                             {
@@ -1346,7 +1128,7 @@ public class MapleMap : IMap
 
     public void killMonster(int mobId)
     {
-        IPlayer? chr = getAllPlayers().ElementAtOrDefault(0);
+        Player? chr = getAllPlayers().ElementAtOrDefault(0);
 
         ProcessMonster(mob =>
         {
@@ -1359,11 +1141,11 @@ public class MapleMap : IMap
 
     public void killMonsterWithDrops(int mobId)
     {
-        Dictionary<int, IPlayer> mapChars = this.getMapPlayers();
+        Dictionary<int, Player> mapChars = this.getMapPlayers();
 
         if (mapChars.Count > 0)
         {
-            IPlayer defaultChr = mapChars.FirstOrDefault().Value;
+            Player defaultChr = mapChars.FirstOrDefault().Value;
 
             ProcessMonster(mob =>
             {
@@ -1441,21 +1223,13 @@ public class MapleMap : IMap
     {
         List<Reactor> list = new();
 
-        objectLock.EnterReadLock();
-        try
+        foreach (IMapObject o in getMapObjects())
         {
-            foreach (IMapObject o in getMapObjects())
+            if (o.getType() == MapObjectType.REACTOR)
             {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    Reactor r = ((Reactor)o);
-                    list.Add(r);
-                }
+                Reactor r = ((Reactor)o);
+                list.Add(r);
             }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
         }
 
         resetReactors(list);
@@ -1470,17 +1244,9 @@ public class MapleMap : IMap
                 continue;
             }
 
-            r.lockReactor();
-            try
-            {
-                r.resetReactorActions(0);
-                r.setAlive(true);
-                broadcastMessage(PacketCreator.triggerReactor(r, 0));
-            }
-            finally
-            {
-                r.unlockReactor();
-            }
+            r.resetReactorActions(0);
+            r.setAlive(true);
+            broadcastMessage(PacketCreator.triggerReactor(r, 0));
         }
     }
 
@@ -1512,23 +1278,15 @@ public class MapleMap : IMap
         List<IMapObject> listObjects = new();
         List<Reactor> targets = new();
 
-        objectLock.EnterReadLock();
-        try
+        foreach (object ob in list)
         {
-            foreach (object ob in list)
+            if (ob is IMapObject mmo)
             {
-                if (ob is IMapObject mmo)
+                if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
                 {
-                    if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
-                    {
-                        listObjects.Add(mmo);
-                    }
+                    listObjects.Add(mmo);
                 }
             }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
         }
 
         foreach (var obj in listObjects)
@@ -1547,15 +1305,7 @@ public class MapleMap : IMap
 
     private Dictionary<int, IMapObject> getCopyMapObjects()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return new(mapobjects);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return new(mapobjects);
     }
 
     public NPC? getNPCById(int id)
@@ -1577,23 +1327,15 @@ public class MapleMap : IMap
 
     public bool containsNPC(int npcid)
     {
-        objectLock.EnterReadLock();
-        try
+        foreach (var obj in getMapObjects())
         {
-            foreach (var obj in getMapObjects())
+            if (obj.getType() == MapObjectType.NPC)
             {
-                if (obj.getType() == MapObjectType.NPC)
+                if (((NPC)obj).getId() == npcid)
                 {
-                    if (((NPC)obj).getId() == npcid)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
         }
         return false;
     }
@@ -1603,39 +1345,21 @@ public class MapleMap : IMap
         // assumption: there's at most one of the same NPC in a map.
         var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
 
-        chrLock.EnterReadLock();
-        objectLock.EnterWriteLock();
-        try
+        foreach (IMapObject obj in npcs)
         {
-            foreach (IMapObject obj in npcs)
+            if (((NPC)obj).getId() == npcid)
             {
-                if (((NPC)obj).getId() == npcid)
-                {
-                    broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
-                    broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
+                broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
+                broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
 
-                    removeMapObject(obj.getObjectId());
-                }
+                removeMapObject(obj.getObjectId());
             }
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-            chrLock.ExitReadLock();
         }
     }
 
     public IMapObject? getMapObject(int oid)
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return mapobjects.GetValueOrDefault(oid);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return mapobjects.GetValueOrDefault(oid);
     }
 
     /**
@@ -1659,74 +1383,52 @@ public class MapleMap : IMap
 
     public Reactor? getReactorById(int Id)
     {
-        objectLock.EnterReadLock();
-        try
+        foreach (var obj in getMapObjects())
         {
-            foreach (var obj in getMapObjects())
+            if (obj.getType() == MapObjectType.REACTOR)
             {
-                if (obj.getType() == MapObjectType.REACTOR)
+                if (((Reactor)obj).getId() == Id)
                 {
-                    if (((Reactor)obj).getId() == Id)
-                    {
-                        return (Reactor)obj;
-                    }
+                    return (Reactor)obj;
                 }
             }
-            return null;
         }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return null;
     }
 
     public List<Reactor> getReactorsByIdRange(int first, int last)
     {
         List<Reactor> list = new();
 
-        objectLock.EnterReadLock();
-        try
-        {
-            foreach (var obj in getMapObjects())
-            {
-                if (obj.getType() == MapObjectType.REACTOR)
-                {
-                    Reactor mr = (Reactor)obj;
 
-                    if (mr.getId() >= first && mr.getId() <= last)
-                    {
-                        list.Add(mr);
-                    }
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                Reactor mr = (Reactor)obj;
+
+                if (mr.getId() >= first && mr.getId() <= last)
+                {
+                    list.Add(mr);
                 }
             }
+        }
 
-            return list;
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return list;
     }
 
     public Reactor? getReactorByName(string name)
     {
-        objectLock.EnterReadLock();
-        try
+
+        foreach (IMapObject obj in getMapObjects())
         {
-            foreach (IMapObject obj in getMapObjects())
+            if (obj.getType() == MapObjectType.REACTOR)
             {
-                if (obj.getType() == MapObjectType.REACTOR)
+                if (((Reactor)obj).getName().Equals(name))
                 {
-                    if (((Reactor)obj).getName().Equals(name))
-                    {
-                        return (Reactor)obj;
-                    }
+                    return (Reactor)obj;
                 }
             }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
         }
         return null;
     }
@@ -1844,24 +1546,16 @@ public class MapleMap : IMap
         var selfDestruction = monster.getStats().selfDestruction();
         if (monster.getStats().removeAfter() > 0 || selfDestruction != null && selfDestruction.Hp < 0)
         {
-            Action removeAfterAction;
+            IWorldChannelCommand removeAfterAction;
 
             if (selfDestruction == null)
             {
-                removeAfterAction = () =>
-                {
-                    killMonster(monster, null, false);
-                };
-
+                removeAfterAction = new KillMonsterCommand(this, monster, null, 0);
                 registerMapSchedule(removeAfterAction, monster.getStats().removeAfter() * 1000);
             }
             else
             {
-                removeAfterAction = () =>
-                {
-                    killMonster(monster, null, false, selfDestruction.Action);
-                };
-
+                removeAfterAction = new KillMonsterCommand(this, monster, null, selfDestruction.Action);
                 registerMapSchedule(removeAfterAction, selfDestruction.RemoveAfter * 1000);
             }
 
@@ -1881,10 +1575,7 @@ public class MapleMap : IMap
 
     private List<SpawnPoint> getMonsterSpawn()
     {
-        lock (monsterSpawn)
-        {
-            return new(monsterSpawn);
-        }
+        return new(monsterSpawn);
     }
 
     public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
@@ -2061,61 +1752,28 @@ public class MapleMap : IMap
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        var tMan = ChannelServer.Container.TimerManager;
+        var tMan = ChannelServer.Node.TimerManager;
         ScheduledFuture? poisonSchedule = null;
-        Action? poisonTask = null;
-        if (poison)
+        if (mist is PlayerMist playerMist)
         {
-            var playerMist = (mist as PlayerMist)!;
-            poisonTask = () =>
+            poisonSchedule = tMan.register(new MapTaskBase(this, "PlayerMistTask", () =>
             {
-                List<IMapObject> affectedMonsters = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.MONSTER));
-                foreach (IMapObject mo in affectedMonsters)
-                {
-                    if (playerMist.makeChanceResult())
-                    {
-                        MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), playerMist.getSourceSkill());
-                        ((Monster)mo).applyStatus(playerMist.getOwner(), poisonEffect, true, duration);
-                    }
-                }
-            };
-
+                ChannelServer.Post(new PlayerMistEffectCommand(playerMist));
+            }), 2000, 2500);
         }
-        else if (recovery)
-        {
-            var playerMist = (mist as PlayerMist)!;
-            poisonTask = () =>
-            {
-                List<IMapObject> players = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.PLAYER));
-                foreach (IMapObject mo in players)
-                {
-                    if (playerMist.makeChanceResult())
-                    {
-                        IPlayer chr = (IPlayer)mo;
-                        if (playerMist.getOwner().getId() == chr.getId() || playerMist.getOwner().getParty() != null && playerMist.getOwner().getParty()!.containsMembers(chr.Id))
-                        {
-                            chr.ChangeMP(playerMist.getSourceSkill().getEffect(chr.getSkillLevel(playerMist.getSourceSkill().getId())).getX() * chr.MP / 100);
-                        }
-                    }
-                }
-            };
-        }
-
-        if (poisonTask != null)
-            poisonSchedule = tMan.register(new MapTaskBase(this, "PoisonTask", poisonTask), 2000, 2500);
 
         Action mistSchedule = () =>
         {
-            removeMapObject(mist);
             if (poisonSchedule != null)
             {
                 poisonSchedule.cancel(false);
             }
-            broadcastMessage(mist.makeDestroyData());
+
+            ChannelServer.Post(new MapMistRemoveCommand(mist));
         };
 
         MobMistService service = this.getChannelServer().MobMistService;
-        service.registerMobMistCancelAction(mapid, mistSchedule, duration);
+        service.registerMobMistCancelAction(mapid, new MapMistRemoveCommand(mist), duration);
     }
 
     public void spawnKite(Kite kite)
@@ -2123,21 +1781,15 @@ public class MapleMap : IMap
         addMapObject(kite);
         broadcastMessage(kite.makeSpawnData());
 
-        var expireKite = () =>
-        {
-            removeMapObject(kite);
-            broadcastMessage(kite.makeDestroyData());
-        };
-
-        ChannelServer.Container.MapObjectManager.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
+        ChannelServer.MapObjectManager.RegisterTimedMapObject(kite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
-    public void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
+    public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
     {
         spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
     }
 
-    private void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, DropType dropType, bool playerDrop)
+    private void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, DropType dropType, bool playerDrop)
     {
         if (FieldLimit.DROP_LIMIT.check(this.getFieldLimit()))
         {
@@ -2151,43 +1803,30 @@ public class MapleMap : IMap
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
-            mdrop.lockItem();
-            try
-            {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, 0));
-            }
-            finally
-            {
-                mdrop.unlockItem();
-            }
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, 0));
         }, null);
 
         /// 不明，对比<see cref="spawnDrop"/> 多出来的一段 是否可以移除？
-        mdrop.lockItem();
-        try
-        {
-            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 0);
-        }
-        finally
-        {
-            mdrop.unlockItem();
-        }
+
+        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 0);
 
         instantiateItemDrop(mdrop);
         activateItemReactors(mdrop, owner.getClient());
     }
 
-    private void registerMapSchedule(AbstractRunnable r, long delay)
+    private void registerMapSchedule(IWorldChannelCommand r, long delay)
     {
         OverallService service = this.getChannelServer().OverallService;
         service.registerOverallAction(mapid, r, delay);
     }
 
-    private void registerMapSchedule(Action r, long delay) => registerMapSchedule(TempRunnable.Parse(r), delay);
-
     private void activateItemReactors(MapItem drop, IChannelClient c)
     {
         var item = drop.getItem();
+        if (item == null)
+        {
+            return;
+        }
 
         foreach (IMapObject o in getReactors())
         {
@@ -2201,7 +1840,7 @@ public class MapleMap : IMap
 
                     if (react.getArea().Contains(drop.getPosition()))
                     {
-                        registerMapSchedule(new ActivateItemReactor(this, drop, react, c), 5000);
+                        registerMapSchedule(new ReactorHitFromMapItemCommand(drop, react), 5000);
                         break;
                     }
                 }
@@ -2221,29 +1860,21 @@ public class MapleMap : IMap
 
             foreach (MapItem drop in list)
             {
-                drop.lockItem();
-                try
+                if (!drop.isPickedUp())
                 {
-                    if (!drop.isPickedUp())
-                    {
-                        var item = drop.getItem();
+                    var item = drop.getItem();
 
-                        if (item != null && reactItem == item.getItemId() && reactQty == item.getQuantity())
+                    if (item != null && reactItem == item.getItemId() && reactQty == item.getQuantity())
+                    {
+                        if (reactArea.Contains(drop.getPosition()))
                         {
-                            if (reactArea.Contains(drop.getPosition()))
+                            var owner = drop.getOwnerClient();
+                            if (owner != null)
                             {
-                                var owner = drop.getOwnerClient();
-                                if (owner != null)
-                                {
-                                    registerMapSchedule(new ActivateItemReactor(this, drop, react, owner), 5000);
-                                }
+                                registerMapSchedule(new ReactorHitFromMapItemCommand(drop, react), 5000);
                             }
                         }
                     }
-                }
-                finally
-                {
-                    drop.unlockItem();
                 }
             }
         }
@@ -2251,20 +1882,14 @@ public class MapleMap : IMap
 
     public void startMapEffect(string msg, int itemId, long time = 30000)
     {
-        if (mapEffect != null)
+        if (MapEffect != null)
         {
             return;
         }
-        mapEffect = new MapEffect(msg, itemId);
-        broadcastMessage(mapEffect.makeStartData());
+        MapEffect = new MapEffect(msg, itemId);
+        broadcastMessage(MapEffect.makeStartData());
 
-        Action r = () =>
-        {
-            broadcastMessage(mapEffect.makeDestroyData());
-            mapEffect = null;
-        };
-
-        registerMapSchedule(r, time);
+        registerMapSchedule(new MapClearMapEffectCommand(this), time);
     }
 
 
@@ -2306,7 +1931,7 @@ public class MapleMap : IMap
     }
     */
 
-    public void addPlayerPuppet(IPlayer player)
+    public void addPlayerPuppet(Player player)
     {
         ProcessMonster(mm =>
         {
@@ -2314,7 +1939,7 @@ public class MapleMap : IMap
         });
     }
 
-    public void removePlayerPuppet(IPlayer player)
+    public void removePlayerPuppet(Player player)
     {
         ProcessMonster(mm =>
         {
@@ -2324,7 +1949,7 @@ public class MapleMap : IMap
 
     public void broadcastMessage(Packet packet)
     {
-        Broadcast(null, double.PositiveInfinity, null, e => e.sendPacket(packet));
+        Broadcast(-1, double.PositiveInfinity, null, e => e.sendPacket(packet));
     }
 
     public void broadcastGMMessage(Packet packet)
@@ -2340,7 +1965,7 @@ public class MapleMap : IMap
      * @param repeatToSource
      * @param ranged
      */
-    public void broadcastMessage(IPlayer source, Packet packet, bool repeatToSource, bool ranged = false)
+    public void broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false)
     {
         broadcastMessage(repeatToSource ? null : source, packet, ranged ? getRangedDistance() : double.PositiveInfinity, source.getPosition());
     }
@@ -2363,14 +1988,14 @@ public class MapleMap : IMap
      * @param packet
      * @param rangedFrom
      */
-    public void broadcastMessage(IPlayer? source, Packet packet, Point rangedFrom)
+    public void broadcastMessage(Player? source, Packet packet, Point rangedFrom)
     {
         broadcastMessage(source, packet, getRangedDistance(), rangedFrom);
     }
 
-    private void broadcastMessage(IPlayer? source, Packet packet, double rangeSq, Point? rangedFrom)
+    private void broadcastMessage(Player? source, Packet packet, double rangeSq, Point? rangedFrom)
     {
-        Broadcast(source, rangeSq, rangedFrom, chr => chr.sendPacket(packet));
+        Broadcast(source?.Id ?? -1, rangeSq, rangedFrom, chr => chr.sendPacket(packet));
     }
 
     private void updateBossSpawn(Monster monster)
@@ -2390,12 +2015,12 @@ public class MapleMap : IMap
 
     public void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null)
     {
-        broadcastBossHpMessage(mm, bossHash, null, packet, getRangedDistance(), rangedFrom);
+        broadcastBossHpMessage(mm, bossHash, packet, getRangedDistance(), rangedFrom);
     }
 
-    private void broadcastBossHpMessage(Monster mm, int bossHash, IPlayer? source, Packet packet, double rangeSq, Point? rangedFrom)
+    private void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, double rangeSq, Point? rangedFrom)
     {
-        Broadcast(source, rangeSq, rangedFrom, chr =>
+        Broadcast(-1, rangeSq, rangedFrom, chr =>
         {
             chr.getClient().announceBossHpBar(mm, bossHash, packet);
         });
@@ -2403,43 +2028,29 @@ public class MapleMap : IMap
 
     private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, double rangeSq = double.PositiveInfinity, Point? rangedFrom = null, short dropDelay = 0)
     {
-        Broadcast(null, rangeSq, rangedFrom, chr =>
+        Broadcast(-1, rangeSq, rangedFrom, chr =>
         {
             chr.sendPacket(PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay));
         });
     }
 
-    public void broadcastSpawnPlayerMapObjectMessage(IPlayer source, IPlayer player, bool enteringField)
+    public void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
     {
         broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, false);
     }
 
-    public void broadcastGMSpawnPlayerMapObjectMessage(IPlayer source, IPlayer player, bool enteringField)
+    public void broadcastGMSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
     {
         broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, true);
     }
 
-    private void broadcastSpawnPlayerMapObjectMessage(IPlayer source, IPlayer player, bool enteringField, bool gmBroadcast)
+    private void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField, bool gmBroadcast)
     {
-        chrLock.EnterReadLock();
-        try
+        if (gmBroadcast)
         {
-            if (gmBroadcast)
+            foreach (Player chr in getAllPlayers())
             {
-                foreach (IPlayer chr in getAllPlayers())
-                {
-                    if (chr.isGM())
-                    {
-                        if (chr != source)
-                        {
-                            chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (IPlayer chr in getAllPlayers())
+                if (chr.isGM())
                 {
                     if (chr != source)
                     {
@@ -2448,28 +2059,26 @@ public class MapleMap : IMap
                 }
             }
         }
-        finally
+        else
         {
-            chrLock.ExitReadLock();
-        }
-    }
-
-    public void broadcastUpdateCharLookMessage(IPlayer source, IPlayer player)
-    {
-        chrLock.EnterReadLock();
-        try
-        {
-            foreach (IPlayer chr in getAllPlayers())
+            foreach (Player chr in getAllPlayers())
             {
                 if (chr != source)
                 {
-                    chr.sendPacket(PacketCreator.updateCharLook(chr.Client, player));
+                    chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
                 }
             }
         }
-        finally
+    }
+
+    public void broadcastUpdateCharLookMessage(Player source, Player player)
+    {
+        foreach (Player chr in getAllPlayers())
         {
-            chrLock.ExitReadLock();
+            if (chr != source)
+            {
+                chr.sendPacket(PacketCreator.updateCharLook(chr.Client, player));
+            }
         }
     }
 
@@ -2544,15 +2153,7 @@ public class MapleMap : IMap
 
     public List<IMapObject> getMapObjects()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return new(mapobjects.Values);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return new(mapobjects.Values);
     }
     /// <summary>
     /// 
@@ -2580,46 +2181,22 @@ public class MapleMap : IMap
 
     public List<IMapObject> GetMapObjects(Func<IMapObject, bool> func)
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return mapobjects.Values.AsValueEnumerable().Where(func).ToList();
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return mapobjects.Values.AsValueEnumerable().Where(func).ToList();
     }
     List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type) where TObject : IMapObject
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return mapobjects.Values.AsValueEnumerable()
-                .Where(x => x.getType() == type)
-                .Cast<TObject>()
-                .ToList();
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return mapobjects.Values.AsValueEnumerable()
+            .Where(x => x.getType() == type)
+            .Cast<TObject>()
+            .ToList();
     }
     List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return mapobjects.Values.AsValueEnumerable()
-                .Where(x => x.getType() == type)
-                .Cast<TObject>()
-                .Where(func)
-                .ToList();
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return mapobjects.Values.AsValueEnumerable()
+            .Where(x => x.getType() == type)
+            .Cast<TObject>()
+            .Where(func)
+            .ToList();
     }
 
     private static bool IsObjectInRange(IMapObject obj, Point from, double rangeSq, List<MapObjectType> types)
@@ -2635,25 +2212,18 @@ public class MapleMap : IMap
     public List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types)
     {
         List<IMapObject> ret = new();
-        objectLock.EnterReadLock();
-        try
+
+        foreach (IMapObject l in getMapObjects())
         {
-            foreach (IMapObject l in getMapObjects())
+            if (types.Contains(l.getType()))
             {
-                if (types.Contains(l.getType()))
+                if (box.Contains(l.getPosition()))
                 {
-                    if (box.Contains(l.getPosition()))
-                    {
-                        ret.Add(l);
-                    }
+                    ret.Add(l);
                 }
             }
-            return ret;
         }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return ret;
     }
 
     public Portal? getPortal(string portalname)
@@ -2733,17 +2303,14 @@ public class MapleMap : IMap
 
         if (toRemove.Count > 0)
         {
-            lock (monsterSpawn)
+            foreach (SpawnPoint sp in toRemove)
             {
-                foreach (SpawnPoint sp in toRemove)
-                {
-                    monsterSpawn.Remove(sp);
-                }
+                monsterSpawn.Remove(sp);
             }
         }
     }
 
-    public void reportMonsterSpawnPoints(IPlayer chr)
+    public void reportMonsterSpawnPoints(Player chr)
     {
         chr.dropMessage(6, "Mob spawnpoints on map " + getId() + ", with available Mob SPs " + monsterSpawn.Count() + ", used " + spawnedMonstersOnMap.get() + ":");
         foreach (SpawnPoint sp in getMonsterSpawn())
@@ -2754,7 +2321,7 @@ public class MapleMap : IMap
 
 
 
-    private static void updateMapObjectVisibility(IPlayer chr, IMapObject mo)
+    private static void updateMapObjectVisibility(Player chr, IMapObject mo)
     {
         if (!chr.isMapObjectVisible(mo))
         { // object entered view range
@@ -2774,13 +2341,13 @@ public class MapleMap : IMap
     public void moveMonster(Monster monster, Point reportedPos)
     {
         monster.setPosition(reportedPos);
-        foreach (IPlayer chr in getAllPlayers())
+        foreach (Player chr in getAllPlayers())
         {
             updateMapObjectVisibility(chr, monster);
         }
     }
 
-    public void movePlayer(IPlayer player, Point newPosition)
+    public void movePlayer(Player player, Point newPosition)
     {
         player.setPosition(newPosition);
 
@@ -2837,28 +2404,12 @@ public class MapleMap : IMap
     {
         broadcastMessage(PacketCreator.environmentMove(ms, type));
 
-        objectLock.EnterWriteLock();
-        try
-        {
-            environment.AddOrUpdate(ms, type);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        environment.AddOrUpdate(ms, type);
     }
 
     public IDictionary<string, int> getEnvironment()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return new Dictionary<string, int>(environment);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return new Dictionary<string, int>(environment);
     }
 
     public string getMapName()
@@ -2902,7 +2453,7 @@ public class MapleMap : IMap
     }
 
     // not really costly to keep generating imo
-    public void sendNightEffect(IPlayer chr)
+    public void sendNightEffect(Player chr)
     {
         foreach (var types in SourceTemplate.Backs)
         {
@@ -2915,31 +2466,15 @@ public class MapleMap : IMap
 
     public void broadcastNightEffect()
     {
-        chrLock.EnterReadLock();
-        try
+        foreach (Player chr in this.getAllPlayers())
         {
-            foreach (IPlayer chr in this.getAllPlayers())
-            {
-                sendNightEffect(chr);
-            }
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
+            sendNightEffect(chr);
         }
     }
 
-    public IPlayer? getCharacterByName(string name)
+    public Player? getCharacterByName(string name)
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return getAllPlayers().FirstOrDefault(x => x.getName().Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return getAllPlayers().FirstOrDefault(x => x.getName().Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
     public bool makeDisappearItemFromMap(IMapObject? mapobj)
@@ -2958,21 +2493,14 @@ public class MapleMap : IMap
     {
         if (mapitem != null && mapitem == getMapObject(mapitem.getObjectId()))
         {
-            mapitem.lockItem();
-            try
-            {
-                if (mapitem.isPickedUp())
-                {
-                    return true;
-                }
 
-                pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem);
+            if (mapitem.isPickedUp())
+            {
                 return true;
             }
-            finally
-            {
-                mapitem.unlockItem();
-            }
+
+            pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem);
+            return true;
         }
 
         return false;
@@ -2990,10 +2518,10 @@ public class MapleMap : IMap
     //    private List<MonsterDropEntry> visibleQuestEntry;
     //    private List<MonsterDropEntry> otherQuestEntry;
     //    private List<MonsterGlobalDropEntry> globalEntry;
-    //    private IPlayer chr;
+    //    private Player chr;
     //    private Monster mob;
     //    IMap _map;
-    //    public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
+    //    public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, Player chr, Monster mob)
     //    {
     //        _map = map;
     //        this.droptype = droptype;
@@ -3045,60 +2573,7 @@ public class MapleMap : IMap
 
         public override void HandleRun()
         {
-            reactor.hitLockReactor();
-            try
-            {
-                if (reactor.getReactorType() == 100)
-                {
-                    if (reactor.getShouldCollect() == true && mapitem != null && mapitem == _map.getMapObject(mapitem.getObjectId()))
-                    {
-                        mapitem.lockItem();
-                        try
-                        {
-                            if (mapitem.isPickedUp())
-                            {
-                                return;
-                            }
-                            mapitem.setPickedUp(true);
-                            _map.unregisterItemDrop(mapitem);
-
-                            reactor.setShouldCollect(false);
-                            _map.broadcastMessage(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem.getPosition());
-
-                            reactor.hitReactor(c);
-
-                            if (reactor.getDelay() > 0)
-                            {
-                                var reactorMap = reactor.getMap();
-
-                                OverallService service = reactorMap.getChannelServer().OverallService;
-                                service.registerOverallAction(reactorMap.getId(), () =>
-                                {
-                                    reactor.lockReactor();
-                                    try
-                                    {
-                                        reactor.resetReactorActions(0);
-                                        reactor.setAlive(true);
-                                        _map.broadcastMessage(PacketCreator.triggerReactor(reactor, 0));
-                                    }
-                                    finally
-                                    {
-                                        reactor.unlockReactor();
-                                    }
-                                }, reactor.getDelay());
-                            }
-                        }
-                        finally
-                        {
-                            mapitem.unlockItem();
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                reactor.hitUnlockReactor();
-            }
+            _map.ChannelServer.Post(new ReactorHitFromMapItemCommand(mapitem, reactor));
         }
     }
 
@@ -3258,19 +2733,12 @@ public class MapleMap : IMap
         }
 
         int numPlayers;
-        chrLock.EnterReadLock();
-        try
-        {
-            numPlayers = characters.Count;
 
-            if (numPlayers == 0)
-            {
-                return;
-            }
-        }
-        finally
+        numPlayers = characters.Count;
+
+        if (numPlayers == 0)
         {
-            chrLock.ExitReadLock();
+            return;
         }
 
         int numShouldSpawn = getNumShouldSpawn(numPlayers);
@@ -3327,7 +2795,7 @@ public class MapleMap : IMap
     //private class SpawnCondition
     //{
 
-    //    public Func<IPlayer, bool>? canSpawn;
+    //    public Func<Player, bool>? canSpawn;
     //}
 
     public int getHPDec() => SourceTemplate.DecHP;
@@ -3352,56 +2820,40 @@ public class MapleMap : IMap
 
     public int getSeats() => SourceTemplate.SeatCount;
 
-    public void broadcastGMMessage(IPlayer source, Packet packet, bool repeatToSource)
+    public void broadcastGMMessage(Player source, Packet packet, bool repeatToSource)
     {
         broadcastGMMessage(repeatToSource ? null : source, packet, double.PositiveInfinity, source.getPosition());
     }
 
-    private void broadcastGMMessage(IPlayer? source, Packet packet, double rangeSq, Point? rangedFrom)
+    private void broadcastGMMessage(Player? source, Packet packet, double rangeSq, Point? rangedFrom)
     {
-        chrLock.EnterReadLock();
-        try
+        foreach (Player chr in getAllPlayers())
         {
-            foreach (IPlayer chr in getAllPlayers())
+            if (chr != source && chr.isGM())
             {
-                if (chr != source && chr.isGM())
+                if (rangeSq < double.PositiveInfinity)
                 {
-                    if (rangeSq < double.PositiveInfinity)
-                    {
-                        if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
-                        {
-                            chr.sendPacket(packet);
-                        }
-                    }
-                    else
+                    if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
                     {
                         chr.sendPacket(packet);
                     }
                 }
-            }
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-    }
-
-    public void broadcastNONGMMessage(IPlayer source, Packet packet, bool repeatToSource)
-    {
-        chrLock.EnterReadLock();
-        try
-        {
-            foreach (IPlayer chr in getAllPlayers())
-            {
-                if (chr != source && !chr.isGM())
+                else
                 {
                     chr.sendPacket(packet);
                 }
             }
         }
-        finally
+    }
+
+    public void broadcastNONGMMessage(Player source, Packet packet, bool repeatToSource)
+    {
+        foreach (Player chr in getAllPlayers())
         {
-            chrLock.ExitReadLock();
+            if (chr != source && !chr.isGM())
+            {
+                chr.sendPacket(packet);
+            }
         }
     }
 
@@ -3443,9 +2895,9 @@ public class MapleMap : IMap
 
     public void warpEveryone(int to)
     {
-        List<IPlayer> players = new(getAllPlayers());
+        List<Player> players = new(getAllPlayers());
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(to);
         }
@@ -3453,9 +2905,9 @@ public class MapleMap : IMap
 
     public void warpEveryone(int to, int pto)
     {
-        List<IPlayer> players = new(getAllPlayers());
+        List<Player> players = new(getAllPlayers());
 
-        foreach (IPlayer chr in players)
+        foreach (Player chr in players)
         {
             chr.changeMap(to, pto);
         }
@@ -3469,8 +2921,8 @@ public class MapleMap : IMap
 
     public void warpOutByTeam(int team, int mapid)
     {
-        List<IPlayer> chars = new(getAllPlayers());
-        foreach (IPlayer chr in chars)
+        List<Player> chars = new(getAllPlayers());
+        foreach (Player chr in chars)
         {
             if (chr != null)
             {
@@ -3482,7 +2934,7 @@ public class MapleMap : IMap
         }
     }
 
-    public virtual void startEvent(IPlayer chr)
+    public virtual void startEvent(Player chr)
     {
         if (this.mapid == MapId.EVENT_PHYSICAL_FITNESS)
         {
@@ -3610,16 +3062,16 @@ public class MapleMap : IMap
         }
     }
 
-    public bool claimOwnership(IPlayer chr)
+    public bool claimOwnership(Player chr)
     {
         if (mapOwner == null)
         {
             this.mapOwner = chr;
             chr.setOwnedMap(this);
 
-            mapOwnerLastActivityTime = ChannelServer.Container.getCurrentTime();
+            mapOwnerLastActivityTime = ChannelServer.Node.getCurrentTime();
 
-            getChannelServer().Container.MapOwnershipManager.RegisterOwnedMap(this);
+            getChannelServer().MapOwnershipManager.RegisterOwnedMap(this);
             return true;
         }
         else
@@ -3628,13 +3080,13 @@ public class MapleMap : IMap
         }
     }
 
-    public IPlayer? unclaimOwnership()
+    public Player? unclaimOwnership()
     {
         var lastOwner = this.mapOwner;
         return unclaimOwnership(lastOwner) ? lastOwner : null;
     }
 
-    public bool unclaimOwnership(IPlayer? chr)
+    public bool unclaimOwnership(Player? chr)
     {
         if (chr != null && mapOwner == chr)
         {
@@ -3643,7 +3095,7 @@ public class MapleMap : IMap
 
             mapOwnerLastActivityTime = long.MaxValue;
 
-            getChannelServer().Container.MapOwnershipManager.UnregisterOwnedMap(this);
+            getChannelServer().MapOwnershipManager.UnregisterOwnedMap(this);
             return true;
         }
         else
@@ -3654,12 +3106,12 @@ public class MapleMap : IMap
 
     private void refreshOwnership()
     {
-        mapOwnerLastActivityTime = ChannelServer.Container.getCurrentTime();
+        mapOwnerLastActivityTime = ChannelServer.Node.getCurrentTime();
     }
 
-    public bool isOwnershipRestricted(IPlayer chr)
+    public bool isOwnershipRestricted(Player chr)
     {
-        IPlayer? owner = mapOwner;
+        Player? owner = mapOwner;
 
         if (owner != null)
         {
@@ -3679,7 +3131,7 @@ public class MapleMap : IMap
 
     public void checkMapOwnerActivity()
     {
-        long timeNow = ChannelServer.Container.getCurrentTime();
+        long timeNow = ChannelServer.Node.getCurrentTime();
         if (timeNow - mapOwnerLastActivityTime > 60000)
         {
             if (unclaimOwnership() != null)
@@ -3842,58 +3294,41 @@ public class MapleMap : IMap
 
         EventInstanceManager = null;
         portals.Clear();
-        mapEffect = null;
+        MapEffect = null;
 
         monsterSpawn.Clear();
 
-        chrLock.EnterWriteLock();
-        try
+        aggroMonitor.dispose();
+
+        if (itemMonitor != null)
         {
-            aggroMonitor.dispose();
-
-            if (itemMonitor != null)
-            {
-                itemMonitor.cancel(false);
-                itemMonitor = null;
-            }
-
-            if (expireItemsTask != null)
-            {
-                expireItemsTask.cancel(false);
-                expireItemsTask = null;
-            }
-
-            if (characterStatUpdateTask != null)
-            {
-                characterStatUpdateTask.cancel(false);
-                characterStatUpdateTask = null;
-            }
+            itemMonitor.cancel(false);
+            itemMonitor = null;
         }
-        finally
+
+        if (expireItemsTask != null)
         {
-            chrLock.ExitWriteLock();
-            log.Debug("{MapInstance}已释放", InstanceName);
+            expireItemsTask.cancel(false);
+            expireItemsTask = null;
+        }
+
+        if (characterStatUpdateTask != null)
+        {
+            characterStatUpdateTask.cancel(false);
+            characterStatUpdateTask = null;
         }
     }
 
     #region Objects: Player
-    private Dictionary<int, IPlayer> characters = new();
+    private Dictionary<int, Player> characters = new();
     public int countPlayers()
     {
         return getAllPlayers().Count;
     }
 
-    public List<IPlayer> getAllPlayers()
+    public List<Player> getAllPlayers()
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return characters.Values.ToList();
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return characters.Values.ToList();
     }
 
     public int getNumPlayersInArea(int index)
@@ -3903,59 +3338,44 @@ public class MapleMap : IMap
 
     public int getNumPlayersInRect(Rectangle rect)
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return getAllPlayers().Count(x => rect.Contains(x.getPosition()));
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return getAllPlayers().Count(x => rect.Contains(x.getPosition()));
     }
 
-    protected virtual void OnPlayerEnter(IPlayer chr)
+    protected virtual void OnPlayerEnter(Player chr)
     {
+        ChannelServer.NodeService.TeamManager.ChannelNotify(chr);
+
         if (pirateDocked)
         {
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
             chr.sendPacket(PacketCreator.crogBoatPacket(true));
         }
-
-        ChannelServer.Metrics.MapCountInc(Id);
     }
 
-    public void addPlayer(IPlayer chr)
+    public void addPlayer(Player chr)
     {
         int chrSize;
-        chrLock.EnterWriteLock();
-        try
-        {
-            if (!characters.TryAdd(chr.Id, chr))
-            {
-                log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
-                return;
-            }
 
-            chrSize = characters.Count;
-
-            itemMonitorTimeout = 1;
-        }
-        finally
+        if (!characters.TryAdd(chr.Id, chr))
         {
-            chrLock.ExitWriteLock();
+            log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
+            return;
         }
+
+        chrSize = characters.Count;
+
+        itemMonitorTimeout = 1;
 
         chr.setMap(this);
         chr.updateActiveEffects();
 
         if (this.getHPDec() > 0)
         {
-            ChannelServer.Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
+            ChannelServer.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
         }
         else
         {
-            ChannelServer.Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
+            ChannelServer.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
         }
 
         MapScriptManager msm = ChannelServer.MapScriptManager;
@@ -3992,12 +3412,9 @@ public class MapleMap : IMap
             // To Ereve (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
+            ChannelServer.Node.TimerManager.schedule(() =>
             {
-                if (chr.getMapId() == MapId.FROM_ELLINIA_TO_EREVE)
-                {
-                    chr.changeMap(MapId.SKY_FERRY, 0);
-                }
+                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ELLINIA_TO_EREVE, MapId.SKY_FERRY));
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
@@ -4005,12 +3422,9 @@ public class MapleMap : IMap
             // To Victoria Island (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
+            ChannelServer.Node.TimerManager.schedule(() =>
             {
-                if (chr.getMapId() == MapId.FROM_EREVE_TO_ELLINIA)
-                {
-                    chr.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
-                }
+                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ELLINIA, MapId.ELLINIA_SKY_FERRY));
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
@@ -4018,12 +3432,9 @@ public class MapleMap : IMap
             // To Orbis (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
+            ChannelServer.Node.TimerManager.schedule(() =>
             {
-                if (chr.getMapId() == MapId.FROM_EREVE_TO_ORBIS)
-                {
-                    chr.changeMap(MapId.ORBIS_STATION, 0);
-                }
+                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ORBIS, MapId.ORBIS_STATION));
             }, travelTime);
         }
         else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
@@ -4031,12 +3442,9 @@ public class MapleMap : IMap
             // To Ereve From Orbis (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Container.TimerManager.schedule(() =>
+            ChannelServer.Node.TimerManager.schedule(() =>
             {
-                if (chr.getMapId() == MapId.FROM_ORBIS_TO_EREVE)
-                {
-                    chr.changeMap(MapId.SKY_FERRY, 0);
-                }
+                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ORBIS_TO_EREVE, MapId.SKY_FERRY));
             }, travelTime);
         }
         else if (MiniDungeonInfo.isDungeonMap(mapid))
@@ -4059,7 +3467,7 @@ public class MapleMap : IMap
             if (pet != null)
             {
                 pet.setPos(getGroundBelow(chr.getPosition()));
-                chr.sendPacket(PacketCreator.showPet(chr, pet, false, false));
+                chr.sendPacket(PacketCreator.ShowPet(chr, pet));
             }
             else
             {
@@ -4109,15 +3517,9 @@ public class MapleMap : IMap
             chr.sendPacket(PacketCreator.coconutScore(0, 0));
             chr.sendPacket(PacketCreator.showForcedEquip(chr.getTeam()));
         }
-        objectLock.EnterWriteLock();
-        try
-        {
-            this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+
+        this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
+        GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.ServerLogName), new KeyValuePair<string, object?>("Map", InstanceName));
 
         // 访问商店/开店时应该没办法切换地图
         //if (chr.VisitingShop != null)
@@ -4148,9 +3550,9 @@ public class MapleMap : IMap
             chr.getMap().spawnSummon(summon);
             updateMapObjectVisibility(chr, summon);
         }
-        if (mapEffect != null)
+        if (MapEffect != null)
         {
-            mapEffect.sendStartData(chr.getClient());
+            MapEffect.sendStartData(chr.getClient());
         }
         chr.sendPacket(PacketCreator.resetForcedStats());
         if (MapId.isGodlyStatMap(mapid))
@@ -4178,7 +3580,7 @@ public class MapleMap : IMap
 
         if (hasClock())
         {
-            var cal = ChannelServer.Container.GetCurrentTimeDateTimeOffSet();
+            var cal = ChannelServer.Node.GetCurrentTimeDateTimeOffset();
             chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
         }
         if (hasBoat() > 0)
@@ -4186,29 +3588,21 @@ public class MapleMap : IMap
             chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
         }
 
-        chr.receivePartyMemberHP();
-        ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
+        ChannelServer.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
 
         OnPlayerEnter(chr);
     }
 
-    public void removePlayer(IPlayer chr)
+    public void removePlayer(Player chr)
     {
         var cserv = chr.getClient().getChannelServer();
         chr.unregisterChairBuff();
 
-        var party = chr.getParty();
-        chrLock.EnterWriteLock();
-        try
-        {
-            characters.Remove(chr.Id);
-            if (XiGuai?.Controller == chr)
-                XiGuai = null;
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
+
+        characters.Remove(chr.Id);
+        GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.ServerLogName), new KeyValuePair<string, object?>("Map", InstanceName));
+        if (XiGuai?.Controller == chr)
+            XiGuai = null;
 
         if (MiniDungeonInfo.isDungeonMap(mapid))
         {
@@ -4258,47 +3652,29 @@ public class MapleMap : IMap
                 this.broadcastPacket(chr, PacketCreator.removeDragon(chr.getId()));
             }
         }
-
-        ChannelServer.Metrics.MapCountDec(Id);
     }
 
-    public Dictionary<int, IPlayer> getMapPlayers()
+    public Dictionary<int, Player> getMapPlayers()
     {
         return characters;
     }
 
-    public IPlayer? getCharacterById(int id)
+    public Player? getCharacterById(int id)
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return characters.GetValueOrDefault(id);
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return characters.GetValueOrDefault(id);
     }
 
-    public List<IPlayer> getPlayersInRange(Rectangle box)
+    public List<Player> getPlayersInRange(Rectangle box)
     {
-        List<IPlayer> character = new();
-        chrLock.EnterReadLock();
-        try
+        List<Player> character = new();
+
+        foreach (Player chr in getAllPlayers())
         {
-            foreach (IPlayer chr in getAllPlayers())
+            if (box.Contains(chr.getPosition()))
             {
-                if (box.Contains(chr.getPosition()))
-                {
-                    character.Add(chr);
-                }
+                character.Add(chr);
             }
         }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
-
         return character;
     }
 
@@ -4321,62 +3697,31 @@ public class MapleMap : IMap
             {
                 mapobj = null;
 
-                objectLock.EnterWriteLock();
-                try
+                while (mapobj == null)
                 {
-                    while (mapobj == null)
-                    {
-                        if (!registeredDrops.TryDequeue(out var item))
-                            break;
+                    if (!registeredDrops.TryDequeue(out var item))
+                        break;
 
-                        if (item?.TryGetTarget(out var d) ?? false)
-                            mapobj = d;
-                    }
-                }
-                finally
-                {
-                    objectLock.ExitWriteLock();
+                    if (item?.TryGetTarget(out var d) ?? false)
+                        mapobj = d;
                 }
             } while (!makeDisappearItemFromMap(mapobj));
         }
 
-        objectLock.EnterWriteLock();
-        try
-        {
-            droppedItems.Add(mdrop);
-            registeredDrops.Enqueue(new(mdrop));
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+
+        droppedItems.Add(mdrop);
+        registeredDrops.Enqueue(new(mdrop));
     }
 
     public void unregisterItemDrop(MapItem mdrop)
     {
-        objectLock.EnterWriteLock();
-        try
-        {
-            removeMapObject(mdrop);
-            droppedItems.Remove(mdrop);
-        }
-        finally
-        {
-            objectLock.ExitWriteLock();
-        }
+        removeMapObject(mdrop);
+        droppedItems.Remove(mdrop);
     }
 
     private List<MapItem> getDroppedItems()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return new(droppedItems);
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return new(droppedItems);
     }
 
     public int getDroppedItemsCountById(int itemid)
@@ -4404,15 +3749,7 @@ public class MapleMap : IMap
 
     public int countItems()
     {
-        objectLock.EnterReadLock();
-        try
-        {
-            return droppedItems.Count;
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
+        return droppedItems.Count;
     }
 
     public List<MapItem> getItems()
@@ -4421,37 +3758,29 @@ public class MapleMap : IMap
     }
     #endregion
 
-    private void Broadcast(IPlayer? source, double rangeSq, Point? rangedFrom, Action<IPlayer> effectPlayer)
+    private void Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Action<Player> effectPlayer)
     {
-        chrLock.EnterReadLock();
-        try
+        foreach (Player chr in getAllPlayers())
         {
-            foreach (IPlayer chr in getAllPlayers())
+            if (chr.Id != exceptChrId)
             {
-                if (chr != source)
+                if (rangeSq < double.PositiveInfinity)
                 {
-                    if (rangeSq < double.PositiveInfinity)
-                    {
-                        if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
-                        {
-                            effectPlayer(chr);
-                        }
-                    }
-                    else
+                    if (rangedFrom != null && rangedFrom.Value.distanceSq(chr.getPosition()) <= rangeSq)
                     {
                         effectPlayer(chr);
                     }
                 }
+                else
+                {
+                    effectPlayer(chr);
+                }
             }
         }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
     }
-    public void BroadcastAll(Action<IPlayer> effectPlayer)
+    public void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1)
     {
-        Broadcast(null, double.PositiveInfinity, null, effectPlayer);
+        Broadcast(exceptId, double.PositiveInfinity, null, effectPlayer);
     }
 
     public void TypedMessage(int type, string messageKey, params string[] param)

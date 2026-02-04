@@ -8,11 +8,12 @@ using client.inventory.manipulator;
 using ItemProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel
 {
-    public class PlayerShopManager
+    public class PlayerShopManager : IAsyncDisposable
     {
         private ConcurrentDictionary<int, IPlayerShop> activeMerchants = new();
         private ConcurrentDictionary<int, IPlayerShop> playerShopData = new();
@@ -27,11 +28,11 @@ namespace Application.Core.Channel
             _worldChannel = worldChannel;
         }
 
-        public void CheckExpired()
+        public List<SyncPlayerShopRequest> CheckExpired()
         {
             List<SyncPlayerShopRequest> requests = [];
 
-            var currentTime = _worldChannel.Container.getCurrentTime();
+            var currentTime = _worldChannel.Node.getCurrentTime();
             var allShops = GetAllShops().Where(x => x.ExpirationTime < currentTime).ToArray();
 
             foreach (var item in allShops)
@@ -46,9 +47,8 @@ namespace Application.Core.Channel
 
                 requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
             }
-            var request = new ItemProto.BatchSyncPlayerShopRequest();
-            request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            return requests;
+
         }
 
         public bool RegisterShop(IPlayerShop shop)
@@ -108,7 +108,7 @@ namespace Application.Core.Channel
             return null;
         }
 
-        public bool RemoveCommodity(IPlayer chr, int slotIndex)
+        public bool RemoveCommodity(Player chr, int slotIndex)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -125,7 +125,7 @@ namespace Application.Core.Channel
 
             if (slotIndex >= shop.Commodity.Count || slotIndex < 0)
             {
-                _worldChannel.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
+                _worldChannel.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
                 _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slotIndex);
                 chr.Client.Disconnect(true, false);
                 return false;
@@ -135,7 +135,7 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public bool AddCommodity(IPlayer chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
+        public bool AddCommodity(Player chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -173,100 +173,90 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public void BuyItem(IPlayer buyer, int itemIndex, int quantity)
+        public void BuyItem(Player buyer, int itemIndex, int quantity)
         {
             var shop = buyer.VisitingShop;
             if (shop == null)
                 return;
 
-            try
+            if (buyer.Id == shop.OwnerId)
             {
-                if (shop.TradeLock())
+                buyer.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            PlayerShopItem pItem = shop.Commodity.get(itemIndex);
+
+            if (quantity < 1 || !pItem.isExist() || pItem.getBundles() < quantity)
+            {
+                buyer.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            Item newItem = pItem.getItem().copy();
+
+            newItem.setQuantity((short)(pItem.getItem().getQuantity() * quantity));
+            if (newItem.getInventoryType().Equals(InventoryType.EQUIP) && newItem.getQuantity() > 1)
+            {
+                buyer.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+
+            KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
+
+            int price = Math.Min(pItem.getPrice() * quantity, int.MaxValue);
+            var mesoCheck = shop.MesoCheck(price);
+            if (mesoCheck != null)
+            {
+                buyer.dropMessage(1, mesoCheck);
+                buyer.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (buyer.getMeso() >= price)
+            {
+                if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
+                    && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
                 {
-                    if (buyer.Id == shop.OwnerId)
+                    buyer.GainMeso(-price);
+                    price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
+
+                    shop.GainMeso(price);
+
+                    shop.InsertSoldHistory(itemIndex, new SoldItem(buyer.getName(), pItem.getItem().getItemId(), newItem.getQuantity(), price));
+
+                    pItem.setBundles((short)(pItem.getBundles() - quantity));
+                    if (pItem.getBundles() < 1)
                     {
-                        buyer.sendPacket(PacketCreator.enableActions());
-                        return;
+                        pItem.setDoesExist(false);
+
+                        shop.OnCommoditySellout();
                     }
 
-                    PlayerShopItem pItem = shop.Commodity.get(itemIndex);
+                    //if (shop is HiredMerchant hm)
+                    //{
+                    //    if (hm.SoldNotify)
+                    //        hm.announceItemSold(newItem, price, hm.getQuantityLeft(pItem.getItem().getItemId()));
+                    //}
 
-                    if (quantity < 1 || !pItem.isExist() || pItem.getBundles() < quantity)
-                    {
-                        buyer.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    Item newItem = pItem.getItem().copy();
-
-                    newItem.setQuantity((short)(pItem.getItem().getQuantity() * quantity));
-                    if (newItem.getInventoryType().Equals(InventoryType.EQUIP) && newItem.getQuantity() > 1)
-                    {
-                        buyer.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-
-                    KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
-
-                    int price = Math.Min(pItem.getPrice() * quantity, int.MaxValue);
-                    var mesoCheck = shop.MesoCheck(price);
-                    if (mesoCheck != null)
-                    {
-                        buyer.dropMessage(1, mesoCheck);
-                        buyer.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    if (buyer.getMeso() >= price)
-                    {
-                        if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
-                            && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
-                        {
-                            buyer.GainMeso(-price, false);
-                            price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
-
-                            shop.GainMeso(price);
-
-                            shop.InsertSoldHistory(itemIndex, new SoldItem(buyer.getName(), pItem.getItem().getItemId(), newItem.getQuantity(), price));
-
-                            pItem.setBundles((short)(pItem.getBundles() - quantity));
-                            if (pItem.getBundles() < 1)
-                            {
-                                pItem.setDoesExist(false);
-
-                                shop.OnCommoditySellout();
-                            }
-
-                            //if (shop is HiredMerchant hm)
-                            //{
-                            //    if (hm.SoldNotify)
-                            //        hm.announceItemSold(newItem, price, hm.getQuantityLeft(pItem.getItem().getItemId()));
-                            //}
-
-                            shop.BroadcastShopItemUpdate();
-                        }
-                        else
-                        {
-                            buyer.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
-                            buyer.sendPacket(PacketCreator.enableActions());
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        buyer.dropMessage(1, "You don't have enough mesos to purchase this item.");
-                        buyer.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    SyncPlayerShop(shop, SyncPlayerShopOperation.UpdateByTrade);
+                    shop.BroadcastShopItemUpdate();
+                }
+                else
+                {
+                    buyer.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
+                    buyer.sendPacket(PacketCreator.enableActions());
+                    return;
                 }
             }
-            finally
+            else
             {
-                shop.TradeUnlock();
+                buyer.dropMessage(1, "You don't have enough mesos to purchase this item.");
+                buyer.sendPacket(PacketCreator.enableActions());
+                return;
             }
+
+            SyncPlayerShop(shop, SyncPlayerShopOperation.UpdateByTrade);
         }
 
         public void NewPlayerShop(IPlayerShop? shop)
@@ -280,7 +270,7 @@ namespace Application.Core.Channel
             }
         }
 
-        public bool CloseByPlayer(IPlayer chr)
+        public bool CloseByPlayer(Player chr)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -306,7 +296,7 @@ namespace Application.Core.Channel
         /// <param name="shop"></param>
         public void SyncPlayerShop(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
         {
-            _worldChannel.Container.Transport.SyncPlayerShop(GenrateSyncRequest(shop, operation));
+            _worldChannel.Node.Transport.SyncPlayerShop(GenrateSyncRequest(shop, operation));
         }
 
         private ItemProto.SyncPlayerShopRequest GenrateSyncRequest(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
@@ -326,19 +316,19 @@ namespace Application.Core.Channel
             return request;
         }
 
-        public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
-        {
-            var owner = _worldChannel.Container.FindPlayerById(data.OwnerId);
-            if (owner != null)
-            {
-                string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
-                owner.dropMessage(6,
-                    $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
-            }
+        //public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
+        //{
+        //    var owner = _worldChannel.Container.FindPlayerById(data.OwnerId);
+        //    if (owner != null)
+        //    {
+        //        string qtyStr = data.Quantity > 1 ? " x " + data.Quantity : "";
+        //        owner.dropMessage(6,
+        //            $"[Hired Merchant] Item '{owner.Client.CurrentCulture.GetItemName(data.ItemId)}'{qtyStr} has been sold for {data.GainedMeso} mesos. ({data.Left} left)");
+        //    }
 
-        }
+        //}
 
-        internal void Dispose()
+        public async ValueTask DisposeAsync()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -359,7 +349,7 @@ namespace Application.Core.Channel
 
             var request = new ItemProto.BatchSyncPlayerShopRequest();
             request.List.AddRange(requests);
-            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
+            await _worldChannel.Node.Transport.BatchSyncPlayerShop(request);
         }
     }
 }

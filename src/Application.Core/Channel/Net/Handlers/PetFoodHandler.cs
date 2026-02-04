@@ -34,14 +34,14 @@ public class PetFoodHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
-        if (abm.getLastSpam(2) + 500 > c.CurrentServerContainer.getCurrentTime())
+        if (abm.getLastSpam(2) + 500 > c.CurrentServer.Node.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
         abm.spam(2);
         p.readInt(); // timestamp issue detected thanks to Masterrulax
-        abm.setTimestamp(1, c.CurrentServerContainer.getCurrentTimestamp(), 3);
+        abm.setTimestamp(1, c.CurrentServer.Node.getCurrentTimestamp(), 3);
         if (chr.getNoPets() == 0)
         {
             c.sendPacket(PacketCreator.enableActions());
@@ -77,9 +77,7 @@ public class PetFoodHandler : ChannelHandlerBase
             try
             {
                 Inventory useInv = chr.getInventory(InventoryType.USE);
-                useInv.lockInventory();
-                try
-                {
+
                     var use = useInv.getItem(pos);
                     if (use == null || (itemId / 10000) != 212 || use.getItemId() != itemId || use.getQuantity() < 1)
                     {
@@ -88,11 +86,6 @@ public class PetFoodHandler : ChannelHandlerBase
 
                     pet.gainTamenessFullness(chr, (pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
                     InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
-                }
-                finally
-                {
-                    useInv.unlockInventory();
-                }
             }
             finally
             {

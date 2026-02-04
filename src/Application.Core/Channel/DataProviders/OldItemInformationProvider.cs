@@ -1718,7 +1718,7 @@ public class OldItemInformationProvider
         return YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET && ItemConstants.isPet(itemId);
     }
 
-    public ICollection<Item> canWearEquipment(IPlayer chr, ICollection<Item> items)
+    public ICollection<Item> canWearEquipment(Player chr, ICollection<Item> items)
     {
         Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
         if (inv.IsChecked())
@@ -1953,7 +1953,7 @@ public class OldItemInformationProvider
         return list;
     }
 
-    private bool canUseSkillBook(IPlayer player, int skillBookId)
+    private bool canUseSkillBook(Player player, int skillBookId)
     {
         var skilldata = getSkillStats(skillBookId, player.getJob().getId());
         if (skilldata == null || skilldata.GetValueOrDefault("skillid") == 0)
@@ -1966,7 +1966,7 @@ public class OldItemInformationProvider
             && player.getMasterLevel(skill2) < skilldata.GetValueOrDefault("masterLevel");
     }
 
-    public List<int> usableMasteryBooks(IPlayer player)
+    public List<int> usableMasteryBooks(Player player)
     {
         List<int> masterybook = new();
         for (int i = 2290000; i <= 2290139; i++)
@@ -1980,7 +1980,7 @@ public class OldItemInformationProvider
         return masterybook;
     }
 
-    public List<int> usableSkillBooks(IPlayer player)
+    public List<int> usableSkillBooks(Player player)
     {
         List<int> skillbook = new();
         for (int i = 2280000; i <= 2280019; i++)

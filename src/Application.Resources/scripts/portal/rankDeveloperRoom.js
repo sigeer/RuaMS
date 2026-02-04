@@ -1,6 +1,6 @@
 function enter(pi) {
     if (pi.getPlayer().getMapId() != 777777777) {
-        if (!Server.canEnterDeveloperRoom()) {
+        if (!pi.CanEnterDeveloperRoom()) {
             pi.message("The next room is currently unavailable.");
             return false;
         }

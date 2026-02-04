@@ -36,7 +36,7 @@ public class FameAction : AbstractQuestAction
     }
 
 
-    public override void run(IPlayer chr, int? extSelection)
+    public override void run(Player chr, int? extSelection)
     {
         chr.gainFame(fame);
     }

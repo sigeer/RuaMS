@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Pet;
 using client.inventory;
 using constants.game;
@@ -71,6 +72,7 @@ public class Pet : Item
 
         CopyItemProps(copyPet);
 
+        copyPet.setPos(getPos());
         copyPet.setFh(getFh());
         copyPet.setStance(getStance());
         return copyPet;
@@ -119,7 +121,7 @@ public class Pet : Item
         return 3;
     }
 
-    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
+    public void gainTamenessFullness(Player owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
     {
         sbyte slot = owner.getPetIndex(this);
         bool enjoyed;
@@ -231,22 +233,7 @@ public class Pet : Item
         return Summoned;
     }
 
-    public void setSummoned(bool yes)
-    {
-        Summoned = yes;
-    }
-
-    public int getPetAttribute()
-    {
-        return PetAttribute;
-    }
-
-    public void setPetAttribute(int flag)
-    {
-        PetAttribute = flag;
-    }
-
-    public void addPetAttribute(IPlayer owner, PetAttribute flag)
+    public void addPetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute |= (int)flag;
 
@@ -257,7 +244,7 @@ public class Pet : Item
         }
     }
 
-    public void removePetAttribute(IPlayer owner, PetAttribute flag)
+    public void removePetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
 
@@ -285,7 +272,31 @@ public class Pet : Item
 
     public override void setExpiration(long expire)
     {
-        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expiration;
+        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
+    }
+
+    public Pet? EvolvePet(Player owner)
+    {
+        if (!SourceTemplate.CanEvol)
+            return null;
+
+        var nextPet = new LotteryMachine<int>(SourceTemplate.Evols.Select((x, idx) => new LotteryMachinItem<int>(x, SourceTemplate.EvolProbs[idx])))
+            .GetRandomItem();
+        var nextPetTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(nextPet) as PetItemTemplate;
+        if (nextPetTemplate == null)
+            return null;
+
+        var evolved = new Pet(nextPetTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+
+        var fromDefaultName = owner.Client.CurrentCulture.GetItemName(getItemId()) ?? Name;
+        var nextDefaultName = owner.Client.CurrentCulture.GetItemName(nextPet) ?? Name;
+        evolved.Name = Name == fromDefaultName ? nextDefaultName : Name;
+        evolved.Tameness = Tameness;
+        evolved.Fullness = Fullness;
+        evolved.Level = Level;
+        evolved.setExpiration(owner.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(nextPetTemplate.Life).ToUnixTimeMilliseconds());
+
+        return evolved;
     }
 }
 

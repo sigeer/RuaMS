@@ -6,18 +6,18 @@ message InviteGuestRequest {
 	int32 marriageId = 1;
 	int32 masterId = 2;
 	string guestName = 3;
+	int32 itemId = 4;
 }
 
 message InviteGuestResponse {
 	int32 code = 1;
-}
+	InviteGuestRequest request = 2;
+	int32 weddingId = 3;
+	int32 guestId = 4;
+	bool isCathedral = 5;
+	string groomName = 6;
+	string brideName = 7;
 
-message InviteGuestCallback {
-	int32 weddingId = 2;
-	int32 guestId = 3;
-	bool isCathedral = 7;
-	string groomName = 5;
-	string brideName = 6;
 }
 
 message WeddingInfoDto {

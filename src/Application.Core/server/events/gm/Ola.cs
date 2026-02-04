@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
 using tools;
 
@@ -28,34 +29,39 @@ namespace server.events.gm;
 
 
 
-/**
- * @author kevintjuh93
- */
+/// <summary>
+/// TODO: 待重构，让其与WorldChannel关联或EventInstance
+/// </summary>
 public class Ola
 {
-    private IPlayer chr;
+    private Player chr;
     private long time = 0;
     private long timeStarted = 0;
     private ScheduledFuture? schedule = null;
 
-    public Ola(IPlayer chr)
+    public Ola(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServerContainer.TimerManager.schedule(() =>
+        this.schedule = chr.Client.CurrentServer.Node.TimerManager.schedule(() =>
         {
-            if (MapId.isOlaOla(chr.getMapId()))
-            {
-                chr.changeMap(chr.getMap().getReturnMap());
-            }
-            resetTimes();
-        }, 360000);
+            chr.Client.CurrentServer.Post(new EventOlaTimeoutCommand(this));
+        }, 360_000);
+    }
+
+    public void ProcessTimeout()
+    {
+        if (MapId.isOlaOla(chr.getMapId()))
+        {
+            chr.changeMap(chr.getMap().getReturnMap());
+        }
+        resetTimes();
     }
 
     public void startOla()
     { // TODO: Messages
         chr.getMap().startEvent();
         chr.sendPacket(PacketCreator.getClock(360));
-        this.timeStarted = chr.getChannelServer().Container.getCurrentTime();
+        this.timeStarted = chr.getChannelServer().Node.getCurrentTime();
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
@@ -81,6 +87,6 @@ public class Ola
 
     public long getTimeLeft()
     {
-        return time - (chr.getChannelServer().Container.getCurrentTime() - timeStarted);
+        return time - (chr.getChannelServer().Node.getCurrentTime() - timeStarted);
     }
 }

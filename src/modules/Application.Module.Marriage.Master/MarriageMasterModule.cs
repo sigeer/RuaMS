@@ -2,6 +2,7 @@ using Application.Core.Login;
 using Application.Core.Login.Models;
 using Application.Core.Login.Modules;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Module.Marriage.Master
 {
@@ -13,9 +14,9 @@ namespace Application.Module.Marriage.Master
             _marriageManager = marriageManager;
         }
 
-        public override void OnPlayerLogin(CharacterLiveObject obj, bool isNewComer)
+        public override async Task OnPlayerLogin(CharacterLiveObject obj)
         {
-            base.OnPlayerLogin(obj, isNewComer);
+            await base.OnPlayerLogin(obj);
 
             var info = _marriageManager.GetEffectMarriageModel(obj.Character.Id);
             if (info != null)
@@ -24,15 +25,15 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
-                    _marriageManager.NotifyPartner(obj.Character.Id, partner.Character.Id, partner.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(obj.Character.Id, partner.Character.Id, partner.Character.Map);
                 }
             }
         }
 
-        public override void OnPlayerLogoff(CharacterLiveObject obj)
+        public override async Task OnPlayerLogoff(CharacterLiveObject obj)
         {
-            base.OnPlayerLogoff(obj);
+            await base.OnPlayerLogoff(obj);
 
             var info = _marriageManager.GetEffectMarriageModel(obj.Character.Id);
             if (info != null)
@@ -41,14 +42,14 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }
 
-        public override void OnPlayerMapChanged(CharacterLiveObject obj)
+        public override async Task OnPlayerMapChanged(CharacterLiveObject obj)
         {
-            base.OnPlayerMapChanged(obj);
+            await base.OnPlayerMapChanged(obj);
 
             var info = _marriageManager.GetEffectMarriageModel(obj.Character.Id);
             if (info != null)
@@ -57,14 +58,14 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }
 
-        public override void OnPlayerEnterCashShop(CharacterLiveObject obj)
+        public override async Task OnPlayerEnterCashShop(CharacterLiveObject obj)
         {
-            base.OnPlayerEnterCashShop(obj);
+            await base.OnPlayerEnterCashShop(obj);
 
             var info = _marriageManager.GetEffectMarriageModel(obj.Character.Id);
             if (info != null)
@@ -73,7 +74,7 @@ namespace Application.Module.Marriage.Master
                 var partner = _server.CharacterManager.FindPlayerById(partnerId);
                 if (partner != null && partner.Channel > 0)
                 {
-                    _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
+                    await _marriageManager.NotifyPartner(partner.Character.Id, obj.Character.Id, obj.Character.Map);
                 }
             }
         }

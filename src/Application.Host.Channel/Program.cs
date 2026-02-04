@@ -1,20 +1,17 @@
-using Application.Module.Duey.Channel;
+using Application.Core.Channel.HostExtensions;
 using Application.Module.Maker.Channel;
-using Application.Module.PlayerNPC.Channel;
-using Serilog.Events;
+using Application.Utility;
 using Serilog;
+using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
-using Application.Shared.Servers;
-using Application.Utility;
-using Application.Protos;
-using ServiceProto;
-using Application.Host.Channel;
-using Application.Core.Channel.HostExtensions;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+Console.OutputEncoding = Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 builder.Configuration.AddEnvironmentVariables(AppSettingKeys.EnvPrefix);
 YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
@@ -48,32 +45,13 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
 builder.AddChannelServer();
-builder.Services.AddGrpc(options =>
-{
-    options.Interceptors.Add<LoggingInterceptor>();
-});
-
-builder.Services.AddDueyChannel();
 builder.Services.AddMakerChannel();
-builder.Services.AddPlayerNPCChannel();
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.GrpcPort), listenOptions =>
-    {
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-    });
-
-    options.ListenAnyIP(builder.Configuration.GetValue<int>(AppSettingKeys.MetricsPort), listenOptions =>
-    {
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
-    });
-});
 
 var app = builder.Build();
 
 app.UseChannelServer();
 
-app.MapGrpcService<WorldChannelGrpcServer>();
 
+//var p1 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://ruams-master", CancellationToken.None);
+//var p2 = await app.Services.GetRequiredService<ServiceEndpointResolver>().GetEndpointsAsync("http://_grpc.ruams-master", CancellationToken.None);
 app.Run();

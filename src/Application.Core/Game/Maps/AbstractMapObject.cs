@@ -83,4 +83,11 @@ public abstract class AbstractMapObject : IMapObject
     {
         return getObjectId();
     }
+
+    public virtual void MapRemove()
+    {
+        getMap().removeMapObject(this);
+        getMap().BroadcastAll(chr => sendDestroyData(chr.Client));
+    }
+
 }

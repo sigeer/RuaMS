@@ -27,6 +27,5 @@ public class ClearCacheCommand : ParamsCommandBase
             AbstractScriptManager.ClearCache();
             c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
-
     }
 }

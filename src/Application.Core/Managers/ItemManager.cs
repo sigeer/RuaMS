@@ -8,7 +8,7 @@ namespace Application.Core.Managers
     public class ItemManager
     {
 
-        public static void UpdateEquip(IPlayer player, int newStat, int newSpdJmp)
+        public static void UpdateEquip(Player player, int newStat, int newSpdJmp)
         {
             Inventory equip = player.getInventory(InventoryType.EQUIP);
 
@@ -83,7 +83,7 @@ namespace Application.Core.Managers
             return equippedWithStat;
         }
 
-        public static string ShowEquipFeatures(IPlayer chr, Equip equip)
+        public static string ShowEquipFeatures(Player chr, Equip equip)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             if (!equip.SourceTemplate.IsUpgradeable())

@@ -46,7 +46,7 @@ namespace Application.Core.Game.Commands
             set => _currentCommand = value;
         }
 
-        public virtual void Run(IChannelClient client, string[] values)
+        public virtual void RunAsync(IChannelClient client, string[] values)
         {
             try
             {

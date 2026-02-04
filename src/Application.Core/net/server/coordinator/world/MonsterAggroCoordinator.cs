@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -32,21 +33,18 @@ namespace net.server.coordinator.world;
  */
 public class MonsterAggroCoordinator
 {
-    private object lockObj = new object();
-    private object idleLock = new object();
     private long lastStopTime;
 
     private ScheduledFuture? aggroMonitor = null;
 
-    private Dictionary<Monster, Dictionary<int, PlayerAggroEntry>> mobAggroEntries = new();
-    private Dictionary<Monster, List<PlayerAggroEntry>> mobSortedAggros = new();
+    private Dictionary<Monster, PlayerAggroObject> mobAggroEntries = new();
 
     private HashSet<int> mapPuppetEntries = new();
     MapleMap Map { get; }
     public MonsterAggroCoordinator(MapleMap map)
     {
         Map = map;
-        lastStopTime = map.ChannelServer.Container.getCurrentTime();
+        lastStopTime = map.ChannelServer.Node.getCurrentTime();
     }
 
     private class PlayerAggroEntry(int cid)
@@ -62,53 +60,44 @@ public class MonsterAggroCoordinator
         public int entryRank = -1;
     }
 
+    private record PlayerAggroObject(Dictionary<int, PlayerAggroEntry> Items, List<PlayerAggroEntry> CachedView);
+
     public void stopAggroCoordinator()
     {
-        Monitor.Enter(idleLock);
-        try
+        if (aggroMonitor == null)
         {
-            if (aggroMonitor == null)
-            {
-                return;
-            }
-
-            aggroMonitor.cancel(false);
-            aggroMonitor = null;
-        }
-        finally
-        {
-            Monitor.Exit(idleLock);
+            return;
         }
 
-        lastStopTime = Map.ChannelServer.Container.getCurrentTime();
+        aggroMonitor.cancel(false);
+        aggroMonitor = null;
+
+        lastStopTime = Map.ChannelServer.Node.getCurrentTime();
     }
 
     public void startAggroCoordinator()
     {
-        Monitor.Enter(idleLock);
-        try
+        if (aggroMonitor != null)
         {
-            if (aggroMonitor != null)
-            {
-                return;
-            }
-
-            aggroMonitor = Map.ChannelServer.Container.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
-            {
-                runAggroUpdate(1);
-                runSortLeadingCharactersAggro();
-            }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
-        }
-        finally
-        {
-            Monitor.Exit(idleLock);
+            return;
         }
 
-        int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Container.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+        aggroMonitor = Map.ChannelServer.Node.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
+        {
+            Map.ChannelServer.Post(new MapMobAggroCommand(Map));
+        }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+
+        int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Node.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
         if (timeDelta > 0)
         {
             runAggroUpdate(timeDelta);
         }
+    }
+
+    public void RunAggro()
+    {
+        runAggroUpdate(1);
+        runSortLeadingCharactersAggro();
     }
 
     private static void updateEntryExpiration(PlayerAggroEntry pae)
@@ -118,44 +107,38 @@ public class MonsterAggroCoordinator
 
     private static void insertEntryDamage(PlayerAggroEntry pae, int damage)
     {
-        lock (pae)
-        {
-            long totalDamage = pae.averageDamage;
-            totalDamage *= pae.currentDamageInstances;
-            totalDamage += damage;
+        long totalDamage = pae.averageDamage;
+        totalDamage *= pae.currentDamageInstances;
+        totalDamage += damage;
 
-            pae.expireStreak = 0;
-            pae.updateStreak = 0;
-            updateEntryExpiration(pae);
+        pae.expireStreak = 0;
+        pae.updateStreak = 0;
+        updateEntryExpiration(pae);
 
-            pae.currentDamageInstances += 1;
-            pae.averageDamage = (int)(totalDamage / pae.currentDamageInstances);
-            pae.accumulatedDamage = totalDamage;
-        }
+        pae.currentDamageInstances += 1;
+        pae.averageDamage = (int)(totalDamage / pae.currentDamageInstances);
+        pae.accumulatedDamage = totalDamage;
     }
 
     private static bool expiredAfterUpdateEntryDamage(PlayerAggroEntry pae, int deltaTime)
     {
-        lock (pae)
-        {
-            pae.updateStreak += 1;
-            pae.toNextUpdate -= deltaTime;
+        pae.updateStreak += 1;
+        pae.toNextUpdate -= deltaTime;
 
-            if (pae.toNextUpdate <= 0)
-            {    // reached dmg instance expire time
-                pae.expireStreak += 1;
-                updateEntryExpiration(pae);
+        if (pae.toNextUpdate <= 0)
+        {    // reached dmg instance expire time
+            pae.expireStreak += 1;
+            updateEntryExpiration(pae);
 
-                pae.currentDamageInstances -= 1;
-                if (pae.currentDamageInstances < 1)
-                {   // expired aggro for this player
-                    return true;
-                }
-                pae.accumulatedDamage = pae.averageDamage * pae.currentDamageInstances;
+            pae.currentDamageInstances -= 1;
+            if (pae.currentDamageInstances < 1)
+            {   // expired aggro for this player
+                return true;
             }
-
-            return false;
+            pae.accumulatedDamage = pae.averageDamage * pae.currentDamageInstances;
         }
+
+        return false;
     }
 
     public void addAggroDamage(Monster mob, int cid, int damage)
@@ -165,61 +148,20 @@ public class MonsterAggroCoordinator
             return;
         }
 
-        var sortedAggro = mobSortedAggros.GetValueOrDefault(mob);
-        Dictionary<int, PlayerAggroEntry>? mobAggro = mobAggroEntries.GetValueOrDefault(mob);
+        var mobAggro = mobAggroEntries.GetValueOrDefault(mob);
         if (mobAggro == null)
         {
-            if (Monitor.TryEnter(lockObj))
-            {   // can run unreliably, as fast as possible... try lock that is!
-                try
-                {
-                    mobAggro = mobAggroEntries.GetValueOrDefault(mob);
-                    if (mobAggro == null)
-                    {
-                        mobAggro = new();
-                        mobAggroEntries.AddOrUpdate(mob, mobAggro);
-
-                        sortedAggro = new();
-                        mobSortedAggros.AddOrUpdate(mob, sortedAggro);
-                    }
-                    else
-                    {
-                        sortedAggro = mobSortedAggros.GetValueOrDefault(mob);
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(lockObj);
-                }
-            }
-            else
-            {
-                return;
-            }
+            mobAggro = new(new Dictionary<int, PlayerAggroEntry>(), new List<PlayerAggroEntry>());
+            mobAggroEntries[mob] = mobAggro;
         }
 
-        var aggroEntry = mobAggro.GetValueOrDefault(cid);
+        var aggroEntry = mobAggro.Items.GetValueOrDefault(cid);
         if (aggroEntry == null)
         {
             aggroEntry = new PlayerAggroEntry(cid);
 
-            lock (mobAggro)
-            {
-                lock (sortedAggro!)
-                {
-                    var mappedEntry = mobAggro.GetValueOrDefault(cid);
-
-                    if (mappedEntry == null)
-                    {
-                        mobAggro.AddOrUpdate(aggroEntry.cid, aggroEntry);
-                        sortedAggro.Add(aggroEntry);
-                    }
-                    else
-                    {
-                        aggroEntry = mappedEntry;
-                    }
-                }
-            }
+            mobAggro.Items[cid] = aggroEntry;
+            mobAggro.CachedView.Add(aggroEntry);
         }
         else if (damage < 1)
         {
@@ -231,106 +173,45 @@ public class MonsterAggroCoordinator
 
     private void runAggroUpdate(int deltaTime)
     {
-        List<KeyValuePair<Monster, Dictionary<int, PlayerAggroEntry>>> aggroMobs = new();
-        Monitor.Enter(lockObj);
-        try
-        {
-            aggroMobs = mobAggroEntries.ToList();
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        var aggroMobs = mobAggroEntries.ToList();
 
         foreach (var am in aggroMobs)
         {
-            Dictionary<int, PlayerAggroEntry> mobAggro = am.Value;
-            var sortedAggro = mobSortedAggros.GetValueOrDefault(am.Key);
+            var dataList = am.Value.CachedView.ToArray();
 
-            if (sortedAggro != null)
+            List<int> toRemove = new();
+
+            foreach (PlayerAggroEntry pae in dataList)
             {
-                List<int> toRemove = new();
-                List<int> toRemoveIdx = new(mobAggro.Count);
-                List<int> toRemoveByFetch = new();
-
-                lock (mobAggro)
+                if (expiredAfterUpdateEntryDamage(pae, deltaTime))
                 {
-                    lock (sortedAggro)
+                    toRemove.Add(pae.cid);
+                }
+            }
+
+            if (toRemove.Count > 0)
+            {
+                foreach (int cid in toRemove)
+                {
+                    am.Value.Items.Remove(cid);
+                }
+
+                if (am.Value.Items.Count == 0)
+                {   // all aggro on this mob expired
+                    if (!am.Key.isBoss())
                     {
-                        foreach (PlayerAggroEntry pae in mobAggro.Values)
-                        {
-                            if (expiredAfterUpdateEntryDamage(pae, deltaTime))
-                            {
-                                toRemove.Add(pae.cid);
-                                if (pae.entryRank > -1)
-                                {
-                                    toRemoveIdx.Add(pae.entryRank);
-                                }
-                                else
-                                {
-                                    toRemoveByFetch.Add(pae.cid);
-                                }
-                            }
-                        }
-
-                        if (toRemove.Count > 0)
-                        {
-                            foreach (int cid in toRemove)
-                            {
-                                mobAggro.Remove(cid);
-                            }
-
-                            if (mobAggro.Count == 0)
-                            {   // all aggro on this mob expired
-                                if (!am.Key.isBoss())
-                                {
-                                    am.Key.aggroResetAggro();
-                                }
-                            }
-                        }
-
-                        if (toRemoveIdx.Count > 0)
-                        {
-                            // last to first indexes
-                            toRemoveIdx.Sort((p1, p2) => p2.CompareTo(p1));
-
-                            foreach (int idx in toRemoveIdx)
-                            {
-                                sortedAggro.RemoveAt(idx);
-                            }
-                        }
-
-                        if (toRemoveByFetch.Count > 0)
-                        {
-                            foreach (int cid in toRemoveByFetch)
-                            {
-                                for (int i = 0; i < sortedAggro.Count; i++)
-                                {
-                                    if (cid.Equals(sortedAggro.get(i).cid))
-                                    {
-                                        sortedAggro.RemoveAt(i);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        am.Key.aggroResetAggro();
                     }
                 }
             }
+
+            am.Value.CachedView.RemoveAll(x => toRemove.Contains(x.cid));
+
         }
     }
 
-    private static void insertionSortAggroList(List<PlayerAggroEntry> paeList)
-    {
-        paeList.Sort((a, b) => b.accumulatedDamage.CompareTo(a.accumulatedDamage));
 
-        for (int i = 0; i < paeList.Count; i++)
-        {
-            paeList[i].entryRank = i;
-        }
-    }
-
-    public bool isLeadingCharacterAggro(Monster mob, IPlayer player)
+    public bool isLeadingCharacterAggro(Monster mob, Player player)
     {
         if (mob.isLeadingPuppetInVicinity())
         {
@@ -344,11 +225,10 @@ public class MonsterAggroCoordinator
         // by assuming the quasi-sorted nature of "mobAggroList", this method
         // returns whether the player given as parameter can be elected as next aggro leader
 
-        var mobAggroList = mobSortedAggros.GetValueOrDefault(mob);
-        if (mobAggroList != null)
+        var obj = mobAggroEntries.GetValueOrDefault(mob);
+        if (obj != null)
         {
-
-            mobAggroList = new(mobAggroList.Take(Math.Min(mobAggroList.Count, 5)));
+            var mobAggroList = obj.CachedView.Take(5).ToArray();
 
             var map = mob.getMap();
             foreach (PlayerAggroEntry pae in mobAggroList)
@@ -373,77 +253,43 @@ public class MonsterAggroCoordinator
 
     public void runSortLeadingCharactersAggro()
     {
-        List<List<PlayerAggroEntry>> aggroList;
-        Monitor.Enter(lockObj);
-        try
-        {
-            aggroList = new(mobSortedAggros.Values);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        var aggroList = mobAggroEntries.Values.ToArray();
 
-        foreach (List<PlayerAggroEntry> mobAggroList in aggroList)
+        foreach (var mobAggroList in aggroList)
         {
-            lock (mobAggroList)
+            mobAggroList.CachedView.Sort((a, b) => b.accumulatedDamage.CompareTo(a.accumulatedDamage));
+
+            for (int i = 0; i < mobAggroList.CachedView.Count; i++)
             {
-                insertionSortAggroList(mobAggroList);
+                mobAggroList.CachedView[i].entryRank = i;
             }
         }
     }
 
     public void removeAggroEntries(Monster mob)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            mobAggroEntries.Remove(mob);
-            mobSortedAggros.Remove(mob);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        mobAggroEntries.Remove(mob);
     }
 
-    public void addPuppetAggro(IPlayer player)
+    public void addPuppetAggro(Player player)
     {
-        lock (mapPuppetEntries)
-        {
-            mapPuppetEntries.Add(player.getId());
-        }
+        mapPuppetEntries.Add(player.getId());
     }
 
     public void removePuppetAggro(int cid)
     {
-        lock (mapPuppetEntries)
-        {
-            mapPuppetEntries.Remove(cid);
-        }
+        mapPuppetEntries.Remove(cid);
     }
 
     public List<int> getPuppetAggroList()
     {
-        lock (mapPuppetEntries)
-        {
-            return new(mapPuppetEntries);
-        }
+        return new(mapPuppetEntries);
     }
 
     public void dispose()
     {
         stopAggroCoordinator();
 
-        Monitor.Enter(lockObj);
-        try
-        {
-            mobAggroEntries.Clear();
-            mobSortedAggros.Clear();
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        mobAggroEntries.Clear();
     }
 }

@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Relation;
 
 namespace Application.Core.Gameplay.ChannelEvents
@@ -11,7 +12,6 @@ namespace Application.Core.Gameplay.ChannelEvents
         private long[] dojoFinishTime;
         private ScheduledFuture?[] dojoTask;
         private Dictionary<int, int> dojoParty = new();
-        private object lockObj = new object();
 
         public const int StageCount = 20;
         public DojoInstance(WorldChannel channel)
@@ -55,56 +55,48 @@ namespace Application.Core.Gameplay.ChannelEvents
 
         public int IngressDojo(bool isPartyDojo, Team? party, int fromStage)
         {
-            Monitor.Enter(lockObj);
-            try
+            int dojoList = this.usedDojo;
+            int range, slot = 0;
+
+            if (!isPartyDojo)
             {
-                int dojoList = this.usedDojo;
-                int range, slot = 0;
-
-                if (!isPartyDojo)
-                {
-                    dojoList = dojoList >> 5;
-                    range = 15;
-                }
-                else
-                {
-                    range = 5;
-                }
-
-                while ((dojoList & 1) != 0)
-                {
-                    dojoList = (dojoList >> 1);
-                    slot++;
-                }
-
-                if (slot < range)
-                {
-                    int slotMapid = (isPartyDojo ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE) + (100 * (fromStage + 1)) + slot;
-                    int dojoSlot = GetDojoSlot(slotMapid);
-
-                    if (party != null)
-                    {
-                        if (dojoParty.ContainsKey(party.GetHashCode()))
-                        {
-                            return -2;
-                        }
-                        dojoParty.Add(party.GetHashCode(), dojoSlot);
-                    }
-
-                    this.usedDojo |= (1 << dojoSlot);
-
-                    this.ResetDojo(slotMapid);
-                    this.startDojoSchedule(slotMapid);
-                    return slot;
-                }
-                else
-                {
-                    return -1;
-                }
+                dojoList = dojoList >> 5;
+                range = 15;
             }
-            finally
+            else
             {
-                Monitor.Exit(lockObj);
+                range = 5;
+            }
+
+            while ((dojoList & 1) != 0)
+            {
+                dojoList = (dojoList >> 1);
+                slot++;
+            }
+
+            if (slot < range)
+            {
+                int slotMapid = (isPartyDojo ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE) + (100 * (fromStage + 1)) + slot;
+                int dojoSlot = GetDojoSlot(slotMapid);
+
+                if (party != null)
+                {
+                    if (dojoParty.ContainsKey(party.GetHashCode()))
+                    {
+                        return -2;
+                    }
+                    dojoParty.Add(party.GetHashCode(), dojoSlot);
+                }
+
+                this.usedDojo |= (1 << dojoSlot);
+
+                this.ResetDojo(slotMapid);
+                this.startDojoSchedule(slotMapid);
+                return slot;
+            }
+            else
+            {
+                return -1;
             }
         }
 
@@ -113,15 +105,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             int mask = 0b11111111111111111111;
             mask ^= (1 << slot);
 
-            Monitor.Enter(lockObj);
-            try
-            {
-                usedDojo &= mask;
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
+            usedDojo &= mask;
 
             if (party != null)
             {
@@ -199,46 +183,46 @@ namespace Application.Core.Gameplay.ChannelEvents
 
             long clockTime = (stage > 36 ? 15 : (stage / 6) + 5) * 60000;
 
-            Monitor.Enter(lockObj);
-            try
+            if (this.dojoTask[slot] != null)
             {
-                if (this.dojoTask[slot] != null)
+                this.dojoTask[slot]!.cancel(false);
+            }
+            this.dojoTask[slot] = Channel.Node.TimerManager.schedule(() =>
+            {
+                Channel.Post(new DojoTimeoutCommand(this, dojoMapId));
+            }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
+
+            dojoFinishTime[slot] = this.Channel.Node.getCurrentTime() + clockTime;
+        }
+
+        public void ProcessTimeout(int dojoMapId)
+        {
+            int slot = GetDojoSlot(dojoMapId);
+            int stage = (dojoMapId / 100) % 100;
+
+            int delta = (dojoMapId) % 100;
+            int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
+            Team? party = null;
+
+            for (int i = 0; i < 5; i++)
+            { //only 32 stages, but 38 maps
+                if (stage + i > 38)
                 {
-                    this.dojoTask[slot]!.cancel(false);
+                    break;
                 }
-                this.dojoTask[slot] = Channel.Container.TimerManager.schedule(() =>
+
+                var dojoExit = this.Channel.getMapFactory().getMap(MapId.DOJO_EXIT);
+                foreach (var chr in this.Channel.getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta).getAllPlayers())
                 {
-                    int delta = (dojoMapId) % 100;
-                    int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
-                    Team? party = null;
-
-                    for (int i = 0; i < 5; i++)
-                    { //only 32 stages, but 38 maps
-                        if (stage + i > 38)
-                        {
-                            break;
-                        }
-
-                        var dojoExit = this.Channel.getMapFactory().getMap(MapId.DOJO_EXIT);
-                        foreach (var chr in this.Channel.getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta).getAllPlayers())
-                        {
-                            if (MapId.isDojo(chr.getMap().getId()))
-                            {
-                                chr.changeMap(dojoExit);
-                            }
-                            party = chr.getParty();
-                        }
+                    if (MapId.isDojo(chr.getMap().getId()))
+                    {
+                        chr.changeMap(dojoExit);
                     }
-
-                    FreeDojoSlot(slot, party);
-                }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
+                    party = chr.getParty();
+                }
             }
 
-            dojoFinishTime[slot] = this.Channel.Container.getCurrentTime() + clockTime;
+            FreeDojoSlot(slot, party);
         }
 
         public void DismissDojoSchedule(int dojoMapId, Team party)
@@ -250,18 +234,10 @@ namespace Application.Core.Gameplay.ChannelEvents
                 return;
             }
 
-            Monitor.Enter(lockObj);
-            try
+            if (this.dojoTask[slot] != null)
             {
-                if (this.dojoTask[slot] != null)
-                {
-                    this.dojoTask[slot]!.cancel(false);
-                    this.dojoTask[slot] = null;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
+                this.dojoTask[slot]!.cancel(false);
+                this.dojoTask[slot] = null;
             }
 
             FreeDojoSlot(slot, party);

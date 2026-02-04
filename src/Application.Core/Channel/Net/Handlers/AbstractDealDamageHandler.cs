@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Gameplay;
@@ -35,6 +36,7 @@ using Microsoft.Extensions.Logging;
 using scripting;
 using server;
 using server.life;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -52,7 +54,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    protected void applyAttack(AttackInfo attack, IPlayer player, int attackCount)
+    protected void applyAttack(AttackInfo attack, Player player, int attackCount)
     {
         var map = player.getMap();
         if (map.isOwnershipRestricted(player))
@@ -613,19 +615,18 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         }
     }
 
-    private static void damageMonsterWithSkill(IPlayer attacker, IMap map, Monster monster, int damage, int skillid, int fixedTime)
+    private static void damageMonsterWithSkill(Player attacker, IMap map, Monster monster, int damage, int skillid, int fixedTime)
     {
         int animationTime = fixedTime == 0 ? SkillFactory.GetSkillTrust(skillid).getAnimationTime() : fixedTime;
 
         var damageCore = () =>
         {
-            map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), damage), monster.getPosition());
-            map.damageMonster(attacker, monster, damage);
+            attacker.Client.CurrentServer.Post(new DamageMobFromSkillCommand(map, monster, attacker, damage));
         };
         if (animationTime > 0)
         {
             // be sure to only use LIMITED ATTACKS with animation time here
-            attacker.Client.CurrentServerContainer.TimerManager.schedule(damageCore, animationTime);
+            attacker.Client.CurrentServer.Node.TimerManager.schedule(damageCore, animationTime);
         }
         else
         {
@@ -633,7 +634,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         }
     }
 
-    protected AttackInfo parseDamage(InPacket p, IPlayer chr, bool ranged, bool magic)
+    protected AttackInfo parseDamage(InPacket p, Player chr, bool ranged, bool magic)
     {
         //2C 00 00 01 91 A1 12 00 A5 57 62 FC E2 75 99 10 00 47 80 01 04 01 C6 CC 02 DD FF 5F 00
         AttackInfo ret = new AttackInfo();
@@ -1156,9 +1157,6 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             {
                 return;
             }
-            mapItem.lockItem();
-            try
-            {
                 if (mapItem.isPickedUp())
                 {
                     return;
@@ -1166,11 +1164,6 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 int delay = attack.attackDelay + (index++ % 5) * EXPLODED_MESO_SPREAD_DELAY;
                 delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
                 map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
-            }
-            finally
-            {
-                mapItem.unlockItem();
-            }
         }
     }
 }

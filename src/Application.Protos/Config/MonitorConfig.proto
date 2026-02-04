@@ -10,8 +10,9 @@ message ToggleMonitorPlayerRequest {
 }
 
 message ToggleMonitorPlayerResponse {
-	bool isSuccess = 1;
-	bool isMonitored = 2;
+	int32 code = 1;
+	ToggleMonitorPlayerRequest request = 2;
+	bool isMonitored = 3;
 }
 
 message MonitorDataWrapper {
