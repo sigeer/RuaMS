@@ -97,7 +97,6 @@ public partial class Player
     private bool hidden, equipchanged = true, hasSandboxItem = false, whiteChat = false;
     private bool equippedMesoMagnet = false, equippedItemPouch = false, equippedPetItemIgnore = false;
     private bool usedSafetyCharm = false;
-    private float autopotHpAlert, autopotMpAlert;
     public CharacterLink? Link { get; set; }
 
     private string? chalktext = null;
@@ -2805,6 +2804,7 @@ public partial class Player
         {
             eim.playerKilled(this);
         }
+        usedSafetyCharm = false;
 
         if (JobModel != Job.BEGINNER
             && !MapId.isDojo(getMapId())
@@ -2857,7 +2857,6 @@ public partial class Player
                     loseExp(curExp, false, false);
                 }
             }
-
         }
 
         cancelEffectFromBuffStat(BuffStat.MORPH);
@@ -2868,17 +2867,9 @@ public partial class Player
         sendPacket(PacketCreator.enableActions());
     }
 
+
     public void respawn(int returnMap)
     {
-        respawn(null, returnMap);    // unspecified EIM, don't force EIM unregister in this case
-    }
-
-    public void respawn(AbstractEventInstanceManager? eim, int returnMap)
-    {
-        if (eim != null)
-        {
-            eim.unregisterPlayer(this);    // some event scripts uses this...
-        }
         changeMap(returnMap);
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
@@ -4133,25 +4124,6 @@ public partial class Player
         this.dragon = dragon;
     }
 
-    public void setAutopotHpAlert(float hpPortion)
-    {
-        autopotHpAlert = hpPortion;
-    }
-
-    public float getAutopotHpAlert()
-    {
-        return autopotHpAlert;
-    }
-
-    public void setAutopotMpAlert(float mpPortion)
-    {
-        autopotMpAlert = mpPortion;
-    }
-
-    public float getAutopotMpAlert()
-    {
-        return autopotMpAlert;
-    }
     public string getLastCommandMessage()
     {
         return this.commandtext ?? string.Empty;
