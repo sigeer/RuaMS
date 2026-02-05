@@ -1,4 +1,6 @@
+using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
+using Application.Utility.Performance;
 
 namespace Application.Core.Game.Commands
 {
@@ -56,6 +58,7 @@ namespace Application.Core.Game.Commands
                     return;
                 }
 
+                using var activity = GameMetrics.ActivitySource.StartActivity($"ExecuteCommand:{CurrentCommand}");
                 Execute(client, values);
             }
             catch (CommandArgumentException ex)

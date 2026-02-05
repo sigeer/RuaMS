@@ -1,5 +1,7 @@
 using Application.Core.Channel.Internal;
+using Application.Utility.Performance;
 using Google.Protobuf;
+using System.Diagnostics;
 
 namespace Application.Core.Channel.Commands
 {
@@ -16,6 +18,9 @@ namespace Application.Core.Channel.Commands
 
         public void Execute(ChannelNodeCommandContext ctx)
         {
+            using var activity = GameMetrics.ActivitySource.StartActivity(nameof(HandleMasterPacketCommand));
+            activity?.SetTag("Handler", _handler.GetType().Name);
+
             _handler.Handle(_content);
         }
     }

@@ -6,7 +6,7 @@ namespace Application.Core.Channel.Tasks
     {
         readonly WorldChannelServer _server;
 
-        public CharacterDiseaseTask(WorldChannelServer server) : base($"{server.ServerName}_{nameof(CharacterDiseaseTask)}",
+        public CharacterDiseaseTask(WorldChannelServer server) : base($"{server.InstanceName}_{nameof(CharacterDiseaseTask)}",
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL),
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL))
         {

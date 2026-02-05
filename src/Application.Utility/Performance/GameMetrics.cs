@@ -1,10 +1,16 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
 namespace Application.Utility.Performance
 {
     public class GameMetrics
     {
-        private static readonly Meter MyMeter = new("RuaMS.GameMetrics", "1.0.0");
+        public const string MetricsName = "RuaMS.GameMetrics";
+        public const string ActivityName = "RuaMS.GameServer";
+
+        public static ActivitySource ActivitySource { get; set; } = new ActivitySource(ActivityName, "1.0.0");
+
+        private static readonly Meter MyMeter = new(MetricsName, "1.0.0");
 
         public static readonly UpDownCounter<int> CasgShopPlayerCount = MyMeter.CreateUpDownCounter<int>("game_cashshop_players", description: "商城玩家数");
         public static readonly UpDownCounter<int> OnlinePlayerCount = MyMeter.CreateUpDownCounter<int>("game_online_players", description: "在线玩家数");

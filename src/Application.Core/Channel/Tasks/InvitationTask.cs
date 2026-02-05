@@ -6,7 +6,7 @@ namespace Application.Core.Channel.Tasks
     {
         readonly WorldChannelServer _server;
 
-        public InvitationTask(WorldChannelServer server) : base($"{server.ServerName}_{nameof(InvitationTask)}")
+        public InvitationTask(WorldChannelServer server) : base($"{server.InstanceName}_{nameof(InvitationTask)}")
         {
             _server = server;
         }

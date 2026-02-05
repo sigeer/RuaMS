@@ -37,7 +37,7 @@ namespace Application.Core.Channel
         public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
-        public string ServerName => ServerConfig.ServerName;
+        public string InstanceName => ServerConfig.ServerName;
         Lazy<SkillbookInformationProvider> _skillbookInformationProvider;
         public SkillbookInformationProvider SkillbookInformationProvider => _skillbookInformationProvider.Value;
         public CashItemProvider CashItemProvider { get; }
@@ -251,10 +251,10 @@ namespace Application.Core.Channel
             {
                 if (!IsRunning)
                 {
-                    _logger.LogInformation("[{ServerName}] 未启动", ServerName);
+                    _logger.LogInformation("[{ServerName}] 未启动", InstanceName);
                     return;
                 }
-                _logger.LogInformation("[{ServerName}] 正在停止...", ServerName);
+                _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
                 await CharacterDiseaseTask.StopAsync();
                 await PetHungerTask.StopAsync();
@@ -282,7 +282,7 @@ namespace Application.Core.Channel
 
                 await TimerManager.Stop();
                 await CommandLoop.DisposeAsync();
-                _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
+                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
 
                 // 有些玩家在CashShop
                 await PlayerStorage.disconnectAll(true);
@@ -292,7 +292,7 @@ namespace Application.Core.Channel
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[{ServerName}] 停止{Status}", ServerName, "失败");
+                _logger.LogError(ex, "[{ServerName}] 停止{Status}", InstanceName, "失败");
             }
             finally
             {
@@ -309,7 +309,7 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
-            CommandLoop.Start(ServerName);
+            CommandLoop.Start(InstanceName);
 
             foreach (var item in ServerConfig.ChannelConfig)
             {
@@ -340,7 +340,7 @@ namespace Application.Core.Channel
             }
 
             IsRunning = true;
-            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, ServerName);
+            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();

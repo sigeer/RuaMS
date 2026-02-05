@@ -4,6 +4,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using Application.Templates.Item.Cash;
+using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -249,6 +250,11 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
+        using var activity = GameMetrics.ActivitySource.StartActivity("HiredMerchant:GainMeso");
+        activity?.SetTag("PlayerId", OwnerId);
+        activity?.SetTag("Player", OwnerName);
+        activity?.SetTag("Meso", meso);
+
         Mesos += meso;
     }
 

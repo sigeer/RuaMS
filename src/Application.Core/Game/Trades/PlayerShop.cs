@@ -1,8 +1,10 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
+using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
+using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -192,6 +194,11 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
+        using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShop:GainMeso");
+        activity?.SetTag("PlayerId", Owner.Id);
+        activity?.SetTag("Player", Owner.Name);
+        activity?.SetTag("Meso", meso);
+
         Owner.GainMeso(meso, GainItemShow.ShowInMessage);
     }
 

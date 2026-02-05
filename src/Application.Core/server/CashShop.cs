@@ -21,7 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel;
 using client.inventory;
+using System.Diagnostics;
+using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace server;
 
@@ -31,8 +34,6 @@ namespace server;
  */
 public class CashShop
 {
-    ILogger? _log;
-
     /// <summary>
     /// 点券
     /// </summary>
@@ -125,6 +126,15 @@ public class CashShop
 
     public bool TryGainCash(int cashType, int cashValue)
     {
+        Activity.Current?.AddEvent(
+        new ActivityEvent(
+            "GainCash",
+            tags: new ActivityTagsCollection
+            {
+                ["CashType"] = cashType,
+                ["Delta"] = cashValue,
+            }));
+
         switch (cashType)
         {
             case NX_CREDIT:
@@ -158,26 +168,24 @@ public class CashShop
 
     public bool BuyCashItem(int type, CashItem? buyItem)
     {
-        if (buyItem == null)
+        if (buyItem == null || !buyItem.isOnSale())
             return false;
 
-        return TryGainCash(type, -buyItem.getPrice());
+
+        if (!TryGainCash(type, -buyItem.getPrice()))
+            return false;
+
+        Log.Logger.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
+                Owner,
+                ClientCulture.SystemCulture.GetItemName(buyItem.getItemId()),
+                buyItem.getSN(),
+                buyItem.getPrice());
+        return true;
     }
 
     public void gainCash(int type, int cash)
     {
-        switch (type)
-        {
-            case NX_CREDIT:
-                NxCredit += cash;
-                break;
-            case MAPLE_POINT:
-                MaplePoint += cash;
-                break;
-            case NX_PREPAID:
-                NxPrepaid += cash;
-                break;
-        }
+        TryGainCash(type, cash);
     }
 
     public void Buy(int type, CashItem? buyItem)
