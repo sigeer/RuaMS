@@ -42,7 +42,7 @@ public class MapManager : IDisposable, INamedInstance
         _channelServer = worldChannel;
         this.evt = eim;
 
-        InstanceName = "MapManager:" + (evt == null ? "None" : evt.getName());
+        InstanceName = $"{worldChannel.InstanceName}:{nameof(MapManager)}:{(evt == null ? "None" : evt.getName())}";
     }
 
     public IMap resetMap(int mapid, out IMap? oldMap)
@@ -63,7 +63,7 @@ public class MapManager : IDisposable, INamedInstance
         maps[mapid] = map;
 
         GameMetrics.ActiveMapCount.Add(1, 
-            new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName), 
+            new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName), 
             new KeyValuePair<string, object?>("Name", InstanceName));
         return map;
     }
@@ -100,7 +100,7 @@ public class MapManager : IDisposable, INamedInstance
         sw.Stop();
 
         GameMetrics.MapTickDuration.Record(sw.Elapsed.TotalMilliseconds,
-            new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName),
+            new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName),
             new KeyValuePair<string, object?>("Name", InstanceName));
     }
 
@@ -109,7 +109,7 @@ public class MapManager : IDisposable, INamedInstance
         if (maps.TryRemove(mapId, out oldMap))
         {
             GameMetrics.ActiveMapCount.Add(-1
-                , new KeyValuePair<string, object?>("Channel", _channelServer.ServerLogName)
+                , new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName)
                 , new KeyValuePair<string, object?>("Name", InstanceName));
             oldMap.Dispose();
         }

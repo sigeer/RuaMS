@@ -11,7 +11,7 @@ namespace Application.Core.Channel.InProgress
     {
         public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels)
         {
-            ServerName = worldChannel.ServerName;
+            ServerName = worldChannel.InstanceName;
             ServerHost = worldChannel.ServerConfig.ServerHost;
             ServerConfigs = channels;
             ChannelServer = worldChannel;

@@ -3519,7 +3519,7 @@ public class MapleMap : IMap, INamedInstance
         }
 
         this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
-        GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.ServerLogName), new KeyValuePair<string, object?>("Map", InstanceName));
+        GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
 
         // 访问商店/开店时应该没办法切换地图
         //if (chr.VisitingShop != null)
@@ -3600,7 +3600,7 @@ public class MapleMap : IMap, INamedInstance
 
 
         characters.Remove(chr.Id);
-        GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.ServerLogName), new KeyValuePair<string, object?>("Map", InstanceName));
+        GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
         if (XiGuai?.Controller == chr)
             XiGuai = null;
 

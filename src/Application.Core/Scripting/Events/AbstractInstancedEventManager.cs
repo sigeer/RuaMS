@@ -61,7 +61,7 @@ namespace Application.Core.Scripting.Events
             if (instances.TryAdd(instanceName, eim))
             {
                 GameMetrics.ChannelEventInstanceCount.Add(1,
-                    new KeyValuePair<string, object?>("Channel", cserv.ServerLogName),
+                    new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
                     new KeyValuePair<string, object?>("Event", getName()));
 
                 return true;
@@ -74,7 +74,7 @@ namespace Application.Core.Scripting.Events
             if (instances.TryRemove(name, out var eim))
             {
                 GameMetrics.ChannelEventInstanceCount.Add(-1,
-                    new KeyValuePair<string, object?>("Channel", cserv.ServerLogName),
+                    new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
                     new KeyValuePair<string, object?>("Event", getName()));
 
                 if (eim != null)

@@ -117,7 +117,7 @@ namespace Application.Core.Channel.InProgress
 
         public Task CompleteChannelShutdown()
         {
-            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerName);
+            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerConfig.ServerName);
             return Task.CompletedTask;
         }
 
@@ -745,7 +745,7 @@ namespace Application.Core.Channel.InProgress
 
         public void HealthCheck(MonitorData data)
         {
-            _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().ServerName].HealthCheck(data);
+            _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().InstanceName].HealthCheck(data);
         }
 
         public bool GainCharacterSlot(int accountId)

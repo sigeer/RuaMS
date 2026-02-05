@@ -7,7 +7,7 @@ namespace Application.Core.Channel.Tasks
         readonly WorldChannel _worldChannel;
 
         public RespawnTask(WorldChannel worldChannel)
-            : base($"{worldChannel.ServerLogName}_{nameof(RespawnTask)}",
+            : base($"{worldChannel.InstanceName}_{nameof(RespawnTask)}",
                   TimeSpan.FromMilliseconds(YamlConfig.config.server.RESPAWN_INTERVAL),
                   TimeSpan.FromMilliseconds(YamlConfig.config.server.RESPAWN_INTERVAL))
         {

@@ -30,11 +30,10 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<ChannelCommandContext>
+public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<ChannelCommandContext>, INamedInstance
 {
     public int Id => channel;
-    public string ServerName { get; }
-    public string ServerLogName { get; }
+    public string InstanceName { get; }
     private ILogger log;
     public bool IsRunning { get; private set; }
 
@@ -146,8 +145,8 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         Node = serverContainer;
         NodeService = serverContainer;
         LifeScope = scope;
-        ServerName = $"频道{channel}";
-        ServerLogName = $"{ServerName}（{serverContainer.ServerName}_{config.Port}）";
+
+        InstanceName = $"{serverContainer.InstanceName}:频道{channel}（{config.Port}）";
         ChannelConfig = config;
         WorldServerMessage = "";
 
@@ -164,7 +163,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(serverHost), Port);
 
         NettyServer = nettyServer;
-        log = LogFactory.GetLogger(ServerLogName);
+        log = LogFactory.GetLogger(InstanceName);
 
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
 
@@ -273,15 +272,15 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     }
     public void Initialize(Config.RegisterServerResult config)
     {
-        log.Information("[{ServerName}] 初始化...", ServerLogName);
+        log.Information("[{ServerName}] 初始化...", InstanceName);
 
         UpdateWorldConfig(config.Config);
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
-            ServerLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+            InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        log.Information("[{ServerName}] 初始化事件...", ServerLogName);
+        log.Information("[{ServerName}] 初始化事件...", InstanceName);
         var loadedEventsCount = eventSM.ReloadEventScript();
-        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", ServerLogName, loadedEventsCount);
+        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
         _respawnTask = new RespawnTask(this);
         _respawnTask.Register(Node.TimerManager);
@@ -295,10 +294,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         InviteChannelHandlerRegistry.Register(new AllianceInviteChannelHandler(this, inviteHandlerLogger));
         InviteChannelHandlerRegistry.Register(new MessengerInviteChannelHandler(this, inviteHandlerLogger));
 
-        log.Information("[{ServerName}] 初始化完成", ServerLogName);
+        log.Information("[{ServerName}] 初始化完成", InstanceName);
 
         log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-            ServerLogName,
+            InstanceName,
             DateTimeOffset.FromUnixTimeMilliseconds(Node.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
@@ -306,9 +305,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public Task StartServer(CancellationToken cancellationToken)
     {
         IsRunning = true;
-        log.Information("[{ServerName}] 启动成功：监听端口{Port}", ServerLogName, Port);
+        log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
 
-        CommandLoop.Start(ServerLogName);
+        CommandLoop.Start(InstanceName);
         return Task.CompletedTask;
     }
 
@@ -326,16 +325,16 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             }
 
             isShuttingDown = true;
-            log.Information("[{ServerName}] 停止中...", ServerLogName);
+            log.Information("[{ServerName}] 停止中...", InstanceName);
 
-            log.Information("[{ServerName}] 停止定时任务...", ServerLogName);
+            log.Information("[{ServerName}] 停止定时任务...", InstanceName);
 
             if (_respawnTask != null)
             {
                 await _respawnTask.StopAsync();
             }
 
-            log.Information("[{ServerName}] 停止定时任务>>>完成", ServerLogName);
+            log.Information("[{ServerName}] 停止定时任务>>>完成", InstanceName);
 
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);
@@ -348,16 +347,16 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             await closeChannelSchedules();
 
             await NettyServer.Stop();
-            log.Information("[{ServerName}] 停止监听", ServerLogName);
+            log.Information("[{ServerName}] 停止监听", InstanceName);
             await CommandLoop.DisposeAsync();
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("[{ServerName}] 已停止", ServerLogName);
+            log.Information("[{ServerName}] 已停止", InstanceName);
         }
         catch (Exception e)
         {
-            log.Error(e, "[{ServerName}] 停止失败", ServerLogName);
+            log.Error(e, "[{ServerName}] 停止失败", InstanceName);
         }
         finally
         {
@@ -401,7 +400,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             GameMetrics.OnlinePlayerCount.Add(-1);
 
         Players.AddPlayer(chr);
-        GameMetrics.OnlinePlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ServerLogName));
+        GameMetrics.OnlinePlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", InstanceName));
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
     }
 
@@ -422,7 +421,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         {
             chr.getMap().removePlayer(chr);
 
-            GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ServerLogName));
+            GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", InstanceName));
             return true;
         }
 
