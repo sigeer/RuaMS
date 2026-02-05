@@ -1,16 +1,16 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="OpenTelemetry" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry" Version="1.15.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="10.0.0" />
-    <PackageVersion Include="System.Management" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
+    <PackageVersion Include="System.Management" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="DotNetty.Buffers" Version="0.7.6" />
@@ -22,13 +22,13 @@
   <ItemGroup>
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.Map" Version="2.0.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Humanizer.Core" Version="2.14.1" />
-    <PackageVersion Include="Humanizer.Core.zh-CN" Version="2.14.1" />
+    <PackageVersion Include="Humanizer.Core" Version="3.0.1" />
+    <PackageVersion Include="Humanizer.Core.zh-CN" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8" />
@@ -38,20 +38,20 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Jint" Version="4.5.0" />
-    <PackageVersion Include="NLua" Version="1.7.6" />
-    <PackageVersion Include="KeraLua" Version="1.4.7" />
+    <PackageVersion Include="NLua" Version="1.7.8" />
+    <PackageVersion Include="KeraLua" Version="1.4.9" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3" />
-    <PackageVersion Include="Polly" Version="8.6.4" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.33" />
+    <PackageVersion Include="Polly" Version="8.6.5" />
     <PackageVersion Include="Quartz" Version="3.15.1" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="AutoMapper" Version="14.0.0" />
     <PackageVersion Include="AutoMapper.Extensions.ExpressionMapping" Version="8.0.0" />
     <PackageVersion Include="ZLinq" Version="1.5.4" />
     <PackageVersion Include="Yitter.IdGenerator" Version="1.0.14" />
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Mapster" Version="7.4.0" />
     <PackageVersion Include="FastExpressionCompiler" Version="5.3.0" />
   </ItemGroup>
