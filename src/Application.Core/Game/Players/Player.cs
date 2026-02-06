@@ -30,14 +30,11 @@ namespace Application.Core.Game.Players
 
 
         public PlayerKeyMap KeyMap { get; set; }
-        public MapManager MapManager => Client.CurrentServer.getMapFactory();
-
         public List<FameLogObject> FameLogs { get; set; }
 
 
-        public Player(int world, int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
+        public Player(int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
         {
-            World = world;
             AccountId = accountId;
             HP = hp;
             MaxHP = hp;

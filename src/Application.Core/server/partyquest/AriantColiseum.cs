@@ -208,7 +208,7 @@ public class AriantColiseum
                 chr.setAriantColiseum(null);
 
                 int shards = chr.countItem(ItemId.ARPQ_SPIRIT_JEWEL);
-                chr.getAbstractPlayerInteraction().removeAll(ItemId.ARPQ_SPIRIT_JEWEL);
+                chr.GainItem(ItemId.ARPQ_SPIRIT_JEWEL, (short)-shards, show: GainItemShow.ShowInChat);
                 chr.updateAriantScore(shards);
             }
         }

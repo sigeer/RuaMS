@@ -782,7 +782,7 @@ public class InventoryManipulator
             }
         }
 
-        int quantityNow = chr.getItemQuantity(itemId, false);
+        int quantityNow = chr.getItemQuantity(itemId);
         if (itemId == chr.getItemEffect())
         {
             if (quantityNow <= 0)

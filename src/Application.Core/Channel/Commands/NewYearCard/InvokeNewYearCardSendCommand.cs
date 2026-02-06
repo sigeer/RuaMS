@@ -24,8 +24,8 @@ namespace Application.Core.Channel.Commands
                 var sender = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.Request.FromId);
                 if (sender != null)
                 {
-                    sender.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD, -1);
-                    sender.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD_SEND, 1);
+                    sender.GainItem(ItemId.NEW_YEARS_CARD, -1, show: GainItemShow.ShowInChat);
+                    sender.GainItem(ItemId.NEW_YEARS_CARD_SEND, 1, show: GainItemShow.ShowInChat);
 
                     var model = ctx.WorldChannel.Mapper.Map<NewYearCardObject>(data.Model);
                     sender.addNewYearRecord(model);

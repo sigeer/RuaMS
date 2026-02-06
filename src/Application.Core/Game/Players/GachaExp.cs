@@ -19,9 +19,10 @@ namespace Application.Core.Game.Players
         {
             int expgain = 0;
             long currentgexp = GachaExpValue.get();
-            if ((currentgexp + ExpValue.get()) >= ExpTable.getExpNeededForLevel(Level))
+            int levelUpNeed = ExpTable.getExpNeededForLevel(Level) - ExpValue.get();
+            if (currentgexp >= levelUpNeed)
             {
-                expgain += ExpTable.getExpNeededForLevel(Level) - ExpValue.get();
+                expgain += Math.Max(0, levelUpNeed);
 
                 int nextneed = ExpTable.getExpNeededForLevel(Level + 1);
                 if (currentgexp - expgain >= nextneed)

@@ -63,7 +63,7 @@ public class MesoDropHandler : ChannelHandlerBase
             {
                 if (meso <= player.getMeso() && meso > 9 && meso < 50001)
                 {
-                    player.gainMeso(-meso, false, true, false);
+                    player.GainMeso(-meso, enableActions: true);
                 }
                 else
                 {

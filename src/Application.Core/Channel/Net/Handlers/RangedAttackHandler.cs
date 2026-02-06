@@ -135,7 +135,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         {
                             money = chr.getMeso();
                         }
-                        chr.gainMeso(-money, false);
+                        chr.GainMeso(-money);
                     }
                 }
             }

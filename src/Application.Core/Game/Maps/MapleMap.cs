@@ -525,7 +525,6 @@ public class MapleMap : IMap, INamedInstance
 
         Collections.shuffle(dropEntry);
 
-        Item idrop;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
         var itemPos = mob.getPosition();
@@ -566,14 +565,14 @@ public class MapleMap : IMap, INamedInstance
                 }
                 else
                 {
-                    if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
+                    var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount());
+                    if (idrop == null)
                     {
-                        idrop = ii.randomizeStats(ii.getEquipById(de.ItemId));
+                        log.Warning("{Map}, {Mob}尝试掉落不存在的物品：{ItemId}", InstanceName, mob.GetName(), de.ItemId);
+                        continue;
                     }
-                    else
-                    {
-                        idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
-                    }
+                    if (idrop is Equip equip)
+                        ii.randomizeStats(equip);
                     spawnDrop(idrop, itemPos, mob, chr, false, droptype, de.QuestId, dropDelay);
                 }
                 dIndex++;

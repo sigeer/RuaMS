@@ -46,7 +46,7 @@ public class MesoAction : AbstractQuestAction
     {
         if (gain < 0)
         {
-            chr.gainMeso(gain, true, false, true);
+            chr.GainMeso(gain, GainItemShow.ShowInChat);
         }
         else
         {
@@ -56,7 +56,7 @@ public class MesoAction : AbstractQuestAction
                 mesoGain = gain * chr.getQuestMesoRate();
             }
 
-            chr.gainMeso((int)mesoGain, true, false, true);
+            chr.GainMeso((int)mesoGain, GainItemShow.ShowInChat);
         }
     }
 }

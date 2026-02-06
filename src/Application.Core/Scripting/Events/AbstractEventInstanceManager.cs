@@ -165,7 +165,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             foreach (Player mc in players)
             {
-                mc.gainMeso((int)(gain * mc.getMesoRate()), inChat: true);
+                mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
         else
@@ -174,7 +174,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainMeso((int)(gain * mc.getMesoRate()), inChat: true);
+                    mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
                 }
             }
         }
@@ -902,13 +902,21 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         return objects.Select(x => Convert.ToInt32(x)).ToList();
     }
-
+    /// <summary>
+    /// 设置关卡经验奖励
+    /// </summary>
+    /// <param name="gain"></param>
+    [ScriptCall]
     public void setEventClearStageExp(List<object> gain)
     {
         onMapClearExp.Clear();
         onMapClearExp.AddRange(convertToIntegerList(gain));
     }
-
+    /// <summary>
+    /// 设置关卡金币奖励
+    /// </summary>
+    /// <param name="gain"></param>
+    [ScriptCall]
     public void setEventClearStageMeso(List<object> gain)
     {
         onMapClearMeso.Clear();
@@ -1000,7 +1008,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         byte rewardTypes = 0;
         var list = eventRewards.GetValueOrDefault(level)!;
 
-        foreach (int itemId in list.Rewards)
+        foreach (int itemId in list.ItemRewards)
         {
             rewardTypes |= (byte)(1 << (int)ItemConstants.getInventoryType(itemId));
         }
@@ -1026,6 +1034,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
+    /// <summary>
+    /// 发放完全通关奖励
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="eventLevel"></param>
+    /// <returns></returns>
     public bool giveEventReward(Player player, int eventLevel = 1)
     {
         List<int>? rewardsSet, rewardsQty;
@@ -1044,7 +1058,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
 
         var item = eventRewards.GetValueOrDefault(rewardIndex)!;
-        rewardsSet = item.Rewards;
+        rewardsSet = item.ItemRewards;
         rewardsQty = item.Quantity;
 
         rewardExp = item.Exp;
@@ -1056,10 +1070,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
                 return false;
             }
 
-            var api = player.getAbstractPlayerInteraction();
             int rnd = (int)Math.Floor(Randomizer.nextDouble() * rewardsSet.Count);
 
-            api.gainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd));
+            player.GainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd), show: GainItemShow.ShowInChat);
         }
         if (rewardExp > 0)
         {
@@ -1279,6 +1292,10 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
+    /// <summary>
+    /// 对所有玩家发放关卡奖励
+    /// </summary>
+    /// <param name="thisStage"></param>
     public void giveEventPlayersStageReward(int thisStage)
     {
         List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
@@ -1296,7 +1313,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
     /// <summary>
-    /// 对单个玩家发放通关奖励
+    /// 对单个玩家发放关卡奖励
     /// </summary>
     /// <param name="mc"></param>
     /// <param name="thisStage"></param>

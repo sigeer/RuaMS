@@ -20,7 +20,7 @@ public class RockPaperScissor
         c.sendPacket(PacketCreator.rpsMode((byte)(9 + mode)));
         if (mode == 0)
         {
-            c.OnlinedCharacter.gainMeso(-1000, true, true, true);
+            c.OnlinedCharacter.GainMeso(-1000, GainItemShow.ShowInChat, true);
         }
     }
 

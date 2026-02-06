@@ -9,16 +9,9 @@ namespace Application.Core.Game.Players
         public int Id { get; set; }
 
         public int AccountId { get; set; }
-
-        public int World { get; set; }
-
         public string Name { get; set; } = null!;
 
         public int Level { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gachaexp { get; set; }
 
         public int Str { get; set; }
 
@@ -27,16 +20,6 @@ namespace Application.Core.Game.Players
         public int Luk { get; set; }
 
         public int Int { get; set; }
-
-        public int Hp { get; set; }
-
-        public int Mp { get; set; }
-
-        public int Maxhp { get; set; }
-
-        public int Maxmp { get; set; }
-
-        public int Meso { get; set; }
 
         public int HpMpUsed { get; set; }
 

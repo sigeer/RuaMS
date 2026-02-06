@@ -833,7 +833,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public Equip GetEquipByTemplate(EquipTemplate equipTemplate)
     {
         var nEquip = new Equip(equipTemplate, 0);
-        nEquip.setQuantity(1);
 
         nEquip.setStr(equipTemplate.IncSTR);
         nEquip.setDex(equipTemplate.IncDEX);

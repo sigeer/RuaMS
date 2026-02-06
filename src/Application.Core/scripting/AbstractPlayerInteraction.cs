@@ -262,15 +262,16 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public bool haveItem(int itemid, int quantity = 1)
     {
-        return getPlayer().getItemQuantity(itemid, false) >= quantity;
+        return getItemQuantity(itemid) >= quantity;
     }
 
+    [ScriptCall]
     public int getItemQuantity(int itemid)
     {
-        return getPlayer().getItemQuantity(itemid, false);
+        return getPlayer().getItemQuantity(itemid);
     }
 
-
+    [ScriptCall]
     public bool haveItemWithId(int itemid, bool checkEquipped = false)
     {
         return getPlayer().haveItemWithId(itemid, checkEquipped);
@@ -656,6 +657,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     }
     // js使用
+    [ScriptCall]
     public void gainItem(int id, bool show) => gainItem(id, 1, show);
 
     public void gainItem(int id, int quantity = 1, bool show = true)

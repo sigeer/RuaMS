@@ -364,7 +364,7 @@ namespace Application.Core.Channel.Services
                     switch (itemType)
                     {
                         case CdkItemType.Meso:
-                            chr.gainMeso(quantity, false); //mesos
+                            chr.GainMeso(quantity); //mesos
                             mesos += quantity;
                             break;
                         case CdkItemType.NxCredit:

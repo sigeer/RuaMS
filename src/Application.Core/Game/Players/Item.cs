@@ -129,10 +129,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void setInventory(InventoryType type, Inventory inv)
-        {
-            Bag.SetValue(type, inv);
-        }
         public Inventory getInventory(InventoryType type)
         {
             return Bag[type];
@@ -147,10 +143,6 @@ namespace Application.Core.Game.Players
         {
             slots += Bag[type].getSlotLimit();
             return slots <= 96;
-        }
-        public bool gainSlots(int type, int slots)
-        {
-            return gainSlots(type, slots, true);
         }
         public bool gainSlots(int type, int slots, bool update)
         {
@@ -226,19 +218,10 @@ namespace Application.Core.Game.Players
                     || (checkEquipped && Bag[InventoryType.EQUIPPED].findById(itemid) != null);
         }
 
+        [ScriptCall]
         public bool haveItemEquipped(int itemid)
         {
             return (Bag[InventoryType.EQUIPPED].findById(itemid) != null);
-        }
-
-        public bool haveCleanItem(int itemid)
-        {
-            return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-        }
-
-        public bool HasEmptySlotByItem(int itemId)
-        {
-            return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
         }
 
         public bool hasEmptySlot(sbyte invType)
@@ -246,24 +229,9 @@ namespace Application.Core.Game.Players
             return getInventory(InventoryTypeUtils.getByType(invType)).getNextFreeSlot() > -1;
         }
 
-        public int getItemQuantity(int itemid, bool checkEquipped)
+        public int getItemQuantity(int itemid)
         {
-            int count = Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
-            if (checkEquipped)
-            {
-                count += Bag[InventoryType.EQUIPPED].countById(itemid);
-            }
-            return count;
-        }
-
-        public int getCleanItemQuantity(int itemid, bool checkEquipped)
-        {
-            int count = Bag[ItemConstants.getInventoryType(itemid)].countNotOwnedById(itemid);
-            if (checkEquipped)
-            {
-                count += Bag[InventoryType.EQUIPPED].countNotOwnedById(itemid);
-            }
-            return count;
+            return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
         }
 
         public void setItemEffect(int itemEffect)
@@ -284,38 +252,6 @@ namespace Application.Core.Game.Players
             long nextMeso = (long)MesoValue.get() + gain;
             return nextMeso <= int.MaxValue;
         }
-        [Obsolete("使用 GainMeso")]
-
-        public void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
-        {
-            long nextMeso;
-
-            nextMeso = (long)MesoValue.get() + gain;  // thanks Thora for pointing integer overflow here
-            if (nextMeso > int.MaxValue)
-            {
-                gain -= (int)(nextMeso - int.MaxValue);
-            }
-            else if (nextMeso < 0)
-            {
-                gain = -MesoValue.get();
-            }
-            nextMeso = MesoValue.addAndGet(gain);
-
-            if (gain != 0)
-            {
-                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-                if (show)
-                {
-                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
-                }
-            }
-            else
-            {
-                sendPacket(PacketCreator.enableActions());
-            }
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -450,7 +386,7 @@ namespace Application.Core.Game.Players
         /// <param name="show">显示方式</param>
         /// <param name="expires">道具有效时长。单位ms， -1不会过期</param>
         /// <param name="nextSetter">设置其他道具属性，不能对返回值修改属性（要在传客户端前修改）</param>
-        /// <returns>获得的道具</returns>
+        /// <returns>获得的道具，尽量不使用：如果是可叠放物品，不会与背包物品对应，</returns>
         public Item? GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
         {
             if (quantity == 0)

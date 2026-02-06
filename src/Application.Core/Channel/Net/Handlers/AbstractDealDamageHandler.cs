@@ -503,7 +503,6 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                                     if (skillLv > 0)
                                     {
-                                        AbstractPlayerInteraction api = player.getAbstractPlayerInteraction();
 
                                         int shellId = (skillLv) switch
                                         {
@@ -512,9 +511,9 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                             _ => ItemId.RED_SNAIL_SHELL
                                         };
 
-                                        if (api.haveItem(shellId, 1))
+                                        if (player.haveItemWithId(shellId, false))
                                         {
-                                            api.gainItem(shellId, -1, false);
+                                            player.GainItem(shellId, -1);
                                             totDamageToOneMonster *= player.getLevel();
                                         }
                                         else

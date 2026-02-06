@@ -246,7 +246,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public virtual void gainMeso(int gain)
     {
-        getPlayer().gainMeso(gain, inChat: true);
+        getPlayer().GainMeso(gain, GainItemShow.ShowInChat);
     }
 
     public virtual void gainExp(int gain)

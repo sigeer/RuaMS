@@ -107,7 +107,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             List<KeyValuePair<int, short>> toUpdate = new();
                             foreach (var r in reagentids)
                             {
-                                int qty = c.getAbstractPlayerInteraction().getItemQuantity(r.Key);
+                                int qty = c.OnlinedCharacter.getItemQuantity(r.Key);
 
                                 if (qty < r.Value)
                                 {
@@ -189,7 +189,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 foreach (var pair in recipe!.getReqItems())
                                 {
-                                    c.getAbstractPlayerInteraction().gainItem(pair.ItemId, (short)-pair.Quantity, false);
+                                    c.OnlinedCharacter.GainItem(pair.ItemId, (short)-pair.Quantity);
                                 }
                             }
 
@@ -198,13 +198,13 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 if (cost > 0)
                                 {
-                                    c.OnlinedCharacter.gainMeso(-cost, false);
+                                    c.OnlinedCharacter.GainMeso(-cost);
                                 }
 
                                 foreach (var pair in recipe.getGainItems())
                                 {
                                     c.OnlinedCharacter.setCS(true);
-                                    c.getAbstractPlayerInteraction().gainItem(pair.ItemId, (short)pair.Quantity, false);
+                                    c.OnlinedCharacter.GainItem(pair.ItemId, (short)pair.Quantity);
                                     c.OnlinedCharacter.setCS(false);
                                 }
                             }
@@ -214,19 +214,19 @@ namespace Application.Module.Maker.Channel.Net.Handlers
 
                                 if (stimulantid != -1)
                                 {
-                                    c.getAbstractPlayerInteraction().gainItem(stimulantid, -1, false);
+                                    c.OnlinedCharacter.GainItem(stimulantid, -1);
                                 }
                                 if (reagentids.Count > 0)
                                 {
                                     foreach (var r in reagentids)
                                     {
-                                        c.getAbstractPlayerInteraction().gainItem(r.Key, (short)(-1 * r.Value), false);
+                                        c.OnlinedCharacter.GainItem(r.Key, (short)(-1 * r.Value));
                                     }
                                 }
 
                                 if (cost > 0)
                                 {
-                                    c.OnlinedCharacter.gainMeso(-cost, false);
+                                    c.OnlinedCharacter.GainMeso(-cost);
                                 }
                                 makerSucceeded = _service.addBoostedMakerItem(c, toCreate, stimulantid, reagentids);
                             }

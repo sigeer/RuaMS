@@ -169,14 +169,15 @@ public class PacketCreator
         addCharStats(p, chr);
         p.writeByte(chr.BuddyList.Capacity);
 
-        if (chr.getLinkedName() == null)
+        var linkedName = chr.getLinkedName();
+        if (linkedName == null)
         {
             p.writeByte(0);
         }
         else
         {
             p.writeByte(1);
-            p.writeString(chr.getLinkedName());
+            p.writeString(linkedName);
         }
 
         p.writeInt(chr.getMeso());
@@ -6295,7 +6296,7 @@ public class PacketCreator
         p.writeFixedString(item.getGiftFrom());
         if (isGift)
         {
-            p.writeFixedString(giftMessage, 73);
+            p.writeFixedString(giftMessage!, 73);
             return;
         }
         addExpirationTime(p, item.getExpiration());
@@ -6535,7 +6536,7 @@ public class PacketCreator
             p.writeByte(1);
         }
 
-        p.writeString(c.AccountEntity.Name);
+        p.writeString(c.AccountName);
         if (mts)
         {
             p.writeBytes(new byte[]{ 0x88, 19, 0, 0,
