@@ -37,7 +37,7 @@ function setEventExclusives(eim) {
 
 function setEventRewards(eim) {
     // 设置所有可能的奖励，随机给予玩家作为事件结束时的奖品。
-    expStages = [50000, 25500, 21000, 19505, 17500, 12000, 5000, 2500];    //bonus exp given on CLEAR stage signal
+    const expStages = [50000, 25500, 21000, 19505, 17500, 12000, 5000, 2500];    //bonus exp given on CLEAR stage signal
     eim.setEventClearStageExp(expStages);
 }
 

@@ -35,7 +35,7 @@ namespace Application.Core.Login.Services
             if (characterObj == null || characterObj.Character == null)
                 return null;
 
-            var accountData = _masterServer.AccountManager.GetAccount(characterObj.Character.AccountId);
+            var accountData = _masterServer.AccountManager.GetAccountDto(characterObj.Character.AccountId);
             if (accountData == null || accountData.CurrentHwid == null || accountData.CurrentMac == null)
                 return null;
 

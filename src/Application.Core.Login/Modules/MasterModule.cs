@@ -1,9 +1,11 @@
 using Application.Core.Login.Models;
+using Application.Resources.Messages;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using GuildProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Application.Core.Login.Modules
 {
@@ -32,6 +34,9 @@ namespace Application.Core.Login.Modules
         /// <param name="isNewComer"></param>
         public override async Task OnPlayerLogin(CharacterLiveObject obj)
         {
+            if (_server.AccountManager.TryGetGMLevel(obj.Character.AccountId, out var gmLevel))
+                await _server.DropWorldMessage(-2, string.Format(SystemMessage.System_GmLoggedin, gmLevel < 6 ? "GM" : "Admin", obj.Character.Name), true);
+
             await _server.NoteManager.SendNote(obj);
 
             await _server.DueyManager.SendDueyNotifyOnLogin(obj.Character.Id);

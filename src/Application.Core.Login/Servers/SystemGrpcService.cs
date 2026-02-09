@@ -10,6 +10,7 @@ using Grpc.Core;
 using MessageProto;
 using Microsoft.Extensions.Logging;
 using ServerProto;
+using SyncProto;
 using SystemProto;
 
 namespace Application.Core.Login.Servers
@@ -153,6 +154,12 @@ namespace Application.Core.Login.Servers
                 node.HealthCheck(request);
             }
             return Task.FromResult(new Empty());
+        }
+
+        public override Task<GainAccountCharacterSlotResponse> GainCharacterSlot(GainAccountCharacterSlotRequest request, ServerCallContext context)
+        {
+            _server.AccountManager.GainCharacterSlot(request.AccId);
+            return base.GainCharacterSlot(request, context);
         }
     }
 }

@@ -21,14 +21,10 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
-using Application.Resources.Messages;
 using Application.Shared.KeyMaps;
-using Application.Shared.Languages;
-using Application.Shared.Team;
 using client.inventory;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -136,13 +132,10 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
             Inventory eqpInv = player.getInventory(InventoryType.EQUIPPED);
-
-                foreach (Item it in eqpInv.list())
-                {
-                    player.equippedItem((Equip)it);
-                }
-
-            c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
+            foreach (Item it in eqpInv.list())
+            {
+                player.equippedItem((Equip)it);
+            }
 
             c.sendPacket(PacketCreator.updateGender(player));
 
@@ -169,16 +162,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
 
                 player.reloadQuestExpirations();
-
-                /*
-                if (!c.hasVotedAlready()){
-                    player.sendPacket(PacketCreator.earnTitleMessage("You can vote now! Vote and earn a vote point!"));
-                }
-                */
-                if (player.isGM())
-                {
-                    c.CurrentServer.NodeService.SendDropMessage(-2, string.Format(SystemMessage.System_GmLoggedin, (player.gmLevel() < 6 ? "GM" : "Admin"), player.Name), true);
-                }
             }
             else
             {
@@ -201,8 +184,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (newcomer)
             {
-                var eim = c.CurrentServer.EventRecallManager?.recallEventInstance(cid);
-                eim?.registerPlayer(player);
+                c.CurrentServer.EventRecallManager?.recallEventInstance(player);
             }
 
             // Tell the client to use the custom scripts available for the NPCs provided, instead of the WZ entries.

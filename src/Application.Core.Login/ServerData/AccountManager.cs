@@ -262,5 +262,19 @@ namespace Application.Core.Login.Datas
             res.List.AddRange(accountInfo.Select(x => new ClientInfo { AccountName = x.Name, CharacterName = "", CurrentHWID = x.CurrentHwid, CurrentIP = x.CurrentIP, CurrentMAC = x.CurrentMac }));
             return res;
         }
+
+        public bool TryGetGMLevel(int accId, out int gmLevel)
+        {
+            gmLevel = 0;
+            var acc = GetAccountDto(accId);
+            if (acc == null)
+                return false;
+
+            if (acc.GMLevel <= 1)
+                return false;
+
+            gmLevel = acc.GMLevel;
+            return true;
+        }
     }
 }
