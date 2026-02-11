@@ -30,7 +30,11 @@ namespace Application.Core.Login
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
                 msg.Receivers.AddRange(gmids);
-                await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
+
+                if (msg.Receivers.Count > 0)
+                {
+                    await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
+                }
             }
             else
             {
@@ -54,7 +58,10 @@ namespace Application.Core.Login
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
                 msg.Receivers.AddRange(gmids);
-                await Transport.SendMessageN(ChannelRecvCode.HandleFullPacket, msg, msg.Receivers);
+                if (msg.Receivers.Count > 0)
+                {
+                    await Transport.SendMessageN(ChannelRecvCode.HandleFullPacket, msg, msg.Receivers);
+                }
             }
             else
             {
@@ -82,7 +89,7 @@ namespace Application.Core.Login
 
         public void DisconnectChr(int chrId)
         {
-            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new () };
+            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new() };
             _ = Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, data, [chrId]);
         }
     }

@@ -104,7 +104,15 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) =>
                 {
                     if (src.EquipInfo != null)
+                    {
                         return ctx.Mapper.Map<Equip>(src);
+                    }
+
+                    if (src.InventoryType == (int)InventoryType.EQUIP || src.InventoryType == (int)InventoryType.EQUIPPED)
+                    {
+                        var equip = ItemInformationProvider.getInstance().getEquipById(src.Itemid, (short)src.Position);
+                        return equip;
+                    }
 
                     if (src.PetInfo != null)
                         return ctx.Mapper.Map<Pet>(src);

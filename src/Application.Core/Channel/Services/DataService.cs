@@ -10,17 +10,14 @@ using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using AutoMapper;
 using client;
-using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
 using net.server;
-using net.server.guild;
 using server;
 using server.events;
 using server.life;
 using server.quest;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -108,11 +105,13 @@ namespace Application.Core.Channel.Services
             {
                 sandboxCheck |= item.Flag;
 
+                var itemObj = _mapper.Map<Item>(item);
+
                 InventoryType mit = item.InventoryType.GetByType();
-                if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
+                if (itemObj is Equip equipObj)
                 {
-                    var equipObj = _mapper.Map<Equip>(item);
                     player.Bag[mit.ordinal()].addItemFromDB(equipObj);
+
                     if (equipObj.Ring != null && mit.Equals(InventoryType.EQUIPPED))
                     {
                         equipObj.Ring.equip();
@@ -122,15 +121,14 @@ namespace Application.Core.Channel.Services
                 }
                 else
                 {
-                    var itemObj = _mapper.Map<Item>(item);
                     player.Bag[item.InventoryType].addItemFromDB(itemObj);
+
                     if (itemObj is Pet petObj)
                     {
                         if (petObj.Summoned)
                         {
                             player.addPet(petObj);
                         }
-                        continue;
                     }
                 }
             }
@@ -416,7 +414,7 @@ namespace Application.Core.Channel.Services
             _ = _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel)
                 .ContinueWith(t =>
                 {
-                    server.Post(new PlayerCompleteLoginCommand(chr.Id, o.LoginInfo.IsNewCommer, o.RemoteCallList ));
+                    server.Post(new PlayerCompleteLoginCommand(chr.Id, o.LoginInfo.IsNewCommer, o.RemoteCallList));
                 });
         }
 
@@ -638,7 +636,7 @@ namespace Application.Core.Channel.Services
                         var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
                         if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
                         {
-                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y), 
+                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
                                 data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);
                         }
                     }
@@ -731,29 +729,6 @@ namespace Application.Core.Channel.Services
             return reactorDropData.GetValueOrDefault(reactorId) ?? [];
         }
 
-
-        public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
-        {
-            var code = CharacterFactory.GetNoviceCreator(request.Type, this)
-                .createCharacter(request.AccountId, request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
-            return new CreatorProto.CreateCharResponseDto { Code = code };
-        }
-
-        public int SendNewPlayer(Player player)
-        {
-            var dto = DeserializeNew(player);
-            return _transport.SendNewPlayer(dto).Code;
-        }
-
-        public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
-        {
-            var checkResult = _transport.CreatePlayerCheck(new CreatorProto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
-            if (checkResult != CreateCharResult.Success)
-                return checkResult;
-
-            return CharacterFactory.GetVeteranCreator(type, this)
-                .createCharacter(client.AccountId, name, face, hair, skin, gender, improveSp);
-        }
 
         public QueryChannelExpedtionResponse GetExpeditionInfo()
         {

@@ -63,11 +63,9 @@ namespace Application.Core.Login.Mappers
 
 
             CreateMap<Inventoryequipment, EquipModel>()
-                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Inventoryequipmentid));
 
             CreateMap<Inventoryitem, ItemModel>()
-                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype));
             CreateMap<ItemEntityPair, ItemModel>()
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))

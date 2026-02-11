@@ -33,6 +33,7 @@ namespace Application.Core.Login.Client
 
         public MasterServer CurrentServer { get; set; }
         public int SelectedChannel { get; set; }
+        public int CurrentHistoryId { get; set; }
 
         public override int AccountId => AccountEntity?.Id ?? 0;
 
@@ -193,7 +194,7 @@ namespace Application.Core.Login.Client
             var localState = CurrentServer.AccountManager.GetAccountLoginStatus(AccountEntity.Id);
             if (localState.State == LoginStage.LOGIN_SERVER_TRANSITION || localState.State == LoginStage.PlayerServerTransition)
             {
-                if (localState.DateTime.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
+                if (localState.ProcessTime.AddSeconds(30) < CurrentServer.GetCurrentTimeDateTimeOffset())
                 {
                     updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
                     return LoginStage.LOGIN_NOTLOGGEDIN;
@@ -214,7 +215,7 @@ namespace Application.Core.Login.Client
                 return LoginResultCode.Fail_Count;   // thanks Survival_Project for finding out an issue with AUTOMATIC_REGISTER here
             }
 
-            int accId = CurrentServer.GetAccountIdByAccountName(login);
+            int accId = CurrentServer.AccountManager.GetAccountIdByName(login);
             try
             {
                 var dbModel = CurrentServer.GetAccountDto(accId);

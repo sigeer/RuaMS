@@ -332,10 +332,6 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
-                    b.Property<DateTime?>("Lastlogin")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("lastlogin");
-
                     b.Property<int?>("MaplePoint")
                         .HasColumnType("int")
                         .HasColumnName("maplePoint");
@@ -858,6 +854,10 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("int")
                         .HasDefaultValueSql("'4'");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("IsDeleted");
+
                     b.Property<long>("Jailexpire")
                         .HasColumnType("bigint")
                         .HasColumnName("jailexpire");
@@ -1050,18 +1050,11 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("vanquisherStage");
 
-                    b.Property<int>("World")
-                        .HasColumnType("int")
-                        .HasColumnName("world");
-
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
                     b.HasIndex(new[] { "AccountId" }, "accountid")
                         .HasDatabaseName("accountid2");
-
-                    b.HasIndex(new[] { "Id", "AccountId", "World" }, "id")
-                        .HasDatabaseName("id1");
 
                     b.HasIndex(new[] { "Id", "AccountId", "Name" }, "id_2")
                         .HasDatabaseName("id_21");
@@ -1246,32 +1239,6 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("dueypackages", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Dueyitem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Inventoryitemid")
-                        .HasColumnType("int")
-                        .HasColumnName("inventoryitemid");
-
-                    b.Property<int>("PackageId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID");
-
-                    b.HasIndex(new[] { "PackageId" }, "PackageId");
-
-                    b.ToTable("dueyitems", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.Eventstat", b =>
@@ -1806,27 +1773,6 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("macbans", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Macfilter", b =>
-                {
-                    b.Property<int>("Macfilterid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("macfilterid");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Macfilterid"));
-
-                    b.Property<string>("Filter")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
-                        .HasColumnName("filter");
-
-                    b.HasKey("Macfilterid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("macfilters", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.MakerCreatedataEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -2038,7 +1984,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.HasIndex(new[] { "Id" }, "id")
                         .IsUnique()
-                        .HasDatabaseName("id2");
+                        .HasDatabaseName("id1");
 
                     b.ToTable("monstercarddata", (string)null);
                 });
@@ -2420,7 +2366,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("pets", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Petignore", b =>
+            modelBuilder.Entity("Application.EF.Entities.PetIgnoreEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2428,6 +2374,10 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int")
+                        .HasColumnName("CharacterId");
 
                     b.Property<int>("Itemid")
                         .HasColumnType("int")
@@ -2946,29 +2896,6 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("reports", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Response", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Chat")
-                        .HasColumnType("text")
-                        .HasColumnName("chat");
-
-                    b.Property<string>("Response1")
-                        .HasColumnType("text")
-                        .HasColumnName("response");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("responses", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.Ring_Entity", b =>
                 {
                     b.Property<int>("Id")
@@ -3034,49 +2961,6 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("savedlocations", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.ServerQueue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Accountid")
-                        .HasColumnType("int")
-                        .HasColumnName("accountid");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<DateTime>("CreateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("createTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("message");
-
-                    b.Property<sbyte>("Type")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("type");
-
-                    b.Property<int>("Value")
-                        .HasColumnType("int")
-                        .HasColumnName("value");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("server_queue", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.ShopEntity", b =>
@@ -3441,8 +3325,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.HasKey("Inventoryequipmentid")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID")
-                        .HasDatabaseName("INVENTORYITEMID1");
+                    b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID");
 
                     b.ToTable("inventoryequipment", (string)null);
                 });
@@ -3563,18 +3446,6 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("notes", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Dueyitem", b =>
-                {
-                    b.HasOne("Application.EF.Entities.DueyPackageEntity", "Package")
-                        .WithMany("Dueyitems")
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("dueyitems_ibfk_1");
-
-                    b.Navigation("Package");
-                });
-
             modelBuilder.Entity("Application.EF.Entities.FamelogEntity", b =>
                 {
                     b.HasOne("Application.EF.Entities.CharacterEntity", "Character")
@@ -3599,7 +3470,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Navigation("CidNavigation");
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Petignore", b =>
+            modelBuilder.Entity("Application.EF.Entities.PetIgnoreEntity", b =>
                 {
                     b.HasOne("Application.EF.Entities.PetEntity", "Pet")
                         .WithMany("Petignores")
@@ -3644,11 +3515,6 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Navigation("Famelogs");
 
                     b.Navigation("FamilyCharacter");
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.DueyPackageEntity", b =>
-                {
-                    b.Navigation("Dueyitems");
                 });
 
             modelBuilder.Entity("Application.EF.Entities.PetEntity", b =>

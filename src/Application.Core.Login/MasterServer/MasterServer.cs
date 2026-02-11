@@ -89,6 +89,10 @@ namespace Application.Core.Login
         public CouponManager CouponManager => _couponManager.Value;
         readonly Lazy<AccountManager> _accountManager;
         public AccountManager AccountManager => _accountManager.Value;
+
+        readonly Lazy<AccountGameManager> _accountGameManager;
+        public AccountGameManager AccountGameManager => _accountGameManager.Value;
+
         readonly Lazy<CharacterManager> _characterManager;
         public CharacterManager CharacterManager => _characterManager.Value;
         readonly Lazy<ServerManager> _serverManager;
@@ -131,8 +135,6 @@ namespace Application.Core.Login
         readonly Lazy<GachaponManager> _gachaponManager;
         public GachaponManager GachaponManager => _gachaponManager.Value;
 
-        readonly Lazy<DataStorage> _dataStorage;
-        public DataStorage DataStorage => _dataStorage.Value;
         readonly Lazy<CDKManager> _cdkManager;
         public CDKManager CDKManager => _cdkManager.Value;
 
@@ -140,6 +142,8 @@ namespace Application.Core.Login
         public DueyManager DueyManager => _dueyManager.Value;
         readonly Lazy<IPlayerNPCManager> _playerNPCManager;
         public IPlayerNPCManager PlayerNPCManager => _playerNPCManager.Value;
+        readonly Lazy<CreatePlayerService> _createPlayerService;
+        public CreatePlayerService CreatePlayerService => _createPlayerService.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -211,10 +215,11 @@ namespace Application.Core.Login
             _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
-            _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
             _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
             _playerNPCManager = new(() => ServiceProvider.GetRequiredService<IPlayerNPCManager>());
+            _accountGameManager = new(() => ServiceProvider.GetRequiredService<AccountGameManager>());
+            _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());
 
             _messageDispatcher = new(() => new(this));
             CommandLoop = new (this);

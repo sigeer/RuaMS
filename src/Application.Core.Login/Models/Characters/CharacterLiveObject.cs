@@ -1,10 +1,29 @@
 using Application.Core.Login.Servers;
-using Application.Shared.NewYear;
+using Application.Shared.Constants;
+using Application.Shared.Items;
 
 namespace Application.Core.Login.Models
 {
-    public class CharacterViewObject
+    public class CharacterLiveObject : CharacterViewObject
     {
+        public CharacterLiveObject(CharacterModel model, ItemModel[] items) : base(model, items)
+        {
+            MonsterBooks = [];
+            PetIgnores = [];
+            TrockLocations = [];
+            Areas = [];
+            Events = [];
+            QuestStatuses = [];
+            Skills = [];
+            SkillMacros = [];
+            CoolDowns = [];
+            SavedLocations = [];
+            BuddyList = [];
+            NewYearCards = [];
+            FameLogs = [];
+            GachaponStorage = new StorageModel(Character.AccountId, (int)StorageType.AccountStorage);
+            KeyMaps = GameConstants.GetDefaultKeyMapping().Select(x => new KeyMapModel() { Key = x.Key, Action = x.Value.getAction(), Type = x.Value.getType() }).ToArray();
+        }
         /// <summary>
         /// 仅在MasterServer使用，-1：商城，0：离线
         /// </summary>
@@ -14,11 +33,6 @@ namespace Application.Core.Login.Models
         /// </summary>
         public ChannelServerNode? ChannelNode { get; set; }
         public int ActualChannel => ChannelNode == null ? 0 : Channel;
-        public CharacterModel Character { get; set; }
-        public ItemModel[] InventoryItems { get; set; } = [];
-    }
-    public class CharacterLiveObject : CharacterViewObject
-    {
         public int[] WishItems { get; set; } = [];
         public MonsterbookModel[] MonsterBooks { get; set; }
         public PetIgnoreModel[] PetIgnores { get; set; }

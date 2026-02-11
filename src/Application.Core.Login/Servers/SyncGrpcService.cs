@@ -34,16 +34,6 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<CreateCharResponseDto> CreateCharacter(NewPlayerSaveDto request, ServerCallContext context)
-        {
-            return Task.FromResult(new CreateCharResponseDto { Code = _server.CharacterManager.CreatePlayerDB(request) });
-        }
-
-        public override Task<CreateCharCheckResponse> CreateCharacterCheck(CreateCharCheckRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new CreateCharCheckResponse { Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name) });
-        }
-
         public override Task<PlayerBuffDto> GetPlayerBuffers(GetPlayerBufferRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.BuffManager.Get(request.CharacterId));
@@ -80,7 +70,7 @@ namespace Application.Core.Login.Servers
         public override Task<AccountLoginStateDto> UpdateAccountState(UpdateAccountStateRequest request, ServerCallContext context)
         {
             var data = _server.AccountManager.UpdateAccountState(request.AccId, (sbyte)request.State);
-            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.DateTime) });
+            return Task.FromResult(new AccountLoginStateDto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.ProcessTime) });
         }
     }
 }

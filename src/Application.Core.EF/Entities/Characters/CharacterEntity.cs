@@ -1,3 +1,5 @@
+using Application.Shared.Constants;
+
 namespace Application.EF.Entities;
 
 public class CharacterEntity
@@ -42,8 +44,6 @@ public class CharacterEntity
     public int Id { get; set; }
 
     public int AccountId { get; set; }
-
-    public int World { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -96,7 +96,7 @@ public class CharacterEntity
     public int Spawnpoint { get; set; }
 
 
-    public int BuddyCapacity { get; set; } = 25;
+    public int BuddyCapacity { get; set; } = DefaultConfigs.BuddyCapacity;
 
     public DateTimeOffset CreateDate { get; set; }
 
@@ -170,6 +170,7 @@ public class CharacterEntity
     public bool PartySearch { get; set; } = true;
 
     public long Jailexpire { get; set; }
+    public bool IsDeleted { get; set; }
 
     public virtual ICollection<FamelogEntity> Famelogs { get; set; } = new List<FamelogEntity>();
 

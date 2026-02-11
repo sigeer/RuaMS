@@ -21,9 +21,8 @@
 */
 
 
-using Application.EF;
+using Application.Core.Login.Models;
 using Application.Utility.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Tasks;
 
@@ -39,76 +38,64 @@ namespace Application.Core.Login.Tasks;
 /// </summary>
 public class RankingLoginTask : AbstractRunnable
 {
-    private DateTimeOffset lastUpdate;
-    readonly IDbContextFactory<DBContext> _dbContextFactory;
     readonly MasterServer _server;
 
-    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory, MasterServer server) : base($"MasterServer_{nameof(RankingLoginTask)}")
+    public RankingLoginTask(MasterServer server) : base($"{server.InstanceName}_{nameof(RankingLoginTask)}")
     {
-        _dbContextFactory = dbContextFactory;
         _server = server;
-        lastUpdate = _server.GetCurrentTimeDateTimeOffset();
     }
 
-    private void resetMoveRank(DBContext dbContext)
+    private void resetMoveRank(List<CharacterModel> all)
     {
-        dbContext.Characters.ExecuteUpdate(x => x.SetProperty(y => y.JobRankMove, 0).SetProperty(y => y.RankMove, 0));
+        foreach (var item in all)
+        {
+            item.JobRankMove = 0;
+            item.RankMove = 0;
+        }
     }
 
-    private void updateRanking(DBContext dbContext, int job, int world)
+    public void RecalcRankMove(List<CharacterModel> all, int job)
     {
         var jobRangeStart = job * 100;
         var jobRangeEnd = job * 100 + 99;
-        var dataList = (from a in dbContext.Characters.Where(x => x.World == world && (job == -1 || x.JobId >= jobRangeStart && x.JobId <= jobRangeEnd))
-                        join b in dbContext.Accounts.Where(x => x.GMLevel < 2) on a.AccountId equals b.Id
-                        orderby a.Level descending, a.Exp descending, a.LastExpGainTime ascending, a.Fame descending, a.Meso descending
-                        select new { a.Id, rank = job != -1 ? a.JobRank : a.Rank, rankMove = job != -1 ? a.JobRankMove : a.RankMove, b.Lastlogin }).ToList();
-        var filteredIds = dataList.Select(x => x.Id).ToList();
-        var filteredCharacters = dbContext.Characters.Where(x => filteredIds.Contains(x.Id)).ToList();
+        var sorted = all.Where(x => (job == -1 || x.JobId >= jobRangeStart && x.JobId <= jobRangeEnd))
+            .OrderByDescending(x => x.Level)
+            .ThenByDescending(x => x.Exp)
+            .ThenByDescending(x => x.LastExpGainTime)
+            .ThenByDescending(x => x.Fame)
+            .ThenByDescending(x => x.Meso).ToList();
+
         int rank = 0;
-        foreach (var item in dataList)
+        foreach (var item in sorted)
         {
             int rankMove = 0;
             rank++;
-            if (item.Lastlogin < lastUpdate)
-            {
-                rankMove = item.rankMove;
-            }
-            rankMove += item.rank - rank;
+            rankMove += (job != -1 ? item.JobRank : item.Rank) - rank;
 
-            var dbModel = filteredCharacters.FirstOrDefault(x => x.Id == item.Id);
-            if (dbModel != null)
+            if (job != -1)
             {
-                if (job != -1)
-                {
-                    dbModel.JobRank = rank;
-                    dbModel.JobRankMove = rankMove;
-                }
-                else
-                {
-                    dbModel.Rank = rank;
-                    dbModel.RankMove = rankMove;
-                }
+                item.JobRank = rank;
+                item.JobRankMove = rankMove;
+            }
+            else
+            {
+                item.Rank = rank;
+                item.RankMove = rankMove;
             }
         }
-        dbContext.SaveChanges();
     }
+
     public override void HandleRun()
     {
         try
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-
-            resetMoveRank(dbContext);
-            updateRanking(dbContext, -1, 0);    //overall ranking
+            var all = _server.CharacterManager.GetAllCachedPlayers();
+            resetMoveRank(all);
+            RecalcRankMove(all, -1);    //overall ranking
             for (int i = 0; i <= JobUtils.getMax(); i++)
             {
-                updateRanking(dbContext, i, 0);
+                RecalcRankMove(all, i);
             }
-            dbTrans.Commit();
-
-            lastUpdate = _server.GetCurrentTimeDateTimeOffset();
         }
         catch (Exception e)
         {

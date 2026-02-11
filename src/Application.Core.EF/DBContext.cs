@@ -47,8 +47,6 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DropDataEntity> DropData { get; set; }
 
-    public virtual DbSet<Dueyitem> Dueyitems { get; set; }
-
     public virtual DbSet<DueyPackageEntity> Dueypackages { get; set; }
 
     public virtual DbSet<Eventstat> Eventstats { get; set; }
@@ -78,8 +76,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<KeyMapEntity> Keymaps { get; set; }
 
     public virtual DbSet<MacbanEntity> Macbans { get; set; }
-
-    public virtual DbSet<Macfilter> Macfilters { get; set; }
 
     public virtual DbSet<MakerCreatedataEntity> Makercreatedata { get; set; }
 
@@ -116,7 +112,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<PetEntity> Pets { get; set; }
 
-    public virtual DbSet<Petignore> Petignores { get; set; }
+    public virtual DbSet<PetIgnoreEntity> Petignores { get; set; }
 
     public virtual DbSet<Playerdisease> Playerdiseases { get; set; }
 
@@ -142,13 +138,10 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Report> Reports { get; set; }
 
-    public virtual DbSet<Response> Responses { get; set; }
 
     public virtual DbSet<Ring_Entity> Rings { get; set; }
 
     public virtual DbSet<SavedLocationEntity> Savedlocations { get; set; }
-
-    public virtual DbSet<ServerQueue> ServerQueues { get; set; }
 
     public virtual DbSet<ShopEntity> Shops { get; set; }
 
@@ -451,28 +444,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Questid)
                 .HasColumnType("int")
                 .HasColumnName("questid");
-        });
-
-        modelBuilder.Entity<Dueyitem>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("dueyitems");
-
-            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
-
-            entity.HasIndex(e => e.PackageId, "PackageId");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int")
-                .HasColumnName("inventoryitemid");
-            entity.Property(e => e.PackageId).HasColumnType("int");
-
-            entity.HasOne(d => d.Package).WithMany(p => p.Dueyitems)
-                .HasForeignKey(d => d.PackageId)
-                .HasConstraintName("dueyitems_ibfk_1");
         });
 
         modelBuilder.Entity<DueyPackageEntity>(entity =>
@@ -824,18 +795,6 @@ public partial class DBContext : DbContext
                 .HasColumnName("mac");
         });
 
-        modelBuilder.Entity<Macfilter>(entity =>
-        {
-            entity.HasKey(e => e.Macfilterid).HasName("PRIMARY");
-
-            entity.ToTable("macfilters");
-
-            entity.Property(e => e.Macfilterid)
-                .HasColumnName("macfilterid");
-            entity.Property(e => e.Filter)
-                .HasMaxLength(30)
-                .HasColumnName("filter");
-        });
 
         modelBuilder.Entity<MakerCreatedataEntity>(entity =>
         {
@@ -1368,7 +1327,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Summoned).HasColumnName("summoned");
         });
 
-        modelBuilder.Entity<Petignore>(entity =>
+        modelBuilder.Entity<PetIgnoreEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1384,6 +1343,9 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Petid)
                 .HasColumnType("bigint")
                 .HasColumnName("petid");
+            entity.Property(e => e.CharacterId)
+                .HasColumnType("int")
+                .HasColumnName("CharacterId");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Petignores)
                 .HasForeignKey(d => d.Petid)
@@ -1744,21 +1706,6 @@ public partial class DBContext : DbContext
                 .HasColumnName("victimid");
         });
 
-        modelBuilder.Entity<Response>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("responses");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Chat)
-                .HasColumnType("text")
-                .HasColumnName("chat");
-            entity.Property(e => e.Response1)
-                .HasColumnType("text")
-                .HasColumnName("response");
-        });
 
         modelBuilder.Entity<Ring_Entity>(entity =>
         {
@@ -1807,36 +1754,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Portal)
                 .HasColumnType("int")
                 .HasColumnName("portal");
-        });
-
-        modelBuilder.Entity<ServerQueue>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("server_queue");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Accountid)
-                .HasColumnType("int")
-                .HasColumnName("accountid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.CreateTime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnType("timestamp")
-                .HasColumnName("createTime");
-            entity.Property(e => e.Message)
-                .HasMaxLength(128)
-                .HasColumnName("message");
-            entity.Property(e => e.Type)
-                .HasColumnType("tinyint")
-                .HasColumnName("type");
-            entity.Property(e => e.Value)
-                .HasColumnType("int")
-                .HasColumnName("value");
         });
 
         modelBuilder.Entity<ShopEntity>(entity =>
@@ -2105,13 +2022,6 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'10'")
                 .HasColumnType("tinyint")
                 .HasColumnName("gender");
-            entity.Property(e => e.Lastlogin)
-                .HasColumnType("timestamp")
-                .HasConversion(
-                    v => v.HasValue ? v.Value.UtcDateTime : (DateTime?)null,
-                    v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : (DateTimeOffset?)null
-                )
-                .HasColumnName("lastlogin");
             entity.Property(e => e.MaplePoint)
                 .HasColumnType("int")
                 .HasColumnName("maplePoint");
@@ -2222,11 +2132,9 @@ public partial class DBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("characters");
+            entity.ToTable("characters").HasQueryFilter(e => !e.IsDeleted);
 
             entity.HasIndex(e => e.AccountId, "accountid");
-
-            entity.HasIndex(e => new { e.Id, e.AccountId, e.World }, "id");
 
             entity.HasIndex(e => new { e.Id, e.AccountId, e.Name }, "id_2");
 
@@ -2457,9 +2365,9 @@ public partial class DBContext : DbContext
             entity.Property(e => e.VanquisherStage)
                 .HasColumnType("int")
                 .HasColumnName("vanquisherStage");
-            entity.Property(e => e.World)
-                .HasColumnType("int")
-                .HasColumnName("world");
+            entity.Property(e => e.IsDeleted)
+                .HasColumnType("tinyint(1)")
+                .HasColumnName("IsDeleted");
         });
     }
 

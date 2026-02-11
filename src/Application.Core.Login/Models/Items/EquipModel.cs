@@ -3,7 +3,6 @@ namespace Application.Core.Login.Models
     public class EquipModel
     {
         public int Id { get; set; }
-        public int InventoryItemId { get; set; }
 
         public int Upgradeslots { get; set; }
 

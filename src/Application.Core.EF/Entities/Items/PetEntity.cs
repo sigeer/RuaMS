@@ -28,5 +28,5 @@ public class PetEntity
 
     public int Flag { get; set; }
 
-    public virtual ICollection<Petignore> Petignores { get; set; } = new List<Petignore>();
+    public virtual ICollection<PetIgnoreEntity> Petignores { get; set; } = new List<PetIgnoreEntity>();
 }

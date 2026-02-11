@@ -48,7 +48,7 @@ namespace Application.Core.Game.Players
 
         public int Party { get; set; }
 
-        public int BuddyCapacity { get; set; } = 25;
+        public int BuddyCapacity { get; set; } = DefaultConfigs.BuddyCapacity;
 
         public DateTimeOffset CreateDate { get; set; }
 

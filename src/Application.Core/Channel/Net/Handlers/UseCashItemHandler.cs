@@ -513,42 +513,44 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 543)
         {
-            if (itemId == ItemId.MAPLE_LIFE_B && !c.GainCharacterSlot())
-            {
-                player.dropMessage(1, "You have already used up all 12 extra character slots.");
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
+            // 创建一个30级的角色，移除
+            throw new BusinessNotsupportException("Maple Life");
+            //if (itemId == ItemId.MAPLE_LIFE_B && !c.GainCharacterSlot())
+            //{
+            //    player.dropMessage(1, "You have already used up all 12 extra character slots.");
+            //    c.sendPacket(PacketCreator.enableActions());
+            //    return;
+            //}
 
-            string name = p.readString();
-            int face = p.readInt();
-            int hair = p.readInt();
-            int haircolor = p.readInt();
-            int skin = p.readInt();
-            int gender = p.readInt();
-            int jobid = p.readInt();
-            int improveSp = p.readInt();
+            //string name = p.readString();
+            //int face = p.readInt();
+            //int hair = p.readInt();
+            //int haircolor = p.readInt();
+            //int skin = p.readInt();
+            //int gender = p.readInt();
+            //int jobid = p.readInt();
+            //int improveSp = p.readInt();
 
-            int newPlayerId = c.CurrentServer.NodeService.DataService.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
+            //int newPlayerId = c.CurrentServer.NodeService.DataService.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
 
-            if (newPlayerId > 0)
-            {
-                c.sendPacket(PacketCreator.sendMapleLifeError(0));   // success!
+            //if (newPlayerId > 0)
+            //{
+            //    c.sendPacket(PacketCreator.sendMapleLifeError(0));   // success!
 
-                player.showHint("#bSuccess#k on creation of the new character through the Maple Life card.");
-                remove(c, position, itemId);
-            }
-            else
-            {
-                if (newPlayerId == -1)
-                {    // check name
-                    c.sendPacket(PacketCreator.sendMapleLifeNameError());
-                }
-                else
-                {
-                    c.sendPacket(PacketCreator.sendMapleLifeError(-1 * newPlayerId));
-                }
-            }
+            //    player.showHint("#bSuccess#k on creation of the new character through the Maple Life card.");
+            //    remove(c, position, itemId);
+            //}
+            //else
+            //{
+            //    if (newPlayerId == -1)
+            //    {    // check name
+            //        c.sendPacket(PacketCreator.sendMapleLifeNameError());
+            //    }
+            //    else
+            //    {
+            //        c.sendPacket(PacketCreator.sendMapleLifeError(-1 * newPlayerId));
+            //    }
+            //}
         }
         else if (itemType == 545)
         {

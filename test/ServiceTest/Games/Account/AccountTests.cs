@@ -1,6 +1,7 @@
-using ServiceTest.Games;
+using Application.EF;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
-using tools;
 
 namespace ServiceTest.Games.Account
 {
@@ -20,15 +21,34 @@ namespace ServiceTest.Games.Account
             Assert.That(p is not null);
         }
 
-        //[Test]
-        //public void Create_Delete_Character_Test()
-        //{
-        //    var r = CharacterFactory.CreateCharacter(0, 1, "abcdefg", 20000, 30032, 3, 0, BeginnerCreator.CreateRecipe(1040006, 1060006, 1072005, 1312004), out var newChar);
-        //    Assert.That(r, Is.EqualTo(0));
+        [Test]
+        public async Task Create_Delete_Character_Test()
+        {
+            var acc = GameTestGlobal.TestServer.GetMasterServer().AccountManager.GetAccountDto(1)!;
 
-        //    if (r == 0 && newChar != null)
-        //        Assert.That(CharacterManager.DeleteCharacterFromDB(newChar.getId()));
-        //}
+            var r = GameTestGlobal.TestServer.GetMasterServer().CreatePlayerService.CreateCharacter(acc, 1, "abcdefg", 0, 20000, 30032, 3, 1040002, 1060002, 1072001, 1302000);
+            Assert.That(r, Is.Not.Null);
+
+            using var dbContext = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<IDbContextFactory<DBContext>>().CreateDbContext();
+            using (var dbTran = dbContext.Database.BeginTransaction())
+            {
+                await GameTestGlobal.TestServer.GetMasterServer().CharacterManager.Commit(dbContext);
+                dbTran.Commit();
+            }
+
+            var player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            Assert.That(player, Is.Not.Null);
+
+            Assert.That(GameTestGlobal.TestServer.GetMasterServer().CharacterManager.RemoveCharacter(r.Character.Id, r.Character.AccountId));
+            using (var dbTran = dbContext.Database.BeginTransaction())
+            {
+                await GameTestGlobal.TestServer.GetMasterServer().CharacterManager.Commit(dbContext);
+                dbTran.Commit();
+            }
+
+            player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            Assert.That(player, Is.Null);
+        }
 
 
         [TestCase("   ", ExpectedResult = false)]

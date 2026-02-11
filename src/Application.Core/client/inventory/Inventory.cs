@@ -231,6 +231,13 @@ public class Inventory : IEnumerable<Item>
         {
             return;
         }
+
+        if (item.getPosition() == 0)
+        {
+            addItem(item);
+            return;
+        }
+
         addSlotFromDB(item.getPosition(), item);
     }
 

@@ -10,15 +10,7 @@ namespace Application.Core.Game.Players.PlayerProps
         private Dictionary<int, KeyBinding> _dataSource;
         public PlayerKeyMap(Player owner) : base(owner)
         {
-            _dataSource = new Dictionary<int, KeyBinding>();
-
-            var selectedKey = GameConstants.getCustomKey(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            var selectedType = GameConstants.getCustomType(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            var selectedAction = GameConstants.getCustomAction(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            for (int i = 0; i < selectedKey.Length; i++)
-            {
-                _dataSource.AddOrUpdate(selectedKey[i], new KeyBinding(selectedType[i], selectedAction[i]));
-            }
+            _dataSource = GameConstants.GetDefaultKeyMapping();
         }
 
         public override void LoadData(RepeatedField<Dto.KeyMapDto> keyMapFromDB)

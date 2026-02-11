@@ -23,9 +23,6 @@
 
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.EF;
-using Application.Utility.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Net.Handlers;
@@ -49,16 +46,6 @@ public class DeleteCharHandler : LoginHandlerBase
             // 可以让用户手动退出队伍、工会后再删除
             try
             {
-                using var dbContext = new DBContext();
-                var charModel = dbContext.Characters.Where(x => x.Id == cid)
-                    .Select(x => new { x.World, x.GuildId, x.GuildRank })
-                    .FirstOrDefault() ?? throw new BusinessCharacterNotFoundException(cid);
-                if (charModel.GuildId != 0 && charModel.GuildRank <= 1)
-                {
-                    c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x16));
-                    return;
-                }
-
                 foreach (var module in _server.Modules)
                 {
                     var checkResult = module.DeleteCharacterCheck(cid);
@@ -76,7 +63,7 @@ public class DeleteCharHandler : LoginHandlerBase
                 return;
             }
 
-            if (_server.CharacterManager.DeleteChar(cid, c.AccountEntity!.Id))
+            if (_server.CharacterManager.RemoveCharacter(cid, c.AccountId))
             {
                 _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);
                 c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0));

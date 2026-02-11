@@ -1,3 +1,5 @@
+using Application.Shared.Constants;
+
 namespace Application.Core.Login.Models
 {
     public class CharacterModel
@@ -61,7 +63,7 @@ namespace Application.Core.Login.Models
 
         public int Party { get; set; }
 
-        public int BuddyCapacity { get; set; } = 25;
+        public int BuddyCapacity { get; set; } = DefaultConfigs.BuddyCapacity;
 
         public DateTimeOffset CreateDate { get; set; }
 
@@ -103,13 +105,13 @@ namespace Application.Core.Login.Models
 
         public int PlayerHiredMerchantStatus { get; set; }
 
-        public int Equipslots { get; set; }
+        public int Equipslots { get; set; } = DefaultConfigs.BagSize;
 
-        public int Useslots { get; set; }
+        public int Useslots { get; set; } = DefaultConfigs.BagSize;
 
-        public int Setupslots { get; set; }
+        public int Setupslots { get; set; } = DefaultConfigs.BagSize;
 
-        public int Etcslots { get; set; }
+        public int Etcslots { get; set; } = DefaultConfigs.BagSize;
 
         public int FamilyId { get; set; } = -1;
 
@@ -148,6 +150,5 @@ namespace Application.Core.Login.Models
         public bool PartySearch { get; set; } = true;
 
         public long Jailexpire { get; set; }
-        public string NameWithMedal { get; set; }
     }
 }

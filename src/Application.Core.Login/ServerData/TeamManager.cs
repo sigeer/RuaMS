@@ -2,6 +2,7 @@ using Application.Core.Login.Models;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using AutoMapper;
+using AutoMapper.Execution;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using TeamProto;

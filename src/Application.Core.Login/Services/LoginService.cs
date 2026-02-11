@@ -60,7 +60,7 @@ namespace Application.Core.Login.Services
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
                 .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
-            data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountManager.GetAccountGameData(data.Character.AccountId));
+            data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountGameManager.GetAccountGameData(data.Character.AccountId));
             data.Account = _mapper.Map<Dto.AccountCtrlDto>(accountData);
             data.RemoteCallList.AddRange(_masterServer.CrossServerService.GetCallback(characterId));
             return data;

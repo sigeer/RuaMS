@@ -27,10 +27,6 @@ service SyncService {
 	rpc UpdateAccountState(Dto.UpdateAccountStateRequest) returns(Dto.AccountLoginStateDto);
 	rpc PushPlayerBuffers(SyncProto.PushPlayerBuffsRequest) returns(google.protobuf.Empty);
 	rpc GetPlayerBuffers(SyncProto.GetPlayerBufferRequest) returns(SyncProto.PlayerBuffDto);
-
-	rpc CreateCharacterCheck(CreatorProto.CreateCharCheckRequest) returns (CreatorProto.CreateCharCheckResponse);
-	rpc CreateCharacter(CreatorProto.NewPlayerSaveDto) returns (CreatorProto.CreateCharResponseDto);
-
 	rpc SyncPlayerShop(ItemProto.SyncPlayerShopRequest) returns(google.protobuf.Empty);
 	rpc BatchSyncPlayerShop(ItemProto.BatchSyncPlayerShopRequest) returns(google.protobuf.Empty);
 }

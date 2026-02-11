@@ -47,7 +47,7 @@ public class FamilyAddHandler : ChannelHandlerBase
         _options = options;
     }
 
-    public override async Task HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, IChannelClient c)
     {
         string toAdd = p.readString();
         var addChr = c.CurrentServer.getPlayerStorage().getCharacterByName(toAdd);
@@ -88,7 +88,7 @@ public class FamilyAddHandler : ChannelHandlerBase
             return;
         }
 
-        await _familyManager.CreateInvite(chr, toAdd);
+        _ = _familyManager.CreateInvite(chr, toAdd);
         c.sendPacket(PacketCreator.enableActions());
     }
 }

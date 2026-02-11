@@ -21,10 +21,10 @@ namespace Application.Core.Game.Players
             for (int i = 0; i < typeList.Length; i++)
             {
                 var type = typeList[i];
-                byte b = BagConfig.DefaultSize;
+                byte b = DefaultConfigs.BagSize;
                 if (type == InventoryType.CASH)
                 {
-                    b = BagConfig.CashSize;
+                    b = DefaultConfigs.BagCashSize;
                 }
                 _dataSource[i] = new Inventory(owner, type, b);
             }

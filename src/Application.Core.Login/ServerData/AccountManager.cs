@@ -1,9 +1,8 @@
-using Application.Core.Login.Models;
 using Application.Core.Login.Services;
+using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants;
-using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
@@ -11,39 +10,35 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
-using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Datas
 {
-    public class AccountManager
+    public class AccountManager : IStorage
     {
         /// <summary>
         /// 账户登录态记录
         /// </summary>
-        Dictionary<int, AccountLoginStatus> _accStageCache = new Dictionary<int, AccountLoginStatus>();
+        ConcurrentDictionary<int, AccountLoginStatus> _accStageCache = new ();
 
-        Dictionary<int, AccountGame> _accGameDataSource = new();
-        Dictionary<int, AccountCtrl> _accDataSource = new();
-
+        ConcurrentDictionary<int, AccountCtrl> _accDataSource = new();
+        ConcurrentDictionary<int, StoreFlag> _updated = new();
         /// <summary>
         /// 账户及其拥有的角色id缓存
         /// </summary>
-        Dictionary<int, HashSet<int>> _accPlayerCache = new();
+        ConcurrentDictionary<int, HashSet<int>> _accPlayerCache = new();
 
         readonly ILogger<AccountManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly IMapper _maaper;
-        readonly DataStorage _dataStorage;
         readonly MasterServer _server;
-        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, DataStorage dataStorage, MasterServer server)
+        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, MasterServer server)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _maaper = maaper;
-            _dataStorage = dataStorage;
             _server = server;
         }
 
@@ -60,13 +55,13 @@ namespace Application.Core.Login.Datas
 
         public AccountLoginStatus GetAccountLoginStatus(int accId)
         {
-            return _accStageCache.GetOrAdd(accId, () =>
+            return _accStageCache.GetOrAdd(accId, (id) =>
             {
                 using var dbContext = _dbContextFactory.CreateDbContext();
-                var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
+                var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == id);
                 if (dbModel != null)
                 {
-                    return new AccountLoginStatus(0, dbModel.Lastlogin ?? DateTimeOffset.MinValue);
+                    return new AccountLoginStatus(0, DateTimeOffset.MinValue);
                 }
                 else
                     throw new BusinessException($"账号不存在，Id = {accId}");
@@ -79,9 +74,7 @@ namespace Application.Core.Login.Datas
         {
             var d = GetAccountLoginStatus(accId);
             d.State = newState;
-            d.DateTime = _server.GetCurrentTimeDateTimeOffset();
-
-            _dataStorage.SetAccountLoginRecord(new KeyValuePair<int, AccountLoginStatus>(accId, d));
+            d.ProcessTime = _server.GetCurrentTimeDateTimeOffset();
             return d;
         }
 
@@ -98,13 +91,6 @@ namespace Application.Core.Login.Datas
             var newAccModel = new AccountEntity(loginAccount, password);
             dbContext.Accounts.Add(newAccModel);
             dbContext.SaveChanges();
-        }
-
-        public async Task SetupAccountPlayerCache(DBContext dbContext)
-        {
-            _accPlayerCache = (await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
-                .GroupBy(x => x.AccountId)
-                .ToDictionary(x => x.Key, x => x.Select(y => y.Id).ToHashSet());
         }
 
         public HashSet<int> GetAccountPlayerIds(int accId)
@@ -139,46 +125,6 @@ namespace Application.Core.Login.Datas
                 d.Remove(charId);
         }
 
-        public AccountGame? GetAccountGameData(int accountId)
-        {
-            if (_accGameDataSource.TryGetValue(accountId, out var data) && data != null)
-                return data;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-            if (accountData == null)
-                return null;
-
-            var allAccountItems = _server.InventoryManager.LoadItems(dbContext, true, accountId,
-                ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
-
-            var storage = _maaper.Map<StorageModel>(
-                    dbContext.Storages.FirstOrDefault(x => x.OwnerId == accountId && x.Type == (int)StorageType.AccountStorage)
-                    ) ?? new StorageModel(accountId, (int)StorageType.AccountStorage);
-            storage.Items = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray();
-
-            data = new AccountGame
-            {
-                Id = accountData.Id,
-                NxCredit = accountData.NxCredit ?? 0,
-                MaplePoint = accountData.MaplePoint ?? 0,
-                NxPrepaid = accountData.NxPrepaid ?? 0,
-
-                CashOverallItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashOverall).ToArray(),
-                CashAranItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashAran).ToArray(),
-                CashCygnusItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashCygnus).ToArray(),
-                CashExplorerItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashExplorer).ToArray(),
-                QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
-                Storage = storage
-            };
-            _accGameDataSource[accountId] = data;
-            return data;
-        }
-        public void UpdateAccountGame(AccountGame accountGame)
-        {
-            _accGameDataSource[accountGame.Id] = accountGame;
-            _dataStorage.SetAccountGame(accountGame);
-        }
 
         internal AccountCtrl? GetAccount(int accountId)
         {
@@ -198,7 +144,7 @@ namespace Application.Core.Login.Datas
         public void UpdateAccount(AccountCtrl obj)
         {
             _accDataSource[obj.Id] = obj;
-            _dataStorage.SetAccount(obj);
+            _updated[obj.Id] = StoreFlag.AddOrUpdate;
         }
 
         public ConfigProto.SetFlyResponse SetFly(ConfigProto.SetFlyRequest request)
@@ -218,7 +164,7 @@ namespace Application.Core.Login.Datas
 
         public int[] GetOnlinedGmAccId()
         {
-            return _accDataSource.Values.Where(x => x.GMLevel > 1).Select(x => x.Id).ToArray();
+            return _accDataSource.Values.Where(x => x.IsGmAccount()).Select(x => x.Id).ToArray();
         }
 
         public async Task SetGmLevel(SystemProto.SetGmLevelRequest request)
@@ -230,7 +176,7 @@ namespace Application.Core.Login.Datas
                 res.Code = 1;
                 await _server.Transport.SendMessageN(ChannelRecvCode.InvokeSetGmLevel, res, [request.OperatorId]);
                 return;
-            }    
+            }
 
             var accountDto = GetAccount(targetChr.Character.AccountId)!;
             accountDto.GMLevel = (sbyte)request.Level;
@@ -263,18 +209,48 @@ namespace Application.Core.Login.Datas
             return res;
         }
 
-        public bool TryGetGMLevel(int accId, out int gmLevel)
+        public bool TryGetGMInfo(int accId, out int gmLevel)
         {
             gmLevel = 0;
             var acc = GetAccountDto(accId);
             if (acc == null)
                 return false;
 
-            if (acc.GMLevel <= 1)
-                return false;
-
             gmLevel = acc.GMLevel;
-            return true;
+
+            return acc.IsGmAccount();
+        }
+
+        public async Task InitializeAsync(DBContext dbContext)
+        {
+            _accPlayerCache = new ((await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
+                .GroupBy(x => x.AccountId)
+                .ToDictionary(x => x.Key, x => x.Select(y => y.Id).ToHashSet()));
+        }
+
+        public async Task Commit(DBContext dbContext)
+        {
+            var updatedItems = _updated.Keys.ToList();
+            _updated.Clear();
+            if (updatedItems.Count == 0)
+                return;
+
+            var trackingItems = _accDataSource.Where(x => updatedItems.Contains(x.Key)).Select(x => x.Value).ToList();
+            var allAccounts = await dbContext.Accounts.Where(x => updatedItems.Contains(x.Id)).ToListAsync();
+            foreach (var obj in trackingItems)
+            {
+                var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id);
+                if (dbModel != null)
+                {
+                    dbModel.Pic = obj.Pic;
+                    dbModel.Pin = obj.Pin;
+                    dbModel.Gender = obj.Gender;
+                    dbModel.Tos = obj.Tos;
+                    dbModel.GMLevel = obj.GMLevel;
+                    dbModel.Characterslots = obj.Characterslots;
+                }
+            }
+            await dbContext.SaveChangesAsync();
         }
     }
 }

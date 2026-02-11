@@ -34,7 +34,7 @@ namespace Application.Core.Login.Modules
         /// <param name="isNewComer"></param>
         public override async Task OnPlayerLogin(CharacterLiveObject obj)
         {
-            if (_server.AccountManager.TryGetGMLevel(obj.Character.AccountId, out var gmLevel))
+            if (_server.AccountManager.TryGetGMInfo(obj.Character.AccountId, out var gmLevel))
                 await _server.DropWorldMessage(-2, string.Format(SystemMessage.System_GmLoggedin, gmLevel < 6 ? "GM" : "Admin", obj.Character.Name), true);
 
             await _server.NoteManager.SendNote(obj);
@@ -129,6 +129,22 @@ namespace Application.Core.Login.Modules
                 res.AllMembers.AddRange(allMembers);
                 await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberUpdate, res, allMembers);
             }
+        }
+
+        public override int DeleteCharacterCheck(int id)
+        {
+            var chr = _server.CharacterManager.FindPlayerById(id);
+            if (chr  == null)
+            {
+                return 0x9;
+            }
+
+            if (chr.Character.GuildId > 0 || chr.Character.Party > 0)
+            {
+                return 0x16;
+            }
+
+            return base.DeleteCharacterCheck(id);
         }
     }
 }

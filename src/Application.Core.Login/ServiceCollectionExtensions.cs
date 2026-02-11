@@ -53,12 +53,6 @@ namespace Application.Core.Login
             return services;
         }
 
-        static IServiceCollection AddStorage(this IServiceCollection services)
-        {
-            services.AddSingleton<DataStorage>();
-            return services;
-        }
-
         static IServiceCollection AddScheduleTask(this IServiceCollection services)
         {
             services.AddSingleton<RankingLoginTask>();
@@ -82,6 +76,9 @@ namespace Application.Core.Login
 
         static IServiceCollection AddDataManager(this IServiceCollection services)
         {
+            services.AddSingleton<CharacterManager>();
+            services.AddSingleton<IStorage, CharacterManager>(sp => sp.GetRequiredService<CharacterManager>());
+
             services.AddSingleton<NoteManager>();
             services.AddSingleton<IStorage, NoteManager>(sp => sp.GetRequiredService<NoteManager>());
 
@@ -114,6 +111,12 @@ namespace Application.Core.Login
             services.AddSingleton<DueyManager>();
             services.AddSingleton<IStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
 
+            services.AddSingleton<AccountGameManager>();
+            services.AddSingleton<IStorage, AccountGameManager>(sp => sp.GetRequiredService<AccountGameManager>());
+
+            services.AddSingleton<AccountManager>();
+            services.AddSingleton<IStorage, AccountManager>(sp => sp.GetRequiredService<AccountManager>());
+
             services.TryAddSingleton<IPlayerNPCManager, DefaultPlayerNPCManager>();
 
             services.AddSingleton<BuddyManager>();
@@ -126,8 +129,6 @@ namespace Application.Core.Login
             services.AddSingleton<CouponManager>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<TeamManager>();
-            services.AddSingleton<AccountManager>();
-            services.AddSingleton<CharacterManager>();
             services.AddSingleton<BuffManager>();
             services.AddSingleton<ChatRoomManager>();
             services.AddSingleton<CashShopDataManager>();
@@ -143,6 +144,7 @@ namespace Application.Core.Login
             services.AddSingleton<ShopService>();
             services.AddSingleton<MessageService>();
             services.AddSingleton<RankService>();
+            services.AddSingleton<CreatePlayerService>();
 
             services.TryAddSingleton<IExpeditionService, DefaultExpeditionService>();
             services.AddInvitationService();
@@ -183,7 +185,6 @@ namespace Application.Core.Login
             services.AddDataManager();
             services.AddSingleton<AbstractMasterModule, MasterModule>();
             services.AddServices();
-            services.AddStorage();
             services.AddMemoryCache();
             services.AddScheduleTask();
 

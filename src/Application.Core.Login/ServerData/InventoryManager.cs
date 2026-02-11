@@ -2,6 +2,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -89,9 +90,9 @@ namespace Application.Core.Login.Datas
                     Characterid = type.IsAccount ? null : targetId,
                     Expiration = item.Expiration,
                     Flag = item.Flag,
-                    GiftFrom = item.GiftFrom,
+                    GiftFrom = item.GiftFrom ?? "",
                     Inventorytype = item.InventoryType,
-                    Owner = item.Owner,
+                    Owner = item.Owner ?? "",
                     Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
@@ -135,7 +136,7 @@ namespace Application.Core.Login.Datas
 
             dbContext.SaveChanges();
         }
-        
+
         public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var itemType = (byte)type.getValue();
@@ -161,9 +162,9 @@ namespace Application.Core.Login.Datas
                     Characterid = type.IsAccount ? null : targetId,
                     Expiration = item.Expiration,
                     Flag = item.Flag,
-                    GiftFrom = item.GiftFrom,
+                    GiftFrom = item.GiftFrom ?? "",
                     Inventorytype = item.InventoryType,
-                    Owner = item.Owner,
+                    Owner = item.Owner ?? "",
                     Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
