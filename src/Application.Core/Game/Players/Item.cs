@@ -5,9 +5,12 @@ using Application.Core.Game.Relation;
 using Application.Core.tools.RandomUtils;
 using Application.Shared.Constants.Item;
 using Application.Templates.Item.Pet;
+using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
+using System.Diagnostics;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace Application.Core.Game.Players
 {
@@ -100,7 +103,7 @@ namespace Application.Core.Game.Players
                             {
                                 Notice(replace.Message);
                             }
-                            GainItem(replace.ItemId, 1, 
+                            GainItem(replace.ItemId, 1,
                                 expires: (long)TimeSpan.FromMinutes(replace.Period).TotalMilliseconds);
                         }
                     }
@@ -126,10 +129,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void setInventory(InventoryType type, Inventory inv)
-        {
-            Bag.SetValue(type, inv);
-        }
         public Inventory getInventory(InventoryType type)
         {
             return Bag[type];
@@ -144,10 +143,6 @@ namespace Application.Core.Game.Players
         {
             slots += Bag[type].getSlotLimit();
             return slots <= 96;
-        }
-        public bool gainSlots(int type, int slots)
-        {
-            return gainSlots(type, slots, true);
         }
         public bool gainSlots(int type, int slots, bool update)
         {
@@ -223,19 +218,10 @@ namespace Application.Core.Game.Players
                     || (checkEquipped && Bag[InventoryType.EQUIPPED].findById(itemid) != null);
         }
 
+        [ScriptCall]
         public bool haveItemEquipped(int itemid)
         {
             return (Bag[InventoryType.EQUIPPED].findById(itemid) != null);
-        }
-
-        public bool haveCleanItem(int itemid)
-        {
-            return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-        }
-
-        public bool HasEmptySlotByItem(int itemId)
-        {
-            return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
         }
 
         public bool hasEmptySlot(sbyte invType)
@@ -243,24 +229,9 @@ namespace Application.Core.Game.Players
             return getInventory(InventoryTypeUtils.getByType(invType)).getNextFreeSlot() > -1;
         }
 
-        public int getItemQuantity(int itemid, bool checkEquipped)
+        public int getItemQuantity(int itemid)
         {
-            int count = Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
-            if (checkEquipped)
-            {
-                count += Bag[InventoryType.EQUIPPED].countById(itemid);
-            }
-            return count;
-        }
-
-        public int getCleanItemQuantity(int itemid, bool checkEquipped)
-        {
-            int count = Bag[ItemConstants.getInventoryType(itemid)].countNotOwnedById(itemid);
-            if (checkEquipped)
-            {
-                count += Bag[InventoryType.EQUIPPED].countNotOwnedById(itemid);
-            }
-            return count;
+            return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
         }
 
         public void setItemEffect(int itemEffect)
@@ -281,35 +252,41 @@ namespace Application.Core.Game.Players
             long nextMeso = (long)MesoValue.get() + gain;
             return nextMeso <= int.MaxValue;
         }
-        [Obsolete("使用 GainMeso")]
-
-        public void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delta">修改值</param>
+        /// <param name="check">是否验证范围，true且未通过验证时不会修改金币</param>
+        /// <returns>实际获取的金币</returns>
+        int ChangeMeso(int delta, bool check = false)
         {
-            long nextMeso;
+            int notGain = 0;
+            int actualGain = delta;
+            var nextMeso = (long)MesoValue.get() + delta;
 
-            nextMeso = (long)MesoValue.get() + gain;  // thanks Thora for pointing integer overflow here
             if (nextMeso > int.MaxValue)
             {
-                gain -= (int)(nextMeso - int.MaxValue);
+                notGain = (int)(nextMeso - int.MaxValue);
+                actualGain -= notGain;
             }
             else if (nextMeso < 0)
             {
-                gain = -MesoValue.get();
+                notGain = (int)nextMeso;
+                actualGain = -MesoValue.get();
             }
-            nextMeso = MesoValue.addAndGet(gain);
 
-            if (gain != 0)
-            {
-                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-                if (show)
-                {
-                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
-                }
-            }
-            else
-            {
-                sendPacket(PacketCreator.enableActions());
-            }
+            Activity.Current?.AddEvent(
+                    new ActivityEvent(
+                        "ChangeMeso",
+                        tags: new ActivityTagsCollection
+                        {
+                            ["Gain"] = delta,
+                            ["ActualGain"] = actualGain,
+                        }));
+
+            if (!check || actualGain == delta)
+                MesoValue.addAndGet(actualGain);
+            return actualGain;
         }
 
         /// <summary>
@@ -321,30 +298,19 @@ namespace Application.Core.Game.Players
         /// <returns>是否成功</returns>
         public bool TryGainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            bool canGainMeso = false;
-            long nextMeso;
+            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            activity?.SetTag("PlayerId", Id);
+            activity?.SetTag("Player", Name);
+            activity?.SetTag("Meso", gain);
 
-            nextMeso = (long)MesoValue.get() + gain;
-            canGainMeso = nextMeso <= int.MaxValue || nextMeso >= 0;
-            if (canGainMeso)
-            {
-                nextMeso = MesoValue.addAndGet(gain);
-            }
-            else
+            var actualGain = ChangeMeso(gain, true);
+            if (actualGain != gain)
             {
                 return false;
             }
 
-            if (canGainMeso)
-            {
-                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-                GainMesoShowMessage(gain, d);
-            }
-            else
-            {
-                sendPacket(PacketCreator.enableActions());
-            }
-
+            updateSingleStat(Stat.MESO, MesoValue, enableActions);
+            GainMesoShowMessage(actualGain, d);
             return true;
         }
 
@@ -357,33 +323,23 @@ namespace Application.Core.Game.Players
         /// <returns>超出上限后无法拾取的数量</returns>
         public int GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            int notGained = 0;
-            long nextMeso;
+            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            activity?.SetTag("PlayerId", Id);
+            activity?.SetTag("Player", Name);
+            activity?.SetTag("Meso", gain);
 
-            nextMeso = (long)MesoValue.get() + gain;
-            if (nextMeso > int.MaxValue)
-            {
-                notGained = (int)(nextMeso - int.MaxValue);
-                gain -= notGained;
-            }
-            else if (nextMeso < 0)
-            {
-                notGained = (int)nextMeso;
-                gain = -MesoValue.get();
-            }
+            var actualGain = ChangeMeso(gain);
 
-            nextMeso = MesoValue.addAndGet(gain);
-
-            if (gain != 0)
+            if (actualGain != 0)
             {
-                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-                GainMesoShowMessage(gain, d);
+                updateSingleStat(Stat.MESO, MesoValue, enableActions);
+                GainMesoShowMessage(actualGain, d);
             }
             else
             {
                 sendPacket(PacketCreator.enableActions());
             }
-            return notGained;
+            return gain - actualGain;
         }
         #endregion
 
@@ -430,13 +386,19 @@ namespace Application.Core.Game.Players
         /// <param name="show">显示方式</param>
         /// <param name="expires">道具有效时长。单位ms， -1不会过期</param>
         /// <param name="nextSetter">设置其他道具属性，不能对返回值修改属性（要在传客户端前修改）</param>
-        /// <returns>获得的道具</returns>
+        /// <returns>获得的道具，尽量不使用：如果是可叠放物品，不会与背包物品对应，</returns>
         public Item? GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
         {
             if (quantity == 0)
             {
                 return null;
             }
+
+            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainItem");
+            activity?.SetTag("PlayerId", Id);
+            activity?.SetTag("Player", Name);
+            activity?.SetTag("ItemId", itemId);
+            activity?.SetTag("Quantity", quantity);
 
             Item? item = null;
 

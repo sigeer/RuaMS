@@ -75,6 +75,7 @@ public class Equip : Item
         this.upgradeSlots = (sbyte)upgradeSlots;
         this.itemExp = 0;
         this.itemLevel = 1;
+        this.quantity = 1;
 
         IsElemental = SourceTemplate.IsElemental;
         MaxLevel = Math.Min(30,

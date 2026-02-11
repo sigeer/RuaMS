@@ -56,7 +56,7 @@ public class ReportHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getMeso() > 299)
                 {
                     c.OnlinedCharacter.decreaseReports();
-                    c.OnlinedCharacter.gainMeso(-300, true);
+                    c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
                 }
                 else
                 {
@@ -83,7 +83,7 @@ public class ReportHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getMeso() > 299)
                 {
                     c.OnlinedCharacter.decreaseReports();
-                    c.OnlinedCharacter.gainMeso(-300, true);
+                    c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
                 }
                 else
                 {

@@ -39,7 +39,7 @@ namespace Application.Core.Channel.DueyService
             {
                 if (chr.canHoldMeso(meso))
                 {
-                    chr.gainMeso(meso, false);
+                    chr.GainMeso(meso);
                 }
                 else
                 {

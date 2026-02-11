@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Commands
                 var receiver = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.Request.MasterId);
                 if (receiver != null)
                 {
-                    receiver.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD_RECEIVED, 1);
+                    receiver.GainItem(ItemId.NEW_YEARS_CARD_RECEIVED, 1, show: GainItemShow.ShowInChat);
                     if (!string.IsNullOrEmpty(newCard.Message))
                     {
                         receiver.dropMessage(6, "[New Year] " + newCard.SenderName + ": " + newCard.Message);

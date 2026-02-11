@@ -59,7 +59,7 @@ public class GiveMesosCommand : CommandBase
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(recv_);
         if (victim != null && victim.IsOnlined)
         {
-            victim.gainMeso((int)mesos_, true);
+            victim.GainMeso((int)mesos_, GainItemShow.ShowInMessage);
             player.MessageI18N(nameof(ClientMessage.GiveMesosCommand_MesoGiven));
         }
         else

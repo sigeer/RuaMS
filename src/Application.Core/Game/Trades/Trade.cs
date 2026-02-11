@@ -77,7 +77,7 @@ public class Trade
         {
             int fee = TradeManager.GetFee(PartnerTrade.Meso);
             var actualGainMeso = PartnerTrade.Meso - fee;
-            chr.gainMeso(actualGainMeso, show, true, show);
+            chr.GainMeso(actualGainMeso, GainItemShow.ShowInChat, true);
             if (fee > 0)
             {
                 chr.dropMessage(1, "Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos due to trade fees.");
@@ -141,7 +141,7 @@ public class Trade
         }
         if (chr.getMeso() >= meso)
         {
-            chr.gainMeso(-meso, false, true, false);
+            chr.GainMeso(-meso, enableActions: true);
             this.Meso += meso;
             chr.sendPacket(PacketCreator.getTradeMesoSet(0, this.Meso));
 

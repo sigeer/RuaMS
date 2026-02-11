@@ -61,7 +61,6 @@ public abstract class CharacterFactory
         lock (createNewLock)
         {
             var newCharacter = new Player(
-                 world: 0,
                  accountId: accountId,
                  hp: recipe.getMaxHp(),
                  mp: recipe.getMaxMp(),

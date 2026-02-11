@@ -234,7 +234,7 @@ public class Shop
             int recvMesos = ii.getPrice(item.getItemId(), quantity);
             if (recvMesos > 0)
             {
-                c.OnlinedCharacter.gainMeso(recvMesos, false);
+                c.OnlinedCharacter.GainMeso(recvMesos);
             }
             c.sendPacket(PacketCreator.shopTransaction(0x8));
         }
@@ -264,7 +264,7 @@ public class Shop
             {
                 item.setQuantity(slotMax);
                 c.OnlinedCharacter.forceUpdateItem(item);
-                c.OnlinedCharacter.gainMeso(-price, false, true, false);
+                c.OnlinedCharacter.GainMeso(-price, enableActions: true);
                 c.sendPacket(PacketCreator.shopTransaction(0x8));
             }
             else

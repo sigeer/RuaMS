@@ -298,12 +298,12 @@ public class TakeDamageHandler : ChannelHandlerBase
                 int mesoloss = (int)(damage * (buffValue.Value / 100.0));
                 if (chr.getMeso() < mesoloss)
                 {
-                    chr.gainMeso(-chr.getMeso(), false);
+                    chr.GainMeso(-chr.getMeso());
                     chr.cancelBuffStats(BuffStat.MESOGUARD);
                 }
                 else
                 {
-                    chr.gainMeso(-mesoloss, false);
+                    chr.GainMeso(-mesoloss);
                 }
                 chr.UpdateStatsChunk(() =>
                 {

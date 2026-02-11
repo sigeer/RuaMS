@@ -5,7 +5,7 @@ namespace Application.Core.Channel.Tasks
         readonly WorldChannelServer _server;
         readonly NetworkMonitor networkMonitor;
         public HealthCheckTask(WorldChannelServer server) : base(
-            $"ChannelServer:{server.ServerName}_{nameof(HealthCheckTask)}")
+            $"{server.InstanceName}_{nameof(HealthCheckTask)}")
         {
             _server = server;
             networkMonitor = new NetworkMonitor();

@@ -6,7 +6,7 @@ namespace Application.Core.Channel.ServerData
     {
         readonly WorldChannelServer _server;
 
-        public MountTirednessTask(WorldChannelServer server) : base($"{server.ServerName}_{nameof(MountTirednessManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public MountTirednessTask(WorldChannelServer server) : base($"{server.InstanceName}_{nameof(MountTirednessManager)}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
             this._server = server;
         }

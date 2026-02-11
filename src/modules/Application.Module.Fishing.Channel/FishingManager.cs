@@ -20,7 +20,7 @@ namespace Application.Module.Fishing.Channel
         readonly WorldChannelServer _server;
 
         public FishingManager(WorldChannelServer server, ILogger<FishingManager> logger)
-            : base($"ChannelServer:{server.ServerName}_{nameof(FishingManager)}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+            : base($"{server.InstanceName}_{nameof(FishingManager)}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
             _server = server;
             _logger = logger;
@@ -129,7 +129,7 @@ namespace Application.Module.Fishing.Channel
                 {
                     case 0:
                         int mesoAward = (int)((1400.0 * Randomizer.nextDouble() + 1201) * chr.getMesoRate() + (15 * chr.getLevel() / 5));
-                        chr.gainMeso(mesoAward, true, true, true);
+                        chr.GainMeso(mesoAward, GainItemShow.ShowInChat, true);
 
                         rewardStr = mesoAward + " mesos.";
                         break;
@@ -145,7 +145,7 @@ namespace Application.Module.Fishing.Channel
 
                         if (chr.canHold(itemid))
                         {
-                            chr.getAbstractPlayerInteraction().gainItem(itemid);
+                            chr.GainItem(itemid, 1, show: GainItemShow.ShowInChat);
                         }
                         else
                         {

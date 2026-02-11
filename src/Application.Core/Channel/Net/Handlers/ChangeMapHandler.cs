@@ -93,7 +93,7 @@ public class ChangeMapHandler : ChannelHandlerBase
                         // thanks lucasziron (lziron) for showing revivePlayer() triggering by Wheel
 
                         InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.WHEEL_OF_FORTUNE, 1, true, false);
-                        chr.sendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE, false)));
+                        chr.sendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE)));
 
                         chr.UpdateStatsChunk(() =>
                         {

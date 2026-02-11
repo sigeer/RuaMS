@@ -5,9 +5,8 @@ using Application.Utility.Tasks;
 
 namespace Application.Shared.Servers
 {
-    public interface IServerBase<out TServerTransport> where TServerTransport : IServerTransport
+    public interface IServerBase<out TServerTransport> : INamedInstance where TServerTransport : IServerTransport
     {
-        string ServerName { get; }
         TServerTransport Transport { get; }
         Task StartServer(CancellationToken cancellationToken);
         Task Shutdown(int delaySeconds = -1);

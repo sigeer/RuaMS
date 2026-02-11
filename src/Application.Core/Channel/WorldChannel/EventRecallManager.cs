@@ -33,7 +33,7 @@ public class EventRecallManager : TaskBase
     private ConcurrentDictionary<int, AbstractEventInstanceManager> eventHistory = new();
 
     public EventRecallManager(WorldChannel worldChannel)
-        : base($"{worldChannel.ServerLogName}_{nameof(EventRecallManager)}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+        : base($"{worldChannel.InstanceName}_{nameof(EventRecallManager)}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
     {
     }
 
@@ -64,11 +64,12 @@ public class EventRecallManager : TaskBase
         return eim != null && !eim.isEventDisposed();
     }
 
-    public AbstractEventInstanceManager? recallEventInstance(int characterId)
+    public void recallEventInstance(Player chr)
     {
-        if (eventHistory.TryRemove(characterId, out var eim))
-            return isRecallableEvent(eim) ? eim : null;
-        return null;
+        if (eventHistory.TryRemove(chr.Id, out var eim) && isRecallableEvent(eim))
+        {
+            eim.registerPlayer(chr);
+        }
     }
 
     public void storeEventInstance(int characterId, AbstractEventInstanceManager eim)

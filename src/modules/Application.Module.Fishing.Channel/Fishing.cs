@@ -110,7 +110,7 @@ public class Fishing
             {
                 case 0:
                     int mesoAward = (int)((1400.0 * Randomizer.nextDouble() + 1201) * chr.getMesoRate() + (15 * chr.getLevel() / 5));
-                    chr.gainMeso(mesoAward, true, true, true);
+                    chr.GainMeso(mesoAward, GainItemShow.ShowInChat, true);
 
                     rewardStr = mesoAward + " mesos.";
                     break;
@@ -126,7 +126,7 @@ public class Fishing
 
                     if (chr.canHold(itemid))
                     {
-                        chr.getAbstractPlayerInteraction().gainItem(itemid);
+                        chr.GainItem(itemid, 1, show: GainItemShow.ShowInChat);
                     }
                     else
                     {

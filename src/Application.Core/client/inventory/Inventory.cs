@@ -25,9 +25,13 @@ using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.model;
+using Application.Shared.Constants.Item;
+using Application.Utility.Performance;
 using client.inventory.manipulator;
 using System.Collections;
+using System.Diagnostics;
 using ZLinq;
+using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace client.inventory;
 
@@ -207,6 +211,17 @@ public class Inventory : IEnumerable<Item>
             return -1;
         }
         item.setPosition(slotId);
+
+        Activity.Current?.AddEvent(
+        new ActivityEvent(
+            "AddItem",
+            tags: new ActivityTagsCollection
+            {
+                ["Inventory"] = getType(),
+                ["Slot"] = slotId,
+                ["Item.Id"] = item.getItemId(),
+                ["Item.Quantity"] = item.getQuantity()
+            }));
         return slotId;
     }
 
@@ -312,8 +327,20 @@ public class Inventory : IEnumerable<Item>
             item.setQuantity((short)left);
             removed = quantity;
         }
+
         if (left <= 0 && !allowZero)
             removeSlot(slot);
+
+        Activity.Current?.AddEvent(
+                new ActivityEvent(
+                    "RemoveItem",
+                    tags: new ActivityTagsCollection
+                    {
+                        ["Inventory"] = getType(),
+                        ["Slot"] = slot,
+                        ["RemoveCount"] = quantity,
+                        ["ActualRemoved"] = removed
+                    }));
         return removed;
 
     }

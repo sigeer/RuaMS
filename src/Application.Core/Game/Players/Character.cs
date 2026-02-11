@@ -3474,7 +3474,7 @@ public partial class Player
             int recvMesos = ii.getPrice(itemid, quantity);
             if (recvMesos > 0)
             {
-                gainMeso(recvMesos, false);
+                GainMeso(recvMesos);
                 return (recvMesos);
             }
         }
@@ -3638,12 +3638,6 @@ public partial class Player
     {
         this.VanquisherStage = x;
     }
-
-    public void setWorld(int world)
-    {
-        this.World = world;
-    }
-
 
 
     private long getDojoTimeLeft()
