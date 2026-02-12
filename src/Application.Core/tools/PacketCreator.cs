@@ -1467,7 +1467,7 @@ public class PacketCreator
 
 
     /// <summary>
-    /// 
+    /// CMobPool::OnMobLeaveField
     /// </summary>
     /// <param name="objId"></param>
     /// <param name="animation">0 = dissapear, 1 = fade out, 2+ = special</param>
@@ -1476,7 +1476,6 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.KILL_MONSTER);
         p.writeInt(objId);
-        p.writeByte(animation);
         p.writeByte(animation);
         return p;
     }

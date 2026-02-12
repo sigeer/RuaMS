@@ -38,7 +38,7 @@ namespace Application.Core.Scripting.Events
                 return false;
             }
 
-            if (eligibleMembers.Any(x => x.Map != leader.Map))
+            if (eligibleMembers.Any(x => x.MapModel != leader.MapModel))
             {
                 return false;
             }

@@ -148,7 +148,7 @@ namespace Application.Core.Channel.Services
             c.SetPlayer(player);
 
             var mapManager = c.CurrentServer.getMapFactory();
-            player.setMap(mapManager.getMap(player.Map) ?? mapManager.getMap(MapId.HENESYS));
+            player.setMap(mapManager.getMap(o.Character.Map) ?? mapManager.getMap(MapId.HENESYS));
 
             player.InitialSpawnPoint = o.Character.Spawnpoint;
             var portal = player.MapModel.getPortal(player.InitialSpawnPoint);
@@ -292,7 +292,6 @@ namespace Application.Core.Channel.Services
                     LongValue = LongTool.BytesToLong(player.QuickSlotKeyMapped!.GetKeybindings()),
                 }
                 : null;
-
 
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
             if (player.MapModel == null || player.CashShopModel.isOpened())
@@ -465,68 +464,6 @@ namespace Application.Core.Channel.Services
                 MobSkillId = x.Value.FromMobSkill.getId().type.getId(),
                 MobSkillLevel = x.Value.FromMobSkill.getId().level
             }));
-            return data;
-        }
-        /// <summary>
-        /// 创建角色使用
-        /// </summary>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        public CreatorProto.NewPlayerSaveDto DeserializeNew(Player player)
-        {
-            var playerDto = _mapper.Map<Dto.CharacterDto>(player);
-            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
-            {
-                playerDto.Map = player.Map;
-            }
-            else
-            {
-                if (player.MapModel.getForcedReturnId() != MapId.NONE)
-                {
-                    playerDto.Map = player.MapModel.getForcedReturnId();
-                }
-                else
-                {
-                    playerDto.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
-                }
-            }
-            if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
-            {
-                // reset to first spawnpoint on those maps
-                playerDto.Spawnpoint = 0;
-            }
-            else
-            {
-                var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
-                if (closest != null)
-                {
-                    playerDto.Spawnpoint = closest.getId();
-                }
-                else
-                {
-                    playerDto.Spawnpoint = 0;
-                }
-            }
-
-            #region inventory mapping
-            var itemType = ItemFactory.INVENTORY.getValue();
-            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
-            {
-                opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = itemType;
-            })).ToArray();
-
-            #endregion
-
-            var data = new CreatorProto.NewPlayerSaveDto()
-            {
-                Character = playerDto
-            };
-            data.InventoryItems.AddRange(d);
-            data.Events.AddRange(player.Events.Select(x => new Dto.EventDto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
-            data.Skills.AddRange(player.Skills.ToDto());
-            data.KeyMaps.AddRange(player.KeyMap.ToDto());
-
             return data;
         }
 

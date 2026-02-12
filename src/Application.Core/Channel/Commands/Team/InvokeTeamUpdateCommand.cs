@@ -54,7 +54,7 @@ namespace Application.Core.Channel.Commands
                 {
                     foreach (var partychar in partyMembers)
                     {
-                        if (partychar!.Map == targetPlayer.Map && targetPlayer.Channel == partychar.Channel)
+                        if (partychar!.MapModel == targetPlayer.MapModel)
                         {
                             partychar.sendPacket(TeamPacketCreator.updatePartyMemberHP(targetPlayer.Id, targetPlayer.HP, targetPlayer.ActualMaxHP));
                             targetPlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(partychar.Id, partychar.HP, partychar.ActualMaxHP));
