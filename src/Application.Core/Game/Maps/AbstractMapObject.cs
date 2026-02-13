@@ -19,6 +19,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 namespace Application.Core.Game.Maps;
 
 public abstract class AbstractMapObject : IMapObject
@@ -89,5 +90,42 @@ public abstract class AbstractMapObject : IMapObject
         getMap().removeMapObject(this);
         getMap().BroadcastAll(chr => sendDestroyData(chr.Client));
     }
+    /// <summary>
+    /// 是否能被玩家看到
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    protected virtual bool IsPlayerVisiable(Player chr)
+    {
+        return true;
+    }
 
+    public virtual void Enter(IMap map, Action<Player> chrAction)
+    {
+        map.addMapObject(this);
+        setMap(map);
+
+        foreach (Player chr in map.getAllPlayers())
+        {
+            if (IsPlayerVisiable(chr) && (getType().IsNonRangedType() || chr.getPosition().distanceSq(getPosition()) <= MapleMap.getRangedDistance()))
+            {
+                chr.addVisibleMapObject(this);
+                chrAction(chr);
+            }
+        }
+    }
+
+    public virtual void Leave(Action<Player> chrAction)
+    {
+        MapModel.removeMapObject(this);
+
+        foreach (Player chr in MapModel.getAllPlayers())
+        {
+            if (IsPlayerVisiable(chr) && (getType().IsNonRangedType() || chr.getPosition().distanceSq(getPosition()) <= MapleMap.getRangedDistance()))
+            {
+                chr.removeVisibleMapObject(this);
+                chrAction(chr);
+            }
+        }
+    }
 }

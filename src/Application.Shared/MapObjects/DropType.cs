@@ -1,19 +1,22 @@
 namespace Application.Shared.MapObjects
 {
-    public enum DropType
+    public enum DropType: byte
     {
         /// <summary>
-        /// 限个人
+        /// 个人可拾取
         /// </summary>
         OnlyOwner,
         /// <summary>
-        /// 全队
+        /// 全队可拾取
         /// </summary>
         OnwerWithTeam,
         /// <summary>
-        /// 所有人
+        /// 所有人可拾取
         /// </summary>
         FreeForAll,
+        /// <summary>
+        /// 金钱炸弹掉落，所有人可拾取
+        /// </summary>
         FreeForAll_Explosive
     }
 }

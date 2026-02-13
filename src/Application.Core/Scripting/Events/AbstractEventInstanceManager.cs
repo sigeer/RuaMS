@@ -869,8 +869,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             npc.setRx0(pos.X + 50);
             npc.setRx1(pos.X - 50);
             npc.setFh(map.Footholds.FindBelowFoothold(pos).getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
+
+            npc.Enter(map, chr => chr.sendPacket(PacketCreator.spawnNPC(npc)));
         }
     }
 

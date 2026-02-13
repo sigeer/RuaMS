@@ -1,6 +1,7 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
+using Application.Shared.KeyMaps;
 using net.server;
 using server;
 using tools;
@@ -214,6 +215,18 @@ namespace Application.Core.Game.Players
         public int GetMakerSkillLevel()
         {
             return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
+        }
+
+        /// <summary>
+        /// 学习技能并放置在 [=]键上，用于测试
+        /// </summary>
+        /// <param name="skillId"></param>
+        public void LearnExtraSkill(int skillId)
+        {
+            var skill = SkillFactory.GetSkillTrust(skillId);
+            changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
+            changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
+            sendKeymap();
         }
     }
 }

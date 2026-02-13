@@ -461,32 +461,31 @@ public class Reactor : AbstractMapObject
         {
             if (getShouldCollect() == true && mapItem != null && mapItem == MapModel.getMapObject(mapItem.getObjectId()))
             {
-                    if (mapItem.isPickedUp())
-                    {
-                        return;
-                    }
+                if (mapItem.isPickedUp())
+                {
+                    return;
+                }
 
-                    var ownerClient = mapItem.getOwnerClient();
-                    if (ownerClient == null)
-                    {
-                        return;
-                    }
-                    mapItem.setPickedUp(true);
-                    MapModel.unregisterItemDrop(mapItem);
+                var ownerClient = mapItem.getOwnerClient();
+                if (ownerClient == null)
+                {
+                    return;
+                }
 
-                    setShouldCollect(false);
-                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapItem.getPosition());
+                mapItem.Leave(chr => chr.sendPacket(mapItem.GetExpiredPacket()));
 
-                    hitReactor(ownerClient);
+                setShouldCollect(false);
 
-                    if (getDelay() > 0)
-                    {
-                        var reactorMap = getMap();
+                hitReactor(ownerClient);
 
-                        OverallService service = reactorMap.getChannelServer().OverallService;
-                        service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
-                    }
-  
+                if (getDelay() > 0)
+                {
+                    var reactorMap = getMap();
+
+                    OverallService service = reactorMap.getChannelServer().OverallService;
+                    service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
+                }
+
             }
         }
     }

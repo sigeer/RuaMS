@@ -563,9 +563,7 @@ namespace Application.Core.Channel.Services
                             npc.setRx1(data.Data.Rx1);
                             npc.setFh(data.Data.Fh);
 
-                            map.addMapObject(npc);
-                            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-
+                            npc.Enter(map, chr => chr.sendPacket(PacketCreator.spawnNPC(npc)));
                         }
                     }
                     else if (data.Data.Type == LifeType.Monster)

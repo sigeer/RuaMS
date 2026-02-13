@@ -1,6 +1,9 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Players;
 using client.inventory;
+using server.maps;
 using tools;
 
 
@@ -230,5 +233,81 @@ public class MapItem : AbstractMapObject
     public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  MapItemRemoveAnimation.None, 0));
+    }
+
+    public Packet GetExpiredPacket()
+    {
+        return PacketCreator.removeItemFromMap(getObjectId(), MapItemRemoveAnimation.Expired, 0);
+    }
+
+    protected override bool IsPlayerVisiable(Player chr)
+    {
+        return chr.needQuestItem(questid, getItemId());
+    }
+
+
+    public override void Enter(IMap map, Action<Player> getSpawnPacket)
+    {
+        base.Enter(map, getSpawnPacket);
+
+        map.MapItems.Add(this);
+
+        // 掉落物触发反应堆
+        if (Item != null)
+        {
+            foreach (var react in map.getReactors().OfType<Reactor>())
+            {
+                if (react.getReactorType() == 100)
+                {
+                    var reactItem = react.getReactItem(react.getEventState())!;
+                    if (reactItem.ItemId == Item.getItemId() && reactItem.Quantity == Item.getQuantity())
+                    {
+                        if (react.getArea().Contains(getPosition()))
+                        {
+                            map.registerMapSchedule(new ReactorHitFromMapItemCommand(this, react), 5_000);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public override void Leave(Action<Player> chrAction)
+    {
+        setPickedUp(true);
+
+        base.Leave(chrAction);
+
+        MapModel.MapItems.Remove(this);
+    }
+
+    public Packet GetSpawnPacket(Player chr, byte mod, int delay)
+    {
+        int dropType = getDropType();
+        if (hasClientsideOwnership(chr) && dropType < 3)
+        {
+            dropType = 2;
+        }
+
+        OutPacket p = OutPacket.create(SendOpcode.DROP_ITEM_FROM_MAPOBJECT);
+        p.writeByte(mod);
+        p.writeInt(getObjectId());
+        p.writeBool(getMeso() > 0); // 1 mesos, 0 item, 2 and above all item meso bag,
+        p.writeInt(getItemId()); // drop object ID
+        p.writeInt(getClientsideOwnerId()); // owner charid/partyid :)
+        p.writeByte(dropType); // 0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA
+        p.writePos(getPosition());
+        p.writeInt(getDropper().getObjectId()); // dropper oid, found thanks to Li Jixue
+
+        p.writePos(getDropper().getPosition());
+        p.writeShort(delay);//Fh?
+
+        if (Item != null)
+        {
+            p.writeLong(PacketCommon.getTime(Item.getExpiration()));
+        }
+        p.writeBool(!isPlayerDrop()); //pet EQP pickup
+        return p;
     }
 }

@@ -1470,7 +1470,7 @@ public class PacketCreator
     /// CMobPool::OnMobLeaveField
     /// </summary>
     /// <param name="objId"></param>
-    /// <param name="animation">0 = dissapear, 1 = fade out, 2+ = special</param>
+    /// <param name="animation">0 = dissapear, 1 = fade out, 2+ = special, 4. boom</param>
     /// <returns></returns>
     public static Packet killMonster(int objId, int animation)
     {

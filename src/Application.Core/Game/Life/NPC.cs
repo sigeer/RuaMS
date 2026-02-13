@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Maps;
 using Application.Templates.Npc;
 using server.life;
 using tools;

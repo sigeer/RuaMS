@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Commands;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -7,6 +8,7 @@ using Application.Core.Scripting.Events;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Utility.Collections;
 using client.inventory;
 using net.server.coordinator.world;
 using scripting.Event;
@@ -40,8 +42,16 @@ namespace Application.Core.Game.Maps
         bool IsTrackedByEvent { get; set; }
         AbstractEventInstanceManager? EventInstanceManager { get; }
         MapEffect? MapEffect { get; set; }
+        BoundedCollection<MapItem> MapItems { get; }
+        /// <summary>
+        /// 加入地图对象，会创建objectId
+        /// </summary>
         void addMapObject(IMapObject mapobject);
-
+        /// <summary>
+        /// 直接加入地图对象，不会创建objectId
+        /// </summary>
+        /// <param name="mapObject"></param>
+        void AddMapObjectDirectly(IMapObject mapObject);
         void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addPlayer(Player chr);
@@ -91,6 +101,7 @@ namespace Application.Core.Game.Maps
         void destroyReactors(int first, int last);
         void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos);
         void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos);
+        void applyRemoveAfter(Monster monster);
         void dismissRemoveAfter(Monster monster);
         void dropFromFriendlyMonster(Player chr, Monster mob);
         void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
@@ -189,7 +200,6 @@ namespace Application.Core.Game.Maps
         public bool removeKilledMonsterObject(Monster monster);
         void killMonsterWithDrops(int mobId);
         bool makeDisappearItemFromMap(MapItem mapitem);
-        bool makeDisappearItemFromMap(IMapObject? mapobj);
         void makeMonsterReal(Monster monster);
         void mobMpRecovery();
         void moveEnvironment(string ms, int type);
@@ -236,6 +246,7 @@ namespace Application.Core.Game.Maps
         void spawnKite(Kite kite);
         void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short delay = 0);
         void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
+        void spawnRevives(Monster monster);
         void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
         void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
@@ -259,7 +270,7 @@ namespace Application.Core.Game.Maps
         void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
         void SetupAreaBoss(string name, int bossId, int mobTime, List<object> points, string spawnMessage);
         void makeDisappearExpiredItemDrops();
-        void unregisterItemDrop(MapItem mapItem);
         void ProcessItemMonitor();
+        void registerMapSchedule(IWorldChannelCommand r, long delay);
     }
 }

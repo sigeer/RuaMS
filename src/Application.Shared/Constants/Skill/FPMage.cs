@@ -29,6 +29,9 @@ public class FPMage
     public const int PARTIAL_RESISTANCE = 2110000;
     public const int ELEMENT_AMPLIFICATION = 2110001;
     public const int EXPLOSION = 2111002;
+    /// <summary>
+    /// 致命毒雾
+    /// </summary>
     public const int POISON_MIST = 2111003;
     public const int SEAL = 2111004;
     public const int SPELL_BOOSTER = 2111005;

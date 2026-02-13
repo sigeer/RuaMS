@@ -1,11 +1,15 @@
+using Application.Core.Channel.Commands;
+using Application.Core.Channel.Tasks;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
+using Application.Scripting.JS;
 using client.status;
 using Google.Protobuf.WellKnownTypes;
 using server;
 using System.Collections.Generic;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.Game.Maps.Mists
 {
@@ -14,7 +18,7 @@ namespace Application.Core.Game.Maps.Mists
         public int OwnerId { get; }
         public StatEffect Source { get; }
 
-        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(owner.getMap(), mistPosition, 8)
+        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(owner.getMap(), mistPosition, source.getDuration())
         {
             this.OwnerId = owner.Id;
             this.Source = source;
@@ -46,13 +50,12 @@ namespace Application.Core.Game.Maps.Mists
 
         public override Packet makeSpawnData()
         {
-            var sourceSkill = getSourceSkill();
-            return PacketCreator.spawnMist(getObjectId(), OwnerId, sourceSkill.getId(), Source.SkillLevel, this);
+            return PacketCreator.spawnMist(getObjectId(), OwnerId, Source.getSourceId(), Source.SkillLevel, this);
         }
 
         public override Packet makeFakeSpawnData(int level)
         {
-            return PacketCreator.spawnMist(getObjectId(), OwnerId, getSourceSkill().getId(), level, this);
+            return PacketCreator.spawnMist(getObjectId(), OwnerId, Source.getSourceId(), level, this);
         }
 
         public bool makeChanceResult()
@@ -96,6 +99,24 @@ namespace Application.Core.Game.Maps.Mists
                     }
                 }
             }
+        }
+
+        public ScheduledFuture? EffectScheduler { get; private set; }
+        public override void Enter(IMap map, Action<Player> chrAction)
+        {
+            base.Enter(map, chrAction);
+
+            EffectScheduler = map.ChannelServer.Node.TimerManager.register(new MapTaskBase(map, $"PlayerMistEffectTask_{GetHashCode()}", () =>
+            {
+                map.ChannelServer.Post(new PlayerMistEffectCommand(this));
+            }), 2000, 2500);
+        }
+
+        public override void Leave(Action<Player> chrAction)
+        {
+            EffectScheduler?.cancel(false);
+
+            base.Leave(chrAction);
         }
     }
 }

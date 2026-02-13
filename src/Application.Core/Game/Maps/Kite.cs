@@ -1,4 +1,5 @@
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.Game.Maps;
 
@@ -51,5 +52,12 @@ public class Kite : AbstractMapObject
     public Packet makeDestroyData()
     {
         return PacketCreator.removeKite(getObjectId(), 0);
+    }
+
+    public override void Enter(IMap map, Action<Player> getSpawnPacket)
+    {
+        base.Enter(map, getSpawnPacket);
+
+        map.ChannelServer.MapObjectManager.RegisterTimedMapObject(this, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 }

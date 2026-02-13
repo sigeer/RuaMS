@@ -26,8 +26,8 @@ public class NpcCommand : CommandBase
             npc.setRx0(player.getPosition().X + 50);
             npc.setRx1(player.getPosition().X - 50);
             npc.setFh(player.getMap().Footholds.FindBelowFoothold(c.OnlinedCharacter.getPosition()).getId());
-            player.getMap().addMapObject(npc);
-            player.getMap().broadcastMessage(PacketCreator.spawnNPC(npc));
+
+            npc.Enter(player.MapModel, chr => chr.sendPacket(PacketCreator.spawnNPC(npc)));
         }
     }
 }

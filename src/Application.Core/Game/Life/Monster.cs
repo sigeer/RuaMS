@@ -24,16 +24,20 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
+using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
+using scripting.Event;
 using server.life;
 using server.loot;
+using System.Threading;
 using tools;
 using static Application.Templates.Mob.MobTemplate;
 
@@ -1117,6 +1121,7 @@ public class Monster : AbstractLifeObject
 
     public override void sendDestroyData(IChannelClient client)
     {
+        // 为什么发2个？
         client.sendPacket(PacketCreator.killMonster(getObjectId(), false));
         client.sendPacket(PacketCreator.killMonster(getObjectId(), true));
     }
@@ -2344,7 +2349,7 @@ public class Monster : AbstractLifeObject
             {
                 mob.disableDrops();
             }
-            reviveMap.spawnMonster(mob);
+            reviveMap.spawnRevives(mob);
             OnRevive?.Invoke(curMob, mob);
             mob.RevivedFrom = curMob;
 
@@ -2380,5 +2385,48 @@ public class Monster : AbstractLifeObject
                 eim.reviveMonster(mob);
             }
         }
+    }
+
+    void OnBossSpawn(Monster monster)
+    {
+        if (monster.hasBossHPBar())
+        {
+            MapModel.broadcastBossHpMessage(monster, monster.GetHashCode(), monster.makeBossHPBarPacket(), monster.getPosition());
+        }
+
+        if (monster.isBoss())
+        {
+            if (MapModel.unclaimOwnership() != null)
+            {
+                MapModel.BroadcastAll(e => e.Pink(nameof(ClientMessage.Map_Ownership_Boss), e.Client.CurrentCulture.GetMobName(monster.getId())));
+            }
+        }
+    }
+
+    public Packet GetLeavePacket(int animate)
+    {
+        return PacketCreator.killMonster(getObjectId(), animate);
+    }
+
+    public override void Enter(IMap map, Action<Player> getSpawnPacket)
+    {
+        base.Enter(map, getSpawnPacket);
+
+        if (!fake)
+        {
+            map.EventInstanceManager?.registerMonster(this);
+            aggroUpdateController();
+
+            OnBossSpawn(this);
+
+            if (getDropPeriodTime() > 0)
+            {
+                dropFromFriendlyMonster(getDropPeriodTime());
+            }
+
+            map.XiGuai?.ApplyMonster(this);
+        }
+        map.addSelfDestructive(this);
+        map.applyRemoveAfter(this);
     }
 }

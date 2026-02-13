@@ -38,3 +38,23 @@ public enum MapObjectType
     DRAGON,
     KITE
 }
+
+public static class MapObjectTypeUtils
+{
+    public static bool IsNonRangedType(this MapObjectType type)
+    {
+        switch (type)
+        {
+            case MapObjectType.PLAYER:
+            case MapObjectType.NPC:
+            case MapObjectType.HIRED_MERCHANT:
+            case MapObjectType.PLAYER_NPC:
+            case MapObjectType.DRAGON:
+            case MapObjectType.MIST:
+            case MapObjectType.KITE:
+                return true;
+            default:
+                return false;
+        }
+    }
+}

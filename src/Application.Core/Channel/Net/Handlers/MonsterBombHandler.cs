@@ -37,8 +37,7 @@ public class MonsterBombHandler : ChannelHandlerBase
         }
         if (monster.getId() == MobId.HIGH_DARKSTAR || monster.getId() == MobId.LOW_DARKSTAR)
         {
-            monster.getMap().broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), 4));
-            c.OnlinedCharacter.getMap().removeMapObject(oid);
+            monster.Leave(chr => chr.sendPacket(monster.GetLeavePacket(4)));
         }
     }
 }

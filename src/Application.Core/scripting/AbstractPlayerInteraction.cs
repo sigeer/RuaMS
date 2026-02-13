@@ -896,8 +896,8 @@ public class AbstractPlayerInteraction : IClientMessenger
             npc.setRx0(pos.X + 50);
             npc.setRx1(pos.X - 50);
             npc.setFh(map.Footholds.FindBelowFoothold(pos)!.getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
+
+            npc.Enter(map, chr => chr.sendPacket(PacketCreator.spawnNPC(npc)));
         }
     }
 
@@ -1176,14 +1176,6 @@ public class AbstractPlayerInteraction : IClientMessenger
     {
         MobSkill reduceAvoidSkill = MobSkillFactory.getMobSkillOrThrow(MobSkillType.EVA, 2);
         reduceAvoidSkill.applyEffect(monster);
-    }
-
-    public void LearnExtraSkill(int skillId)
-    {
-        var skill = SkillFactory.GetSkillTrust(skillId);
-        getPlayer().changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
-        getPlayer().changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
-        getPlayer().sendKeymap();
     }
 
     public void TypedMessage(int type, string messageKey, params string[] param)

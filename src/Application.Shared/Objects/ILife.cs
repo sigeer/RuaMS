@@ -29,7 +29,7 @@ namespace Application.Shared.Objects
         /// </summary>
         /// <param name="deltaValue"></param>
         /// <param name="useCheck">是否校验当前血量</param>
-        /// <returns>校验当前血量时，如果当前血量不足返回false</returns>
+        /// <returns>校验当前血量时，如果当前血量不足则更新失败，返回false，</returns>
         bool ChangeHP(int deltaValue, bool useCheck = true);
         bool ChangeMP(int deltaValue, bool useCheck = true);
         void SetHP(int value);

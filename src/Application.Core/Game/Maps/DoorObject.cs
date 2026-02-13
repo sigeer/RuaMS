@@ -160,4 +160,9 @@ public class DoorObject : AbstractMapObject
     {
         return MapObjectType.DOOR;
     }
+
+    protected override bool IsPlayerVisiable(Player chr)
+    {
+        return chr.getMapId() == getFrom().getId();
+    }
 }

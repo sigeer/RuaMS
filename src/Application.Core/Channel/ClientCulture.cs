@@ -126,6 +126,12 @@ namespace Application.Core.Channel
         {
             return i.ToString("N", CultureInfo);
         }
+
+        public string GetSkillName(int skillId)
+        {
+            return StringProvider.GetSubProvider(StringCategory.Skill).GetRequiredItem<StringTemplate>(skillId)?.Name ?? $"Skill_{skillId}";
+        }
+
         public static ClientCulture SystemCulture = new ClientCulture();
     }
 

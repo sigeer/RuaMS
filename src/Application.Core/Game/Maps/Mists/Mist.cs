@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using Application.Core.Channel.Commands;
+using net.server.services.task.channel;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists;
@@ -8,6 +9,8 @@ public abstract class Mist : AbstractMapObject
     protected Rectangle mistPosition;
     protected bool _isMobMist, _isPoisonMist, _isRecoveryMist;
     protected int skillDelay;
+
+    public bool IsFake { get; set; }
 
     public Mist(IMap map, Rectangle mistPosition, int skillDelay)
     {
@@ -77,4 +80,11 @@ public abstract class Mist : AbstractMapObject
         return skillDelay;
     }
 
+    public override void Enter(IMap map, Action<Player> chrAction)
+    {
+        base.Enter(map, chrAction);
+
+        MobMistService service = map.getChannelServer().MobMistService;
+        service.registerMobMistCancelAction(map.Id, new MapMistRemoveCommand(this), getSkillDelay());
+    }
 }

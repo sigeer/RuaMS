@@ -32,6 +32,9 @@ public class Shadower
     public const int TAUNT = 4221003;
     public const int NINJA_AMBUSH = 4221004;
     public const int VENOMOUS_STAB = 4220005;
+    /// <summary>
+    /// 烟雾弹
+    /// </summary>
     public const int SMOKE_SCREEN = 4221006;
     public const int BOOMERANG_STEP = 4221007;
     public const int HEROS_WILL = 4221008;

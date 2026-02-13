@@ -66,12 +66,6 @@ namespace Application.Core.Game.Players
             this.TotalCP = 0;
         }
 
-
-        public string getPartyQuestItems()
-        {
-            return DataString;
-        }
-
         public bool gotPartyQuestItem(string partyquestchar)
         {
             return DataString.Contains(partyquestchar);

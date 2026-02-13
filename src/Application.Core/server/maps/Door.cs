@@ -79,26 +79,8 @@ public class Door
         DoorObject areaDoor = this.getAreaDoor();
         DoorObject townDoor = this.getTownDoor();
 
-        IMap target = this.getTarget();
-        IMap town = this.getTown();
-
-        var targetChars = target.getAllPlayers();
-        var townChars = town.getAllPlayers();
-
-        target.removeMapObject(areaDoor);
-        town.removeMapObject(townDoor);
-
-        foreach (Player chr in targetChars)
-        {
-            areaDoor.sendDestroyData(chr.getClient());
-            chr.removeVisibleMapObject(areaDoor);
-        }
-
-        foreach (Player chr in townChars)
-        {
-            townDoor.sendDestroyData(chr.getClient());
-            chr.removeVisibleMapObject(townDoor);
-        }
+        areaDoor.Leave(chr => areaDoor.sendDestroyData(chr.getClient()));
+        townDoor.Leave(chr => townDoor.sendDestroyData(chr.getClient()));
 
         var owner = target.ChannelServer.getPlayerStorage().getCharacterById(ownerId);
         if (owner != null)
