@@ -36,7 +36,9 @@ namespace Application.Core.Login.Net.Handlers
             }
 
 
-            if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(macs) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
+            if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) 
+                || _server.AccountBanManager.IsMACBlocked(macs) 
+                || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
             {
                 _sessionCoordinator.closeSession(c, true);
                 return;
@@ -74,10 +76,10 @@ namespace Application.Core.Login.Net.Handlers
             _server.UnregisterLoginState(c);
             c.SetCharacterOnSessionTransitionState(charId);
 
-            c.AccountEntity!.CurrentIP = c.RemoteAddress;
-            c.AccountEntity!.CurrentMac = macs;
-            c.AccountEntity!.CurrentHwid = hwid.hwid;
-            _server.AccountHistoryManager.InsertLoginHistory(c.AccountId, c.RemoteAddress, macs, hwid.hwid);
+            c.AccountEntity.CurrentIP = c.RemoteAddress;
+            c.AccountEntity.CurrentMac = macs;
+            c.AccountEntity.CurrentHwid = hwid.hwid;
+            _server.AccountHistoryManager.AttachAccountMAC(c.CurrentHistoryId, macs);
             _server.AccountManager.SetClientLanguage(c.AccountId, c.Language);
 
             try

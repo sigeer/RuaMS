@@ -20,7 +20,7 @@ public class MapId
     public const int FM_ENTRANCE = 910000000;
 
     // Beginner
-    public static int MUSHROOM_TOWN = 10000;
+    public const int MUSHROOM_TOWN = 10000;
 
     // Town
     public const int SOUTHPERRY = 2000000;
@@ -106,12 +106,12 @@ public class MapId
     public const int ARAN_MAHA = 914090200; // Black screen when warped to
 
     // Starting map
-    public static int STARTING_MAP_NOBLESSE = 130030000;
+    public const int STARTING_MAP_NOBLESSE = 130030000;
 
     // Cygnus intro
     // These are the actual maps
-    private static int CYGNUS_INTRO_LOCATION_MIN = 913040000;
-    private static int CYGNUS_INTRO_LOCATION_MAX = 913040006;
+    private const int CYGNUS_INTRO_LOCATION_MIN = 913040000;
+    private const int CYGNUS_INTRO_LOCATION_MAX = 913040006;
 
     public static bool isCygnusIntro(int mapId)
     {

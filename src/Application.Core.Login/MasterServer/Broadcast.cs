@@ -30,7 +30,7 @@ namespace Application.Core.Login
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
                 msg.Receivers.AddRange(gmids);
-                await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
+                await Transport.SendMessageN(ChannelRecvCode.DropTextMessage, msg, msg.Receivers);
             }
             else
             {
@@ -44,7 +44,7 @@ namespace Application.Core.Login
             var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
             msg.Receivers.AddRange(targets);
 
-            await Transport.BroadcastMessageN(ChannelRecvCode.DropTextMessage, msg);
+            await Transport.SendMessageN(ChannelRecvCode.DropTextMessage, msg, msg.Receivers);
         }
 
         public async Task BroadcastPacket(MessageProto.PacketRequest p)

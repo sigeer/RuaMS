@@ -100,8 +100,6 @@ namespace Application.Core.ServerTransports
         Dto.ShopDto? GetShop(int id, bool isShopId);
         RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
         Task SendToggleCoupon(int v);
-        CreatorProto.CreateCharResponseDto SendNewPlayer(CreatorProto.NewPlayerSaveDto data);
-        CreatorProto.CreateCharCheckResponse CreatePlayerCheck(CreatorProto.CreateCharCheckRequest request);
         int[][] GetMostSellerCashItems();
         ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
         ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
@@ -213,7 +211,6 @@ namespace Application.Core.ServerTransports
         Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers);
         Task SaveAllNotifyAsync();
         Task DisconnectAllNotifyAsync();
-        Task CreatePlayerResponseAsync(CreateCharResponseDto res);
 
         #region Duey
         Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request);

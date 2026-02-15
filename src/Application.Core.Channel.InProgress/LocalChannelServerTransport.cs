@@ -110,11 +110,6 @@ namespace Application.Core.Channel.InProgress
             }
         }
 
-        public async Task CreatePlayerResponseAsync(CreateCharResponseDto res)
-        {
-            _server.HandleCreateCharacterResponse(res);
-        }
-
         public Task CompleteChannelShutdown()
         {
             _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerConfig.ServerName);
@@ -283,18 +278,6 @@ namespace Application.Core.Channel.InProgress
         public async Task SendToggleCoupon(int v)
         {
             await _server.CouponManager.ToggleCoupon(v);
-        }
-        public CreatorProto.CreateCharResponseDto SendNewPlayer(CreatorProto.NewPlayerSaveDto data)
-        {
-            return new CreatorProto.CreateCharResponseDto { Code = _server.CharacterManager.CreatePlayerDB(data) };
-        }
-
-        public CreatorProto.CreateCharCheckResponse CreatePlayerCheck(CreatorProto.CreateCharCheckRequest request)
-        {
-            return new CreatorProto.CreateCharCheckResponse()
-            {
-                Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name)
-            };
         }
 
         public int[][] GetMostSellerCashItems()

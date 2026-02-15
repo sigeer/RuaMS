@@ -107,7 +107,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     partychar.sendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
 
-                    if (partychar.Map == updatePlayer.Map)
+                    if (partychar.MapModel == updatePlayer.MapModel)
                     {
                         partychar.sendPacket(TeamPacketCreator.updatePartyMemberHP(updatePlayer.Id, updatePlayer.HP, updatePlayer.ActualMaxHP));
                         updatePlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(partychar.Id, partychar.HP, partychar.ActualMaxHP));

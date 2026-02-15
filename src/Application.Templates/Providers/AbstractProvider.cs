@@ -53,7 +53,11 @@ namespace Application.Templates.Providers
             }
             finally
             {
-                _hasAllLoaded = true;
+                if (_options.UseCache)
+                {
+                    _hasAllLoaded = true;
+                }
+
                 _loadAllLock.Exit();
             }
         }

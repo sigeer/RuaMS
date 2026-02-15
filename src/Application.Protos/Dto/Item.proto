@@ -8,7 +8,6 @@ import "Dto/Pet.proto";
 package Dto;
 
 message ItemDto {
-  int32 inventoryItemId = 1;
   int32 type = 2;
   google.protobuf.Int32Value characterid = 3;
   google.protobuf.Int32Value accountid = 4;
@@ -16,10 +15,10 @@ message ItemDto {
   int32 inventoryType = 6;
   int32 position = 7;
   int32 quantity = 8;
-  string owner = 9;
+  google.protobuf.StringValue owner = 9;
   int32 flag = 10;
   int64 expiration = 11;
-  string giftFrom = 12;
+  google.protobuf.StringValue giftFrom = 12;
   EquipDto equipInfo = 13;
   PetDto petInfo = 14;
 }

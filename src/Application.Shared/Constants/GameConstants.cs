@@ -2,6 +2,8 @@ using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Skill;
 using Application.Shared.MapObjects;
+using Application.Utility.Configs;
+using System.Data.Common;
 using System.Globalization;
 
 namespace Application.Shared.Constants
@@ -63,6 +65,20 @@ namespace Application.Shared.Constants
         {
             return (customKeyset ? CUSTOM_ACTION : DEFAULT_ACTION);
         }
+
+        public static Dictionary<int, KeyBinding> GetDefaultKeyMapping()
+        {
+            var dic = new Dictionary<int, KeyBinding>();
+            var selectedKey = GameConstants.getCustomKey(YamlConfig.config.server.USE_CUSTOM_KEYSET);
+            var selectedType = GameConstants.getCustomType(YamlConfig.config.server.USE_CUSTOM_KEYSET);
+            var selectedAction = GameConstants.getCustomAction(YamlConfig.config.server.USE_CUSTOM_KEYSET);
+            for (int i = 0; i < selectedKey.Length; i++)
+            {
+                dic[selectedKey[i]] = new KeyBinding(selectedType[i], selectedAction[i]);
+            }
+            return dic;
+        }
+
 
         private static int[] mobHpVal = {0, 15, 20, 25, 35, 50, 65, 80, 95, 110, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350,
             375, 405, 435, 465, 495, 525, 580, 650, 720, 790, 900, 990, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800,

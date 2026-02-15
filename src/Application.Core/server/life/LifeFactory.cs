@@ -5,28 +5,14 @@ using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Concurrent;
 
 namespace server.life;
 
 
-public class LifeFactory : IStaticService
+public class LifeFactory
 {
-    private static Lazy<LifeFactory> _instance = new Lazy<LifeFactory>(new LifeFactory());
-
-    public static LifeFactory Instance => _instance.Value ?? throw new BusinessFatalException("LifeFactory 未注册");
-
-    Microsoft.Extensions.Logging.ILogger log = NullLogger.Instance;
-    public void Register(IServiceProvider sp)
-    {
-        if (_instance != null)
-            return;
-
-        log = sp.GetRequiredService<ILogger<LifeFactory>>();
-    }
+    public static LifeFactory Instance = new();
 
     MobProvider _mobProvider;
     NpcProvider _npcProvider;
@@ -51,7 +37,7 @@ public class LifeFactory : IStaticService
         }
         else
         {
-            log.LogWarning("Unknown Life type: {LifeType}", type);
+            Log.Logger.Warning("Unknown Life type: {LifeType}", type);
             return null;
         }
     }
@@ -158,7 +144,7 @@ public class LifeFactory : IStaticService
             }
         }
 
-        monsterStats[mid] =data = new(stats, mobTemplate.AttackInfos);
+        monsterStats[mid] = data = new(stats, mobTemplate.AttackInfos);
         return data;
 
     }

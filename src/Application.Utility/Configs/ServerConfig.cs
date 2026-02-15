@@ -95,7 +95,6 @@ public class ServerConfig
 
     //Cash Shop Configuration
     public bool USE_JOINT_CASHSHOP_INVENTORY;
-    public bool USE_CLEAR_OUTDATED_COUPONS;
     public bool ALLOW_CASHSHOP_NAME_CHANGE;
 
     //Maker Configuration

@@ -25,11 +25,15 @@ namespace Application.Shared.Models
         public string CurrentIP { get; set; } = null!;
         public string CurrentMac { get; set; } = null!;
         public string CurrentHwid { get; set; } = null!;
-
         public string GetSessionRemoteHost()
         {
             return $"{CurrentIP}-{CurrentHwid}";
         }
 
+    }
+
+    public static class AccountExtensions
+    {
+        public static bool IsGmAccount(this AccountCtrl acc) => acc.GMLevel > 1;
     }
 }

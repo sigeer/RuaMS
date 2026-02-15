@@ -11,6 +11,7 @@ using SystemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Application.Shared.Message;
+using Application.Resources.Messages;
 
 namespace Application.Core.Login.ServerData
 {
@@ -34,7 +35,7 @@ namespace Application.Core.Login.ServerData
             _localId = await dbContext.AccountBindings.MaxAsync(x => (int?)x.Id) ?? 0;
         }
 
-        public void InsertLoginHistory(int accId, string ip, string mac, string hwid)
+        public AccountHistoryModel InsertAccountLoginHistory(int accId, string ip, string hwid)
         {
             var model = new AccountHistoryModel()
             {
@@ -42,10 +43,20 @@ namespace Application.Core.Login.ServerData
                 AccountId = accId,
                 HWID = hwid,
                 IP = ip,
-                MAC = mac,
                 LastActiveTime = _server.GetCurrentTimeDateTimeOffset()
             };
             SetDirty(model.Id, new StoreUnit<AccountHistoryModel>(StoreFlag.AddOrUpdate, model));
+            return model;
+        }
+
+        public void AttachAccountMAC(int id, string mac)
+        {
+            var model = Query(x => x.Id == id).FirstOrDefault();
+            if (model != null)
+            {
+                model.MAC = mac;
+                SetDirty(model.Id, new StoreUnit<AccountHistoryModel>(StoreFlag.AddOrUpdate, model));
+            }
         }
 
         public override List<AccountHistoryModel> Query(Expression<Func<AccountHistoryModel, bool>> expression)
@@ -232,7 +243,7 @@ namespace Application.Core.Login.ServerData
             }
 
             await _server.Transport.SendMessageN(ChannelRecvCode.BanPlayer, res, [request.OperatorId, targetChr.Character.Id]);
-            await _server.DropWorldMessage(6, "Ban_NoticeGM", true);
+            await _server.DropWorldMessage(6, nameof(SystemMessage.Ban_NoticeGM), true);
         }
 
         public List<int> GetBannedAccounts()
@@ -269,6 +280,7 @@ namespace Application.Core.Login.ServerData
             await dbContext.Ipbans.ExecuteDeleteAsync();
             await dbContext.Macbans.ExecuteDeleteAsync();
             await dbContext.Hwidbans.ExecuteDeleteAsync();
+
             dbContext.Ipbans.AddRange(bannedIP);
             dbContext.Macbans.AddRange(bannedMAC);
             dbContext.Hwidbans.AddRange(bannedHWID);

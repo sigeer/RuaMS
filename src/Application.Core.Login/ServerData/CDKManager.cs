@@ -9,6 +9,7 @@ using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Application.Core.Login.ServerData
 {
@@ -49,7 +50,7 @@ namespace Application.Core.Login.ServerData
             using var dbContext = _dbContextFactory.CreateDbContext(); ;
             var entityExpression = _mapper.MapExpression<Expression<Func<CdkCodeEntity, bool>>>(expression);
 
-            var dataFromDB = _mapper.Map<List<CdkCodeModel>>(dbContext.CdkCodes.Where(entityExpression).ToList());
+            var dataFromDB = _mapper.Map<List<CdkCodeModel>>(dbContext.CdkCodes.AsNoTracking().Where(entityExpression).ToList());
 
             var filteredCodeIds = dataFromDB.Select(x => x.Id).ToArray();
             var allCodeItems = dbContext.CdkItems.AsNoTracking().Where(x => filteredCodeIds.Contains(x.CodeId)).ToList();
@@ -64,6 +65,13 @@ namespace Application.Core.Login.ServerData
 
         public override Task InitializeAsync(DBContext dbContext)
         {
+            //long timeClear = _server.GetCurrentTimeDateTimeOffset().AddDays(-14).ToUnixTimeMilliseconds();
+
+            //var codeList = await dbContext.CdkCodes.Where(x => x.Expiration <= timeClear).ToListAsync();
+            //var codeIdList = codeList.Select(x => x.Id).ToList();
+            //await dbContext.CdkItems.Where(x => codeIdList.Contains(x.CodeId)).ExecuteDeleteAsync();
+            //dbContext.CdkCodes.RemoveRange(codeList);
+            //await dbContext.SaveChangesAsync();
             return Task.CompletedTask;
         }
 

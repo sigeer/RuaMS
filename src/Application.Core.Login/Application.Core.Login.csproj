@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="CharacterCreator\" />
     <Folder Include="Properties\" />
 
 	  <!--<Content Include="..\Application.Resources\wz\String.wz\**">
@@ -31,6 +30,12 @@
 	  <ProjectReference Include="..\Application.Core.EF.MySQL\Application.Core.EF.MySQL.csproj" />
 	  <ProjectReference Include="..\Application.Core.EF.Sqlite\Application.Core.EF.Sqlite.csproj" />
 	  <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Assets\MakeCharInfo.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 

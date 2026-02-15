@@ -145,11 +145,6 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.RegisterChannel, req, cancellationToken);
         }
 
-        public async Task CreatePlayerResponseAsync(CreateCharResponseDto res)
-        {
-            await InternalSession.SendAsync(ChannelSendCode.CreateCharacterResponse, res);
-        }
-
         public async Task CompleteChannelShutdown()
         {
             await InternalSession.DisconnectAsync();
@@ -275,16 +270,6 @@ namespace Application.Core.ServerTransports
         public async Task SendToggleCoupon(int itemId)
         {
             await InternalSession.SendAsync(ChannelSendCode.ToggleCoupon, new ToggelCouponRequest { Id = itemId });
-        }
-
-        public CreateCharResponseDto SendNewPlayer(NewPlayerSaveDto data)
-        {
-            return _syncClient.CreateCharacter(data);
-        }
-
-        public CreateCharCheckResponse CreatePlayerCheck(CreateCharCheckRequest request)
-        {
-            return _syncClient.CreateCharacterCheck(request);
         }
 
         public int[][] GetMostSellerCashItems()

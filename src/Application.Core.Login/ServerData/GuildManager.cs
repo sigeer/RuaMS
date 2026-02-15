@@ -9,6 +9,7 @@ using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility;
 using AutoMapper;
+using AutoMapper.Execution;
 using Dto;
 using Google.Protobuf;
 using GuildProto;
@@ -20,6 +21,7 @@ using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login.ServerData
 {
@@ -100,11 +102,12 @@ namespace Application.Core.Login.ServerData
                 return;
             }
 
-            var guildModel = new GuildModel() { 
-                GuildId = Interlocked.Increment(ref _currentGuildId), 
-                Name = request.Name, 
-                Leader = request.LeaderId, 
-                Signature = _server.getCurrentTime() 
+            var guildModel = new GuildModel()
+            {
+                GuildId = Interlocked.Increment(ref _currentGuildId),
+                Name = request.Name,
+                Leader = request.LeaderId,
+                Signature = _server.getCurrentTime()
             };
 
             _idGuildDataSource[guildModel.GuildId] = guildModel;
@@ -124,6 +127,7 @@ namespace Application.Core.Login.ServerData
                     member.Character.GuildRank = 2;
                     member.Character.AllianceRank = 5;
                 }
+                _server.CharacterManager.SetState(member.Character.Id);
             }
 
             SetGuildUpdate(guildModel);
@@ -293,6 +297,8 @@ namespace Application.Core.Login.ServerData
             }
             first.Character.AllianceRank = 1;
             second.Character.AllianceRank = 2;
+            _server.CharacterManager.SetState(first.Character.Id);
+            _server.CharacterManager.SetState(second.Character.Id);
 
             res.Model = _mapper.Map<AllianceProto.AllianceDto>(allianceModel);
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCreated, res, request.Members);
@@ -461,7 +467,7 @@ namespace Application.Core.Login.ServerData
 
         public async Task UpdateGuildEmblem(UpdateGuildEmblemRequest request)
         {
-            var response = new UpdateGuildEmblemResponse {  Request = request };
+            var response = new UpdateGuildEmblemResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -529,6 +535,7 @@ namespace Application.Core.Login.ServerData
                     member.Character.GuildId = 0;
                     member.Character.GuildRank = 5;
                     member.Character.AllianceRank = 5;
+                    _server.CharacterManager.SetState(member.Character.Id);
                 }
             }
 
@@ -591,6 +598,7 @@ namespace Application.Core.Login.ServerData
             }
 
             chrTo.Character.GuildRank = request.NewRank;
+            _server.CharacterManager.SetState(chrTo.Character.Id);
 
             response.GuildId = guild.GuildId;
             response.GuildMembers.AddRange(guild.Members);
@@ -652,6 +660,7 @@ namespace Application.Core.Login.ServerData
             chrTo.Character.GuildId = 0;
             chrTo.Character.GuildRank = 5;
             chrTo.Character.AllianceRank = 5;
+            _server.CharacterManager.SetState(chrTo.Character.Id);
 
             guild.Members.Remove(chrTo.Character.Id);
             SetGuildUpdate(guild);
@@ -708,6 +717,7 @@ namespace Application.Core.Login.ServerData
             master.Character.GuildId = 0;
             master.Character.GuildRank = 5;
             master.Character.AllianceRank = 5;
+            _server.CharacterManager.SetState(master.Character.Id);
 
             List<int> notifyMembers = [];
 
@@ -773,6 +783,7 @@ namespace Application.Core.Login.ServerData
             master.Character.GuildId = guild.GuildId;
             master.Character.GuildRank = 5;
             master.Character.AllianceRank = 5;
+            _server.CharacterManager.SetState(master.Character.Id);
 
             response.GuildDto = MapGuildDto(guild);
 
@@ -789,7 +800,7 @@ namespace Application.Core.Login.ServerData
 
             List<int> notifyMembers = [];
             notifyMembers.Add(request.PlayerId);
-            notifyMembers.AddRange(response.AllMembers); 
+            notifyMembers.AddRange(response.AllMembers);
 
             await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerJoinGuild, response, notifyMembers);
         }
@@ -843,12 +854,16 @@ namespace Application.Core.Login.ServerData
             foreach (var member in guildMembers)
             {
                 if (member != null)
+                {
                     member.Character.AllianceRank = 5;
+                    _server.CharacterManager.SetState(member.Character.Id);
+                }
             }
             guild.AllianceId = alliance.Id;
             SetGuildUpdate(guild);
 
             master.Character.AllianceRank = 2;
+            _server.CharacterManager.SetState(master.Character.Id);
 
             response.GuildId = guild.GuildId;
             response.AllianceId = alliance.Id;
@@ -901,7 +916,10 @@ namespace Application.Core.Login.ServerData
             foreach (var member in guildMembers)
             {
                 if (member != null)
+                {
                     member.Character.AllianceRank = 5;
+                    _server.CharacterManager.SetState(member.Character.Id);
+                }
             }
             SetGuildUpdate(guild);
 
@@ -958,7 +976,10 @@ namespace Application.Core.Login.ServerData
             foreach (var member in guildMembers)
             {
                 if (member != null)
+                {
                     member.Character.AllianceRank = 5;
+                    _server.CharacterManager.SetState(member.Character.Id);
+                }
             }
             SetGuildUpdate(guild);
 
@@ -1010,7 +1031,7 @@ namespace Application.Core.Login.ServerData
             res.AllianceId = alliance.Id;
             res.AllianceDto = MapAllianceDto(alliance);
 
-            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res,  GetAllianceMembers(res.AllianceDto));
+            await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res, GetAllianceMembers(res.AllianceDto));
         }
 
         public async Task UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
@@ -1143,6 +1164,8 @@ namespace Application.Core.Login.ServerData
 
             master.Character.AllianceRank = 2;
             newLeader.Character.AllianceRank = 1;
+            _server.CharacterManager.SetState(master.Character.Id);
+            _server.CharacterManager.SetState(newLeader.Character.Id);
 
             res.AllianceId = alliance.Id;
             res.OldLeaderName = master.Character.Name;
@@ -1197,6 +1220,7 @@ namespace Application.Core.Login.ServerData
             }
 
             targetPlayer.Character.AllianceRank = newRank;
+            _server.CharacterManager.SetState(targetPlayer.Character.Id);
 
             res.AllianceId = alliance.Id;
             res.NewRank = newRank;
@@ -1241,7 +1265,10 @@ namespace Application.Core.Login.ServerData
                 foreach (var member in guildMembers)
                 {
                     if (member != null)
+                    {
                         member.Character.AllianceRank = 5;
+                        _server.CharacterManager.SetState(member.Character.Id);
+                    }
                 }
                 res.AllMembers.AddRange(item.Members);
                 SetGuildUpdate(item);

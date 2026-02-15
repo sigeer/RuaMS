@@ -23,6 +23,7 @@
 
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.ServerData;
 using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Configs;
@@ -98,6 +99,8 @@ public class LoginPasswordHandler : LoginHandlerBase
         {
             c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
             _server.RegisterLoginState(c);
+            c.CurrentHistoryId = _server.AccountHistoryManager.InsertAccountLoginHistory(c.AccountId, c.RemoteAddress, hwid.hwid).Id;
+
         }
         else
         {

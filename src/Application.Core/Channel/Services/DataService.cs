@@ -10,17 +10,14 @@ using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using AutoMapper;
 using client;
-using client.creator;
 using client.inventory;
 using client.keybind;
 using ExpeditionProto;
 using net.server;
-using net.server.guild;
 using server;
 using server.events;
 using server.life;
 using server.quest;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -108,11 +105,13 @@ namespace Application.Core.Channel.Services
             {
                 sandboxCheck |= item.Flag;
 
+                var itemObj = _mapper.Map<Item>(item);
+
                 InventoryType mit = item.InventoryType.GetByType();
-                if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
+                if (itemObj is Equip equipObj)
                 {
-                    var equipObj = _mapper.Map<Equip>(item);
                     player.Bag[mit.ordinal()].addItemFromDB(equipObj);
+
                     if (equipObj.Ring != null && mit.Equals(InventoryType.EQUIPPED))
                     {
                         equipObj.Ring.equip();
@@ -122,15 +121,14 @@ namespace Application.Core.Channel.Services
                 }
                 else
                 {
-                    var itemObj = _mapper.Map<Item>(item);
                     player.Bag[item.InventoryType].addItemFromDB(itemObj);
+
                     if (itemObj is Pet petObj)
                     {
                         if (petObj.Summoned)
                         {
                             player.addPet(petObj);
                         }
-                        continue;
                     }
                 }
             }
@@ -150,7 +148,7 @@ namespace Application.Core.Channel.Services
             c.SetPlayer(player);
 
             var mapManager = c.CurrentServer.getMapFactory();
-            player.setMap(mapManager.getMap(player.Map) ?? mapManager.getMap(MapId.HENESYS));
+            player.setMap(mapManager.getMap(o.Character.Map) ?? mapManager.getMap(MapId.HENESYS));
 
             player.InitialSpawnPoint = o.Character.Spawnpoint;
             var portal = player.MapModel.getPortal(player.InitialSpawnPoint);
@@ -295,7 +293,6 @@ namespace Application.Core.Channel.Services
                 }
                 : null;
 
-
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
             if (player.MapModel == null || player.CashShopModel.isOpened())
             {
@@ -416,7 +413,7 @@ namespace Application.Core.Channel.Services
             _ = _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel)
                 .ContinueWith(t =>
                 {
-                    server.Post(new PlayerCompleteLoginCommand(chr.Id, o.LoginInfo.IsNewCommer, o.RemoteCallList ));
+                    server.Post(new PlayerCompleteLoginCommand(chr.Id, o.LoginInfo.IsNewCommer, o.RemoteCallList));
                 });
         }
 
@@ -467,68 +464,6 @@ namespace Application.Core.Channel.Services
                 MobSkillId = x.Value.FromMobSkill.getId().type.getId(),
                 MobSkillLevel = x.Value.FromMobSkill.getId().level
             }));
-            return data;
-        }
-        /// <summary>
-        /// 创建角色使用
-        /// </summary>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        public CreatorProto.NewPlayerSaveDto DeserializeNew(Player player)
-        {
-            var playerDto = _mapper.Map<Dto.CharacterDto>(player);
-            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
-            {
-                playerDto.Map = player.Map;
-            }
-            else
-            {
-                if (player.MapModel.getForcedReturnId() != MapId.NONE)
-                {
-                    playerDto.Map = player.MapModel.getForcedReturnId();
-                }
-                else
-                {
-                    playerDto.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
-                }
-            }
-            if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
-            {
-                // reset to first spawnpoint on those maps
-                playerDto.Spawnpoint = 0;
-            }
-            else
-            {
-                var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
-                if (closest != null)
-                {
-                    playerDto.Spawnpoint = closest.getId();
-                }
-                else
-                {
-                    playerDto.Spawnpoint = 0;
-                }
-            }
-
-            #region inventory mapping
-            var itemType = ItemFactory.INVENTORY.getValue();
-            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
-            {
-                opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = itemType;
-            })).ToArray();
-
-            #endregion
-
-            var data = new CreatorProto.NewPlayerSaveDto()
-            {
-                Character = playerDto
-            };
-            data.InventoryItems.AddRange(d);
-            data.Events.AddRange(player.Events.Select(x => new Dto.EventDto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
-            data.Skills.AddRange(player.Skills.ToDto());
-            data.KeyMaps.AddRange(player.KeyMap.ToDto());
-
             return data;
         }
 
@@ -638,7 +573,7 @@ namespace Application.Core.Channel.Services
                         var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
                         if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
                         {
-                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y), 
+                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
                                 data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);
                         }
                     }
@@ -731,29 +666,6 @@ namespace Application.Core.Channel.Services
             return reactorDropData.GetValueOrDefault(reactorId) ?? [];
         }
 
-
-        public CreatorProto.CreateCharResponseDto CreatePlayer(CreatorProto.CreateCharRequestDto request)
-        {
-            var code = CharacterFactory.GetNoviceCreator(request.Type, this)
-                .createCharacter(request.AccountId, request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
-            return new CreatorProto.CreateCharResponseDto { Code = code };
-        }
-
-        public int SendNewPlayer(Player player)
-        {
-            var dto = DeserializeNew(player);
-            return _transport.SendNewPlayer(dto).Code;
-        }
-
-        public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
-        {
-            var checkResult = _transport.CreatePlayerCheck(new CreatorProto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
-            if (checkResult != CreateCharResult.Success)
-                return checkResult;
-
-            return CharacterFactory.GetVeteranCreator(type, this)
-                .createCharacter(client.AccountId, name, face, hair, skin, gender, improveSp);
-        }
 
         public QueryChannelExpedtionResponse GetExpeditionInfo()
         {

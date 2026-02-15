@@ -73,7 +73,7 @@ public class OxQuiz
         int gm = 0;
         foreach (var mc in map.getAllPlayers())
         {
-            if (mc.gmLevel() > 1)
+            if (mc.isGM())
             {
                 gm++;
             }

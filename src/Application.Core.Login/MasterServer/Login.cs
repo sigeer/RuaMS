@@ -5,6 +5,7 @@ using Application.Core.Login.Session;
 using Application.EF.Entities;
 using Application.Shared.Login;
 using Application.Shared.Message;
+using Application.Shared.Models;
 using Application.Utility.Configs;
 using CreatorProto;
 using Google.Protobuf;
@@ -28,11 +29,6 @@ namespace Application.Core.Login
             return AccountManager.GetAccountDto(accId);
         }
 
-        public int GetAccountIdByAccountName(string name)
-        {
-            return AccountManager.GetAccountIdByName(name);
-        }
-
         public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
         {
             return AccountManager.UpdateAccountState(accId, newState);
@@ -42,12 +38,6 @@ namespace Application.Core.Login
         {
             return CharacterManager.GetCharactersView(AccountManager.GetAccountPlayerIds(id).ToArray());
         }
-
-        public void UpdateAccountChracterByAdd(int accountId, int id)
-        {
-            AccountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
-        }
-
 
         public void CommitAccountEntity(AccountCtrl accountEntity)
         {

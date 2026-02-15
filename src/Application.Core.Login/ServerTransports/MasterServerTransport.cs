@@ -18,11 +18,6 @@ namespace Application.Core.Login
         {
         }
 
-        public async Task<CreatorProto.CreateCharResponseDto> CreatePlayer(CreatorProto.CreateCharRequestDto request)
-        {
-            return await _server.SendCreateCharacterRequest(request);
-        }
-
         public async Task SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {
             var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };

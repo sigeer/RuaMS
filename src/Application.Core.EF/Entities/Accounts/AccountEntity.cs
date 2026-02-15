@@ -24,9 +24,6 @@ public partial class AccountEntity
     /// 账户的登录态完全可以由服务器内存控制-- 服务器停止时必定不在线
     /// </summary>
     //public sbyte Loggedin { get; set; }
-
-    public DateTimeOffset? Lastlogin { get; set; }
-
     public DateTimeOffset Createdat { get; set; }
 
     public DateTime Birthday { get; set; }

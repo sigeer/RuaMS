@@ -5,11 +5,11 @@ namespace Application.Shared.Login
         public AccountLoginStatus(int state, DateTimeOffset dateTime)
         {
             State = state;
-            DateTime = dateTime;
+            ProcessTime = dateTime;
         }
 
         public int State { get; set; }
-        public DateTimeOffset DateTime { get; set; }
+        public DateTimeOffset ProcessTime { get; set; }
         public int Language { get; set; }
 
         public static AccountLoginStatus Default = new AccountLoginStatus(0, DateTimeOffset.MinValue);

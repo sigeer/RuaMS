@@ -3730,7 +3730,7 @@ public partial class Player
 
     public override void sendSpawnData(IChannelClient Client)
     {
-        if (!this.isHidden() || Client.AccountEntity!.GMLevel > 1)
+        if (!this.isHidden() || Client.AccountEntity!.IsGmAccount())
         {
             Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
 

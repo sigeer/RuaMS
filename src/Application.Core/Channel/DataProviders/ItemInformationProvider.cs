@@ -830,9 +830,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
-    public Equip GetEquipByTemplate(EquipTemplate equipTemplate)
+    public Equip GetEquipByTemplate(EquipTemplate equipTemplate, short position = 0)
     {
-        var nEquip = new Equip(equipTemplate, 0);
+        var nEquip = new Equip(equipTemplate, position);
 
         nEquip.setStr(equipTemplate.IncSTR);
         nEquip.setDex(equipTemplate.IncDEX);
@@ -893,9 +893,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     }
 
-    public Equip getEquipById(int equipId)
+    public Equip getEquipById(int equipId, short position = 0)
     {
-        return GetEquipByTemplate(GetEquipTemplate(equipId) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId));
+        return GetEquipByTemplate(GetEquipTemplate(equipId) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId), position);
     }
 
     /// <summary>

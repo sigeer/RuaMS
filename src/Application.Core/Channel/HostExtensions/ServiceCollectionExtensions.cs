@@ -77,9 +77,6 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<IStaticService, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
             services.AddSingleton<DataBootstrap, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
 
-            services.AddSingleton<LifeFactory>();
-            services.AddSingleton<IStaticService, LifeFactory>(sp => sp.GetRequiredService<LifeFactory>());
-
             services.AddSingleton<WzStringQueryService>();
 
             services.AddSingleton<ShopManager>();

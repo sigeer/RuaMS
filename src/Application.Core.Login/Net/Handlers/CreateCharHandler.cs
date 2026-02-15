@@ -56,16 +56,20 @@ public class CreateCharHandler : LoginHandlerBase
             return;
         }
 
-        int newCharacterId = c.CurrentServer.CharacterManager.CreatePlayer(c.AccountId, name, face, hair + haircolor, skincolor, top, bottom, shoes, weapon, gender, job);
-        if (newCharacterId > 0)
+        if (c.AccountEntity == null)
         {
-            c.sendPacket(LoginPacketCreator.addNewCharEntry(c, c.CurrentServer.CharacterManager.GetCharactersView([newCharacterId])[0]));
+            // 账号信息不存在
+            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
+            return;
         }
 
-
-        if (newCharacterId == -2)
+        var model = c.CurrentServer.CreatePlayerService.CreateCharacter(c.AccountEntity, job, name, gender, face, hair + haircolor, skincolor, top, bottom, shoes, weapon);
+        if (model == null)
         {
             c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
+            return;
         }
+
+        c.sendPacket(LoginPacketCreator.AddNewCharEntry(model));
     }
 }

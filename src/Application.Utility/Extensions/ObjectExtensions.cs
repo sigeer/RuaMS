@@ -21,6 +21,16 @@ namespace Application.Utility.Extensions
             }
             return dp;
         }
+
+        public static string AdpteSP(this int[] sps)
+        {
+            return string.Join(',', sps);
+        }
+
+        public static int[] AdpteSP(this string sp)
+        {
+            return sp.Split(',').Select(int.Parse).ToArray();
+        }
     }
 }
 

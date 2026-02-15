@@ -35,9 +35,6 @@ public partial class DueyPackageEntity
     }
 
 
-    public virtual ICollection<Dueyitem> Dueyitems { get; set; } = new List<Dueyitem>();
-
-
     //public void UpdateSentTime()
     //{
     //    DateTimeOffset cal = TimeStamp;

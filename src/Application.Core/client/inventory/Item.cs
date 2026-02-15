@@ -149,9 +149,9 @@ public class Item : IComparable<Item>
         return owner;
     }
 
-    public void setOwner(string owner)
+    public void setOwner(string? owner)
     {
-        this.owner = owner;
+        this.owner = owner ?? "";
     }
 
     public int CompareTo(Item? other)
@@ -220,9 +220,9 @@ public class Item : IComparable<Item>
         return giftFrom;
     }
 
-    public void setGiftFrom(string giftFrom)
+    public void setGiftFrom(string? giftFrom)
     {
-        this.giftFrom = giftFrom;
+        this.giftFrom = giftFrom ?? "";
     }
     public bool isUntradeable()
     {
