@@ -100,16 +100,16 @@ public class NewCharacterBuilder
 
         Items.RemoveAll(x => x.Type == (int)ItemType.Inventory && x.InventoryType == (int)InventoryType.EQUIPPED);
         if (Top > 0)
-            Items.Add(new ItemModel() { Itemid = Top, Position = -5, Quantity = 1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
+            Items.Add(new ItemModel() { Itemid = Top, Position = -5, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
 
         if (Bottom > 0)
-            Items.Add(new ItemModel() { Itemid = Bottom, Position = -6, Quantity = 1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
+            Items.Add(new ItemModel() { Itemid = Bottom, Position = -6, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
 
         if (Shoes > 0)
-            Items.Add(new ItemModel() { Itemid = Shoes, Position = -7, Quantity = 1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
+            Items.Add(new ItemModel() { Itemid = Shoes, Position = -7, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
 
         if (Weapon > 0)
-            Items.Add(new ItemModel() { Itemid = Weapon, Position = -11, Quantity = 1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
+            Items.Add(new ItemModel() { Itemid = Weapon, Position = -11, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
 
         return new NewCharacterPreview(account, newCharacter, Items.ToArray());
     }
