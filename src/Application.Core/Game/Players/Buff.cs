@@ -265,14 +265,12 @@ namespace Application.Core.Game.Players
                     {
                         int summonId = mbsvh.effect.getSourceId();
 
-                        var summon = summons.GetValueOrDefault(summonId);
-                        if (summon != null)
+                        if (summons.Remove(summonId, out var summon) && summon != null)
                         {
                             MapModel.broadcastMessage(PacketCreator.removeSummon(summon, true), summon.getPosition());
                             MapModel.removeMapObject(summon);
                             removeVisibleMapObject(summon);
 
-                            summons.Remove(summonId);
                             if (summon.isPuppet())
                             {
                                 MapModel.removePlayerPuppet(this);

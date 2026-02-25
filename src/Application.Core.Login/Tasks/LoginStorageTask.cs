@@ -1,5 +1,6 @@
 using Application.Core.Login.Session;
 using Application.Utility.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Login.Tasks
 {
@@ -9,10 +10,10 @@ namespace Application.Core.Login.Tasks
         readonly SessionCoordinator sessionCoordinator;
         readonly LoginBypassCoordinator loginBypassCoordinator;
 
-        public LoginStorageTask(SessionCoordinator sessionCoordinator, LoginBypassCoordinator loginBypassCoordinator)
+        public LoginStorageTask(MasterServer server): base($"{server.InstanceName}_{nameof(LoginStorageTask)}")
         {
-            this.sessionCoordinator = sessionCoordinator;
-            this.loginBypassCoordinator = loginBypassCoordinator;
+            this.sessionCoordinator = server.ServiceProvider.GetRequiredService<SessionCoordinator>();
+            this.loginBypassCoordinator = server.ServiceProvider.GetRequiredService<LoginBypassCoordinator>();
         }
 
         public override void HandleRun()

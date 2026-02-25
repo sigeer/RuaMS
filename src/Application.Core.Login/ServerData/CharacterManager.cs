@@ -31,12 +31,9 @@ namespace Application.Core.Login.Datas
     {
         int _localId = 0;
 
-        ConcurrentDictionary<int, CharacterLiveObject> _idDataSource = new();
-        ConcurrentDictionary<string, CharacterLiveObject> _nameDataSource = new();
+        ConcurrentDictionary<int, IStoreUnit<CharacterViewObject>> _idDataSource = new();
+        ConcurrentDictionary<string, IStoreUnit<CharacterViewObject>> _nameDataSource = new();
 
-        ConcurrentDictionary<int, CharacterViewObject> _charcterViewCache = new();
-
-        ConcurrentDictionary<int, StoreFlag> _updated = new();
 
         readonly IMapper _mapper;
         readonly ILogger<CharacterManager> _logger;
@@ -59,27 +56,32 @@ namespace Application.Core.Login.Datas
             if (id <= 0)
                 return null;
 
-            if (_idDataSource.TryGetValue(id, out var data) && data != null)
-                return data;
+            if (_idDataSource.TryGetValue(id, out var data) && data.Flag != StoreFlag.Remove)
+                return (data.Data as CharacterLiveObject) ?? GetCharacter(id);
 
             return GetCharacter(id);
         }
         public CharacterLiveObject? FindPlayerByName(string name)
         {
-            if (_nameDataSource.TryGetValue(name, out var data) && data != null)
-                return data;
+            if (_nameDataSource.TryGetValue(name, out var data) && data.Flag != StoreFlag.Remove)
+                return (data.Data as CharacterLiveObject) ?? GetCharacter(null, name);
 
             return GetCharacter(null, name);
         }
 
-        public void SetState(int id)
+        public void SetState(CharacterLiveObject obj)
         {
-            _updated[id] = StoreFlag.AddOrUpdate;
+            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove)
+            {
+                o.Update();
+            }
         }
 
         public List<CharacterModel> GetAllCachedPlayers()
         {
-            return _idDataSource.Values.AsValueEnumerable().Select(x => x.Character).ToList();
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Select(x => x.Data!.Character).ToList();
         }
 
         public string GetPlayerName(int id)
@@ -89,7 +91,7 @@ namespace Application.Core.Login.Datas
 
         public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
-            if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
+            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove && o.Data is CharacterLiveObject origin)
             {
                 var oldMap = origin.Character.Map;
                 var oldLevel = origin.Character.Level;
@@ -128,7 +130,7 @@ namespace Application.Core.Login.Datas
                         _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
                     }
                 }
-                SetState(obj.Character.Id);
+                SetState(origin);
 
                 if (oldLevel != origin.Character.Level)
                 {
@@ -290,7 +292,6 @@ namespace Application.Core.Login.Datas
             _idDataSource.Clear();
             _nameDataSource.Clear();
 
-            _charcterViewCache.Clear();
         }
 
         CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
@@ -299,10 +300,10 @@ namespace Application.Core.Login.Datas
                 return null;
 
             CharacterLiveObject? d = null;
-            if (characterId != null && _idDataSource.TryGetValue(characterId.Value, out var p1))
-                d = p1;
-            if (d == null && characterName != null && _nameDataSource.TryGetValue(characterName, out var p2))
-                d = p2;
+            if (characterId != null && _idDataSource.TryGetValue(characterId.Value, out var p1) && p1.Flag != StoreFlag.Remove)
+                d = p1.Data as CharacterLiveObject;
+            if (d == null && characterName != null && _nameDataSource.TryGetValue(characterName, out var p2) && p2.Flag != StoreFlag.Remove)
+                d = p2.Data as CharacterLiveObject;
 
             if (d == null)
             {
@@ -367,8 +368,9 @@ namespace Application.Core.Login.Datas
                     GachaponStorage = gachponStore
                 };
 
-                _idDataSource[characterEntity.Id] = d;
-                _nameDataSource[characterEntity.Name] = d;
+                var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, d);
+                _idDataSource[characterEntity.Id] = data;
+                _nameDataSource[characterEntity.Name] = data;
             }
             return d;
         }
@@ -386,10 +388,8 @@ namespace Application.Core.Login.Datas
             List<int> needLoadFromDB = new();
             foreach (var item in charIds)
             {
-                if (_idDataSource.TryGetValue(item, out var e) && e != null)
-                    list.Add(e);
-                else if (_charcterViewCache.TryGetValue(item, out var d) && d != null)
-                    list.Add(d);
+                if (_idDataSource.TryGetValue(item, out var e) && e.Flag != StoreFlag.Remove)
+                    list.Add(e.Data!);
                 else
                     needLoadFromDB.Add(item);
             }
@@ -412,7 +412,10 @@ namespace Application.Core.Login.Datas
             foreach (var character in characters)
             {
                 var obj = new CharacterViewObject(_mapper.Map<CharacterModel>(character), _mapper.Map<ItemModel[]>(items.Where(x => x.Item.Characterid == character.Id)));
-                _charcterViewCache[obj.Character.Id] = obj;
+
+                var data = new StoreUnit<CharacterViewObject>(StoreFlag.Cached, obj);
+                _idDataSource[obj.Character.Id] = data;
+                _nameDataSource[obj.Character.Name] = data;
                 list.Add(obj);
             }
             return list;
@@ -420,7 +423,9 @@ namespace Application.Core.Login.Datas
         }
         internal int GetOnlinedPlayerCount()
         {
-            return _idDataSource.Values.AsValueEnumerable().Count(x => x.Channel != 0);
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Count(x => x.Data is CharacterLiveObject o && o.Channel != 0);
         }
 
         public bool CheckCharacterName(string name)
@@ -451,25 +456,35 @@ namespace Application.Core.Login.Datas
 
         internal float GetChannelPlayerCount(int channelId)
         {
-            return _idDataSource.Values.AsValueEnumerable().Count(x => x.Channel == channelId);
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Count(x => x.Data is CharacterLiveObject o && o.Channel == channelId);
         }
 
         internal int[] GetOnlinedGMs()
         {
             var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
             return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToArray();
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0 && accIds.Contains(o.Character.AccountId))
+                .Select(x => x.Data!.Character.Id).ToArray();
         }
 
         public List<int> GetOnlinedPlayerAccountId()
         {
             return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Channel > 0).Select(x => x.Character.AccountId).ToList();
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0)
+                .Select(x => x.Data!.Character.AccountId).ToList();
         }
 
         public SystemProto.ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
-            var list = _idDataSource.Values.AsValueEnumerable().Where(x => x.Channel > 0).ToList();
+            var list = _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Select(x => x.Data)
+                .OfType<CharacterLiveObject>()
+                .Where(x => x.Channel > 0).ToList();
             var res = new SystemProto.ShowOnlinePlayerResponse();
             res.List.AddRange(list.Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
@@ -521,7 +536,7 @@ namespace Application.Core.Login.Datas
                 targetChr.Character.Jailexpire += request.Minutes * 60000;
                 res.IsExtend = true;
             }
-            SetState(targetChr.Character.Id);
+            SetState(targetChr);
 
             res.TargetId = targetChr.Character.Id;
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId, res.TargetId]);
@@ -545,7 +560,7 @@ namespace Application.Core.Login.Datas
                 return;
             }
             targetChr.Character.Jailexpire = 0;
-            SetState(targetChr.Character.Id);
+            SetState(targetChr);
 
             res.TargetId = targetChr.Character.Id;
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId, res.TargetId]);
@@ -558,8 +573,7 @@ namespace Application.Core.Login.Datas
 
         public async Task Commit(DBContext dbContext)
         {
-            var updateData = _updated.ToDictionary();
-            _updated.Clear();
+            var updateData = _idDataSource.Where(x => x.Value.Flag != StoreFlag.Cached).ToDictionary();
             if (updateData.Count == 0)
                 return;
 
@@ -592,24 +606,26 @@ namespace Application.Core.Login.Datas
 
                 foreach (var item in updateData)
                 {
-                    if (item.Value == StoreFlag.Remove)
+                    if (item.Value.Flag == StoreFlag.Remove)
                     {
                         await dbContext.Characters.Where(x => x.Id == item.Key)
                             .ExecuteUpdateAsync(x => x.SetProperty(y => y.IsDeleted, true));
                         continue;
                     }
 
-                    var data = _idDataSource.GetValueOrDefault(item.Key);
+                    var data = item.Value.Data;
                     if (data == null)
                     {
                         _logger.LogWarning("发现了更新项，但是没有记录 CharacterId={CharacterId}", item.Key);
                         continue;
                     }
 
-                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, data.Character.Id, data.InventoryItems, ItemFactory.INVENTORY);
-
                     if (data is CharacterLiveObject obj)
                     {
+                        item.Value.Flag = StoreFlag.Cached;
+
+                        await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+
                         var character = updateCharacters.FirstOrDefault(x => x.Id == obj.Character.Id);
                         if (character == null)
                         {
@@ -681,9 +697,10 @@ namespace Application.Core.Login.Datas
         public void InsertNewCharacter(NewCharacterPreview obj)
         {
             obj.Character.Id = Interlocked.Increment(ref _localId);
-            _idDataSource[obj.Character.Id] = obj;
-            _nameDataSource[obj.Character.Name] = obj;
-            SetState(obj.Character.Id);
+            var data = new StoreUnit<NewCharacterPreview>(StoreFlag.AddOrUpdate, obj);
+            _idDataSource[obj.Character.Id] = data;
+            _nameDataSource[obj.Character.Name] = data;
+
             _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(obj.Character.AccountId, obj.Character.Id);
 
             _ = _masterServer.DropYellowTip("[New Char]: " + obj.Account.Name + " has created a new character with IGN " + obj.Character.Name, true);
@@ -691,14 +708,13 @@ namespace Application.Core.Login.Datas
 
         public bool RemoveCharacter(int chrId, int checkAccount)
         {
-            if (_idDataSource.TryRemove(chrId, out var model) && model != null && model.Character.AccountId == checkAccount)
+            if (_idDataSource.TryGetValue(chrId, out var model)
+                && model.Flag != StoreFlag.Remove
+                && model.Data!.Character.AccountId == checkAccount)
             {
-                _nameDataSource.TryRemove(model.Character.Name, out _);
-                _charcterViewCache.TryRemove(chrId, out _);
+                model.Remove();
 
-                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(model.Character.AccountId, chrId);
-
-                _updated[chrId] = StoreFlag.Remove;
+                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(model.Data.Character.AccountId, chrId);
                 return true;
             }
             return false;

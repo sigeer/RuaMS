@@ -47,7 +47,7 @@ namespace Application.Core.Login.ServerData
         async Task AddBuddy(CharacterLiveObject masterChr, CharacterLiveObject targetChr, string groupName = StringConstants.Buddy_DefaultGroup)
         {
             masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, CharacterId = masterChr.Character.Id, Group = groupName };
-            _server.CharacterManager.SetState(masterChr.Character.Id);
+            _server.CharacterManager.SetState(masterChr);
 
             var data = new BuddyProto.AddBuddyResponse()
             {
@@ -80,7 +80,7 @@ namespace Application.Core.Login.ServerData
             }
 
             masterChr.BuddyList[targetChr.Character.Id] = new BuddyModel() { Id = targetChr.Character.Id, CharacterId = masterChr.Character.Id, Group = request.GroupName };
-            _server.CharacterManager.SetState(masterChr.Character.Id);
+            _server.CharacterManager.SetState(masterChr);
 
             res.TargetId = targetChr.Character.Id;
             res.Buddy = GetChrBuddyDto(res.MasterId, targetChr);
@@ -128,7 +128,7 @@ namespace Application.Core.Login.ServerData
             else
             {
                 masterChr.BuddyList.Remove(request.Buddyid);
-                _server.CharacterManager.SetState(masterChr.Character.Id);
+                _server.CharacterManager.SetState(masterChr);
             }
 
             await _server.Transport.SendMessageN(ChannelRecvCode.OnBuddyRemove, res, [request.MasterId, request.Buddyid]);
