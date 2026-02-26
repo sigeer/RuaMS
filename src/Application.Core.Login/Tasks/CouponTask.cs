@@ -33,7 +33,7 @@ public class CouponTask : AsyncAbstractRunnable
 {
     readonly MasterServer _server;
 
-    public CouponTask(MasterServer server): base($"MasterServer_{nameof(CouponTask)}")
+    public CouponTask(MasterServer server): base($"{server.InstanceName}_{nameof(CouponTask)}")
     {
         _server = server;
     }

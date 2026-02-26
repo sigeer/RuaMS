@@ -1522,24 +1522,6 @@ public class MapleMap : IMap, INamedInstance
         return calcPointBelow(pos);
     }
 
-    void spawnRevives(Monster monster)
-    {
-        monster.setMap(this);
-        if (getEventInstance() != null)
-        {
-            getEventInstance()!.registerMonster(monster);
-        }
-
-        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, false)));
-
-        monster.aggroUpdateController();
-        updateBossSpawn(monster);
-
-        spawnedMonstersOnMap.incrementAndGet();
-        addSelfDestructive(monster);
-        applyRemoveAfter(monster);
-    }
-
     private void applyRemoveAfter(Monster monster)
     {
         var selfDestruction = monster.getStats().selfDestruction();

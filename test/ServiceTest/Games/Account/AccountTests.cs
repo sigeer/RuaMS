@@ -40,6 +40,10 @@ namespace ServiceTest.Games.Account
             Assert.That(player, Is.Not.Null);
 
             Assert.That(GameTestGlobal.TestServer.GetMasterServer().CharacterManager.RemoveCharacter(r.Character.Id, r.Character.AccountId));
+
+            player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            Assert.That(player, Is.Null);
+
             using (var dbTran = dbContext.Database.BeginTransaction())
             {
                 await GameTestGlobal.TestServer.GetMasterServer().CharacterManager.Commit(dbContext);

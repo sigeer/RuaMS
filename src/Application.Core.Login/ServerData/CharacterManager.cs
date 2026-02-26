@@ -31,12 +31,9 @@ namespace Application.Core.Login.Datas
     {
         int _localId = 0;
 
-        ConcurrentDictionary<int, CharacterLiveObject> _idDataSource = new();
-        ConcurrentDictionary<string, CharacterLiveObject> _nameDataSource = new();
+        ConcurrentDictionary<int, IStoreUnit<CharacterViewObject>> _idDataSource = new();
+        ConcurrentDictionary<string, IStoreUnit<CharacterViewObject>> _nameDataSource = new();
 
-        ConcurrentDictionary<int, CharacterViewObject> _charcterViewCache = new();
-
-        ConcurrentDictionary<int, StoreFlag> _updated = new();
 
         readonly IMapper _mapper;
         readonly ILogger<CharacterManager> _logger;
@@ -59,27 +56,50 @@ namespace Application.Core.Login.Datas
             if (id <= 0)
                 return null;
 
-            if (_idDataSource.TryGetValue(id, out var data) && data != null)
-                return data;
-
-            return GetCharacter(id);
+            if (_idDataSource.TryGetValue(id, out var data))
+            {
+                if (data.Flag == StoreFlag.Remove)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(id);
+                }
+            }
+            
+            return GetCharacterFromDB(id);
         }
         public CharacterLiveObject? FindPlayerByName(string name)
         {
-            if (_nameDataSource.TryGetValue(name, out var data) && data != null)
-                return data;
+            if (_nameDataSource.TryGetValue(name, out var data))
+            {
+                if (data.Flag == StoreFlag.Remove)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(null, name);
+                }
+            }
 
-            return GetCharacter(null, name);
+            return GetCharacterFromDB(null, name);
         }
 
-        public void SetState(int id)
+        public void SetState(CharacterLiveObject obj)
         {
-            _updated[id] = StoreFlag.AddOrUpdate;
+            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove)
+            {
+                o.Update();
+            }
         }
 
         public List<CharacterModel> GetAllCachedPlayers()
         {
-            return _idDataSource.Values.AsValueEnumerable().Select(x => x.Character).ToList();
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Select(x => x.Data!.Character).ToList();
         }
 
         public string GetPlayerName(int id)
@@ -89,7 +109,7 @@ namespace Application.Core.Login.Datas
 
         public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
-            if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
+            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove && o.Data is CharacterLiveObject origin)
             {
                 var oldMap = origin.Character.Map;
                 var oldLevel = origin.Character.Level;
@@ -128,7 +148,7 @@ namespace Application.Core.Login.Datas
                         _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
                     }
                 }
-                SetState(obj.Character.Id);
+                SetState(origin);
 
                 if (oldLevel != origin.Character.Level)
                 {
@@ -290,86 +310,78 @@ namespace Application.Core.Login.Datas
             _idDataSource.Clear();
             _nameDataSource.Clear();
 
-            _charcterViewCache.Clear();
         }
 
-        CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
+        CharacterLiveObject? GetCharacterFromDB(int? characterId = null, string? characterName = null)
         {
             if (characterId == null && characterName == null)
                 return null;
 
-            CharacterLiveObject? d = null;
-            if (characterId != null && _idDataSource.TryGetValue(characterId.Value, out var p1))
-                d = p1;
-            if (d == null && characterName != null && _nameDataSource.TryGetValue(characterName, out var p2))
-                d = p2;
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var characterEntity = characterId != null
+                ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
+                : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
+            if (characterEntity == null)
+                return null;
 
-            if (d == null)
+            characterId = characterEntity.Id;
+            characterName = characterEntity.Name;
+
+            var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+
+            var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
+                              let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
+                              select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+
+            var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
+
+            var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
+                ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
+            gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
+
+            var buddyData = (from a in dbContext.Buddies
+                             where a.CharacterId == characterId
+                             select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
+
+            #region quest
+            var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
+                                   let bs = dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   let cs = dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   select new QuestStatusEntityPair(a, bs, cs)).ToArray();
+            #endregion
+
+            var now = _masterServer.GetCurrentTimeDateTimeOffset();
+            var before30Days = now.AddDays(-30);
+            var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && x.When >= before30Days).ToList();
+
+            var d = new CharacterLiveObject(chrModel, invItems)
             {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var characterEntity = characterId != null
-                    ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
-                    : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
-                if (characterEntity == null)
-                    return null;
+                Channel = 0,
+                PetIgnores = petIgnores,
+                Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                BuddyList = buddyData.ToDictionary(x => x.Id),
+                FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
+                Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
 
-                characterId = characterEntity.Id;
-                characterName = characterEntity.Name;
+                MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
-                var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+                QuestStatuses = _mapper.Map<QuestStatusModel[]>(questStatusData),
 
-                var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
-                                  let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
-                                  select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+                SavedLocations = _mapper.Map<SavedLocationModel[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                SkillMacros = _mapper.Map<SkillMacroModel[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
+                NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
+                GachaponStorage = gachponStore
+            };
 
-                var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
+            var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, d);
+            _idDataSource[characterEntity.Id] = data;
+            _nameDataSource[characterEntity.Name] = data;
 
-                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
-                    ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
-                gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
-
-                var buddyData = (from a in dbContext.Buddies
-                                 where a.CharacterId == characterId
-                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
-
-                #region quest
-                var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
-                                       let bs = dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
-                                       let cs = dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
-                                       select new QuestStatusEntityPair(a, bs, cs)).ToArray();
-                #endregion
-
-                var now = _masterServer.GetCurrentTimeDateTimeOffset();
-                var before30Days = now.AddDays(-30);
-                var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && x.When >= before30Days).ToList();
-
-                d = new CharacterLiveObject(chrModel, invItems)
-                {
-                    Channel = 0,
-                    PetIgnores = petIgnores,
-                    Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    BuddyList = buddyData.ToDictionary(x => x.Id),
-                    FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
-                    Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-
-                    MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-
-                    QuestStatuses = _mapper.Map<QuestStatusModel[]>(questStatusData),
-
-                    SavedLocations = _mapper.Map<SavedLocationModel[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    SkillMacros = _mapper.Map<SkillMacroModel[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
-                    NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
-                    GachaponStorage = gachponStore
-                };
-
-                _idDataSource[characterEntity.Id] = d;
-                _nameDataSource[characterEntity.Name] = d;
-            }
             return d;
         }
 
@@ -386,10 +398,8 @@ namespace Application.Core.Login.Datas
             List<int> needLoadFromDB = new();
             foreach (var item in charIds)
             {
-                if (_idDataSource.TryGetValue(item, out var e) && e != null)
-                    list.Add(e);
-                else if (_charcterViewCache.TryGetValue(item, out var d) && d != null)
-                    list.Add(d);
+                if (_idDataSource.TryGetValue(item, out var e) && e.Flag != StoreFlag.Remove)
+                    list.Add(e.Data!);
                 else
                     needLoadFromDB.Add(item);
             }
@@ -412,7 +422,10 @@ namespace Application.Core.Login.Datas
             foreach (var character in characters)
             {
                 var obj = new CharacterViewObject(_mapper.Map<CharacterModel>(character), _mapper.Map<ItemModel[]>(items.Where(x => x.Item.Characterid == character.Id)));
-                _charcterViewCache[obj.Character.Id] = obj;
+
+                var data = new StoreUnit<CharacterViewObject>(StoreFlag.Cached, obj);
+                _idDataSource[obj.Character.Id] = data;
+                _nameDataSource[obj.Character.Name] = data;
                 list.Add(obj);
             }
             return list;
@@ -420,7 +433,9 @@ namespace Application.Core.Login.Datas
         }
         internal int GetOnlinedPlayerCount()
         {
-            return _idDataSource.Values.AsValueEnumerable().Count(x => x.Channel != 0);
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Count(x => x.Data is CharacterLiveObject o && o.Channel != 0);
         }
 
         public bool CheckCharacterName(string name)
@@ -451,25 +466,35 @@ namespace Application.Core.Login.Datas
 
         internal float GetChannelPlayerCount(int channelId)
         {
-            return _idDataSource.Values.AsValueEnumerable().Count(x => x.Channel == channelId);
+            return _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Count(x => x.Data is CharacterLiveObject o && o.Channel == channelId);
         }
 
         internal int[] GetOnlinedGMs()
         {
             var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
             return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToArray();
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0 && accIds.Contains(o.Character.AccountId))
+                .Select(x => x.Data!.Character.Id).ToArray();
         }
 
         public List<int> GetOnlinedPlayerAccountId()
         {
             return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Channel > 0).Select(x => x.Character.AccountId).ToList();
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0)
+                .Select(x => x.Data!.Character.AccountId).ToList();
         }
 
         public SystemProto.ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
-            var list = _idDataSource.Values.AsValueEnumerable().Where(x => x.Channel > 0).ToList();
+            var list = _idDataSource.Values.AsValueEnumerable()
+                .Where(x => x.Flag != StoreFlag.Remove)
+                .Select(x => x.Data)
+                .OfType<CharacterLiveObject>()
+                .Where(x => x.Channel > 0).ToList();
             var res = new SystemProto.ShowOnlinePlayerResponse();
             res.List.AddRange(list.Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
@@ -521,7 +546,7 @@ namespace Application.Core.Login.Datas
                 targetChr.Character.Jailexpire += request.Minutes * 60000;
                 res.IsExtend = true;
             }
-            SetState(targetChr.Character.Id);
+            SetState(targetChr);
 
             res.TargetId = targetChr.Character.Id;
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId, res.TargetId]);
@@ -545,7 +570,7 @@ namespace Application.Core.Login.Datas
                 return;
             }
             targetChr.Character.Jailexpire = 0;
-            SetState(targetChr.Character.Id);
+            SetState(targetChr);
 
             res.TargetId = targetChr.Character.Id;
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId, res.TargetId]);
@@ -558,8 +583,7 @@ namespace Application.Core.Login.Datas
 
         public async Task Commit(DBContext dbContext)
         {
-            var updateData = _updated.ToDictionary();
-            _updated.Clear();
+            var updateData = _idDataSource.Where(x => x.Value.Flag != StoreFlag.Cached).ToDictionary();
             if (updateData.Count == 0)
                 return;
 
@@ -592,24 +616,26 @@ namespace Application.Core.Login.Datas
 
                 foreach (var item in updateData)
                 {
-                    if (item.Value == StoreFlag.Remove)
+                    if (item.Value.Flag == StoreFlag.Remove)
                     {
                         await dbContext.Characters.Where(x => x.Id == item.Key)
                             .ExecuteUpdateAsync(x => x.SetProperty(y => y.IsDeleted, true));
                         continue;
                     }
 
-                    var data = _idDataSource.GetValueOrDefault(item.Key);
+                    var data = item.Value.Data;
                     if (data == null)
                     {
                         _logger.LogWarning("发现了更新项，但是没有记录 CharacterId={CharacterId}", item.Key);
                         continue;
                     }
 
-                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, data.Character.Id, data.InventoryItems, ItemFactory.INVENTORY);
-
                     if (data is CharacterLiveObject obj)
                     {
+                        item.Value.Flag = StoreFlag.Cached;
+
+                        await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+
                         var character = updateCharacters.FirstOrDefault(x => x.Id == obj.Character.Id);
                         if (character == null)
                         {
@@ -681,9 +707,10 @@ namespace Application.Core.Login.Datas
         public void InsertNewCharacter(NewCharacterPreview obj)
         {
             obj.Character.Id = Interlocked.Increment(ref _localId);
-            _idDataSource[obj.Character.Id] = obj;
-            _nameDataSource[obj.Character.Name] = obj;
-            SetState(obj.Character.Id);
+            var data = new StoreUnit<NewCharacterPreview>(StoreFlag.AddOrUpdate, obj);
+            _idDataSource[obj.Character.Id] = data;
+            _nameDataSource[obj.Character.Name] = data;
+
             _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(obj.Character.AccountId, obj.Character.Id);
 
             _ = _masterServer.DropYellowTip("[New Char]: " + obj.Account.Name + " has created a new character with IGN " + obj.Character.Name, true);
@@ -691,14 +718,13 @@ namespace Application.Core.Login.Datas
 
         public bool RemoveCharacter(int chrId, int checkAccount)
         {
-            if (_idDataSource.TryRemove(chrId, out var model) && model != null && model.Character.AccountId == checkAccount)
+            if (_idDataSource.TryGetValue(chrId, out var model)
+                && model.Flag != StoreFlag.Remove
+                && model.Data!.Character.AccountId == checkAccount)
             {
-                _nameDataSource.TryRemove(model.Character.Name, out _);
-                _charcterViewCache.TryRemove(chrId, out _);
+                model.Remove();
 
-                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(model.Character.AccountId, chrId);
-
-                _updated[chrId] = StoreFlag.Remove;
+                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(checkAccount, chrId);
                 return true;
             }
             return false;

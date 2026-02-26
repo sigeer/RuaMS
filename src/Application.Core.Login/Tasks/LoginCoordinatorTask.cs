@@ -1,5 +1,6 @@
 using Application.Core.Login.Session;
 using Application.Utility.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Login.Tasks
 {
@@ -7,9 +8,9 @@ namespace Application.Core.Login.Tasks
     {
         readonly SessionCoordinator _sessionCoordinator;
 
-        public LoginCoordinatorTask(SessionCoordinator sessionCoordinator)
+        public LoginCoordinatorTask(MasterServer server) : base($"{server.InstanceName}_{nameof(LoginCoordinatorTask)}")
         {
-            _sessionCoordinator = sessionCoordinator;
+            _sessionCoordinator = server.ServiceProvider.GetRequiredService<SessionCoordinator>();
         }
 
         public override void HandleRun()
