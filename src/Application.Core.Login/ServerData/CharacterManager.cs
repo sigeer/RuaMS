@@ -714,7 +714,7 @@ namespace Application.Core.Login.Datas
             {
                 model.Remove();
 
-                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(model.Data.Character.AccountId, chrId);
+                _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(checkAccount, chrId);
                 return true;
             }
             return false;
