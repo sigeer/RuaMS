@@ -56,17 +56,35 @@ namespace Application.Core.Login.Datas
             if (id <= 0)
                 return null;
 
-            if (_idDataSource.TryGetValue(id, out var data) && data.Flag != StoreFlag.Remove)
-                return (data.Data as CharacterLiveObject) ?? GetCharacter(id);
-
-            return GetCharacter(id);
+            if (_idDataSource.TryGetValue(id, out var data))
+            {
+                if (data.Flag == StoreFlag.Remove)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(id);
+                }
+            }
+            
+            return GetCharacterFromDB(id);
         }
         public CharacterLiveObject? FindPlayerByName(string name)
         {
-            if (_nameDataSource.TryGetValue(name, out var data) && data.Flag != StoreFlag.Remove)
-                return (data.Data as CharacterLiveObject) ?? GetCharacter(null, name);
+            if (_nameDataSource.TryGetValue(name, out var data))
+            {
+                if (data.Flag == StoreFlag.Remove)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(null, name);
+                }
+            }
 
-            return GetCharacter(null, name);
+            return GetCharacterFromDB(null, name);
         }
 
         public void SetState(CharacterLiveObject obj)
@@ -294,84 +312,76 @@ namespace Application.Core.Login.Datas
 
         }
 
-        CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
+        CharacterLiveObject? GetCharacterFromDB(int? characterId = null, string? characterName = null)
         {
             if (characterId == null && characterName == null)
                 return null;
 
-            CharacterLiveObject? d = null;
-            if (characterId != null && _idDataSource.TryGetValue(characterId.Value, out var p1) && p1.Flag != StoreFlag.Remove)
-                d = p1.Data as CharacterLiveObject;
-            if (d == null && characterName != null && _nameDataSource.TryGetValue(characterName, out var p2) && p2.Flag != StoreFlag.Remove)
-                d = p2.Data as CharacterLiveObject;
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var characterEntity = characterId != null
+                ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
+                : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
+            if (characterEntity == null)
+                return null;
 
-            if (d == null)
+            characterId = characterEntity.Id;
+            characterName = characterEntity.Name;
+
+            var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+
+            var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
+                              let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
+                              select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+
+            var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
+
+            var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
+                ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
+            gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
+
+            var buddyData = (from a in dbContext.Buddies
+                             where a.CharacterId == characterId
+                             select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
+
+            #region quest
+            var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
+                                   let bs = dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   let cs = dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   select new QuestStatusEntityPair(a, bs, cs)).ToArray();
+            #endregion
+
+            var now = _masterServer.GetCurrentTimeDateTimeOffset();
+            var before30Days = now.AddDays(-30);
+            var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && x.When >= before30Days).ToList();
+
+            var d = new CharacterLiveObject(chrModel, invItems)
             {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var characterEntity = characterId != null
-                    ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
-                    : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
-                if (characterEntity == null)
-                    return null;
+                Channel = 0,
+                PetIgnores = petIgnores,
+                Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                BuddyList = buddyData.ToDictionary(x => x.Id),
+                FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
+                Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
 
-                characterId = characterEntity.Id;
-                characterName = characterEntity.Name;
+                MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
-                var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+                QuestStatuses = _mapper.Map<QuestStatusModel[]>(questStatusData),
 
-                var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
-                                  let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
-                                  select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+                SavedLocations = _mapper.Map<SavedLocationModel[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                SkillMacros = _mapper.Map<SkillMacroModel[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
+                NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
+                GachaponStorage = gachponStore
+            };
 
-                var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
+            var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, d);
+            _idDataSource[characterEntity.Id] = data;
+            _nameDataSource[characterEntity.Name] = data;
 
-                var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
-                    ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
-                gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
-
-                var buddyData = (from a in dbContext.Buddies
-                                 where a.CharacterId == characterId
-                                 select new BuddyModel { Id = a.BuddyId, Group = a.Group, CharacterId = a.CharacterId }).ToArray();
-
-                #region quest
-                var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
-                                       let bs = dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
-                                       let cs = dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
-                                       select new QuestStatusEntityPair(a, bs, cs)).ToArray();
-                #endregion
-
-                var now = _masterServer.GetCurrentTimeDateTimeOffset();
-                var before30Days = now.AddDays(-30);
-                var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && x.When >= before30Days).ToList();
-
-                d = new CharacterLiveObject(chrModel, invItems)
-                {
-                    Channel = 0,
-                    PetIgnores = petIgnores,
-                    Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    BuddyList = buddyData.ToDictionary(x => x.Id),
-                    FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
-                    Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-
-                    MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-
-                    QuestStatuses = _mapper.Map<QuestStatusModel[]>(questStatusData),
-
-                    SavedLocations = _mapper.Map<SavedLocationModel[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    SkillMacros = _mapper.Map<SkillMacroModel[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
-                    NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
-                    GachaponStorage = gachponStore
-                };
-
-                var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, d);
-                _idDataSource[characterEntity.Id] = data;
-                _nameDataSource[characterEntity.Name] = data;
-            }
             return d;
         }
 
