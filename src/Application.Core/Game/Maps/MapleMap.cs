@@ -30,6 +30,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
@@ -1040,48 +1041,10 @@ public class MapleMap : IMap, INamedInstance
                         }
                     }
 
-                    if (MobId.isZakumArm(monster.getId()))
-                    {
-                        bool makeZakReal = true;
-                        var objects = getMapObjects();
-                        foreach (IMapObject mapObj in objects)
-                        {
-                            Monster? mons = getMonsterByOid(mapObj.getObjectId());
-                            if (mons != null)
-                            {
-                                if (MobId.isZakumArm(mons.getId()))
-                                {
-                                    makeZakReal = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (makeZakReal)
-                        {
-                            var map = chr.getMap();
-
-                            foreach (IMapObject mapObj in objects)
-                            {
-                                Monster? mons = map.getMonsterByOid(mapObj.getObjectId());
-                                if (mons != null)
-                                {
-                                    if (mons.getId() == MobId.ZAKUM_1)
-                                    {
-                                        makeMonsterReal(mons);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                     var dropOwner = monster.killBy(chr);
-                    if (withDrops && !monster.dropsDisabled())
+                    if (withDrops && dropOwner != null)
                     {
-                        if (dropOwner == null)
-                        {
-                            dropOwner = chr;
-                        }
                         dropFromMonster(dropOwner, monster, false, dropDelay);
                     }
 
@@ -1616,6 +1579,8 @@ public class MapleMap : IMap, INamedInstance
 
     public void makeMonsterReal(Monster monster)
     {
+        if (!monster.isFake())
+            return;
         monster.setFake(false);
         broadcastMessage(PacketCreator.makeMonsterReal(monster));
         monster.aggroUpdateController();
@@ -2106,7 +2071,7 @@ public class MapleMap : IMap, INamedInstance
             .Cast<TObject>()
             .ToList();
     }
-    List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject
+    public List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject
     {
         return mapobjects.Values.AsValueEnumerable()
             .Where(x => x.getType() == type)
@@ -2415,7 +2380,7 @@ public class MapleMap : IMap, INamedInstance
                 return true;
             }
 
-            pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapitem);
+            pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), DropLeaveFieldType.Expired, 0), mapitem);
             return true;
         }
 
@@ -2792,7 +2757,7 @@ public class MapleMap : IMap, INamedInstance
     {
         ProcessMapObject(x => x.getType() == MapObjectType.ITEM, i =>
         {
-            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), MapItemRemoveAnimation.Expired, 0));
+            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), DropLeaveFieldType.Expired, 0));
             unregisterItemDrop((MapItem)i);
         });
     }
@@ -2948,36 +2913,19 @@ public class MapleMap : IMap, INamedInstance
         // ayy lmao
         var htIntro = LifeFactory.Instance.getMonster(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
+    }
 
-        var ht = LifeFactory.Instance.getMonster(MobId.HORNTAIL)!;
-        ht.setParentMobOid(htIntro.getObjectId());
-        ht.OnDamaged += (sender, args) =>
+    public void SpawnZakumOnGroundBelow(Point pos)
+    {
+        var main = LifeFactory.Instance.getMonster(MobId.ZAKUM_1)!;
+        spawnFakeMonsterOnGroundBelow(main, pos);
+
+        for (int mobId = MobId.ZAKUM_ARM_1; mobId <= MobId.ZAKUM_ARM_8; mobId++)
         {
-            ht.addHp(args.Damage);
-        };
-        ht.OnHealed += (sender, args) =>
-        {
-            ht.addHp(-args);
-        };
-        // 灵魂的血量只能通过部位影响
+            var bodyPart = LifeFactory.Instance.getMonster(mobId)!;
+            bodyPart.setParentMobOid(main.getObjectId());
 
-        spawnMonsterOnGroundBelow(ht, targetPoint);
-
-        for (int mobId = MobId.HORNTAIL_HEAD_A; mobId <= MobId.HORNTAIL_TAIL; mobId++)
-        {
-            Monster m = LifeFactory.Instance.getMonster(mobId)!;
-            m.setParentMobOid(htIntro.getObjectId());
-
-            m.OnDamaged += (sender, args) =>
-            {
-                ht.applyFakeDamage(args.Attacker, args.Damage, true);
-            };
-
-            m.OnHealed += (sender, args) =>
-            {
-                ht.addHp(args);
-            };
-            spawnMonsterOnGroundBelow(m, targetPoint);
+            spawnMonsterOnGroundBelow(bodyPart, pos);
         }
     }
 

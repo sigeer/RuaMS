@@ -296,6 +296,11 @@ public class ReactorActionManager : AbstractPlayerInteraction
         reactor.getMap().spawnFakeMonsterOnGroundBelow(monster, getPosition());
     }
 
+    public void SpawnZakum()
+    {
+        reactor.getMap().SpawnZakumOnGroundBelow(getPosition());
+    }
+
     /**
      * Used for Targa and Scarlion
      */

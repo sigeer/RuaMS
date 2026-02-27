@@ -97,7 +97,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     /// <summary>
     /// 被击杀后，衍生物生成时触发。生成的衍生物
     /// </summary>
-    public event EventHandler<Monster>? OnRevive;
+    public event EventHandler<MonsterReviveEventArgs>? OnRevive;
     /// <summary>
     /// 被击杀时无衍生物，或者所有衍生物被击杀后触发
     /// </summary>
@@ -899,10 +899,14 @@ public class Monster : AbstractLifeObject, ICombatantObject
             .Where(x => lootChars.Any(chr => chr.needQuestItem(x.QuestId, x.ItemId))).ToList();
     }
 
+    /// <summary>
+    /// 分发击杀奖励（经验）
+    /// </summary>
+    /// <param name="killer"></param>
+    /// <returns></returns>
     public Player? killBy(Player? killer)
     {
         distributeExperience(killer != null ? killer.getId() : 0);
-
 
         // TODO: 文本大致意思是显示，不太可能用于被击杀时触发
         //var timeMob = reviveMap.TimeMob;
@@ -1031,7 +1035,8 @@ public class Monster : AbstractLifeObject, ICombatantObject
         this.aggroClearDamages();
         this.dispatchClearSummons();
 
-        OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
+        var dieAni = getAnimationTime("die1");
+        OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, dieAni));
 
         if (getStats().isFriendly())
         {
@@ -1062,6 +1067,20 @@ public class Monster : AbstractLifeObject, ICombatantObject
                     break;
             }
         }
+
+        if (MobId.isZakumArm(getId()))
+        {
+            var objects = MapModel.GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.getParentMobOid() == getParentMobOid());
+            if (objects.Count == 0)
+            {
+                var mainMob = MapModel.getMonsterByOid(getParentMobOid());
+                if (mainMob != null)
+                {
+                    MapModel.makeMonsterReal(mainMob);
+                }
+            }
+        }
+
 
         stati.Clear();
         alreadyBuffed.Clear();
@@ -2371,6 +2390,50 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
             dropFromFriendlyMonster(dropPeriodTime);
         }
+
+        if (getId() == MobId.SUMMON_HORNTAIL)
+        {
+            var soul = RevivingMonsters.FirstOrDefault(x => x.getId() == MobId.HORNTAIL)!;
+            soul.OnDamaged += (sender, args) =>
+            {
+                soul.addHp(args.Damage);
+            };
+            soul.OnHealed += (sender, args) =>
+            {
+                soul.addHp(-args);
+            };
+
+            List<Monster> deathBody = [];
+            var others = RevivingMonsters.Where(x => x.getId() != MobId.HORNTAIL).ToList();
+            foreach (var m in others)
+            {
+                m.OnDamaged += (sender, args) =>
+                {
+                    soul.applyFakeDamage(args.Attacker, args.Damage, true);
+                };
+
+                m.OnHealed += (sender, args) =>
+                {
+                    soul.addHp(args);
+                };
+
+                m.OnRevive += (sender, args) =>
+                {
+                    deathBody.Add(args.NextMob);
+
+                    if (deathBody.Count == others.Count)
+                    {
+                        soul.setHpZero();
+                        MapModel.killMonster(soul, args.Killer, true);
+                        
+                        foreach (var item in deathBody)
+                        {
+                            MapModel.killMonster(item, null, false);
+                        }
+                    }
+                };
+            }
+        }
     }
 
     void DispatchMonsterAllKilled()
@@ -2399,33 +2462,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 mob.disableDrops();
             }
             reviveMap.spawnMonster(mob);
-            OnRevive?.Invoke(curMob, mob);
+            OnRevive?.Invoke(curMob, new MonsterReviveEventArgs(mob, killer));
             mob.RevivedFrom = curMob;
 
-            if (MobId.isDeadHorntailPart(mob.getId()) && reviveMap.isHorntailDefeated())
-            {
-                bool htKilled = false;
-                var ht = reviveMap.getMonsterById(MobId.HORNTAIL);
-
-                if (ht != null)
-                {
-                    htKilled = ht.isAlive();
-                    ht.setHpZero();
-
-                    if (htKilled)
-                    {
-                        // 清理灵魂
-                        reviveMap.killMonster(ht, killer, true);
-                    }
-                }
-
-                // 清理死亡的部位
-                for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
-                {
-                    reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);
-                }
-            }
-            else if (controller != null)
+            if (controller != null)
             {
                 mob.aggroSwitchController(controller, aggro);
             }

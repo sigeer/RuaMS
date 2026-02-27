@@ -135,6 +135,7 @@ namespace Application.Core.Game.Maps
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
+        List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject;
         Dictionary<int, Player> getMapPlayers();
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
@@ -255,6 +256,11 @@ namespace Application.Core.Game.Maps
         void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
 
         void spawnHorntailOnGroundBelow(Point targetPoint);
+        /// <summary>
+        /// 召唤扎昆（复合型Mob）
+        /// </summary>
+        /// <param name="targetPoint"></param>
+        void SpawnZakumOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnKite(Kite kite);
         void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short delay = 0);

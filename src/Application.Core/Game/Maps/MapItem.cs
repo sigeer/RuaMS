@@ -229,6 +229,6 @@ public class MapItem : AbstractMapObject
 
     public override void sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  MapItemRemoveAnimation.None, 0));
+        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  DropLeaveFieldType.None, 0));
     }
 }

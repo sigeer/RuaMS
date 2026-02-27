@@ -475,7 +475,7 @@ public class Reactor : AbstractMapObject
                     MapModel.unregisterItemDrop(mapItem);
 
                     setShouldCollect(false);
-                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), MapItemRemoveAnimation.Expired, 0), mapItem.getPosition());
+                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem.getPosition());
 
                     hitReactor(ownerClient);
 

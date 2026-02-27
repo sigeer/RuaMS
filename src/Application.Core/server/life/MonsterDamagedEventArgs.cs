@@ -1,3 +1,4 @@
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 
 namespace server.life;
@@ -24,4 +25,17 @@ public sealed class MonsterKilledEventArgs : EventArgs
         Killer = killer;
         DieAni = dieAni;
     }
+}
+
+public sealed class MonsterReviveEventArgs : EventArgs
+{
+    public MonsterReviveEventArgs(Monster nextMob, ICombatantObject? killer)
+    {
+        NextMob = nextMob;
+        Killer = killer;
+    }
+
+    public Monster NextMob { get; }
+    public ICombatantObject? Killer { get; }
+
 }
