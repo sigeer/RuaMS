@@ -27,19 +27,26 @@ using Application.Core.Channel.Events;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
+using Application.Resources.Messages;
+using Application.Shared.Objects;
 using Application.Shared.WzEntity;
 using client.status;
+using Google.Protobuf.Collections;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
 using server.loot;
+using System.Threading;
 using tools;
+using ZLinq;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Life;
 
-public class Monster : AbstractLifeObject
+public class Monster : AbstractLifeObject, ICombatantObject
 {
     private ILogger log;
 
@@ -65,6 +72,9 @@ public class Monster : AbstractLifeObject
     private int team;
     private int parentMobOid = 0;
     private int spawnEffect = 0;
+    /// <summary>
+    /// 玩家对其造成的伤害记录
+    /// </summary>
     private Dictionary<int, AtomicLong> takenDamage = new();
     private ScheduledFuture? monsterItemDrop = null;
     private IWorldChannelCommand? removeAfterAction = null;
@@ -424,7 +434,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public bool damage(Player attacker, int damage, bool stayAlive)
+    public bool damage(ICombatantObject attacker, int damage, bool stayAlive)
     {
         bool lastHit = false;
 
@@ -472,7 +482,7 @@ public class Monster : AbstractLifeObject
      * @param damage
      * @param stayAlive
      */
-    public void applyDamage(Player from, int damage, bool stayAlive, bool fake)
+    public void applyDamage(ICombatantObject from, int damage, bool stayAlive, bool fake)
     {
         var trueDamage = applyAndGetHpDamage(damage, stayAlive);
         if (trueDamage == null)
@@ -480,29 +490,36 @@ public class Monster : AbstractLifeObject
             return;
         }
 
-        if (YamlConfig.config.server.USE_DEBUG)
-        {
-            from.dropMessage(5, "Hitted MOB " + this.getId() + ", OID " + this.getObjectId());
-        }
-
         if (!fake)
         {
             OnDamaged?.Invoke(this, new MonsterDamagedEventArgs(from, trueDamage.Value));
         }
 
-        if (!takenDamage.ContainsKey(from.getId()))
+        if (getStats().isFriendly())
         {
-            takenDamage.Add(from.getId(), new AtomicLong(trueDamage.Value));
-        }
-        else
-        {
-            takenDamage.GetValueOrDefault(from.getId())!.addAndGet(trueDamage.Value);
+            MapModel.EventInstanceManager?.friendlyDamaged(this);
         }
 
-        broadcastMobHpBar(from);
+        if (from is Player chr)
+        {
+            if (takenDamage.TryGetValue(chr.Id, out var d))
+            {
+                d.addAndGet(trueDamage.Value);
+            }
+            else
+            {
+                takenDamage.Add(chr.Id, new AtomicLong(trueDamage.Value));
+            }
+
+
+            if (YamlConfig.config.server.USE_DEBUG)
+                chr.dropMessage(5, "Hitted MOB " + this.getId() + ", OID " + this.getObjectId());
+
+            broadcastMobHpBar(chr);
+        }
     }
 
-    public void applyFakeDamage(Player from, int damage, bool stayAlive)
+    public void applyFakeDamage(ICombatantObject from, int damage, bool stayAlive)
     {
         applyDamage(from, damage, stayAlive, true);
     }
@@ -535,7 +552,7 @@ public class Monster : AbstractLifeObject
 
     public bool isAttackedBy(Player chr)
     {
-        return takenDamage.ContainsKey(chr.getId());
+        return takenDamage.ContainsKey(chr.Id);
     }
 
     private static bool isWhiteExpGain(Player chr, Dictionary<int, float> personalRatio, double sdevRatio)
@@ -853,7 +870,7 @@ public class Monster : AbstractLifeObject
     }
 
     /// <summary>
-    /// 只生成击杀玩家（或其队友）可收集的道具
+    /// 只生成造成伤害者可获取的掉落物（看起来同一队伍其他玩家如果没有造成伤害，也不会掉落他们的任务物品）
     /// </summary>
     /// <returns></returns>
     public List<DropEntry> retrieveRelevantDrops()
@@ -876,18 +893,16 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        return LootManager.retrieveRelevantDrops(this.getId(), lootChars);
+
+        return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId())
+            .AsValueEnumerable()
+            .Where(x => lootChars.Any(chr => chr.needQuestItem(x.QuestId, x.ItemId))).ToList();
     }
 
     public Player? killBy(Player? killer)
     {
         distributeExperience(killer != null ? killer.getId() : 0);
 
-        var lastController = aggroRemoveController();
-
-        var curMob = this;
-
-        var reviveMap = MapModel;
 
         // TODO: 文本大致意思是显示，不太可能用于被击杀时触发
         //var timeMob = reviveMap.TimeMob;
@@ -898,25 +913,10 @@ public class Monster : AbstractLifeObject
         //        reviveMap.dropMessage(6, timeMob.Message);
         //    }
         //}
-
-        if (RevivingMonsters.Count > 0)
-        {
-            if (RevivingMonsters.Any(x => x.getId() == (MobId.TRANSPARENT_ITEM)) && reviveMap.getId() > 925000000 && reviveMap.getId() < 926000000)
-            {
-                reviveMap.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
-                reviveMap.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
-            }
-
-            MapModel.ChannelServer.Node.TimerManager.schedule(() =>
-            {
-                MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer));
-            }, getAnimationTime("die1"));
-        }
-
         return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
     }
 
-    public void dropFromFriendlyMonster(long delay)
+    void dropFromFriendlyMonster(long delay)
     {
         Monster m = this;
         monsterItemDrop = MapModel.ChannelServer.Node.TimerManager.register(() =>
@@ -976,11 +976,26 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public void dispatchMonsterKilled(Player? killer)
+    public void dispatchMonsterKilled(ICombatantObject? killer)
     {
         processMonsterKilled(killer);
 
-        if (RevivingMonsters.Count == 0)
+        var lastController = aggroRemoveController();
+
+        if (RevivingMonsters.Count > 0)
+        {
+            if (RevivingMonsters.Any(x => x.getId() == (MobId.TRANSPARENT_ITEM)) && getId() > 925000000 && getId() < 926000000)
+            {
+                MapModel.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
+                MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
+            }
+
+            MapModel.ChannelServer.Node.TimerManager.schedule(() =>
+            {
+                MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer, lastController));
+            }, getAnimationTime("die1"));
+        }
+        else
         {
             DispatchMonsterAllKilled();
         }
@@ -1005,10 +1020,11 @@ public class Monster : AbstractLifeObject
         getMap().dismissRemoveAfter(this);
     }
 
-    private void processMonsterKilled(Player? killer)
+    private void processMonsterKilled(ICombatantObject? killer)
     {
         if (killer == null)
-        {    // players won't gain EXP from a mob that has no killer, but a quest count they should
+        {    
+            // players won't gain EXP from a mob that has no killer, but a quest count they should
             dispatchRaiseQuestMobCount();
         }
 
@@ -1017,10 +1033,39 @@ public class Monster : AbstractLifeObject
 
         OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, getAnimationTime("die1")));
 
+        if (getStats().isFriendly())
+        {
+            switch (getId())
+            {
+                case MobId.WATCH_HOG:
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(getId())));
+                    break;
+                case MobId.MOON_BUNNY: //moon bunny
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(getId())));
+                    break;
+                case MobId.TYLUS: //tylus
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(getId())));
+                    break;
+                case MobId.JULIET: //juliet
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(getId())));
+                    break;
+                case MobId.ROMEO: //romeo
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(getId())));
+                    break;
+                case MobId.GIANT_SNOWMAN_LV1_EASY:
+                case MobId.GIANT_SNOWMAN_LV1_MEDIUM:
+                case MobId.GIANT_SNOWMAN_LV1_HARD:
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
+                    break;
+                case MobId.DELLI: //delli
+                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(getId())));
+                    break;
+            }
+        }
+
         stati.Clear();
         alreadyBuffed.Clear();
     }
-
 
 
     public int getHighestDamagerId()
@@ -1903,7 +1948,7 @@ public class Monster : AbstractLifeObject
     /**
      * Removes controllability status from the current controller of this mob.
      */
-    public KeyValuePair<Player?, bool> aggroRemoveController()
+    public MonsterControllerPair aggroRemoveController()
     {
         Player? chrController;
         bool hadAggro;
@@ -2315,6 +2360,17 @@ public class Monster : AbstractLifeObject
     void DispatchMonsterSpawned()
     {
         OnSpawned?.Invoke(this, EventArgs.Empty);
+
+        var dropPeriodTime = getDropPeriodTime();
+        if (dropPeriodTime > 0)
+        {
+            if (getId() == MobId.MOON_BUNNY)
+            {
+                dropPeriodTime = dropPeriodTime / 3;
+            }
+
+            dropFromFriendlyMonster(dropPeriodTime);
+        }
     }
 
     void DispatchMonsterAllKilled()
@@ -2322,17 +2378,15 @@ public class Monster : AbstractLifeObject
         OnLifeCleared?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Revive(Player? killer)
+    public void Revive(ICombatantObject? killer, MonsterControllerPair lastController)
     {
-        var lastController = aggroRemoveController();
-
         var curMob = this;
 
         var reviveMap = MapModel;
         var eim = reviveMap.getEventInstance();
 
-        var controller = lastController.Key;
-        bool aggro = lastController.Value;
+        var controller = lastController.Controller;
+        bool aggro = lastController.HasAggro;
 
         foreach (var mob in RevivingMonsters)
         {
@@ -2360,11 +2414,12 @@ public class Monster : AbstractLifeObject
 
                     if (htKilled)
                     {
+                        // 清理灵魂
                         reviveMap.killMonster(ht, killer, true);
                     }
                 }
 
-                // reviveMap.isHorntailDefeated()表示已经击杀，这里重复击杀目的是为了解决什么问题？
+                // 清理死亡的部位
                 for (int i = MobId.DEAD_HORNTAIL_MAX; i >= MobId.DEAD_HORNTAIL_MIN; i--)
                 {
                     reviveMap.killMonster(reviveMap.getMonsterById(i), killer, true);

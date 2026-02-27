@@ -21,7 +21,7 @@
 */
 namespace Application.Shared.MapObjects;
 
-public enum MapObjectType
+public enum MapObjectType : byte
 {
     NPC,
     MONSTER,

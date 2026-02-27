@@ -6060,11 +6060,6 @@ public class PacketCreator
         return p;
     }
 
-    private static string getRightPaddedStr(string inValue, char padchar, int length)
-    {
-        return inValue.PadRight(length, padchar);
-    }
-
     public static Packet MobDamageMobFriendly(Monster mob, int damage, int remainingHp)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_MONSTER);

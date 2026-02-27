@@ -1,13 +1,15 @@
+using Application.Core.Game.Maps;
+
 namespace server.life;
 
 public sealed class MonsterDamagedEventArgs : EventArgs
 {
-    public Player Player { get; }
+    public ICombatantObject Attacker { get; }
     public int Damage { get; }
 
-    public MonsterDamagedEventArgs(Player player, int damage)
+    public MonsterDamagedEventArgs(ICombatantObject attacker, int damage)
     {
-        Player = player;
+        Attacker = attacker;
         Damage = damage;
     }
 }
@@ -15,11 +17,11 @@ public sealed class MonsterDamagedEventArgs : EventArgs
 
 public sealed class MonsterKilledEventArgs : EventArgs
 {
-    public Player? Killer { get; }
+    public ICombatantObject? Killer { get; }
     public int DieAni { get; }
-    public MonsterKilledEventArgs(Player? player, int dieAni)
+    public MonsterKilledEventArgs(ICombatantObject? killer, int dieAni)
     {
-        Killer = player;
+        Killer = killer;
         DieAni = dieAni;
     }
 }

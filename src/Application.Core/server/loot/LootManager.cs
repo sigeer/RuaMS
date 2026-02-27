@@ -22,6 +22,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using server.quest;
+using ZLinq;
 
 namespace server.loot;
 
@@ -33,6 +34,11 @@ public class LootManager
 
     private static bool isRelevantDrop(DropEntry dropEntry, List<Player> players, List<LootInventory> playersInv)
     {
+        if (dropEntry.QuestId == 0)
+        {
+            return true;
+        }
+
         int qStartAmount = 0, qCompleteAmount = 0;
         Quest quest = Quest.getInstance(dropEntry.QuestId);
         if (quest != null)
@@ -63,7 +69,7 @@ public class LootManager
                 }
 
                 // thanks kvmba for noticing quest items with no required amount failing to be detected as such
-
+                
                 int qItemStatus = chrInv.hasItem(dropEntry.ItemId, qItemAmount);
                 if (qItemStatus == 2)
                 {

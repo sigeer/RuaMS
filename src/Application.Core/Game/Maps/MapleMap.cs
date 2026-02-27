@@ -595,7 +595,7 @@ public class MapleMap : IMap, INamedInstance
         else if (mob.getStats().isFfaLoot())
             dropType = DropType.FreeForAll;
         else if (chr.Party > 0)
-            dropType = DropType.OnwerWithTeam;
+            dropType = DropType.OwnerWithTeam;
 
         float chrRate = 1;
         if (!useBaseRate)
@@ -605,7 +605,7 @@ public class MapleMap : IMap, INamedInstance
             var stati = mob.getStati(MonsterStatus.SHOWDOWN);
             if (stati != null)
             {
-                chrRate = (int)(chrRate * (stati.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN) / 100.0 + 1.0));
+                chrRate *= (stati.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN) / 100.0f + 1.0f);
             }
         }
 
@@ -643,7 +643,7 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
-        DropType droptype = (chr.Party > 0 ? DropType.OnwerWithTeam : DropType.OnlyOwner);
+        DropType droptype = (chr.Party > 0 ? DropType.OwnerWithTeam : DropType.OnlyOwner);
         int chRate = 1000000;   // 偷窃成功概率已经计算
         byte d = 1;
 
@@ -657,7 +657,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short dropDelay = 0)
     {
-        spawnDrop(drop, dropPos, reactor, chr, false, (chr.Party > 0 ? DropType.OnwerWithTeam : DropType.OnlyOwner), questid, dropDelay);
+        spawnDrop(drop, dropPos, reactor, chr, false, (chr.Party > 0 ? DropType.OwnerWithTeam : DropType.OnlyOwner), questid, dropDelay);
     }
 
     private void stopItemMonitor()
@@ -874,7 +874,7 @@ public class MapleMap : IMap, INamedInstance
     public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
     {
         Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(item, droppos, dropper, owner, DropType.OnwerWithTeam, false);
+        MapItem mdrop = new MapItem(item, droppos, dropper, owner, DropType.OwnerWithTeam, false);
 
         broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
     }
@@ -882,7 +882,7 @@ public class MapleMap : IMap, INamedInstance
     public void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos)
     {
         Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(meso, droppos, dropper, owner, DropType.OnwerWithTeam, false);
+        MapItem mdrop = new MapItem(meso, droppos, dropper, owner, DropType.OwnerWithTeam, false);
 
         broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
     }
@@ -927,7 +927,7 @@ public class MapleMap : IMap, INamedInstance
         return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
     }
 
-    public bool damageMonster(Player chr, Monster monster, int damage, short dropDelay = 0)
+    public bool damageMonster(ICombatantObject chr, Monster monster, int damage, short dropDelay = 0)
     {
         if (monster.getId() == MobId.ZAKUM_1)
         {
@@ -944,13 +944,17 @@ public class MapleMap : IMap, INamedInstance
                 // should work ;p
                 if (monster.getHp() <= selfDestr.Hp)
                 {
-                    killMonster(monster, chr, true, selfDestr.Action);
+                    killMonster(monster, chr, true, selfDestr.Action, 0);
                     return true;
                 }
             }
+
             if (killed)
             {
-                killMonster(monster, chr, true, dropDelay);
+                if (monster.getStats().isFriendly())
+                    killMonster(monster, null, false, dropDelay);
+                else
+                    killMonster(monster, chr, true, dropDelay);
             }
             return true;
         }
@@ -981,7 +985,7 @@ public class MapleMap : IMap, INamedInstance
             "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!"));
     }
 
-    public bool removeKilledMonsterObject(Monster monster)
+    bool removeKilledMonsterObject(Monster monster)
     {
         if (monster.getHp() < 0)
         {
@@ -999,40 +1003,25 @@ public class MapleMap : IMap, INamedInstance
 
         return true;
     }
-    public void killMonster(Monster? monster, Player? chr, bool withDrops, short dropDelay = 0) => killMonster(monster, chr, withDrops, 1, dropDelay);
-    public void killMonster(Monster? monster, Player? chr, bool withDrops, int animation, short dropDelay)
+    public void killMonster(Monster? monster, ICombatantObject? killer, bool withDrops, short dropDelay = 0) => killMonster(monster, killer, withDrops, 1, dropDelay);
+    public void killMonster(Monster? monster, ICombatantObject? killer, bool withDrops, int animation, short dropDelay)
     {
         if (monster == null)
         {
             return;
         }
 
-        if (chr == null)
+
+        if (removeKilledMonsterObject(monster))
         {
-            if (removeKilledMonsterObject(monster))
+            try
             {
-                monster.dispatchMonsterKilled(chr);
-                broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
-                monster.aggroSwitchController(null, false);
-            }
-        }
-        else
-        {
-            if (removeKilledMonsterObject(monster))
-            {
-                try
+                if (killer is Player chr)
                 {
                     if (monster.getStats().getLevel() >= chr.getLevel() + 30 && !chr.isGM())
                     {
                         ChannelServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
                     }
-
-                    /*if (chr.getQuest(Quest.getInstance(29400)).getStatus().Equals(QuestStatus.Status.STARTED)) {
-                     if (chr.getLevel() >= 120 && monster.getStats().getLevel() >= 120) {
-                     //FIX MEDAL SHET
-                     } else if (monster.getStats().getLevel() >= chr.getLevel()) {
-                     }
-                     }*/
 
                     int buff = monster.getBuffToGive();
                     if (buff > -1)
@@ -1107,15 +1096,16 @@ public class MapleMap : IMap, INamedInstance
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    log.Error(e.ToString());
-                }
-                finally
-                {     // thanks resinate for pointing out a memory leak possibly from an exception thrown
-                    monster.dispatchMonsterKilled(chr);
-                    broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
-                }
+            }
+            catch (Exception e)
+            {
+                log.Error(e.ToString());
+            }
+            finally
+            {
+                // thanks resinate for pointing out a memory leak possibly from an exception thrown
+                monster.dispatchMonsterKilled(killer);
+                broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
             }
         }
     }
@@ -1125,7 +1115,7 @@ public class MapleMap : IMap, INamedInstance
         this.killMonster(mob, getAllPlayers().ElementAtOrDefault(0), false);
     }
 
-    public void killMonster(int mobId)
+    public void killMonster(int mobId, bool withDrops = false)
     {
         Player? chr = getAllPlayers().ElementAtOrDefault(0);
 
@@ -1133,28 +1123,9 @@ public class MapleMap : IMap, INamedInstance
         {
             if (mob.getId() == mobId)
             {
-                this.killMonster(mob, chr, false);
+                this.killMonster(mob, chr, withDrops);
             }
         });
-    }
-
-    public void killMonsterWithDrops(int mobId)
-    {
-        Dictionary<int, Player> mapChars = this.getMapPlayers();
-
-        if (mapChars.Count > 0)
-        {
-            Player defaultChr = mapChars.FirstOrDefault().Value;
-
-            ProcessMonster(mob =>
-            {
-                if (mob.getId() == mobId)
-                {
-                    var chr = mapChars.GetValueOrDefault(mob.getHighestDamagerId()) ?? defaultChr;
-                    this.killMonster(mob, chr, true);
-                }
-            });
-        }
     }
 
     public void killAllMonstersNotFriendly()
@@ -1172,9 +1143,6 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
-    /// <summary>
-    /// 直接杀死怪物，不会掉落物品，不会继续重生怪物
-    /// </summary>
     public void killAllMonsters()
     {
         closeMapSpawnPoints();
@@ -1493,11 +1461,6 @@ public class MapleMap : IMap, INamedInstance
         _hasLongLifeMob = true;
     }
 
-    private void monsterItemDrop(Monster m, long delay)
-    {
-        m.dropFromFriendlyMonster(delay);
-    }
-
     public void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos)
     {
         Point spos = getGroundBelow(pos);
@@ -1531,7 +1494,7 @@ public class MapleMap : IMap, INamedInstance
 
             if (selfDestruction == null)
             {
-                removeAfterAction = new KillMonsterCommand(this, monster, null, 0);
+                removeAfterAction = new KillMonsterCommand(this, monster, null, 1);
                 registerMapSchedule(removeAfterAction, monster.getStats().removeAfter() * 1000);
             }
             else
@@ -1599,31 +1562,6 @@ public class MapleMap : IMap, INamedInstance
 
         SetMonsterInfo(monster);
 
-        if (monster.getDropPeriodTime() > 0)
-        {
-            //9300102 - Watchhog, 9300061 - Moon Bunny (HPQ), 9300093 - Tylus
-            if (monster.getId() == MobId.WATCH_HOG)
-            {
-                monsterItemDrop(monster, monster.getDropPeriodTime());
-            }
-            else if (monster.getId() == MobId.MOON_BUNNY)
-            {
-                monsterItemDrop(monster, monster.getDropPeriodTime() / 3);
-            }
-            else if (monster.getId() == MobId.TYLUS)
-            {
-                monsterItemDrop(monster, monster.getDropPeriodTime());
-            }
-            else if (monster.getId() == MobId.GIANT_SNOWMAN_LV5_EASY || monster.getId() == MobId.GIANT_SNOWMAN_LV5_MEDIUM || monster.getId() == MobId.GIANT_SNOWMAN_LV5_HARD)
-            {
-                monsterItemDrop(monster, monster.getDropPeriodTime());
-            }
-            else
-            {
-                log.Error("UNCODED TIMED MOB DETECTED: {MonsterId}", monster.getId());
-            }
-        }
-
         spawnedMonstersOnMap.incrementAndGet();
         XiGuai?.ApplyMonster(monster);
 
@@ -1648,10 +1586,7 @@ public class MapleMap : IMap, INamedInstance
         }
         spos = d.Value;
 
-        if (getEventInstance() != null)
-        {
-            getEventInstance()!.registerMonster(monster);
-        }
+        EventInstanceManager?.registerMonster(monster);
 
         spos.Y--;
         monster.setPosition(spos);
@@ -3009,7 +2944,8 @@ public class MapleMap : IMap, INamedInstance
     }
 
     public void spawnHorntailOnGroundBelow(Point targetPoint)
-    {   // ayy lmao
+    {   
+        // ayy lmao
         var htIntro = LifeFactory.Instance.getMonster(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
 
@@ -3023,6 +2959,8 @@ public class MapleMap : IMap, INamedInstance
         {
             ht.addHp(-args);
         };
+        // 灵魂的血量只能通过部位影响
+
         spawnMonsterOnGroundBelow(ht, targetPoint);
 
         for (int mobId = MobId.HORNTAIL_HEAD_A; mobId <= MobId.HORNTAIL_TAIL; mobId++)
@@ -3032,7 +2970,7 @@ public class MapleMap : IMap, INamedInstance
 
             m.OnDamaged += (sender, args) =>
             {
-                ht.applyFakeDamage(args.Player, args.Damage, true);
+                ht.applyFakeDamage(args.Attacker, args.Damage, true);
             };
 
             m.OnHealed += (sender, args) =>
@@ -3278,6 +3216,7 @@ public class MapleMap : IMap, INamedInstance
         MapEffect = null;
 
         monsterSpawn.Clear();
+        _bossSp.Clear();
 
         aggroMonitor.dispose();
 
@@ -3438,8 +3377,8 @@ public class MapleMap : IMap, INamedInstance
         }
         else if (GameConstants.isAriantColiseumArena(mapid))
         {
-            int pqTimer = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-            chr.sendPacket(PacketCreator.getClock(pqTimer / 1000));
+            int pqTimer = (int)TimeSpan.FromMinutes(10).TotalSeconds;
+            chr.sendPacket(PacketCreator.getClock(pqTimer));
         }
 
         Pet?[] pets = chr.getPets();
