@@ -260,14 +260,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void killMonster(int id, bool withDrops = false)
     {
-        if (withDrops)
-        {
-            getMap().killMonsterWithDrops(id);
-        }
-        else
-        {
-            getMap().killMonster(id);
-        }
+        getMap().killMonster(id, withDrops);
     }
 
     public Point getPosition()
@@ -301,6 +294,11 @@ public class ReactorActionManager : AbstractPlayerInteraction
             return;
         }
         reactor.getMap().spawnFakeMonsterOnGroundBelow(monster, getPosition());
+    }
+
+    public void SpawnZakum()
+    {
+        reactor.getMap().SpawnZakumOnGroundBelow(getPosition());
     }
 
     /**

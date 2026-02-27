@@ -23,7 +23,7 @@ namespace Application.Core.Gameplay
         }
 
         protected virtual Packet GetPickupPacket(MapItem mapItem) =>
-            PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? MapItemRemoveAnimation.PickupByPet : MapItemRemoveAnimation.PickupByPlayer, _player.Id, IsPetPickup, _petIndex);
+            PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? DropLeaveFieldType.PickupByPet : DropLeaveFieldType.PickupByPlayer, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
         {

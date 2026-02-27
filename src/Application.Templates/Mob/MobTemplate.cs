@@ -22,6 +22,9 @@ namespace Application.Templates.Mob
         public int[] Revive { get; set; }
         public int PublicReward { get; set; }
         public bool DamagedByMob { get; set; }
+        /// <summary>
+        /// 掉落物以“爆炸”的动画出现
+        /// </summary>
         public bool ExplosiveReward { get; set; }
         public bool UnDead { get; set; }
         public bool IsFirstAttack { get; set; }

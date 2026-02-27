@@ -1964,7 +1964,8 @@ public partial class Player
     public bool needQuestItem(int questid, int itemid)
     {
         if (questid <= 0)
-        { //For non quest items :3
+        { 
+            //For non quest items :3
             return true;
         }
 

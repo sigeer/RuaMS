@@ -15,7 +15,7 @@ using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger
+    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger, ICombatantObject
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;

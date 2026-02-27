@@ -85,7 +85,7 @@ namespace Application.Core.Game.Maps
         int countMonsters();
         int countPlayers();
         int countReactors();
-        bool damageMonster(Player chr, Monster monster, int damage, short delay = 0);
+        
         void destroyNPC(int npcid);
         void destroyReactor(int oid);
         void destroyReactors(int first, int last);
@@ -135,6 +135,7 @@ namespace Application.Core.Game.Maps
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
+        List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject;
         Dictionary<int, Player> getMapPlayers();
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
@@ -174,20 +175,43 @@ namespace Application.Core.Game.Maps
         bool isCPQMap();
         bool isCPQMap2();
         bool isCPQWinnerMap();
+        /// <summary>
+        /// 通过是否生成所有的‘死亡的XXX’来判断暗黑龙王是否被击败
+        /// </summary>
+        /// <returns></returns>
         bool isHorntailDefeated();
         bool isMuted();
         bool isOwnershipRestricted(Player chr);
         bool isOxQuiz();
         bool isPurpleCPQMap();
         bool isStartingEventMap();
+        #region Attack Mob
+        bool damageMonster(ICombatantObject chr, Monster monster, int damage, short delay = 0);
+        /// <summary>
+        /// 杀死所有怪物，不会掉落物品，不重生
+        /// </summary>
         void killAllMonsters();
+        /// <summary>
+        /// 杀死所有怪物（友方单位除外）不会掉落物品，不重生
+        /// </summary>
         void killAllMonstersNotFriendly();
+        /// <summary>
+        /// 击杀友方单位
+        /// </summary>
+        /// <param name="mob"></param>
         void killFriendlies(Monster mob);
-        void killMonster(int mobId);
-        public void killMonster(Monster? monster, Player? chr, bool withDrops, short dropDelay = 0);
-        void killMonster(Monster? monster, Player? chr, bool withDrops, int animation, short dropDelay);
-        public bool removeKilledMonsterObject(Monster monster);
-        void killMonsterWithDrops(int mobId);
+        void killMonster(int mobId, bool withDrops = false);
+        /// <summary>
+        /// 击杀怪物
+        /// </summary>
+        /// <param name="monster"></param>
+        /// <param name="chr">击杀者</param>
+        /// <param name="withDrops">是否掉落</param>
+        /// <param name="dropDelay"></param>
+        void killMonster(Monster? monster, ICombatantObject? chr, bool withDrops, short dropDelay = 0);
+        void killMonster(Monster? monster, ICombatantObject? chr, bool withDrops, int animation, short dropDelay);
+        #endregion
+
         bool makeDisappearItemFromMap(MapItem mapitem);
         bool makeDisappearItemFromMap(IMapObject? mapobj);
         void makeMonsterReal(Monster monster);
@@ -232,6 +256,11 @@ namespace Application.Core.Game.Maps
         void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
 
         void spawnHorntailOnGroundBelow(Point targetPoint);
+        /// <summary>
+        /// 召唤扎昆（复合型Mob）
+        /// </summary>
+        /// <param name="targetPoint"></param>
+        void SpawnZakumOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnKite(Kite kite);
         void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short delay = 0);

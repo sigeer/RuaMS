@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -25,10 +25,8 @@ function act() {
         rm.getPlayer().getEventInstance().setProperty("canEnter", "false");
     }
     rm.changeMusic("Bgm06/FinalFight");
-    rm.spawnFakeMonster(8800000);
-    for (i = 8800003; i < 8800011; i++) {
-        rm.spawnMonster(i);
-    }
+    rm.SpawnZakum();
+
     rm.createMapMonitor(280030000, "ps00");
     rm.mapMessage(5, "Zakum is summoned by the force of Eye of Fire.");
 }

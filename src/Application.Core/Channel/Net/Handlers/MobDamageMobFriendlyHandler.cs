@@ -21,7 +21,6 @@
  */
 
 
-using Application.Resources.Messages;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -40,63 +39,18 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 
         var map = c.OnlinedCharacter.getMap();
         var monster = map.getMonsterByOid(damaged);
+        var attackerMob = map.getMonsterByOid(attacker);
 
-        if (monster == null || map.getMonsterByOid(attacker) == null)
+        if (monster == null || attackerMob == null)
         {
             return;
         }
 
         int damage = Randomizer.nextInt(((monster.getMaxHp() / 13 + monster.getPADamage() * 10)) * 2 + 500) / 10; // Formula planned by Beng.
 
-        if (monster.getHp() - damage < 1)
-        {     // friendly dies
-            switch (monster.getId())
-            {
-                case MobId.WATCH_HOG:
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(monster.getId())));
-                    break;
-                case MobId.MOON_BUNNY: //moon bunny
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(monster.getId())));
-                    break;
-                case MobId.TYLUS: //tylus
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(monster.getId())));
-                    break;
-                case MobId.JULIET: //juliet
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(monster.getId())));
-                    break;
-                case MobId.ROMEO: //romeo
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(monster.getId())));
-                    break;
-                case MobId.GIANT_SNOWMAN_LV1_EASY:
-                case MobId.GIANT_SNOWMAN_LV1_MEDIUM:
-                case MobId.GIANT_SNOWMAN_LV1_HARD:
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
-                    break;
-                case MobId.DELLI: //delli
-                    map.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(monster.getId())));
-                    break;
-            }
+        map.damageMonster(attackerMob, monster, damage);
+        map.broadcastMessage(PacketCreator.MobDamageMobFriendly(monster, damage, monster.getHp()), monster.getPosition());
 
-            map.killFriendlies(monster);
-        }
-        else
-        {
-            var eim = map.getEventInstance();
-            if (eim != null)
-            {
-                eim.friendlyDamaged(monster);
-            }
-        }
-
-        monster.applyAndGetHpDamage(damage, false);
-        int remainingHp = monster.getHp();
-        if (remainingHp <= 0)
-        {
-            remainingHp = 0;
-            map.removeMapObject(monster);
-        }
-
-        map.broadcastMessage(PacketCreator.MobDamageMobFriendly(monster, damage, remainingHp), monster.getPosition());
         c.sendPacket(PacketCreator.enableActions());
     }
 }
