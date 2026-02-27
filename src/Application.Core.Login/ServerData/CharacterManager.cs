@@ -250,7 +250,7 @@ namespace Application.Core.Login.Datas
 
         internal async Task<int> CompleteLogin(int playerId, int channel)
         {
-            if (_idDataSource.TryGetValue(playerId, out var data) && data is CharacterLiveObject d)
+            if (_idDataSource.TryGetValue(playerId, out var data) && data.Flag != StoreFlag.Remove && data.Data is CharacterLiveObject d)
             {
                 var lastChannel = d.Channel;
                 d.Channel = channel;
