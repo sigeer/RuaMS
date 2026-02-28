@@ -130,7 +130,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                     var monster = (Monster)monsterx[x];
                     if (monster.getId() == mobToKill)
                     {
-                        c.OnlinedCharacter.getMap().killMonster(monster, c.OnlinedCharacter, true);
+                        c.OnlinedCharacter.getMap().RemoveMob(monster, c.OnlinedCharacter, true);
                     }
                 }
                 break;

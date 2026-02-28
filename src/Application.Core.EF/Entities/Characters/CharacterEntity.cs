@@ -170,6 +170,8 @@ public class CharacterEntity
     public bool PartySearch { get; set; } = true;
 
     public long Jailexpire { get; set; }
+    //public int HpAlert { get; set; } = DefaultConfigs.HPAlert;
+    //public int MpAlert { get; set; } = DefaultConfigs.MPAlert;
     public bool IsDeleted { get; set; }
 
     public virtual ICollection<FamelogEntity> Famelogs { get; set; } = new List<FamelogEntity>();

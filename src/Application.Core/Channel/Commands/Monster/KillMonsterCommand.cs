@@ -23,7 +23,7 @@ namespace Application.Core.Channel.Commands
 
         public void Execute(ChannelCommandContext ctx)
         {
-            _map.killMonster(_targetMob, _killer, false, _animate, 0);
+            _map.RemoveMob(_targetMob, _killer, true, _animate, 0);
         }
     }
 }

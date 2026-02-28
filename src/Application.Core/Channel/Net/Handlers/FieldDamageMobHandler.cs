@@ -20,6 +20,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Life;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -63,8 +64,8 @@ public class FieldDamageMobHandler : ChannelHandlerBase
                 return;
             }
 
+            mob.DamageBy(chr, dmg, 0);
             map.broadcastMessage(chr, PacketCreator.damageMonster(mobOid, dmg), true);
-            map.damageMonster(chr, mob, dmg);
         }
         return;
     }

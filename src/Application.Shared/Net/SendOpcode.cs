@@ -355,7 +355,9 @@ public enum SendOpcode
     MAPLELIFE_RESULT = 0x15D,
     MAPLELIFE_ERROR = 0x15E,
     VICIOUS_HAMMER = 0x162,
-    VEGA_SCROLL = 0x166
+    VEGA_SCROLL = 0x166,
+
+    SyncHpMpAlert = 0x1001
 }
 
 

@@ -2794,79 +2794,7 @@ public partial class Player
             yellowMessage(message);
         }
     }
-    private void playerDead()
-    {
-        cancelAllBuffs(false);
-        dispelDebuffs();
-        lastDeathtime = Client.CurrentServer.Node.getCurrentTime();
 
-        var eim = getEventInstance();
-        if (eim != null)
-        {
-            eim.playerKilled(this);
-        }
-        usedSafetyCharm = false;
-
-        if (JobModel != Job.BEGINNER
-            && !MapId.isDojo(getMapId())
-            && eim is not MonsterCarnivalEventInstanceManager
-            && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
-        {
-
-            for (var i = 0; i < ItemId.SafetyCharms.Length; i++)
-            {
-                var invType = ItemConstants.getInventoryType(ItemId.SafetyCharms[i]);
-                var inv = Bag[invType];
-                var itemCount = inv.countById(ItemId.SafetyCharms[i]);
-                if (itemCount > 0)
-                {
-                    message("You have used a safety charm, so your EXP points have not been decreased.");
-                    InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
-                    usedSafetyCharm = true;
-                    break;
-                }
-            }
-
-            if (!usedSafetyCharm)
-            {
-                // thanks Conrad for noticing missing FieldLimit check
-                int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
-
-                if (MapModel.SourceTemplate.Town)
-                {    // thanks MindLove, SIayerMonkey, HaItsNotOver for noting players only lose 1% on town maps
-                    XPdummy /= 100;
-                }
-                else
-                {
-                    if (getLuk() < 50)
-                    {    // thanks Taiketo, Quit, Fishanelli for noting player EXP loss are fixed, 50-LUK threshold
-                        XPdummy /= 10;
-                    }
-                    else
-                    {
-                        XPdummy /= 20;
-                    }
-                }
-
-                int curExp = getExp();
-                if (curExp > XPdummy)
-                {
-                    loseExp(XPdummy, false, false);
-                }
-                else
-                {
-                    loseExp(curExp, false, false);
-                }
-            }
-        }
-
-        cancelEffectFromBuffStat(BuffStat.MORPH);
-
-        cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
-
-        unsitChairInternal();
-        sendPacket(PacketCreator.enableActions());
-    }
 
 
     public void respawn(int returnMap)

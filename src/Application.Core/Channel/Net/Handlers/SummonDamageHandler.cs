@@ -101,7 +101,8 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                         target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
                     }
                 }
-                player.getMap().damageMonster(player, target, damage, attackEntry.delay);
+                target.DamageBy(player, damage, attackEntry.delay);
+                // 这里怎么没有广播伤害
             }
         }
 

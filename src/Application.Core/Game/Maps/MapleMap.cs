@@ -21,6 +21,7 @@
  */
 
 
+using Acornima;
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
@@ -395,9 +396,9 @@ public class MapleMap : IMap, INamedInstance
         return curOid;
     }
 
-    public void removeMapObject(int objectId)
+    public bool removeMapObject(int objectId)
     {
-        mapobjects.Remove(objectId, out var mapObj);
+        return mapobjects.Remove(objectId, out var mapObj);
     }
 
     void RemoveMapObjects(IEnumerable<int> objectIds)
@@ -408,9 +409,9 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void removeMapObject(IMapObject obj)
+    public bool removeMapObject(IMapObject obj)
     {
-        removeMapObject(obj.getObjectId());
+        return removeMapObject(obj.getObjectId());
     }
 
     private Point? calcPointBelow(Point initial)
@@ -517,7 +518,7 @@ public class MapleMap : IMap, INamedInstance
         return false;
     }
 
-    private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, Player chr, Monster mob, short dropDelay)
+    private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, Player chr, IMapObject dropper, short dropDelay)
     {
         if (dropEntry.Count == 0)
         {
@@ -528,7 +529,7 @@ public class MapleMap : IMap, INamedInstance
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        var itemPos = mob.getPosition();
+        var itemPos = dropper.getPosition();
         var startPosX = itemPos.X;
         foreach (var de in dropEntry)
         {
@@ -560,7 +561,8 @@ public class MapleMap : IMap, INamedInstance
                         }
                         else
                         {
-                            spawnMesoDrop((int)mesos, itemPos, mob, chr, false, droptype, dropDelay);
+                            spawnMesoDrop((int)mesos, itemPos, dropper, chr, false, droptype, dropDelay);
+                            dIndex++;
                         }
                     }
                 }
@@ -569,18 +571,38 @@ public class MapleMap : IMap, INamedInstance
                     var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount());
                     if (idrop == null)
                     {
-                        log.Warning("{Map}, {Mob}尝试掉落不存在的物品：{ItemId}", InstanceName, mob.GetName(), de.ItemId);
+                        log.Warning("{Map}, {Mob}尝试掉落不存在的物品：{ItemId}", InstanceName, dropper.GetName(), de.ItemId);
                         continue;
                     }
                     if (idrop is Equip equip)
                         ii.randomizeStats(equip);
-                    spawnDrop(idrop, itemPos, mob, chr, false, droptype, de.QuestId, dropDelay);
+
+                    spawnDrop(idrop, itemPos, dropper, chr, false, droptype, de.QuestId, dropDelay);
+                    dIndex++;
                 }
-                dIndex++;
+
             }
         }
 
         return dIndex;
+    }
+
+    public void DropFromPlayerTomb(Player chr)
+    {
+        if (!dropsOn)
+        {
+            return;
+        }
+
+        List<MapItem> items = [];
+
+        var meso = Randomizer.nextInt(chr.getMeso() / 10);
+        if (meso > 0)
+        {
+            chr.GainMeso(-meso);
+
+            spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, DropType.FreeForAll);
+        }
     }
 
     private void dropFromMonster(Player chr, Monster mob, bool useBaseRate, short dropDelay)
@@ -845,18 +867,7 @@ public class MapleMap : IMap, INamedInstance
         var validPos = calcDropPos(dropPos, dropper.getPosition());
 
         MapItem mdrop = new MapItem(idrop, validPos, dropper, chr, droptype, playerDrop, questid);
-        spawnAndAddRangedMapObject(mdrop, c =>
-        {
-            var chr1 = c.OnlinedCharacter;
-
-            if (chr1.needQuestItem(questid, idrop.getItemId()))
-            {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
-            }
-        }, null);
-
-        instantiateItemDrop(mdrop);
-        activateItemReactors(mdrop, chr.getClient());
+        SpawnMapItem(mdrop, dropDelay);
     }
 
     public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
@@ -864,12 +875,18 @@ public class MapleMap : IMap, INamedInstance
         var validPos = calcDropPos(position, dropper.getPosition());
 
         MapItem mdrop = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
-        spawnAndAddRangedMapObject(mdrop, c =>
+        SpawnMapItem(mdrop, dropDelay);
+    }
+
+    void SpawnMapItem(MapItem mapItem, short dropDelay = 0)
+    {
+        spawnAndAddRangedMapObject(mapItem, c =>
         {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), validPos, 1, dropDelay));
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, mapItem.getDropper().getPosition(), mapItem.getPosition(), (int)DropEnterFieldType.SpawnMapItem, dropDelay));
         }, null);
 
-        instantiateItemDrop(mdrop);
+        instantiateItemDrop(mapItem);
+        activateItemReactors(mapItem, mapItem.getOwnerClient());
     }
 
     public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
@@ -928,40 +945,6 @@ public class MapleMap : IMap, INamedInstance
         return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
     }
 
-    public bool damageMonster(ICombatantObject chr, Monster monster, int damage, short dropDelay = 0)
-    {
-        if (monster.getId() == MobId.ZAKUM_1)
-        {
-            if (countMonster(MobId.ZAKUM_ARM_1, MobId.ZAKUM_ARM_8) > 0)
-                return true;
-        }
-        if (monster.isAlive())
-        {
-            bool killed = monster.damage(chr, damage, false);
-
-            var selfDestr = monster.getStats().selfDestruction();
-            if (selfDestr != null && selfDestr.Hp > -1)
-            {
-                // should work ;p
-                if (monster.getHp() <= selfDestr.Hp)
-                {
-                    killMonster(monster, chr, true, selfDestr.Action, 0);
-                    return true;
-                }
-            }
-
-            if (killed)
-            {
-                if (monster.getStats().isFriendly())
-                    killMonster(monster, null, false, dropDelay);
-                else
-                    killMonster(monster, chr, true, dropDelay);
-            }
-            return true;
-        }
-        return false;
-    }
-
     public void broadcastBalrogVictory(string leaderName)
     {
         ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
@@ -986,15 +969,14 @@ public class MapleMap : IMap, INamedInstance
             "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!"));
     }
 
-    bool removeKilledMonsterObject(Monster monster)
+    bool TryRemoveMapMonsterObject(Monster monster)
     {
-        if (monster.getHp() < 0)
+        if (!removeMapObject(monster))
         {
             return false;
         }
 
         spawnedMonstersOnMap.decrementAndGet();
-        removeMapObject(monster);
         monster.disposeMapObject();
         if (monster.hasBossHPBar())
         {
@@ -1004,8 +986,7 @@ public class MapleMap : IMap, INamedInstance
 
         return true;
     }
-    public void killMonster(Monster? monster, ICombatantObject? killer, bool withDrops, short dropDelay = 0) => killMonster(monster, killer, withDrops, 1, dropDelay);
-    public void killMonster(Monster? monster, ICombatantObject? killer, bool withDrops, int animation, short dropDelay)
+    public void RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0)
     {
         if (monster == null)
         {
@@ -1013,7 +994,7 @@ public class MapleMap : IMap, INamedInstance
         }
 
 
-        if (removeKilledMonsterObject(monster))
+        if (TryRemoveMapMonsterObject(monster))
         {
             try
             {
@@ -1028,9 +1009,8 @@ public class MapleMap : IMap, INamedInstance
                     if (buff > -1)
                     {
                         ItemInformationProvider mii = ItemInformationProvider.getInstance();
-                        foreach (IMapObject mmo in getAllPlayers())
+                        foreach (var character in getAllPlayers())
                         {
-                            Player character = (Player)mmo;
                             if (character.isAlive())
                             {
                                 var statEffect = mii.getItemEffect(buff)!;
@@ -1075,7 +1055,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void killFriendlies(Monster mob)
     {
-        this.killMonster(mob, getAllPlayers().ElementAtOrDefault(0), false);
+        this.RemoveMob(mob, getAllPlayers().ElementAtOrDefault(0), false);
     }
 
     public void killMonster(int mobId, bool withDrops = false)
@@ -1086,7 +1066,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (mob.getId() == mobId)
             {
-                this.killMonster(mob, chr, withDrops);
+                this.RemoveMob(mob, chr, withDrops);
             }
         });
     }
@@ -1102,7 +1082,7 @@ public class MapleMap : IMap, INamedInstance
                 return;
             }
 
-            killMonster(monster, null, false);
+            RemoveMob(monster, null, false);
         });
     }
 
@@ -1112,7 +1092,7 @@ public class MapleMap : IMap, INamedInstance
 
         ProcessMonster(monster =>
         {
-            killMonster(monster, null, false);
+            RemoveMob(monster, null, false);
         });
     }
 

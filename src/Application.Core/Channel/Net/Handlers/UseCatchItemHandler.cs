@@ -93,7 +93,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
         if (itemTemplate.BridleProp == 0 || Random.Shared.Next(100) < itemTemplate.BridleProp)
         {
             chr.getMap().broadcastMessage(PacketCreator.catchMonster(objectId, itemId, true));
-            mob.getMap().killMonster(mob, null, false);
+            mob.getMap().RemoveMob(mob, null, false);
             InventoryManipulator.removeById(c, invType, itemId, 1, true, true);
 
             if (itemTemplate.Create > 0)

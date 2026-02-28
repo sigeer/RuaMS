@@ -1,4 +1,9 @@
+using Application.Core.Game.Maps;
+using Application.Core.Scripting.Events;
 using Application.Shared.Objects;
+using client.inventory.manipulator;
+using constants.game;
+using tools;
 
 namespace Application.Core.Game.Players
 {
@@ -21,6 +26,8 @@ namespace Application.Core.Game.Players
         public int BuffMaxMP { get; private set; }
         public int ActualMaxHP { get; private set; }
         public int ActualMaxMP { get; private set; }
+        public int HpAlert { get; set; } = DefaultConfigs.HPAlert;
+        public int MpAlert { get; set; } = DefaultConfigs.MPAlert;
 
         public void ChangeMaxHP(int value)
         {
@@ -64,6 +71,9 @@ namespace Application.Core.Game.Players
         }
         public bool ChangeHP(int deltaValue, bool useCheck = true)
         {
+            if (deltaValue == 0)
+                return true;
+
             var targetValue = HP + deltaValue;
             if (useCheck && targetValue <= 0)
                 return false;
@@ -96,20 +106,16 @@ namespace Application.Core.Game.Players
 
             if (MapModel != null)
             {
-                var died = HP <= 0;
-                MapModel.registerCharacterStatUpdate(() =>
-                {
-                    updatePartyMemberHP();    // thanks BHB (BHB88) for detecting a deadlock case within player stats.
+                updatePartyMemberHP();
 
-                    if (died)
-                    {
-                        playerDead();
-                    }
-                    else
-                    {
-                        checkBerserk(isHidden());
-                    }
-                });
+                if (HP <= 0)
+                {
+                    OnDead();
+                }
+                else
+                {
+                    checkBerserk(isHidden());
+                }
             }
         }
 
@@ -201,5 +207,95 @@ namespace Application.Core.Game.Players
                 SetHP(0);
             });
         }
+
+        // 需要在UpdateStatsChunk内调用
+        public bool DamageBy(ICombatantObject attacker, int damageValue, short delay, bool stayAlive = false)
+        {
+            if (!isAlive())
+            {
+                return false;
+            }
+
+            if (stayAlive)
+                damageValue = Math.Min(HP, damageValue) - 1;
+
+            ChangeHP(-damageValue, false);
+            return true;
+        }
+
+        void OnDead()
+        {
+            cancelAllBuffs(false);
+            dispelDebuffs();
+            lastDeathtime = Client.CurrentServer.Node.getCurrentTime();
+
+            var eim = getEventInstance();
+            if (eim != null)
+            {
+                eim.playerKilled(this);
+            }
+            usedSafetyCharm = false;
+
+            if (JobModel != Job.BEGINNER
+                && !MapId.isDojo(getMapId())
+                && eim is not MonsterCarnivalEventInstanceManager
+                && !FieldLimit.NO_EXP_DECREASE.check(MapModel.getFieldLimit()))
+            {
+
+                for (var i = 0; i < ItemId.SafetyCharms.Length; i++)
+                {
+                    var invType = ItemConstants.getInventoryType(ItemId.SafetyCharms[i]);
+                    var inv = Bag[invType];
+                    var itemCount = inv.countById(ItemId.SafetyCharms[i]);
+                    if (itemCount > 0)
+                    {
+                        message("You have used a safety charm, so your EXP points have not been decreased.");
+                        InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
+                        usedSafetyCharm = true;
+                        break;
+                    }
+                }
+
+                if (!usedSafetyCharm)
+                {
+                    // thanks Conrad for noticing missing FieldLimit check
+                    int XPdummy = ExpTable.getExpNeededForLevel(getLevel());
+
+                    if (MapModel.SourceTemplate.Town)
+                    {    // thanks MindLove, SIayerMonkey, HaItsNotOver for noting players only lose 1% on town maps
+                        XPdummy /= 100;
+                    }
+                    else
+                    {
+                        if (getLuk() < 50)
+                        {    // thanks Taiketo, Quit, Fishanelli for noting player EXP loss are fixed, 50-LUK threshold
+                            XPdummy /= 10;
+                        }
+                        else
+                        {
+                            XPdummy /= 20;
+                        }
+                    }
+
+                    int curExp = getExp();
+                    if (curExp > XPdummy)
+                    {
+                        loseExp(XPdummy, false, false);
+                    }
+                    else
+                    {
+                        loseExp(curExp, false, false);
+                    }
+                }
+            }
+
+            cancelEffectFromBuffStat(BuffStat.MORPH);
+
+            cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
+
+            unsitChairInternal();
+            sendPacket(PacketCreator.enableActions());
+        }
+
     }
 }
