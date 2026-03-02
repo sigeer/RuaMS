@@ -186,7 +186,6 @@ namespace Application.Core.Game.Maps
         bool isPurpleCPQMap();
         bool isStartingEventMap();
         #region Attack Mob
-        bool damageMonster(ICombatantObject chr, Monster monster, int damage, short delay = 0);
         /// <summary>
         /// 杀死所有怪物，不会掉落物品，不重生
         /// </summary>
@@ -201,15 +200,16 @@ namespace Application.Core.Game.Maps
         /// <param name="mob"></param>
         void killFriendlies(Monster mob);
         void killMonster(int mobId, bool withDrops = false);
+
         /// <summary>
-        /// 击杀怪物
+        /// 从地图上移除Mob
         /// </summary>
         /// <param name="monster"></param>
-        /// <param name="chr">击杀者</param>
-        /// <param name="withDrops">是否掉落</param>
+        /// <param name="killer"></param>
+        /// <param name="withDrops"></param>
+        /// <param name="animation"></param>
         /// <param name="dropDelay"></param>
-        void killMonster(Monster? monster, ICombatantObject? chr, bool withDrops, short dropDelay = 0);
-        void killMonster(Monster? monster, ICombatantObject? chr, bool withDrops, int animation, short dropDelay);
+        void RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0);
         #endregion
 
         bool makeDisappearItemFromMap(MapItem mapitem);
@@ -221,8 +221,8 @@ namespace Application.Core.Game.Maps
         void movePlayer(Player player, Point newPosition);
         void pickItemDrop(Packet pickupPacket, MapItem mdrop);
         void registerCharacterStatUpdate(Action r);
-        void removeMapObject(int num);
-        void removeMapObject(IMapObject obj);
+        bool removeMapObject(int num);
+        bool removeMapObject(IMapObject obj);
         void removeMonsterSpawn(int mobId, int x, int y);
         void removePlayer(Player chr);
         void removePlayerPuppet(Player player);

@@ -64,14 +64,10 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             try
             {
-                var mmo = map.getMapObject(oid);
-                if (mmo is Monster)
+                attacker = map.getMonsterByOid(oid);
+                if (attacker?.getId() != monsteridfrom)
                 {
-                    attacker = (Monster)mmo;
-                    if (attacker.getId() != monsteridfrom)
-                    {
-                        attacker = null;
-                    }
+                    attacker = null;
                 }
 
                 if (attacker != null)
@@ -183,7 +179,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                             {
                                 bouncedamage = attacker.getMaxHp() / 5;
                             }
-                            map.damageMonster(chr, attacker, bouncedamage);
+                            attacker.DamageBy(chr, bouncedamage, 0);
                             map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
                             chr.sendPacket(PacketCreator.showOwnBuffEffect(id, 5));
                             map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), id, 5), false);
@@ -226,7 +222,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                         int bouncedamage = damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200 : 100));
                         bouncedamage = Math.Min(bouncedamage, attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
-                        map.damageMonster(chr, attacker, bouncedamage);
+                        attacker.DamageBy(chr, bouncedamage, 0);
                         map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), false, true);
                         attacker.aggroMonsterDamage(chr, bouncedamage);
                     }
@@ -274,6 +270,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
 
             int? buffValue = null;
+            // 魔法盾
             if ((buffValue = chr.getBuffedValue(BuffStat.MAGIC_GUARD)) != null && mpattack == 0)
             {
                 int mploss = (int)(damage * (buffValue.Value / 100.0));
@@ -288,10 +285,11 @@ public class TakeDamageHandler : ChannelHandlerBase
 
                 chr.UpdateStatsChunk(() =>
                 {
-                    chr.ChangeHP(-hploss, false);
+                    chr.DamageBy(attacker, hploss, 0);
                     chr.ChangeMP(-mploss);
                 });
             }
+            // 金钱盾
             else if ((buffValue = chr.getBuffedValue(BuffStat.MESOGUARD)) != null)
             {
                 damage = (int)Math.Round((double)damage / 2);
@@ -307,7 +305,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
                 chr.UpdateStatsChunk(() =>
                 {
-                    chr.ChangeHP(-damage, false);
+                    chr.DamageBy(attacker, damage, 0);
                     chr.ChangeMP(-mpattack);
                 });
             }
@@ -317,9 +315,10 @@ public class TakeDamageHandler : ChannelHandlerBase
                 {
                     chr.decreaseBattleshipHp(damage);
                 }
+
                 chr.UpdateStatsChunk(() =>
                 {
-                    chr.ChangeHP(-damage, false);
+                    chr.DamageBy(attacker, damage, 0);
                     chr.ChangeMP(-mpattack);
                 });
             }

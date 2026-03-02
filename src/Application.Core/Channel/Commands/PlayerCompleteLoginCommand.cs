@@ -1,6 +1,7 @@
 using Dto;
 using Google.Protobuf.Collections;
 using net.server.guild;
+using tools;
 
 namespace Application.Core.Channel.Commands
 {
@@ -25,6 +26,7 @@ namespace Application.Core.Channel.Commands
                 if (isNewCommer)
                 {
                     chr.setLoginTime(ctx.WorldChannel.Node.GetCurrentTimeDateTimeOffset());
+                    chr.sendPacket(PacketCreator.SyncHpMpAlert(chr.HpAlert, chr.MpAlert));
                 }
 
                 var guild = chr.GetGuild();

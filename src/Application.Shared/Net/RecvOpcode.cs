@@ -205,7 +205,8 @@ public enum RecvOpcode
     USE_MAPLELIFE = 0x100,
     USE_HAMMER = 0x104,
 
-    SetLanguage = 0x1000
+    SetLanguage = 0x1000,
+    SetHpMpAlert = 0x1001
 }
 public static class RecvOpcodeExtensions
 {

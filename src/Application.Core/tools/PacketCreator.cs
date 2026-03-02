@@ -6895,4 +6895,12 @@ public class PacketCreator
             p.writeInt(0);
         }
     }
+
+    public static Packet SyncHpMpAlert(int hp, int mp)
+    {
+        var p = OutPacket.create(SendOpcode.SyncHpMpAlert);
+        p.writeByte(hp);
+        p.writeByte(mp);
+        return p;
+    }
 }

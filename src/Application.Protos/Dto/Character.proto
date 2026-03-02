@@ -76,4 +76,6 @@ message CharacterDto {
   bool partySearch = 72;
   int64 jailexpire = 73;
   int32 effectMarriageId = 74;
+  int32 hpAlert = 75;
+  int32 mpAlert = 76;
 }

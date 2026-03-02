@@ -76,7 +76,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
                 dmg = maxDmg;
             }
 
-            map.damageMonster(chr, damaged, dmg);
+            damaged.DamageBy(chr, dmg, 0);
             map.broadcastMessage(chr, PacketCreator.damageMonster(to, dmg), false);
         }
     }

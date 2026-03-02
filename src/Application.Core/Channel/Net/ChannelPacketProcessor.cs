@@ -149,6 +149,8 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.OPEN_ITEMUI, sp.GetRequiredService<RaiseUIStateHandler>()},
                 {(short)RecvOpcode.USE_ITEMUI, sp.GetRequiredService<RaiseIncExpHandler>()},
                 {(short)RecvOpcode.CHANGE_QUICKSLOT, sp.GetRequiredService<QuickslotKeyMappedModifiedHandler>()},
+
+                {(short)RecvOpcode.SetHpMpAlert, sp.GetRequiredService<SetHpMpAlertHandler>()},
             };
         }
 

@@ -479,7 +479,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     if (Randomizer.rand(1, 100) <= mortal.getY())
                                     {
-                                        map.damageMonster(player, monster, int.MaxValue, target.Value!.delay);  // thanks Conrad for noticing reduced EXP gain from skill kill
+                                        monster.DamageBy(player, int.MaxValue, target.Value!.delay);
                                     }
                                 }
                             }
@@ -573,7 +573,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
                         }
 
-                        map.damageMonster(player, monster, totDamageToOneMonster, target.Value!.delay);
+                        monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
                     }
                     if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
                     {
@@ -584,7 +584,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
                                 player.UpdateStatsChunk(() =>
                                 {
-                                    player.ChangeHP(-toUse.getX(), false);
+                                    player.DamageBy(monster, toUse.getX(), attack.attackDelay);
                                 });
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
@@ -599,7 +599,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
                                 player.UpdateStatsChunk(() =>
                                 {
-                                    player.ChangeHP(-toUse.getY(), false);
+                                    player.DamageBy(monster, toUse.getY(), attack.attackDelay);
                                 });
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }

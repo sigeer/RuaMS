@@ -34,6 +34,7 @@ using Application.Shared.Objects;
 using Application.Shared.WzEntity;
 using client.status;
 using Google.Protobuf.Collections;
+using Jint.Native.ShadowRealm;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
@@ -362,7 +363,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     //    }
     //}
 
-    public int? applyAndGetHpDamage(int delta, bool stayAlive)
+    int? applyAndGetHpDamage(int delta, bool stayAlive)
     {
         int curHp = hp.get();
         if (curHp <= 0)
@@ -434,47 +435,40 @@ public class Monster : AbstractLifeObject, ICombatantObject
         }
     }
 
-    public bool damage(ICombatantObject attacker, int damage, bool stayAlive)
+    public bool DamageBy(ICombatantObject attacker, int damageValue, short delay, bool stayAlive = false)
     {
-        bool lastHit = false;
-
         if (!this.isAlive())
         {
             return false;
         }
 
-        /* pyramid not implemented
-        Pair<int, int> cool = this.getStats().getCool();
-        if (cool != null) {
-            Pyramid pq = (Pyramid) chr.getPartyQuest();
-            if (pq != null) {
-                if (damage > 0) {
-                    if (damage >= cool.getLeft()) {
-                        if ((Randomizer.nextDouble() * 100) < cool.getRight()) {
-                            pq.cool();
-                        } else {
-                            pq.kill();
-                        }
-                    } else {
-                        pq.kill();
-                    }
-                } else {
-                    pq.miss();
-                }
-                killed = true;
-            }
-        }
-        */
-
-        if (damage > 0)
+        if (isFake())
         {
-            this.applyDamage(attacker, damage, stayAlive, false);
-            if (!this.isAlive())
-            {  // monster just died
-                lastHit = true;
-            }
+            return false;
         }
-        return lastHit;
+
+        if (damageValue > 0)
+        {
+            this.applyDamage(attacker, damageValue, stayAlive, false);
+
+            var selfDestr = getStats().selfDestruction();
+            if (selfDestr != null && selfDestr.Hp > -1)
+            {
+                // should work ;p
+                if (getHp() <= selfDestr.Hp)
+                {
+                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, delay);
+                    return true;
+                }
+            }
+
+            if (!this.isAlive())
+            {
+                MapModel.RemoveMob(this, attacker, true, delay);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -482,7 +476,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
      * @param damage
      * @param stayAlive
      */
-    public void applyDamage(ICombatantObject from, int damage, bool stayAlive, bool fake)
+    void applyDamage(ICombatantObject from, int damage, bool stayAlive, bool fake)
     {
         var trueDamage = applyAndGetHpDamage(damage, stayAlive);
         if (trueDamage == null)
@@ -893,10 +887,9 @@ public class Monster : AbstractLifeObject, ICombatantObject
             }
         }
 
-
         return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId())
             .AsValueEnumerable()
-            .Where(x => lootChars.Any(chr => chr.needQuestItem(x.QuestId, x.ItemId))).ToList();
+            .Where(x => x.QuestId <= 0 || lootChars.Any(chr => chr.needQuestItem(x.QuestId, x.ItemId))).ToList();
     }
 
     /// <summary>
@@ -1027,7 +1020,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     private void processMonsterKilled(ICombatantObject? killer)
     {
         if (killer == null)
-        {    
+        {
             // players won't gain EXP from a mob that has no killer, but a quest count they should
             dispatchRaiseQuestMobCount();
         }
@@ -2424,11 +2417,11 @@ public class Monster : AbstractLifeObject, ICombatantObject
                     if (deathBody.Count == others.Count)
                     {
                         soul.setHpZero();
-                        MapModel.killMonster(soul, args.Killer, true);
-                        
+                        MapModel.RemoveMob(soul, args.Killer, true);
+
                         foreach (var item in deathBody)
                         {
-                            MapModel.killMonster(item, null, false);
+                            MapModel.RemoveMob(item, null, false);
                         }
                     }
                 };

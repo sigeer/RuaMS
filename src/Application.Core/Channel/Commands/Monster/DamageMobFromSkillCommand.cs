@@ -22,7 +22,7 @@ namespace Application.Core.Channel.Commands
         public void Execute(ChannelCommandContext ctx)
         {
             _map.broadcastMessage(PacketCreator.damageMonster(_mob.getObjectId(), _damage), _mob.getPosition());
-            _map.damageMonster(_attacker, _mob, _damage);
+            _mob.DamageBy(_attacker, _damage, 0);
         }
     }
 }

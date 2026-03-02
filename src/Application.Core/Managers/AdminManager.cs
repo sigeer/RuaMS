@@ -29,7 +29,7 @@ namespace Application.Core.Managers
                 Monster monster = (Monster)monstermo;
                 if (!monster.getStats().isFriendly() && !(monster.getId() >= MobId.DEAD_HORNTAIL_MIN && monster.getId() <= MobId.HORNTAIL))
                 {
-                    map.damageMonster(player, monster, int.MaxValue);
+                    monster.DamageBy(player, int.MaxValue, 0);
                     count++;
                 }
             }

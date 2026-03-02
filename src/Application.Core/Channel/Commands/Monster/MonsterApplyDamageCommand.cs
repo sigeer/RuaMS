@@ -47,7 +47,7 @@ namespace Application.Core.Channel.Commands
             }
             if (damage > 0)
             {
-                _monster.applyDamage(chr, damage, true, false);
+                _monster.DamageBy(chr, damage, 0, true);
 
                 if (type == 1)
                 {

@@ -133,34 +133,30 @@ public class PetAutopotProcessor
                     incMp = Math.Ceiling(maxMp * stat.getMpRate());
                 }
 
-                if (YamlConfig.config.server.USE_COMPULSORY_AUTOPOT)
+                var autoHpRatio = chr.HpAlert / 20.0f;
+                var autoMpRatio = chr.MpAlert / 20.0f;
+
+                if (hasHpGain)
                 {
-                    if (hasHpGain)
+                    double hpRatio = (autoHpRatio * maxHp) - curHp;
+                    if (hpRatio > 0.0)
                     {
-                        double hpRatio = (YamlConfig.config.server.PET_AUTOHP_RATIO * maxHp) - curHp;
-                        if (hpRatio > 0.0)
-                        {
-                            qtyCount = (int)Math.Ceiling(hpRatio / incHp);
-                        }
-                    }
-
-                    if (hasMpGain)
-                    {
-                        double mpRatio = ((YamlConfig.config.server.PET_AUTOMP_RATIO * maxMp) - curMp);
-                        if (mpRatio > 0.0)
-                        {
-                            qtyCount = Math.Max(qtyCount, (int)Math.Ceiling(mpRatio / incMp));
-                        }
-                    }
-
-                    if (qtyCount < 0)
-                    { // thanks Flint, Kevs for noticing an issue where negative counts were getting achieved
-                        qtyCount = 0;
+                        qtyCount = (int)Math.Ceiling(hpRatio / incHp);
                     }
                 }
-                else
+
+                if (hasMpGain)
                 {
-                    qtyCount = 1;   // non-compulsory autopot concept thanks to marcuswoon
+                    double mpRatio = ((autoMpRatio * maxMp) - curMp);
+                    if (mpRatio > 0.0)
+                    {
+                        qtyCount = Math.Max(qtyCount, (int)Math.Ceiling(mpRatio / incMp));
+                    }
+                }
+
+                if (qtyCount < 0)
+                { // thanks Flint, Kevs for noticing an issue where negative counts were getting achieved
+                    qtyCount = 0;
                 }
 
                 while (true)
