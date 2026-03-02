@@ -3,33 +3,43 @@ using System;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Application.Core.EF.Sqlite.Migrations
+namespace Application.Core.EF.MySQL.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20260302014123_Add_StoreHpMpAlert")]
+    partial class Add_StoreHpMpAlert
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Application.Core.EF.Entities.AccountBanEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("Id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
                         .HasColumnName("AccountId");
 
                     b.Property<int>("BanLevel")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
@@ -37,7 +47,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("EndTime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("Reason")
+                    b.Property<sbyte>("Reason")
                         .HasColumnType("tinyint")
                         .HasColumnName("Reason");
 
@@ -64,8 +74,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("CharId")
                         .HasColumnType("int")
@@ -75,7 +87,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("current_exp");
 
-                    b.Property<float>("ExpCoupon")
+                    b.Property<int>("ExpCoupon")
                         .HasColumnType("int")
                         .HasColumnName("exp_coupon");
 
@@ -89,7 +101,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("gained_exp");
 
-                    b.Property<float>("WorldExpRate")
+                    b.Property<int>("WorldExpRate")
                         .HasColumnType("int")
                         .HasColumnName("world_exp_rate");
 
@@ -103,7 +115,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -112,7 +126,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasDefaultValueSql("''");
 
                     b.Property<int>("NpcId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -124,19 +138,21 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ItemId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("PoolId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -148,16 +164,18 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Chance")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("PoolId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -169,12 +187,14 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(17)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<long>("Expiration")
                         .HasColumnType("bigint");
@@ -195,7 +215,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CodeId")
                         .HasColumnType("int");
@@ -221,8 +243,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("Id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
@@ -232,7 +256,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(30)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(30)")
                         .HasColumnName("HWID")
                         .HasDefaultValueSql("''");
 
@@ -240,7 +264,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("IP")
                         .HasDefaultValueSql("''");
 
@@ -254,7 +278,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(100)")
                         .HasColumnName("MAC")
                         .HasDefaultValueSql("''");
 
@@ -271,8 +295,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Birthday")
                         .ValueGeneratedOnAdd()
@@ -294,7 +320,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Email")
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("email");
 
                     b.Property<sbyte>("GMLevel")
@@ -317,13 +343,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("''");
 
                     b.Property<string>("Nick")
                         .HasMaxLength(20)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(20)")
                         .HasColumnName("nick");
 
                     b.Property<int?>("NxCredit")
@@ -338,7 +364,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(128)")
                         .HasColumnName("password")
                         .HasDefaultValueSql("''");
 
@@ -346,7 +372,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(26)")
                         .HasColumnName("pic")
                         .HasDefaultValueSql("''");
 
@@ -354,12 +380,12 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(10)")
                         .HasColumnName("pin")
                         .HasDefaultValueSql("''");
 
                     b.Property<bool>("Tos")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("tos");
 
                     b.HasKey("Id")
@@ -379,26 +405,28 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("capacity")
                         .HasDefaultValueSql("'2'");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name");
 
                     b.Property<string>("Notice")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(20)")
                         .HasColumnName("notice")
                         .HasDefaultValueSql("''");
 
@@ -406,7 +434,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("rank1")
                         .HasDefaultValueSql("'Master'");
 
@@ -414,7 +442,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("rank2")
                         .HasDefaultValueSql("'Jr. Master'");
 
@@ -422,7 +450,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("rank3")
                         .HasDefaultValueSql("'Member'");
 
@@ -430,7 +458,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("rank4")
                         .HasDefaultValueSql("'Member'");
 
@@ -438,7 +466,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("rank5")
                         .HasDefaultValueSql("'Member'");
 
@@ -455,8 +483,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Area")
                         .HasColumnType("int")
@@ -469,7 +499,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("Info")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("info");
 
                     b.HasKey("Id")
@@ -482,14 +512,16 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Replyid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("replyid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Replyid"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(26)")
                         .HasColumnName("content")
                         .HasDefaultValueSql("''");
 
@@ -515,8 +547,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Threadid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("threadid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Threadid"));
 
                     b.Property<int>("Guildid")
                         .HasColumnType("int")
@@ -534,7 +568,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(26)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("''");
 
@@ -565,8 +599,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Attempttime")
                         .ValueGeneratedOnAdd()
@@ -576,7 +612,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Bosstype")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
                         .HasColumnName("bosstype");
 
                     b.Property<int>("CharacterId")
@@ -593,8 +629,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Attempttime")
                         .ValueGeneratedOnAdd()
@@ -604,7 +642,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Bosstype")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
                         .HasColumnName("bosstype");
 
                     b.Property<int>("CharacterId")
@@ -621,8 +659,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BuddyId")
                         .HasColumnType("int")
@@ -635,7 +675,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("Group")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(17)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(17)")
                         .HasColumnName("group")
                         .HasDefaultValueSql("'0'");
 
@@ -653,7 +693,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CodeId")
                         .HasColumnType("int");
@@ -686,8 +728,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
@@ -723,7 +767,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(64)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(64)")
                         .HasColumnName("dataString")
                         .HasDefaultValueSql("''");
 
@@ -804,7 +848,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasDefaultValueSql("'50'");
 
                     b.Property<int>("HpAlert")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("HpMpUsed")
                         .HasColumnType("int")
@@ -923,13 +967,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasDefaultValueSql("'5'");
 
                     b.Property<int>("MpAlert")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("''");
 
@@ -947,7 +991,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<bool>("PartySearch")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasDefaultValue(true)
                         .HasColumnName("partySearch");
 
@@ -983,7 +1027,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(128)")
                         .HasColumnName("sp")
                         .HasDefaultValueSql("'0,0,0,0,0,0,0,0,0,0'");
 
@@ -1033,8 +1077,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Charid")
                         .HasColumnType("int")
@@ -1061,8 +1107,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -1109,8 +1157,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -1118,7 +1168,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Comments")
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("comments");
 
                     b.Property<sbyte>("Continent")
@@ -1160,7 +1210,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("PackageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PackageId"));
 
                     b.Property<bool>("Checked")
                         .ValueGeneratedOnAdd()
@@ -1174,7 +1226,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Message")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("varchar(200)");
 
                     b.Property<int>("ReceiverId")
                         .HasColumnType("int");
@@ -1202,8 +1254,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Characterid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("characterid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Characterid"));
 
                     b.Property<int>("Info")
                         .HasColumnType("int")
@@ -1213,7 +1267,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(11)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("'0'")
                         .HasComment("0");
@@ -1228,8 +1282,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Famelogid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("famelogid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Famelogid"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -1256,7 +1312,7 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>
                 {
                     b.Property<int>("Cid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("cid");
 
                     b.Property<int>("Familyid")
@@ -1269,7 +1325,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Precepts")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("precepts");
 
                     b.Property<int>("Reptosenior")
@@ -1304,8 +1360,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Charid")
                         .HasColumnType("int")
@@ -1331,8 +1389,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cid")
                         .HasColumnType("int")
@@ -1342,7 +1402,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("daynotes");
 
-                    b.Property<int>("ItemMeso")
+                    b.Property<long>("ItemMeso")
                         .HasColumnType("bigint")
                         .HasColumnName("itemMeso");
 
@@ -1369,8 +1429,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("FromId")
                         .HasColumnType("int")
@@ -1403,8 +1465,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("GuildId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("guildid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("GuildId"));
 
                     b.Property<int>("AllianceId")
                         .HasColumnType("int")
@@ -1443,19 +1507,19 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("name");
 
                     b.Property<string>("Notice")
                         .HasMaxLength(101)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(101)")
                         .HasColumnName("notice");
 
                     b.Property<string>("Rank1Title")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("rank1title")
                         .HasDefaultValueSql("'Master'");
 
@@ -1463,7 +1527,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("rank2title")
                         .HasDefaultValueSql("'Jr. Master'");
 
@@ -1471,7 +1535,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("rank3title")
                         .HasDefaultValueSql("'Member'");
 
@@ -1479,7 +1543,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("rank4title")
                         .HasDefaultValueSql("'Member'");
 
@@ -1487,11 +1551,11 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(45)")
                         .HasColumnName("rank5title")
                         .HasDefaultValueSql("'Member'");
 
-                    b.Property<long>("Signature")
+                    b.Property<int>("Signature")
                         .HasColumnType("int")
                         .HasColumnName("signature");
 
@@ -1506,13 +1570,13 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.Hwidaccount", b =>
                 {
                     b.Property<int>("AccountId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("accountid");
 
                     b.Property<string>("Hwid")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(40)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(40)")
                         .HasColumnName("hwid")
                         .HasDefaultValueSql("''");
 
@@ -1536,17 +1600,19 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Hwidbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("hwidbanid");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Hwidbanid"));
+
                     b.Property<int>("AccountId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("AccountId");
 
                     b.Property<string>("Hwid")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(30)")
                         .HasColumnName("hwid");
 
                     b.HasKey("Hwidbanid")
@@ -1562,8 +1628,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Inventoryitemid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("inventoryitemid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Inventoryitemid"));
 
                     b.Property<int?>("Accountid")
                         .HasColumnType("int")
@@ -1579,17 +1647,17 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("expiration")
                         .HasDefaultValueSql("'-1'");
 
-                    b.Property<short>("Flag")
+                    b.Property<int>("Flag")
                         .HasColumnType("int")
                         .HasColumnName("flag");
 
                     b.Property<string>("GiftFrom")
                         .IsRequired()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(26)")
                         .HasColumnName("giftFrom");
 
-                    b.Property<sbyte>("Inventorytype")
+                    b.Property<int>("Inventorytype")
                         .HasColumnType("int")
                         .HasColumnName("inventorytype");
 
@@ -1608,15 +1676,15 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("petid")
                         .HasDefaultValueSql("'-1'");
 
-                    b.Property<short>("Position")
+                    b.Property<int>("Position")
                         .HasColumnType("int")
                         .HasColumnName("position");
 
-                    b.Property<short>("Quantity")
+                    b.Property<int>("Quantity")
                         .HasColumnType("int")
                         .HasColumnName("quantity");
 
-                    b.Property<byte>("Type")
+                    b.Property<sbyte>("Type")
                         .HasColumnType("tinyint")
                         .HasColumnName("type");
 
@@ -1632,18 +1700,20 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Ipbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("ipbanid");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Ipbanid"));
+
                     b.Property<int>("Aid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("aid");
 
                     b.Property<string>("Ip")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(40)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(40)")
                         .HasColumnName("ip")
                         .HasDefaultValueSql("''");
 
@@ -1657,8 +1727,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Action")
                         .HasColumnType("int")
@@ -1686,17 +1758,19 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Macbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("macbanid");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Macbanid"));
+
                     b.Property<int>("Aid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("aid");
 
                     b.Property<string>("Mac")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(30)")
                         .HasColumnName("mac");
 
                     b.HasKey("Macbanid")
@@ -1711,7 +1785,7 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.MakerCreatedataEntity", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
                     b.Property<int>("Itemid")
@@ -1760,13 +1834,15 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Itemid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("itemid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Itemid"));
 
                     b.Property<string>("Stat")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(20)")
                         .HasColumnName("stat");
 
                     b.Property<short>("Value")
@@ -1782,7 +1858,7 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.MakerRecipedataEntity", b =>
                 {
                     b.Property<int>("Itemid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("itemid");
 
                     b.Property<int>("ReqItem")
@@ -1802,11 +1878,11 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.MakerRewardDataEntity", b =>
                 {
                     b.Property<int>("Itemid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("itemid");
 
                     b.Property<int>("Rewardid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("rewardid");
 
                     b.Property<sbyte>("Prob")
@@ -1829,30 +1905,32 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Marriageid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("marriageid");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Marriageid"));
+
                     b.Property<int>("EngagementItemId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Husbandid")
                         .HasColumnType("int")
                         .HasColumnName("husbandid");
 
                     b.Property<int>("RingSourceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("Time0")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTimeOffset?>("Time1")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTimeOffset?>("Time2")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("Wifeid")
                         .HasColumnType("int")
@@ -1868,8 +1946,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -1895,8 +1975,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cardid")
                         .HasColumnType("int")
@@ -1920,8 +2002,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cid")
                         .HasColumnType("int")
@@ -1941,8 +2025,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Acc")
                         .ValueGeneratedOnAdd()
@@ -1987,7 +2073,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("GiftFrom")
                         .IsRequired()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(26)")
                         .HasColumnName("giftFrom");
 
                     b.Property<int>("Hands")
@@ -2074,7 +2160,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(16)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("owner")
                         .HasDefaultValueSql("''");
 
@@ -2103,7 +2189,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("SellEnds")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("sell_ends");
 
                     b.Property<int>("Seller")
@@ -2113,7 +2199,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("Sellername")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("sellername");
 
                     b.Property<int>("Speed")
@@ -2174,8 +2260,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2188,13 +2276,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("New")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("new");
 
                     b.Property<string>("Old")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("old");
 
                     b.Property<DateTime>("RequestTime")
@@ -2216,8 +2304,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Activeday")
                         .HasColumnType("int")
@@ -2249,8 +2339,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<long>("Petid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bigint")
                         .HasColumnName("petid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Petid"));
 
                     b.Property<int>("Closeness")
                         .HasColumnType("int")
@@ -2270,11 +2362,11 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Name")
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name");
 
                     b.Property<bool>("Summoned")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("summoned");
 
                     b.HasKey("Petid")
@@ -2287,8 +2379,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CharacterId")
                         .HasColumnType("int")
@@ -2314,8 +2408,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cy")
                         .HasColumnType("int")
@@ -2352,7 +2448,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name");
 
                     b.Property<int>("Overallrank")
@@ -2401,8 +2497,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Equipid")
                         .HasColumnType("int")
@@ -2430,8 +2528,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Charid")
                         .HasColumnType("int")
@@ -2465,8 +2565,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Map")
                         .HasColumnType("int")
@@ -2496,8 +2598,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cy")
                         .HasColumnType("int")
@@ -2543,7 +2647,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(1)")
                         .HasColumnName("type")
                         .HasDefaultValueSql("'n'");
 
@@ -2571,8 +2675,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Queststatusid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("queststatusid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Queststatusid"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2616,8 +2722,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Questactionid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("questactionid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Questactionid"));
 
                     b.Property<byte[]>("Data")
                         .IsRequired()
@@ -2642,8 +2750,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2653,7 +2763,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(15)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(15)")
                         .HasColumnName("progress")
                         .HasDefaultValueSql("''");
 
@@ -2675,8 +2785,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Questrequirementid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("questrequirementid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Questrequirementid"));
 
                     b.Property<byte[]>("Data")
                         .IsRequired()
@@ -2700,7 +2812,7 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.Entities.Quickslotkeymapped", b =>
                 {
                     b.Property<int>("Accountid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("accountid");
 
                     b.Property<long>("Keymap")
@@ -2717,8 +2829,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Reactordropid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("reactordropid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Reactordropid"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -2750,8 +2864,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Chatlog")
                         .IsRequired()
@@ -2777,6 +2893,8 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("reporttime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Reporttime"));
+
                     b.Property<int>("Victimid")
                         .HasColumnType("int")
                         .HasColumnName("victimid");
@@ -2791,8 +2909,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CharacterId1")
                         .HasColumnType("int")
@@ -2824,8 +2944,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2833,7 +2955,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Locationtype")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL','JAIL','CYGNUSINTRO')")
                         .HasColumnName("locationtype");
 
                     b.Property<int>("Map")
@@ -2854,8 +2976,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("ShopId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("shopid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ShopId"));
 
                     b.Property<int>("NpcId")
                         .HasColumnType("int")
@@ -2871,8 +2995,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Shopitemid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("shopitemid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Shopitemid"));
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int")
@@ -2905,8 +3031,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2945,8 +3073,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -2954,7 +3084,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.Property<string>("Name")
                         .HasMaxLength(13)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(13)")
                         .HasColumnName("name");
 
                     b.Property<sbyte>("Position")
@@ -2991,8 +3121,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Info")
                         .HasColumnType("int")
@@ -3017,8 +3149,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Storageid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("storageid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Storageid"));
 
                     b.Property<int>("Meso")
                         .HasColumnType("int")
@@ -3046,8 +3180,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Trockid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("trockid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Trockid"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
@@ -3071,8 +3207,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CharId")
                         .HasColumnType("int")
@@ -3092,8 +3230,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Inventoryequipmentid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("inventoryequipmentid");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Inventoryequipmentid"));
 
                     b.Property<int>("Acc")
                         .HasColumnType("int")
@@ -3127,7 +3267,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("itemexp");
 
-                    b.Property<byte>("Itemlevel")
+                    b.Property<int>("Itemlevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("itemlevel")
@@ -3137,7 +3277,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("jump");
 
-                    b.Property<byte>("Level")
+                    b.Property<int>("Level")
                         .HasColumnType("int")
                         .HasColumnName("level");
 
@@ -3202,11 +3342,11 @@ namespace Application.Core.EF.Sqlite.Migrations
             modelBuilder.Entity("Application.EF.MonsterbookEntity", b =>
                 {
                     b.Property<int>("Cardid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("cardid");
 
                     b.Property<int>("Charid")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("charid");
 
                     b.Property<int>("Level")
@@ -3224,23 +3364,25 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(120)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("varchar(120)")
                         .HasColumnName("message")
                         .HasDefaultValueSql("''");
 
                     b.Property<bool>("Received")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("received");
 
                     b.Property<bool>("ReceiverDiscard")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("receiverdiscard");
 
                     b.Property<int>("ReceiverId")
@@ -3250,7 +3392,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasDefaultValueSql("'-1'");
 
                     b.Property<bool>("SenderDiscard")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("senderdiscard");
 
                     b.Property<int>("SenderId")
@@ -3277,11 +3419,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<bool>("Deleted")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("tinyint(1)")
                         .HasColumnName("deleted");
 
                     b.Property<int>("Fame")

@@ -844,6 +844,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("hp")
                         .HasDefaultValueSql("'50'");
 
+                    b.Property<int>("HpAlert")
+                        .HasColumnType("int");
+
                     b.Property<int>("HpMpUsed")
                         .HasColumnType("int")
                         .HasColumnName("hpMpUsed");
@@ -959,6 +962,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("mp")
                         .HasDefaultValueSql("'5'");
+
+                    b.Property<int>("MpAlert")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
