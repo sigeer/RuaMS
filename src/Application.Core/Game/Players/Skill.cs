@@ -1,6 +1,7 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
+using Application.Shared.KeyMaps;
 using net.server;
 using server;
 using tools;
@@ -215,5 +216,19 @@ namespace Application.Core.Game.Players
         {
             return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
         }
+
+        public bool LearnSkill(int skillId)
+        {
+            var skill = SkillFactory.getSkill(skillId);
+            if (skill == null)
+            {
+                return false;
+            }
+            changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
+            changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
+            sendKeymap();
+            return true;
+        }
+
     }
 }
