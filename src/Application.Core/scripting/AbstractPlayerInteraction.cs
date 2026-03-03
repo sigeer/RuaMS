@@ -1180,10 +1180,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void LearnExtraSkill(int skillId)
     {
-        var skill = SkillFactory.GetSkillTrust(skillId);
-        getPlayer().changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
-        getPlayer().changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
-        getPlayer().sendKeymap();
+        getPlayer().LearnSkill(skillId);
     }
 
     public void TypedMessage(int type, string messageKey, params string[] param)

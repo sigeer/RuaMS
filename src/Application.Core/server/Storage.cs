@@ -50,7 +50,7 @@ public class Storage : AbstractStorage
 
     public bool TryGainSlots(int slots)
     {
-        if (CanGainSlots(Slots))
+        if (CanGainSlots(slots))
         {
             this.Slots += (byte)slots;
             return true;
