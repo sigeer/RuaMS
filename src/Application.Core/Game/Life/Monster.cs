@@ -73,6 +73,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     private int team;
     private int parentMobOid = 0;
     private int spawnEffect = 0;
+    public int ChaindMobOId { get; set; }
     /// <summary>
     /// 玩家对其造成的伤害记录
     /// </summary>
@@ -1063,10 +1064,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
         if (MobId.isZakumArm(getId()))
         {
-            var objects = MapModel.GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.getParentMobOid() == getParentMobOid());
+            var objects = MapModel.GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.ChaindMobOId == ChaindMobOId);
             if (objects.Count == 0)
             {
-                var mainMob = MapModel.getMonsterByOid(getParentMobOid());
+                var mainMob = MapModel.getMonsterByOid(ChaindMobOId);
                 if (mainMob != null)
                 {
                     MapModel.makeMonsterReal(mainMob);
@@ -2449,6 +2450,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
             mob.setPosition(curMob.getPosition());
             mob.setFh(curMob.getFh());
             mob.setParentMobOid(curMob.getObjectId());
+            mob.ChaindMobOId = ChaindMobOId;
 
             if (dropsDisabled())
             {
