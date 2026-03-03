@@ -2903,7 +2903,7 @@ public class MapleMap : IMap, INamedInstance
         for (int mobId = MobId.ZAKUM_ARM_1; mobId <= MobId.ZAKUM_ARM_8; mobId++)
         {
             var bodyPart = LifeFactory.Instance.getMonster(mobId)!;
-            bodyPart.setParentMobOid(main.getObjectId());
+            bodyPart.ChaindMobOId = main.getObjectId();
 
             spawnMonsterOnGroundBelow(bodyPart, pos);
         }
