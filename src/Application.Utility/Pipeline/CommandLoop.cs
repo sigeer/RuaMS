@@ -35,25 +35,26 @@ namespace Application.Utility.Pipeline
         {
             Stopwatch sw = new();
 
-            while (await _commands.Reader.WaitToReadAsync())
+            //while (await _commands.Reader.WaitToReadAsync())
+            //{
+            //    GameMetrics.CommandCountTick(key, _commands.Reader.Count);
+            //    while (_commands.Reader.TryRead(out var item))
+            //    {
+            //        sw.Restart();
+            //        item.Execute(CreateContext());
+            //        sw.Stop();
+            //        GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
+            //    }
+            //}
+
+            await foreach (var item in _commands.Reader.ReadAllAsync())
             {
                 GameMetrics.CommandCountTick(key, _commands.Reader.Count);
-                while (_commands.Reader.TryRead(out var item))
-                {
-                    sw.Restart();
-                    item.Execute(CreateContext());
-                    sw.Stop();
-                    GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
-                }
+                sw.Restart();
+                item.Execute(CreateContext());
+                sw.Stop();
+                GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
             }
-
-            //await foreach (var item in _commands.Reader.ReadAllAsync())
-            //{
-            //    sw.Restart();
-            //    await item.Execute(CreateContext());
-            //    sw.Stop();
-            //    GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
-            //}
         }
 
         public void Register(ICommand<TContext> tickable)
