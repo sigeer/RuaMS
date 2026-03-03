@@ -36,29 +36,12 @@ namespace server;
 public class Shop
 {
     private ILogger log;
-    private static HashSet<int> rechargeableItems = new();
 
     private int id;
     private int npcId;
     private List<ShopItem> items;
     private int tokenvalue = 1000000000;
     private int token = ItemId.GOLDEN_MAPLE_LEAF;
-
-    static Shop()
-    {
-        foreach (int throwingStarId in ItemId.allThrowingStarIds())
-        {
-            rechargeableItems.Add(throwingStarId);
-        }
-        rechargeableItems.Add(ItemId.BLAZE_CAPSULE);
-        rechargeableItems.Add(ItemId.GLAZE_CAPSULE);
-        rechargeableItems.Add(ItemId.BALANCED_FURY);
-        rechargeableItems.Remove(ItemId.DEVIL_RAIN_THROWING_STAR); // doesn't exist
-        foreach (int bulletId in ItemId.allBulletIds())
-        {
-            rechargeableItems.Add(bulletId);
-        }
-    }
 
     public Shop(int id, int npcId, List<ShopItem> items)
     {
