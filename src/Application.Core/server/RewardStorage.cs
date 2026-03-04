@@ -12,14 +12,14 @@ namespace Application.Core.Server
 
         public override bool StoreItemCheck(short slot, int itemId, short quantity)
         {
-            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
         }
 
         public override bool StoreMesoCheck(int meso)
         {
-            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             // 如果不返回STORAGE数据包，窗口会卡住
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
@@ -27,7 +27,7 @@ namespace Application.Core.Server
 
         public override void ArrangeItems()
         {
-            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return;
         }
