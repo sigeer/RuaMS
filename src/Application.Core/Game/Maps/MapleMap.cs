@@ -568,14 +568,12 @@ public class MapleMap : IMap, INamedInstance
                 }
                 else
                 {
-                    var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount());
+                    var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount(), true);
                     if (idrop == null)
                     {
                         log.Warning("{Map}, {Mob}尝试掉落不存在的物品：{ItemId}", InstanceName, dropper.GetName(), de.ItemId);
                         continue;
                     }
-                    if (idrop is Equip equip)
-                        ii.randomizeStats(equip);
 
                     spawnDrop(idrop, itemPos, dropper, chr, false, droptype, de.QuestId, dropDelay);
                     dIndex++;

@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
 using Application.Resources;
@@ -869,7 +870,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
-    public Item? GenerateVirtualItemById(int itemId, int quantity)
+    public Item? GenerateVirtualItemById(int itemId, int quantity, bool randomIfEquip = false)
     {
         if (quantity <= 0)
             return null;
@@ -880,7 +881,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         if (abTemplate is EquipTemplate equipTemplate)
         {
-            return GetEquipByTemplate(equipTemplate);
+            var eqp = GetEquipByTemplate(equipTemplate);
+            if (randomIfEquip)
+            {
+                randomizeStats(eqp);
+            }
+            return eqp;
         }
 
         else if(abTemplate is PetItemTemplate petTemplate)

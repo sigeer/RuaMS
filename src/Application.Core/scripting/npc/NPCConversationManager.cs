@@ -484,7 +484,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public GachaponPoolItemDataObject? doGachapon()
     {
         var reward = c.CurrentServer.NodeService.GachaponManager.DoGachapon(npc);
-        var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity);
+        var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity, true);
         if (rewardItem == null)
         {
             LogFactory.GetLogger(LogType.Gachapon).Debug("ItemId={ItemId} not found", reward.ItemId);
