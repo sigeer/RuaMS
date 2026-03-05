@@ -12,14 +12,14 @@ namespace Application.Core.Server
 
         public override bool StoreItemCheck(short slot, int itemId, short quantity)
         {
-            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
         }
 
         public override bool StoreMesoCheck(int meso)
         {
-            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             // 如果不返回STORAGE数据包，窗口会卡住
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return false;
@@ -27,7 +27,7 @@ namespace Application.Core.Server
 
         public override void ArrangeItems()
         {
-            Owner.Pink(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
+            Owner.Popup(nameof(ClientMessage.RewardStorage_OnlyAllowTakeOut));
             Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
             return;
         }
@@ -37,7 +37,7 @@ namespace Application.Core.Server
             if (!CanGainItem(1))
                 return false;
 
-            Owner.Pink(nameof(ClientMessage.RewardStorage_NewItem), Owner.Client.CurrentCulture.GetItemName(item.getItemId()) ?? item.getItemId().ToString());
+            Owner.Notice(nameof(ClientMessage.RewardStorage_NewItem), Owner.Client.CurrentCulture.GetItemName(item.getItemId()) ?? item.getItemId().ToString());
             Items.Add(item);
             return true;
         }

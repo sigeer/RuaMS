@@ -63,6 +63,9 @@ public class Storage : AbstractStorage
     {
         if (Owner.isGM() && Owner.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE)
         {
+            log.Information("GM {GM} blocked from using storage", Owner);
+            Owner.Popup(nameof(ClientMessage.Storage_Restriction_GMLevel));
+            UpdateMeso();
             return false;
         }
 

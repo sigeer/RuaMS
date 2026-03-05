@@ -3455,6 +3455,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 当前GM等级无法使用仓库服务。 的本地化字符串。
+        /// </summary>
+        public static string Storage_Restriction_GMLevel {
+            get {
+                return ResourceManager.GetString("Storage_Restriction_GMLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 把玩家传送到这里。 的本地化字符串。
         /// </summary>
         public static string SummonCommand_Description {
