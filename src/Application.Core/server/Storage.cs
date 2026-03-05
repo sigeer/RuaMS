@@ -59,6 +59,25 @@ public class Storage : AbstractStorage
         return false;
     }
 
+    protected override bool BaseCheck()
+    {
+        if (Owner.isGM() && Owner.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE)
+        {
+            log.Information("GM {GM} blocked from using storage", Owner);
+            Owner.Popup(nameof(ClientMessage.Storage_Restriction_GMLevel));
+            UpdateMeso();
+            return false;
+        }
+
+        if (Owner.getLevel() < 15)
+        {
+            Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            UpdateMeso();
+            return false;
+        }
+        return true;
+    }
+
     public override bool TakeOutItemCheck(Item item)
     {
         var fee = NpcTemplate?.TrunkGet ?? 0;

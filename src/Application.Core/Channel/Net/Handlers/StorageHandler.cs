@@ -52,22 +52,9 @@ public class StorageHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
 
-        if (StorageProcessor.hasGMRestrictions(chr))
-        {
-            chr.dropMessage(1, "You cannot use the storage as a GM of this level.");
-            _logger.LogInformation("GM {GM} blocked from using storage", chr);
-            chr.sendPacket(PacketCreator.enableActions());
-            return;
-        }
-
         byte mode = p.readByte();
 
-        if (chr.getLevel() < 15)
-        {
-            chr.Popup(nameof(ClientMessage.Storage_NeedLevel));
-            c.sendPacket(PacketCreator.enableActions());
-            return;
-        }
+
 
         var storage = chr.CurrentStorage;
         if (storage == null)

@@ -37,7 +37,7 @@ namespace Application.Core.Server
             if (!CanGainItem(1))
                 return false;
 
-            Owner.Pink(nameof(ClientMessage.RewardStorage_NewItem), Owner.Client.CurrentCulture.GetItemName(item.getItemId()) ?? item.getItemId().ToString());
+            Owner.Notice(nameof(ClientMessage.RewardStorage_NewItem), Owner.Client.CurrentCulture.GetItemName(item.getItemId()) ?? item.getItemId().ToString());
             Items.Add(item);
             return true;
         }

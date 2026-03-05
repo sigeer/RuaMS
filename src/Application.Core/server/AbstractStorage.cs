@@ -58,9 +58,19 @@ namespace Application.Core.Server
             return Items.ToList();
         }
 
+        protected virtual bool BaseCheck()
+        {
+            return true;
+        }
+
 
         public virtual bool StoreItemCheck(short slot, int itemId, short quantity)
         {
+            if (!BaseCheck())
+            {
+                return false;
+            }
+
             if (quantity < 1)
             {
                 Owner.sendPacket(PacketCreator.enableActions());
@@ -77,6 +87,11 @@ namespace Application.Core.Server
         }
         public virtual bool TakeOutItemCheck(Item item)
         {
+            if (!BaseCheck())
+            {
+                return false;
+            }
+
             if (!Owner.CanHoldUniquesOnly(item.getItemId()))
             {
                 Owner.sendPacket(StoragePacketCreator.getStorageError(0x0C));
@@ -94,11 +109,21 @@ namespace Application.Core.Server
 
         public virtual bool TakeOutMesoCheck(int meso)
         {
+            if (!BaseCheck())
+            {
+                return false;
+            }
+
             return meso <= Meso;
         }
 
         public virtual bool StoreMesoCheck(int meso)
         {
+            if (!BaseCheck())
+            {
+                return false;
+            }
+
             return Owner.getMeso() >= meso;
         }
 
@@ -135,6 +160,11 @@ namespace Application.Core.Server
 
         public virtual void ArrangeItems()
         {
+            if (!BaseCheck())
+            {
+                return;
+            }
+
             StorageInventory msi = new StorageInventory(Owner.Client, Items);
             msi.mergeItems();
             Items = msi.sortItems();
