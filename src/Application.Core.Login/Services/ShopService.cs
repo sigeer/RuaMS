@@ -9,8 +9,6 @@ namespace Application.Core.Login.Services
 {
     public class ShopService
     {
-        HashSet<int> rechargeableItems = new();
-
         readonly IMapper _mapper;
         readonly ILogger<ShopService> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
@@ -20,19 +18,6 @@ namespace Application.Core.Login.Services
             _mapper = mapper;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
-
-            foreach (int throwingStarId in ItemId.allThrowingStarIds())
-            {
-                rechargeableItems.Add(throwingStarId);
-            }
-            rechargeableItems.Add(ItemId.BLAZE_CAPSULE);
-            rechargeableItems.Add(ItemId.GLAZE_CAPSULE);
-            rechargeableItems.Add(ItemId.BALANCED_FURY);
-            rechargeableItems.Remove(ItemId.DEVIL_RAIN_THROWING_STAR); // doesn't exist
-            foreach (int bulletId in ItemId.allBulletIds())
-            {
-                rechargeableItems.Add(bulletId);
-            }
         }
 
         public Dto.ShopDto? LoadFromDB(int id, bool isShopId)
@@ -63,7 +48,6 @@ namespace Application.Core.Login.Services
                 }
 
                 var items = new List<Dto.ShopItemDto>();
-                List<int> recharges = new(rechargeableItems);
                 var shopItems = dbContext.Shopitems.Where(x => x.Shopid == shopId).OrderByDescending(x => x.Position).ToList();
                 shopItems.ForEach(x =>
                 {
@@ -72,10 +56,6 @@ namespace Application.Core.Login.Services
                         var m = _mapper.Map<Dto.ShopItemDto>(x);
                         m.Buyable = 1;
                         items.Add(m);
-                        if (rechargeableItems.Contains(x.ItemId))
-                        {
-                            recharges.Remove(x.ItemId);
-                        }
                     }
                     else
                     {
@@ -84,10 +64,6 @@ namespace Application.Core.Login.Services
                         items.Add(m);
                     }
                 });
-                foreach (int recharge in recharges)
-                {
-                    items.Add(new Dto.ShopItemDto() { Buyable = 1000, ItemId = recharge, Price = 0, Pitch = 0 });
-                }
                 ret.Items.AddRange(items);
             }
             catch (Exception e)

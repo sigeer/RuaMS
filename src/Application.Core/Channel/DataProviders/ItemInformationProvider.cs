@@ -258,7 +258,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public double getUnitPrice(int itemId)
     {
-        return getRoundedUnitPrice(GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 0, 5);
+        return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.UnitPrice ?? 0;
     }
 
     public int getPrice(int itemId, int quantity)

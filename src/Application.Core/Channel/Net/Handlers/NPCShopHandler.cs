@@ -77,7 +77,7 @@ public class NPCShopHandler : ChannelHandlerBase
             case 2:
                 { // recharge ;)
 
-                    byte slot = (byte)p.readShort();
+                    var slot = p.readShort();
                     playerShop.recharge(c, slot);
                     break;
                 }

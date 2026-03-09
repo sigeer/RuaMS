@@ -2213,11 +2213,6 @@ public class PacketCreator
         return p;
     }
 
-    // someone thought it was a good idea to handle floating point representation through packets ROFL
-    private static int doubleToShortBits(double d)
-    {
-        return (short)(BitConverter.DoubleToInt64Bits(d) >> 48);
-    }
 
     public static Packet getNPCShop(IChannelClient c, int sid, List<ShopItem> items)
     {
@@ -2239,9 +2234,7 @@ public class PacketCreator
             }
             else
             {
-                p.writeShort(0);
-                p.writeInt(0);
-                p.writeShort(doubleToShortBits(ii.getUnitPrice(item.getItemId())));
+                p.writeLong(BitConverter.DoubleToInt64Bits(ii.getUnitPrice(item.getItemId())));
                 p.writeShort(ii.getSlotMax(c, item.getItemId()));
             }
         }
