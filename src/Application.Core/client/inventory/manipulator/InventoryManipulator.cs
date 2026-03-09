@@ -124,8 +124,16 @@ public class InventoryManipulator
                 }
             }
         }
-        else if (quantity == 1)
+        else
         {
+            if (item is Equip && quantity != 1)
+            {
+                Log.Logger.Warning("Tried to pickup Id={ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
+                c.sendPacket(PacketCreator.getInventoryFull());
+                c.sendPacket(PacketCreator.showItemUnavailable());
+                return false;
+            }
+
             short newSlot = inv.addItem(item);
             if (newSlot == -1)
             {
@@ -141,13 +149,6 @@ public class InventoryManipulator
             {
                 chr.setHasSandboxItem();
             }
-        }
-        else
-        {
-            Log.Logger.Warning("Tried to pickup Id={ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
-            c.sendPacket(PacketCreator.getInventoryFull());
-            c.sendPacket(PacketCreator.showItemUnavailable());
-            return false;
         }
         if (show)
         {
