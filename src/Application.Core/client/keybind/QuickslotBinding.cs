@@ -1,3 +1,5 @@
+using Application.Shared.KeyMaps;
+
 namespace client.keybind;
 
 
@@ -7,8 +9,20 @@ namespace client.keybind;
  */
 public class QuickslotBinding
 {
-    public static int QUICKSLOT_SIZE = 8;
-    public static byte[] DEFAULT_QUICKSLOTS = { 0x2A, 0x52, 0x47, 0x49, 0x1D, 0x53, 0x4F, 0x51 };
+    public const int QUICKSLOT_SIZE = 8;
+    /// <summary>
+    /// 42, 82, 71, 73, 29, 83, 79, 81
+    /// </summary>
+    public static byte[] DEFAULT_QUICKSLOTS = {
+        (byte)KeyCode.LeftShift,
+        (byte)KeyCode.Insert,
+        (byte)KeyCode.Home,
+        (byte)KeyCode.PageUp,
+        (byte)KeyCode.LeftControl,
+        (byte)KeyCode.Delete,
+        (byte)KeyCode.End,
+        (byte)KeyCode.PageDown
+    };
 
     private byte[] m_aQuickslotKeyMapped;
 

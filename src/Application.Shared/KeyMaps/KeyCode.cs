@@ -1,6 +1,6 @@
 namespace Application.Shared.KeyMaps
 {
-    public enum KeyCode
+    public enum KeyCode: byte
     {
         Num1 = 2, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9, Num0, Minus, Equal,
         Q = 16, W, E, R, T, Y, U, I, O, P, LeftBracket, RightBracket,

@@ -434,7 +434,7 @@ namespace Application.Core.Game.Players
                         item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM())!;
                     }
 
-                    if (randomStats)
+                    else if (randomStats)
                     {
                         ii.randomizeStats(it);
                     }

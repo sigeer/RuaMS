@@ -327,7 +327,7 @@ public class OldItemInformationProvider
         {
             try
             {
-                fEntry = getRoundedUnitPrice(DataTool.getDouble(pData), 5);
+                fEntry = DataTool.getDouble(pData);
             }
             catch (Exception)
             {
