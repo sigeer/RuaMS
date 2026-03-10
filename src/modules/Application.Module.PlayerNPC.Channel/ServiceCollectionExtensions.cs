@@ -1,8 +1,7 @@
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
-using Application.Module.PlayerNPC.Channel.Commands.Gm4;
-using Application.Module.PlayerNPC.Channel.Commands.Gm6;
+using Application.Module.PlayerNPC.Channel.Game.Commands;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;

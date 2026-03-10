@@ -29,7 +29,7 @@ namespace Application.Core.Channel
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
-        public Dictionary<int, WorldChannel> Servers { get; set; }
+        public Dictionary<int, IChannelServer> Servers { get; set; }
         public DistributeSession<int, SyncProto.PlayerSaveDto>? SyncPlayerSession { get; set; }
         public DistributeSession<int, ItemProto.SyncPlayerShopRequest>? SyncPlayerShopSession { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
@@ -408,18 +408,8 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public Player? FindPlayerById(int channel, int cid)
-        {
-            if (cid <= 0)
-                return null;
 
-            if (Servers.TryGetValue(channel, out var ch))
-                return ch.Players.getCharacterById(cid);
-
-            return null;
-        }
-
-        public WorldChannel? GetChannel(int channel)
+        public IActor<ChannelCommandContext>? GetChannelActor(int channel)
         {
             return Servers.GetValueOrDefault(channel);
         }

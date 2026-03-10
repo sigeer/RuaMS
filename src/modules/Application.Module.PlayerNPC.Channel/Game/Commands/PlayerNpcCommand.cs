@@ -3,7 +3,7 @@ using Application.Core.Client;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 
-namespace Application.Module.PlayerNPC.Channel.Commands.Gm4;
+namespace Application.Module.PlayerNPC.Channel.Game.Commands;
 
 public class PlayerNpcCommand : CommandBase
 {

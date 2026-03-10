@@ -104,9 +104,15 @@ namespace Application.Module.Marriage.Channel
         /// 检测婚姻数据并修复
         /// </summary>
         /// <param name="chr"></param>
-        public void CheckMarriageData(Player chr)
+        public void CheckMarriageData(int chrId)
         {
-            var marriageInfo = GetPlayerMarriageInfo(chr.Id);
+            var chr = _server.PlayerStorage.getCharacterById(chrId);
+            if (chr == null)
+            {
+                return;
+            }
+
+            var marriageInfo = GetPlayerMarriageInfo(chrId);
             if (marriageInfo == null)
             {
                 // 未婚状态，移除订婚、结婚戒指，

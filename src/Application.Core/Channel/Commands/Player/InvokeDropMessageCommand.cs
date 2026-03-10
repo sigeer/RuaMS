@@ -63,4 +63,40 @@ namespace Application.Core.Channel.Commands
             return;
         }
     }
+
+    internal record InvokeMultiDropMessageCommandPlus : IWorldChannelCommand
+    {
+        IEnumerable<int> playerIds;
+        NoticeType type;
+        Func<Player, string> _getMessage;
+        public InvokeMultiDropMessageCommandPlus(IEnumerable<int> playerIds, NoticeType type, Func<Player, string> getMessage)
+        {
+            this.playerIds = playerIds;
+            this.type = type;
+            _getMessage = getMessage;
+        }
+
+        public void Execute(ChannelCommandContext ctx)
+        {
+            if (playerIds.Contains(-1))
+            {
+                foreach (var player in ctx.WorldChannel.getPlayerStorage().getAllCharacters())
+                {
+                    player.TypedMessage((int)type, _getMessage(player));
+                }
+            }
+            else
+            {
+                foreach (var id in playerIds)
+                {
+                    var player = ctx.WorldChannel.getPlayerStorage().getCharacterById(id);
+                    if (player != null)
+                    {
+                        player.TypedMessage((int)type, _getMessage(player));
+                    }
+                }
+            }
+            return;
+        }
+    }
 }

@@ -202,13 +202,6 @@ namespace Application.Core.Channel.Services
             return r.Code == 0;
         }
 
-        public void OnBroadcastTVFinished(Empty data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                ch.broadcastPacket(PacketCreator.removeTV());
-            }
-        }
 
         internal bool UseCash_ItemMegaphone(Player player, Item? item, string message, bool isWishper)
         {

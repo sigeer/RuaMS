@@ -236,98 +236,14 @@ namespace Application.Module.PlayerNPC.Channel
             }
         }
 
-        public void OnRefreshMapPlayerNPC(UpdateMapPlayerNPCResponse data)
-        {
-            var updatedList = _mapper.Map<PlayerNpc[]>(data.UpdatedList);
-            var newData = _mapper.Map<PlayerNpc>(data.NewData);
-            foreach (var ch in _server.Servers.Values)
-            {
-                var chr = ch.Players.getCharacterById(newData.PlayerId);
-                if (chr != null)
-                {
-                    chr.dropMessage($"PlayerNpc创建成功");
-                }
-
-                var mapFactory = ch.getMapFactory();
-                if (mapFactory.TryGetMap(data.MapId, out var map))
-                {
-                    var playerNpcs =
-                        map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>()
-                        .OrderBy(x => x.GetSourceId()).ToList();
-
-                    foreach (var pn in playerNpcs)
-                    {
-                        map.removeMapObject(pn);
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
-                    }
-
-                    foreach (var pn in updatedList)
-                    {
-                        map.addPlayerNPCMapObject(pn);
-                        map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-                        map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(pn));
-                    }
-                    map.addPlayerNPCMapObject(newData);
-                    map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
-                    map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(newData));
-                }
-            }
-            LoadAllData();
-        }
-
-
         public void RemovePlayerNPC(string target)
         {
             _transport.RemovePlayerNPC(new RemovePlayerNPCRequest { TargetName = target });
         }
 
-        public void OnPlayerNPCRemoved(RemovePlayerNPCResponse data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                var mapFactory = ch.getMapFactory();
-
-                foreach (var item in data.List)
-                {
-                    if (mapFactory.TryGetMap(item.MapId, out var map))
-                    {
-                        map.removeMapObject(item.ObjectId);
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(item.ObjectId));
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(item.ObjectId));
-                    }
-                }
-            }
-            LoadAllData();
-        }
-
         public void RemoveAllPlayerNPC()
         {
             _transport.RemoveAllPlayerNPC();
-        }
-
-        public void OnPlayerNPCClear(RemoveAllPlayerNPCResponse data)
-        {
-            foreach (var ch in _server.Servers.Values)
-            {
-                var mapFactory = ch.getMapFactory();
-
-                foreach (var mapId in data.MapIdList)
-                {
-                    if (mapFactory.TryGetMap(mapId, out var map))
-                    {
-                        var playerNpcs = map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>().ToList();
-
-                        foreach (var pn in playerNpcs)
-                        {
-                            map.removeMapObject(pn);
-                            map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                            map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
-                        }
-                    }
-                }
-            }
-            LoadAllData();
         }
 
         public void SpawnPlayerNPCList(IMap map, List<PlayerNpc> dataList)

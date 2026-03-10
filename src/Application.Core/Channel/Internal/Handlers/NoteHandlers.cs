@@ -23,7 +23,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(SendNoteResponse res)
             {
-                var channel = _server.GetChannel(res.ReceiverChannel);
+                var channel = _server.GetChannelActor(res.ReceiverChannel);
                 if (channel != null)
                 {
                     channel.Post(new InvokeNoteReceiveCommand(res));

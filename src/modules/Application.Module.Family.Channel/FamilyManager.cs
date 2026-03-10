@@ -170,33 +170,33 @@ namespace Application.Module.Family.Channel
             await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
-        public void OnJoinFamily(Dto.JoinFamilyResponse data)
-        {
-            if (data.Code != 0)
-            {
-                var inviter = _server.FindPlayerById(data.InviterChannel, data.InviterId);
-                if (inviter != null)
-                {
-                    inviter.sendPacket(FamilyPacketCreator.sendFamilyMessage(data.Code, 0));
-                }
-            }
-            else
-            {
-                var chrFamily = _mapper.Map<Models.Family>(data.Model);
-                chrFamily.broadcast(FamilyPacketCreator.sendFamilyJoinResponse(true, data.NewMember.Name), data.NewMember.Id);
-                var chrFamilyEntry = chrFamily.getEntryByID(data.NewMember.Id);
-                var seniorEntry = chrFamily.getEntryByID(data.NewMember.SeniorId);
-                UpdateSeniorFamilyInfo(chrFamilyEntry, true);
+        //public void OnJoinFamily(Dto.JoinFamilyResponse data)
+        //{
+        //    if (data.Code != 0)
+        //    {
+        //        var inviter = _server.FindPlayerById(data.InviterChannel, data.InviterId);
+        //        if (inviter != null)
+        //        {
+        //            inviter.sendPacket(FamilyPacketCreator.sendFamilyMessage(data.Code, 0));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var chrFamily = _mapper.Map<Models.Family>(data.Model);
+        //        chrFamily.broadcast(FamilyPacketCreator.sendFamilyJoinResponse(true, data.NewMember.Name), data.NewMember.Id);
+        //        var chrFamilyEntry = chrFamily.getEntryByID(data.NewMember.Id);
+        //        var seniorEntry = chrFamily.getEntryByID(data.NewMember.SeniorId);
+        //        UpdateSeniorFamilyInfo(chrFamilyEntry, true);
 
-                var receiver = _server.FindPlayerById(data.NewMember.Channel, data.NewMember.Id);
-                if (receiver != null)
-                {
-                    receiver.sendPacket(FamilyPacketCreator.getSeniorMessage(seniorEntry.Name));
-                    receiver.sendPacket(FamilyPacketCreator.getFamilyInfo(chrFamilyEntry));
-                }
+        //        var receiver = _server.FindPlayerById(data.NewMember.Channel, data.NewMember.Id);
+        //        if (receiver != null)
+        //        {
+        //            receiver.sendPacket(FamilyPacketCreator.getSeniorMessage(seniorEntry.Name));
+        //            receiver.sendPacket(FamilyPacketCreator.getFamilyInfo(chrFamilyEntry));
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
         public void UseEntitlement(Player player, FamilyEntitlement entitlement)
         {

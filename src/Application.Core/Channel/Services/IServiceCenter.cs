@@ -14,6 +14,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public interface IServiceCenter
     {
+        IServiceProvider ServiceProvider { get; }
         IItemDistributeService ItemDistributeService { get; }
         AdminService AdminService { get; }
         DataService DataService { get; }

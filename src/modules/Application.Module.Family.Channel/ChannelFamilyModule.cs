@@ -79,38 +79,39 @@ namespace Application.Module.Family.Channel
         }
 
 
-        public override void OnPlayerLogin(Player data)
+        public override void OnPlayerLogin(int chrId)
         {
+            var chr = _server.PlayerStorage.getCharacterById(chrId);
+            if (chr == null)
+            {
+                return;
+            }
             FamilyEntry? familyEntry = null;
 
-            if (data.FamilyId > 0)
+            if (chr.FamilyId > 0)
             {
-                var f = _familyManager.GetFamilyByPlayerId(data.Id);
+                var f = _familyManager.GetFamilyByPlayerId(chr.Id);
                 if (f != null)
                 {
-                    familyEntry = f.getEntryByID(data.Id);
+                    familyEntry = f.getEntryByID(chr.Id);
                     if (familyEntry != null)
                     {
-                        familyEntry.Channel = data.Channel;
+                        familyEntry.Channel = chr.Channel;
                     }
                     else
                     {
-                        _logger.LogError("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", data.Name, f.Id);
+                        _logger.LogError("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", chr.Name, f.Id);
                     }
                 }
                 else
                 {
-                    _logger.LogError("Chr {CharacterName} has an invalid family ID ({FamilyId})", data.Name, data.FamilyId);
+                    _logger.LogError("Chr {CharacterName} has an invalid family ID ({FamilyId})", chr.Name, chr.FamilyId);
                 }
             }
 
-            var chr = _server.FindPlayerById(data.Channel, data.Id);
-            if (chr != null)
-            {
-                chr.sendPacket(FamilyPacketCreator.loadFamily());
-                chr.sendPacket(FamilyPacketCreator.getFamilyInfo(familyEntry));
-                _familyManager.AnnounceToSenior(familyEntry, FamilyPacketCreator.sendFamilyLoginNotice(data.Name, true), true);
-            }
+            chr.sendPacket(FamilyPacketCreator.loadFamily());
+            chr.sendPacket(FamilyPacketCreator.getFamilyInfo(familyEntry));
+            _familyManager.AnnounceToSenior(familyEntry, FamilyPacketCreator.sendFamilyLoginNotice(chr.Name, true), true);
         }
     }
 }

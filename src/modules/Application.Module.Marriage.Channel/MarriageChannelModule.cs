@@ -22,9 +22,9 @@ namespace Application.Module.Marriage.Channel
             _marriageManager = marriageManager;
         }
 
-        public override void OnPlayerLogin(Player chr)
+        public override void OnPlayerLogin(int chrId)
         {
-            base.OnPlayerLogin(chr);
+            base.OnPlayerLogin(chrId);
             _marriageManager.CheckMarriageData(chr);
         }
 
