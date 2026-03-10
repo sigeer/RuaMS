@@ -29,7 +29,7 @@ namespace Application.Core.Login.Tasks;
 public class RankingCommandTask : AbstractRunnable
 {
     readonly RankService _rankService;
-    public RankingCommandTask(MasterServer server, RankService rankService) : base($"{server.InstanceName}_{nameof(RankService)}")
+    public RankingCommandTask(MasterServer server, RankService rankService) : base(nameof(RankService))
     {
         _rankService = rankService;
     }

@@ -33,7 +33,7 @@ public class EventRecallManager : TaskBase
     private ConcurrentDictionary<int, AbstractEventInstanceManager> eventHistory = new();
 
     public EventRecallManager(WorldChannel worldChannel)
-        : base($"{worldChannel.InstanceName}_{nameof(EventRecallManager)}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+        : base(nameof(EventRecallManager), TimeSpan.FromHours(1), TimeSpan.FromHours(1))
     {
     }
 

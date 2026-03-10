@@ -8,7 +8,7 @@ namespace Application.Core.Login.Tasks
     {
         readonly SessionCoordinator _sessionCoordinator;
 
-        public LoginCoordinatorTask(MasterServer server) : base($"{server.InstanceName}_{nameof(LoginCoordinatorTask)}")
+        public LoginCoordinatorTask(MasterServer server) : base(nameof(LoginCoordinatorTask))
         {
             _sessionCoordinator = server.ServiceProvider.GetRequiredService<SessionCoordinator>();
         }

@@ -491,7 +491,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            c.CurrentServer.Node.TimerManager.schedule(
+            c.CurrentServer.TimerManager.schedule(
                 () => c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
                 TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
@@ -659,7 +659,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             remove(c, position, itemId);
 
             IChannelClient client = c;
-            c.CurrentServer.Node.TimerManager.schedule(() =>
+            c.CurrentServer.TimerManager.schedule(() =>
             {
                 c.CurrentServer.Post(new DelayedShowVegaSpellCommand(player, scrolled, curlevel));
             }, TimeSpan.FromSeconds(3));

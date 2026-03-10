@@ -310,7 +310,7 @@ namespace Application.Core.Game.Players
             {
                 if (questExpireTask == null)
                 {
-                    questExpireTask = Client.CurrentServer.Node.TimerManager.register(
+                    questExpireTask = Client.CurrentServer.TimerManager.register(
                         new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
                         {
                             Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));
@@ -325,7 +325,7 @@ namespace Application.Core.Game.Players
         {
             if (questExpireTask == null)
             {
-                questExpireTask = Client.CurrentServer.Node.TimerManager.register(
+                questExpireTask = Client.CurrentServer.TimerManager.register(
                     new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
                     {
                         Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));

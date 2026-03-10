@@ -127,6 +127,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public IActor<ChannelNodeCommandContext> NodeActor { get; }
     public IServiceCenter NodeService { get; }
     public IMapper Mapper { get; }
+    public ITimerManager TimerManager { get; private set; } = null!;
 
     public CharacterDiseaseManager CharacterDiseaseManager { get; }
     public PetHungerManager PetHungerManager { get; }
@@ -270,7 +271,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         eventSM.ReloadEventScript();
     }
-    public void Initialize(Config.RegisterServerResult config)
+    public async Task Initialize(Config.RegisterServerResult config)
     {
         log.Information("[{ServerName}] 初始化...", InstanceName);
 
@@ -282,11 +283,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         var loadedEventsCount = eventSM.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
+        TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
+
         _respawnTask = new RespawnTask(this);
-        _respawnTask.Register(Node.TimerManager);
+        _respawnTask.Register(TimerManager);
 
         EventRecallManager = new EventRecallManager(this);
-        EventRecallManager.Register(Node.TimerManager);
+        EventRecallManager.Register(TimerManager);
 
         var inviteHandlerLogger = LifeScope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<InviteChannelHandler>>();
         InviteChannelHandlerRegistry.Register(new PartyInviteChannelHandler(this, inviteHandlerLogger));
@@ -327,14 +330,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             isShuttingDown = true;
             log.Information("[{ServerName}] 停止中...", InstanceName);
 
-            log.Information("[{ServerName}] 停止定时任务...", InstanceName);
+            await NettyServer.Stop();
+            log.Information("[{ServerName}] 停止监听", InstanceName);
 
             if (_respawnTask != null)
             {
                 await _respawnTask.StopAsync();
             }
 
-            log.Information("[{ServerName}] 停止定时任务>>>完成", InstanceName);
 
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);
@@ -346,9 +349,12 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
             await closeChannelSchedules();
 
-            await NettyServer.Stop();
-            log.Information("[{ServerName}] 停止监听", InstanceName);
             await CommandLoop.DisposeAsync();
+
+            log.Information("[{ServerName}] 停止定时任务调度器{SchedulerName}...", InstanceName, TimerManager.Name);
+            await TimerManager.Stop();
+            log.Information("[{ServerName}] 停止定时任务调度器{SchedulerName}>>>完成", InstanceName, TimerManager.Name);
+
             LifeScope.Dispose();
 
             IsRunning = false;

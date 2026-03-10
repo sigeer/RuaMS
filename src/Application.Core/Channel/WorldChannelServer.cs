@@ -350,7 +350,7 @@ namespace Application.Core.Channel
             {
                 var scope = ServiceProvider.CreateScope();
                 var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
-                worldChannel.Initialize(configs);
+                await worldChannel.Initialize(configs);
 
                 Servers[channel] = worldChannel;
                 ServerConfigMapping[server.Key] = worldChannel;

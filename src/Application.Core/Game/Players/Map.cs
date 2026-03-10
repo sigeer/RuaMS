@@ -315,7 +315,7 @@ namespace Application.Core.Game.Players
             MapEffect mapEffect = new MapEffect(msg, itemId);
             sendPacket(mapEffect.makeStartData());
 
-            Client.CurrentServer.Node.TimerManager.schedule(() =>
+            Client.CurrentServer.TimerManager.schedule(() =>
             {
                 Client.CurrentServer.Post(new PlayerMapEffectRemoveCommand(this, mapEffect));
             }, duration);

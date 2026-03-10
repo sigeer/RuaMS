@@ -140,9 +140,9 @@ public class MapleMap : IMap, INamedInstance
         log = LogFactory.GetLogger($"Map/{range}");
 
         if (EventInstanceManager == null)
-            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:None_Map:{Id}({GetHashCode()})";
+            InstanceName = $"{worldChannel.InstanceName}_EventInstance:None_Map:{Id}({GetHashCode()})";
         else
-            InstanceName = $"Channel:{worldChannel.Id}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}({GetHashCode()})";
+            InstanceName = $"{worldChannel.InstanceName}_EventInstance:{EventInstanceManager.getName()}_Map:{Id}({GetHashCode()})";
 
         #region portals
         portals = new();
@@ -705,12 +705,12 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
-        itemMonitor = ChannelServer.Node.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
+        itemMonitor = ChannelServer.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
         {
             ChannelServer.Post(new MapItemMonitorCommand(this));
         }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-        expireItemsTask = ChannelServer.Node.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", () =>
+        expireItemsTask = ChannelServer.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", () =>
         {
             ChannelServer.Post(new MapItemExpiredCommand(this));
         }),
@@ -1611,7 +1611,7 @@ public class MapleMap : IMap, INamedInstance
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        var tMan = ChannelServer.Node.TimerManager;
+        var tMan = ChannelServer.TimerManager;
         ScheduledFuture? poisonSchedule = null;
         if (mist is PlayerMist playerMist)
         {
@@ -3258,7 +3258,7 @@ public class MapleMap : IMap, INamedInstance
             // To Ereve (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Node.TimerManager.schedule(() =>
+            ChannelServer.TimerManager.schedule(() =>
             {
                 ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ELLINIA_TO_EREVE, MapId.SKY_FERRY));
             }, travelTime);
@@ -3268,7 +3268,7 @@ public class MapleMap : IMap, INamedInstance
             // To Victoria Island (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Node.TimerManager.schedule(() =>
+            ChannelServer.TimerManager.schedule(() =>
             {
                 ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ELLINIA, MapId.ELLINIA_SKY_FERRY));
             }, travelTime);
@@ -3278,7 +3278,7 @@ public class MapleMap : IMap, INamedInstance
             // To Orbis (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Node.TimerManager.schedule(() =>
+            ChannelServer.TimerManager.schedule(() =>
             {
                 ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ORBIS, MapId.ORBIS_STATION));
             }, travelTime);
@@ -3288,7 +3288,7 @@ public class MapleMap : IMap, INamedInstance
             // To Ereve From Orbis (SkyFerry)
             int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.Node.TimerManager.schedule(() =>
+            ChannelServer.TimerManager.schedule(() =>
             {
                 ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ORBIS_TO_EREVE, MapId.SKY_FERRY));
             }, travelTime);

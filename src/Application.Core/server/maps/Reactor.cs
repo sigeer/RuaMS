@@ -210,7 +210,7 @@ public class Reactor : AbstractMapObject
         {
             sbyte nextState = stats.getTimeoutState(state);
 
-            timeoutTask = MapModel.ChannelServer.Node.TimerManager.schedule(() =>
+            timeoutTask = MapModel.ChannelServer.TimerManager.schedule(() =>
             {
                 timeoutTask = null;
 
@@ -222,7 +222,7 @@ public class Reactor : AbstractMapObject
 
     public void delayedHitReactor(IChannelClient c, long delay)
     {
-        c.CurrentServer.Node.TimerManager.schedule(() =>
+        c.CurrentServer.TimerManager.schedule(() =>
         {
             c.CurrentServer.Post(new ReactorHitCommand(this, c));
         }, delay);

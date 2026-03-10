@@ -187,7 +187,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             {
                 this.dojoTask[slot]!.cancel(false);
             }
-            this.dojoTask[slot] = Channel.Node.TimerManager.schedule(() =>
+            this.dojoTask[slot] = Channel.TimerManager.schedule(() =>
             {
                 Channel.Post(new DojoTimeoutCommand(this, dojoMapId));
             }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp

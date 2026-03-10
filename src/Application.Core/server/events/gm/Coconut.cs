@@ -69,7 +69,7 @@ public class Coconut
     {
         Map.broadcastMessage(PacketCreator.getClock(time));
 
-        Map.ChannelServer.Node.TimerManager.schedule(() =>
+        Map.ChannelServer.TimerManager.schedule(() =>
         {
             Map.ChannelServer.Post(new EventCoconutTimeoutCommand(this));
         }, TimeSpan.FromSeconds(time));
@@ -111,7 +111,7 @@ public class Coconut
     public void warpOut()
     {
         setCoconutsHittable(false);
-        Map.ChannelServer.Node.TimerManager.schedule(() =>
+        Map.ChannelServer.TimerManager.schedule(() =>
         {
             Map.ChannelServer.Post(new EventCoconutDelayWarpoutCommand(this));
         }, TimeSpan.FromSeconds(Map.TimeFinish));

@@ -130,7 +130,7 @@ public class Expedition : IClientMessenger
         Expedition exped = this;
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMinutes(type.getRegistrationMinutes());
 
-        schedule = leader.Client.CurrentServer.Node.TimerManager.schedule(() =>
+        schedule = leader.Client.CurrentServer.TimerManager.schedule(() =>
         {
             leader.Client.CurrentServer.Post(new ExpeditionRegistrationTimeoutCommand(this));
         }, TimeSpan.FromMinutes(type.getRegistrationMinutes()));

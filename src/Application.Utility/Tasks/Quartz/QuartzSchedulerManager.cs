@@ -18,14 +18,13 @@ namespace Application.Utility.Tasks
             return Task.CompletedTask;
         }
 
-        public Task JobDeleted(JobKey jobKey, CancellationToken cancellationToken)
+        public async Task JobDeleted(JobKey jobKey, CancellationToken cancellationToken)
         {
             if (_timerManager.TaskScheduler.TryRemove(jobKey.Name, out var p) && p is QuartzScheduledFuture data)
             {
                 Log.Logger.Debug("结束了一个任务，JobId = {JobId}", jobKey.Name);
-                _timerManager.Scheduler.UnscheduleJob(data.TriggerKey);
+                await _timerManager.Scheduler.UnscheduleJob(data.TriggerKey);
             }
-            return Task.CompletedTask;
         }
 
         public Task JobInterrupted(JobKey jobKey, CancellationToken cancellationToken = default)

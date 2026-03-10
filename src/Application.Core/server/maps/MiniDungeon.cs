@@ -43,7 +43,7 @@ public class MiniDungeon
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
-        timeoutTask = worldChannel.Node.TimerManager.schedule(() =>
+        timeoutTask = worldChannel.TimerManager.schedule(() =>
         {
             worldChannel.Post(new MiniDungeonTimeoutCommand(this));
         }, expireTime);

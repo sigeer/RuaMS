@@ -625,7 +625,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         if (animationTime > 0)
         {
             // be sure to only use LIMITED ATTACKS with animation time here
-            attacker.Client.CurrentServer.Node.TimerManager.schedule(damageCore, animationTime);
+            attacker.Client.CurrentServer.TimerManager.schedule(damageCore, animationTime);
         }
         else
         {

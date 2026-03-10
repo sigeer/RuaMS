@@ -42,7 +42,7 @@ public class Ola
     public Ola(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.Node.TimerManager.schedule(() =>
+        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
         {
             chr.Client.CurrentServer.Post(new EventOlaTimeoutCommand(this));
         }, 360_000);

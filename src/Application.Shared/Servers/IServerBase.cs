@@ -11,7 +11,6 @@ namespace Application.Shared.Servers
         Task StartServer(CancellationToken cancellationToken);
         Task Shutdown(int delaySeconds = -1);
         bool IsRunning { get; }
-        ITimerManager TimerManager { get; }
 
         /// <summary>
         /// 当前服务器的启动时间(StartServer之后)
