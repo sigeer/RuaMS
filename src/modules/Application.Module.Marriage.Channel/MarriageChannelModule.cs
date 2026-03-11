@@ -3,6 +3,7 @@ using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Players;
+using Application.Module.Marriage.Channel.Commands;
 using Application.Module.Marriage.Common;
 using Application.Module.Marriage.Common.Models;
 using Application.Shared.Constants.Item;
@@ -25,7 +26,7 @@ namespace Application.Module.Marriage.Channel
         public override void OnPlayerLogin(int chrId)
         {
             base.OnPlayerLogin(chrId);
-            _marriageManager.CheckMarriageData(chr);
+            _server.PushChannelCommand(new InvokeCheckMarriageCommand(chrId));
         }
 
         public void WriteMarriageRing(OutPacket p, Player chr)

@@ -126,7 +126,6 @@ namespace Application.Core.Channel
         public List<AbstractChannelModule> Modules { get; private set; }
 
         public ExpeditionService ExpeditionService { get; }
-        public ChannelPlayerStorage PlayerStorage { get; }
         Lazy<MessageDispatcherNew> _messageDispatcher;
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
 
@@ -155,7 +154,6 @@ namespace Application.Core.Channel
             Servers = new();
             ServerConfigMapping = new();
             ServerConfig = serverConfigOptions.Value;
-            PlayerStorage = new();
 
             _skillbookInformationProvider = new(() => ServiceProvider.GetRequiredService<SkillbookInformationProvider>());
             CashItemProvider = cashItemProvider;
@@ -278,14 +276,15 @@ namespace Application.Core.Channel
                     await module.UninstallAsync();
                 }
 
-                PushChannelCommand(new InvokeChannelShutdownCommand());
+                foreach (var server in Servers.Values)
+                {
+                    await server.Shutdown(delaySeconds);
+                }
 
                 await TimerManager.Stop();
                 await CommandLoop.DisposeAsync();
-                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
 
-                // 有些玩家在CashShop
-                await PlayerStorage.disconnectAll(true);
+                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
 
                 await Transport.CompleteChannelShutdown();
                 IsRunning = false;

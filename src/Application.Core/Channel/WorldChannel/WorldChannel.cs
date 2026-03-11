@@ -338,7 +338,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
                 await _respawnTask.StopAsync();
             }
 
-
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);
             await PlayerShopManager.DisposeAsync();
@@ -349,12 +348,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
             await closeChannelSchedules();
 
-            await CommandLoop.DisposeAsync();
-
-            log.Information("[{ServerName}] 停止定时任务调度器{SchedulerName}...", InstanceName, TimerManager.Name);
             await TimerManager.Stop();
-            log.Information("[{ServerName}] 停止定时任务调度器{SchedulerName}>>>完成", InstanceName, TimerManager.Name);
 
+            await CommandLoop.DisposeAsync();
             LifeScope.Dispose();
 
             IsRunning = false;
