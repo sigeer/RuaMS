@@ -3426,7 +3426,7 @@ public class MapleMap : IMap, INamedInstance
 
         if (hasClock())
         {
-            var cal = ChannelServer.Node.GetCurrentTimeDateTimeOffset();
+            var cal = ChannelServer.Node.GetCurrentTimeDateTimeOffset().ToLocalTime();
             chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
         }
         if (hasBoat() > 0)
