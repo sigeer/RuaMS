@@ -147,7 +147,7 @@ namespace Application.Core.Game.Players
         {
             if (_skillCooldownTask == null)
             {
-                _skillCooldownTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
+                _skillCooldownTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
                 {
                     Client.CurrentServer.Post(new PlayerSkillCooldownExpiredCommand(this));
                 }), 1500);

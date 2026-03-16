@@ -80,7 +80,7 @@ public class Pyramid : PartyQuest
         {
             gauge = 100;
             count = 0;
-            gaugeSchedule = worldChannel.Node.TimerManager.register(() =>
+            gaugeSchedule = worldChannel.TimerManager.register(() =>
             {
                 worldChannel.Post(new EventPyramidGaugeCommand(this));
             }, 1000);
@@ -151,7 +151,7 @@ public class Pyramid : PartyQuest
             value = 120;
         }
 
-        _timer = worldChannel.Node.TimerManager.schedule(() =>
+        _timer = worldChannel.TimerManager.schedule(() =>
         {
             worldChannel.Post(new EventPyramidTimeoutCommand(this));
         }, TimeSpan.FromSeconds(value));//, 4000

@@ -2,7 +2,7 @@ using Application.Core.Client;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 
-namespace Application.Module.PlayerNPC.Channel.Commands.Gm6;
+namespace Application.Module.PlayerNPC.Channel.Game.Commands;
 
 public class EraseAllPNpcsCommand : CommandBase
 {

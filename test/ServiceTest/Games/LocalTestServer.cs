@@ -87,16 +87,9 @@ namespace ServiceTest.Games
 
         public MasterServer GetMasterServer() => ServiceProvider.GetRequiredService<MasterServer>();
 
-
-        public WorldChannel GetChannel(int i)
-        {
-            var container = ServiceProvider.GetRequiredService<WorldChannelServer>();
-            return container.Servers[i];
-        }
-
         public Player? GetPlayer(int cid = 1)
         {
-            var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1];
+            var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1] as WorldChannel;
 
             var mainServer = ServiceProvider.GetRequiredService<MasterServer>();
             var loginService = ServiceProvider.GetRequiredService<LoginService>();

@@ -917,7 +917,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     void dropFromFriendlyMonster(long delay)
     {
         Monster m = this;
-        monsterItemDrop = MapModel.ChannelServer.Node.TimerManager.register(() =>
+        monsterItemDrop = MapModel.ChannelServer.TimerManager.register(() =>
         {
             MapModel.ChannelServer.Post(new MonsterFriendlyDropCommand(m));
         }, delay, delay);
@@ -988,10 +988,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
 
-            MapModel.ChannelServer.Node.TimerManager.schedule(() =>
+            MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
             {
                 MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer, lastController));
-            }, getAnimationTime("die1"));
+            }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
         else
         {

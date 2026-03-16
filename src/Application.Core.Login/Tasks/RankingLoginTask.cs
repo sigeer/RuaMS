@@ -40,7 +40,7 @@ public class RankingLoginTask : AbstractRunnable
 {
     readonly MasterServer _server;
 
-    public RankingLoginTask(MasterServer server) : base($"{server.InstanceName}_{nameof(RankingLoginTask)}")
+    public RankingLoginTask(MasterServer server) : base(nameof(RankingLoginTask))
     {
         _server = server;
     }

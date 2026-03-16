@@ -536,10 +536,10 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable($"{InstanceName}_ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
-            TimerManager.register(new NamedRunnable($"{InstanceName}_ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
-            await TimerManager.RegisterAsync(new FuncAsyncRunnable($"{InstanceName}_DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
             TimerManager.register(new LoginCoordinatorTask(this), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(new LoginStorageTask(this), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
@@ -550,7 +550,7 @@ namespace Application.Core.Login
             InvitationManager.Register(TimerManager);
             ServerManager.Register(TimerManager);
 
-            TimerManager.register(new NamedRunnable($"{InstanceName}_NewYearCardNotify", async () =>
+            TimerManager.register(new NamedRunnable("NewYearCardNotify", async () =>
             {
                 await NewYearCardManager.NotifyNewYearCard();
             }), TimeSpan.FromHours(1), timeLeft);

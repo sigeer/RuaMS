@@ -38,7 +38,7 @@ namespace client.processor.stat;
 public class AssignAPProcessor
 {
 
-    public static async Task APAutoAssignAction(InPacket inPacket, IChannelClient c)
+    public static void APAutoAssignAction(InPacket inPacket, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)

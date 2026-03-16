@@ -29,7 +29,7 @@ namespace Application.Core.Channel
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
-        public Dictionary<int, WorldChannel> Servers { get; set; }
+        public Dictionary<int, IChannelServer> Servers { get; set; }
         public DistributeSession<int, SyncProto.PlayerSaveDto>? SyncPlayerSession { get; set; }
         public DistributeSession<int, ItemProto.SyncPlayerShopRequest>? SyncPlayerShopSession { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
@@ -126,7 +126,6 @@ namespace Application.Core.Channel
         public List<AbstractChannelModule> Modules { get; private set; }
 
         public ExpeditionService ExpeditionService { get; }
-        public ChannelPlayerStorage PlayerStorage { get; }
         Lazy<MessageDispatcherNew> _messageDispatcher;
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
 
@@ -155,7 +154,6 @@ namespace Application.Core.Channel
             Servers = new();
             ServerConfigMapping = new();
             ServerConfig = serverConfigOptions.Value;
-            PlayerStorage = new();
 
             _skillbookInformationProvider = new(() => ServiceProvider.GetRequiredService<SkillbookInformationProvider>());
             CashItemProvider = cashItemProvider;
@@ -278,14 +276,15 @@ namespace Application.Core.Channel
                     await module.UninstallAsync();
                 }
 
-                PushChannelCommand(new InvokeChannelShutdownCommand());
+                foreach (var server in Servers.Values)
+                {
+                    await server.Shutdown(delaySeconds);
+                }
 
                 await TimerManager.Stop();
                 await CommandLoop.DisposeAsync();
-                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
 
-                // 有些玩家在CashShop
-                await PlayerStorage.disconnectAll(true);
+                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
 
                 await Transport.CompleteChannelShutdown();
                 IsRunning = false;
@@ -350,7 +349,7 @@ namespace Application.Core.Channel
             {
                 var scope = ServiceProvider.CreateScope();
                 var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
-                worldChannel.Initialize(configs);
+                await worldChannel.Initialize(configs);
 
                 Servers[channel] = worldChannel;
                 ServerConfigMapping[server.Key] = worldChannel;
@@ -408,18 +407,8 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public Player? FindPlayerById(int channel, int cid)
-        {
-            if (cid <= 0)
-                return null;
 
-            if (Servers.TryGetValue(channel, out var ch))
-                return ch.Players.getCharacterById(cid);
-
-            return null;
-        }
-
-        public WorldChannel? GetChannel(int channel)
+        public IActor<ChannelCommandContext>? GetChannelActor(int channel)
         {
             return Servers.GetValueOrDefault(channel);
         }

@@ -38,7 +38,7 @@ public class MapMonitor
     {
         this.map = map;
         this.portal = map.getPortal(portal);
-        this.monitorSchedule = map.ChannelServer.Node.TimerManager.register(() =>
+        this.monitorSchedule = map.ChannelServer.TimerManager.register(() =>
         {
             map.ChannelServer.Post(new MapTempActiveCheckCommand(this));
         }, 5000);

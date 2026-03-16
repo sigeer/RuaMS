@@ -92,7 +92,7 @@ namespace Application.Core.Game.Players
                 stopChairTask();
             }
 
-            chairRecoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
+            chairRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
             {
                 Client.CurrentServer.Post(new PlayerChairBuffCommand(this));
             }, healInterval, healInterval);

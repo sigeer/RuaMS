@@ -122,7 +122,7 @@ namespace Application.Core.Game.Players
         {
             if (itemExpireTask == null)
             {
-                itemExpireTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_ItemExpireTask", () =>
+                itemExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_ItemExpireTask", () =>
                 {
                     Client.CurrentServer.Post(new PlayerItemExpiredCommand(this));
                 }), 60_000);

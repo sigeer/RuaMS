@@ -44,7 +44,7 @@ public class Fitness
     public Fitness(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.Node.TimerManager.schedule(() =>
+        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
         {
             chr.Client.CurrentServer.Post(new EventFitnessTimeoutCommand(this));
         }, 900_000);
@@ -95,7 +95,7 @@ public class Fitness
 
     public void checkAndMessage()
     {
-        this.schedulemsg = chr.Client.CurrentServer.Node.TimerManager.register(() =>
+        this.schedulemsg = chr.Client.CurrentServer.TimerManager.register(() =>
         {
             chr.Client.CurrentServer.Post(new EventFitnessNoticeCommand(this));
         }, 5000, 29500);

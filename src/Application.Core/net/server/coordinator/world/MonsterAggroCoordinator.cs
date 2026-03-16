@@ -82,7 +82,7 @@ public class MonsterAggroCoordinator
             return;
         }
 
-        aggroMonitor = Map.ChannelServer.Node.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
+        aggroMonitor = Map.ChannelServer.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
         {
             Map.ChannelServer.Post(new MapMobAggroCommand(Map));
         }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);

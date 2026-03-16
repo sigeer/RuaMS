@@ -1,11 +1,13 @@
 using Quartz;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using YamlDotNet.Core;
 
 namespace Application.Utility.Tasks;
 
 public class QuartzTimerManager : ITimerManager
 {
+    public string Name => Scheduler.SchedulerName;
     public IScheduler Scheduler { get; }
 
     public ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; } = new();
@@ -44,13 +46,14 @@ public class QuartzTimerManager : ITimerManager
 
     public ScheduledFuture register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
     {
+        var taskName = $"{Scheduler.SchedulerName}_{r.Name}";
         var job = JobBuilder.Create<QuartzJob>()
-            .WithIdentity(r.Name)
+            .WithIdentity(taskName)
             .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, true } })
             .Build();
 
         var builder = TriggerBuilder.Create()
-                        .WithIdentity("T_" + r.Name);
+                        .WithIdentity("T_" + taskName);
         if (delay == null)
             builder.StartNow();
         else
@@ -63,7 +66,7 @@ public class QuartzTimerManager : ITimerManager
                         .Build();
 
         Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
-        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
+        return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
@@ -73,13 +76,14 @@ public class QuartzTimerManager : ITimerManager
         await RegisterAsync(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
     public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
     {
+        var taskName = $"{Scheduler.SchedulerName}_{r.Name}";
         var job = JobBuilder.Create<QuartzJob>()
-            .WithIdentity(r.Name)
+            .WithIdentity(taskName)
             .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, true } })
             .Build();
 
         var builder = TriggerBuilder.Create()
-                        .WithIdentity("T_" + r.Name);
+                        .WithIdentity("T_" + taskName);
         if (delay == null)
             builder.StartNow();
         else
@@ -92,24 +96,25 @@ public class QuartzTimerManager : ITimerManager
                         .Build();
 
         await Scheduler.ScheduleJob(job, trigger);
-        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
+        return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
 
     public ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay)
     {
+        var taskName = $"{Scheduler.SchedulerName}_{r.Name}";
         var job = JobBuilder.Create<QuartzJob>()
-            .WithIdentity(r.Name)
+            .WithIdentity(taskName)
             .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, false } })
             .Build();
 
         var trigger = TriggerBuilder.Create()
-            .WithIdentity("T_" + r.Name)
+            .WithIdentity("T_" + taskName)
             .StartAt(DateTimeOffset.UtcNow.Add(delay))
             .Build();
 
         Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
-        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
+        return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
     public ScheduledFuture schedule(Action r, TimeSpan delay)
@@ -119,7 +124,7 @@ public class QuartzTimerManager : ITimerManager
 
     public async Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
     {
-        taskName = $"{taskName}_{r.GetHashCode()}";
+        taskName = $"{Scheduler.SchedulerName}_{taskName}_{r.GetHashCode()}";
         var job = JobBuilder.Create<QuartzJob>()
             .WithIdentity(taskName)
             .UsingJobData(new JobDataMap() { { JobDataKeys.Data, r }, { JobDataKeys.IsRepeatable, false } })

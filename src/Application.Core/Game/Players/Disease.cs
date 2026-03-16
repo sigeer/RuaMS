@@ -183,7 +183,7 @@ namespace Application.Core.Game.Players
         {
             if (_diseaseExpireTask == null)
             {
-                _diseaseExpireTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
+                _diseaseExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
                 {
                     Client.CurrentServer.Post(new PlayerDiseaseExpiredCommand(this));
                 }), 1500);

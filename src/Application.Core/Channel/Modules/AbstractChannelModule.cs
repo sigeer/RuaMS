@@ -43,11 +43,7 @@ namespace Application.Core.Channel.Modules
         {
             if (arg.FromChannel == 0 && arg.Channel > 0)
             {
-                var chr = _server.GetChannel(arg.Channel)?.getPlayerStorage()?.getCharacterById(arg.Id);
-                if (chr != null)
-                {
-                    OnPlayerLogin(chr);
-                }
+                OnPlayerLogin(arg.Id);
             }
             //if (arg.FromChannel != 0 && arg.Channel == 0)
             //{
@@ -58,7 +54,7 @@ namespace Application.Core.Channel.Modules
             //    await OnPlayerEnterCashShop(obj);
             //}
         }
-        public virtual void OnPlayerLogin(Player chr) { }
+        public virtual void OnPlayerLogin(int chrId) { }
         public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

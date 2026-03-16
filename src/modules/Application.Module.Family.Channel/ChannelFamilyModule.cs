@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Modules;
 using Application.Core.Game.Players;
+using Application.Module.Family.Channel.Commands;
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
@@ -79,38 +80,9 @@ namespace Application.Module.Family.Channel
         }
 
 
-        public override void OnPlayerLogin(Player data)
+        public override void OnPlayerLogin(int chrId)
         {
-            FamilyEntry? familyEntry = null;
-
-            if (data.FamilyId > 0)
-            {
-                var f = _familyManager.GetFamilyByPlayerId(data.Id);
-                if (f != null)
-                {
-                    familyEntry = f.getEntryByID(data.Id);
-                    if (familyEntry != null)
-                    {
-                        familyEntry.Channel = data.Channel;
-                    }
-                    else
-                    {
-                        _logger.LogError("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", data.Name, f.Id);
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Chr {CharacterName} has an invalid family ID ({FamilyId})", data.Name, data.FamilyId);
-                }
-            }
-
-            var chr = _server.FindPlayerById(data.Channel, data.Id);
-            if (chr != null)
-            {
-                chr.sendPacket(FamilyPacketCreator.loadFamily());
-                chr.sendPacket(FamilyPacketCreator.getFamilyInfo(familyEntry));
-                _familyManager.AnnounceToSenior(familyEntry, FamilyPacketCreator.sendFamilyLoginNotice(data.Name, true), true);
-            }
+            _server.PushChannelCommand(new InvokePlayerLoginNotifyCommand(chrId));
         }
     }
 }

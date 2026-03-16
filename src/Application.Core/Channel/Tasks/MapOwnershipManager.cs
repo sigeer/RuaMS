@@ -8,7 +8,7 @@ public class MapOwnershipTask : TaskBase
     readonly WorldChannelServer _server;
 
     public MapOwnershipTask(WorldChannelServer server)
-        : base($"{server.InstanceName}_{nameof(MapOwnershipManager)}",
+        : base(nameof(MapOwnershipManager),
               TimeSpan.FromSeconds(20),
               TimeSpan.FromSeconds(20))
     {

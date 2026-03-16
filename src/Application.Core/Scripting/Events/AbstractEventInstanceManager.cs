@@ -563,7 +563,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
 
-        event_schedule = EventManager.getChannelServer().Node.TimerManager.schedule(() =>
+        event_schedule = EventManager.getChannelServer().TimerManager.schedule(() =>
         {
             EventManager.getChannelServer().Post(new EventInstanceDismissTimerCommand(this));
         }, time);
@@ -707,7 +707,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             EventManager.disposeInstance(name);
         }
 
-        EventManager.getChannelServer().Node.TimerManager.schedule(() =>
+        EventManager.getChannelServer().TimerManager.schedule(() =>
         {
             EventManager.getChannelServer().Post(new MapManagerDisposeCommand(mapManager));
         }, TimeSpan.FromMinutes(1));

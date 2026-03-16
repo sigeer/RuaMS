@@ -10,7 +10,7 @@ namespace Application.Core.Login.Tasks
         readonly SessionCoordinator sessionCoordinator;
         readonly LoginBypassCoordinator loginBypassCoordinator;
 
-        public LoginStorageTask(MasterServer server): base($"{server.InstanceName}_{nameof(LoginStorageTask)}")
+        public LoginStorageTask(MasterServer server): base(nameof(LoginStorageTask))
         {
             this.sessionCoordinator = server.ServiceProvider.GetRequiredService<SessionCoordinator>();
             this.loginBypassCoordinator = server.ServiceProvider.GetRequiredService<LoginBypassCoordinator>();

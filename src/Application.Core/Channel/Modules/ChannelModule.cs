@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Modules
             if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
             {
                 var jobModel = JobFactory.GetById(data.JobId);
-                var packet = PacketCreator.serverNotice(6, 
+                var packet = PacketCreator.serverNotice(6,
                     $"[{ClientCulture.SystemCulture.Ordinal(jobModel.Rank)} Job] {data.Name} has just become a {ClientCulture.SystemCulture.GetJobName(jobModel)}.");
 
                 _server.PushChannelCommand(new InvokeBuddyPacketCommand(data.Id, data.Buddies, packet));
@@ -44,16 +44,12 @@ namespace Application.Core.Channel.Modules
         {
             if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
             {
-                foreach (var ch in _server.Servers.Values)
-                {
-                    ch.LightBlue(e =>
-                        e.GetMessageByKey(
+                _server.PushChannelCommand(new InvokeMultiDropMessageCommandPlus(
+                    [-1], NoticeType.LightBlue, e => e.GetMessageByKey(
                             nameof(ClientMessage.Levelup_Congratulation),
-                            CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, e.GetItemName(data.MedalItemId)),
+                            CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, e.Client.CurrentCulture.GetItemName(data.MedalItemId)),
                             data.Level.ToString(),
-                            data.Name)
-                        );
-                }
+                            data.Name)));
             }
         }
     }

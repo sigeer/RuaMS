@@ -1,6 +1,9 @@
+using Application.Core.Channel.Commands.Channel;
 using Application.Shared.Message;
 using Google.Protobuf;
 using LifeProto;
+using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
@@ -17,7 +20,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(CreatePLifeRequest res)
             {
-                _server.DataService.OnPLifeCreated(res);
+                _server.PushChannelCommand(new InvokePLifeCreatingCommand(res));
             }
 
             protected override CreatePLifeRequest Parse(ByteString data) => CreatePLifeRequest.Parser.ParseFrom(data);
@@ -33,7 +36,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(RemovePLifeResponse res)
             {
-                _server.DataService.OnPLifeRemoved(res);
+                _server.PushChannelCommand(new InvokePLifeRemoveCommand(res));
             }
 
             protected override RemovePLifeResponse Parse(ByteString data) => RemovePLifeResponse.Parser.ParseFrom(data);

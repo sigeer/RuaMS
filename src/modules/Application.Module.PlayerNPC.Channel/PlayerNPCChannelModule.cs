@@ -1,10 +1,9 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Message;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
-using Application.Core.Managers;
+using Application.Module.PlayerNPC.Channel.Game.Commands;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Constants.Job;
 using Application.Shared.MapObjects;
@@ -27,9 +26,6 @@ namespace Application.Module.PlayerNPC.Channel
         public override void Initialize()
         {
             base.Initialize();
-            MessageDispatcher.Register<LifeProto.UpdateMapPlayerNPCResponse>(BroadcastMessage.OnMapPlayerNpcUpdate, _manager.OnRefreshMapPlayerNPC);
-            MessageDispatcher.Register<LifeProto.RemoveAllPlayerNPCResponse>(BroadcastMessage.OnClearPlayerNpc, _manager.OnPlayerNPCClear);
-            MessageDispatcher.Register<LifeProto.RemovePlayerNPCResponse>(BroadcastMessage.OnRemovePlayerNpc, _manager.OnPlayerNPCRemoved);
 
             _manager.LoadAllData();
         }
@@ -64,16 +60,9 @@ namespace Application.Module.PlayerNPC.Channel
 
         public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
         {
-            if (arg.Level == JobFactory.GetById(arg.JobId).GetSlackMaxLevel())
+            if (arg.Level == JobFactory.GetById(arg.JobId).GetSlackMaxLevel() && _config.PLAYERNPC_AUTODEPLOY)
             {
-                var chr = _server.GetChannel(arg.Channel)?.getPlayerStorage()?.getCharacterById(arg.Id);
-                if (chr != null && !chr.isGM())
-                {
-                    if (_config.PLAYERNPC_AUTODEPLOY)
-                    {
-                        SpawnPlayerNPCByHonor(chr);
-                    }
-                }
+                _server.PushChannelCommand(new SpawnHonorPlayerNpcCommand(arg.Id));
             }
         }
     }

@@ -1,4 +1,5 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.Commands.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -543,100 +544,10 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void OnPLifeCreated(LifeProto.CreatePLifeRequest data)
-        {
-            Player? chr = null;
-            foreach (var ch in _server.Servers.Values)
-            {
-                chr ??= ch.Players.getCharacterById(data.MasterId);
-                if (ch.getMapFactory().isMapLoaded(data.Data.MapId))
-                {
-                    var map = ch.getMapFactory().getMap(data.Data.MapId);
-                    if (data.Data.Type == LifeType.NPC)
-                    {
-                        var npc = LifeFactory.Instance.getNPC(data.Data.LifeId);
-                        if (npc != null && npc.getName() == "MISSINGNO")
-                        {
-                            npc.setPosition(new Point(data.Data.X, data.Data.Y));
-                            npc.setCy(data.Data.Cy);
-                            npc.setRx0(data.Data.Rx0);
-                            npc.setRx1(data.Data.Rx1);
-                            npc.setFh(data.Data.Fh);
-
-                            map.addMapObject(npc);
-                            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-
-                        }
-                    }
-                    else if (data.Data.Type == LifeType.Monster)
-                    {
-                        var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
-                        if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
-                        {
-                            map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
-                                data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);
-                        }
-                    }
-                }
-            }
-
-            if (chr != null)
-            {
-                if (data.Data.Type == LifeType.NPC)
-                {
-                    chr.yellowMessage("Pnpc created.");
-                }
-                if (data.Data.Type == LifeType.Monster)
-                {
-                    chr.yellowMessage("Pmob created.");
-                }
-            }
-
-            LoadAllPLife();
-        }
-
         public void RemovePLife(Player chr, string lifeType, int lifeId = -1)
         {
             var pos = chr.getPosition();
             _ = _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
-        }
-
-        public void OnPLifeRemoved(LifeProto.RemovePLifeResponse res)
-        {
-            Player? chr = null;
-            foreach (var ch in _server.Servers.Values)
-            {
-                chr ??= ch.Players.getCharacterById(res.MasterId);
-                foreach (var data in res.RemovedItems)
-                {
-                    if (ch.getMapFactory().isMapLoaded(data.MapId))
-                    {
-                        var map = ch.getMapFactory().getMap(data.MapId);
-                        if (data.Type == LifeType.NPC)
-                        {
-                            map.destroyNPC(data.LifeId);
-                        }
-                        else if (data.Type == LifeType.Monster)
-                        {
-                            map.removeMonsterSpawn(data.LifeId, data.X, data.Y);
-                        }
-                    }
-                }
-            }
-
-            if (chr != null)
-            {
-                if (res.LifeType == LifeType.NPC)
-                {
-                    chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pNPC placements.");
-                }
-                if (res.LifeType == LifeType.Monster)
-                {
-                    chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pmob placements.");
-                }
-            }
-
-            LoadAllPLife();
         }
 
         public void LoadAllPLife()
@@ -667,28 +578,28 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public QueryChannelExpedtionResponse GetExpeditionInfo()
-        {
-            var res = new QueryChannelExpedtionResponse();
-            foreach (var channel in _server.Servers.Values)
-            {
-                var item = new ExpeditionProto.ChannelExpeditionDto() { Channel = channel.getId() };
+        //public QueryChannelExpedtionResponse GetExpeditionInfo()
+        //{
+        //    var res = new QueryChannelExpedtionResponse();
+        //    foreach (var channel in _server.Servers.Values)
+        //    {
+        //        var item = new ExpeditionProto.ChannelExpeditionDto() { Channel = channel.getId() };
 
-                var expeds = channel.getExpeditions();
-                foreach (var exped in expeds)
-                {
-                    var dto = new ExpeditionInfoDto
-                    {
-                        LeaderId = exped.getLeader().Id,
-                        Status = exped.isRegistering() ? 1 : 0,
-                        Type = exped.getType().ordinal()
-                    };
-                    dto.Members.AddRange(exped.getMembers().Select(x => new ExpeditionMemberDto { Id = x.Key, Name = x.Value }).OrderBy(x => x.Id == dto.LeaderId));
-                    item.Expeditions.Add(dto);
-                }
-                res.List.Add(item);
-            }
-            return res;
-        }
+        //        var expeds = channel.getExpeditions();
+        //        foreach (var exped in expeds)
+        //        {
+        //            var dto = new ExpeditionInfoDto
+        //            {
+        //                LeaderId = exped.getLeader().Id,
+        //                Status = exped.isRegistering() ? 1 : 0,
+        //                Type = exped.getType().ordinal()
+        //            };
+        //            dto.Members.AddRange(exped.getMembers().Select(x => new ExpeditionMemberDto { Id = x.Key, Name = x.Value }).OrderBy(x => x.Id == dto.LeaderId));
+        //            item.Expeditions.Add(dto);
+        //        }
+        //        res.List.Add(item);
+        //    }
+        //    return res;
+        //}
     }
 }

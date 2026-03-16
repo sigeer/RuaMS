@@ -6,7 +6,7 @@ namespace Application.Core.Channel.Tasks
     {
         readonly WorldChannelServer _server;
         public DisposeCheckTask(WorldChannelServer server) : base(
-            $"{server.InstanceName}_{nameof(DisposeCheckTask)}")
+            nameof(DisposeCheckTask))
         {
             _server = server;
         }

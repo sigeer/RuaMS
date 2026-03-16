@@ -4,6 +4,7 @@ namespace Application.Utility.Tasks
 {
     public interface ITimerManager
     {
+        string Name { get; }
         ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; }
         Task Start();
         Task Stop();

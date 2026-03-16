@@ -75,17 +75,17 @@ public class AriantColiseum
             mc.sendPacket(PacketCreator.updateAriantPQRanking(score));
         }
 
-        setAriantScoreBoard(eventMap.ChannelServer.Node.TimerManager.schedule(() =>
+        setAriantScoreBoard(eventMap.ChannelServer.TimerManager.schedule(() =>
         {
             eventMap.ChannelServer.Post(new EventAriantClearCommand(this));
         }, pqTimerBoard));
 
-        setArenaFinish(eventMap.ChannelServer.Node.TimerManager.schedule(() =>
+        setArenaFinish(eventMap.ChannelServer.TimerManager.schedule(() =>
         {
             eventMap.ChannelServer.Post(new EventAriantWarpOutCommand(this));
         }, pqTimer));
 
-        setArenaUpdate(eventMap.ChannelServer.Node.TimerManager.register(() =>
+        setArenaUpdate(eventMap.ChannelServer.TimerManager.register(() =>
         {
             eventMap.ChannelServer.Post(new EventAriantBroadcastScoreCommand(this));
         }, 500, 500));

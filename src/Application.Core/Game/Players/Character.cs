@@ -747,7 +747,7 @@ public partial class Player
             }
         }
 
-        Client.CurrentServer.Node.TimerManager.schedule(() =>
+        Client.CurrentServer.TimerManager.schedule(() =>
         {
             Client.CurrentServer.Post(new MapBroadcastJobChangedCommand(this.getMap(), this.Id));
         }, 777);
@@ -1131,7 +1131,7 @@ public partial class Player
     {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
+        extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
         {
             Client.CurrentServer.Post(new PlayerExtralRecoveryCommand(this, healHP, healMP));
         }, healInterval, healInterval);
@@ -2132,7 +2132,7 @@ public partial class Player
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.Node.TimerManager.schedule(() =>
+            Client.CurrentServer.TimerManager.schedule(() =>
             {
                 Client.CurrentServer.Post(new PlayerEnergyChargeCommand(chr));
             }, ceffect.getDuration());
@@ -3124,7 +3124,7 @@ public partial class Player
     {
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
         this.isbanned = true;
-        Client.CurrentServer.Node.TimerManager.schedule(() =>
+        Client.CurrentServer.TimerManager.schedule(() =>
         {
             Client.CurrentServer.Post(new InvokePlayerDisconnectCommand(Id));
         }, duration);
@@ -3149,7 +3149,7 @@ public partial class Player
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
         //this.isbanned = true;
-        //Client.CurrentServer.Node.TimerManager.schedule(new Runnable() {
+        //Client.CurrentServer.TimerManager.schedule(new Runnable() {
         //    public override    public void run() {
         //        Client.disconnect(false, false);
         //    }
@@ -3844,7 +3844,7 @@ public partial class Player
     {
         if (pendantOfSpirit == null)
         {
-            pendantOfSpirit = Client.CurrentServer.Node.TimerManager.register(() =>
+            pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
             {
                 Client.CurrentServer.Post(new PlayerPendantExpRateIncreaseCommand(this));
             }, TimeSpan.FromHours(1)); //1 hour

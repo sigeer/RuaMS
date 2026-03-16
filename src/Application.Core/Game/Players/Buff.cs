@@ -156,7 +156,7 @@ namespace Application.Core.Game.Players
         {
             if (_buffExpireTask == null)
             {
-                _buffExpireTask = Client.CurrentServer.Node.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
+                _buffExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
                 {
                     Client.CurrentServer.Post(new PlayerBuffExpiredCommand(this));
                 }), 1500);
@@ -1092,7 +1092,7 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect healEffect = bHealing.getEffect(bHealingLvl);
                     var healInterval = TimeSpan.FromSeconds(healEffect.getX());
-                    beholderHealingSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
+                    beholderHealingSchedule = Client.CurrentServer.TimerManager.register(() =>
                     {
                         Client.CurrentServer.Post(new PlayerBeholdHealBuffCommand(Id, healEffect));
                     }, healInterval, healInterval);
@@ -1102,7 +1102,7 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect buffEffect = bBuff.getEffect(getSkillLevel(bBuff));
                     var buffInterval = TimeSpan.FromSeconds(buffEffect.getX());
-                    beholderBuffSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
+                    beholderBuffSchedule = Client.CurrentServer.TimerManager.register(() =>
                     {
                         Client.CurrentServer.Post(new PlayerBeholdHexBuffCommand(Id, buffEffect));
 
@@ -1119,7 +1119,7 @@ namespace Application.Core.Game.Players
                     recoveryTask.cancel(false);
                 }
 
-                recoveryTask = Client.CurrentServer.Node.TimerManager.register(() =>
+                recoveryTask = Client.CurrentServer.TimerManager.register(() =>
                 {
                     Client.CurrentServer.Post(new PlayerBuffHealCommand(this, effect));
 
@@ -1251,7 +1251,7 @@ namespace Application.Core.Game.Players
                 dragonBloodSchedule.cancel(false);
                 dragonBloodSchedule = null;
             }
-            dragonBloodSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
+            dragonBloodSchedule = Client.CurrentServer.TimerManager.register(() =>
             {
                 Client.CurrentServer.Post(new PlayerBuffDragonBloodCommand(Id, bloodEffect));
             }, 4000, 4000);
@@ -1350,7 +1350,7 @@ namespace Application.Core.Game.Players
                 {
                     var buffEffect = BerserkX.getEffect(skilllevel);
                     var berserk = (this.HP * 100 / this.ActualMaxHP) < buffEffect.getX();
-                    berserkSchedule = Client.CurrentServer.Node.TimerManager.register(() =>
+                    berserkSchedule = Client.CurrentServer.TimerManager.register(() =>
                     {
                         Client.CurrentServer.Post(new PlayerBerserkBuffCommand(isHidden, Id, buffEffect, berserk));
                     }
