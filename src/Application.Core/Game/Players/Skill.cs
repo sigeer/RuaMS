@@ -5,6 +5,7 @@ using Application.Shared.KeyMaps;
 using net.server;
 using server;
 using tools;
+using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Game.Players
 {
@@ -28,6 +29,16 @@ namespace Application.Core.Game.Players
         public sbyte getSkillLevel(Skill? skill)
         {
             return skill == null ? (sbyte)0 : (Skills.GetSkill(skill)?.skillevel ?? 0);
+        }
+
+        public StatEffect? TryGetPlayerSkillEffect(int skillId)
+        {
+            var skillObj = SkillFactory.GetSkillTrust(skillId);
+
+            var skillLevel = getSkillLevel(skillObj);
+            if (skillLevel == 0)
+                return null;
+            return skillObj.getEffect(skillLevel);
         }
 
         public StatEffect GetPlayerSkillEffect(int skillId)

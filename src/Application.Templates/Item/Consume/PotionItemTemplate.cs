@@ -124,11 +124,11 @@ namespace Application.Templates.Item.Consume
         [WZPath("spec/itemupbyitem")]
         public int ItemUp { get; set; }
         [WZPath("spec/itemCode")]
-        public int ItemCode { get; set; }
+        public int ItemCode { get; set; } = -1;
         [WZPath("spec/itemRange")]
-        public int ItemRange { get; set; }
+        public int ItemRange { get; set; } = -1;
         [WZPath("spec/prob")]
-        public int Prob { get; set; } = 1;
+        public int Prob { get; set; } = 0;
 
         #region MC 里的道具？
         [WZPath("spec/cp")]

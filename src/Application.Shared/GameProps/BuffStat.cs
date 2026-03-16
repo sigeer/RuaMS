@@ -38,9 +38,21 @@ namespace Application.Shared.GameProps
 
         // ------ monster card buffs, thanks to Arnah (Vertisy) ------
         public static readonly BuffStat ITEM_UP_BY_ITEM = new BuffStat(0x100000L);
+        /// <summary>
+        /// 无视物理抵抗
+        /// </summary>
         public static readonly BuffStat RESPECT_PIMMUNE = new BuffStat(0x200000L);
+        /// <summary>
+        /// 无视魔法抵抗
+        /// </summary>
         public static readonly BuffStat RESPECT_MIMMUNE = new BuffStat(0x400000L);
+        /// <summary>
+        /// 属性抗性
+        /// </summary>
         public static readonly BuffStat DEFENSE_ATT = new BuffStat(0x800000L);
+        /// <summary>
+        /// 状态抗性
+        /// </summary>
         public static readonly BuffStat DEFENSE_STATE = new BuffStat(0x1000000L);
 
         public static readonly BuffStat HPREC = new BuffStat(0x2000000L);

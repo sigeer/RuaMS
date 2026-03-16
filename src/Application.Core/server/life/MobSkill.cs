@@ -194,7 +194,7 @@ public class MobSkill : ISkill
     public void applyEffect(Player? player, Monster monster, bool skill, List<Player>? banishPlayersOutput)
     {
         // See if the MobSkill is successful before doing anything
-        if (!makeChanceResult())
+        if (!makeChanceResult(player))
         {
             return;
         }
@@ -554,9 +554,29 @@ public class MobSkill : ISkill
         return cooltime;
     }
 
-    public bool makeChanceResult()
+    public bool makeChanceResult(Player? chr)
     {
-        return prop == 0 || Randomizer.nextDouble() < prop;
+        if (prop == 0 || prop == 1)
+        {
+            return true;
+        }
+
+        var checkProp = prop;
+        // 对玩家释放
+        if (chr != null)
+        {
+            // 不同的抗性都用了同一个buff
+            var buff = chr.getBuffEffect(BuffStat.DEFENSE_STATE);
+            if (buff != null)
+            {
+                var type = Disease.GetDiseaseByAb(buff.DefenseState);
+                if (type?.getMobSkillType() == this.getType())
+                {
+                    checkProp -= (buff.Prob / 100.0f);
+                }
+            }
+        }
+        return Randomizer.nextDouble() < checkProp;
     }
 
     private Rectangle calculateBoundingBox(Point posFrom)

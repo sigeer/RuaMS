@@ -1615,7 +1615,7 @@ public class MapleMap : IMap, INamedInstance
         ScheduledFuture? poisonSchedule = null;
         if (mist is PlayerMist playerMist)
         {
-            poisonSchedule = tMan.register(new MapTaskBase(this, "PlayerMistTask", () =>
+            poisonSchedule = tMan.register(new MapTaskBase(this, $"{nameof(PlayerMist)}_{playerMist.getObjectId()}", () =>
             {
                 ChannelServer.Post(new PlayerMistEffectCommand(playerMist));
             }), 2000, 2500);
