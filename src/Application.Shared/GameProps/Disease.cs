@@ -62,6 +62,7 @@ namespace Application.Shared.GameProps
         private ulong i;
         private MobSkillType mobSkillType;
         bool _isFirst;
+        private string Ab { get; }
 
         Disease(ulong i) : this(i, 0)
         {
@@ -117,6 +118,26 @@ namespace Application.Shared.GameProps
         public static Disease GetBySkillTrust(MobSkillType? skill)
         {
             return getBySkill(skill) ?? throw new BusinessResException($"getBySkill({skill})");
+        }
+
+        public static Disease? GetDiseaseByAb(string? val)
+        {
+            switch (val)
+            {
+                case "C":
+                    return Disease.CURSE;
+                case "F":
+                    return Disease.STUN;
+                case "D":
+                    return DARKNESS;
+                case "W":
+                    return WEAKEN;
+                case "S":
+                    return SEAL;
+
+                default:
+                    return null;
+            }
         }
 
     }

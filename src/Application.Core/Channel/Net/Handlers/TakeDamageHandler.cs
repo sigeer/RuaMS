@@ -28,6 +28,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.status;
 using Microsoft.Extensions.Logging;
+using server;
 using server.life;
 using tools;
 
@@ -49,7 +50,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         p.readInt();
         sbyte damagefrom = p.ReadSByte();
-        p.readByte(); //Element
+        var element = EnumClassCache<Element>.GetValues()[p.readByte()];
         int damage = p.readInt();
         int oid = 0, monsteridfrom = 0, pgmr = 0, direction = 0;
         int pos_x = 0, pos_y = 0, fake = 0;
@@ -266,6 +267,37 @@ public class TakeDamageHandler : ChannelHandlerBase
                 if (highDef != null && hdLevel > 0)
                 {
                     damage = (int)(damage * Math.Ceiling(highDef.getEffect(hdLevel).getX() / 1000.0));
+                }
+
+                // element
+                {
+                    if (element != Element.NEUTRAL)
+                    {
+                        float totalRate = 0;
+
+                        var tempBuff = chr.getBuffEffect(BuffStat.DEFENSE_ATT);
+                        if (tempBuff != null && tempBuff.DefenseAtt?.Length > 0 && Element.getFromChar(tempBuff.DefenseAtt[0]) == element)
+                        {
+                            totalRate += tempBuff.Prob;
+                        }
+
+                        // 也许还需要职业检测
+
+                        if (element == Element.ICE || element == Element.LIGHTING)
+                        {
+                            totalRate += (chr.TryGetPlayerSkillEffect(ILMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
+                        }
+                        if (element == Element.FIRE || element == Element.POISON)
+                        {
+                            totalRate += (chr.TryGetPlayerSkillEffect(FPMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
+                        }
+
+                        totalRate += (chr.TryGetPlayerSkillEffect(Priest.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+                        totalRate += (chr.TryGetPlayerSkillEffect(DragonKnight.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+                        totalRate += (chr.TryGetPlayerSkillEffect(BlazeWizard.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+
+                        damage = (int)Math.Ceiling(damage * Math.Max(0, 100.0f - totalRate) / 100.0f);
+                    }
                 }
             }
 

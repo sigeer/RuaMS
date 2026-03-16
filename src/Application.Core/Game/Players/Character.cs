@@ -1687,30 +1687,6 @@ public partial class Player
         return ActualQuestMesoRate;
     }
 
-    public float getCardRate(int itemid)
-    {
-        float rate = 100.0f;
-
-        if (itemid == 0)
-        {
-            StatEffect? mseMeso = getBuffEffect(BuffStat.MESO_UP_BY_ITEM);
-            if (mseMeso != null)
-            {
-                rate += mseMeso.getCardRate(getMapId(), itemid);
-            }
-        }
-        else
-        {
-            StatEffect? mseItem = getBuffEffect(BuffStat.ITEM_UP_BY_ITEM);
-            if (mseItem != null)
-            {
-                rate += mseItem.getCardRate(getMapId(), itemid);
-            }
-        }
-
-        return rate / 100;
-    }
-
     public int getFace()
     {
         return Face;

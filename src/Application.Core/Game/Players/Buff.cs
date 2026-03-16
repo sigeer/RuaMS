@@ -1372,5 +1372,29 @@ namespace Application.Core.Game.Players
                 MapModel.broadcastGMMessage(this, PacketCreator.showBerserk(Id, buffEffect.SkillLevel, berserk), false);
             }
         }
+
+        public float getCardRate(int itemid)
+        {
+            float rate = 100.0f;
+
+            if (itemid == 0)
+            {
+                StatEffect? mseMeso = getBuffEffect(BuffStat.MESO_UP_BY_ITEM);
+                if (mseMeso != null)
+                {
+                    rate += mseMeso.getCardRate(this, itemid);
+                }
+            }
+            else
+            {
+                StatEffect? mseItem = getBuffEffect(BuffStat.ITEM_UP_BY_ITEM);
+                if (mseItem != null)
+                {
+                    rate += mseItem.getCardRate(this, itemid);
+                }
+            }
+
+            return rate / 100;
+        }
     }
 }
