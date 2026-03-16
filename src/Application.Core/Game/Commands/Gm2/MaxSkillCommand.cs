@@ -22,7 +22,7 @@ public class MaxSkillCommand : CommandBase
             catch (Exception nfe)
             {
                 log.Error(nfe.ToString());
-                break;
+                continue;
             }
         }
 

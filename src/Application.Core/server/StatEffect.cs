@@ -358,7 +358,7 @@ public class StatEffect
                     DefenseState = mobCard.DefenseState;
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
-
+                prob = mobCard.Prob;
 
                 foreach (var conData in mobCard.Con)
                 {
