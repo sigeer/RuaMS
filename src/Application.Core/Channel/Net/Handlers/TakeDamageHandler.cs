@@ -270,35 +270,35 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
 
                 // element
-                {
-                    if (element != Element.NEUTRAL)
-                    {
-                        float totalRate = 0;
+                //{
+                //    if (element != Element.NEUTRAL)
+                //    {
+                //        float totalRate = 0;
 
-                        var tempBuff = chr.getBuffEffect(BuffStat.DEFENSE_ATT);
-                        if (tempBuff != null && tempBuff.DefenseAtt?.Length > 0 && Element.getFromChar(tempBuff.DefenseAtt[0]) == element)
-                        {
-                            totalRate += tempBuff.Prob;
-                        }
+                //        var tempBuff = chr.getBuffEffect(BuffStat.DEFENSE_ATT);
+                //        if (tempBuff != null && tempBuff.DefenseAtt?.Length > 0 && Element.getFromChar(tempBuff.DefenseAtt[0]) == element)
+                //        {
+                //            totalRate += tempBuff.Prob;
+                //        }
 
-                        // 也许还需要职业检测
+                //        // 也许还需要职业检测
 
-                        if (element == Element.ICE || element == Element.LIGHTING)
-                        {
-                            totalRate += (chr.TryGetPlayerSkillEffect(ILMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
-                        }
-                        if (element == Element.FIRE || element == Element.POISON)
-                        {
-                            totalRate += (chr.TryGetPlayerSkillEffect(FPMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
-                        }
+                //        if (element == Element.ICE || element == Element.LIGHTING)
+                //        {
+                //            totalRate += (chr.TryGetPlayerSkillEffect(ILMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
+                //        }
+                //        if (element == Element.FIRE || element == Element.POISON)
+                //        {
+                //            totalRate += (chr.TryGetPlayerSkillEffect(FPMage.PARTIAL_RESISTANCE)?.getX() ?? 0);
+                //        }
 
-                        totalRate += (chr.TryGetPlayerSkillEffect(Priest.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
-                        totalRate += (chr.TryGetPlayerSkillEffect(DragonKnight.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
-                        totalRate += (chr.TryGetPlayerSkillEffect(BlazeWizard.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+                //        totalRate += (chr.TryGetPlayerSkillEffect(Priest.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+                //        totalRate += (chr.TryGetPlayerSkillEffect(DragonKnight.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
+                //        totalRate += (chr.TryGetPlayerSkillEffect(BlazeWizard.ELEMENTAL_RESISTANCE)?.getX() ?? 0);
 
-                        damage = (int)Math.Ceiling(damage * Math.Max(0, 100.0f - totalRate) / 100.0f);
-                    }
-                }
+                //        damage = (int)Math.Ceiling(damage * Math.Max(0, 100.0f - totalRate) / 100.0f);
+                //    }
+                //}
             }
 
             int? buffValue = null;

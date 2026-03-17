@@ -214,11 +214,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                     if (attack.magic ? monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) : monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY))
                     {
-                        var passBuff = player.getBuffEffect(attack.magic ? BuffStat.RESPECT_MIMMUNE : BuffStat.RESPECT_PIMMUNE);
-                        if (passBuff == null || Randomizer.nextDouble() >= passBuff.Prob / 100.0f)
-                        {
-                            Array.Fill(onedList, 1);
-                        }                        
+                        Array.Fill(onedList, 1);
                     }
 
                     if (MobId.isDojoBoss(monster.getId()))
