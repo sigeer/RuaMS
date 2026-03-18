@@ -1,0 +1,94 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="DevLog.MD" />
+    <File Path="docs/CHANGES.MD" />
+    <File Path="docs/CodeMigration.MD" />
+    <File Path="README.MD" />
+  </Folder>
+  <Folder Name="/SolutionItems/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="docker-compose.yml" />
+    <File Path="NuGet.config" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Application.Benchmark/Application.Benchmark.csproj" />
+    <Project Path="src/Application.Core.Channel.InProgress/Application.Core.Channel.InProgress.csproj" />
+    <Project Path="src/Application.Core.EF.MySQL/Application.Core.EF.MySQL.csproj" />
+    <Project Path="src/Application.Core.EF.Sqlite/Application.Core.EF.Sqlite.csproj" />
+    <Project Path="src/Application.Core.EF/Application.Core.EF.csproj" />
+    <Project Path="src/Application.Core.Login/Application.Core.Login.csproj" />
+    <Project Path="src/Application.Core/Application.Core.csproj" />
+    <Project Path="src/Application.Host.Channel/Application.Host.Channel.csproj" />
+    <Project Path="src/Application.Host/Application.Host.csproj" />
+    <Project Path="src/Application.Protos/Application.Protos.csproj" />
+    <Project Path="src/Application.Resources/Application.Resources.csproj" />
+    <Project Path="src/Application.Scripting.JS/Application.Scripting.JS.csproj" />
+    <Project Path="src/Application.Scripting.Lua/Application.Scripting.Lua.csproj" />
+    <Project Path="src/Application.Scripting/Application.Scripting.csproj" />
+    <Project Path="src/Application.Shared/Application.Shared.csproj" />
+    <Project Path="src/Application.Templates.XmlWzReader/Application.Templates.XmlWzReader.csproj" />
+    <Project Path="src/Application.Templates/Application.Templates.csproj" />
+    <Project Path="src/Application.Utility/Application.Utility.csproj" />
+    <Project Path="src/XmlWzReader/XmlWzReader.csproj" />
+  </Folder>
+  <Folder Name="/src/app/">
+    <Project Path="src/app/RuaMS.AppHost/RuaMS.AppHost.csproj" />
+    <Project Path="src/app/RuaMS.ServiceDefaults/RuaMS.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/BBS/">
+    <Project Path="src/modules/Application.Module.BBS.Channel.InProgress/Application.Module.BBS.Channel.InProgress.csproj" />
+    <Project Path="src/modules/Application.Module.BBS.Channel/Application.Module.BBS.Channel.csproj" />
+    <Project Path="src/modules/Application.Module.BBS.Common/Application.Module.BBS.Common.csproj" />
+    <Project Path="src/modules/Application.Module.BBS.Master/Application.Module.BBS.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/ExpeditionBossLog/">
+    <Project Path="src/modules/Application.Module.ExpeditionBossLog.Master/Application.Module.ExpeditionBossLog.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Family/">
+    <Project Path="src/modules/Application.Module.Family.Channel/Application.Module.Family.Channel.csproj" />
+    <Project Path="src/modules/Application.Module.Family.Common/Application.Module.Family.Common.csproj" />
+    <Project Path="src/modules/Application.Module.Family.Master/Application.Module.Family.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Fishing/">
+    <Project Path="src/modules/Application.Module.Fishing.Channel/Application.Module.Fishing.Channel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Maker/">
+    <Project Path="src/modules/Application.Module.Maker.Channel.InProgress/Application.Module.Maker.Channel.InProgress.csproj" />
+    <Project Path="src/modules/Application.Module.Maker.Channel/Application.Module.Maker.Channel.csproj" />
+    <Project Path="src/modules/Application.Module.Maker.Common/Application.Module.Maker.Common.csproj" />
+    <Project Path="src/modules/Application.Module.Maker.Master/Application.Module.Maker.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Marriage/">
+    <Project Path="src/modules/Application.Module.Marriage.Channel.InProgress/Application.Module.Marriage.Channel.InProgress.csproj" />
+    <Project Path="src/modules/Application.Module.Marriage.Channel/Application.Module.Marriage.Channel.csproj" />
+    <Project Path="src/modules/Application.Module.Marriage.Common/Application.Module.Marriage.Common.csproj" />
+    <Project Path="src/modules/Application.Module.Marriage.Master/Application.Module.Marriage.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/PlayerNPC/">
+    <Project Path="src/modules/Application.Module.PlayerNPC.Channel.InProgress/Application.Module.PlayerNPC.Channel.InProgress.csproj" />
+    <Project Path="src/modules/Application.Module.PlayerNPC.Channel/Application.Module.PlayerNPC.Channel.csproj" />
+    <Project Path="src/modules/Application.Module.PlayerNPC.Common/Application.Module.PlayerNPC.Common.csproj" />
+    <Project Path="src/modules/Application.Module.PlayerNPC.Master/Application.Module.PlayerNPC.Master.csproj" />
+  </Folder>
+  <Folder Name="/src/srcItems/">
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/ServiceTest/ServiceTest.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/CodeMigration/CodeMigration.csproj" />
+    <Project Path="tools/XmlWzReader.SouceGenerator/XmlWzReader.SouceGenerator.csproj" />
+  </Folder>
+  <Folder Name="/workflow/">
+    <File Path=".github/workflows/build-docker-channel.yml" />
+    <File Path=".github/workflows/build-docker-master-standalone.yml" />
+    <File Path=".github/workflows/build-docker-master.yml" />
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+</Solution>
