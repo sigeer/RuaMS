@@ -519,8 +519,10 @@ public class PacketCreator
                 p.writeInt(skill.Value.masterlevel);
             }
         }
-        p.writeShort(chr.getAllCooldowns().Count);
-        foreach (PlayerCoolDownValueHolder cooling in chr.getAllCooldowns())
+
+        var cooldowns = chr.getAllCooldowns();
+        p.writeShort(cooldowns.Count);
+        foreach (var cooling in cooldowns)
         {
             p.writeInt(cooling.skillId);
             int timeLeft = (int)(cooling.length + cooling.startTime - chr.Client.CurrentServer.Node.getCurrentTime());

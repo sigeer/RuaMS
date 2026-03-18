@@ -174,6 +174,11 @@ namespace Application.Core.Game.Players
             long curTime = Client.CurrentServer.Node.getCurrentTime();
             foreach (var bel in es)
             {
+                if (bel.Key == Corsair.BATTLE_SHIP_HP)
+                {
+                    continue;
+                }
+
                 CooldownValueHolder mcdvh = bel.Value;
                 if (curTime >= mcdvh.startTime + mcdvh.length)
                 {
@@ -209,7 +214,7 @@ namespace Application.Core.Game.Players
         }
         public void giveCoolDowns(int skillid, long starttime, long length)
         {
-            if (skillid == 5221999)
+            if (skillid == Corsair.BATTLE_SHIP_HP)
             {
                 this.battleshipHp = (int)length;
                 addCooldown(skillid, 0, length);

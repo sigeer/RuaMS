@@ -1086,7 +1086,7 @@ public partial class Player
 
     public void announceBattleshipHp()
     {
-        sendPacket(PacketCreator.skillCooldown(5221999, battleshipHp));
+        sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP_HP, battleshipHp));
     }
 
     public void decreaseBattleshipHp(int decrease)
@@ -1096,15 +1096,17 @@ public partial class Player
         {
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
+
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
             addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServer.Node.getCurrentTime(), cooldown * 1000);
-            removeCooldown(5221999);
+
+            removeCooldown(Corsair.BATTLE_SHIP_HP);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
         else
         {
             announceBattleshipHp();
-            addCooldown(5221999, 0, long.MaxValue);
+            addCooldown(Corsair.BATTLE_SHIP_HP, 0, battleshipHp);
         }
     }
 
@@ -3050,13 +3052,16 @@ public partial class Player
         }
     }
 
-    public void setBattleshipHp(int battleshipHp)
-    {
-        this.battleshipHp = battleshipHp;
-    }
-
     public void resetBattleshipHp()
     {
+        // a1: skillid, a2: skillLevel, a3: level
+        //  int __cdecl sub_7665F1(int a1, int a2, int a3)
+        //  {
+        //    if ( a1 == 5221006 )
+        //      return 200 * (a3 + 2 * a2 - 120);
+        //    else
+        //      return -1;
+        //  }
         int bshipLevel = Math.Max(getLevel() - 120, 0);  // thanks alex12 for noticing battleship HP issues for low-level players
         this.battleshipHp = 400 * getSkillLevel(SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP)) + (bshipLevel * 200);
     }

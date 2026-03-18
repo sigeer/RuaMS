@@ -37,4 +37,6 @@ public class Corsair
     public const int HYPNOTIZE = 5221009;
     public const int SPEED_INFUSION = 5221010;
     public const int BULLSEYE = 5220011;
+
+    public const int BATTLE_SHIP_HP = 5221999;
 }

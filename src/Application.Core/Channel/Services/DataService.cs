@@ -215,7 +215,7 @@ namespace Application.Core.Channel.Services
                 int skillid = item.SkillId;
                 long length = item.Length;
                 long startTime = item.StartTime;
-                if (skillid != 5221999 && (length + startTime < c.CurrentServer.Node.getCurrentTime()))
+                if (skillid != Corsair.BATTLE_SHIP_HP && (length + startTime < c.CurrentServer.Node.getCurrentTime()))
                 {
                     continue;
                 }

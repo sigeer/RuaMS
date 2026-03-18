@@ -28,7 +28,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using Application.Shared.Constants.Map;
+using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
@@ -53,19 +53,17 @@ public class StatEffect
     private short watk, matk, wdef, mdef, acc, avoid, speed, jump;
     private short hp, mp;
     private double hpR, mpR;
-    private short mhpRRate, mmpRRate, mobSkill, mobSkillLevel;
+    private short mhpRRate, mmpRRate;
     private sbyte mhpR, mmpR;
     private short mpCon, hpCon;
-    private int duration = -1, target, barrier;
+    private int duration = -1;
     private bool overTime;
     private int sourceid;
-    private int moveTo = -1;
-    private int cp, nuffSkill;
     private List<Disease> cureDebuffs;
     private bool skill;
     private List<BuffStatValue> statups;
     private Dictionary<MonsterStatus, int> monsterStatus;
-    private int x, y, mobCount = 1, moneyCon, cooldown, morphId = 0, ghost, fatigue, berserk, booster;
+    private int x, y, mobCount = 1, moneyCon, cooldown, morphId = 0;
     private int prop = 100;
     private int itemCon, itemConNo;
     private int damage = 100, attackCount = 1, fixdamage = -1;
@@ -85,8 +83,6 @@ public class StatEffect
 
 
     public List<ScopedEffect> ScopedEffects { get; } = [];
-    int _itemCode = -1;
-    int _itemRange = -1;
     public int Prob { get; private set; }
     public string? DefenseAtt { get; private set; }
     public string? DefenseState { get; private set; }
@@ -99,22 +95,32 @@ public class StatEffect
 
     public int getCardRate(Player chr, int itemid)
     {
-        if (!isActive(chr))
+        //if (!isActive(chr))
+        //{
+        //    return 0;
+        //}
+        if (itemid == 0 && EffectTemplate is IItemStatEffectMesoUp mesoUp)
         {
-            return 0;
+            return mesoUp.Prob;
         }
-        if (_itemCode == -1 && _itemRange == -1)
+        if (itemid > 0 && EffectTemplate is IItemStatEffectItemUp itemUp)
         {
-            return Prob;
+            if (itemUp.ItemUp == 1)
+            {
+                return itemUp.Prob;
+            }
+
+            else if (itemUp.ItemUp == 2 && itemid == itemUp.ItemCode)
+            {
+                return itemUp.Prob;
+            }
+
+            else if (itemUp.ItemUp == 3 && itemid / 10000 == itemUp.ItemRange)
+            {
+                return itemUp.Prob;
+            }
         }
-        if (itemid == _itemCode)
-        {
-            return Prob;
-        }
-        if (itemid / 10000 == _itemRange)
-        {
-            return Prob;
-        }
+
         return 0;
     }
 
@@ -240,31 +246,13 @@ public class StatEffect
 
         if (template is IStatEffectExpInc expInc && expInc.ExpInc > 0)
         {
+            // 不像buff  更像一次性获得经验
             addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_INCREASE, expInc.ExpInc);
-        }
-
-        if (template is IItemStatEffectMC mcItem)
-        {
-            cp = mcItem.CP;
-            nuffSkill = mcItem.CPSkill;
-        }
-
-        if (template is IStatEffectIncMountFatigue fatigueItem && fatigueItem.IncFatigue != 0)
-        {
-            fatigue = fatigueItem.IncFatigue;
-        }
-
-        if (template is IItemStatEffectMobSkill mobSkillItem && mobSkillItem.MobSkill != null)
-        {
-            mobSkill = (short)mobSkillItem.MobSkill.MobSkill;
-            mobSkillLevel = (short)mobSkillItem.MobSkill.Level;
-            target = (short)mobSkillItem.MobSkill.Target;
         }
 
         if (template is IStatEffectMorphGhost morphGhost)
         {
-            ghost = morphGhost.Ghost;
-            addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, ghost);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, morphGhost.Ghost);
         }
 
         if (template is IStatEffectMorph morphEffect)
@@ -272,11 +260,6 @@ public class StatEffect
             morphId = morphEffect.Morph;
             hp = (short)morphEffect.HP;
             addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, morphId);
-        }
-
-        if (template is TownScrollItemTemplate scroll)
-        {
-            moveTo = scroll.MoveTo;
         }
 
         if (template is CouponItemTemplate coupon)
@@ -323,20 +306,16 @@ public class StatEffect
 
         if (template is PotionItemTemplate other)
         {
-            barrier = other.Barrier;
-            berserk = other.Berserk;
-            booster = other.Booster;
-
-            addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, berserk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, booster);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, other.Barrier);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, other.Berserk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, other.Booster);
         }
 
         {
-            int prob = 0;
             if (template is MonsterCardItemTemplate mobCard)
             {
-                // TODO: 这4个效果加成功能似乎没有实现
+                Prob = mobCard.Prob;
+                // 客户端计算
                 if (mobCard.RespectPimmune)
                 {
                     addBuffStatPairToListIfNotZero(statups, BuffStat.RESPECT_PIMMUNE, mobCard.Prob);
@@ -358,7 +337,6 @@ public class StatEffect
                     DefenseState = mobCard.DefenseState;
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
-                prob = mobCard.Prob;
 
                 foreach (var conData in mobCard.Con)
                 {
@@ -368,32 +346,16 @@ public class StatEffect
 
             if (template is IItemStatEffectMesoUp mesoUp && mesoUp.MesoUp)
             {
+                Prob = mesoUp.Prob;
                 // 为什么是4？
                 // 改成prob，当存在多个有效buff时，取用倍率最高的
                 addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, mesoUp.Prob);
-                prob = mesoUp.Prob;
             }
 
             if (template is IItemStatEffectItemUp itemUp && itemUp.ItemUp > 0)
             {
+                Prob = itemUp.Prob;
                 addBuffStatPairToListIfNotZero(statups, BuffStat.ITEM_UP_BY_ITEM, itemUp.Prob);
-                prob = itemUp.Prob;
-
-                switch (itemUp.ItemUp)
-                {
-                    case 2:
-                        _itemCode = itemUp.ItemCode;
-                        break;
-
-                    case 3:
-                        _itemRange = itemUp.ItemRange;    // 3 digits
-                        break;
-                }
-            }
-
-            if (prob > 0)
-            {
-                Prob = prob;
             }
         }
 
@@ -828,7 +790,6 @@ public class StatEffect
         }
 
 
-
         statups.TrimExcess();
     }
 
@@ -961,21 +922,21 @@ public class StatEffect
             return false;
         }
 
-        if (moveTo != -1)
+        if (EffectTemplate is TownScrollItemTemplate townScroll)
         {
-            if (moveTo != applyto.getMapId())
+            if (townScroll.MoveTo != applyto.getMapId())
             {
                 IMap target;
                 Portal pt;
 
-                if (moveTo == MapId.NONE)
+                if (townScroll.MoveTo == MapId.NONE)
                 {
                     target = applyto.getMap().getReturnMap();
                     pt = target.getRandomPlayerSpawnpoint();
                 }
                 else
                 {
-                    target = applyto.getChannelServer().getMapFactory().getMap(moveTo);
+                    target = applyto.getChannelServer().getMapFactory().getMap(townScroll.MoveTo);
                     int targetid = target.getId() / 10000000;
                     if (targetid != 60
                         && applyto.getMapId() / 10000000 != 61
@@ -1057,14 +1018,62 @@ public class StatEffect
             applyto.Monsterbook.addCard(monsterCardItem.TemplateId);
         }
 
-        if (cp != 0)
+        if (EffectTemplate is IItemStatEffectMC mc)
         {
-            applyto.gainCP(cp);
+            if (mc.CP != 0)
+            {
+                applyto.gainCP(mc.CP);
+            }
+
+            if (mc.CPSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
+            {
+                // added by Drago (Dragohe4rt)
+                var skill = CarnivalFactory.getInstance().getSkill(mc.CPSkill);
+                if (skill != null)
+                {
+                    var dis = skill.getDisease();
+                    var opposition = applyfrom.MCTeam!.Enemy!;
+                    if (skill.targetsAll)
+                    {
+                        foreach (var chrApp in opposition.Team.EligibleMembers)
+                        {
+                            if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
+                            {
+                                if (dis == null)
+                                {
+                                    chrApp.dispel();
+                                }
+                                else
+                                {
+                                    MobSkill mobSkill = skill.getSkill();
+                                    chrApp.giveDebuff(dis, mobSkill);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var chrApp = applyfrom.getMap().getCharacterById(opposition.GetRandomMemberId());
+                        if (chrApp != null && chrApp.getMap().isCPQMap())
+                        {
+                            if (dis == null)
+                            {
+                                chrApp.dispel();
+                            }
+                            else
+                            {
+                                MobSkill mobSkill = skill.getSkill();
+                                chrApp.giveDebuff(dis, mobSkill);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        if (applyto.MountModel != null && this.getFatigue() != 0)
+        if (EffectTemplate is IStatEffectIncMountFatigue mountFatigue && mountFatigue.IncFatigue != 0 && applyto.MountModel != null)
         {
-            applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + this.getFatigue());
+            applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + mountFatigue.IncFatigue);
         }
 
         if (summonMovementType != null && pos != null)
@@ -1122,51 +1131,6 @@ public class StatEffect
         {
             applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
         }
-        else if (nuffSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
-        {
-            // added by Drago (Dragohe4rt)
-            var skill = CarnivalFactory.getInstance().getSkill(nuffSkill);
-            if (skill != null)
-            {
-                var dis = skill.getDisease();
-                var opposition = applyfrom.MCTeam!.Enemy!;
-                if (skill.targetsAll)
-                {
-                    foreach (var chrApp in opposition.Team.EligibleMembers)
-                    {
-                        if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
-                        {
-                            if (dis == null)
-                            {
-                                chrApp.dispel();
-                            }
-                            else
-                            {
-                                MobSkill mobSkill = skill.getSkill();
-                                chrApp.giveDebuff(dis, mobSkill);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-
-                    var chrApp = applyfrom.getMap().getCharacterById(opposition.GetRandomMemberId());
-                    if (chrApp != null && chrApp.getMap().isCPQMap())
-                    {
-                        if (dis == null)
-                        {
-                            chrApp.dispel();
-                        }
-                        else
-                        {
-                            MobSkill mobSkill = skill.getSkill();
-                            chrApp.giveDebuff(dis, mobSkill);
-                        }
-                    }
-                }
-            }
-        }
         else if (cureDebuffs.Count > 0)
         { // added by Drago (Dragohe4rt)
             foreach (Disease debuff in cureDebuffs)
@@ -1174,13 +1138,13 @@ public class StatEffect
                 applyfrom.dispelDebuff(debuff);
             }
         }
-        else if (mobSkill > 0 && mobSkillLevel > 0)
+        else if (EffectTemplate is IItemStatEffectMobSkill mobSkillEffect && mobSkillEffect.MobSkill != null)
         {
-            MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkill);
-            MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillLevel);
+            MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkillEffect.MobSkill.MobSkill);
+            MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillEffect.MobSkill.Level);
             var dis = Disease.GetBySkillTrust(mobSkillType);
 
-            if (target > 0)
+            if (mobSkillEffect.MobSkill.Target > 0)
             {
                 foreach (Player chr in applyto.getMap().getAllPlayers())
                 {
@@ -1416,6 +1380,18 @@ public class StatEffect
                 if (localstatups[i].BuffState.Equals(BuffStat.MORPH))
                 {
                     localstatups[i] = new(BuffStat.MORPH, getMorph(applyto));
+                    break;
+                }
+            }
+        }
+        else if (EffectTemplate is IStatEffectMorph morph && morph.MorphRandom?.Length > 0)
+        {
+            var item = new LotteryMachine<MorphRandomData, int>(morph.MorphRandom.ToList(), x => x.Prob).GetRandomItem();
+            for (int i = 0; i < localstatups.Length; i++)
+            {
+                if (localstatups[i].BuffState.Equals(BuffStat.MORPH))
+                {
+                    localstatups[i] = new(BuffStat.MORPH, item.Morph);
                     break;
                 }
             }
@@ -1973,16 +1949,6 @@ public class StatEffect
     private bool isComboReset()
     {
         return sourceid == Aran.COMBO_BARRIER || sourceid == Aran.COMBO_DRAIN;
-    }
-
-    private int getFatigue()
-    {
-        return fatigue;
-    }
-
-    private int getMorph()
-    {
-        return morphId;
     }
 
     private int getMorph(Player chr)
