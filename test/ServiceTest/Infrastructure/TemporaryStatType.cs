@@ -1,18 +1,18 @@
 using Application.Shared.GameProps;
 using Application.Utility;
 
-namespace ServiceTest.Games.Gameplay
+namespace ServiceTest.Infrastructure
 {
     public class TempDe
     {
-        // [Test]
+        [Test]
         public void P1()
         {
             var n = Enum.GetValues<TemporaryStatType>();
             List<PosValuePair> ns = [];
             foreach (var item in n)
             {
-                ns.Add(new(item.ToString(), 3 - ((int)item / 32), (int)(((long)1 << ((int)item % 32)) & 0xFFFFFFFF), false));
+                ns.Add(new(item.ToString(), 3 - ((int)item / 32), (uint)(((long)1 << ((int)item % 32)) & 0xFFFFFFFF), false));
             }
 
             var o = EnumClassCache<BuffStat>.GetValues();
@@ -20,42 +20,42 @@ namespace ServiceTest.Games.Gameplay
             List<PosValuePair> os = [];
             foreach (var item in o)
             {
-                var high = (int)(item.getValue() >> 32);
-                var low = (int)(item.getValue() & 0xFFFFFFFF);
+                var high = (uint)(item.getValue() >> 32);
+                var low = (uint)(item.getValue() & 0xFFFFFFFF);
 
                 int pos = low != 0 ? 2 : 3;
                 if (item.IsFirst)
                 {
                     pos -= 2;
                 }
-                int value = low > 0 ? low : high;
+                var value = low > 0 ? low : high;
                 os.Add(new PosValuePair(item.name(), pos, value, false));
 
             }
             foreach (var item in d)
             {
-                var high = (int)(item.getValue() >> 32);
-                var low = (int)(item.getValue() & 0xFFFFFFFF);
+                var high = (uint)(item.getValue() >> 32);
+                var low = (uint)(item.getValue() & 0xFFFFFFFF);
 
                 int pos = low != 0 ? 2 : 3;
                 if (item.isFirst())
                 {
                     pos -= 2;
                 }
-                int value = low > 0 ? low : high;
+                var value = low > 0 ? low : high;
                 os.Add(new PosValuePair(item.name(), pos, value, true));
             }
 
             Console.WriteLine("New================>");
             foreach (var item in ns.OrderBy(x => x.Position).ThenBy(x => x.Value))
             {
-                Console.WriteLine($"{item.Name}: Pos: {item.Position}, Value: {item.Value}");
+                Console.WriteLine($"{item.Name}: Pos: {item.Position}, Value: {(uint)item.Value}");
             }
 
             Console.WriteLine("Old================>");
             foreach (var item in os.OrderBy(x => x.Position).ThenBy(x => x.Value))
             {
-                var s = $"{item.Name}: Pos: {item.Position}, Value: {item.Value}";
+                var s = $"{item.Name}: Pos: {item.Position}, Value: {(uint)item.Value}";
                 if (item.IsDisease)
                 {
                     s += "  (From Disease)";
@@ -67,7 +67,7 @@ namespace ServiceTest.Games.Gameplay
         }
     }
 
-    public record PosValuePair(string Name, int Position, int Value, bool IsDisease);
+    public record PosValuePair(string Name, int Position, uint Value, bool IsDisease);
     public enum TemporaryStatType
     {
         WATK,
