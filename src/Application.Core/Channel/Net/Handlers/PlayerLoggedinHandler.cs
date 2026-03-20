@@ -171,8 +171,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
 
-            player.StartPlayerTask();
-
             if (player.JobModel.HasDragon())
             {
                 player.createDragon();

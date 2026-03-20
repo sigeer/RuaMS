@@ -8,10 +8,16 @@ namespace Application.Core.Login.Models
 
     public class BuffModel
     {
-        public int UsedTime { get; set; }
+        public long StartTime { get; set; }
         public int SourceId { get; set; }
-        public bool IsSkill { get; set; }
         public int SkillLevel { get; set; }
+        public BuffStatValueModel[] Stats { get; set; }
+    }
+
+    public record BuffStatValueModel
+    {
+        public string BuffStat { get; set; }
+        public int Value { get; set; }
     }
     public class DiseaseModel
     {

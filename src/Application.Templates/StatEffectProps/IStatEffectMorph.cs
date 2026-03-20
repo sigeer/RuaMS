@@ -7,6 +7,7 @@ namespace Application.Templates.StatEffectProps
         public int HP { get; }
 
         public int Morph { get; }
-        public MorphRandomData[]? MorphRandom { get; }
+        public MorphRandomData[] MorphRandom { get; }
+        bool Valid() => Morph > 0 || MorphRandom.Length > 0;
     }
 }

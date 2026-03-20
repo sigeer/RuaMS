@@ -99,7 +99,7 @@ namespace Application.Templates.Skill
         [GenerateIgnoreProperty]
         public int ExpInc { get; set; }
         [GenerateIgnoreProperty]
-        public MorphRandomData[]? MorphRandom { get; set; }
+        public MorphRandomData[] MorphRandom { get; set; } = [];
         [GenerateIgnoreProperty]
         public int ExpBuffRate { get; set; }
     }

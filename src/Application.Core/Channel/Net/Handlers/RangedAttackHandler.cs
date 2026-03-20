@@ -51,14 +51,11 @@ public class RangedAttackHandler : AbstractDealDamageHandler
 
         var attack = parseDamage(p, chr, true, false);
 
-        if (chr.getBuffEffect(BuffStat.MORPH) != null)
+        if (chr.IsMorphWithoutAttack())
         {
-            if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
-            {
-                // How are they attacking when the client won't let them?
-                chr.getClient().Disconnect(false, false);
-                return;
-            }
+            // How are they attacking when the client won't let them?
+            chr.getClient().Disconnect(false, false);
+            return;
         }
 
         if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)

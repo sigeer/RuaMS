@@ -1,6 +1,4 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Players.PlayerProps;
-using client;
 using server.life;
 using tools;
 using ZLinq;
@@ -9,8 +7,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private ScheduledFuture? _diseaseExpireTask = null;
-
         public Dictionary<Disease, PlayerDisease> Diseases { get; } = new();
         public bool hasDisease(Disease dis)
         {
@@ -159,34 +155,14 @@ namespace Application.Core.Game.Players
             Diseases.Clear();
         }
 
-        public void cancelDiseaseExpireTask()
-        {
-            if (_diseaseExpireTask != null)
-            {
-                _diseaseExpireTask.cancel(false);
-                _diseaseExpireTask = null;
-            }
-        }
 
-        public void ClearExpiredDisease()
+        public void ClearExpiredDisease(long now)
         {
-            long curTime = Client.CurrentServer.Node.getCurrentTime();
-            var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= curTime).Select(x => x.Disease).ToList();
+            var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= now).Select(x => x.Disease).ToList();
 
             foreach (var item in expired)
             {
                 dispelDebuff(item);
-            }
-        }
-
-        public void diseaseExpireTask()
-        {
-            if (_diseaseExpireTask == null)
-            {
-                _diseaseExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_DiseaseExpireTask", () =>
-                {
-                    Client.CurrentServer.Post(new PlayerDiseaseExpiredCommand(this));
-                }), 1500);
             }
         }
     }

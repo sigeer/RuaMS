@@ -11,7 +11,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private ScheduledFuture? _buffExpireTask = null;
         /// <summary>
         /// 仅供debug使用
         /// </summary>
@@ -20,11 +19,11 @@ namespace Application.Core.Game.Players
         /// buffEffects 同一类型buff取效果最好的那种，当该buff过期时，使用次一级效果且未过期的
         /// </summary>
 
-        private Dictionary<BuffStat, BuffStatValueHolder> effects = new();
+        public Dictionary<BuffStat, BuffStatValueHolder> ActiveEffects { get; } = new();
         /// <summary>
         /// sourceid - effects
         /// <para>
-        /// 玩家受到的所有buff
+        /// 玩家所有buff
         /// 同类型的buff可能有多个来源：加成同一种属性的不同药品
         /// </para>
         /// </summary>
@@ -41,7 +40,7 @@ namespace Application.Core.Game.Players
 
         private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
-            return effects.GetValueOrDefault(effect);
+            return ActiveEffects.GetValueOrDefault(effect);
         }
         public long? getBuffedStarttime(BuffStat effect)
         {
@@ -50,7 +49,7 @@ namespace Application.Core.Game.Players
 
         public void setBuffedValue(BuffStat effect, int value)
         {
-            if (effects.TryGetValue(effect, out var mbsvh))
+            if (ActiveEffects.TryGetValue(effect, out var mbsvh))
             {
                 mbsvh.value = value;
             }
@@ -73,7 +72,7 @@ namespace Application.Core.Game.Players
 
         public bool HasBuff(BuffStat stat)
         {
-            return effects.ContainsKey(stat);
+            return ActiveEffects.ContainsKey(stat);
         }
 
         private List<BuffStatValueHolder> getAllStatups()
@@ -83,20 +82,17 @@ namespace Application.Core.Game.Players
 
         public List<PlayerBuffValueHolder> getAllBuffs()
         {
-            // buff values will be stored in an arbitrary order
-
-            long curtime = Client.CurrentServer.Node.getCurrentTime();
-
             Dictionary<int, PlayerBuffValueHolder> ret = new();
-            foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
+            foreach (var bel in buffEffects)
             {
-                foreach (BuffStatValueHolder mbsvh in bel.Values)
+                var effectBuffStats = new List<BuffStatValue>();
+                foreach (var mbsvh in bel.Value)
                 {
-                    int srcid = mbsvh.effect.getBuffSourceId();
-                    if (!ret.ContainsKey(srcid))
+                    if (!ret.ContainsKey(bel.Key))
                     {
-                        ret.Add(srcid, new PlayerBuffValueHolder((int)(curtime - mbsvh.startTime), mbsvh.effect));
+                        ret.Add(bel.Key, new PlayerBuffValueHolder(mbsvh.Value.startTime, mbsvh.Value.effect, effectBuffStats));
                     }
+                    effectBuffStats.Add(new BuffStatValue(mbsvh.Key, mbsvh.Value.value));
                 }
             }
             return new(ret.Values);
@@ -120,27 +116,24 @@ namespace Application.Core.Game.Players
             );
 
             Log.Debug("-------------------");
-            Log.Debug("IN ACTION: {InAction}", string.Join(", ", effects
-                    .Select(entry => entry.Key.name() + " -> " + Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId())))
+            Log.Debug("IN ACTION: {InAction}", string.Join(", ", ActiveEffects
+                    .Select(entry => entry.Key.name() + " -> " + 
+                    (entry.Value.effect.isSkill() 
+                    ? Client.CurrentCulture.GetSkillName(entry.Value.effect.getSourceId()) 
+                    : Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId()))))
             );
         }
 
-        public void debugListAllBuffsCount()
-        {
-            Log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value)));
-        }
-
-        public void ClearExpiredBuffs()
+        public void ClearExpiredBuffs(long now)
         {
             HashSet<KeyValuePair<int, long>> es;
             List<BuffStatValueHolder> toCancel = new();
 
             es = new(buffExpires);
 
-            long curTime = Client.CurrentServer.Node.getCurrentTime();
             foreach (var bel in es)
             {
-                if (curTime >= bel.Value)
+                if (now >= bel.Value)
                 {
                     toCancel.AddRange(buffEffects.GetValueOrDefault(bel.Key)!.Values);    //rofl
                 }
@@ -149,26 +142,6 @@ namespace Application.Core.Game.Players
             foreach (var item in toCancel)
             {
                 cancelEffect(item.effect, false);
-            }
-        }
-
-        public void buffExpireTask()
-        {
-            if (_buffExpireTask == null)
-            {
-                _buffExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_BuffExpireTask", () =>
-                {
-                    Client.CurrentServer.Post(new PlayerBuffExpiredCommand(this));
-                }), 1500);
-            }
-        }
-
-        public void cancelBuffExpireTask()
-        {
-            if (_buffExpireTask != null)
-            {
-                _buffExpireTask.cancel(false);
-                _buffExpireTask = null;
             }
         }
 
@@ -181,7 +154,7 @@ namespace Application.Core.Game.Players
                 cancelEffectFromBuffStat(BuffStat.PUPPET);
                 cancelEffectFromBuffStat(BuffStat.COMBO);
 
-                effects.Clear();
+                ActiveEffects.Clear();
 
                 foreach (int srcid in buffEffects.Keys)
                 {
@@ -247,11 +220,11 @@ namespace Application.Core.Game.Players
                 BuffStat mbs = stat.Key;
                 effectsToCancel.Add(new(mbs, stat.Value));
 
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
-                    effects.Remove(mbs);
+                    ActiveEffects.Remove(mbs);
 
                     if (mbs == BuffStat.RECOVERY)
                     {
@@ -380,7 +353,7 @@ namespace Application.Core.Game.Players
             HashSet<BuffStat> updatedBuffs = new();
             HashSet<StatEffect> activeEffects = new();
 
-            foreach (BuffStatValueHolder mse in effects.Values)
+            foreach (BuffStatValueHolder mse in ActiveEffects.Values)
             {
                 activeEffects.Add(mse.effect);
             }
@@ -399,7 +372,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStat mbs in updatedBuffs)
             {
-                effects.Remove(mbs);
+                ActiveEffects.Remove(mbs);
             }
 
             updateEffects(updatedBuffs);
@@ -413,7 +386,7 @@ namespace Application.Core.Game.Players
             {
                 fetchBestEffectFromItemEffectHolder(mbs);
 
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
                     foreach (var statup in mbsvh.effect.getStatups())
@@ -446,7 +419,7 @@ namespace Application.Core.Game.Players
             }
             else if ((ombs = getSingletonStatupFromEffect(effect)) != null)
             {   // removing all effects of a buff having non-shareable buff stat.
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(ombs);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(ombs);
                 if (mbsvh != null)
                 {
                     buffstats = extractCurrentBuffStats(mbsvh.effect);
@@ -480,7 +453,7 @@ namespace Application.Core.Game.Players
 
         public void cancelEffectFromBuffStat(BuffStat stat)
         {
-            BuffStatValueHolder? effect = effects.GetValueOrDefault(stat);
+            BuffStatValueHolder? effect = ActiveEffects.GetValueOrDefault(stat);
 
             if (effect != null)
             {
@@ -809,7 +782,7 @@ namespace Application.Core.Game.Players
                         BuffStat mbs = ps.BuffState;
                         if (retrievedStats.Contains(mbs))
                         {
-                            BuffStatValueHolder mbsvhe = effects.GetValueOrDefault(mbs)!;
+                            BuffStatValueHolder mbsvhe = ActiveEffects.GetValueOrDefault(mbs)!;
 
                             // this shouldn't even be null...
                             //if (mbsvh != null) {
@@ -842,7 +815,7 @@ namespace Application.Core.Game.Players
             Dictionary<BuffStat, KeyValuePair<int, StatEffect?>?> maxBuffValue = new();
             foreach (BuffStat mbs in retrievedStats)
             {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
                     retrievedEffects.AddOrUpdate(mbsvh.effect.getBuffSourceId(), new(mbsvh.effect, mbsvh.startTime));
@@ -976,7 +949,7 @@ namespace Application.Core.Game.Players
             foreach (var bel in buffEffects[sourceid])
             {
                 BuffStat mbs = bel.Key;
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(bel.Key);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(bel.Key);
 
                 BuffStatValue p;
                 if (mbsvh != null)
@@ -1065,7 +1038,7 @@ namespace Application.Core.Game.Players
             buffEffectsCount.AddOrUpdate(stat, (sbyte)val);
         }
 
-        public void registerEffect(StatEffect effect, long starttime, long expirationtime, bool isSilent)
+        public void registerEffect(StatEffect effect, IEnumerable<BuffStatValue> purposeStats, long starttime, long expirationtime, bool isSilent)
         {
             if (effect.isDragonBlood())
             {
@@ -1155,9 +1128,9 @@ namespace Application.Core.Game.Players
             Dictionary<BuffStat, BuffStatValueHolder> toDeploy;
             Dictionary<BuffStat, BuffStatValueHolder> appliedStatups = new();
 
-            foreach (var ps in effect.getStatups())
+            foreach (var ps in purposeStats)
             {
-                appliedStatups.AddOrUpdate(ps.BuffState, new BuffStatValueHolder(effect, starttime, ps.Value));
+                appliedStatups[ps.BuffState] = new BuffStatValueHolder(effect, starttime, ps.Value);
             }
 
             bool active = effect.isActive(this);
@@ -1168,7 +1141,7 @@ namespace Application.Core.Game.Players
                 HashSet<BuffStat> retrievedStats = new();
                 foreach (var statup in appliedStatups)
                 {
-                    BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(statup.Key);
+                    BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(statup.Key);
                     BuffStatValueHolder statMbsvh = statup.Value;
 
                     if (active)
@@ -1213,7 +1186,7 @@ namespace Application.Core.Game.Players
                     addItemEffectHolder(sourceid, expirationtime, appliedStatups);
                     foreach (var statup in toDeploy)
                     {
-                        effects.AddOrUpdate(statup.Key, statup.Value);
+                        ActiveEffects.AddOrUpdate(statup.Key, statup.Value);
                     }
 
                     if (active)
@@ -1237,7 +1210,7 @@ namespace Application.Core.Game.Players
             addItemEffectHolder(sourceid, expirationtime, appliedStatups);
             foreach (var statup in toDeploy)
             {
-                effects.AddOrUpdate(statup.Key, statup.Value);
+                ActiveEffects.AddOrUpdate(statup.Key, statup.Value);
             }
 
 
@@ -1259,7 +1232,7 @@ namespace Application.Core.Game.Players
 
         public bool hasActiveBuff(int sourceid)
         {
-            var allBuffs = effects.Values.ToList();
+            var allBuffs = ActiveEffects.Values.ToList();
 
             foreach (BuffStatValueHolder mbsvh in allBuffs)
             {
@@ -1395,6 +1368,16 @@ namespace Application.Core.Game.Players
             }
 
             return rate / 100;
+        }
+
+        public bool IsMorphWithoutAttack()
+        {
+            var morphBuff = getBuffedValue(BuffStat.MORPH);
+            if (morphBuff != null)
+            {
+                return morphBuff > 0 && morphBuff < 100;
+            }
+            return false;
         }
     }
 }

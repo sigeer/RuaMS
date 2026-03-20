@@ -1,50 +1,47 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
-using Application.Core.tools.RandomUtils;
-using Application.Shared.Constants.Item;
-using Application.Templates.Item.Pet;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
 using System.Diagnostics;
 using tools;
-using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
         private int itemEffect;
-        private ScheduledFuture? itemExpireTask = null;
-        public void cancelExpirationTask()
-        {
-            if (itemExpireTask != null)
-            {
-                itemExpireTask.cancel(false);
-                itemExpireTask = null;
-            }
-        }
 
-        public void ClearExpiredItems()
+        public void ClearExpiredSkills(long now)
         {
-            bool deletedCoupon = false;
-
-            long expiration, currenttime = Client.CurrentServer.Node.getCurrentTime();
             foreach (var skill in getSkills())
             {
-                if (skill.Value.expiration != -1 && skill.Value.expiration < currenttime)
+                if (skill.Value.expiration != -1 && skill.Value.expiration < now)
                 {
                     changeSkillLevel(skill.Key, -1, 0, -1);
                 }
             }
+        }
+
+        long _itemExpiredNextCheck = 0;
+        public void ClearExpiredItems(long currenttime)
+        {
+            if (_itemExpiredNextCheck > 0 && _itemExpiredNextCheck - currenttime < 60_000)
+            {
+                return;
+            }
+
+            _itemExpiredNextCheck = currenttime;
+
+            bool deletedCoupon = false;
+
             List<Item> toberemove = new();
             foreach (Inventory inv in Bag.GetValues())
             {
                 foreach (Item item in inv.list())
                 {
-                    expiration = item.getExpiration();
+                    long expiration = item.getExpiration();
 
                     if (expiration != -1 && (expiration < currenttime) && ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK))
                     {
@@ -115,17 +112,6 @@ namespace Application.Core.Game.Players
                 {
                     updateCouponRates();
                 }
-            }
-        }
-
-        public void expirationTask()
-        {
-            if (itemExpireTask == null)
-            {
-                itemExpireTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_ItemExpireTask", () =>
-                {
-                    Client.CurrentServer.Post(new PlayerItemExpiredCommand(this));
-                }), 60_000);
             }
         }
 

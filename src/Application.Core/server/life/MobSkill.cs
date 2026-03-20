@@ -565,12 +565,10 @@ public class MobSkill : ISkill
         // 对玩家释放
         if (chr != null)
         {
-            // 不同的抗性都用了同一个buff
             var buff = chr.getBuffEffect(BuffStat.DEFENSE_STATE);
             if (buff != null)
             {
-                var type = Disease.GetDiseaseByAb(buff.DefenseState);
-                if (type?.getMobSkillType() == this.getType())
+                if (buff.DefenseState?.getMobSkillType() == this.getType())
                 {
                     checkProp -= (buff.Prob / 100.0f);
                 }

@@ -101,6 +101,10 @@ namespace Application.Core.Channel
         {
             return StringProvider.GetSubProvider(StringCategory.Item)?.GetRequiredItem<StringTemplate>(itemId)?.Name;
         }
+        public string? GetSkillName(int skillId)
+        {
+            return StringProvider.GetSubProvider(StringCategory.Skill)?.GetRequiredItem<StringTemplate>(skillId)?.Name;
+        }
 
         public string GetMapName(int mapId)
         {

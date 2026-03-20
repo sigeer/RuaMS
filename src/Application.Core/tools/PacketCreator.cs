@@ -519,8 +519,10 @@ public class PacketCreator
                 p.writeInt(skill.Value.masterlevel);
             }
         }
-        p.writeShort(chr.getAllCooldowns().Count);
-        foreach (PlayerCoolDownValueHolder cooling in chr.getAllCooldowns())
+
+        var cooldowns = chr.getAllCooldowns();
+        p.writeShort(cooldowns.Count);
+        foreach (var cooling in cooldowns)
         {
             p.writeInt(cooling.skillId);
             int timeLeft = (int)(cooling.length + cooling.startTime - chr.Client.CurrentServer.Node.getCurrentTime());
@@ -2642,6 +2644,7 @@ public class PacketCreator
             p.writeInt(buffid);
             p.writeInt(bufflength);
         }
+
         p.writeInt(0);
         p.writeByte(0);
         p.writeInt(statups[0].Value); //Homing beacon ...
@@ -2652,6 +2655,38 @@ public class PacketCreator
         }
         return p;
     }
+
+    public static Packet GiveBuff(StatEffect effect, int period, params BuffStatValue[] statups)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
+        bool special = false;
+        writeLongMask(p, statups);
+
+        foreach (var statup in statups)
+        {
+            if (statup.BuffState.Equals(BuffStat.MONSTER_RIDING) || statup.BuffState.Equals(BuffStat.HOMING_BEACON))
+            {
+                special = true;
+            }
+            p.writeShort(statup.Value);
+            p.writeInt(effect.getBuffSourceId());
+            p.writeInt(period);
+        }
+
+        p.writeByte(effect.DefenseAtt == null ? 0 : (byte)effect.DefenseAtt);
+        /// mob对玩家附加disease是服务端处理的，除非客户端分步计算（buff抵抗和mob成功概率分开计算，buff没抵抗成功才请求服务端，也就是乘法计算，这里只是推测）
+        /// 当前修复是以服务端单次计算，也就是加法计算 <see cref="MobSkill.makeChanceResult(Player?)"/>
+        p.writeByte(0); // DefenseState?
+        p.skip(3);
+        p.writeInt(statups[0].Value); //Homing beacon ...
+
+        if (special)
+        {
+            p.skip(3);
+        }
+        return p;
+    }
+
 
     /**
      * @param cid
