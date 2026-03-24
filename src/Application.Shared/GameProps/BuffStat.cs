@@ -25,7 +25,7 @@ namespace Application.Shared.GameProps
         public static readonly BuffStat AURA = new BuffStat(0x40000L);
         public static readonly BuffStat CONFUSE = new BuffStat(0x80000L);
 
-        public static readonly BuffStat EXP_BUFF = new BuffStat(0x40000000L);
+        public static readonly BuffStat EXP_BUFF = new BuffStat(0x40000000000L, true);
 
         // ------ COUPON feature ------
         public static readonly BuffStat COUPON_EXP1 = new BuffStat(0x100000L);
@@ -145,6 +145,11 @@ namespace Application.Shared.GameProps
             if (other == null)
                 return 1;
             return i.CompareTo(other.i);
+        }
+
+        public static BuffStat From(string str)
+        {
+            return EnumClassCache<BuffStat>.GetValue(str);
         }
     }
 }

@@ -3,8 +3,14 @@ syntax = "proto3";
 package Dto;
 
 message BuffDto {
-  int32 usedTime = 1;
-  int32 sourceId = 2;
-  bool isSkill = 3;
-  int32 skillLevel = 4;
+  int32 sourceId = 1;
+  int32 skillLevel = 3;
+
+  int64 startTime = 4;
+  repeated BuffStatDto stats = 5;
+}
+
+message BuffStatDto {
+	string buffStat = 1;
+	int32 value = 2;
 }

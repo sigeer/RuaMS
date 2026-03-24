@@ -101,24 +101,6 @@ namespace Application.Core.Game.Players
             Bag[InventoryType.ETC].setSlotLimit(Etcslots);
         }
 
-
-        public void StartPlayerTask()
-        {
-            buffExpireTask();
-            diseaseExpireTask();
-            skillCooldownTask();
-            expirationTask();
-            questExpirationTask();
-        }
-
-        public void StopPlayerTask()
-        {
-            cancelBuffExpireTask();
-            cancelDiseaseExpireTask();
-            cancelSkillCooldownTask();
-            cancelExpirationTask();
-            cancelQuestExpirationTask();
-        }
         public override int GetSourceId()
         {
             return Id;

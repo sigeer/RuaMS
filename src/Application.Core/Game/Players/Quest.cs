@@ -11,7 +11,6 @@ namespace Application.Core.Game.Players
     {
         private List<KeyValuePair<DelayedQuestUpdate, object[]>> npcUpdateQuests = new();
 
-        private ScheduledFuture? questExpireTask = null;
         public Dictionary<short, QuestStatus> Quests { get; set; } = new Dictionary<short, QuestStatus>();
         public bool HasExpireableQuest => Quests.Values.AsValueEnumerable().Any(x => x.getExpirationTime() > 0);
 
@@ -259,21 +258,15 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void ClearExpiredQuests()
+        public void ClearExpiredQuests(long now)
         {
-            long timeNow = Client.CurrentServer.Node.getCurrentTime();
             var quests = Quests.AsValueEnumerable()
-                .Where(x => x.Value.getExpirationTime() > 0 && x.Value.getExpirationTime() <= timeNow)
+                .Where(x => x.Value.getExpirationTime() > 0 && x.Value.getExpirationTime() <= now)
                 .Select(x => x.Value.getQuest())
                 .ToList();
             foreach (var item in quests)
             {
                 expireQuest(item);
-            }
-
-            if (!HasExpireableQuest)
-            {
-                cancelQuestExpirationTask();
             }
         }
 
@@ -282,16 +275,6 @@ namespace Application.Core.Game.Players
             if (quest.forfeit(this))
             {
                 sendPacket(QuestPacket.QuestExpire(quest.getId()));
-            }
-        }
-
-        public void cancelQuestExpirationTask()
-        {
-
-            if (questExpireTask != null && !HasExpireableQuest)
-            {
-                questExpireTask.cancel(false);
-                questExpireTask = null;
             }
         }
 
@@ -304,38 +287,9 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void questExpirationTask()
-        {
-            if (HasExpireableQuest)
-            {
-                if (questExpireTask == null)
-                {
-                    questExpireTask = Client.CurrentServer.TimerManager.register(
-                        new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
-                        {
-                            Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));
-                        }), TimeSpan.FromSeconds(10));
-                }
-            }
-
-        }
-
-
-        private void registerQuestExpire(Quest quest)
-        {
-            if (questExpireTask == null)
-            {
-                questExpireTask = Client.CurrentServer.TimerManager.register(
-                    new NamedRunnable($"Player:{Id},{GetHashCode()}_QuestExpireTask", () =>
-                    {
-                        Client.CurrentServer.Post(new PlayerQuestExpiredCommand(this));
-                    }), TimeSpan.FromSeconds(10));
-            }
-        }
 
         public void questTimeLimit(Quest quest, int seconds)
         {
-            registerQuestExpire(quest);
             sendPacket(QuestPacket.AddQuestTimeLimit(quest.getId(), seconds * 1000));
         }
 
@@ -346,10 +300,6 @@ namespace Application.Core.Game.Players
             if (timeLeft <= 0)
             {
                 expireQuest(quest);
-            }
-            else
-            {
-                registerQuestExpire(quest);
             }
         }
 

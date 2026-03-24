@@ -215,7 +215,7 @@ namespace Application.Core.Channel.Services
                 int skillid = item.SkillId;
                 long length = item.Length;
                 long startTime = item.StartTime;
-                if (skillid != 5221999 && (length + startTime < c.CurrentServer.Node.getCurrentTime()))
+                if (skillid != Corsair.BATTLE_SHIP_HP && (length + startTime < c.CurrentServer.Node.getCurrentTime()))
                 {
                     continue;
                 }
@@ -450,12 +450,17 @@ namespace Application.Core.Channel.Services
         public SyncProto.PlayerBuffDto DeserializeBuff(Player player)
         {
             var data = new SyncProto.PlayerBuffDto();
-            data.Buffs.AddRange(player.getAllBuffs().Select(x => new Dto.BuffDto
+            data.Buffs.AddRange(player.getAllBuffs().Select(x =>
             {
-                IsSkill = x.effect.isSkill(),
-                SkillLevel = x.effect.SkillLevel,
-                SourceId = x.effect.getSourceId(),
-                UsedTime = x.usedTime,
+                var o = new Dto.BuffDto
+                {
+                    SkillLevel = x.Effect.SkillLevel,
+                    SourceId = x.Effect.getBuffSourceId(),
+
+                    StartTime = x.StartTime
+                };
+                o.Stats.AddRange(x.EffectStats.Select(y => new Dto.BuffStatDto { Value = y.Value, BuffStat = y.BuffState.ToString() }));
+                return o;
             }));
             data.Diseases.AddRange(player.Diseases.Select(x => new Dto.DiseaseDto
             {
@@ -473,20 +478,18 @@ namespace Application.Core.Channel.Services
             _transport.SendBuffObject(player.getId(), DeserializeBuff(player));
         }
 
-        private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
-        {
-            long curtime = _server.getCurrentTime();
-            return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
-        }
         public void RecoverCharacterBuff(Player player)
         {
             var buffdto = _transport.GetBuffObject(player.Id);
-            var buffs = buffdto.Buffs.Select(x => new PlayerBuffValueHolder(x.UsedTime,
-                x.IsSkill ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel) : ItemInformationProvider.getInstance().getItemEffect(x.SourceId)!)).ToList();
 
-            var timedBuffs = getLocalStartTimes(buffs);
-            player.silentGiveBuffs(timedBuffs);
+            foreach (var x in buffdto.Buffs)
+            {
+                var statEffect = x.SourceId > 0
+                    ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel)
+                    : ItemInformationProvider.getInstance().getItemEffect(-x.SourceId);
 
+                statEffect?.silentApplyBuff(player, x.StartTime, x.Stats.Select(y => new BuffStatValue(BuffStat.From(y.BuffStat), y.Value)).ToList());
+            }
 
             player.silentApplyDiseases(buffdto.Diseases);
             foreach (var e in player.Diseases.Values)

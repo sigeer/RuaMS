@@ -21,7 +21,7 @@
  */
 
 
-using Application.Core.Channel.DataProviders;
+using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
 using server.life;
@@ -53,14 +53,13 @@ public class UseSummonBagHandler : ChannelHandlerBase
             if (toUse.SourceTemplate is not SummonMobItemTemplate itemTemplate)
                 return;
 
-            InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-            foreach (var toSpawnChild in itemTemplate.SummonData)
+            var item = new LotteryMachine<SummonData, int>(itemTemplate.SummonData, x => x.Prob).GetRandomItem();
+            if (item == null)
             {
-                if (Randomizer.nextInt(100) < toSpawnChild.Prob)
-                {
-                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
-                }
+                return;
             }
+            InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+            c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(item.Mob), c.OnlinedCharacter.getPosition());
         }
         c.sendPacket(PacketCreator.enableActions());
     }

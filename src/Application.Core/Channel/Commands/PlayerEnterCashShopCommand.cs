@@ -73,8 +73,6 @@ namespace Application.Core.Channel.Commands
                 mc.cancelAllDebuffs();
                 mc.forfeitExpirableQuests();
 
-                mc.StopPlayerTask();
-
                 mc.sendPacket(PacketCreator.openCashShop(mc.Client, false));
                 mc.sendPacket(PacketCreator.showCashInventory(mc.Client));
                 mc.sendPacket(PacketCreator.showGifts(mc.Client.CurrentServer.NodeService.ItemService.LoadPlayerGifts(mc)));

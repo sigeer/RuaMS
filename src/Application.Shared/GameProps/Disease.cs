@@ -62,7 +62,6 @@ namespace Application.Shared.GameProps
         private ulong i;
         private MobSkillType mobSkillType;
         bool _isFirst;
-        private string Ab { get; }
 
         Disease(ulong i) : this(i, 0)
         {

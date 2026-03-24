@@ -47,14 +47,12 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         chr.getAutobanManager().spam(8);*/
 
         var attack = parseDamage(p, chr, false, false);
-        if (chr.getBuffEffect(BuffStat.MORPH) != null)
+
+        if (chr.IsMorphWithoutAttack())
         {
-            if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
-            {
-                // How are they attacking when the client won't let them?
-                chr.getClient().Disconnect(false, false);
-                return;
-            }
+            // How are they attacking when the client won't let them?
+            chr.getClient().Disconnect(false, false);
+            return;
         }
 
         if (chr.getDojoEnergy() < 10000

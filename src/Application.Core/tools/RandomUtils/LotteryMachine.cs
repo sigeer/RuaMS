@@ -50,12 +50,17 @@ namespace Application.Core.tools.RandomUtils
             _chanceSelector = chanceSelector ?? throw new ArgumentNullException(nameof(chanceSelector));
 
             _sum = _items.Sum(_chanceSelector);
-            if (_sum <= 0)
+            if (_sum < 0)
                 throw new ArgumentException("总概率必须大于 0", nameof(items));
         }
 
         public TSource GetRandomItem()
         {
+            if (_items.Count == 1)
+            {
+                return _items[0];
+            }
+
             var value = Randomizer.nextInt(_sum);
             foreach (var item in _items)
             {

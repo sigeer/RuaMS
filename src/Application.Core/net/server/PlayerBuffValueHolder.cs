@@ -21,21 +21,9 @@
 */
 
 
+using Application.Core.Game.Skills;
 using server;
 
 namespace net.server;
 
-/**
- * @author Danny
- */
-public class PlayerBuffValueHolder
-{
-    public int usedTime;
-    public StatEffect effect;
-
-    public PlayerBuffValueHolder(int usedTime, StatEffect effect)
-    {
-        this.usedTime = usedTime;
-        this.effect = effect;
-    }
-}
+public record PlayerBuffValueHolder(long StartTime, StatEffect Effect, List<BuffStatValue> EffectStats);

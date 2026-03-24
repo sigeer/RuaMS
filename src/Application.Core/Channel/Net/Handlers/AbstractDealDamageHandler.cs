@@ -212,7 +212,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     int totDamageToOneMonster = 0;
                     var onedList = (target.Value?.damageLines ?? []).ToArray();
 
-                    if (attack.magic ? monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) : monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY))
+                    // 已经在客户端计算过了，这里只能用是否拥有buff简单的判断（假如效果很低，但是客户端开挂改成100%，服务端也没办法区分）
+                    if (attack.magic && monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) && !player.HasBuff(BuffStat.RESPECT_MIMMUNE))
+                    {
+                        Array.Fill(onedList, 1);
+                    }
+
+                    if (!attack.magic && monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY) && !player.HasBuff(BuffStat.RESPECT_PIMMUNE))
                     {
                         Array.Fill(onedList, 1);
                     }
@@ -849,9 +855,9 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         }
 
         int bonusDmgBuff = 100;
-        foreach (var pbvh in chr.getAllBuffs())
+        foreach (var pbvh in chr.ActiveEffects)
         {
-            int bonusDmg = pbvh.effect.getDamage() - 100;
+            int bonusDmg = pbvh.Value.effect.getDamage() - 100;
             bonusDmgBuff += bonusDmg;
         }
 

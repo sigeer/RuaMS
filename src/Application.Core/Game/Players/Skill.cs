@@ -128,7 +128,6 @@ namespace Application.Core.Game.Players
         #endregion
 
         #region skill cooldown
-        private ScheduledFuture? _skillCooldownTask = null;
         public List<PlayerCoolDownValueHolder> getAllCooldowns()
         {
             List<PlayerCoolDownValueHolder> ret = new();
@@ -145,37 +144,19 @@ namespace Application.Core.Game.Players
             return coolDowns.ContainsKey(skillId);
         }
 
-        public void cancelSkillCooldownTask()
+        public void ClearExpiredSkillCooldown(long now)
         {
-            if (_skillCooldownTask != null)
-            {
-                _skillCooldownTask.cancel(false);
-                _skillCooldownTask = null;
-            }
-        }
+            HashSet<KeyValuePair<int, CooldownValueHolder>> es = new(coolDowns);
 
-        public void skillCooldownTask()
-        {
-            if (_skillCooldownTask == null)
-            {
-                _skillCooldownTask = Client.CurrentServer.TimerManager.register(new NamedRunnable($"Player:{Id},{GetHashCode()}_SkillCooldownTask", () =>
-                {
-                    Client.CurrentServer.Post(new PlayerSkillCooldownExpiredCommand(this));
-                }), 1500);
-            }
-        }
-
-        public void ClearExpiredSkillCooldown()
-        {
-            HashSet<KeyValuePair<int, CooldownValueHolder>> es;
-
-            es = new(coolDowns);
-
-            long curTime = Client.CurrentServer.Node.getCurrentTime();
             foreach (var bel in es)
             {
+                if (bel.Key == Corsair.BATTLE_SHIP_HP)
+                {
+                    continue;
+                }
+
                 CooldownValueHolder mcdvh = bel.Value;
-                if (curTime >= mcdvh.startTime + mcdvh.length)
+                if (now >= mcdvh.startTime + mcdvh.length)
                 {
                     removeCooldown(mcdvh.skillId);
                     sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
@@ -209,7 +190,7 @@ namespace Application.Core.Game.Players
         }
         public void giveCoolDowns(int skillid, long starttime, long length)
         {
-            if (skillid == 5221999)
+            if (skillid == Corsair.BATTLE_SHIP_HP)
             {
                 this.battleshipHp = (int)length;
                 addCooldown(skillid, 0, length);

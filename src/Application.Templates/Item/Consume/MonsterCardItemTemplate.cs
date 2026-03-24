@@ -6,7 +6,11 @@ namespace Application.Templates.Item.Consume
     /// 238
     /// </summary>
     [GenerateTag]
-    public class MonsterCardItemTemplate : PotionItemTemplate, IStatEffectMapProtection
+    public class MonsterCardItemTemplate : PotionItemTemplate, 
+        IStatEffectMapProtection, 
+        IItemStatEffectMesoUp,
+        IItemStatEffectItemUp,
+        IStatEffectPower
     {
         public MonsterCardItemTemplate(int templateId) : base(templateId)
         {

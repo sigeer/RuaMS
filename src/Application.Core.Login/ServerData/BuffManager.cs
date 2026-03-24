@@ -1,31 +1,24 @@
-using Application.Core.Login.Models;
-using AutoMapper;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Datas
 {
     public class BuffManager
     {
-        Dictionary<int, PlayerBuffSaveModel> _datasource;
-
-        readonly IMapper _mapper;
-        readonly MasterServer _server;
-
-        public BuffManager(IMapper mapper, MasterServer server)
+        ConcurrentDictionary<int, SyncProto.PlayerBuffDto> _datasource;
+        public BuffManager()
         {
             _datasource = new();
-            _mapper = mapper;
-            _server = server;
         }
 
         public void SaveBuff(int v, SyncProto.PlayerBuffDto data)
         {
-            _datasource[v] = _mapper.Map<PlayerBuffSaveModel>(data);
+            _datasource[v] = data;
         }
 
         public SyncProto.PlayerBuffDto Get(int playerId)
         {
-            if (_datasource.Remove(playerId, out var d))
-                return _mapper.Map<SyncProto.PlayerBuffDto>(d);
+            if (_datasource.TryRemove(playerId, out var d))
+                return d;
             return new();
         }
     }

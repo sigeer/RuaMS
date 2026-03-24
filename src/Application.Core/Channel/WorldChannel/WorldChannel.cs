@@ -287,6 +287,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
         _respawnTask = new RespawnTask(this);
         _respawnTask.Register(TimerManager);
+        new ChannelTickTask(this).Register(TimerManager);
 
         EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(TimerManager);
