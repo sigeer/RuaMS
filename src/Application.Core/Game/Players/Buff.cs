@@ -1050,7 +1050,6 @@ namespace Application.Core.Game.Players
             }
             else if (effect.isBeholder())
             {
-                int beholder = DarkKnight.BEHOLDER;
                 if (beholderHealingSchedule != null)
                 {
                     beholderHealingSchedule.cancel(false);
@@ -1255,16 +1254,17 @@ namespace Application.Core.Game.Players
                 ChangeHP(statEffect.getHp());
             });
 
-            sendPacket(PacketCreator.showOwnBuffEffect(statEffect.getSourceId(), 2));
-            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), statEffect.getSourceId(), 5), true);
-            MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(statEffect.getSourceId(), 2), false);
+            int skillId = DarkKnight.BEHOLDER;
+            sendPacket(PacketCreator.showOwnBuffEffect(skillId, 2));
+            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), skillId, 5), true);
+            MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(skillId, 2), false);
         }
 
         public void ApplyBeholderHex(StatEffect buffEffect)
         {
             buffEffect.applyTo(this);
 
-            var skillId = buffEffect.getSourceId();
+            var skillId = DarkKnight.BEHOLDER;
             sendPacket(PacketCreator.showOwnBuffEffect(skillId, 2));
             MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), skillId, (int)(Randomizer.nextDouble() * 3) + 6), true);
             MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), skillId, 2), false);
