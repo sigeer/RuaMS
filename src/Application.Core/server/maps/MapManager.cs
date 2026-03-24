@@ -24,6 +24,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
 using Application.Utility.Performance;
+using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -89,13 +90,12 @@ public class MapManager : IDisposable, INamedInstance
         return new(maps);
     }
 
-    public void updateMaps()
+    public void OnTick(long now)
     {
         var sw = Stopwatch.StartNew();
-        foreach (IMap map in getMaps().Values)
+        foreach (var tickable in getMaps().Values.OfType<ITickable>())
         {
-            map.respawn();
-            map.mobMpRecovery();
+            tickable.OnTick(now);
         }
         sw.Stop();
 

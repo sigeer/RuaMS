@@ -29,6 +29,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.tools.RandomUtils;
+using Application.Shared.Constants.Skill;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
@@ -1506,8 +1507,12 @@ public class StatEffect
                 }
             }
             else
-            { // assumption: this is heal
-                float hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
+            { 
+                // assumption: this is heal
+                float hpHeal = hp;
+                if (sourceid == Cleric.HEAL)
+                    hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
+
                 hpchange += (int)hpHeal;
                 if (applyfrom.hasDisease(Disease.ZOMBIFY))
                 {

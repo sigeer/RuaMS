@@ -38,6 +38,7 @@ using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Utility.Performance;
+using Application.Utility.Tickables;
 using client.autoban;
 using client.inventory;
 using client.status;
@@ -54,7 +55,7 @@ using ZLinq;
 
 namespace Application.Core.Game.Maps;
 
-public class MapleMap : IMap, INamedInstance
+public class MapleMap : IMap, INamedInstance, ITickable
 {
     public string InstanceName { get; }
 
@@ -2639,6 +2640,37 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
+    public long Period { get; } = YamlConfig.config.server.RESPAWN_INTERVAL;
+    public long Next { get; set; } = long.MaxValue;
+    public bool Disabled { get; set; }
+    public void OnTick(long now)
+    {
+        if (characters.Count > 0 && !Disabled)
+        {
+            if (Next <= now)
+            {
+                respawn();
+                mobMpRecovery();
+
+                Next = now + Period;
+            }
+
+            foreach (var chr in characters.Values.ToList())
+            {
+                foreach (var item in chr.getAllStatups().OfType<ITickable>())
+                {
+                    item.OnTick(now);
+                }
+
+                chr.ClearExpiredBuffs();
+                chr.ClearExpiredDisease(now);
+                chr.Bag.OnTick(now);
+                chr.ClearExpiredSkills(now);
+                chr.ClearExpiredQuests(now);
+                chr.ClearExpiredSkillCooldown(now);
+            }
+        }
+    }
 
 
     //private interface DelayedPacketCreation
@@ -3130,6 +3162,7 @@ public class MapleMap : IMap, INamedInstance
             return;
 
         disposed = true;
+        Disabled = true;
 
         ProcessMonster(mm => mm.dispose());
         clearMapObjects();

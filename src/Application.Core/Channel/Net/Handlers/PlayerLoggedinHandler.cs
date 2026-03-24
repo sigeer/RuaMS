@@ -143,7 +143,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             // player.checkMessenger();
             c.sendPacket(PacketCreator.enableReport());
             player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
-            player.checkBerserk(player.isHidden());
 
             if (newcomer)
             {

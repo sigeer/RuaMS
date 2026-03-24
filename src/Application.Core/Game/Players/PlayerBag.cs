@@ -1,17 +1,21 @@
+using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Items;
 using Application.Core.Models;
 using Application.Shared.Constants.Item;
 using Application.Templates.Item;
+using Application.Utility.Tickables;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
 namespace Application.Core.Game.Players
 {
-    public class PlayerBag : IDisposable
+    public class PlayerBag : IDisposable, ITickable
     {
         readonly Inventory[] _dataSource;
         private bool disposedValue;
         Player Owner { get; }
+
         public PlayerBag(Player owner)
         {
             Owner = owner;
@@ -215,6 +219,102 @@ namespace Application.Core.Game.Players
             foreach (var type in inventoryTypes)
             {
                 RemoveFromInventory(type, int.MaxValue, filter, fromDrop, consume, showMessage);
+            }
+        }
+
+        public long Next { get; private set; } = long.MaxValue;
+
+        public long Period { get; } = 60_000;
+
+        public bool Disabled { get; set; }
+
+        public void OnTick(long now)
+        {
+            if (!Disabled)
+            {
+                if (Next <= now)
+                {
+                    bool deletedCoupon = false;
+
+                    List<Item> toberemove = new();
+                    foreach (Inventory inv in GetValues())
+                    {
+                        foreach (Item item in inv.list())
+                        {
+                            long expiration = item.getExpiration();
+
+                            if (expiration != -1 && (expiration < now))
+                            {
+                                if (item is Pet pet)
+                                {
+                                    Owner.unequipPet(pet, true);
+
+                                    if (ItemConstants.isExpirablePet(item.getItemId()))
+                                    {
+                                        Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
+                                        toberemove.Add(item);
+                                    }
+                                    else
+                                    {
+                                        item.setExpiration(-1);
+                                        Owner.forceUpdateItem(item);
+                                    }
+                                }
+                                else
+                                {
+                                    Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
+                                    toberemove.Add(item);
+                                    if (ItemConstants.isRateCoupon(item.getItemId()))
+                                    {
+                                        deletedCoupon = true;
+                                    }
+                                }
+
+                                if ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)
+                                {
+                                    short lockObj = item.getFlag();
+                                    lockObj &= ~(ItemConstants.LOCK);
+                                    item.setFlag(lockObj); //Probably need a check, else people can make expiring items into permanent items...
+                                    item.setExpiration(-1);
+                                    Owner.forceUpdateItem(item);   //TEST :3
+                                }
+                            }
+                        }
+
+                        if (toberemove.Count > 0)
+                        {
+                            foreach (Item item in toberemove)
+                            {
+                                RemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
+                            }
+
+                            ItemInformationProvider ii = ItemInformationProvider.getInstance();
+                            foreach (Item item in toberemove)
+                            {
+                                var replace = ii.GetReplaceItemTemplate(item.getItemId());
+                                if (replace != null)
+                                {
+                                    if (!string.IsNullOrEmpty(replace.Message))
+                                    {
+                                        Owner.Notice(replace.Message);
+                                    }
+                                    Owner.GainItem(replace.ItemId, 1,
+                                        expires: replace.Period.GetExpirationFromMinutes());
+                                }
+                            }
+
+                            toberemove.Clear();
+                        }
+
+                        if (deletedCoupon)
+                        {
+                            Owner.updateCouponRates();
+                        }
+                    }
+
+                    Next = now + Period;
+                }
+
             }
         }
     }

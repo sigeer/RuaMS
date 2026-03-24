@@ -119,7 +119,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public WorldChannelCommandLoop CommandLoop { get; }
     public EventRecallManager? EventRecallManager { get; private set; }
 
-    RespawnTask? _respawnTask;
+    ChannelTickableTask? _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
@@ -285,9 +285,8 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-        _respawnTask = new RespawnTask(this);
+        _respawnTask = new ChannelTickableTask(this);
         _respawnTask.Register(TimerManager);
-        new ChannelTickTask(this).Register(TimerManager);
 
         EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(TimerManager);

@@ -167,11 +167,6 @@ public partial class Player
     public byte[]? QuickSlotLoaded { get; set; }
     public QuickslotBinding? QuickSlotKeyMapped { get; set; }
 
-
-    private ScheduledFuture? dragonBloodSchedule;
-    private ScheduledFuture? beholderHealingSchedule, beholderBuffSchedule, berserkSchedule;
-
-    private ScheduledFuture? recoveryTask = null;
     private ScheduledFuture? extraRecoveryTask = null;
 
     private ScheduledFuture? pendantOfSpirit = null; //1122017
@@ -3898,36 +3893,6 @@ public partial class Player
 
     public void Dispose()
     {
-        if (dragonBloodSchedule != null)
-        {
-            dragonBloodSchedule.cancel(true);
-        }
-        dragonBloodSchedule = null;
-
-        if (beholderHealingSchedule != null)
-        {
-            beholderHealingSchedule.cancel(true);
-        }
-        beholderHealingSchedule = null;
-
-        if (beholderBuffSchedule != null)
-        {
-            beholderBuffSchedule.cancel(true);
-        }
-        beholderBuffSchedule = null;
-
-        if (berserkSchedule != null)
-        {
-            berserkSchedule.cancel(true);
-        }
-        berserkSchedule = null;
-
-        if (recoveryTask != null)
-        {
-            recoveryTask.cancel(true);
-        }
-        recoveryTask = null;
-
         if (extraRecoveryTask != null)
         {
             extraRecoveryTask.cancel(true);

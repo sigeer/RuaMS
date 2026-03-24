@@ -1,6 +1,10 @@
 
 ## 项目介绍
 
+![.NET](https://img.shields.io/badge/net10.0-512bd4?logo=.NET&labelColor=gray)
+[![Build Check](https://github.com/sigeer/RuaMS/actions/workflows/build.yml/badge.svg)](https://github.com/sigeer/RuaMS/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/sigeer/RuaMS)](https://github.com/sigeer/RuaMS/blob/master/LICENSE)
+
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
