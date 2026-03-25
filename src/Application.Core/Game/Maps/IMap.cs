@@ -7,6 +7,7 @@ using Application.Core.Scripting.Events;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Utility.Tickables;
 using client.inventory;
 using net.server.coordinator.world;
 using scripting.Event;
@@ -16,9 +17,10 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable, IClientMessenger
+    public interface IMap : IDisposable, IClientMessenger, ILoopTickable
     {
         int Id { get; }
+        bool AutoRespawn { get; set; }
         /// <summary>
         /// "ChannelId_EventInstanceName_MapId";
         /// </summary>

@@ -10,7 +10,7 @@ using tools;
 
 namespace Application.Core.Game.Players
 {
-    public class PlayerBag : IDisposable, ITickable
+    public class PlayerBag : IDisposable, ILoopTickable
     {
         readonly Inventory[] _dataSource;
         private bool disposedValue;
@@ -222,15 +222,15 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public long Next { get; private set; } = long.MaxValue;
+        public long Next { get; private set; }
 
         public long Period { get; } = 60_000;
 
-        public bool Disabled { get; set; }
+        public bool IsTickableCancelled { get; set; }
 
         public void OnTick(long now)
         {
-            if (!Disabled)
+            if (!IsTickableCancelled)
             {
                 if (Next <= now)
                 {
@@ -314,7 +314,6 @@ namespace Application.Core.Game.Players
 
                     Next = now + Period;
                 }
-
             }
         }
     }

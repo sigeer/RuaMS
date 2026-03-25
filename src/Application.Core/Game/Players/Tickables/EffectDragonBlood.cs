@@ -13,34 +13,21 @@ namespace Application.Core.Game.Players.Tickables
             Next = chr.getChannelServer().Node.getCurrentTime() + Period;
         }
 
-        public override void OnTick(long now)
+        protected override void Process(long now)
         {
-            if (!Disabled)
+            _chr.UpdateStatsChunk(() =>
             {
-                if (ExpiredAt <= now)
+                if (_chr.ChangeHP(-effect.getX()))
                 {
-                    Disabled = true;
+                    _chr.sendPacket(PacketCreator.showOwnBuffEffect(effect.getSourceId(), 5));
+                    _chr.MapModel.broadcastMessage(_chr, PacketCreator.showBuffEffect(_chr.getId(), effect.getSourceId(), 5), false);
+                }
+                else
+                {
+                    IsTickableCancelled = true;
                     return;
                 }
-
-                if (Next <= now)
-                {
-                    _chr.UpdateStatsChunk(() =>
-                    {
-                        if (_chr.ChangeHP(-effect.getX()))
-                        {
-                            _chr.sendPacket(PacketCreator.showOwnBuffEffect(effect.getSourceId(), 5));
-                            _chr.MapModel.broadcastMessage(_chr, PacketCreator.showBuffEffect(_chr.getId(), effect.getSourceId(), 5), false);
-                        }
-                        else
-                        {
-                            Disabled = true;
-                            return;
-                        }
-                    });
-                    Next = now + Period;
-                }
-            }
+            });
         }
     }
 }

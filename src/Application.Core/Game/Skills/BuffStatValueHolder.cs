@@ -4,7 +4,7 @@ using tools;
 
 namespace Application.Core.Game.Skills
 {
-    public class BuffStatValueHolder: ITickable
+    public class BuffStatValueHolder: ILoopTickable, ILifedTickable
     {
         protected Player _chr;
         public StatEffect effect;
@@ -22,21 +22,33 @@ namespace Application.Core.Game.Skills
             this.value = value;
 
             this.bestApplied = false;
-            Next = long.MaxValue;
+
+            Period = 1_000;
         }
 
         public long Next { get; protected set; }
 
         public long Period { get; init; }
 
-        public bool Disabled { get; set; }
+        public bool IsTickableCancelled { get; set; }
         public virtual void OnTick(long now)
         {
-            if (!Disabled && ExpiredAt <= now)
+            if (!IsTickableCancelled && Next <= now)
             {
-                Disabled = true;
-                return;
+                if (ExpiredAt <= now)
+                {
+                    IsTickableCancelled = true;
+                    return;
+                }
+
+                Process(now);
+                Next = now + Period;
             }
+        }
+
+        protected virtual void Process(long now)
+        {
+            return;
         }
     }
 }

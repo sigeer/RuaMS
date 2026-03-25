@@ -41,11 +41,11 @@ namespace Application.Core.Game.Players.Tickables
         StatEffect? _hexEffect;
         public override void OnTick(long now)
         {
-            if (!Disabled)
+            if (!IsTickableCancelled)
             {
                 if (ExpiredAt <= now)
                 {
-                    Disabled = true;
+                    IsTickableCancelled = true;
                     return;
                 }
 

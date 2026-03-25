@@ -55,7 +55,7 @@ using ZLinq;
 
 namespace Application.Core.Game.Maps;
 
-public class MapleMap : IMap, INamedInstance, ITickable
+public class MapleMap : IMap, INamedInstance, IDelayedTickable
 {
     public string InstanceName { get; }
 
@@ -85,6 +85,7 @@ public class MapleMap : IMap, INamedInstance, ITickable
     bool pirateDocked = false;
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
     public bool IsTrackedByEvent { get; set; }
+    public bool AutoRespawn { get; set; }
 
     private string mapName;
     private string streetName;
@@ -192,6 +193,8 @@ public class MapleMap : IMap, INamedInstance, ITickable
                 }
             }
         });
+
+        AutoRespawn = eim == null;
     }
 
     void UpdateMapActualMobRate()
@@ -1612,36 +1615,12 @@ public class MapleMap : IMap, INamedInstance, ITickable
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        var tMan = ChannelServer.TimerManager;
-        ScheduledFuture? poisonSchedule = null;
-        if (mist is PlayerMist playerMist)
-        {
-            poisonSchedule = tMan.register(new MapTaskBase(this, $"{nameof(PlayerMist)}_{playerMist.getObjectId()}", () =>
-            {
-                ChannelServer.Post(new PlayerMistEffectCommand(playerMist));
-            }), 2000, 2500);
-        }
-
-        Action mistSchedule = () =>
-        {
-            if (poisonSchedule != null)
-            {
-                poisonSchedule.cancel(false);
-            }
-
-            ChannelServer.Post(new MapMistRemoveCommand(mist));
-        };
-
-        MobMistService service = this.getChannelServer().MobMistService;
-        service.registerMobMistCancelAction(mapid, new MapMistRemoveCommand(mist), duration);
     }
 
     public void spawnKite(Kite kite)
     {
         addMapObject(kite);
         broadcastMessage(kite.makeSpawnData());
-
-        ChannelServer.MapObjectManager.RegisterTimedMapObject(kite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
     public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
@@ -1746,10 +1725,8 @@ public class MapleMap : IMap, INamedInstance, ITickable
         {
             return;
         }
-        MapEffect = new MapEffect(msg, itemId);
+        MapEffect = new MapEffect(msg, itemId, ChannelServer.Node.getCurrentTime() + time);
         broadcastMessage(MapEffect.makeStartData());
-
-        registerMapSchedule(new MapClearMapEffectCommand(this), time);
     }
 
 
@@ -2592,6 +2569,11 @@ public class MapleMap : IMap, INamedInstance, ITickable
             return;
         }
 
+        if (!AutoRespawn)
+        {
+            return;
+        }
+
         int numPlayers;
 
         numPlayers = characters.Count;
@@ -2641,11 +2623,13 @@ public class MapleMap : IMap, INamedInstance, ITickable
     }
 
     public long Period { get; } = YamlConfig.config.server.RESPAWN_INTERVAL;
-    public long Next { get; set; } = long.MaxValue;
-    public bool Disabled { get; set; }
+    public long Next { get; set; }
+    public bool IsTickableCancelled { get; set; }
+
     public void OnTick(long now)
     {
-        if (characters.Count > 0 && !Disabled)
+        // 有玩家才更新，可能导致一些对象在玩家进入后才开始清理
+        if (characters.Count > 0 && !IsTickableCancelled)
         {
             if (Next <= now)
             {
@@ -2655,39 +2639,36 @@ public class MapleMap : IMap, INamedInstance, ITickable
                 Next = now + Period;
             }
 
-            foreach (var chr in characters.Values.ToList())
+            foreach (var item in getMapObjects())
             {
-                foreach (var item in chr.getAllStatups().OfType<ITickable>())
+                if (item is ITickable tickable)
                 {
-                    item.OnTick(now);
-                }
+                    tickable.OnTick(now);
 
-                chr.ClearExpiredBuffs();
-                chr.ClearExpiredDisease(now);
-                chr.Bag.OnTick(now);
-                chr.ClearExpiredSkills(now);
-                chr.ClearExpiredQuests(now);
-                chr.ClearExpiredSkillCooldown(now);
+                    if (tickable.IsTickableCancelled)
+                    {
+                        if (item is Kite || item is Mist)
+                        {
+                            removeMapObject(item);
+                            BroadcastAll(chr => item.sendDestroyData(chr.Client));
+                        }
+                    }
+                }
             }
+
+            if (MapEffect != null)
+            {
+                MapEffect.OnTick(now);
+
+                if (MapEffect.IsTickableCancelled)
+                {
+                    BroadcastAll(chr => MapEffect.makeDestroyData());
+                    MapEffect = null;
+                }
+            }
+
         }
     }
-
-
-    //private interface DelayedPacketCreation
-    //{
-    //    public Action<IClient>? sendPackets { get; set; }
-    //}
-
-    //public class ActualDelayedPacketCreation : DelayedPacketCreation
-    //{
-    //    public Action<IClient>? sendPackets { get; set; }
-    //}
-
-    //private class SpawnCondition
-    //{
-
-    //    public Func<Player, bool>? canSpawn;
-    //}
 
     public int getHPDec() => SourceTemplate.DecHP;
     public int getHPDecProtect() => SourceTemplate.ProtectItem;
@@ -3162,7 +3143,7 @@ public class MapleMap : IMap, INamedInstance, ITickable
             return;
 
         disposed = true;
-        Disabled = true;
+        IsTickableCancelled = true;
 
         ProcessMonster(mm => mm.dispose());
         clearMapObjects();

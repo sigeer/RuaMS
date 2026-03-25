@@ -6,15 +6,16 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Shared.Events;
-using scripting.Event.scheduler;
+using Application.Utility.Tickables;
 using server;
 using server.life;
 using server.maps;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Scripting.Events;
 
-public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable
+public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, Player> chars = new();
@@ -26,7 +27,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
     public AbstractInstancedEventManager EventManager { get; }
-    private EventScriptScheduler ess;
+
     protected MapManager mapManager;
     private string name;
     private Dictionary<string, object> props = new();
@@ -62,8 +63,10 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         EventManager = em;
         this.name = name;
-        this.ess = new EventScriptScheduler(EventManager.getChannelServer());
+
         this.mapManager = new MapManager(this, EventManager.getChannelServer());
+
+        SubTickables = [mapManager];
     }
 
     public void setName(string name)
@@ -563,10 +566,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
 
-        event_schedule = EventManager.getChannelServer().TimerManager.schedule(() =>
-        {
-            EventManager.getChannelServer().Post(new EventInstanceDismissTimerCommand(this));
-        }, time);
+        SubTickables.Add(new EventInstanceTimperDismissRequest(this, timeStarted + time));
     }
 
     public void DismissEventTimer()
@@ -681,8 +681,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
         disposed = true;
 
-        ess.dispose();
-
 
         foreach (Player chr in chars.Values)
         {
@@ -721,10 +719,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void schedule(string methodName, long delay)
     {
-        if (ess != null)
-        {
-            ess.registerEntry(new EventInstanceCallMethodCommand(this, methodName), delay);
-        }
+        SubTickables.Add(new EventInstanceScheduleRequest(methodName, this, EventManager.getChannelServer().Node.getCurrentTime() + delay));
     }
 
 
@@ -1308,7 +1303,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 SetRewardClaimed(mc, thisStage);
                 mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(list[1] * mc.getMesoRate()),  GainItemShow.ShowInChat);
+                mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
     }
@@ -1471,6 +1466,43 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             arr.Add(chr.Id);
         else
             rewardedChr[stage] = new HashSet<int>() { chr.Id };
+    }
+
+    public bool IsTickableCancelled { get; set; }
+    public List<ITickable> SubTickables { get; }
+    public void OnTick(long now)
+    {
+        this.ProcessSubTickables(now);
+    }
+
+    class EventInstanceScheduleRequest : DelayedTickable
+    {
+        string _methodName;
+        AbstractEventInstanceManager _eim;
+        public EventInstanceScheduleRequest(string methodName, AbstractEventInstanceManager eim, long next) : base(next)
+        {
+            _methodName = methodName;
+            _eim = eim;
+        }
+
+        protected override void Handle(long now)
+        {
+            _eim.invokeScriptFunction(_methodName, _eim);
+        }
+    }
+
+    class EventInstanceTimperDismissRequest : DelayedTickable
+    {
+        AbstractEventInstanceManager _eim;
+        public EventInstanceTimperDismissRequest(AbstractEventInstanceManager eim, long next) : base(next)
+        {
+            _eim = eim;
+        }
+
+        protected override void Handle(long now)
+        {
+            _eim.DismissEventTimer();
+        }
     }
 }
 

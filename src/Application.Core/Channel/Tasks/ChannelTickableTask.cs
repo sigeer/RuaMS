@@ -8,8 +8,8 @@ namespace Application.Core.Channel.Tasks
 
         public ChannelTickableTask(WorldChannel worldChannel)
             : base(nameof(ChannelTickableTask),
-                  TimeSpan.FromMilliseconds(250),
-                  TimeSpan.FromMilliseconds(250))
+                  TimeSpan.FromMilliseconds(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC),
+                  TimeSpan.FromMilliseconds(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC))
         {
             _worldChannel = worldChannel;
         }

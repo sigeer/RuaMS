@@ -310,15 +310,15 @@ namespace Application.Core.Game.Players
             return null;
         }
 
+        MapEffect? _mapEffect;
         public void startMapEffect(string msg, int itemId, int duration = 30000)
         {
-            MapEffect mapEffect = new MapEffect(msg, itemId);
-            sendPacket(mapEffect.makeStartData());
-
-            Client.CurrentServer.TimerManager.schedule(() =>
+            if (_mapEffect != null)
             {
-                Client.CurrentServer.Post(new PlayerMapEffectRemoveCommand(this, mapEffect));
-            }, duration);
+                return;
+            }
+            _mapEffect = new MapEffect(msg, itemId, Client.CurrentServer.Node.getCurrentTime() + duration);
+            sendPacket(_mapEffect.makeStartData());
         }
 
         public void showMapOwnershipInfo(Player mapOwner)

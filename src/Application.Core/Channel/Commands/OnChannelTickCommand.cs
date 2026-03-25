@@ -1,3 +1,5 @@
+using Application.Utility.Tickables;
+
 namespace Application.Core.Channel.Commands
 {
     public class OnChannelTickCommand : IWorldChannelCommand
@@ -5,7 +7,7 @@ namespace Application.Core.Channel.Commands
         public void Execute(ChannelCommandContext ctx)
         {
             var now = ctx.WorldChannel.Node.getCurrentTime();
-            ctx.WorldChannel.getMapFactory().OnTick(now);
+            ctx.WorldChannel.OnTick(now);
         }
     }
 }

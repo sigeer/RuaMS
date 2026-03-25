@@ -13,28 +13,14 @@ namespace Application.Core.Game.Players.Tickables
             Next = chr.getChannelServer().Node.getCurrentTime() + Period;
         }
 
-        public override void OnTick(long now)
+        protected override void Process(long now)
         {
-            if (!Disabled)
+            _chr.UpdateStatsChunk(() =>
             {
-                if (ExpiredAt <= now)
-                {
-                    Disabled = true;
-                    return;
-                }
-
-                if (Next <= now)
-                {
-                    _chr.UpdateStatsChunk(() =>
-                    {
-                        _chr.ChangeHP(value);
-                    });
-                    _chr.sendPacket(PacketCreator.showOwnRecovery((sbyte)value));
-                    _chr.MapModel.broadcastMessage(_chr, PacketCreator.showRecovery(_chr.Id, (sbyte)value), false);
-                    Next = now + Period;
-                }
-
-            }
+                _chr.ChangeHP(value);
+            });
+            _chr.sendPacket(PacketCreator.showOwnRecovery((sbyte)value));
+            _chr.MapModel.broadcastMessage(_chr, PacketCreator.showRecovery(_chr.Id, (sbyte)value), false);
         }
     }
 }

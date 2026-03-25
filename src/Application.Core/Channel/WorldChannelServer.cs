@@ -100,7 +100,6 @@ namespace Application.Core.Channel
         public ServerMessageTask ServerMessageTask { get; }
 
         public MountTirednessTask MountTirednessTask { get; }
-        public MapObjectTask MapObjectTask { get; }
         public CharacterDiseaseTask CharacterDiseaseTask { get; }
         public CharacterHpDecreaseTask CharacterHpDecreaseTask { get; }
         public PetHungerTask PetHungerTask { get; }
@@ -161,7 +160,6 @@ namespace Application.Core.Channel
 
             ServerMessageTask = new ServerMessageTask(this);
             MountTirednessTask = new MountTirednessTask(this);
-            MapObjectTask = new MapObjectTask(this);
             CharacterDiseaseTask = new CharacterDiseaseTask(this);
             CharacterHpDecreaseTask = new CharacterHpDecreaseTask(this);
             PetHungerTask = new(this);
@@ -259,7 +257,6 @@ namespace Application.Core.Channel
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
                 await CharacterHpDecreaseTask.StopAsync();
-                await MapObjectTask.StopAsync();
                 await MountTirednessTask.StopAsync();
 
                 if (invitationTask != null)
@@ -383,7 +380,6 @@ namespace Application.Core.Channel
             PetHungerTask.Register(TimerManager);
             ServerMessageTask.Register(TimerManager);
             CharacterHpDecreaseTask.Register(TimerManager);
-            MapObjectTask.Register(TimerManager);
             MountTirednessTask.Register(TimerManager);
             MapOwnershipTask.Register(TimerManager);
 

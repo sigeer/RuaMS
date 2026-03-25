@@ -25,6 +25,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Commands;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
+using Application.Utility.Tickables;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -35,25 +36,24 @@ namespace scripting.Event;
 /**
  * @author Matze
  */
-public class EventScriptManager : AbstractScriptManager
+public class EventScriptManager : AbstractScriptManager, ITickableTree, IDisposable
 {
     private const string INJECTED_VARIABLE_NAME = "em";
 
     private ConcurrentDictionary<string, EventManager> events = new();
-    private bool active = false;
-    readonly string[] eventScripts;
+    public bool IsActive => events.Count > 0;
 
     public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IEnumerable<IAddtionalRegistry> addtionalRegistries)
         : base(logger, commandExecutor, channel, addtionalRegistries)
     {
-        eventScripts = ScriptSource.Instance.GetEvents();
+
     }
 
     public int ReloadEventScript()
     {
         DisposeEvents();
 
-        foreach (string script in eventScripts)
+        foreach (string script in ScriptSource.Instance.GetEvents())
         {
             if (!string.IsNullOrEmpty(script))
             {
@@ -74,7 +74,6 @@ public class EventScriptManager : AbstractScriptManager
                 }
             }
         }
-        active = events.Count > 0;
         return events.Count;
     }
 
@@ -95,7 +94,7 @@ public class EventScriptManager : AbstractScriptManager
 
     public bool isActive()
     {
-        return active;
+        return IsActive;
     }
 
 
@@ -139,15 +138,6 @@ public class EventScriptManager : AbstractScriptManager
     }
 
 
-    public void cancel()
-    {
-        active = false;
-        foreach (var entry in events.Values)
-        {
-            entry.Dispose();
-        }
-    }
-
     void DisposeEvents()
     {
         var cleanEvents = events.Values.ToList();
@@ -158,7 +148,7 @@ public class EventScriptManager : AbstractScriptManager
         events.Clear();
     }
 
-    public void dispose()
+    public void Dispose()
     {
         if (events.Count == 0)
         {
@@ -166,7 +156,14 @@ public class EventScriptManager : AbstractScriptManager
         }
 
         DisposeEvents();
+    }
 
-        active = false;
+    public bool IsTickableCancelled { get; set; }
+
+    public List<ITickable> SubTickables => events.Values.OfType<ITickable>().ToList();
+
+    public void OnTick(long now)
+    {
+        this.ProcessSubTickables(now);
     }
 }
