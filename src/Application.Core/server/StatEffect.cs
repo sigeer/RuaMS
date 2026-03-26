@@ -716,6 +716,8 @@ public class StatEffect
                 case Aran.ROLLING_SPIN:
                 case Evan.FIRE_BREATH:
                 case Evan.BLAZE:
+                case Paladin.GUARDIAN:
+                case Hero.GUARDIAN:
                     monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
                     break;
                 case NightLord.TAUNT:
@@ -1263,6 +1265,7 @@ public class StatEffect
         localDuration = alchemistModifyVal(chr, localDuration, false);
         //CancelEffectAction cancelAction = new CancelEffectAction(chr, this, starttime);
         //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + localDuration) - Server.getInstance().getCurrentTime()));
+        var expiredAt = localStartTime + localDuration;
 
         chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
         var summonMovementType = getSummonMovementType();
@@ -2160,4 +2163,6 @@ public class StatEffect
     {
         return monsterStatus;
     }
+
+    public Skill? GetSkill() => skill ? SkillFactory.getSkill(sourceid) : null;
 }

@@ -127,7 +127,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.sendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
 
             player.getMap().addPlayer(player);
-            player.visitMap(player.getMap());
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 

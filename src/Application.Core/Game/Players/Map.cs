@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
 using Application.Shared.WzEntity;
@@ -10,9 +9,6 @@ namespace Application.Core.Game.Players
     public partial class Player : IMapPlayer
     {
         private Dictionary<int, string> entered = new();
-        private int newWarpMap = -1;
-        private bool canWarpMap = true;  //only one "warp" must be used per call, and this will define the right one.
-        private int canWarpCounter = 0;     //counts how many times "inner warps" have been called.
 
         public override void setMap(IMap map)
         {
@@ -43,27 +39,12 @@ namespace Application.Core.Game.Players
             return warpMap;
         }
 
-        // for use ONLY inside OnUserEnter map scripts that requires a player to change map while still moving between maps.
-        public void warpAhead(int map)
-        {
-            newWarpMap = map;
-        }
-
         private void eventChangedMap(int map)
         {
             var eim = getEventInstance();
             if (eim != null)
             {
                 eim.changedMap(this, map);
-            }
-        }
-
-        private void eventAfterChangedMap(int map)
-        {
-            var eim = getEventInstance();
-            if (eim != null)
-            {
-                eim.afterChangedMap(this, map);
             }
         }
 
@@ -112,48 +93,21 @@ namespace Application.Core.Game.Players
 
         public void changeMap(IMap to, Portal? pto)
         {
-            canWarpCounter++;
-
             eventChangedMap(to.getId());    // player can be dropped from an event here, hence the new warping target.
-            if (pto == null)
-            {
-                pto = to.getPortal(0)!;
-            }
+            pto ??= to.getPortal(0)!;
             changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
-            canWarpMap = false;
-
-            canWarpCounter--;
-            if (canWarpCounter == 0)
-            {
-                canWarpMap = true;
-            }
-
-            eventAfterChangedMap(this.getMapId());
         }
 
         public void changeMap(IMap to, Point pos)
         {
-            canWarpCounter++;
-
             eventChangedMap(to.getId());
             changeMapInternal(to, pos, PacketCreator.getWarpToMap(to, 0x80, pos, this));
-            canWarpMap = false;
-
-            canWarpCounter--;
-            if (canWarpCounter == 0)
-            {
-                canWarpMap = true;
-            }
-
-            eventAfterChangedMap(this.getMapId());
         }
 
         private void changeMapInternal(IMap to, Point pos, Packet warpPacket)
         {
-            if (!canWarpMap)
-            {
+            if (mapTransitioning)
                 return;
-            }
 
             this.mapTransitioning.Set(true);
 
@@ -167,7 +121,6 @@ namespace Application.Core.Game.Players
             {
                 setPosition(pos);
                 to.addPlayer(this);
-                visitMap(base.MapModel);
 
                 Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
             }
@@ -177,29 +130,6 @@ namespace Application.Core.Game.Players
                 Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }
-
-            //alas, new map has been specified when a warping was being processed...
-            if (newWarpMap != -1)
-            {
-                canWarpMap = true;
-
-                int temp = newWarpMap;
-                newWarpMap = -1;
-                changeMap(temp);
-            }
-            else
-            {
-                // if this event map has a gate already opened, render it
-                var eim = getEventInstance();
-                if (eim != null)
-                {
-                    eim.recoverOpenedGate(this, MapModel.getId());
-                }
-
-                // if this map has obstacle components moving, make it do so for this Client
-                sendPacket(PacketCreator.environmentMoveList(MapModel.getEnvironment()));
-            }
-
         }
 
         public bool isChangingMaps()
@@ -217,7 +147,6 @@ namespace Application.Core.Game.Players
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 
-            canWarpCounter++;
             eventChangedMap(MapId.NONE);
 
             var mapEim = target.getEventInstance();
@@ -243,15 +172,6 @@ namespace Application.Core.Game.Players
                 pto = to.getPortal(0)!;
             }
             changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
-            canWarpMap = false;
-
-            canWarpCounter--;
-            if (canWarpCounter == 0)
-            {
-                canWarpMap = true;
-            }
-
-            eventAfterChangedMap(this.getMapId());
         }
 
         private int getVisitedMapIndex(IMap map)

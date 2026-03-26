@@ -55,7 +55,7 @@ using ZLinq;
 
 namespace Application.Core.Game.Maps;
 
-public class MapleMap : IMap, INamedInstance, IDelayedTickable
+public class MapleMap : IMap, INamedInstance
 {
     public string InstanceName { get; }
 
@@ -125,6 +125,7 @@ public class MapleMap : IMap, INamedInstance, IDelayedTickable
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
     public MapTemplate SourceTemplate { get; }
+
     public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim)
     {
         SourceTemplate = mapTemplate;
@@ -2652,6 +2653,11 @@ public class MapleMap : IMap, INamedInstance, IDelayedTickable
                             removeMapObject(item);
                             BroadcastAll(chr => item.sendDestroyData(chr.Client));
                         }
+
+                        else if (item is MapItem mapItem)
+                        {
+                            makeDisappearItemFromMap(item);
+                        }
                     }
                 }
             }
@@ -3210,6 +3216,16 @@ public class MapleMap : IMap, INamedInstance, IDelayedTickable
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
             chr.sendPacket(PacketCreator.crogBoatPacket(true));
         }
+
+        chr.visitMap(this);
+
+        // 恢复当前地图的状态
+        EventInstanceManager?.recoverOpenedGate(chr, Id);
+
+        chr.sendPacket(PacketCreator.environmentMoveList(getEnvironment()));
+
+        // 可能离开了副本，新的地图没有EventInstanceManager
+        chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
 
     public void addPlayer(Player chr)

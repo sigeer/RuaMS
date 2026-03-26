@@ -1277,11 +1277,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void recoverOpenedGate(Player chr, int thisMapId)
     {
-        KeyValuePair<string, int>? gateData = null;
-
-        gateData = openedGates.GetValueOrDefault(thisMapId);
-
-        if (gateData != null)
+        if (openedGates.TryGetValue(thisMapId, out var gateData) && gateData != null)
         {
             chr.sendPacket(PacketCreator.environmentChange(gateData.Value.Key, gateData.Value.Value));
         }

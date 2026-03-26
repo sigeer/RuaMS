@@ -1,6 +1,8 @@
+using Application.Core.Game.Maps;
 using Application.Shared.Team;
 using GuildProto;
 using net.server.guild;
+using System.Security.Cryptography;
 
 namespace Application.Core.Channel.Commands
 {
@@ -27,7 +29,7 @@ namespace Application.Core.Channel.Commands
                 return;
             }
 
-            var guildDto = res.AllianceDto.Guilds.FirstOrDefault(x => x.GuildId == res.GuildId);
+            var guildDto = res.AllianceDto.Guilds.FirstOrDefault(x => x.GuildId == res.GuildId)!;
             foreach (var memberId in res.AllMembers)
             {
                 var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(memberId);
@@ -42,9 +44,10 @@ namespace Application.Core.Channel.Commands
                     {
                         chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
                     }
-
+                    chr.MapModel.broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor));
                 }
             }
+
         }
     }
 }

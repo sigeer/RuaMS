@@ -1,12 +1,13 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Utility.Tickables;
 using client.inventory;
 using tools;
 
 
 namespace Application.Core.Game.Maps;
 
-public class MapItem : AbstractMapObject
+public class MapItem : AbstractMapObject, ILifedTickable
 {
     protected IChannelClient ownerClient;
 
@@ -21,6 +22,10 @@ public class MapItem : AbstractMapObject
     public bool IsPartyDrop => this.party_ownerid != -1;
 
     public bool NeedCheckSpace => getItem()?.NeedCheckSpace ?? false;
+
+    public long ExpiredAt => ExpiredTime;
+
+    public bool IsTickableCancelled { get; set; }
 
     public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
     {
@@ -230,5 +235,18 @@ public class MapItem : AbstractMapObject
     public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  DropLeaveFieldType.None, 0));
+    }
+
+    public void OnTick(long now)
+    {
+        if (IsTickableCancelled)
+        {
+            return;
+        }
+
+        if (ExpiredAt <= now)
+        {
+            IsTickableCancelled = true;
+        }
     }
 }

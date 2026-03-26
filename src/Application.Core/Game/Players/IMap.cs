@@ -26,7 +26,6 @@ namespace Application.Core.Game.Players
         void enteredScript(string script, int mapid);
 
         void visitMap(IMap map);
-        void warpAhead(int map);
 
         void startMapEffect(string msg, int itemId, int duration = 30000);
 
