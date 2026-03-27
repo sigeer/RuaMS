@@ -707,7 +707,10 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         EventManager.getChannelServer().TimerManager.schedule(() =>
         {
-            EventManager.getChannelServer().Post(new MapManagerDisposeCommand(mapManager));
+            EventManager.getChannelServer().Send(w =>
+            {
+                mapManager.Dispose();
+            });
         }, TimeSpan.FromMinutes(1));
 
     }

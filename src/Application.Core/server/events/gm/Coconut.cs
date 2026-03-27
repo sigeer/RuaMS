@@ -71,7 +71,10 @@ public class Coconut
 
         Map.ChannelServer.TimerManager.schedule(() =>
         {
-            Map.ChannelServer.Post(new EventCoconutTimeoutCommand(this));
+            Map.Send(m =>
+            {
+                Check();
+            });
         }, TimeSpan.FromSeconds(time));
     }
 
@@ -113,7 +116,10 @@ public class Coconut
         setCoconutsHittable(false);
         Map.ChannelServer.TimerManager.schedule(() =>
         {
-            Map.ChannelServer.Post(new EventCoconutDelayWarpoutCommand(this));
+            Map.Send(m =>
+            {
+                ProcessWarpOut();
+            });
         }, TimeSpan.FromSeconds(Map.TimeFinish));
     }
 

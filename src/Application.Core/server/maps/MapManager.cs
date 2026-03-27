@@ -93,6 +93,8 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         return new(maps);
     }
 
+    public List<IMap> GetAllMaps() => maps.Values.ToList();
+
     public void OnTick(long now)
     {
         var sw = Stopwatch.StartNew();

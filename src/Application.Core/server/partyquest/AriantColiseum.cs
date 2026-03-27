@@ -77,17 +77,26 @@ public class AriantColiseum
 
         setAriantScoreBoard(eventMap.ChannelServer.TimerManager.schedule(() =>
         {
-            eventMap.ChannelServer.Post(new EventAriantClearCommand(this));
+            eventMap.Send(m =>
+            {
+                showArenaResults();
+            });
         }, pqTimerBoard));
 
         setArenaFinish(eventMap.ChannelServer.TimerManager.schedule(() =>
         {
-            eventMap.ChannelServer.Post(new EventAriantWarpOutCommand(this));
+            eventMap.Send(m =>
+            {
+                enterKingsRoom();
+            });
         }, pqTimer));
 
         setArenaUpdate(eventMap.ChannelServer.TimerManager.register(() =>
         {
-            eventMap.ChannelServer.Post(new EventAriantBroadcastScoreCommand(this));
+            eventMap.Send(m =>
+            {
+                broadcastAriantScoreUpdate();
+            });
         }, 500, 500));
     }
 

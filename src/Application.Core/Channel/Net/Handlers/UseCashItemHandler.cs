@@ -661,7 +661,32 @@ public class UseCashItemHandler : ChannelHandlerBase
             IChannelClient client = c;
             c.CurrentServer.TimerManager.schedule(() =>
             {
-                c.CurrentServer.Post(new DelayedShowVegaSpellCommand(player, scrolled, curlevel));
+                var mapActor = c.CurrentServer.getPlayerStorage().GetCharacterActor(player.Id);
+                mapActor?.Send(map =>
+                {
+                    var chr = map.FindPlayer(player.Id);
+                    if (chr == null)
+                    {
+                        return;
+                    }
+
+                    chr.toggleBlockCashShop();
+
+                    List<ModifyInventory> mods = new();
+                    mods.Add(new ModifyInventory(3, scrolled));
+                    mods.Add(new ModifyInventory(0, scrolled));
+                    chr.sendPacket(PacketCreator.modifyInventory(true, mods));
+
+                    var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
+                    map.broadcastMessage(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
+                    // 取背包装备栏而不是已装备栏，理论上不会出现eSlot < 0的情况？
+                    //if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
+                    //{
+                    //    _player.equipChanged();
+                    //}
+
+                    chr.sendPacket(PacketCreator.enableActions());
+                });
             }, TimeSpan.FromSeconds(3));
         }
         else

@@ -744,7 +744,10 @@ public partial class Player
 
         Client.CurrentServer.TimerManager.schedule(() =>
         {
-            Client.CurrentServer.Post(new MapBroadcastJobChangedCommand(this.getMap(), this.Id));
+            MapModel.Send(m =>
+            {
+                m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+            });
         }, 777);
     }
 
@@ -1130,7 +1133,10 @@ public partial class Player
 
         extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
         {
-            Client.CurrentServer.Post(new PlayerExtralRecoveryCommand(this, healHP, healMP));
+            MapModel.Send(m =>
+            {
+                ApplyExtralRecovery(healHP, healMP);
+            });
         }, healInterval, healInterval);
     }
 
@@ -2105,7 +2111,7 @@ public partial class Player
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.TimerManager.schedule(() =>
+            Client.CurrentServer.NodeService.TimerManager.schedule(() =>
             {
                 Client.CurrentServer.Post(new PlayerEnergyChargeCommand(chr));
             }, ceffect.getDuration());
@@ -3928,7 +3934,11 @@ public partial class Player
         _ = SyncCharAsync(SyncCharacterTrigger.Logoff)
             .ContinueWith(t =>
             {
-                Client.CurrentServer.Post(new PlayerLogoutCommand(Id));
+                Client.CurrentServer.Send(w =>
+                {
+                    RemoveWorldWatcher();
+                    setClient(new OfflineClient());
+                });
             });
     }
 

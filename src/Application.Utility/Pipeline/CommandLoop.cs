@@ -5,33 +5,46 @@ using System.Threading.Channels;
 
 namespace Application.Utility.Pipeline
 {
-    public abstract class CommandLoop<TContext> : IAsyncDisposable where TContext: class, ICommandContext
+    public interface ICommandPipeline
     {
-        private readonly Channel<ICommand<TContext>> _commands;
+        void Start();
+    }
+    public class CommandLoop<TContext> : IAsyncDisposable, ICommandPipeline where TContext: IActorInstance<TContext>
+    {
+        private static Channel<ICommand>[] _commands;
+        private TContext _context;
         private Task? _runningTask;
+        private Channel<ICommand> _command;
 
-        public CommandLoop()
+        static CommandLoop()
         {
-            _commands = Channel.CreateBounded<ICommand<TContext>>(new BoundedChannelOptions(100_000)
+            _commands = new Channel<ICommand>[Environment.ProcessorCount];
+            for (int i = 0; i < Environment.ProcessorCount; i++)
             {
-                SingleReader = true,
-                SingleWriter = false,
-                FullMode = BoundedChannelFullMode.DropOldest
-            });
+                _commands[i] = Channel.CreateBounded<ICommand>(new BoundedChannelOptions(100_000)
+                {
+                    SingleReader = true,
+                    SingleWriter = false,
+                    FullMode = BoundedChannelFullMode.DropOldest
+                });
+            }
+        }
+        public CommandLoop(TContext context)
+        {
+            _context = context;
+            _command = _commands[_context.GetHashCode() & Environment.ProcessorCount];
         }
 
-        public void Start(string key)
+        public void Start()
         {
             if (_runningTask != null)
                 throw new InvalidOperationException("Already running");
 
-            _runningTask = RunLoopAsync(key);
+            _runningTask = RunLoopAsync();
             return;
         }
 
-        protected abstract TContext CreateContext();
-
-        private async Task RunLoopAsync(string key)
+        private async Task RunLoopAsync()
         {
             Stopwatch sw = new();
 
@@ -47,27 +60,34 @@ namespace Application.Utility.Pipeline
             //    }
             //}
 
-            await foreach (var item in _commands.Reader.ReadAllAsync())
+            await foreach (var item in _command.Reader.ReadAllAsync())
             {
-                GameMetrics.CommandCountTick(key, _commands.Reader.Count);
+                // GameMetrics.CommandCountTick(C, _command.Reader.Count);
                 sw.Restart();
-                item.Execute(CreateContext());
+                if (item is IAsyncCommand<TContext> a)
+                {
+                    await a.Execute(_context);
+                }
+                else if (item is ICommand<TContext> b)
+                {
+                    b.Execute(_context);
+                }
                 sw.Stop();
-                GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
+                GameMetrics.GameTick(_context.InstanceName, sw.Elapsed.TotalMilliseconds);
             }
         }
 
-        public void Register(ICommand<TContext> tickable)
+        public void Register(ICommand tickable)
         {
-            if (!_commands.Writer.TryWrite(tickable))
+            if (!_command.Writer.TryWrite(tickable))
             {
-                Log.Logger.Fatal("命令写入失败 {Info}，当前命令队列长度 {Length}", tickable.GetType().Name, _commands.Reader.Count);
+                Log.Logger.Fatal("命令写入失败 {Info}，当前命令队列长度 {Length}", tickable.GetType().Name, _command.Reader.Count);
             }
         }
 
         public async Task StopAsync()
         {
-            _commands.Writer.TryComplete();
+            _command.Writer.TryComplete();
 
             if (_runningTask != null)
             {

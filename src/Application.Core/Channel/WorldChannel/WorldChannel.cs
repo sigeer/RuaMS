@@ -1,3 +1,4 @@
+using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
@@ -5,6 +6,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.ServerTransports;
@@ -32,7 +34,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<ChannelCommandContext>, INamedInstance, IChannelServer, ITickableTree
+public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer, ITickableTree
 {
     public int Id => channel;
     public string InstanceName { get; }
@@ -118,7 +120,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
-    public WorldChannelCommandLoop CommandLoop { get; }
+    public CommandLoop<WorldChannel> CommandLoop { get; }
     public EventRecallManager? EventRecallManager { get; private set; }
 
     ChannelTickableTask? _respawnTask;
@@ -126,7 +128,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public IServerBase<IChannelServerTransport> Node { get; }
-    public IActor<ChannelNodeCommandContext> NodeActor { get; }
+    public IActorInstance<WorldChannelServer> NodeActor { get; }
     public IServiceCenter NodeService { get; }
     public IMapper Mapper { get; }
     public ITimerManager TimerManager { get; private set; } = null!;
@@ -199,7 +201,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
 
-        CommandLoop = new WorldChannelCommandLoop(this);
+        CommandLoop = new CommandLoop<WorldChannel>(this);
         InviteChannelHandlerRegistry = new();
 
         SubTickables = [EventScriptManager, mapManager];
@@ -315,7 +317,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         IsRunning = true;
         log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
 
-        CommandLoop.Start(InstanceName);
+        CommandLoop.Start();
         return Task.CompletedTask;
     }
 
@@ -771,6 +773,21 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         }
     }
 
+    public void Send(ICommand command)
+    {
+        CommandLoop.Register(command);
+    }
+
+    public void Send(IActorInstance<IMap> mapActor, Action<IMap> action)
+    {
+        mapActor.Send(new MapRequest(action));
+    }
+
+    public void Send(IActorInstance<IMap> mapActor, Func<IMap, Task> action)
+    {
+        mapActor.Send(new AsyncMapRequest(action));
+    }
+
     public void Post(ICommand<ChannelCommandContext> command)
     {
         CommandLoop.Register(command);
@@ -779,5 +796,15 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public void OnTick(long now)
     {
         this.ProcessSubTickables(now);
+    }
+
+    public void Send(Func<WorldChannel, Task> action)
+    {
+        CommandLoop.Register(new AsyncChannelRequest(action)); 
+    }
+
+    public void Send(Action<WorldChannel> action)
+    {
+        CommandLoop.Register(new ChannelRequest(action));
     }
 }

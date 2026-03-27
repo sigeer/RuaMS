@@ -94,7 +94,10 @@ namespace Application.Core.Game.Players
 
             chairRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
             {
-                Client.CurrentServer.Post(new PlayerChairBuffCommand(this));
+                MapModel.Send(map =>
+                {
+                    ApplayChairBuff();
+                });
             }, healInterval, healInterval);
 
         }

@@ -7,6 +7,7 @@ using Application.Core.Scripting.Events;
 using Application.Shared.Languages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.inventory;
 using net.server.coordinator.world;
@@ -17,7 +18,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable, IClientMessenger, ILoopTickable
+    public interface IMap : IDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
     {
         int Id { get; }
         bool AutoRespawn { get; set; }
@@ -292,5 +293,6 @@ namespace Application.Core.Game.Maps
         void makeDisappearExpiredItemDrops();
         void unregisterItemDrop(MapItem mapItem);
         void ProcessItemMonitor();
+        Player? FindPlayer(int id);
     }
 }

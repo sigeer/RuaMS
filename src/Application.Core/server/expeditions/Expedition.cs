@@ -28,6 +28,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using Application.Shared.Events;
+using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
 using tools;
@@ -167,7 +168,11 @@ public class Expedition : IClientMessenger
     private void log()
     {
         string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
-        getLeader().Client.CurrentServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6, gmMessage, true));
+        getLeader().Client.CurrentServer.NodeActor
+            .Send(s =>
+            {
+                s.SendDropMessage(6, gmMessage, true);
+            });
 
         string log = type + " EXPEDITION\r\n";
         log += TimeUtils.GetTimeString(startTime) + "\r\n";
@@ -202,7 +207,11 @@ public class Expedition : IClientMessenger
             LightBlue(nameof(ClientMessage.Expedition_Start));
         }
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
-        startMap.ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName(), true));
+        startMap.ChannelServer.NodeActor
+            .Send(s =>
+            {
+                s.SendDropMessage(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName(), true);
+            });
     }
 
     public string addMember(Player player)

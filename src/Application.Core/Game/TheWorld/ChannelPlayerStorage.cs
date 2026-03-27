@@ -1,3 +1,6 @@
+using Application.Core.Game.Maps;
+using Application.Utility.Pipeline;
+
 namespace Application.Core.Game.TheWorld
 {
     public class ChannelPlayerStorage
@@ -33,6 +36,11 @@ namespace Application.Core.Game.TheWorld
         public Player? getCharacterById(int id)
         {
             return storage.GetValueOrDefault(id);
+        }
+
+        public IActorInstance<IMap>? GetCharacterActor(int id)
+        {
+            return storage.GetValueOrDefault(id)?.MapModel;
         }
 
         public List<Player> getAllCharacters()

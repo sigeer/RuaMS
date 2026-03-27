@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
+using Google.Protobuf;
 
 namespace Application.Core.Scripting.Events
 {
@@ -18,7 +19,10 @@ namespace Application.Core.Scripting.Events
                 + " and HAS JUST STARTED THE STRATEGY PHASE. After 3 minutes, no more guild members will be allowed to join the effort."
                 + " Check out Shuang at the excavation site in Perion for more info.";
 
-            cserv.Post(new SendGuildMessageCommand(guildId, 6, callout));
+            cserv.Send(async w =>
+            {
+                await w.Node.Transport.BroadcastGuildMessage(guildId, 6, callout);
+            });
         }
 
         private void exportMovedQueueToGuild(int guildId, int place)
@@ -26,7 +30,10 @@ namespace Application.Core.Scripting.Events
             string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                     + " and is currently on the " + ClientCulture.SystemCulture.Ordinal(place) + " place on the waiting queue.";
 
-            cserv.Post(new SendGuildMessageCommand(guildId, 6, callout));
+            cserv.Send(async w =>
+            {
+                await w.Node.Transport.BroadcastGuildMessage(guildId, 6, callout);
+            });
         }
 
         private List<int>? getNextGuildQueue()

@@ -1,7 +1,9 @@
+using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using Dto;
 using Google.Protobuf;
+using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
@@ -49,7 +51,17 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(SendChatRoomMessageResponse res)
             {
-                _server.PushChannelCommand(new InvokeChatRoomMessageCommand(res));
+                _server.Broadcast((worldChannel) =>
+                {
+                    foreach (var member in res.Members)
+                    {
+                        var actor = worldChannel.getPlayerStorage().GetCharacterActor(member);
+                        actor?.Send(map =>
+                        {
+                            map.FindPlayer(member)?.sendPacket(PacketCreator.messengerChat(res.Text));
+                        });
+                    }
+                });
             }
 
             protected override SendChatRoomMessageResponse Parse(ByteString data) => SendChatRoomMessageResponse.Parser.ParseFrom(data);
