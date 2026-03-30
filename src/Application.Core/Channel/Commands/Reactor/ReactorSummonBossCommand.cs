@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Commands
             this.summonMessage = summonMessage;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             var map = _reactor.getMap();
             var monster = LifeFactory.Instance.GetMonsterTrust(mobId);

@@ -91,7 +91,7 @@ public abstract class BaseScheduler
 
             if (r.Value < timeNow)
             {
-                _channelServer.Post(r.Key);
+                _channelServer.Send(r.Key);
                 toRemove.Add(rmd.Key);
             }
         }
@@ -137,7 +137,7 @@ public abstract class BaseScheduler
 
         if (toRun != null)
         {
-            _channelServer.Post(toRun);
+            _channelServer.Send(toRun);
         }
 
         dispatchRemovedEntries(Collections.singletonList(key), false);

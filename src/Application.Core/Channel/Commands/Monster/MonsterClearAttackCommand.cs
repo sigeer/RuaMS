@@ -1,9 +1,5 @@
 using Application.Core.Game.Life;
-using Application.Core.Game.Skills;
 using server.life;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Channel.Commands
 {
@@ -18,7 +14,7 @@ namespace Application.Core.Channel.Commands
             _attackPos = attackPos;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _mob.clearAttack(_attackPos);
         }
@@ -35,7 +31,7 @@ namespace Application.Core.Channel.Commands
             _mobSkill = mobSkill;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _mob.clearSkill(_mobSkill.getId());
         }
@@ -52,7 +48,7 @@ namespace Application.Core.Channel.Commands
             _ele = element;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             var stats = _mob.getStats();
             stats.removeEffectiveness(_ele);

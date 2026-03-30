@@ -13,7 +13,10 @@ namespace Application.Core.Channel.Tasks
 
         public override void HandleRun()
         {
-            _server.PushChannelCommand(new MapDisposeCheckCommand());
+            _server.Broadcast(w =>
+            {
+                w.getMapFactory().CheckActive();
+            });
         }
     }
 }

@@ -14,7 +14,10 @@ namespace Application.Core.Channel.ServerData
 
         protected override void HandleRun()
         {
-            _server.PushChannelCommand(new InvokePetHungerCommand());
+            _server.Broadcast(w =>
+            {
+                w.PetHungerManager.HandleRun();
+            });
         }
     }
 }

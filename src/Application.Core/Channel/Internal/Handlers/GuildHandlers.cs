@@ -57,7 +57,54 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(CreateGuildResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildCreateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    if (res.Code != 0)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(res.Request.LeaderId)?
+                        .Send(m =>
+                        {
+                            var masterChr = m.getCharacterById(res.Request.LeaderId);
+                            if (masterChr != null)
+                            {
+                                var msg = GuildHandlers.GetErrorMessage((GuildUpdateResult)res.Code);
+                                if (msg != null)
+                                {
+                                    masterChr.Popup(msg);
+                                }
+                                masterChr.GainMeso(YamlConfig.config.server.CREATE_GUILD_COST);
+                            }
+                        });
+                        return;
+                    }
+
+                    foreach (var member in res.GuildDto.Members)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?
+                        .Send(m =>
+                        {
+                            var chr = m.getCharacterById(member.Id);
+
+                            if (chr != null)
+                            {
+                                if (res.GuildDto.Leader == chr.Id)
+                                {
+                                    chr.GuildRank = 1;
+                                    chr.Popup("You have successfully created a Guild.");
+                                }
+                                else
+                                {
+                                    chr.GuildRank = 2;
+                                    chr.Popup("You have successfully cofounded a Guild.");
+                                }
+                                chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
+
+                                chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name));
+                                chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor));
+                            }
+                        });
+                    }
+                });
                 _server.GuildManager.StoreGuild(res.GuildDto);
             }
 
@@ -73,7 +120,27 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(GuildMemberServerChangedResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildMemberServerChangeCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    foreach (var guild in res.AllMembers)
+                    {
+                        if (guild != res.MemberId)
+                        {
+                            w.getPlayerStorage().GetCharacterActor(guild)?.Send(m =>
+                                {
+                                    var chr = m.getCharacterById(guild);
+                                    if (chr != null)
+                                    {
+                                        if (chr.GuildId == res.GuildId)
+                                        {
+                                            chr.sendPacket(GuildPackets.guildMemberOnline(res.GuildId, res.MemberId, res.MemberChanel > 0));
+                                        }
+                                        chr.sendPacket(GuildPackets.allianceMemberOnline(res.AllianceId, res.GuildId, res.MemberId, res.MemberChanel > 0));
+                                    }
+                                });
+                        }
+                    }
+                });
 
                 if (res.AllianceId > 0)
                 {
@@ -98,7 +165,34 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(GuildMemberUpdateResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildMemberUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    foreach (var guild in res.AllMembers)
+                    {
+                        var actor = w.getPlayerStorage().GetCharacterActor(guild);
+                        if (actor != null)
+                            actor.Send(m =>
+                            {
+                                var chr = m.getCharacterById(guild);
+                                if (chr != null)
+                                {
+                                    if (chr.GuildId == res.GuildId)
+                                    {
+                                        if (res.Type == 0)
+                                        {
+                                            chr.sendPacket(PacketCreator.levelUpMessage(2, res.MemberLevel, res.MemberName));
+                                        }
+                                        else
+                                        {
+                                            chr.sendPacket(PacketCreator.jobMessage(0, res.MemberJob, res.MemberName));
+                                        }
+                                        chr.sendPacket(GuildPackets.guildMemberLevelJobUpdate(res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
+                                    }
+                                    chr.sendPacket(GuildPackets.updateAllianceJobLevel(res.AllianceId, res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
+                                }
+                            });
+                    }
+                });
                 if (res.AllianceId > 0)
                 {
                     _server.GuildManager.ClearAllianceCache(res.AllianceId);
@@ -128,7 +222,22 @@ namespace Application.Core.Channel.Internal.Handlers
                     return;
                 }
 
-                _server.PushChannelCommand(new InvokeGuildNoticeUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    foreach (var memberId in res.GuildMembers)
+                    {
+                        var actor = w.getPlayerStorage().GetCharacterActor(memberId);
+                        if (actor != null)
+                            actor.Send(m =>
+                            {
+                                var chr = m.getCharacterById(memberId);
+                                if (chr != null)
+                                {
+                                    chr.sendPacket(GuildPackets.guildNotice(res.GuildId, res.Request.Notice));
+                                }
+                            });
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
@@ -151,8 +260,26 @@ namespace Application.Core.Channel.Internal.Handlers
                     return;
                 }
 
+                _server.Broadcast(w =>
+                {
+                    foreach (var memberId in res.GuildMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        {
+                            var chr = m.getCharacterById(memberId);
+                            if (chr != null)
+                            {
+                                chr.sendPacket(GuildPackets.updateGP(res.GuildId, res.GuildGP));
+                                if (res.Request.Gp > 0)
+                                {
+                                    chr.sendPacket(PacketCreator.getGPMessage(res.Request.Gp));
+                                }
+                            }
+                        });
 
-                _server.PushChannelCommand(new InvokeGuildGpUpdateCommand(res));
+                    }
+                });
+
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
 
@@ -168,7 +295,39 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(UpdateGuildCapacityResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildGpUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var resCode = (GuildUpdateResult)res.Code;
+                    if (resCode != GuildUpdateResult.Success)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?.Send(m =>
+                        {
+                            var masterChr = m.getCharacterById(res.Request.MasterId);
+                            if (masterChr != null)
+                            {
+                                if (resCode == GuildUpdateResult.GuildFull)
+                                {
+                                    masterChr.Popup("Your guild already reached the maximum capacity of players.");
+                                }
+                                masterChr.GainMeso(res.Request.Cost);
+                            }
+                        });
+                        return;
+                    }
+
+
+                    foreach (var memberId in res.GuildMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        {
+                            var chr = m.getCharacterById(memberId);
+                            if (chr != null)
+                            {
+                                chr.sendPacket(GuildPackets.guildCapacityChange(res.GuildId, res.GuildCapacity));
+                            }
+                        });
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
@@ -185,7 +344,43 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(UpdateGuildEmblemResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildEmblemUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var resCode = (GuildUpdateResult)res.Code;
+                    if (resCode != GuildUpdateResult.Success)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)
+                        ?.Send(m =>
+                        {
+                            m.getCharacterById(res.Request.MasterId)?.GainMeso(YamlConfig.config.server.CHANGE_EMBLEM_COST);
+                        });
+                        return;
+                    }
+
+                    var guildDto = res.AllianceDto.Guilds.FirstOrDefault(x => x.GuildId == res.GuildId)!;
+                    foreach (var memberId in res.AllMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?
+                        .Send(m =>
+                        {
+                            var chr = m.getCharacterById(memberId);
+                            if (chr != null)
+                            {
+                                if (chr.GuildId == res.GuildId)
+                                {
+                                    chr.sendPacket(GuildPackets.guildEmblemChange(res.GuildId, (short)res.Request.LogoBg, (byte)res.Request.LogoBgColor, (short)res.Request.Logo, (byte)res.Request.LogoColor));
+                                }
+
+                                if (res.AllianceDto != null)
+                                {
+                                    chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                }
+                                chr.MapModel.broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor));
+                            }
+                        });
+
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
@@ -209,7 +404,22 @@ namespace Application.Core.Channel.Internal.Handlers
                     return;
                 }
 
-                _server.PushChannelCommand(new InvokeGuildRankTitleUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    foreach (var memberId in res.GuildMembers)
+                    {
+                        var actor = w.getPlayerStorage().GetCharacterActor(memberId);
+                        if (actor != null)
+                            actor.Send(m =>
+                            {
+                                var chr = m.getCharacterById(memberId);
+                                if (chr != null)
+                                {
+                                    chr.sendPacket(GuildPackets.rankTitleChange(res.GuildId, res.Request.RankTitles.ToArray()));
+                                }
+                            });
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
@@ -232,7 +442,26 @@ namespace Application.Core.Channel.Internal.Handlers
                     return;
                 }
 
-                _server.PushChannelCommand(new InvokeGuildMemberRankUpdateCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    foreach (var memberId in res.GuildMembers)
+                    {
+                        var actor = w.getPlayerStorage().GetCharacterActor(memberId);
+                        if (actor != null)
+                            actor.Send(m =>
+                            {
+                                var chr = m.getCharacterById(memberId);
+                                if (chr != null)
+                                {
+                                    if (chr.Id == res.Request.TargetPlayerId)
+                                    {
+                                        chr.GuildRank = res.Request.NewRank;
+                                    }
+                                    chr.sendPacket(GuildPackets.changeRank(res.GuildId, res.Request.TargetPlayerId, res.Request.NewRank));
+                                }
+                            });
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
@@ -249,7 +478,63 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(JoinGuildResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildMemberJoinCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var resCode = (GuildUpdateResult)res.Code;
+                    if (resCode != GuildUpdateResult.Success)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(res.Request.PlayerId)?
+                           .Send(m =>
+                           {
+                               var masterChr = m.getCharacterById(res.Request.PlayerId);
+                               if (masterChr != null)
+                               {
+                                   if (resCode == GuildUpdateResult.GuildFull)
+                                   {
+                                       masterChr.dropMessage(1, "The guild you are trying to join is already full.");
+                                   }
+                               }
+                           });
+                        return;
+                    }
+
+                    var newMember = res.GuildDto.Members.FirstOrDefault(x => x.Id == res.Request.PlayerId)!;
+                    foreach (var memberId in res.AllMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                            {
+                                var chr = m.getCharacterById(memberId);
+                                if (chr != null)
+                                {
+                                    if (chr.Id == newMember.Id)
+                                    {
+                                        chr.GuildRank = newMember.GuildRank;
+                                        chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
+                                        chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name));
+                                        chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor));
+                                    }
+                                    else if (chr.GuildId == res.Request.GuildId)
+                                    {
+                                        chr.sendPacket(GuildPackets.newGuildMember(res.Request.GuildId,
+                                            newMember.Id,
+                                            newMember.Name,
+                                            newMember.Job,
+                                            newMember.Level,
+                                            newMember.GuildRank,
+                                            newMember.Channel));
+                                    }
+                                    else
+                                    {
+                                        if (res.AllianceDto != null)
+                                        {
+                                            chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                            chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                        }
+                                    }
+                                }
+                            });
+                    }
+                });
 
                 _server.GuildManager.StoreGuild(res.GuildDto);
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
@@ -267,7 +552,59 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(LeaveGuildResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildMemberLeaveCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var resCode = (GuildUpdateResult)res.Code;
+                    var masterActor = w.getPlayerStorage().GetCharacterActor(res.Request.PlayerId);
+                    if (masterActor != null)
+                        masterActor.Send(m =>
+                        {
+                            var masterChr = m.getCharacterById(res.Request.PlayerId);
+                            if (resCode != GuildUpdateResult.Success)
+                            {
+                                if (masterChr != null)
+                                {
+                                    var msg = GuildHandlers.GetErrorMessage(resCode);
+                                    if (msg != null)
+                                    {
+                                        masterChr.dropMessage(1, msg);
+                                    }
+                                }
+                                return;
+                            }
+                            if (masterChr != null)
+                            {
+                                masterChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                                masterChr.sendPacket(GuildPackets.ShowGuildInfo(null));
+                                masterChr.getMap().broadcastPacket(masterChr, GuildPackets.guildNameChanged(masterChr.Id, ""));
+                            }
+                        });
+
+                    foreach (var memberId in res.AllLeftMembers)
+                    {
+                        var actor = w.getPlayerStorage().GetCharacterActor(memberId);
+                        if (actor != null)
+                            actor.Send(m =>
+                            {
+                                var chr = m.getCharacterById(memberId);
+                                if (chr != null)
+                                {
+                                    if (chr.GuildId == res.GuildId)
+                                    {
+                                        chr.sendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.PlayerId, res.MasterName, false));
+                                    }
+                                    else
+                                    {
+                                        if (res.AllianceDto != null)
+                                        {
+                                            chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                            chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                        }
+                                    }
+                                }
+                            });
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
@@ -285,7 +622,61 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(ExpelFromGuildResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildExpelMemberCallbackCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var resCode = (GuildUpdateResult)res.Code;
+                    if (resCode != GuildUpdateResult.Success)
+                    {
+                        var masterChr = w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId);
+                        if (masterChr != null)
+                        {
+                            if (resCode == GuildUpdateResult.MasterRankFail)
+                            {
+                                masterChr.Popup("权限不足");
+                            }
+                        }
+                        return;
+                    }
+
+                    w.getPlayerStorage().GetCharacterActor(res.Request.TargetPlayerId)?.Send(m =>
+                    {
+                        var targetChr = m.getCharacterById(res.Request.TargetPlayerId);
+
+                        if (targetChr != null)
+                        {
+                            targetChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                            targetChr.sendPacket(GuildPackets.ShowGuildInfo(null));
+
+                            targetChr.getMap().broadcastPacket(targetChr, GuildPackets.guildNameChanged(targetChr.Id, ""));
+                        }
+                    });
+
+
+                    foreach (var memberId in res.AllLeftMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        {
+                            var chr = m.getCharacterById(memberId);
+                            if (chr != null)
+                            {
+                                if (chr.GuildId == res.GuildId)
+                                {
+                                    chr.sendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.TargetPlayerId, res.TargetName, true));
+                                }
+                                else
+                                {
+                                    if (res.AllianceDto != null)
+                                    {
+                                        chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                        chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                    }
+                                }
+
+                            }
+                        });
+
+                    }
+                });
 
                 _server.GuildManager.ClearGuildCache(res.GuildId);
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
@@ -303,8 +694,41 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(GuildDisbandResponse res)
             {
-                _server.PushChannelCommand(new InvokeGuildDisbandCallbackCommand(res));
+                if (res.Code != 0)
+                {
+                    return;
+                }
 
+                _server.Broadcast(w =>
+                {
+                    foreach (var memberId in res.AllMembers)
+                    {
+                        w.getPlayerStorage().GetCharacterActor(memberId)?
+                        .Send(m =>
+                        {
+                            var chr = m.getCharacterById(memberId);
+                            if (chr != null)
+                            {
+                                if (chr.GuildId == res.GuildId)
+                                {
+                                    chr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                                    chr.sendPacket(GuildPackets.ShowGuildInfo(null));
+
+                                    chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, ""));
+                                }
+                                else
+                                {
+                                    if (res.AllianceDto != null)
+                                    {
+                                        chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                        chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                    }
+                                }
+                            }
+                        });
+
+                    }
+                });
                 _server.GuildManager.ClearGuildCache(res.GuildId);
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
             }

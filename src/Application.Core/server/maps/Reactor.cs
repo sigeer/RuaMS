@@ -214,8 +214,10 @@ public class Reactor : AbstractMapObject
             {
                 timeoutTask = null;
 
-                MapModel.ChannelServer.Post(new ReactorSetStateCommand(this, nextState));
-
+                MapModel.Send(map =>
+                {
+                    tryForceHitReactor(nextState);
+                });
             }, timeOut);
         }
     }
@@ -224,7 +226,10 @@ public class Reactor : AbstractMapObject
     {
         c.CurrentServer.TimerManager.schedule(() =>
         {
-            c.CurrentServer.Post(new ReactorHitCommand(this, c));
+            MapModel.Send(map =>
+            {
+                hitReactor(c);
+            });
         }, delay);
     }
 

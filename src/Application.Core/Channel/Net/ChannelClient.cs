@@ -193,7 +193,20 @@ namespace Application.Core.Channel.Net
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            CurrentServer.Post(new HandleChannelPacketCommand(this, msg));
+            if (Character == null)
+            {
+                CurrentServer.Send(w =>
+                {
+                    ProcessPacket(msg);
+                });
+            }
+            else
+            {
+                Character.MapModel.Send(m =>
+                {
+                    ProcessPacket(msg);
+                });
+            }
         }
         public override void ProcessPacket(InPacket packet)
         {
@@ -360,7 +373,8 @@ namespace Application.Core.Channel.Net
                 Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                     .ContinueWith(t =>
                     {
-                        CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
+                        
+                        CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
                     });
             }
             catch (IOException e)
@@ -394,7 +408,7 @@ namespace Application.Core.Channel.Net
             Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                 .ContinueWith(t =>
                 {
-                    CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
+                    CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
                 });
         }
 

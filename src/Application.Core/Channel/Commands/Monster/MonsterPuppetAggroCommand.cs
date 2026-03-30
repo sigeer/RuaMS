@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Commands
             _mob = mob;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _mob.ApplyPuppetAggro();
         }

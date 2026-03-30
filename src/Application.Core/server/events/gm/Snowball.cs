@@ -77,7 +77,7 @@ public class Snowball
         hittable = true;
         map.ChannelServer.TimerManager.schedule(() =>
         {
-            map.ChannelServer.Post(new EventSnowballTimeoutCommand(this));
+            map.Send(m => ProcessTimeout());
         }, 600_000);
 
     }
@@ -156,7 +156,7 @@ public class Snowball
 
                     map.ChannelServer.TimerManager.schedule(() =>
                     {
-                        map.ChannelServer.Post(new EventSnowballRespawnCommand(this));
+                        map.Send(m => SnowmanRespawn());
                     }, 10_000);
                 }
                 else
@@ -211,7 +211,7 @@ public class Snowball
     {
         map.ChannelServer.TimerManager.schedule(() =>
         {
-            map.ChannelServer.Post(new EventSnowballWarpOutCommand(this));
+            map.Send(m => ProcessWarpOut());
         }, 10000);
     }
 

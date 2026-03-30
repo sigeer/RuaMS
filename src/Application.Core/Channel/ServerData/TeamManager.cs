@@ -101,18 +101,28 @@ namespace Application.Core.Channel.ServerData
             var team = GetTeamDto(updatePlayer.Party, false);
             if (team != null)
             {
+                var csrv = updatePlayer.getChannelServer();
+
                 var partyMembers = GetChannelMembers(updatePlayer.getChannelServer(), team);
-
-                foreach (var partychar in partyMembers)
+                foreach (var item in team.Members)
                 {
-                    partychar.sendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
-
-                    if (partychar.MapModel == updatePlayer.MapModel)
+                    var chrActor = csrv.getPlayerStorage().GetCharacterActor(item.Id);
+                    chrActor?.Send(m =>
                     {
-                        partychar.sendPacket(TeamPacketCreator.updatePartyMemberHP(updatePlayer.Id, updatePlayer.HP, updatePlayer.ActualMaxHP));
-                        updatePlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(partychar.Id, partychar.HP, partychar.ActualMaxHP));
-                    }
+                        var chr = m.getCharacterById(item.Id);
+                        if (chr != null)
+                        {
+                            chr.sendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
+
+                            if (chr.MapModel == updatePlayer.MapModel)
+                            {
+                                chr.sendPacket(TeamPacketCreator.updatePartyMemberHP(updatePlayer.Id, updatePlayer.HP, updatePlayer.ActualMaxHP));
+                                updatePlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(chr.Id, chr.HP, chr.ActualMaxHP));
+                            }
+                        }
+                    });
                 }
+
             }
         }
 

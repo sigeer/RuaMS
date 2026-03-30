@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands.Channel;
-
 namespace Application.Core.Channel.ServerData
 {
     public class MountTirednessTask : TaskBase
@@ -13,7 +11,10 @@ namespace Application.Core.Channel.ServerData
 
         protected override void HandleRun()
         {
-            _server.PushChannelCommand(new InvokeMoutTirednessCommand());
+            _server.Broadcast(w =>
+            {
+                w.MountTirednessManager.HandleRun();
+            });
         }
     }
 }

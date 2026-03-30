@@ -21,7 +21,7 @@ namespace Application.Core.Channel.Commands
             _animate = animate;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _map.RemoveMob(_targetMob, _killer, true, _animate, 0);
         }

@@ -1,4 +1,5 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Channel.Tasks
 {
@@ -13,7 +14,10 @@ namespace Application.Core.Channel.Tasks
         }
         protected override void HandleRun()
         {
-            _server.PushChannelCommand(new InvokeChannelMapDamageCommand());
+            _server.Broadcast(w =>
+            {
+                w.CharacterHpDecreaseManager.HandleRun();
+            });
         }
 
     }

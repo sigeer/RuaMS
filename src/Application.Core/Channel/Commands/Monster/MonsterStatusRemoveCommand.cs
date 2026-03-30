@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Commands
             _statueEffect = statueEffect;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {

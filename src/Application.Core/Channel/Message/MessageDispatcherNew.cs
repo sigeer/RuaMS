@@ -2,6 +2,7 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.Internal;
 using Application.Shared.Internal;
+using Application.Utility.Performance;
 using Google.Protobuf;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +24,13 @@ namespace Application.Core.Channel.Message
         {
             if (_handlers.TryGetValue(msgId, out var handler))
             {
-                _server.Post(new HandleMasterPacketCommand(handler, content));
+                _server.Send(s =>
+                {
+                    using var activity = GameMetrics.ActivitySource.StartActivity("HandleMasterPacket");
+                    activity?.SetTag("Handler", handler.GetType().Name);
+
+                    handler.Handle(content);
+                });
             }
             else
             {

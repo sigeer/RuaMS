@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Commands
             _target = target;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {

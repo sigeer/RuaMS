@@ -15,15 +15,20 @@ namespace Application.Core.Channel.Commands
             this.p = p;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             foreach (var buddy in _ids)
             {
-                var buddyChr = ctx.WorldChannel.getPlayerStorage().getCharacterById(buddy);
-                if (buddyChr != null && buddyChr.BuddyList.Contains(id))
+                var buddyChrActor = ctx.getPlayerStorage().GetCharacterActor(buddy);
+                buddyChrActor?.Send(m =>
                 {
-                    buddyChr.sendPacket(p);
-                }
+                    var buddyChr = m.getCharacterById(buddy);
+                    if (buddyChr != null && buddyChr.BuddyList.Contains(id))
+                    {
+                        buddyChr.sendPacket(p);
+                    }
+                });
+
             }
             return;
         }

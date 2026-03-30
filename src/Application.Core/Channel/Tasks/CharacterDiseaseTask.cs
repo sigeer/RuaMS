@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands.Channel;
-
 namespace Application.Core.Channel.Tasks
 {
     public class CharacterDiseaseTask : TaskBase
@@ -17,7 +15,10 @@ namespace Application.Core.Channel.Tasks
         {
             _server.UpdateServerTime();
 
-            _server.PushChannelCommand(new InvokePlayerDiseaseAnnounceCommand());
+            _server.Broadcast(w =>
+            {
+                w.CharacterDiseaseManager.HandleRun();
+            });
         }
 
     }

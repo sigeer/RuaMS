@@ -373,7 +373,7 @@ public class Inventory : IEnumerable<Item>
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
             // deadlocks with coupons rates found thanks to GabrielSin & Masterrulax
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            owner.updateCouponRates();
         }
 
         return slotId;
@@ -387,7 +387,7 @@ public class Inventory : IEnumerable<Item>
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            owner.updateCouponRates();
         }
     }
 
@@ -400,7 +400,7 @@ public class Inventory : IEnumerable<Item>
 
         if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
         {
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            owner.updateCouponRates();
         }
     }
 

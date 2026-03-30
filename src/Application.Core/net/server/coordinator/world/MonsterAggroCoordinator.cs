@@ -84,7 +84,10 @@ public class MonsterAggroCoordinator
 
         aggroMonitor = Map.ChannelServer.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
         {
-            Map.ChannelServer.Post(new MapMobAggroCommand(Map));
+            Map.Send(map =>
+            {
+                map.getAggroCoordinator().RunAggro();
+            });
         }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
 
         int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Node.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);

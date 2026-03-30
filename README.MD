@@ -1,11 +1,14 @@
 
-## 项目介绍
+# 项目介绍
+
+![.NET](https://img.shields.io/badge/net10.0-512bd4?logo=.NET&labelColor=gray)
+[![Build Check](https://github.com/sigeer/RuaMS/actions/workflows/build.yml/badge.svg)](https://github.com/sigeer/RuaMS/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/sigeer/RuaMS)](https://github.com/sigeer/RuaMS/blob/master/LICENSE)
 
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-
-### 注意 ❗
+## 注意 ❗
 
 大量内容未经测试，可能出现大量BUG，不建议搭建游玩。
 
@@ -52,7 +55,7 @@
 ### tools
 
 - **CodeMigration**：转换代码的迁移工具
-	- ReplaceJsContent类：用于替换js脚本中的Java代码
+  - ReplaceJsContent类：用于替换js脚本中的Java代码
 
 ### test
 
@@ -80,7 +83,6 @@
 
 1. `Application.Host`的设置：解除`Kestrel:Endpoints:grpc`节的注释
 2. `Application.Host.Channel`的设置`Services:ruams-master:grpc`
-
 
 ### 单进程模式（master-standalone）
 

@@ -6,16 +6,18 @@ using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
 using Application.Shared.Objects;
+using Application.Utility.Tickables;
 using client;
 using client.autoban;
 using server;
 using server.events;
 using server.maps;
+using System.Security.Cryptography;
 using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientMessenger, ICombatantObject
+    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientPlayer, ICombatantObject, ILoopTickable
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
@@ -31,7 +33,6 @@ namespace Application.Core.Game.Players
 
         public PlayerKeyMap KeyMap { get; set; }
         public List<FameLogObject> FameLogs { get; set; }
-
 
         public Player(int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
         {
@@ -161,6 +162,44 @@ namespace Application.Core.Game.Players
         public void Yellow(string key, params string[] param)
         {
             sendPacket(PacketCommon.SendYellowTip(GetMessageByKey(key, param)));
+        }
+
+        public long Period => 1_500;
+
+        public long Next { get; private set; }
+
+        public bool IsTickableCancelled { get; set; }
+
+        public void OnTick(long now)
+        {
+            foreach (var item in getAllStatups().OfType<ITickable>())
+            {
+                item.OnTick(now);
+            }
+
+            Bag.OnTick(now);
+
+            if (_mapEffect != null)
+            {
+                _mapEffect.OnTick(now);
+
+                if (_mapEffect.IsExpired)
+                {
+                    sendPacket(_mapEffect.makeDestroyData());
+                    _mapEffect = null;
+                }
+            }
+
+            if (Next <= now)
+            {
+                ClearExpiredBuffs();
+                ClearExpiredDisease(now);
+                ClearExpiredSkills(now);
+                ClearExpiredQuests(now);
+                ClearExpiredSkillCooldown(now);
+
+                Next = now + Period;
+            }
         }
     }
 }

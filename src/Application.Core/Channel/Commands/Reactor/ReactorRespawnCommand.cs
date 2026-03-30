@@ -16,7 +16,7 @@ namespace Application.Core.Channel.Commands
             _fromDestroyed = fromDestroyed;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _reactor.respawn(_fromDestroyed);
         }

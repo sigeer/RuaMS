@@ -31,6 +31,7 @@ using Microsoft.Extensions.Logging;
 using server;
 using server.life;
 using tools;
+using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -143,6 +144,32 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
 
             direction = p.readByte();
+
+            var isReflect = p.readByte();   // 伤害反击/魔法反击
+            var knockback = p.readByte();   // 寒冰掌反击 COutPacket::Encode1(&v190, !v181 ? 0 : v175 + 1);  0.不满足防御条件 1. 不满足击晕条件 2. OK
+                                            //                       v47 = *(v198 + 337) / 10000;
+                                            //                       v48 = v47 == 190 || v47 == 193;
+                                            //                       v181 = !v48; // 没有使用坐骑
+                                            //                       v175 = v187 == 0; // 是否近距离攻击判断？
+            if (isReflect > 0 || knockback > 1)
+            {
+                var reflectMobObjectId = p.readInt();
+                var targetMob = map.getMonsterByOid(reflectMobObjectId);
+
+                var skillGroup = new int[] { Hero.GUARDIAN, Paladin.GUARDIAN };
+                foreach (var skill in skillGroup)
+                {
+                    var skillEffect = chr.TryGetPlayerSkillEffect(skill);
+                    if (skillEffect != null)
+                    {
+                        targetMob?.applyStatus(chr, new MonsterStatusEffect(skillEffect.getMonsterStati(), skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
+                        break;
+                    }
+                }
+
+                // 魔法反击，伤害反击应该放在这里
+
+            }
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {

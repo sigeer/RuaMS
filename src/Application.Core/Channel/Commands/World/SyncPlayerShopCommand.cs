@@ -4,11 +4,11 @@ namespace Application.Core.Channel.Commands
 {
     internal class SyncPlayerShopCommand : IWorldChannelCommand
     {
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var r = ctx.WorldChannel.PlayerShopManager.CheckExpired();
+            var r = ctx.PlayerShopManager.CheckExpired();
 
-            ctx.WorldChannel.NodeActor.Post(new InvokeSyncPlayerShopCommand(new DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest>(ctx.WorldChannel.Id, r)));
+            ctx.NodeActor.Send(new InvokeSyncPlayerShopCommand(new DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest>(ctx.Id, r)));
         }
     }
 }

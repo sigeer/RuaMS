@@ -8,9 +8,9 @@ namespace Application.Core.Channel.Commands
             _ownerId = ownerId;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            _ = ctx.WorldChannel.Node.Transport.SendRemoveDoor(_ownerId);
+            _ = ctx.Node.Transport.SendRemoveDoor(_ownerId);
         }
     }
 
@@ -22,9 +22,9 @@ namespace Application.Core.Channel.Commands
             _ownerId = ownerId;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            if (ctx.WorldChannel.PlayerDoors.Remove(_ownerId, out var door) && door != null)
+            if (ctx.PlayerDoors.Remove(_ownerId, out var door) && door != null)
             {
                 door.Destroy();
             }

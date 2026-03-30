@@ -1,21 +1,20 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Resources.Messages;
+using Application.Utility.Tickables;
 using scripting.Event;
-using scripting.Event.scheduler;
 using server.quest;
+using System.Diagnostics;
 
 namespace Application.Core.Scripting.Events;
 
 
-public class EventManager : IDisposable
+public class EventManager : IDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger(LogType.EventManager);
     protected IEngine iv;
     protected WorldChannel cserv;
-    protected EventScriptScheduler ess;
 
 
     private Dictionary<string, string> props = new Dictionary<string, string>();
@@ -28,7 +27,9 @@ public class EventManager : IDisposable
 
 
     public bool AllowReconnect { get; set; }
+    public bool IsTickableCancelled { get; set; }
 
+    public List<ITickable> SubTickables { get; }
 
     public EventManager(WorldChannel cserv, IEngine iv, ScriptFile file)
     {
@@ -39,7 +40,7 @@ public class EventManager : IDisposable
 
         AllowReconnect = true;
 
-        this.ess = new EventScriptScheduler(cserv);
+        SubTickables = [];
     }
 
 
@@ -55,9 +56,7 @@ public class EventManager : IDisposable
             return;
 
         disposed = true;
-        // make sure to only call this when there are NO PLAYERS ONLINE to mess around with the event manager!
-        ess.dispose();
-
+        IsTickableCancelled = true;
         try
         {
             iv.CallFunction("cancelSchedule");
@@ -81,18 +80,14 @@ public class EventManager : IDisposable
         AllowReconnect = true;
     }
 
-    public EventScheduledFuture schedule(string methodName, long delay)
+    public void schedule(string methodName, long delay)
     {
-        return schedule(methodName, null, delay);
+        schedule(methodName, null, delay);
     }
 
-    public EventScheduledFuture schedule(string methodName, EventInstanceManager? eim, long delay)
+    public void schedule(string methodName, EventInstanceManager? eim, long delay)
     {
-        var command = new EventCallMethodCommand(this, methodName, eim);
-        ess.registerEntry(command, delay);
-
-        // hate to do that, but those schedules can still be cancelled, so well... Let GC do it's job
-        return new EventScheduledFuture(command, ess);
+        SubTickables.Add(new EventScheduleRequest(this, methodName, eim, cserv.Node.getCurrentTime() + delay));
     }
 
     public void InvokeMethod(string methodName, AbstractEventInstanceManager? eim)
@@ -270,5 +265,28 @@ public class EventManager : IDisposable
     public int getTransportationTime(double travelTime)
     {
         return cserv.getTransportationTime(travelTime);
+    }
+
+    public void OnTick(long now)
+    {
+        this.ProcessSubTickables(now);
+    }
+
+    class EventScheduleRequest : DelayedTickable
+    {
+        EventManager _em;
+        string _methodName;
+        AbstractEventInstanceManager? _eim;
+        public EventScheduleRequest(EventManager em, string methodName, AbstractEventInstanceManager? eim, long next) : base(next)
+        {
+            _em = em;
+            _methodName = methodName;
+            _eim = eim;
+        }
+
+        protected override void Handle(long now)
+        {
+            _em.InvokeMethod(_methodName, _eim);
+        }
     }
 }

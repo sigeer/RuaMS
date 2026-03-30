@@ -697,11 +697,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public Player? getChrById(int id)
-    {
-        return c.CurrentServer.getPlayerStorage().getCharacterById(id);
-    }
-
     public void mapClock(int time)
     {
         getPlayer().getMap().broadcastMessage(PacketCreator.getClock(time));

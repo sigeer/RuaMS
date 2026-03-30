@@ -123,7 +123,7 @@ public class MobStatusService : BaseService
 
                     foreach (var r in toRun)
                     {
-                        worldChannel.Post(r);
+                        worldChannel.Send(r);
                     }
                 }
             );

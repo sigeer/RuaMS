@@ -1,12 +1,15 @@
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Utility.Tickables;
 using client.inventory;
+using server.maps;
 using tools;
 
 
 namespace Application.Core.Game.Maps;
 
-public class MapItem : AbstractMapObject
+public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 {
     protected IChannelClient ownerClient;
 
@@ -21,6 +24,12 @@ public class MapItem : AbstractMapObject
     public bool IsPartyDrop => this.party_ownerid != -1;
 
     public bool NeedCheckSpace => getItem()?.NeedCheckSpace ?? false;
+
+    public long ExpiredAt => ExpiredTime;
+    public bool IsExpired { get; private set; }
+    public long Next { get; }
+
+    public bool IsTickableCancelled { get; set; }
 
     public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
     {
@@ -37,6 +46,7 @@ public class MapItem : AbstractMapObject
 
         dropTime = dropper.getMap().ChannelServer.Node.getCurrentTime();
         ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
+        Next = dropTime + 5_000;
     }
 
     /// <summary>
@@ -230,5 +240,37 @@ public class MapItem : AbstractMapObject
     public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  DropLeaveFieldType.None, 0));
+    }
+
+    public void OnTick(long now)
+    {
+        if (IsTickableCancelled || IsExpired)
+        {
+            return;
+        }
+
+        if (ExpiredAt <= now)
+        {
+            IsExpired = true;
+            return;
+        }
+
+        if (Next <= now)
+        {
+            foreach (var react in MapModel.GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR, s => s.getReactorType() == 100))
+            {
+                var reactItem = react.getReactItem(react.getEventState())!;
+                if (reactItem.ItemId == getItemId() && reactItem.Quantity == getItem()!.getQuantity())
+                {
+                    if (react.getArea().Contains(getPosition()))
+                    {
+                        react.HitByMapItem(this);
+                        break;
+                    }
+                }
+            }
+            IsTickableCancelled = true;
+            return;
+        }
     }
 }

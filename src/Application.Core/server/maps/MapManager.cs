@@ -24,14 +24,18 @@ using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
 using Application.Utility.Performance;
+using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace server.maps;
 
-public class MapManager : IDisposable, INamedInstance
+public class MapManager : IDisposable, INamedInstance, ITickable
 {
     public string InstanceName { get; }
+
+    public bool IsTickableCancelled { get; set; }
+
     private AbstractEventInstanceManager? evt;
     readonly WorldChannel _channelServer;
 
@@ -89,14 +93,25 @@ public class MapManager : IDisposable, INamedInstance
         return new(maps);
     }
 
-    public void updateMaps()
+    public List<IMap> GetAllMaps() => maps.Values.ToList();
+
+    public void OnTick(long now)
     {
         var sw = Stopwatch.StartNew();
-        foreach (IMap map in getMaps().Values)
+
+        foreach (var item in maps.Values.ToList())
         {
-            map.respawn();
-            map.mobMpRecovery();
+            if (item is ITickable tickable)
+            {
+                tickable.OnTick(now);
+
+                if (tickable.IsTickableCancelled)
+                {
+                    RemoveMap(item.Id, out _);
+                }
+            }
         }
+
         sw.Stop();
 
         GameMetrics.MapTickDuration.Record(sw.Elapsed.TotalMilliseconds,
@@ -115,14 +130,13 @@ public class MapManager : IDisposable, INamedInstance
         }
     }
 
-    bool disposed = false;
 
     public void Dispose()
     {
-        if (disposed)
+        if (IsTickableCancelled)
             return;
 
-        disposed = true;
+        IsTickableCancelled = true;
         foreach (var kv in getMaps())
         {
             RemoveMap(kv.Key, out _);

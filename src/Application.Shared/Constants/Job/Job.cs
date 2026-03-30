@@ -15,122 +15,123 @@ namespace Application.Shared.Constants.Job
         /// 职业群
         /// </summary>
         public JobType Type { get; }
+        public Job? ParentJob { get; }
 
-        public static Job BEGINNER = new Job(JobId.BEGINNER, "新手");
+        public static Job BEGINNER = new Job(JobId.BEGINNER, "新手", null);
 
-        public static Job WARRIOR = new Job(JobId.WARRIOR, "战士");
-        public static Job FIGHTER = new Job(JobId.FIGHTER, "剑客");
-        public static Job CRUSADER = new Job(JobId.CRUSADER, "勇士");
-        public static Job HERO = new Job(JobId.HERO, "英雄");
+        public static Job WARRIOR = new Job(JobId.WARRIOR, "战士", BEGINNER);
+        public static Job FIGHTER = new Job(JobId.FIGHTER, "剑客", WARRIOR);
+        public static Job CRUSADER = new Job(JobId.CRUSADER, "勇士", FIGHTER);
+        public static Job HERO = new Job(JobId.HERO, "英雄", CRUSADER);
 
-        public static Job PAGE = new Job(JobId.PAGE, "准骑士");
-        public static Job WHITEKNIGHT = new Job(JobId.WHITEKNIGHT, "骑士");
-        public static Job PALADIN = new Job(JobId.PALADIN, "圣骑士");
+        public static Job PAGE = new Job(JobId.PAGE, "准骑士", WARRIOR);
+        public static Job WHITEKNIGHT = new Job(JobId.WHITEKNIGHT, "骑士", PAGE);
+        public static Job PALADIN = new Job(JobId.PALADIN, "圣骑士", WHITEKNIGHT);
 
-        public static Job SPEARMAN = new Job(JobId.SPEARMAN, "枪战士");
-        public static Job DRAGONKNIGHT = new Job(JobId.DRAGONKNIGHT, "龙骑士");
-        public static Job DARKKNIGHT = new Job(JobId.DARKKNIGHT, "黑骑士");
-
-
-        public static Job MAGICIAN = new Job(JobId.MAGICIAN, "魔法师");
-        public static Job FP_WIZARD = new Job(JobId.FP_WIZARD, "法师（火毒）");
-        public static Job FP_MAGE = new Job(JobId.FP_MAGE, "巫师（火毒）");
-        public static Job FP_ARCHMAGE = new Job(JobId.FP_ARCHMAGE, "魔导师（火毒）");
-
-        public static Job IL_WIZARD = new Job(JobId.IL_WIZARD, "法师（冰雷）");
-        public static Job IL_MAGE = new Job(JobId.IL_MAGE, "巫师（冰雷）");
-        public static Job IL_ARCHMAGE = new Job(JobId.IL_ARCHMAGE, "魔导师（冰雷）");
-
-        public static Job CLERIC = new Job(JobId.CLERIC, "牧师");
-        public static Job PRIEST = new Job(JobId.PRIEST, "祭司");
-        public static Job BISHOP = new Job(JobId.BISHOP, "主教");
+        public static Job SPEARMAN = new Job(JobId.SPEARMAN, "枪战士", WARRIOR);
+        public static Job DRAGONKNIGHT = new Job(JobId.DRAGONKNIGHT, "龙骑士", SPEARMAN);
+        public static Job DARKKNIGHT = new Job(JobId.DARKKNIGHT, "黑骑士", DRAGONKNIGHT);
 
 
-        public static Job BOWMAN = new Job(JobId.BOWMAN, "弓箭手");
-        public static Job HUNTER = new Job(JobId.HUNTER, "猎人");
-        public static Job RANGER = new Job(JobId.RANGER, "射手");
-        public static Job BOWMASTER = new Job(JobId.BOWMASTER, "神射手");
+        public static Job MAGICIAN = new Job(JobId.MAGICIAN, "魔法师", BEGINNER);
 
-        public static Job CROSSBOWMAN = new Job(JobId.CROSSBOWMAN, "弩弓手");
-        public static Job SNIPER = new Job(JobId.SNIPER, "游侠");
-        public static Job MARKSMAN = new Job(JobId.MARKSMAN, "箭神");
+        public static Job FP_WIZARD = new Job(JobId.FP_WIZARD, "法师（火毒）", MAGICIAN);
+        public static Job FP_MAGE = new Job(JobId.FP_MAGE, "巫师（火毒）", FP_WIZARD);
+        public static Job FP_ARCHMAGE = new Job(JobId.FP_ARCHMAGE, "魔导师（火毒）", FP_MAGE);
 
+        public static Job IL_WIZARD = new Job(JobId.IL_WIZARD, "法师（冰雷）", MAGICIAN);
+        public static Job IL_MAGE = new Job(JobId.IL_MAGE, "巫师（冰雷）", IL_WIZARD);
+        public static Job IL_ARCHMAGE = new Job(JobId.IL_ARCHMAGE, "魔导师（冰雷）", IL_MAGE);
 
-        public static Job THIEF = new Job(JobId.THIEF, "飞侠");
-        public static Job ASSASSIN = new Job(JobId.ASSASSIN, "刺客");
-        public static Job HERMIT = new Job(JobId.HERMIT, "无影人");
-        public static Job NIGHTLORD = new Job(JobId.NIGHTLORD, "隐士");
-
-        public static Job BANDIT = new Job(JobId.BANDIT, "侠客");
-        public static Job CHIEFBANDIT = new Job(JobId.CHIEFBANDIT, "独行客");
-        public static Job SHADOWER = new Job(JobId.SHADOWER, "侠盗");
+        public static Job CLERIC = new Job(JobId.CLERIC, "牧师", MAGICIAN);
+        public static Job PRIEST = new Job(JobId.PRIEST, "祭司",CLERIC);
+        public static Job BISHOP = new Job(JobId.BISHOP, "主教",BISHOP);
 
 
-        public static Job PIRATE = new Job(JobId.PIRATE, "海盗");
-        public static Job BRAWLER = new Job(JobId.BRAWLER, "拳手");
-        public static Job MARAUDER = new Job(JobId.MARAUDER, "斗士");
-        public static Job BUCCANEER = new Job(JobId.BUCCANEER, "冲锋队长");
+        public static Job BOWMAN = new Job(JobId.BOWMAN, "弓箭手", BEGINNER);
+        public static Job HUNTER = new Job(JobId.HUNTER, "猎人", BOWMAN);
+        public static Job RANGER = new Job(JobId.RANGER, "射手", HUNTER);
+        public static Job BOWMASTER = new Job(JobId.BOWMASTER, "神射手", RANGER);
 
-        public static Job GUNSLINGER = new Job(JobId.GUNSLINGER, "火枪手");
-        public static Job OUTLAW = new Job(JobId.OUTLAW, "大副");
-        public static Job CORSAIR = new Job(JobId.CORSAIR, "船长");
-
-
-        public static Job MAPLELEAF_BRIGADIER = new Job(JobId.MAPLELEAF_BRIGADIER, "巡查员");
-        public static Job GM = new Job(JobId.GM, "管理员");
-        public static Job SUPERGM = new Job(JobId.SUPERGM, "超级管理员");
+        public static Job CROSSBOWMAN = new Job(JobId.CROSSBOWMAN, "弩弓手", BOWMAN);
+        public static Job SNIPER = new Job(JobId.SNIPER, "游侠", CROSSBOWMAN);
+        public static Job MARKSMAN = new Job(JobId.MARKSMAN, "箭神", SNIPER);
 
 
+        public static Job THIEF = new Job(JobId.THIEF, "飞侠", BEGINNER);
+        public static Job ASSASSIN = new Job(JobId.ASSASSIN, "刺客", THIEF);
+        public static Job HERMIT = new Job(JobId.HERMIT, "无影人", ASSASSIN);
+        public static Job NIGHTLORD = new Job(JobId.NIGHTLORD, "隐士", HERMIT);
 
-        public static Job NOBLESSE = new Job(JobId.NOBLESSE, "初心者");
-
-        public static Job DAWNWARRIOR1 = new Job(JobId.DAWNWARRIOR1, "魂骑士(1转)");
-        public static Job DAWNWARRIOR2 = new Job(JobId.DAWNWARRIOR2, "魂骑士(2转)");
-        public static Job DAWNWARRIOR3 = new Job(JobId.DAWNWARRIOR3, "魂骑士(3转)");
-        public static Job DAWNWARRIOR4 = new Job(JobId.DAWNWARRIOR4, "魂骑士(4转)");
-
-        public static Job BLAZEWIZARD1 = new Job(JobId.BLAZEWIZARD1, "炎术士(1转)");
-        public static Job BLAZEWIZARD2 = new Job(JobId.BLAZEWIZARD2, "炎术士(2转)");
-        public static Job BLAZEWIZARD3 = new Job(JobId.BLAZEWIZARD3, "炎术士(3转)");
-        public static Job BLAZEWIZARD4 = new Job(JobId.BLAZEWIZARD4, "炎术士(4转)");
-
-        public static Job WINDARCHER1 = new Job(JobId.WINDARCHER1, "风灵使者(1转)");
-        public static Job WINDARCHER2 = new Job(JobId.WINDARCHER2, "风灵使者(2转)");
-        public static Job WINDARCHER3 = new Job(JobId.WINDARCHER3, "风灵使者(3转)");
-        public static Job WINDARCHER4 = new Job(JobId.WINDARCHER4, "风灵使者(4转)");
-
-        public static Job NIGHTWALKER1 = new Job(JobId.NIGHTWALKER1, "夜行者(1转)");
-        public static Job NIGHTWALKER2 = new Job(JobId.NIGHTWALKER2, "夜行者(2转)");
-        public static Job NIGHTWALKER3 = new Job(JobId.NIGHTWALKER3, "夜行者(3转)");
-        public static Job NIGHTWALKER4 = new Job(JobId.NIGHTWALKER4, "夜行者(4转)");
-
-        public static Job THUNDERBREAKER1 = new Job(JobId.THUNDERBREAKER1, "奇袭者(1转)");
-        public static Job THUNDERBREAKER2 = new Job(JobId.THUNDERBREAKER2, "奇袭者(2转)");
-        public static Job THUNDERBREAKER3 = new Job(JobId.THUNDERBREAKER3, "奇袭者(3转)");
-        public static Job THUNDERBREAKER4 = new Job(JobId.THUNDERBREAKER4, "奇袭者(4转)");
+        public static Job BANDIT = new Job(JobId.BANDIT, "侠客", THIEF);
+        public static Job CHIEFBANDIT = new Job(JobId.CHIEFBANDIT, "独行客", BANDIT);
+        public static Job SHADOWER = new Job(JobId.SHADOWER, "侠盗", CHIEFBANDIT);
 
 
-        public static Job LEGEND = new Job(JobId.LEGEND, "战童");
-        public static Job EVAN = new Job(JobId.EVAN, "龙初心");
+        public static Job PIRATE = new Job(JobId.PIRATE, "海盗", BEGINNER);
+        public static Job BRAWLER = new Job(JobId.BRAWLER, "拳手", PIRATE);
+        public static Job MARAUDER = new Job(JobId.MARAUDER, "斗士", BRAWLER);
+        public static Job BUCCANEER = new Job(JobId.BUCCANEER, "冲锋队长", MARAUDER);
 
-        public static Job ARAN1 = new Job(JobId.ARAN1, "战神(1转)");
-        public static Job ARAN2 = new Job(JobId.ARAN2, "战神(2转)");
-        public static Job ARAN3 = new Job(JobId.ARAN3, "战神(3转)");
-        public static Job ARAN4 = new Job(JobId.ARAN4, "战神(4转)");
+        public static Job GUNSLINGER = new Job(JobId.GUNSLINGER, "火枪手", PIRATE);
+        public static Job OUTLAW = new Job(JobId.OUTLAW, "大副", GUNSLINGER);
+        public static Job CORSAIR = new Job(JobId.CORSAIR, "船长", OUTLAW);
 
-        public static Job EVAN1 = new Job(JobId.EVAN1, "龙神1");
-        public static Job EVAN2 = new Job(JobId.EVAN2, "龙神2");
-        public static Job EVAN3 = new Job(JobId.EVAN3, "龙神3");
-        public static Job EVAN4 = new Job(JobId.EVAN4, "龙神4");
-        public static Job EVAN5 = new Job(JobId.EVAN5, "龙神5");
-        public static Job EVAN6 = new Job(JobId.EVAN6, "龙神6");
-        public static Job EVAN7 = new Job(JobId.EVAN7, "龙神7");
-        public static Job EVAN8 = new Job(JobId.EVAN8, "龙神8");
-        public static Job EVAN9 = new Job(JobId.EVAN9, "龙神9");
-        public static Job EVAN10 = new Job(JobId.EVAN10, "龙神10");
+
+        public static Job MAPLELEAF_BRIGADIER = new Job(JobId.MAPLELEAF_BRIGADIER, "巡查员", null);
+        public static Job GM = new Job(JobId.GM, "管理员", null);
+        public static Job SUPERGM = new Job(JobId.SUPERGM, "超级管理员", null);
+
+
+
+        public static Job NOBLESSE = new Job(JobId.NOBLESSE, "初心者", null);
+
+        public static Job DAWNWARRIOR1 = new Job(JobId.DAWNWARRIOR1, "魂骑士(1转)", NOBLESSE);
+        public static Job DAWNWARRIOR2 = new Job(JobId.DAWNWARRIOR2, "魂骑士(2转)", DAWNWARRIOR1);
+        public static Job DAWNWARRIOR3 = new Job(JobId.DAWNWARRIOR3, "魂骑士(3转)", DAWNWARRIOR2);
+        public static Job DAWNWARRIOR4 = new Job(JobId.DAWNWARRIOR4, "魂骑士(4转)", DAWNWARRIOR3);
+
+        public static Job BLAZEWIZARD1 = new Job(JobId.BLAZEWIZARD1, "炎术士(1转)", NOBLESSE);
+        public static Job BLAZEWIZARD2 = new Job(JobId.BLAZEWIZARD2, "炎术士(2转)", BLAZEWIZARD1);
+        public static Job BLAZEWIZARD3 = new Job(JobId.BLAZEWIZARD3, "炎术士(3转)", BLAZEWIZARD2);
+        public static Job BLAZEWIZARD4 = new Job(JobId.BLAZEWIZARD4, "炎术士(4转)", BLAZEWIZARD3);
+
+        public static Job WINDARCHER1 = new Job(JobId.WINDARCHER1, "风灵使者(1转)", NOBLESSE);
+        public static Job WINDARCHER2 = new Job(JobId.WINDARCHER2, "风灵使者(2转)", WINDARCHER1);
+        public static Job WINDARCHER3 = new Job(JobId.WINDARCHER3, "风灵使者(3转)", WINDARCHER2);
+        public static Job WINDARCHER4 = new Job(JobId.WINDARCHER4, "风灵使者(4转)", WINDARCHER3);
+
+        public static Job NIGHTWALKER1 = new Job(JobId.NIGHTWALKER1, "夜行者(1转)", NOBLESSE);
+        public static Job NIGHTWALKER2 = new Job(JobId.NIGHTWALKER2, "夜行者(2转)", NIGHTWALKER1);
+        public static Job NIGHTWALKER3 = new Job(JobId.NIGHTWALKER3, "夜行者(3转)", NIGHTWALKER2);
+        public static Job NIGHTWALKER4 = new Job(JobId.NIGHTWALKER4, "夜行者(4转)", NIGHTWALKER3);
+
+        public static Job THUNDERBREAKER1 = new Job(JobId.THUNDERBREAKER1, "奇袭者(1转)", NOBLESSE);
+        public static Job THUNDERBREAKER2 = new Job(JobId.THUNDERBREAKER2, "奇袭者(2转)", THUNDERBREAKER1);
+        public static Job THUNDERBREAKER3 = new Job(JobId.THUNDERBREAKER3, "奇袭者(3转)", THUNDERBREAKER2);
+        public static Job THUNDERBREAKER4 = new Job(JobId.THUNDERBREAKER4, "奇袭者(4转)", THUNDERBREAKER3);
+
+
+        public static Job LEGEND = new Job(JobId.LEGEND, "战童", null);
+        public static Job ARAN1 = new Job(JobId.ARAN1, "战神(1转)", LEGEND);
+        public static Job ARAN2 = new Job(JobId.ARAN2, "战神(2转)", ARAN1);
+        public static Job ARAN3 = new Job(JobId.ARAN3, "战神(3转)", ARAN2);
+        public static Job ARAN4 = new Job(JobId.ARAN4, "战神(4转)", ARAN3);
+
+        public static Job EVAN = new Job(JobId.EVAN, "龙初心", null);
+        public static Job EVAN1 = new Job(JobId.EVAN1, "龙神1", EVAN);
+        public static Job EVAN2 = new Job(JobId.EVAN2, "龙神2", EVAN1);
+        public static Job EVAN3 = new Job(JobId.EVAN3, "龙神3", EVAN2);
+        public static Job EVAN4 = new Job(JobId.EVAN4, "龙神4", EVAN3);
+        public static Job EVAN5 = new Job(JobId.EVAN5, "龙神5", EVAN4);
+        public static Job EVAN6 = new Job(JobId.EVAN6, "龙神6", EVAN5);
+        public static Job EVAN7 = new Job(JobId.EVAN7, "龙神7", EVAN6);
+        public static Job EVAN8 = new Job(JobId.EVAN8, "龙神8", EVAN7);
+        public static Job EVAN9 = new Job(JobId.EVAN9, "龙神9", EVAN8);
+        public static Job EVAN10 = new Job(JobId.EVAN10, "龙神10", EVAN9);
 
         public bool HasSPTable { get; }
-        private Job(int value, string name)
+        private Job(int value, string name, Job? p)
         {
             Id = value;
 
@@ -170,6 +171,7 @@ namespace Application.Shared.Constants.Job
                     MaxLevel = Type == JobType.Cygnus ? 120 : NumericConfig.MaxLevel;
                     break;
             }
+            ParentJob = p;
         }
 
         public int getId()
@@ -202,6 +204,18 @@ namespace Application.Shared.Constants.Job
             // thanks Steve (kaito1410) for pointing out an improvement here
             int basebranch = basejob.getId() / 10;
             return getId() / 10 == basebranch && getId() >= basejob.getId() || basebranch % 10 == 0 && getId() / 100 == basejob.getId() / 100;
+
+
+        }
+
+        public bool IsSameJobGroup(Job baseJob)
+        {
+            if (Id == baseJob.Id)
+            {
+                return true;
+            }
+
+            return ParentJob?.IsSameJobGroup(baseJob) ?? false;
         }
 
         public bool IsGmJob()
@@ -221,6 +235,22 @@ namespace Application.Shared.Constants.Job
         public bool HasDragon()
         {
             return Id >= JobId.EVAN1 && Id <= JobId.EVAN10;
+        }
+
+        /// <summary>
+        /// 判断当前职业能否使用这个技能
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <returns></returns>
+        public bool CheckSkill(int skillId)
+        {
+            var skillJobId = skillId / 10000;
+            if (skillJobId == Id)
+            {
+                return true;
+            }
+
+            return ParentJob?.CheckSkill(skillId) ?? false;
         }
 
         public override string ToString()

@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Utility.Performance;
+using Application.Utility.Tickables;
 using scripting.Event;
 using System.Collections.Concurrent;
 using tools.exceptions;
@@ -60,6 +61,8 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryAdd(instanceName, eim))
             {
+                SubTickables.Add(eim);
+
                 GameMetrics.ChannelEventInstanceCount.Add(1,
                     new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
                     new KeyValuePair<string, object?>("Event", getName()));
@@ -73,6 +76,8 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryRemove(name, out var eim))
             {
+                eim.IsTickableCancelled = true;
+
                 GameMetrics.ChannelEventInstanceCount.Add(-1,
                     new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
                     new KeyValuePair<string, object?>("Event", getName()));
@@ -86,7 +91,7 @@ namespace Application.Core.Scripting.Events
 
         public void disposeInstance(string name)
         {
-            ess.registerEntry(new EventDisposeCommand(this, name), YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
+            SubTickables.Add(new DelayedDisposeRequest(this, name, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));
         }
 
         /// <summary>
@@ -244,6 +249,23 @@ namespace Application.Core.Scripting.Events
                 eim.Dispose();
             }
             onLoadInstances = 0;
+        }
+
+        class DelayedDisposeRequest : DelayedTickable
+        {
+            AbstractInstancedEventManager _src;
+            string _instanceName;
+
+            public DelayedDisposeRequest(AbstractInstancedEventManager src, string instanceName, long next): base(next)
+            {
+                _src = src;
+                _instanceName = instanceName;
+            }
+
+            protected override void Handle(long now)
+            {
+                _src.ProcessDisposeInstanceInternal(_instanceName);
+            }
         }
     }
 }

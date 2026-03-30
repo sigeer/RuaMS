@@ -11,7 +11,7 @@ namespace Application.Core.Login.Commands
             _inPacket = inPacket;
         }
 
-        public void Execute(MasterCommandContext ctx)
+        public void Execute(MasterServer ctx)
         {
             _client.ProcessPacket(_inPacket);
         }

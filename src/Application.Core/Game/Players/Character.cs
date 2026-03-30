@@ -167,11 +167,6 @@ public partial class Player
     public byte[]? QuickSlotLoaded { get; set; }
     public QuickslotBinding? QuickSlotKeyMapped { get; set; }
 
-
-    private ScheduledFuture? dragonBloodSchedule;
-    private ScheduledFuture? beholderHealingSchedule, beholderBuffSchedule, berserkSchedule;
-
-    private ScheduledFuture? recoveryTask = null;
     private ScheduledFuture? extraRecoveryTask = null;
 
     private ScheduledFuture? pendantOfSpirit = null; //1122017
@@ -749,7 +744,10 @@ public partial class Player
 
         Client.CurrentServer.TimerManager.schedule(() =>
         {
-            Client.CurrentServer.Post(new MapBroadcastJobChangedCommand(this.getMap(), this.Id));
+            MapModel.Send(m =>
+            {
+                m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+            });
         }, 777);
     }
 
@@ -1135,7 +1133,10 @@ public partial class Player
 
         extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
         {
-            Client.CurrentServer.Post(new PlayerExtralRecoveryCommand(this, healHP, healMP));
+            MapModel.Send(m =>
+            {
+                ApplyExtralRecovery(healHP, healMP);
+            });
         }, healInterval, healInterval);
     }
 
@@ -2110,9 +2111,12 @@ public partial class Player
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.TimerManager.schedule(() =>
+            Client.CurrentServer.NodeService.TimerManager.schedule(() =>
             {
-                Client.CurrentServer.Post(new PlayerEnergyChargeCommand(chr));
+                MapModel.Send(m =>
+                {
+                    ApplyEnergeCharge();
+                });
             }, ceffect.getDuration());
         }
     }
@@ -3107,7 +3111,7 @@ public partial class Player
         this.isbanned = true;
         Client.CurrentServer.TimerManager.schedule(() =>
         {
-            Client.CurrentServer.Post(new InvokePlayerDisconnectCommand(Id));
+            Client.CurrentServer.Send(new InvokePlayerDisconnectCommand(Id));
         }, duration);
     }
 
@@ -3610,6 +3614,10 @@ public partial class Player
         sendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new KeyValuePair<Stat, int>(stat, newval)), itemReaction, this));
     }
 
+    /// <summary>
+    /// thread-safe
+    /// </summary>
+    /// <param name="packet"></param>
     public void sendPacket(Packet packet)
     {
         Client.sendPacket(packet);
@@ -3819,7 +3827,10 @@ public partial class Player
         {
             pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
             {
-                Client.CurrentServer.Post(new PlayerPendantExpRateIncreaseCommand(this));
+                MapModel.Send(m =>
+                {
+                    IncreasePendantExpRate();
+                });
             }, TimeSpan.FromHours(1)); //1 hour
         }
     }
@@ -3898,36 +3909,6 @@ public partial class Player
 
     public void Dispose()
     {
-        if (dragonBloodSchedule != null)
-        {
-            dragonBloodSchedule.cancel(true);
-        }
-        dragonBloodSchedule = null;
-
-        if (beholderHealingSchedule != null)
-        {
-            beholderHealingSchedule.cancel(true);
-        }
-        beholderHealingSchedule = null;
-
-        if (beholderBuffSchedule != null)
-        {
-            beholderBuffSchedule.cancel(true);
-        }
-        beholderBuffSchedule = null;
-
-        if (berserkSchedule != null)
-        {
-            berserkSchedule.cancel(true);
-        }
-        berserkSchedule = null;
-
-        if (recoveryTask != null)
-        {
-            recoveryTask.cancel(true);
-        }
-        recoveryTask = null;
-
         if (extraRecoveryTask != null)
         {
             extraRecoveryTask.cancel(true);
@@ -3960,11 +3941,13 @@ public partial class Player
     public void logOff()
     {
         // 切换频道/退出商城的保存不能放在断开连接时处理
-        _ = SyncCharAsync(SyncCharacterTrigger.Logoff)
-            .ContinueWith(t =>
-            {
-                Client.CurrentServer.Post(new PlayerLogoutCommand(Id));
-            });
+        Client.CurrentServer.Send(async w =>
+        {
+            await SyncCharAsync(SyncCharacterTrigger.Logoff);
+
+            RemoveWorldWatcher();
+            setClient(new OfflineClient());
+        });
     }
 
 

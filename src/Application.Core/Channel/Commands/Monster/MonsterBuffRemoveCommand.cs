@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Commands
             _stats = stats;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {

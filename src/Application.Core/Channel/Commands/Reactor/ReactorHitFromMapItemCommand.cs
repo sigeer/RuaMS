@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Commands
             _reactor = reactor;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _reactor.HitByMapItem(_mapItem);
         }

@@ -11,15 +11,15 @@ namespace Application.Core.Channel.Commands
             _data = data;
         }
 
-        public void Execute(ChannelNodeCommandContext ctx)
+        public void Execute(WorldChannelServer ctx)
         {
-            if (ctx.Server.SyncPlayerSession == null)
-                ctx.Server.SyncPlayerSession = ctx.Server.CreateSyncPlayerSession();
+            if (ctx.SyncPlayerSession == null)
+                ctx.SyncPlayerSession = ctx.CreateSyncPlayerSession();
 
-            if (ctx.Server.SyncPlayerSession.CompleteChunk(_data))
+            if (ctx.SyncPlayerSession.CompleteChunk(_data))
             {
-                _ = ctx.Server.Transport.BatchSyncPlayer(ctx.Server.SyncPlayerSession.Chunks, _saveDB);
-                ctx.Server.SyncPlayerSession = null;
+                _ = ctx.Transport.BatchSyncPlayer(ctx.SyncPlayerSession.Chunks, _saveDB);
+                ctx.SyncPlayerSession = null;
             }
         }
     }

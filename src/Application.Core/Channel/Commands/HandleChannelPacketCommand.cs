@@ -13,7 +13,7 @@ namespace Application.Core.Channel.Commands
             _inPacket = inPacket;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             using var activity = GameMetrics.ActivitySource.StartActivity(nameof(HandleChannelPacketCommand));
 

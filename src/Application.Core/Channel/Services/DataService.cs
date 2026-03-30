@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-using Application.Core.Channel.Commands.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -13,8 +11,7 @@ using AutoMapper;
 using client;
 using client.inventory;
 using client.keybind;
-using ExpeditionProto;
-using net.server;
+using net.server.guild;
 using server;
 using server.events;
 using server.life;
@@ -414,7 +411,35 @@ namespace Application.Core.Channel.Services
             _ = _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel)
                 .ContinueWith(t =>
                 {
-                    server.Post(new PlayerCompleteLoginCommand(chr.Id, o.LoginInfo.IsNewCommer, o.RemoteCallList));
+                    chr.MapModel.Send(map =>
+                    {
+                        var mapChr = map.FindPlayer(chr.Id);
+                        if (mapChr != null)
+                        {
+                            if (o.LoginInfo.IsNewCommer)
+                            {
+                                mapChr.setLoginTime(server.Node.GetCurrentTimeDateTimeOffset());
+                                mapChr.sendPacket(PacketCreator.SyncHpMpAlert(mapChr.HpAlert, mapChr.MpAlert));
+                            }
+
+                            var guild = mapChr.GetGuild();
+                            if (guild != null)
+                            {
+                                mapChr.sendPacket(GuildPackets.ShowGuildInfo(guild));
+                            }
+
+                            var alliance = mapChr.GetAlliance();
+                            if (alliance != null)
+                            {
+                                mapChr.sendPacket(GuildPackets.UpdateAllianceInfo(alliance));
+                                mapChr.sendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.Notice));
+                            }
+
+                            server.NodeService.RemoteCallService.RunEventAfterLogin(mapChr, o.RemoteCallList);
+
+                            mapChr.CheckJail();
+                        }
+                    });
                 });
         }
 

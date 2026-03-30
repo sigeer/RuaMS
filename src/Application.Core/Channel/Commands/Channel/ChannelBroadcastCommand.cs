@@ -12,11 +12,11 @@ namespace Application.Core.Channel.Commands
             _packet = packet;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_receivers.Contains(-1))
             {
-                foreach (var player in ctx.WorldChannel.getPlayerStorage().getAllCharacters())
+                foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
                     player.sendPacket(_packet);
                 }
@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Commands
             {
                 foreach (var item in _receivers)
                 {
-                    var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(item);
+                    var chr = ctx.getPlayerStorage().getCharacterById(item);
                     if (chr != null)
                     {
                         chr.sendPacket(_packet);

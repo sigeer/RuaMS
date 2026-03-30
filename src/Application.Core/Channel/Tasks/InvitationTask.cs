@@ -1,4 +1,5 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Game.Invites;
 
 namespace Application.Core.Channel.Tasks
 {
@@ -13,7 +14,10 @@ namespace Application.Core.Channel.Tasks
 
         public override void HandleRun()
         {
-            _server.Post(new InvitationExpireCheckCommand());
+            _server.Send(s =>
+            {
+                InviteType.TRADE.CheckExpired(s.getCurrentTime());
+            });
         }
     }
 }

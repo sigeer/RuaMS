@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Application.Core.Channel
 {
-    public interface IChannelServer : ISocketServer, IActor<ChannelCommandContext>
+    public interface IChannelServer : ISocketServer, IActorInstance<WorldChannel>
     {
         int Id { get; }
     }

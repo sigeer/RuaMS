@@ -2,13 +2,32 @@ using Application.Utility.Pipeline;
 
 namespace Application.Core.Login.Commands
 {
-    public class MasterCommandContext : ICommandContext
+
+    public class MasterDelegateCommand : ICommand<MasterServer>
     {
-        public MasterCommandContext(MasterServer server)
+        public MasterDelegateCommand(Action<MasterServer> func)
         {
-            Server = server;
+            Func = func;
         }
 
-        public MasterServer Server { get; }
+        public Action<MasterServer> Func { get; }
+        public void Execute(MasterServer ctx)
+        {
+            Func.Invoke(ctx);
+        }
+    }
+
+    public class AsyncMasterDelegateCommand : IAsyncCommand<MasterServer>
+    {
+        public AsyncMasterDelegateCommand(Func<MasterServer, Task> func)
+        {
+            Func = func;
+        }
+
+        public Func<MasterServer, Task> Func { get; }
+        public Task Execute(MasterServer ctx)
+        {
+            return Func.Invoke(ctx);
+        }
     }
 }

@@ -16,11 +16,11 @@ namespace Application.Core.Channel.Commands
             this.fromChannel = fromChannel;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel w)
         {
             var chr = fromChannel 
-                ? ctx.WorldChannel.getPlayerStorage().getCharacterById(_chrId)
-                : ctx.WorldChannel.PlayersAway.GetValueOrDefault(_chrId);
+                ? w.getPlayerStorage().getCharacterById(_chrId)
+                : w.PlayersAway.GetValueOrDefault(_chrId);
             if (chr != null)
             {
                 if (fromChannel)

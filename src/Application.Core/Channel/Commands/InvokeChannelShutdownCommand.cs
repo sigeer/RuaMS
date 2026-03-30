@@ -6,9 +6,9 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeChannelShutdownCommand : IWorldChannelCommand
     {
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            _ = ctx.WorldChannel.Shutdown();
+            _ = ctx.Shutdown();
         }
     }
 }

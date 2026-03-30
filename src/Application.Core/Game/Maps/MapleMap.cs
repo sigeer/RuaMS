@@ -23,6 +23,7 @@
 
 using Acornima;
 using Application.Core.Channel;
+using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Tasks;
@@ -38,9 +39,13 @@ using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Utility.Performance;
+using Application.Utility.Pipeline;
+using Application.Utility.Tickables;
 using client.autoban;
 using client.inventory;
 using client.status;
+using Google.Protobuf;
+using Microsoft.Net.Http.Headers;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.map;
@@ -84,6 +89,7 @@ public class MapleMap : IMap, INamedInstance
     bool pirateDocked = false;
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
     public bool IsTrackedByEvent { get; set; }
+    public bool AutoRespawn { get; set; }
 
     private string mapName;
     private string streetName;
@@ -94,7 +100,6 @@ public class MapleMap : IMap, INamedInstance
     private string onUserEnter;
     private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
     private ScheduledFuture? itemMonitor = null;
-    private ScheduledFuture? expireItemsTask = null;
     private ScheduledFuture? characterStatUpdateTask = null;
     private short itemMonitorTimeout;
     public TimeMob? TimeMob { get; set; }
@@ -123,6 +128,8 @@ public class MapleMap : IMap, INamedInstance
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
     public MapTemplate SourceTemplate { get; }
+    public CommandLoop<IMap> CommandLoop { get; }
+
     public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim)
     {
         SourceTemplate = mapTemplate;
@@ -191,6 +198,10 @@ public class MapleMap : IMap, INamedInstance
                 }
             }
         });
+
+        AutoRespawn = eim == null;
+        CommandLoop = new CommandLoop<IMap>(this);
+        CommandLoop.Start();
     }
 
     void UpdateMapActualMobRate()
@@ -686,9 +697,6 @@ public class MapleMap : IMap, INamedInstance
         itemMonitor?.cancel(false);
         itemMonitor = null;
 
-        expireItemsTask?.cancel(false);
-        expireItemsTask = null;
-
         characterStatUpdateTask?.cancel(false);
         characterStatUpdateTask = null;
     }
@@ -707,15 +715,9 @@ public class MapleMap : IMap, INamedInstance
 
         itemMonitor = ChannelServer.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
         {
-            ChannelServer.Post(new MapItemMonitorCommand(this));
+            Send(m => m.ProcessItemMonitor());
         }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-        expireItemsTask = ChannelServer.TimerManager.register(new MapTaskBase(this, "MapItemExpireCheck", () =>
-        {
-            ChannelServer.Post(new MapItemExpiredCommand(this));
-        }),
-            YamlConfig.config.server.ITEM_EXPIRE_CHECK,
-            YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
         itemMonitorTimeout = 1;
     }
@@ -945,26 +947,36 @@ public class MapleMap : IMap, INamedInstance
 
     public void broadcastBalrogVictory(string leaderName)
     {
-        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
-            "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive."));
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.", false);
+        });
     }
 
     public void broadcastHorntailVictory()
     {
-        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
-            "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!"));
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!", false);
+        });
     }
 
     public void broadcastZakumVictory()
     {
-        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
-            "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!"));
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6,
+                "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
+        });
     }
 
     public void broadcastPinkBeanVictory(int channel)
     {
-        ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6,
-            "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!"));
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6,
+                "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!", false);
+        });
     }
 
     bool TryRemoveMapMonsterObject(Monster monster)
@@ -1611,36 +1623,12 @@ public class MapleMap : IMap, INamedInstance
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        var tMan = ChannelServer.TimerManager;
-        ScheduledFuture? poisonSchedule = null;
-        if (mist is PlayerMist playerMist)
-        {
-            poisonSchedule = tMan.register(new MapTaskBase(this, $"{nameof(PlayerMist)}_{playerMist.getObjectId()}", () =>
-            {
-                ChannelServer.Post(new PlayerMistEffectCommand(playerMist));
-            }), 2000, 2500);
-        }
-
-        Action mistSchedule = () =>
-        {
-            if (poisonSchedule != null)
-            {
-                poisonSchedule.cancel(false);
-            }
-
-            ChannelServer.Post(new MapMistRemoveCommand(mist));
-        };
-
-        MobMistService service = this.getChannelServer().MobMistService;
-        service.registerMobMistCancelAction(mapid, new MapMistRemoveCommand(mist), duration);
     }
 
     public void spawnKite(Kite kite)
     {
         addMapObject(kite);
         broadcastMessage(kite.makeSpawnData());
-
-        ChannelServer.MapObjectManager.RegisterTimedMapObject(kite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
     public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
@@ -1745,10 +1733,8 @@ public class MapleMap : IMap, INamedInstance
         {
             return;
         }
-        MapEffect = new MapEffect(msg, itemId);
+        MapEffect = new MapEffect(msg, itemId, ChannelServer.Node.getCurrentTime() + time);
         broadcastMessage(MapEffect.makeStartData());
-
-        registerMapSchedule(new MapClearMapEffectCommand(this), time);
     }
 
 
@@ -2432,7 +2418,7 @@ public class MapleMap : IMap, INamedInstance
 
         public override void HandleRun()
         {
-            _map.ChannelServer.Post(new ReactorHitFromMapItemCommand(mapitem, reactor));
+            _map.ChannelServer.Send(new ReactorHitFromMapItemCommand(mapitem, reactor));
         }
     }
 
@@ -2591,6 +2577,11 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
+        if (!AutoRespawn)
+        {
+            return;
+        }
+
         int numPlayers;
 
         numPlayers = characters.Count;
@@ -2639,23 +2630,58 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
+    public long Period { get; } = YamlConfig.config.server.RESPAWN_INTERVAL;
+    public long Next { get; set; }
+    public bool IsTickableCancelled { get; set; }
 
+    public void OnTick(long now)
+    {
+        // 有玩家才更新，可能导致一些对象在玩家进入后才开始清理
+        if (characters.Count > 0 && !IsTickableCancelled)
+        {
+            if (Next <= now)
+            {
+                respawn();
+                mobMpRecovery();
 
-    //private interface DelayedPacketCreation
-    //{
-    //    public Action<IClient>? sendPackets { get; set; }
-    //}
+                Next = now + Period;
+            }
 
-    //public class ActualDelayedPacketCreation : DelayedPacketCreation
-    //{
-    //    public Action<IClient>? sendPackets { get; set; }
-    //}
+            foreach (var item in getMapObjects())
+            {
+                if (item is ITickable tickable)
+                {
+                    tickable.OnTick(now);
 
-    //private class SpawnCondition
-    //{
+                    if (tickable is ILifedTickable lifeTickable && lifeTickable.IsExpired)
+                    {
+                        if (item is Kite || item is Mist)
+                        {
+                            removeMapObject(item);
+                            BroadcastAll(chr => item.sendDestroyData(chr.Client));
+                        }
 
-    //    public Func<Player, bool>? canSpawn;
-    //}
+                        else if (item is MapItem mapItem)
+                        {
+                            makeDisappearItemFromMap(item);
+                        }
+                    }
+                }
+            }
+
+            if (MapEffect != null)
+            {
+                MapEffect.OnTick(now);
+
+                if (MapEffect.IsExpired)
+                {
+                    BroadcastAll(chr => MapEffect.makeDestroyData());
+                    MapEffect = null;
+                }
+            }
+
+        }
+    }
 
     public int getHPDec() => SourceTemplate.DecHP;
     public int getHPDecProtect() => SourceTemplate.ProtectItem;
@@ -3130,6 +3156,7 @@ public class MapleMap : IMap, INamedInstance
             return;
 
         disposed = true;
+        IsTickableCancelled = true;
 
         ProcessMonster(mm => mm.dispose());
         clearMapObjects();
@@ -3152,17 +3179,12 @@ public class MapleMap : IMap, INamedInstance
             itemMonitor = null;
         }
 
-        if (expireItemsTask != null)
-        {
-            expireItemsTask.cancel(false);
-            expireItemsTask = null;
-        }
-
         if (characterStatUpdateTask != null)
         {
             characterStatUpdateTask.cancel(false);
             characterStatUpdateTask = null;
         }
+        CommandLoop.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     #region Objects: Player
@@ -3196,6 +3218,16 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
             chr.sendPacket(PacketCreator.crogBoatPacket(true));
         }
+
+        chr.visitMap(this);
+
+        // 恢复当前地图的状态
+        EventInstanceManager?.recoverOpenedGate(chr, Id);
+
+        chr.sendPacket(PacketCreator.environmentMoveList(getEnvironment()));
+
+        // 可能离开了副本，新的地图没有EventInstanceManager
+        chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
 
     public void addPlayer(Player chr)
@@ -3260,7 +3292,10 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.TimerManager.schedule(() =>
             {
-                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ELLINIA_TO_EREVE, MapId.SKY_FERRY));
+                Send(map =>
+                {
+                    map.FindPlayer(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
+                });
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
@@ -3270,7 +3305,10 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.TimerManager.schedule(() =>
             {
-                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ELLINIA, MapId.ELLINIA_SKY_FERRY));
+                Send(map =>
+                {
+                    map.FindPlayer(chr.Id)?.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
+                });
             }, travelTime);
         }
         else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
@@ -3280,7 +3318,10 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.TimerManager.schedule(() =>
             {
-                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_EREVE_TO_ORBIS, MapId.ORBIS_STATION));
+                Send(map =>
+                {
+                    map.FindPlayer(chr.Id)?.changeMap(MapId.ORBIS_STATION, 0);
+                });
             }, travelTime);
         }
         else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
@@ -3290,7 +3331,10 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             ChannelServer.TimerManager.schedule(() =>
             {
-                ChannelServer.Post(new PlayerChangeMapCommand(chr, MapId.FROM_ORBIS_TO_EREVE, MapId.SKY_FERRY));
+                Send(map =>
+                {
+                    map.FindPlayer(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
+                });
             }, travelTime);
         }
         else if (MiniDungeonInfo.isDungeonMap(mapid))
@@ -3671,5 +3715,25 @@ public class MapleMap : IMap, INamedInstance
     public void Yellow(string text, params string[] param)
     {
         BroadcastAll(e => e.Yellow(text, param));
+    }
+
+    public void Send(ICommand command)
+    {
+        CommandLoop.Register(command);
+    }
+
+    public void Send(Action<IMap> action)
+    {
+        Send(new MapDelegateCommand(action));
+    }
+
+    public void Send(Func<IMap, Task> action)
+    {
+        Send(new AsyncMapDelegateCommand(action));
+    }
+
+    public Player? FindPlayer(int id)
+    {
+        return characters.GetValueOrDefault(id);
     }
 }

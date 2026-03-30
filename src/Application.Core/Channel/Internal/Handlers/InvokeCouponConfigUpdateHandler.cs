@@ -1,11 +1,6 @@
-using Application.Core.Channel.Commands;
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using Config;
 using Google.Protobuf;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
@@ -20,7 +15,13 @@ namespace Application.Core.Channel.Internal.Handlers
         protected override void HandleMessage(CouponConfig res)
         {
             _server.UpdateCouponConfig(res);
-            _server.PushChannelCommand(new InvokeCouponConfigUpdateCommand(res));
+            _server.Broadcast(w =>
+            {
+                w.getPlayerStorage().ProcessAllCharacters(chr =>
+                {
+                    chr.updateCouponRates();
+                });
+            });
         }
 
         protected override CouponConfig Parse(ByteString data) => CouponConfig.Parser.ParseFrom(data);

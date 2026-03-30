@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Commands
             this.map = chr.getMap();
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             int curHp = _monster.getHp();
             if (curHp <= 1)

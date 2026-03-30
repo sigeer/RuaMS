@@ -626,7 +626,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
         var damageCore = () =>
         {
-            attacker.Client.CurrentServer.Post(new DamageMobFromSkillCommand(map, monster, attacker, damage));
+            map.Send(m =>
+            {
+                m.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), damage), monster.getPosition());
+                monster.DamageBy(attacker, damage, 0);
+            });
         };
         if (animationTime > 0)
         {

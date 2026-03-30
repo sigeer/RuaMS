@@ -916,10 +916,12 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
     void dropFromFriendlyMonster(long delay)
     {
-        Monster m = this;
         monsterItemDrop = MapModel.ChannelServer.TimerManager.register(() =>
         {
-            MapModel.ChannelServer.Post(new MonsterFriendlyDropCommand(m));
+            MapModel.Send(map =>
+            {
+                FriendlyDrop();
+            });
         }, delay, delay);
     }
 
@@ -990,7 +992,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
             MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
             {
-                MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer, lastController));
+                MapModel.Send(map =>
+                {
+                    Revive(killer, lastController);
+                });
             }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
         else
@@ -1329,7 +1334,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
         Action cancelTask = () =>
         {
-            MapModel.ChannelServer.Post(new MonsterStatusRemoveCommand(this, status));
+            MapModel.ChannelServer.Send(new MonsterStatusRemoveCommand(this, status));
         };
         IWorldChannelCommand? overtimeAction = null;
         int overtimeDelay = -1;
@@ -1711,31 +1716,31 @@ public class Monster : AbstractLifeObject, ICombatantObject
         return this.stats.getBuffToGive();
     }
 
-    public class DamageTask : AbstractRunnable
-    {
+    //public class DamageTask : AbstractRunnable
+    //{
 
-        private int dealDamage;
-        private Player chr;
-        private MonsterStatusEffect status;
-        private int type;
-        private IMap map;
-        readonly Monster _monster;
+    //    private int dealDamage;
+    //    private Player chr;
+    //    private MonsterStatusEffect status;
+    //    private int type;
+    //    private IMap map;
+    //    readonly Monster _monster;
 
-        public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
-        {
-            _monster = mapleMonster;
-            this.dealDamage = dealDamage;
-            this.chr = chr;
-            this.status = status;
-            this.type = type;
-            this.map = chr.getMap();
-        }
+    //    public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
+    //    {
+    //        _monster = mapleMonster;
+    //        this.dealDamage = dealDamage;
+    //        this.chr = chr;
+    //        this.status = status;
+    //        this.type = type;
+    //        this.map = chr.getMap();
+    //    }
 
-        public override void HandleRun()
-        {
-            chr.Client.CurrentServer.Post(new MonsterApplyDamageCommand(_monster, chr, status, dealDamage, type));
-        }
-    }
+    //    public override void HandleRun()
+    //    {
+    //        chr.Client.CurrentServer.Post(new MonsterApplyDamageCommand(_monster, chr, status, dealDamage, type));
+    //    }
+    //}
 
     public string getName()
     {

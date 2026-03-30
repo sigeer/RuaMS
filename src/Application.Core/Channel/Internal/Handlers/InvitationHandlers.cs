@@ -1,4 +1,5 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.Invitation;
 using Application.Shared.Message;
 using Google.Protobuf;
 using InvitationProto;
@@ -17,7 +18,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(CreateInviteResponse res)
             {
-                _server.PushChannelCommand(new InvokeCreateInviteCommand(res));
+                _server.Broadcast(w =>
+                {
+                    w.InviteChannelHandlerRegistry.GetHandler(res.Type)?.OnInvitationCreated(res);
+                });
             }
 
             protected override CreateInviteResponse Parse(ByteString data) => CreateInviteResponse.Parser.ParseFrom(data);
@@ -33,7 +37,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(AnswerInviteResponse res)
             {
-                _server.PushChannelCommand(new InvokeAnswerInviteCommand(res));
+                _server.Broadcast(w =>
+                {
+                    w.InviteChannelHandlerRegistry.GetHandler(res.Type)?.OnInvitationAnswered(res); ;
+                });
             }
 
             protected override AnswerInviteResponse Parse(ByteString data) => AnswerInviteResponse.Parser.ParseFrom(data);
