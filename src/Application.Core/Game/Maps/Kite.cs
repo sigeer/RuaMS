@@ -11,8 +11,7 @@ public class Kite : AbstractMapObject, ILifedTickable
     public string OwnerName { get; }
 
     public long ExpiredAt { get; }
-    public bool IsExpired { get; private set; }
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; protected set; }
 
     private string text;
     private int ft;
@@ -63,14 +62,14 @@ public class Kite : AbstractMapObject, ILifedTickable
 
     public void OnTick(long now)
     {
-        if (IsTickableCancelled || IsExpired)
+        if (!this.IsAvailable())
         {
             return;
         }
 
         if (ExpiredAt <= now)
         {
-            IsExpired = true;
+            Status = TickableStatus.Remove;
             return;
         }
     }

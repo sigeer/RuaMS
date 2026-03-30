@@ -31,14 +31,14 @@ namespace Application.Core.Game.Skills
 
         public long Period { get; init; }
 
-        public bool IsTickableCancelled { get; set; }
+        public TickableStatus Status { get; set; }
         public virtual void OnTick(long now)
         {
-            if (!IsTickableCancelled && !IsExpired && Next <= now)
+            if (this.IsAvailable())
             {
                 if (ExpiredAt <= now)
                 {
-                    IsExpired = true;
+                    Status = TickableStatus.Remove;
                     return;
                 }
 

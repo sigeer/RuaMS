@@ -58,18 +58,17 @@ public class MapEffect: ILifedTickable
 
     public long ExpiredAt { get; }
 
-    public bool IsTickableCancelled { get; set; }
-    public bool IsExpired { get; private set; }
+    public TickableStatus Status { get; private set; }
     public void OnTick(long now)
     {
-        if (IsTickableCancelled || IsExpired)
+        if (!this.IsAvailable())
         {
             return;
         }
 
         if (ExpiredAt <= now)
         {
-            IsExpired = true;
+            Status = TickableStatus.Remove;
             return;
         }
     }

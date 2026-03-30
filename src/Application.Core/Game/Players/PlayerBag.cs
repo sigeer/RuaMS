@@ -226,11 +226,11 @@ namespace Application.Core.Game.Players
 
         public long Period { get; } = 60_000;
 
-        public bool IsTickableCancelled { get; set; }
+        public TickableStatus Status { get; private set; }
 
         public void OnTick(long now)
         {
-            if (!IsTickableCancelled)
+            if (this.IsAvailable())
             {
                 if (Next <= now)
                 {

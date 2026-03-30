@@ -158,7 +158,7 @@ public class EventScriptManager : AbstractScriptManager, ITickableTree, IDisposa
         DisposeEvents();
     }
 
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; protected set; }
 
     public List<ITickable> SubTickables => events.Values.OfType<ITickable>().ToList();
 

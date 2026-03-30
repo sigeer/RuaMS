@@ -129,7 +129,7 @@ namespace Application.Core.Game.Players
 
             foreach (var bel in getAllStatups())
             {
-                if (bel.IsTickableCancelled)
+                if (bel.Status == TickableStatus.Remove)
                 {
                     toCancel.Add(bel);    //rofl
                 }
@@ -215,7 +215,7 @@ namespace Application.Core.Game.Players
                 if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
-                    mbsvh.IsTickableCancelled = true;
+                    mbsvh.Status = TickableStatus.Remove;
 
                     if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
                     {

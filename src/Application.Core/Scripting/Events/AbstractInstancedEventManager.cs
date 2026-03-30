@@ -76,7 +76,7 @@ namespace Application.Core.Scripting.Events
         {
             if (instances.TryRemove(name, out var eim))
             {
-                eim.IsTickableCancelled = true;
+                eim.Status = TickableStatus.Remove;
 
                 GameMetrics.ChannelEventInstanceCount.Add(-1,
                     new KeyValuePair<string, object?>("Channel", cserv.InstanceName),

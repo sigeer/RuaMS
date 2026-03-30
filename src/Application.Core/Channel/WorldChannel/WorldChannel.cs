@@ -145,7 +145,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     public List<ITickable> SubTickables { get; }
 
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; }
 
     public WorldChannel(int channelId, WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config, NettyChannelServer nettyServer)
     {

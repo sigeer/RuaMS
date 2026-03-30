@@ -168,7 +168,7 @@ namespace Application.Core.Game.Players
 
         public long Next { get; private set; }
 
-        public bool IsTickableCancelled { get; set; }
+        public TickableStatus Status { get; private set; }
 
         public void OnTick(long now)
         {
@@ -183,7 +183,7 @@ namespace Application.Core.Game.Players
             {
                 _mapEffect.OnTick(now);
 
-                if (_mapEffect.IsExpired)
+                if (_mapEffect.Status == TickableStatus.Remove)
                 {
                     sendPacket(_mapEffect.makeDestroyData());
                     _mapEffect = null;

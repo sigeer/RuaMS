@@ -29,7 +29,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
     public bool IsExpired { get; private set; }
     public long Next { get; }
 
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; protected set; }
 
     public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
     {
@@ -244,14 +244,14 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
     public void OnTick(long now)
     {
-        if (IsTickableCancelled || IsExpired)
+        if (!this.IsAvailable())
         {
             return;
         }
 
         if (ExpiredAt <= now)
         {
-            IsExpired = true;
+            Status = TickableStatus.Remove;
             return;
         }
 
@@ -269,7 +269,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
                     }
                 }
             }
-            IsTickableCancelled = true;
+            Status = TickableStatus.InActive;
             return;
         }
     }

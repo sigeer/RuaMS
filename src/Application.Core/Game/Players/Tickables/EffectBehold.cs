@@ -1,4 +1,5 @@
 using Application.Core.Game.Skills;
+using Application.Utility.Tickables;
 using server;
 
 namespace Application.Core.Game.Players.Tickables
@@ -41,11 +42,11 @@ namespace Application.Core.Game.Players.Tickables
         StatEffect? _hexEffect;
         public override void OnTick(long now)
         {
-            if (!IsTickableCancelled && !IsExpired)
+            if (this.IsAvailable())
             {
                 if (ExpiredAt <= now)
                 {
-                    IsExpired = true;
+                    Status = TickableStatus.Remove;
                     return;
                 }
 

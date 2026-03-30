@@ -140,7 +140,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             {
                 //this happens due to mob on last map damaging player just before changing maps
                 _logger.LogWarning(e, "Attack is not a mob-type, rather is a {MapObject} entity", map.getMapObject(oid)?.GetType()?.Name);
-                return ;
+                return;
             }
 
             direction = p.readByte();
@@ -159,17 +159,43 @@ public class TakeDamageHandler : ChannelHandlerBase
                 var skillGroup = new int[] { Hero.GUARDIAN, Paladin.GUARDIAN };
                 foreach (var skill in skillGroup)
                 {
-                    var skillEffect = chr.TryGetPlayerSkillEffect(skill);
-                    if (skillEffect != null)
+                    if (chr.JobModel.CheckSkill(skill))
                     {
-                        targetMob?.applyStatus(chr, new MonsterStatusEffect(skillEffect.getMonsterStati(), skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
-                        break;
+                        var skillEffect = chr.TryGetPlayerSkillEffect(skill);
+                        if (skillEffect != null)
+                        {
+                            targetMob?.applyStatus(chr, new MonsterStatusEffect(skillEffect.getMonsterStati(), skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (damagefrom == 0 && chr.getBuffedValue(BuffStat.MANA_REFLECTION) != null && damage > 0 && !attacker.isBoss())
+            {
+                if (isReflect == 0)
+                {
+                    var skillGroup = new int[] { ILArchMage.MANA_REFLECTION, FPArchMage.MANA_REFLECTION, Bishop.MANA_REFLECTION };
+                    foreach (var skill in skillGroup)
+                    {
+                        if (chr.JobModel.CheckSkill(skill))
+                        {
+                            var skillEffect = chr.TryGetPlayerSkillEffect(skill);
+                            if (skillEffect != null)
+                            {
+                                int bouncedamage = Math.Min((damage * skillEffect.getX() / 100), attacker.getMaxHp() / 5);
+                                attacker.DamageBy(chr, bouncedamage, 0);
+                                map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
+                                chr.sendPacket(PacketCreator.showOwnBuffEffect(skill, 5));
+                                map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), skill, 5), false);
+                                break;
+                            }
+                        }
                     }
                 }
 
-                // 魔法反击，伤害反击应该放在这里
-
             }
+            chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{isReflect}, knockback:{knockback}");
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {
@@ -190,30 +216,6 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
 
                 attacker.setMp(attacker.getMp() - attackInfo.ConMP);
-                if (chr.getBuffedValue(BuffStat.MANA_REFLECTION) != null && damage > 0 && !attacker.isBoss())
-                {
-                    int jobid = chr.getJob().getId();
-                    if (jobid == 212 || jobid == 222 || jobid == 232)
-                    {
-                        int id = jobid * 10000 + 1002;
-                        var manaReflectSkill = SkillFactory.GetSkillTrust(id);
-                        var chrSkillLevel = chr.getSkillLevel(manaReflectSkill);
-                        if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill)
-                            && chrSkillLevel > 0
-                            && manaReflectSkill.getEffect(chrSkillLevel).makeChanceResult())
-                        {
-                            int bouncedamage = (damage * manaReflectSkill.getEffect(chrSkillLevel).getX() / 100);
-                            if (bouncedamage > attacker.getMaxHp() / 5)
-                            {
-                                bouncedamage = attacker.getMaxHp() / 5;
-                            }
-                            attacker.DamageBy(chr, bouncedamage, 0);
-                            map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
-                            chr.sendPacket(PacketCreator.showOwnBuffEffect(id, 5));
-                            map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), id, 5), false);
-                        }
-                    }
-                }
             }
         }
 

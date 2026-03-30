@@ -2632,12 +2632,12 @@ public class MapleMap : IMap, INamedInstance
 
     public long Period { get; } = YamlConfig.config.server.RESPAWN_INTERVAL;
     public long Next { get; set; }
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; protected set; }
 
     public void OnTick(long now)
     {
         // 有玩家才更新，可能导致一些对象在玩家进入后才开始清理
-        if (characters.Count > 0 && !IsTickableCancelled)
+        if (characters.Count > 0 && this.IsAvailable())
         {
             if (Next <= now)
             {
@@ -2653,7 +2653,7 @@ public class MapleMap : IMap, INamedInstance
                 {
                     tickable.OnTick(now);
 
-                    if (tickable is ILifedTickable lifeTickable && lifeTickable.IsExpired)
+                    if (tickable.Status == TickableStatus.Remove)
                     {
                         if (item is Kite || item is Mist)
                         {
@@ -2673,7 +2673,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 MapEffect.OnTick(now);
 
-                if (MapEffect.IsExpired)
+                if (MapEffect.Status == TickableStatus.Remove)
                 {
                     BroadcastAll(chr => MapEffect.makeDestroyData());
                     MapEffect = null;
@@ -3156,7 +3156,7 @@ public class MapleMap : IMap, INamedInstance
             return;
 
         disposed = true;
-        IsTickableCancelled = true;
+        Status = TickableStatus.Remove;
 
         ProcessMonster(mm => mm.dispose());
         clearMapObjects();

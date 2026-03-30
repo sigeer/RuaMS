@@ -33,8 +33,7 @@ namespace server.maps;
 public class MapManager : IDisposable, INamedInstance, ITickable
 {
     public string InstanceName { get; }
-
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; private set; }
 
     private AbstractEventInstanceManager? evt;
     readonly WorldChannel _channelServer;
@@ -105,7 +104,7 @@ public class MapManager : IDisposable, INamedInstance, ITickable
             {
                 tickable.OnTick(now);
 
-                if (tickable.IsTickableCancelled)
+                if (tickable.Status == TickableStatus.Remove)
                 {
                     RemoveMap(item.Id, out _);
                 }
@@ -133,10 +132,10 @@ public class MapManager : IDisposable, INamedInstance, ITickable
 
     public void Dispose()
     {
-        if (IsTickableCancelled)
+        if (!this.IsAvailable())
             return;
 
-        IsTickableCancelled = true;
+        Status = TickableStatus.Remove;
         foreach (var kv in getMaps())
         {
             RemoveMap(kv.Key, out _);

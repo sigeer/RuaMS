@@ -17,9 +17,8 @@ namespace Application.Core.Game.Maps.Mists
 
         public long Next { get; private set; }
 
-        public bool IsTickableCancelled { get; set; }
+        public TickableStatus Status { get; protected set; }
         public long ExpiredAt { get; }
-        public bool IsExpired { get; private set; }
 
         public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(owner.getMap(), mistPosition, 8)
         {
@@ -73,14 +72,14 @@ namespace Application.Core.Game.Maps.Mists
 
         public void OnTick(long now)
         {
-            if (IsTickableCancelled || IsExpired)
+            if (!this.IsAvailable())
             {
                 return;
             }
 
             if (ExpiredAt <= now)
             {
-                IsExpired = true;
+                Status = TickableStatus.Remove;
                 return;
             }
 

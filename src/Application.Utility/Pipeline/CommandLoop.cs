@@ -11,28 +11,19 @@ namespace Application.Utility.Pipeline
     }
     public class CommandLoop<TContext> : IAsyncDisposable, ICommandPipeline where TContext: IActorInstance<TContext>
     {
-        private static Channel<ICommand>[] _commands;
         private TContext _context;
         private Task? _runningTask;
         private Channel<ICommand> _command;
 
-        static CommandLoop()
-        {
-            _commands = new Channel<ICommand>[Environment.ProcessorCount];
-            for (int i = 0; i < Environment.ProcessorCount; i++)
-            {
-                _commands[i] = Channel.CreateBounded<ICommand>(new BoundedChannelOptions(100_000)
-                {
-                    SingleReader = true,
-                    SingleWriter = false,
-                    FullMode = BoundedChannelFullMode.DropOldest
-                });
-            }
-        }
         public CommandLoop(TContext context)
         {
             _context = context;
-            _command = _commands[_context.GetHashCode() % Environment.ProcessorCount];
+            _command = Channel.CreateBounded<ICommand>(new BoundedChannelOptions(100_000)
+            {
+                SingleReader = true,
+                SingleWriter = false,
+                FullMode = BoundedChannelFullMode.DropOldest
+            });
         }
 
         public void Start()

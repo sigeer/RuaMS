@@ -4,8 +4,7 @@ namespace Application.Utility.Tickables
     {
         void OnTick(long now);
 
-
-        bool IsTickableCancelled { get; set; }
+        TickableStatus Status { get; }
     }
     public interface IDelayedTickable: ITickable
     {
@@ -26,9 +25,23 @@ namespace Application.Utility.Tickables
     public interface ILifedTickable: ITickable
     {
         long ExpiredAt { get; }
-        bool IsExpired { get; }
     }
 
+    public enum TickableStatus
+    {
+        /// <summary>
+        /// 有效
+        /// </summary>
+        Active,
+        /// <summary>
+        /// 仅停止
+        /// </summary>
+        InActive,
+        /// <summary>
+        /// 待移除
+        /// </summary>
+        Remove
+    }
     public abstract class DelayedTickable: IDelayedTickable
     {
         public DelayedTickable(long next)
@@ -38,18 +51,18 @@ namespace Application.Utility.Tickables
 
         public long Next { get; }
 
-        public bool IsTickableCancelled { get; set; }
+        public TickableStatus Status { get; private set; }
 
         public void OnTick(long now)
         {
-            if (IsTickableCancelled)
+            if (Status != TickableStatus.Active)
                 return;
 
             if (Next <= now)
             {
                 Handle(now);
 
-                IsTickableCancelled = true;
+                Status = TickableStatus.Remove;
             }
         }
 

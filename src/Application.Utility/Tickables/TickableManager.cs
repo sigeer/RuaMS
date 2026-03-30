@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Utility.Tickables
 {
     public static class TickableManager
     {
         public static void ProcessSubTickables(this ITickableTree root, long now)
         {
-            if (root.IsTickableCancelled || root is ILifedTickable lifedTickable && lifedTickable.IsExpired)
+            if (root.Status != TickableStatus.Active)
                 return;
 
             var copyedTickables = root.SubTickables.ToArray();
@@ -16,9 +12,14 @@ namespace Application.Utility.Tickables
             {
                 item.OnTick(now);
 
-                if (item is ILifedTickable lifedTickable0 && lifedTickable0.IsExpired)
+                if (item.Status == TickableStatus.Remove)
                     root.SubTickables.Remove(item);
             }
+        }
+
+        public static bool IsAvailable(this ITickable a)
+        {
+            return a.Status != TickableStatus.Remove;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Application.Core.Game.Players.Tickables
                 }
                 else
                 {
-                    IsTickableCancelled = true;
+                    Status = Utility.Tickables.TickableStatus.Remove;
                     return;
                 }
             });

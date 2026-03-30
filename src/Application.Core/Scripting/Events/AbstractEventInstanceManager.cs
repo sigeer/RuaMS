@@ -1467,7 +1467,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             rewardedChr[stage] = new HashSet<int>() { chr.Id };
     }
 
-    public bool IsTickableCancelled { get; set; }
+    public TickableStatus Status { get; set; }
     public List<ITickable> SubTickables { get; }
     public void OnTick(long now)
     {

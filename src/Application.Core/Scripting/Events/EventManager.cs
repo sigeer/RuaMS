@@ -27,8 +27,7 @@ public class EventManager : IDisposable, ITickableTree
 
 
     public bool AllowReconnect { get; set; }
-    public bool IsTickableCancelled { get; set; }
-
+    public TickableStatus Status { get; private set; }
     public List<ITickable> SubTickables { get; }
 
     public EventManager(WorldChannel cserv, IEngine iv, ScriptFile file)
@@ -56,7 +55,7 @@ public class EventManager : IDisposable, ITickableTree
             return;
 
         disposed = true;
-        IsTickableCancelled = true;
+        Status = TickableStatus.Remove;
         try
         {
             iv.CallFunction("cancelSchedule");
