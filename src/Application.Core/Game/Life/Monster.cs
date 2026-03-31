@@ -27,27 +27,21 @@ using Application.Core.Channel.Events;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Resources.Messages;
-using Application.Shared.Objects;
 using Application.Shared.WzEntity;
+using Application.Utility.Tickables;
 using client.status;
-using Google.Protobuf.Collections;
-using Jint.Native.ShadowRealm;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
-using server.loot;
-using System.Threading;
 using tools;
 using ZLinq;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Life;
 
-public class Monster : AbstractLifeObject, ICombatantObject
+public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 {
     private ILogger log;
 
@@ -114,6 +108,12 @@ public class Monster : AbstractLifeObject, ICombatantObject
     public List<Monster> RevivingMonsters => _revivingMonsters.Value;
     Lazy<List<Monster>> _revivingMonsters;
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
+
+    public long Period => throw new NotImplementedException();
+
+    public long Next => throw new NotImplementedException();
+
+    public TickableStatus Status { get; private set; }
 
     public Monster(int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id)
     {
@@ -914,26 +914,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
         return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
     }
 
-    void dropFromFriendlyMonster(long delay)
-    {
-        monsterItemDrop = MapModel.ChannelServer.TimerManager.register(() =>
-        {
-            MapModel.Send(map =>
-            {
-                FriendlyDrop();
-            });
-        }, delay, delay);
-    }
-
     public void FriendlyDrop()
     {
         if (!isAlive())
         {
-            if (monsterItemDrop != null)
-            {
-                monsterItemDrop.cancel(false);
-            }
-
             return;
         }
 
@@ -2387,7 +2371,8 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 dropPeriodTime = dropPeriodTime / 3;
             }
 
-            dropFromFriendlyMonster(dropPeriodTime);
+            _friendlyDropPeriod = dropPeriodTime;
+            _friendlyDropNext = MapModel.ChannelServer.Node.getCurrentTime() + _friendlyDropPeriod;
         }
 
         if (getId() == MobId.SUMMON_HORNTAIL)
@@ -2474,6 +2459,29 @@ public class Monster : AbstractLifeObject, ICombatantObject
             {
                 eim.reviveMonster(mob);
             }
+        }
+    }
+
+    long _friendlyDropNext;
+    long _friendlyDropPeriod;
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable())
+        {
+            return;
+        }
+
+        if (!isAlive())
+        {
+            Status = TickableStatus.Remove;
+            return;
+        }
+
+        if (_friendlyDropPeriod > 0 && _friendlyDropNext <= now)
+        {
+            FriendlyDrop();
+
+            _friendlyDropNext = now + _friendlyDropPeriod;
         }
     }
 }

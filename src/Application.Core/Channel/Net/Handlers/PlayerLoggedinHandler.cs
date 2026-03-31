@@ -145,14 +145,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (newcomer)
             {
-                foreach (var pet in player.getPets())
-                {
-                    if (pet != null)
-                    {
-                        c.CurrentServer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
-                    }
-                }
-
                 var mount = player.getMount();   // thanks Ari for noticing a scenario where Silver Mane quest couldn't be started
                 if (mount != null && mount.getItemId() != 0)
                 {

@@ -30,6 +30,7 @@ using client.status;
 using Microsoft.Extensions.Logging;
 using server;
 using server.life;
+using System.Reflection;
 using tools;
 using static server.partyquest.CarnivalFactory;
 
@@ -54,8 +55,9 @@ public class TakeDamageHandler : ChannelHandlerBase
         var element = EnumClassCache<Element>.GetValues()[p.readByte()];
         int damage = p.readInt();
         int oid = 0, monsteridfrom = 0, pgmr = 0, direction = 0;
-        int pos_x = 0, pos_y = 0, fake = 0;
+        int action = 0, pos_x = 0, pos_y = 0, fake = 0;
         bool is_pgmr = false, is_pg = true, is_deadly = false;
+        int reflectOId = 0;
         int mpattack = 0;
         Monster? attacker = null;
         var map = chr.getMap();
@@ -145,16 +147,20 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             direction = p.readByte();
 
-            var isReflect = p.readByte();   // 伤害反击/魔法反击
-            var knockback = p.readByte();   // 寒冰掌反击 COutPacket::Encode1(&v190, !v181 ? 0 : v175 + 1);  0.不满足防御条件 1. 不满足击晕条件 2. OK
+            var reflect = p.ReadSByte();     // 伤害反击（成功40）/魔法反击（成功0，失败55）  COutPacket::Encode1(&v190, v189);
+            var knockback = p.ReadSByte();   // 寒冰掌反击 COutPacket::Encode1(&v190, !v181 ? 0 : v175 + 1);  0.不满足防御条件 1. 不满足击晕条件 2. OK
                                             //                       v47 = *(v198 + 337) / 10000;
                                             //                       v48 = v47 == 190 || v47 == 193;
                                             //                       v181 = !v48; // 没有使用坐骑
                                             //                       v175 = v187 == 0; // 是否近距离攻击判断？
-            if (isReflect > 0 || knockback > 1)
+            if (reflect > 0 || knockback > 1)   // if ( v175 || v189 ) 魔法反击失败也会走这里？但似乎后续没有那么多可读字节
             {
-                var reflectMobObjectId = p.readInt();
-                var targetMob = map.getMonsterByOid(reflectMobObjectId);
+                is_pg = p.readByte() > 0;   // COutPacket::Encode1(&v190, v189 != 0 && a10 != 0);
+                reflectOId = p.readInt();
+                action = p.readByte();
+                pos_x = p.readShort();
+                pos_y = p.readShort();
+                var targetMob = map.getMonsterByOid(reflectOId);
 
                 var skillGroup = new int[] { Hero.GUARDIAN, Paladin.GUARDIAN };
                 foreach (var skill in skillGroup)
@@ -173,7 +179,7 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             if (damagefrom == 0 && chr.getBuffedValue(BuffStat.MANA_REFLECTION) != null && damage > 0 && !attacker.isBoss())
             {
-                if (isReflect == 0)
+                if (reflect == 0)
                 {
                     var skillGroup = new int[] { ILArchMage.MANA_REFLECTION, FPArchMage.MANA_REFLECTION, Bishop.MANA_REFLECTION };
                     foreach (var skill in skillGroup)
@@ -195,7 +201,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
 
             }
-            chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{isReflect}, knockback:{knockback}");
+            // chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{isReflect}, knockback:{knockback}");
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {
@@ -223,6 +229,8 @@ public class TakeDamageHandler : ChannelHandlerBase
         {
             fake = 4020002 + (chr.getJob().getId() / 10 - 40) * 100000;
         }
+
+        chr.dropMessage($"damageFrom: {damagefrom}, available: {p.available()}");
 
         if (damage > 0)
         {
@@ -386,11 +394,11 @@ public class TakeDamageHandler : ChannelHandlerBase
         }
         if (!chr.isHidden())
         {
-            map.broadcastMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, pgmr, is_pg, oid, pos_x, pos_y), false);
+            map.broadcastMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), false);
         }
         else
         {
-            map.broadcastGMMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, pgmr, is_pg, oid, pos_x, pos_y), false);
+            map.broadcastGMMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), false);
         }
         if (MapId.isDojo(map.getId()))
         {

@@ -1248,6 +1248,7 @@ public partial class Player
                 ChangeHP(-MapModel.getHPDec(), false);
             });
             sendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
+            MapModel.broadcastMessage(PacketCreator.ShowMapEnviromentDamage(Id, MapModel.getHPDec()));
         }
     }
 
@@ -3929,7 +3930,7 @@ public partial class Player
 
         if (MountModel != null)
         {
-            MountModel.empty();
+            MountModel.Dispose();
             MountModel = null;
         }
 

@@ -14,11 +14,6 @@ namespace Application.Core.Channel.Tasks
         protected override void HandleRun()
         {
             _server.UpdateServerTime();
-
-            _server.Broadcast(w =>
-            {
-                w.CharacterDiseaseManager.HandleRun();
-            });
         }
 
     }

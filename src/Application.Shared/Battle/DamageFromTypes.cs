@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Shared.Battle
 {
     public enum DamageFromTypes
@@ -9,6 +5,17 @@ namespace Application.Shared.Battle
         Maigic = 0,
         Physical = -1,
 
-        Map = -3
+        /// <summary>
+        /// 未确认
+        /// </summary>
+        Counter = -2,
+        /// <summary>
+        /// 地图障碍、陷进等
+        /// </summary>
+        Obstacle = -3,
+        /// <summary>
+        /// 未确认
+        /// </summary>
+        Stat = -4
     }
 }

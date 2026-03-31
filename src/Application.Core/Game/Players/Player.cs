@@ -168,6 +168,12 @@ namespace Application.Core.Game.Players
 
         public long Next { get; private set; }
 
+        public long MapDamagePeriod { get; } = YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT * 1000;
+        public long MapDamageNext { get; set; }
+
+        long _diseaseAnnounceNext;
+        long _diseaseAnnouncePeriod = YamlConfig.config.server.UPDATE_INTERVAL;
+
         public TickableStatus Status { get; private set; }
 
         public void OnTick(long now)
@@ -179,6 +185,13 @@ namespace Application.Core.Game.Players
 
             Bag.OnTick(now);
 
+            MountModel?.OnTick(now);
+
+            foreach (var item in pets)
+            {
+                item?.OnTick(now);
+            }
+
             if (_mapEffect != null)
             {
                 _mapEffect.OnTick(now);
@@ -188,6 +201,20 @@ namespace Application.Core.Game.Players
                     sendPacket(_mapEffect.makeDestroyData());
                     _mapEffect = null;
                 }
+            }
+
+            if (MapModel.getHPDec() > 0 && MapDamageNext <= now)
+            {
+                doHurtHp();
+                MapDamageNext = now + MapDamagePeriod;
+            }
+
+            if (_diseaseAnnounceNext <= now)
+            {
+                announceDiseases();
+                collectDiseases();
+
+                _diseaseAnnounceNext = now + _diseaseAnnouncePeriod;
             }
 
             if (Next <= now)

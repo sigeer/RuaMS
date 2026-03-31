@@ -1334,7 +1334,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         int localsourceid = sourceid;
         int seconds = localDuration / 1000;
-        IMount? givemount = null;
+        Mount? givemount = null;
         if (isMonsterRiding())
         {
             int ridingMountId = 0;
@@ -1371,7 +1371,6 @@ public class StatEffect
 
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
-            givemount.ChannelServer.MountTirednessManager.registerMountHunger(applyto);
 
             localDuration = sourceid;
             localsourceid = ridingMountId;

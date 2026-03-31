@@ -240,10 +240,6 @@ namespace Application.Core.Channel.Services
             if (mountItem != null)
             {
                 var mountModel = new Mount(player, mountItem.getItemId());
-                mountModel.setExp(player.MountExp);
-                mountModel.setLevel(player.MountLevel);
-                mountModel.setTiredness(player.Mounttiredness);
-                mountModel.setActive(false);
                 player.SetMount(mountModel);
             }
 

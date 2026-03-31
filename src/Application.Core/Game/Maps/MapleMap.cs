@@ -731,7 +731,6 @@ public class MapleMap : IMap, INamedInstance
                 if (itemMonitor != null)
                 {
                     stopItemMonitor();
-                    aggroMonitor.stopAggroCoordinator();
                 }
 
                 return;
@@ -2680,6 +2679,8 @@ public class MapleMap : IMap, INamedInstance
                 }
             }
 
+            aggroMonitor.OnTick(now);
+
         }
     }
 
@@ -3247,14 +3248,7 @@ public class MapleMap : IMap, INamedInstance
         chr.setMap(this);
         chr.updateActiveEffects();
 
-        if (this.getHPDec() > 0)
-        {
-            ChannelServer.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
-        }
-        else
-        {
-            ChannelServer.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
-        }
+        chr.MapDamageNext = ChannelServer.Node.getCurrentTime() + chr.MapDamagePeriod;
 
         MapScriptManager msm = ChannelServer.MapScriptManager;
         if (chrSize == 1)
@@ -3262,7 +3256,6 @@ public class MapleMap : IMap, INamedInstance
             if (!hasItemMonitor())
             {
                 startItemMonitor();
-                aggroMonitor.startAggroCoordinator();
             }
 
             if (onFirstUserEnter.Length != 0)
@@ -3477,8 +3470,6 @@ public class MapleMap : IMap, INamedInstance
         {
             chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
         }
-
-        ChannelServer.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
 
         OnPlayerEnter(chr);
     }

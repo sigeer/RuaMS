@@ -100,10 +100,7 @@ namespace Application.Core.Channel
         #region Task
         public ServerMessageTask ServerMessageTask { get; }
 
-        public MountTirednessTask MountTirednessTask { get; }
         public CharacterDiseaseTask CharacterDiseaseTask { get; }
-        public CharacterHpDecreaseTask CharacterHpDecreaseTask { get; }
-        public PetHungerTask PetHungerTask { get; }
         public MapOwnershipTask MapOwnershipTask { get; }
         #endregion
 
@@ -160,10 +157,7 @@ namespace Application.Core.Channel
 
 
             ServerMessageTask = new ServerMessageTask(this);
-            MountTirednessTask = new MountTirednessTask(this);
             CharacterDiseaseTask = new CharacterDiseaseTask(this);
-            CharacterHpDecreaseTask = new CharacterHpDecreaseTask(this);
-            PetHungerTask = new(this);
             MapOwnershipTask = new(this);
 
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
@@ -254,11 +248,8 @@ namespace Application.Core.Channel
                 _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
                 await CharacterDiseaseTask.StopAsync();
-                await PetHungerTask.StopAsync();
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
-                await CharacterHpDecreaseTask.StopAsync();
-                await MountTirednessTask.StopAsync();
 
                 if (invitationTask != null)
                     await invitationTask.CancelAsync(false);
@@ -378,10 +369,7 @@ namespace Application.Core.Channel
 
 
             CharacterDiseaseTask.Register(TimerManager);
-            PetHungerTask.Register(TimerManager);
             ServerMessageTask.Register(TimerManager);
-            CharacterHpDecreaseTask.Register(TimerManager);
-            MountTirednessTask.Register(TimerManager);
             MapOwnershipTask.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));

@@ -20,7 +20,7 @@
  */
 
 
-using Application.Core.Channel;
+using Acornima.Ast;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -37,14 +37,11 @@ using Application.Core.model;
 using Application.Core.Models;
 using Application.Shared.Battle;
 using Application.Shared.Constants.Buddy;
-using Application.Shared.Team;
 using client;
 using client.inventory;
 using client.keybind;
 using client.status;
 using constants.game;
-using DotNetty.Common.Utilities;
-using net.server;
 using server;
 using server.events.gm;
 using server.life;
@@ -2458,7 +2455,31 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet damagePlayer(int skill, int monsteridfrom, int cid, int damage, int fake, int direction, bool pgmr, int pgmr_1, bool is_pg, int oid, int pos_x, int pos_y)
+    public static Packet ShowMapEnviromentDamage(int cid, int damage)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
+        p.writeInt(cid);
+        p.writeByte(-3);
+        p.writeInt(0);
+        p.writeInt(damage);
+        return p;
+    }
+
+    public static Packet DamagePlayerFromCounter(int monsteridfrom, int cid, int damage)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
+        p.writeInt(cid);
+        p.writeByte(0);
+        p.writeInt(damage);
+        p.writeInt(monsteridfrom);
+        p.writeByte(0);
+        p.writeBool(false);
+        p.writeByte(0);
+        p.writeInt(damage);
+        return p;
+    }
+
+    public static Packet damagePlayer(int skill, int monsteridfrom, int cid, int damage, int fake, int direction, bool pgmr, bool is_pg, int oid, int action, int pos_x, int pos_y)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
         p.writeInt(cid);
@@ -2472,20 +2493,18 @@ public class PacketCreator
         {
             p.writeInt(monsteridfrom);
             p.writeByte(direction);
+            p.writeBool(pgmr); // v23 = CInPacket::Decode1(a2);
             if (pgmr)
             {
-                p.writeByte(pgmr_1);
-                p.writeByte(is_pg ? 1 : 0);
+                p.writeBool(is_pg);
                 p.writeInt(oid);
-                p.writeByte(6);
+                p.writeByte(action);
                 p.writeShort(pos_x);
                 p.writeShort(pos_y);
                 p.writeByte(0);
             }
-            else
-            {
-                p.writeShort(0);
-            }
+            p.writeByte(0); // stance
+
             p.writeInt(damage);
             if (fake > 0)
             {
@@ -2694,7 +2713,7 @@ public class PacketCreator
      * @param mount
      * @return
      */
-    public static Packet showMonsterRiding(int cid, IMount mount)
+    public static Packet showMonsterRiding(int cid, Mount mount)
     { //Gtfo with this, this is just giveForeignBuff
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
@@ -3529,7 +3548,7 @@ public class PacketCreator
         return p;
     }
 
-    
+
 
     /// <summary>
     /// 
@@ -3619,7 +3638,7 @@ public class PacketCreator
     /// <param name="time">单位：秒</param>
     /// <returns></returns>
     public static Packet getClock(int time)
-    { 
+    {
         // time in seconds
         OutPacket p = OutPacket.create(SendOpcode.CLOCK);
         p.writeByte(2); // clock type. if you send 3 here you have to send another byte (which does not matter at all) before the timestamp
@@ -3628,7 +3647,7 @@ public class PacketCreator
     }
 
     public static Packet getClockTime(int hour, int min, int sec)
-    { 
+    {
         // Current Time
         OutPacket p = OutPacket.create(SendOpcode.CLOCK);
         p.writeByte(1); //Clock-Type
@@ -3943,7 +3962,7 @@ public class PacketCreator
     }
 
     public static Packet catchMonster(int mobOid, byte success)
-    {  
+    {
         // updated packet structure found thanks to Rien dev team
         OutPacket p = OutPacket.create(SendOpcode.CATCH_MONSTER);
         p.writeInt(mobOid);
@@ -4299,9 +4318,7 @@ public class PacketCreator
         return p;
     }
 
-
-
-    public static Packet updateMount(int charid, IMount mount, bool levelup)
+    public static Packet updateMount(int charid, Mount mount, bool levelup)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_TAMING_MOB_INFO);
         p.writeInt(charid);

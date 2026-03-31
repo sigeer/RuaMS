@@ -396,15 +396,9 @@ namespace Application.Core.Game.Players
                 buffstats = extractLeastRelevantStatEffectsIfFull(effect);
             }
 
-            if (effect.isMapChair())
-            {
-                stopChairTask();
-            }
-
             List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
-                Client.CurrentServer.MountTirednessManager.unregisterMountHunger(this);
                 this.getMount()?.setActive(false);
             }
 
@@ -1019,10 +1013,6 @@ namespace Application.Core.Game.Players
 
                 stopExtraTask();
                 startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
-            }
-            else if (effect.isMapChair())
-            {
-                startChairTask();
             }
 
             int sourceid = effect.getBuffSourceId();

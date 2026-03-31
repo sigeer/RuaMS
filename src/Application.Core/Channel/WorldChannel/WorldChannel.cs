@@ -133,11 +133,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public IMapper Mapper { get; }
     public ITimerManager TimerManager { get; private set; } = null!;
 
-    public CharacterDiseaseManager CharacterDiseaseManager { get; }
-    public PetHungerManager PetHungerManager { get; }
-
-    public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
-    public MountTirednessManager MountTirednessManager { get; }
     public MapOwnershipManager MapOwnershipManager { get; }
     public ServerMessageManager ServerMessageManager { get; }
     public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
@@ -193,11 +188,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
         Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();
 
-        CharacterDiseaseManager = new CharacterDiseaseManager(this);
-        PetHungerManager = new PetHungerManager(this);
-
-        CharacterHpDecreaseManager = new CharacterHpDecreaseManager(this);
-        MountTirednessManager = new MountTirednessManager(this);
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
 
@@ -778,18 +768,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         CommandLoop.Register(command);
     }
 
-    public void Send(IActorInstance<IMap> mapActor, Action<IMap> action)
-    {
-        mapActor.Send(new MapDelegateCommand(action));
-    }
-
-    public void Send(IActorInstance<IMap> mapActor, Func<IMap, Task> action)
-    {
-        mapActor.Send(new AsyncMapDelegateCommand(action));
-    }
-
-    
-
     public void OnTick(long now)
     {
         this.ProcessSubTickables(now);
@@ -797,11 +775,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     public void Send(Func<WorldChannel, Task> action)
     {
-        CommandLoop.Register(new AsyncChannelDelegateCommand(action)); 
+        Send(new AsyncChannelDelegateCommand(action)); 
     }
 
     public void Send(Action<WorldChannel> action)
     {
-        CommandLoop.Register(new ChannelDelegateCommand(action));
+        Send(new ChannelDelegateCommand(action));
     }
 }

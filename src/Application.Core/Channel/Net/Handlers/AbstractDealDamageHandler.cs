@@ -592,7 +592,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     player.DamageBy(monster, toUse.getX(), attack.attackDelay);
                                 });
-                                map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
+                                map.broadcastMessage(player, PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()), true);
                             }
                         }
                     }
@@ -607,7 +607,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     player.DamageBy(monster, toUse.getY(), attack.attackDelay);
                                 });
-                                map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
+                                map.broadcastMessage(player, PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()), true);
                             }
                         }
                     }

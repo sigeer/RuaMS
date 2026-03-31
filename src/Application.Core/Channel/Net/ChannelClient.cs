@@ -150,11 +150,6 @@ namespace Application.Core.Channel.Net
                 {
                     player.getChannelServer().freeDojoSectionIfEmpty(mapId);
                 }
-
-                if (player.getMap().getHPDec() > 0)
-                {
-                    player.getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(player);
-                }
             }
         }
 

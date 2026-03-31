@@ -1,8 +1,5 @@
-using Application.Core.Channel.Commands;
-using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using Microsoft.Extensions.DependencyInjection;
 using server;
 using tools;
 
@@ -10,8 +7,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private ScheduledFuture? chairRecoveryTask = null;
-
         private AtomicInteger chair = new AtomicInteger(-1);
 
         private void unsitChairInternal()
@@ -73,46 +68,7 @@ namespace Application.Core.Game.Players
             this.chair.set(chair);
         }
 
-        private void startChairTask()
-        {
-            if (chair.get() < 0)
-            {
-                return;
-            }
-
-            int healInterval;
-
-            updateChairHealStats();
-            healInterval = localchairrate;
-
-
-
-            if (chairRecoveryTask != null)
-            {
-                stopChairTask();
-            }
-
-            chairRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
-            {
-                MapModel.Send(map =>
-                {
-                    ApplayChairBuff();
-                });
-            }, healInterval, healInterval);
-
-        }
-        private void stopChairTask()
-        {
-
-            if (chairRecoveryTask != null)
-            {
-                chairRecoveryTask.cancel(false);
-                chairRecoveryTask = null;
-            }
-
-        }
-
-        private static ChairHealStats getChairTaskIntervalRate(int maxhp, int maxmp)
+        public static ChairHealStats getChairTaskIntervalRate(int maxhp, int maxmp)
         {
             float toHeal = Math.Max(maxhp, maxmp);
             float maxDuration = (float)TimeSpan.FromSeconds(YamlConfig.config.server.CHAIR_EXTRA_HEAL_MAX_DELAY).TotalMilliseconds;
@@ -216,19 +172,21 @@ namespace Application.Core.Game.Players
             int healHP = localchairhp;
             int healMP = localchairmp;
 
-            if (HP < ActualMaxHP)
+            if (HP < ActualMaxHP || MP < ActualMaxMP)
             {
+                UpdateStatsChunk(() =>
+                {
+                    ChangeHP(healHP);
+                    ChangeMP(healMP);
+                });
+
                 var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
                 sendPacket(PacketCreator.showOwnRecovery(recHP));
                 MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
             }
 
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(healHP);
-                ChangeMP(healMP);
-            });
+
         }
     }
 }
