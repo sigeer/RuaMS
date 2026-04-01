@@ -458,14 +458,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 // should work ;p
                 if (getHp() <= selfDestr.Hp)
                 {
-                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, delay);
+                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
                     return true;
                 }
             }
 
             if (!this.isAlive())
             {
-                MapModel.RemoveMob(this, attacker, true, delay);
+                MapModel.RemoveMob(this, attacker, true, dropDelay: delay);
             }
             return true;
         }

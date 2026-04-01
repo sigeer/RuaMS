@@ -1248,7 +1248,6 @@ public partial class Player
                 ChangeHP(-MapModel.getHPDec(), false);
             });
             sendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
-            MapModel.broadcastMessage(PacketCreator.ShowMapEnviromentDamage(Id, MapModel.getHPDec()));
         }
     }
 

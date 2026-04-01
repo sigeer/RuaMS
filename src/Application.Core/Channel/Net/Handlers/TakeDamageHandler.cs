@@ -52,7 +52,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         sbyte damagefrom = p.ReadSByte();
         var element = EnumClassCache<Element>.GetValues()[p.readByte()];
         int damage = p.readInt();
-        int oid = 0, monsteridfrom = 0, pgmr = 0, direction = 0;
+        int oid = 0, monsteridfrom = 0, pgmr = 0,stance = 0, direction = 0;
         int action = 0, pos_x = 0, pos_y = 0, fake = 0;
         bool is_pgmr = false, is_pg = true, is_deadly = false;
         int reflectOId = 0;
@@ -192,7 +192,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
 
             }
-            // chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{isReflect}, knockback:{knockback}");
+            stance = p.readByte();
+            chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{reflect}, knockback:{knockback}, stance: {stance}");
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {
@@ -382,6 +383,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 });
             }
         }
+
         if (!chr.isHidden())
         {
             map.broadcastMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), false);

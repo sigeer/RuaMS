@@ -2455,16 +2455,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet ShowMapEnviromentDamage(int cid, int damage)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
-        p.writeInt(cid);
-        p.writeByte(-3);
-        p.writeInt(0);
-        p.writeInt(damage);
-        return p;
-    }
-
     public static Packet DamagePlayerFromCounter(int monsteridfrom, int cid, int damage)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);

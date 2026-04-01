@@ -168,7 +168,7 @@ namespace Application.Core.Game.Players
 
         public long Next { get; private set; }
 
-        public long MapDamagePeriod { get; } = YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT * 1000;
+        public long MapDamagePeriod { get; } = YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
         public long MapDamageNext { get; set; }
 
         long _diseaseAnnounceNext;
