@@ -223,5 +223,19 @@ namespace Application.Core.Game.Players
             return true;
         }
 
+        public bool CheckSkill(int skillId)
+        {
+            return !isGM() && JobModel.CheckSkill(skillId);
+        }
+
+        public bool CheckBuff(BuffStatValueHolder buff)
+        {
+            if (!buff.Effect.isSkill())
+            {
+                return true;
+            }
+            return !isGM() && JobModel.CheckSkill(buff.Effect.getSourceId());
+        }
+
     }
 }

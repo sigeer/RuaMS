@@ -885,7 +885,6 @@ public class MapleMap : IMap, INamedInstance
         }, null);
 
         instantiateItemDrop(mapItem);
-        activateItemReactors(mapItem, mapItem.getOwnerClient());
     }
 
     public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
@@ -1103,6 +1102,30 @@ public class MapleMap : IMap, INamedInstance
         {
             RemoveMob(monster, null, false);
         });
+    }
+
+    public void TryHitReactorByMapItem(MapItem mapItem)
+    {
+        foreach (var item in mapobjects.Values.AsValueEnumerable())
+        {
+            if (item is Reactor r && r.CheckHitItem(mapItem))
+            {
+                r.HitByMapItem(mapItem);
+                return;
+            }
+        }
+    }
+
+    public bool CanHitReactor(MapItem mapItem)
+    {
+        foreach (var item in mapobjects.Values.AsValueEnumerable())
+        {
+            if (item is Reactor r && r.CheckHitItem(mapItem))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void destroyReactors(int first, int last)
@@ -1657,73 +1680,12 @@ public class MapleMap : IMap, INamedInstance
         broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 0);
 
         instantiateItemDrop(mdrop);
-        activateItemReactors(mdrop, owner.getClient());
     }
 
     private void registerMapSchedule(IWorldChannelCommand r, long delay)
     {
         OverallService service = this.getChannelServer().OverallService;
         service.registerOverallAction(mapid, r, delay);
-    }
-
-    private void activateItemReactors(MapItem drop, IChannelClient c)
-    {
-        var item = drop.getItem();
-        if (item == null)
-        {
-            return;
-        }
-
-        foreach (IMapObject o in getReactors())
-        {
-            Reactor react = (Reactor)o;
-
-            if (react.getReactorType() == 100)
-            {
-                var reactItem = react.getReactItem(react.getEventState())!;
-                if (reactItem.ItemId == item.getItemId() && reactItem.Quantity == item.getQuantity())
-                {
-
-                    if (react.getArea().Contains(drop.getPosition()))
-                    {
-                        registerMapSchedule(new ReactorHitFromMapItemCommand(drop, react), 5000);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    public void searchItemReactors(Reactor react)
-    {
-        if (react.getReactorType() == 100)
-        {
-            var reactProp = react.getReactItem(react.getEventState())!;
-            int reactItem = reactProp.ItemId, reactQty = reactProp.Quantity;
-            Rectangle reactArea = react.getArea();
-
-            List<MapItem> list = getDroppedItems();
-
-            foreach (MapItem drop in list)
-            {
-                if (!drop.isPickedUp())
-                {
-                    var item = drop.getItem();
-
-                    if (item != null && reactItem == item.getItemId() && reactQty == item.getQuantity())
-                    {
-                        if (reactArea.Contains(drop.getPosition()))
-                        {
-                            var owner = drop.getOwnerClient();
-                            if (owner != null)
-                            {
-                                registerMapSchedule(new ReactorHitFromMapItemCommand(drop, react), 5000);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public void startMapEffect(string msg, int itemId, long time = 30000)
@@ -2397,29 +2359,6 @@ public class MapleMap : IMap, INamedInstance
     //    }
     //}
 
-    /// <summary>
-    /// 丢掉道具触发hitReactor
-    /// </summary>
-    private class ActivateItemReactor : AbstractRunnable
-    {
-
-        private MapItem mapitem;
-        private Reactor reactor;
-        private IChannelClient c;
-        private MapleMap _map;
-        public ActivateItemReactor(MapleMap map, MapItem mapitem, Reactor reactor, IChannelClient c)
-        {
-            _map = map;
-            this.mapitem = mapitem;
-            this.reactor = reactor;
-            this.c = c;
-        }
-
-        public override void HandleRun()
-        {
-            _map.ChannelServer.Send(new ReactorHitFromMapItemCommand(mapitem, reactor));
-        }
-    }
 
     private void instanceMapFirstSpawn()
     {

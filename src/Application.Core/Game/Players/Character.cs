@@ -538,9 +538,9 @@ public partial class Player
         List<BuffStatValueHolder> mbsvhList = getAllStatups();
         foreach (BuffStatValueHolder mbsvh in mbsvhList)
         {
-            if (mbsvh.effect.isMagicDoor())
+            if (mbsvh.Effect.isMagicDoor())
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
                 break;
             }
         }
@@ -1173,12 +1173,12 @@ public partial class Player
             List<BuffStatValueHolder> mbsvhList = getAllStatups();
             foreach (BuffStatValueHolder mbsvh in mbsvhList)
             {
-                if (mbsvh.effect.isSkill())
+                if (mbsvh.Effect.isSkill())
                 {
-                    if (mbsvh.effect.getBuffSourceId() != Aran.COMBO_ABILITY)
+                    if (mbsvh.Effect.getBuffSourceId() != Aran.COMBO_ABILITY)
                     {
                         // check discovered thanks to Croosade dev team
-                        cancelEffect(mbsvh.effect, false);
+                        cancelEffect(mbsvh.Effect, false);
                     }
                 }
             }
@@ -1192,14 +1192,14 @@ public partial class Player
         {
             if (skillid == 0)
             {
-                if (mbsvh.effect.isSkill() && (mbsvh.effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.effect.getSourceId())))
+                if (mbsvh.Effect.isSkill() && (mbsvh.Effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.Effect.getSourceId())))
                 {
-                    cancelEffect(mbsvh.effect, false);
+                    cancelEffect(mbsvh.Effect, false);
                 }
             }
-            else if (mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skillid)
+            else if (mbsvh.Effect.isSkill() && mbsvh.Effect.getSourceId() == skillid)
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
             }
         }
     }
@@ -1400,19 +1400,19 @@ public partial class Player
             BuffStatValueHolder? mbsvhi = bpl.Value.GetValueOrDefault(mbs);
             if (mbsvhi != null)
             {
-                if (!mbsvhi.effect.isActive(this))
+                if (!mbsvhi.Effect.isActive(this))
                 {
                     continue;
                 }
 
                 if (mbsvhi.value > max.Key)
                 {
-                    max = new(mbsvhi.value, mbsvhi.effect.getStatups().Count);
+                    max = new(mbsvhi.value, mbsvhi.Effect.getStatups().Count);
                     mbsvh = mbsvhi;
                 }
-                else if (mbsvhi.value == max.Key && mbsvhi.effect.getStatups().Count > max.Value)
+                else if (mbsvhi.value == max.Key && mbsvhi.Effect.getStatups().Count > max.Value)
                 {
-                    max = new(mbsvhi.value, mbsvhi.effect.getStatups().Count);
+                    max = new(mbsvhi.value, mbsvhi.Effect.getStatups().Count);
                     mbsvh = mbsvhi;
                 }
             }
@@ -2028,7 +2028,7 @@ public partial class Player
     public StatEffect? getStatForBuff(BuffStat effect)
     {
         BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(effect);
-        return mbsvh?.effect;
+        return mbsvh?.Effect;
     }
 
     public Storage getStorage()
@@ -2167,7 +2167,7 @@ public partial class Player
         {
             return false;
         }
-        return mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skill.getId();
+        return mbsvh.Effect.isSkill() && mbsvh.Effect.getSourceId() == skill.getId();
     }
 
     public bool isGmJob()
@@ -2694,9 +2694,9 @@ public partial class Player
 
         foreach (BuffStatValueHolder mbsvh in allBuffs)
         {
-            if (ItemConstants.isRateCoupon(mbsvh.effect.getSourceId()))
+            if (ItemConstants.isRateCoupon(mbsvh.Effect.getSourceId()))
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
             }
         }
     }

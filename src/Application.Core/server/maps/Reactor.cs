@@ -23,8 +23,12 @@
 
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
+using Jint;
+using Jint.Runtime;
 using net.server.services.task.channel;
 using server.partyquest;
+using System.Numerics;
+using System.Xml.Linq;
 using tools;
 
 namespace server.maps;
@@ -174,11 +178,6 @@ public class Reactor : AbstractMapObject
         cancelReactorTimeout();
         setShouldCollect(true);
         refreshReactorTimeout();
-
-        if (MapModel != null)
-        {
-            MapModel.searchItemReactors(this);
-        }
     }
 
     public void forceHitReactor(sbyte newState)
@@ -315,10 +314,6 @@ public class Reactor : AbstractMapObject
 
                             setShouldCollect(true);     // refresh collectability on item drop-based reactors
                             refreshReactorTimeout();
-                            if (stats.getType(state) == 100)
-                            {
-                                MapModel.searchItemReactors(this);
-                            }
                         }
                         break;
                     }
@@ -335,10 +330,6 @@ public class Reactor : AbstractMapObject
 
                 setShouldCollect(true);
                 refreshReactorTimeout();
-                if (stats.getType(state) == 100)
-                {
-                    MapModel.searchItemReactors(this);
-                }
             }
 
 
@@ -460,39 +451,62 @@ public class Reactor : AbstractMapObject
         return getName();
     }
 
+    public bool CheckHitItem(MapItem mapItem)
+    {
+        if (getReactorType() != 100)
+        {
+            return false;
+        }
+
+        if (!getArea().Contains(mapItem.getPosition()))
+        {
+            return false;
+        }
+
+        var reactItem = getReactItem(getEventState());
+        if (reactItem == null)
+        {
+            return false;
+        }
+
+        return reactItem.ItemId == mapItem.getItemId() && reactItem.Quantity == mapItem.getItem()!.getQuantity();
+    }
+
     public void HitByMapItem(MapItem mapItem)
     {
         if (getReactorType() == 100)
         {
             if (getShouldCollect() == true && mapItem != null && mapItem == MapModel.getMapObject(mapItem.getObjectId()))
             {
-                    if (mapItem.isPickedUp())
-                    {
-                        return;
-                    }
+                if (mapItem.isPickedUp())
+                {
+                    return;
+                }
 
-                    var ownerClient = mapItem.getOwnerClient();
-                    if (ownerClient == null)
-                    {
-                        return;
-                    }
-                    mapItem.setPickedUp(true);
-                    MapModel.unregisterItemDrop(mapItem);
+                var ownerClient = mapItem.getOwnerClient();
+                if (ownerClient == null)
+                {
+                    return;
+                }
+                mapItem.setPickedUp(true);
+                MapModel.unregisterItemDrop(mapItem);
 
-                    setShouldCollect(false);
-                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem.getPosition());
+                setShouldCollect(false);
+                MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem.getPosition());
 
-                    hitReactor(ownerClient);
+                hitReactor(ownerClient);
 
-                    if (getDelay() > 0)
-                    {
-                        var reactorMap = getMap();
+                if (getDelay() > 0)
+                {
+                    var reactorMap = getMap();
 
-                        OverallService service = reactorMap.getChannelServer().OverallService;
-                        service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
-                    }
-  
+                    OverallService service = reactorMap.getChannelServer().OverallService;
+                    service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
+                }
+
             }
         }
     }
+
+    public string[]? GetScript() => getStats().ActionName;
 }

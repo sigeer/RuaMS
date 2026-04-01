@@ -233,15 +233,23 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
         if (chr.needQuestItem(questid, getItemId()))
         {
-                client.sendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2, 0));
+            client.sendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2, 0));
         }
     }
 
     public override void sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(),  DropLeaveFieldType.None, 0));
+        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), DropLeaveFieldType.None, 0));
     }
 
+    public override void setMap(IMap map)
+    {
+        base.setMap(map);
+
+        willHitReactor = MapModel.CanHitReactor(this);
+    }
+
+    bool willHitReactor;
     public void OnTick(long now)
     {
         if (!this.IsAvailable())
@@ -255,20 +263,9 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
             return;
         }
 
-        if (Next <= now)
+        if (willHitReactor && Next <= now)
         {
-            foreach (var react in MapModel.GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR, s => s.getReactorType() == 100))
-            {
-                var reactItem = react.getReactItem(react.getEventState())!;
-                if (reactItem.ItemId == getItemId() && reactItem.Quantity == getItem()!.getQuantity())
-                {
-                    if (react.getArea().Contains(getPosition()))
-                    {
-                        react.HitByMapItem(this);
-                        break;
-                    }
-                }
-            }
+            MapModel.TryHitReactorByMapItem(this);
             Status = TickableStatus.InActive;
             return;
         }

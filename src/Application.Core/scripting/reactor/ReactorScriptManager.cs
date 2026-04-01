@@ -130,4 +130,42 @@ public class ReactorScriptManager : AbstractScriptManager
 
         return engine;
     }
+
+    private void CallFunction(string type, IChannelClient c, Reactor reactor)
+    {
+        var fn = reactor.GetScript();
+        if (fn == null)
+        {
+            // 没有脚本
+            return;
+        }
+
+        var fullPath = GetReactorScriptPath(type);
+        var engine = getInvocableScriptEngine(fullPath, c);
+        if (engine == null)
+        {
+            _logger.LogCritical("缺少必要的脚本文件: {Path}, ReactorId: {ReactorId}, Action: {Action}", fullPath, reactor.getId(), reactor.getStats().Action);
+            return;
+        }
+
+        try
+        {
+            ReactorActionManager rm = new ReactorActionManager(c, reactor, engine);
+            engine.AddHostedObject("rm", rm);
+
+            if (fn.Length == 1)
+            {
+                engine.CallFunction(fn[0]);
+            }
+            else
+            {
+                engine.CallFunction(fn[0], fn[1..]);
+            }
+            
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "Error during {Type} script for reactor: ReactorId: {ReactorId}, Action: {Action}", type, reactor.getId(), reactor.getStats().Action);
+        }
+    }
 }

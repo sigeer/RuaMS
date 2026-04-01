@@ -28,9 +28,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.status;
 using Microsoft.Extensions.Logging;
-using server;
 using server.life;
-using System.Reflection;
 using tools;
 using static server.partyquest.CarnivalFactory;
 
@@ -149,10 +147,10 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             var reflect = p.ReadSByte();     // 伤害反击（成功40）/魔法反击（成功0，失败55）  COutPacket::Encode1(&v190, v189);
             var knockback = p.ReadSByte();   // 寒冰掌反击 COutPacket::Encode1(&v190, !v181 ? 0 : v175 + 1);  0.不满足防御条件 1. 不满足击晕条件 2. OK
-                                            //                       v47 = *(v198 + 337) / 10000;
-                                            //                       v48 = v47 == 190 || v47 == 193;
-                                            //                       v181 = !v48; // 没有使用坐骑
-                                            //                       v175 = v187 == 0; // 是否近距离攻击判断？
+                                             //                       v47 = *(v198 + 337) / 10000;
+                                             //                       v48 = v47 == 190 || v47 == 193;
+                                             //                       v181 = !v48; // 没有使用坐骑
+                                             //                       v175 = v187 == 0; // 是否近距离攻击判断？
             if (reflect > 0 || knockback > 1)   // if ( v175 || v189 ) 魔法反击失败也会走这里？但似乎后续没有那么多可读字节
             {
                 is_pg = p.readByte() > 0;   // COutPacket::Encode1(&v190, v189 != 0 && a10 != 0);
@@ -165,7 +163,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 var skillGroup = new int[] { Hero.GUARDIAN, Paladin.GUARDIAN };
                 foreach (var skill in skillGroup)
                 {
-                    if (chr.JobModel.CheckSkill(skill))
+                    if (chr.CheckSkill(skill))
                     {
                         var skillEffect = chr.TryGetPlayerSkillEffect(skill);
                         if (skillEffect != null)
@@ -177,26 +175,19 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
             }
 
-            if (damagefrom == 0 && chr.getBuffedValue(BuffStat.MANA_REFLECTION) != null && damage > 0 && !attacker.isBoss())
+            var manaReflection = chr.GetBuffStatValue(BuffStat.MANA_REFLECTION);
+            if (damagefrom == 0 && manaReflection != null && damage > 0 && !attacker.isBoss())
             {
                 if (reflect == 0)
                 {
-                    var skillGroup = new int[] { ILArchMage.MANA_REFLECTION, FPArchMage.MANA_REFLECTION, Bishop.MANA_REFLECTION };
-                    foreach (var skill in skillGroup)
+                    if (chr.CheckBuff(manaReflection))
                     {
-                        if (chr.JobModel.CheckSkill(skill))
-                        {
-                            var skillEffect = chr.TryGetPlayerSkillEffect(skill);
-                            if (skillEffect != null)
-                            {
-                                int bouncedamage = Math.Min((damage * skillEffect.getX() / 100), attacker.getMaxHp() / 5);
-                                attacker.DamageBy(chr, bouncedamage, 0);
-                                map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
-                                chr.sendPacket(PacketCreator.showOwnBuffEffect(skill, 5));
-                                map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), skill, 5), false);
-                                break;
-                            }
-                        }
+                        int bouncedamage = (int)Math.Min((damage * manaReflection.Effect.getX() / 100.0), attacker.getMaxHp() / 5);
+                        attacker.DamageBy(chr, bouncedamage, 0);
+                        map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
+
+                        chr.sendPacket(PacketCreator.showOwnBuffEffect(manaReflection.Effect.getSourceId(), 5));
+                        map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), false);
                     }
                 }
 
@@ -230,7 +221,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             fake = 4020002 + (chr.getJob().getId() / 10 - 40) * 100000;
         }
 
-        chr.dropMessage($"damageFrom: {damagefrom}, available: {p.available()}");
+        // chr.dropMessage($"damageFrom: {damagefrom}, available: {p.available()}");
 
         if (damage > 0)
         {
@@ -256,9 +247,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                 {
                     var powerGuardBuff = chr.getBuffedValue(BuffStat.POWERGUARD);
                     if (powerGuardBuff != null)
-                    { // PG works on bosses, but only at half of the rate.
-                        int bouncedamage = damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200 : 100));
-                        bouncedamage = Math.Min(bouncedamage, attacker.getMaxHp() / 10);
+                    { 
+                        var bouncedamage = (int)Math.Min(damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200.0 : 100.0)), attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
                         attacker.DamageBy(chr, bouncedamage, 0);
                         map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), false, true);

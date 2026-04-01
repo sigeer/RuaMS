@@ -239,7 +239,6 @@ namespace Application.Core.Game.Maps
         void resetReactors(List<Reactor> list);
         void respawn();
         void restoreMapSpawnPoints();
-        void searchItemReactors(Reactor react);
         void sendNightEffect(Player chr);
         void setAllowSpawnPointInBox(bool allow, Rectangle box);
         void setDocked(bool isDocked);
@@ -294,5 +293,10 @@ namespace Application.Core.Game.Maps
         void unregisterItemDrop(MapItem mapItem);
         void ProcessItemMonitor();
         Player? FindPlayer(int id);
+
+        #region Reactors
+        void TryHitReactorByMapItem(MapItem mapItem);
+        bool CanHitReactor(MapItem mapItem);
+        #endregion
     }
 }

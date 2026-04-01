@@ -37,7 +37,7 @@ namespace Application.Core.Game.Players
             return buffEffects.ContainsKey(sourceid);
         }
 
-        private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
+        public BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
             return ActiveEffects.GetValueOrDefault(effect);
         }
@@ -61,12 +61,12 @@ namespace Application.Core.Game.Players
 
         public int getBuffSource(BuffStat stat)
         {
-            return GetBuffStatValue(stat)?.effect?.getSourceId() ?? -1;
+            return GetBuffStatValue(stat)?.Effect?.getSourceId() ?? -1;
         }
 
         public StatEffect? getBuffEffect(BuffStat stat)
         {
-            return GetBuffStatValue(stat)?.effect;
+            return GetBuffStatValue(stat)?.Effect;
         }
 
         public bool HasBuff(BuffStat stat)
@@ -89,7 +89,7 @@ namespace Application.Core.Game.Players
                 {
                     if (!ret.ContainsKey(bel.Key))
                     {
-                        ret.Add(bel.Key, new PlayerBuffValueHolder(mbsvh.Value.startTime, mbsvh.Value.effect, effectBuffStats));
+                        ret.Add(bel.Key, new PlayerBuffValueHolder(mbsvh.Value.startTime, mbsvh.Value.Effect, effectBuffStats));
                     }
                     effectBuffStats.Add(new BuffStatValue(mbsvh.Key, mbsvh.Value.value));
                 }
@@ -117,9 +117,9 @@ namespace Application.Core.Game.Players
             Log.Debug("-------------------");
             Log.Debug("IN ACTION: {InAction}", string.Join(", ", ActiveEffects
                     .Select(entry => entry.Key.name() + " -> " + 
-                    (entry.Value.effect.isSkill() 
-                    ? Client.CurrentCulture.GetSkillName(entry.Value.effect.getSourceId()) 
-                    : Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId()))))
+                    (entry.Value.Effect.isSkill() 
+                    ? Client.CurrentCulture.GetSkillName(entry.Value.Effect.getSourceId()) 
+                    : Client.CurrentCulture.GetItemName(entry.Value.Effect.getSourceId()))))
             );
         }
 
@@ -137,7 +137,7 @@ namespace Application.Core.Game.Players
 
             foreach (var item in toCancel)
             {
-                cancelEffect(item.effect, false);
+                cancelEffect(item.Effect, false);
             }
         }
 
@@ -165,7 +165,7 @@ namespace Application.Core.Game.Players
                 {
                     foreach (var mbse in bpl.Value)
                     {
-                        mseBuffs.AddOrUpdate(mbse.Value.effect, mbse.Value.startTime);
+                        mseBuffs.AddOrUpdate(mbse.Value.Effect, mbse.Value.startTime);
                     }
                 }
 
@@ -206,20 +206,20 @@ namespace Application.Core.Game.Players
             List<BuffStateValuePair> effectsToCancel = new(stats.Count);
             foreach (var stat in stats)
             {
-                int sourceid = stat.Value.effect.getBuffSourceId();
+                int sourceid = stat.Value.Effect.getBuffSourceId();
 
                 BuffStat mbs = stat.Key;
                 effectsToCancel.Add(new(mbs, stat.Value));
 
 
-                if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
+                if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
                     mbsvh.Status = TickableStatus.Remove;
 
                     if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
                     {
-                        int summonId = mbsvh.effect.getSourceId();
+                        int summonId = mbsvh.Effect.getSourceId();
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
@@ -286,7 +286,7 @@ namespace Application.Core.Game.Players
         {
             try
             {
-                return buffSource.FirstOrDefault().Value?.effect;
+                return buffSource.FirstOrDefault().Value?.Effect;
             }
             catch
             {
@@ -320,7 +320,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mse in ActiveEffects.Values)
             {
-                activeEffects.Add(mse.effect);
+                activeEffects.Add(mse.Effect);
             }
 
             foreach (var buff in buffEffects.Values)
@@ -354,7 +354,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
-                    foreach (var statup in mbsvh.effect.getStatups())
+                    foreach (var statup in mbsvh.Effect.getStatups())
                     {
                         retrievedStats.Add(statup.BuffState);
                     }
@@ -387,7 +387,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(ombs);
                 if (mbsvh != null)
                 {
-                    buffstats = extractCurrentBuffStats(mbsvh.effect);
+                    buffstats = extractCurrentBuffStats(mbsvh.Effect);
                 }
             }
 
@@ -416,7 +416,7 @@ namespace Application.Core.Game.Players
 
             if (effect != null)
             {
-                cancelEffect(effect.effect, false);
+                cancelEffect(effect.Effect, false);
             }
         }
 
@@ -537,13 +537,13 @@ namespace Application.Core.Game.Players
                 {
                     var mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
 
-                    var lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
+                    var lpbe = buffEffects.GetValueOrDefault(mbsvh.Effect.getBuffSourceId());
                     lpbe?.Remove(it.Key);
                     buffEffectsCount.AddOrUpdate(it.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(it.Key) - 1));
 
                     if (lpbe == null || lpbe.Count == 0)
                     {
-                        buffEffects.Remove(mbsvh.effect.getBuffSourceId());
+                        buffEffects.Remove(mbsvh.Effect.getBuffSourceId());
                     }
                     extractedStatBuffs.AddOrUpdate(it.Key, mbsvh);
                 }
@@ -729,7 +729,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mbsvh in mbsvhList)
             {
-                StatEffect mse = mbsvh.effect;
+                StatEffect mse = mbsvh.Effect;
                 int buffSourceId = mse.getBuffSourceId();
                 if (isPriorityBuffSourceid(buffSourceId) && !hasActiveBuff(buffSourceId))
                 {
@@ -742,7 +742,7 @@ namespace Application.Core.Game.Players
 
                             // this shouldn't even be null...
                             //if (mbsvh != null) {
-                            yokeStats.AddOrUpdate(mbsvh, mbsvhe.effect);
+                            yokeStats.AddOrUpdate(mbsvh, mbsvhe.Effect);
                             //}
                         }
                     }
@@ -754,7 +754,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder mbsvhPriority = e.Key;
                 StatEffect mseActive = e.Value;
 
-                priorityUpdateEffects.Add(new(mseActive.getBuffSourceId(), new(mbsvhPriority.effect, mbsvhPriority.startTime)));
+                priorityUpdateEffects.Add(new(mseActive.getBuffSourceId(), new(mbsvhPriority.Effect, mbsvhPriority.startTime)));
             }
 
             return priorityUpdateEffects;
@@ -774,7 +774,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
-                    retrievedEffects.AddOrUpdate(mbsvh.effect.getBuffSourceId(), new(mbsvh.effect, mbsvh.startTime));
+                    retrievedEffects.AddOrUpdate(mbsvh.Effect.getBuffSourceId(), new(mbsvh.Effect, mbsvh.startTime));
                 }
 
                 maxBuffValue.AddOrUpdate(mbs, new(int.MinValue, null));
@@ -1037,7 +1037,7 @@ namespace Application.Core.Game.Players
 
                     if (active)
                     {
-                        if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.effect.getStatups().Count <= statMbsvh.effect.getStatups().Count))
+                        if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.Effect.getStatups().Count <= statMbsvh.Effect.getStatups().Count))
                         {
                             toDeploy.AddOrUpdate(statup.Key, statMbsvh);
                         }
@@ -1045,7 +1045,7 @@ namespace Application.Core.Game.Players
                         {
                             if (!isSingletonStatup(statup.Key))
                             {
-                                foreach (var mbs in mbsvh.effect.getStatups())
+                                foreach (var mbs in mbsvh.Effect.getStatups())
                                 {
                                     retrievedStats.Add(mbs.BuffState);
                                 }
@@ -1060,9 +1060,9 @@ namespace Application.Core.Game.Players
                 var updated = appliedStatups.Keys;
                 foreach (BuffStatValueHolder mbsvh in this.getAllStatups())
                 {
-                    if (isPriorityBuffSourceid(mbsvh.effect.getBuffSourceId()))
+                    if (isPriorityBuffSourceid(mbsvh.Effect.getBuffSourceId()))
                     {
-                        foreach (var p in mbsvh.effect.getStatups())
+                        foreach (var p in mbsvh.Effect.getStatups())
                         {
                             if (updated.Contains(p.BuffState))
                             {
@@ -1115,7 +1115,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mbsvh in allBuffs)
             {
-                if (mbsvh.effect.getBuffSourceId() == sourceid)
+                if (mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     return true;
                 }

@@ -17,10 +17,10 @@ namespace Application.Core.Game.Players.Tickables
         {
             _chr.UpdateStatsChunk(() =>
             {
-                if (_chr.ChangeHP(-effect.getX()))
+                if (_chr.ChangeHP(-Effect.getX()))
                 {
-                    _chr.sendPacket(PacketCreator.showOwnBuffEffect(effect.getSourceId(), 5));
-                    _chr.MapModel.broadcastMessage(_chr, PacketCreator.showBuffEffect(_chr.getId(), effect.getSourceId(), 5), false);
+                    _chr.sendPacket(PacketCreator.showOwnBuffEffect(Effect.getSourceId(), 5));
+                    _chr.MapModel.broadcastMessage(_chr, PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), false);
                 }
                 else
                 {

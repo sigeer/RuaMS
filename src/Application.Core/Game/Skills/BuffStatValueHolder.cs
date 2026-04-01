@@ -7,7 +7,7 @@ namespace Application.Core.Game.Skills
     public class BuffStatValueHolder: ILoopTickable, ILifedTickable
     {
         protected Player _chr;
-        public StatEffect effect;
+        public StatEffect Effect { get; }
         public long startTime;
         public int value;
         public bool bestApplied;
@@ -17,7 +17,7 @@ namespace Application.Core.Game.Skills
         public BuffStatValueHolder(Player chr, StatEffect effect, long startTime, long expiredAt, int value)
         {
             _chr = chr;
-            this.effect = effect;
+            this.Effect = effect;
             this.startTime = startTime;
             ExpiredAt = expiredAt;
             this.value = value;

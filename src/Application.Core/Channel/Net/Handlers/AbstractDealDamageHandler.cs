@@ -440,7 +440,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
                         player.UpdateStatsChunk(() =>
                         {
-                            player.ChangeHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
+                            player.ChangeHP((int)((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100.0));
                         });
                     }
                     else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
@@ -481,7 +481,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             if (skillLevel > 0)
                             {
                                 StatEffect mortal = mortalBlow.getEffect(skillLevel);
-                                if (monster.getHp() <= (monster.getStats().getHp() * mortal.getX()) / 100)
+                                if (monster.getHp() <= (int)(monster.getStats().getHp() * mortal.getX() / 100.0))
                                 {
                                     if (Randomizer.rand(1, 100) <= mortal.getY())
                                     {
@@ -555,7 +555,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         else
                         {
                             var skill = SkillFactory.GetSkillTrust(Paladin.HEAVENS_HAMMER);
-                            int HHDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100);
+                            var HHDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100.0);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (HHDmg / 5) + HHDmg * .8)), attack.skill, 1777);
                         }
                     }
@@ -568,7 +568,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         else
                         {
                             var skill = SkillFactory.GetSkillTrust(Aran.COMBO_TEMPEST);
-                            int TmpDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100);
+                            var TmpDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100.0);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (TmpDmg / 5) + TmpDmg * .8)), attack.skill, 0);
                         }
                     }
@@ -861,7 +861,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         int bonusDmgBuff = 100;
         foreach (var pbvh in chr.ActiveEffects)
         {
-            int bonusDmg = pbvh.Value.effect.getDamage() - 100;
+            int bonusDmg = pbvh.Value.Effect.getDamage() - 100;
             bonusDmgBuff += bonusDmg;
         }
 

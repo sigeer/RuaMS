@@ -39,5 +39,17 @@ namespace ServiceTest.Infrastructure
             var final = testStr.replaceFirst("%s", "qq").replaceFirst("%s", "ww");
             Assert.That(final, Is.EqualTo("qq&apos;s Meetballs: ww"));
         }
+
+
+        [TestCase("abc123", ExpectedResult = "abc, 123")]
+        [TestCase("abc123d", ExpectedResult = "abc123d")]
+        [TestCase("abc", ExpectedResult = "abc")]
+        [TestCase("123", ExpectedResult = "__123")]
+        [Test]
+        public string SplitSuffixNumberTest(string input)
+        {
+            var final = input.SplitSuffixNumber();
+            return string.Join(", ", final);
+        }
     }
 }

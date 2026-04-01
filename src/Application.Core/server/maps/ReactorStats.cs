@@ -33,6 +33,8 @@ public class ReactorStats
     private Point br;
     private Dictionary<sbyte, List<StateData>> stateInfo = new();
     private Dictionary<sbyte, int> timeoutInfo = new();
+    public string? Action { get; private set; }
+    public string[]? ActionName { get; private set; }
 
     public void setTL(Point tl)
     {
@@ -52,6 +54,12 @@ public class ReactorStats
     public Point getBR()
     {
         return br;
+    }
+
+    public void SetAction(string? action)
+    {
+        Action = action;
+        ActionName = action?.SplitSuffixNumber();
     }
 
     public void addState(sbyte state, List<StateData> data, int timeOut)
