@@ -57,8 +57,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity = [];
         SoldHistory = [];
         BlackList = [];
-
-        setMap(owner.getMap());
         Channel = owner.Channel;
 
         TypeName = "shop";
@@ -464,6 +462,8 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     {
         client.sendPacket(PacketCreator.updatePlayerShopBox(this));
     }
+
+    public Packet MakeSpawnPacket() => PacketCreator.updatePlayerShopBox(this);
 
     public override MapObjectType getType()
     {

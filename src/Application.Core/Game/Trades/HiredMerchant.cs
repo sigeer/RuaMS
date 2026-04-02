@@ -53,7 +53,6 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         ChannelServer = owner.getChannelServer();
         SourceItemId = item.getItemId();
         Title = desc;
-        setMap(owner.MapModel);
         Channel = owner.Channel;
         Commodity = [];
         SoldHistory = [];
@@ -576,6 +575,8 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }
+
+    public Packet MakeSpawnPacket() => PacketCreator.spawnHiredMerchantBox(this);
 
     public override string GetName()
     {

@@ -19,7 +19,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
     protected bool pickedUp = false, playerDrop;
     protected long dropTime;
     public Item? Item { get; }
-    public long ExpiredTime { get; }
+    public long ExpiredTime { get; private set; }
 
     public bool IsPartyDrop => this.party_ownerid != -1;
 
@@ -27,7 +27,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
     public long ExpiredAt => ExpiredTime;
     public bool IsExpired { get; private set; }
-    public long Next { get; }
+    public long Next { get; private set; }
 
     public TickableStatus Status { get; protected set; }
 
@@ -36,17 +36,12 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         setPosition(position);
         this.Item = item;
         this.dropper = dropper;
-        this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
         this.ownerClient = owner.getClient();
         this.meso = 0;
         this.type = type;
         this.playerDrop = playerDrop;
-
-        dropTime = dropper.getMap().ChannelServer.Node.getCurrentTime();
-        ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
-        Next = dropTime + 5_000;
     }
 
     /// <summary>
@@ -70,16 +65,12 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         setPosition(position);
         this.Item = null;
         this.dropper = dropper;
-        this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
         this.ownerClient = owner.getClient();
         this.meso = meso;
         this.type = type;
         this.playerDrop = playerDrop;
-
-        dropTime = dropper.getMap().ChannelServer.Node.getCurrentTime();
-        ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
     }
 
     public Item? getItem()
@@ -246,7 +237,11 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
     {
         base.setMap(map);
 
-        willHitReactor = MapModel.CanHitReactor(this);
+        dropTime = map.ChannelServer.Node.getCurrentTime();
+        ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
+        Next = dropTime + 5_000;
+
+        willHitReactor = map.CanHitReactor(this);
     }
 
     bool willHitReactor;

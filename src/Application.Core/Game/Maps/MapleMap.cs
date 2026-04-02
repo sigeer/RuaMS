@@ -21,18 +21,15 @@
  */
 
 
-using Acornima;
 using Application.Core.Channel;
 using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
-using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
@@ -44,8 +41,6 @@ using Application.Utility.Tickables;
 using client.autoban;
 using client.inventory;
 using client.status;
-using Google.Protobuf;
-using Microsoft.Net.Http.Headers;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.map;
@@ -65,7 +60,6 @@ public class MapleMap : IMap, INamedInstance
 
     protected ILogger log;
 
-
     private Dictionary<int, IMapObject> mapobjects = new();
     private HashSet<int> selfDestructives = new();
     protected List<SpawnPoint> monsterSpawn = new();
@@ -75,8 +69,6 @@ public class MapleMap : IMap, INamedInstance
     private Dictionary<int, Portal> portals;
     private Dictionary<string, int> environment = new();
 
-    private Queue<WeakReference<IMapObject>> registeredDrops = new();
-    private System.Threading.Channels.Channel<Action> statUpdateRunnables;
 
     private List<Rectangle> areas;
     public FootholdTree Footholds { get; }
@@ -88,7 +80,7 @@ public class MapleMap : IMap, INamedInstance
     private bool docked = false;
     bool pirateDocked = false;
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
-    public bool IsTrackedByEvent { get; set; }
+
     public bool AutoRespawn { get; set; }
 
     private string mapName;
@@ -99,9 +91,7 @@ public class MapleMap : IMap, INamedInstance
     private string onFirstUserEnter;
     private string onUserEnter;
     private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
-    private ScheduledFuture? itemMonitor = null;
-    private ScheduledFuture? characterStatUpdateTask = null;
-    private short itemMonitorTimeout;
+
     public TimeMob? TimeMob { get; set; }
     private bool _allowSummons = true; // All maps should have this true at the beginning
     private Player? mapOwner = null;
@@ -187,17 +177,8 @@ public class MapleMap : IMap, INamedInstance
 
         ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
 
-        statUpdateRunnables = System.Threading.Channels.Channel.CreateUnbounded<Action>();
-        Task.Run(async () =>
-        {
-            while (await statUpdateRunnables.Reader.WaitToReadAsync())
-            {
-                while (statUpdateRunnables.Reader.TryRead(out var action))
-                {
-                    action();
-                }
-            }
-        });
+        droppedItems = new(YamlConfig.config.server.ITEM_LIMIT_ON_MAP);
+        droppedItems.OnOverWrite += (s, o) => makeDisappearItemFromMap(o);
 
         AutoRespawn = eim == null;
         CommandLoop = new CommandLoop<IMap>(this);
@@ -281,115 +262,42 @@ public class MapleMap : IMap, INamedInstance
         return SourceTemplate.TimeLimit;
     }
 
-    public void setReactorState()
-    {
-        foreach (IMapObject o in getMapObjects())
-        {
-            if (o.getType() == MapObjectType.REACTOR && o is Reactor mr)
-            {
-                if (mr.getState() < 1)
-                {
-                    mr.resetReactorActions(1);
-                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
-                }
-            }
-        }
-    }
 
-    public bool isAllReactorState(int reactorId, int state)
-    {
-        foreach (var r in getAllReactors())
-        {
-            if (r.getId() == reactorId && r.getState() != state)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public void addPlayerNPCMapObject(IMapObject pnpcobject)
     {
-        this.mapobjects.AddOrUpdate(pnpcobject.getObjectId(), pnpcobject);
+        addMapObject(pnpcobject, false);
     }
 
-    public void addMapObject(IMapObject mapobject)
+    public void addMapObject(IMapObject mapobject, bool allocateMabObjectId = true)
     {
-        int curOID = getUsableOID();
-
-        mapobject.setObjectId(curOID);
-        this.mapobjects.AddOrUpdate(curOID, mapobject);
-    }
-
-    public void addSelfDestructive(Monster mob)
-    {
-        if (mob.getStats().selfDestruction() != null)
+        if (allocateMabObjectId)
         {
-            this.selfDestructives.Add(mob.getObjectId());
-        }
-    }
+            int curOID = getUsableOID();
 
-    public bool removeSelfDestructive(int mapobjectid)
-    {
-        return this.selfDestructives.Remove(mapobjectid);
+            mapobject.setObjectId(curOID);
+        }
+
+        this.mapobjects.AddOrUpdate(mapobject.getObjectId(), mapobject);
+        mapobject.setMap(this);
     }
 
     private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<Player, bool>? condition = null)
     {
-        List<Player> inRangeCharacters = new();
-        int curOID = getUsableOID();
+        addMapObject(mapobject);
 
-        mapobject.setObjectId(curOID);
-        this.mapobjects.AddOrUpdate(curOID, mapobject);
         foreach (Player chr in getAllPlayers())
         {
             if (condition == null || condition.Invoke(chr))
             {
                 if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
                 {
-                    inRangeCharacters.Add(chr);
                     chr.addVisibleMapObject(mapobject);
+                    packetbakery?.Invoke(chr.Client);
                 }
             }
         }
-
-        foreach (Player chr in inRangeCharacters)
-        {
-            packetbakery?.Invoke(chr.Client);
-        }
     }
-
-    //private void spawnRangedMapObject(IMapObject mapobject, DelayedPacketCreation packetbakery, SpawnCondition condition)
-    //{
-    //    List<Player> inRangeCharacters = new();
-
-    //    chrLock.EnterReadLock();
-    //    try
-    //    {
-    //        int curOID = getUsableOID();
-    //        mapobject.setObjectId(curOID);
-    //        foreach (Player chr in characters)
-    //        {
-    //            if (condition == null || (condition.canSpawn?.Invoke(chr) ?? false))
-    //            {
-    //                if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
-    //                {
-    //                    inRangeCharacters.Add(chr);
-    //                    chr.addVisibleMapObject(mapobject);
-    //                }
-    //            }
-    //        }
-    //    }
-    //    finally
-    //    {
-    //        chrLock.ExitReadLock();
-    //    }
-
-    //    foreach (Player chr in inRangeCharacters)
-    //    {
-    //        packetbakery.sendPackets?.Invoke(chr.getClient());
-    //    }
-    //}
 
     private int getUsableOID()
     {
@@ -527,6 +435,19 @@ public class MapleMap : IMap, INamedInstance
             }
         }
         return false;
+    }
+
+    public void addSelfDestructive(Monster mob)
+    {
+        if (mob.getStats().selfDestruction() != null)
+        {
+            this.selfDestructives.Add(mob.getObjectId());
+        }
+    }
+
+    public bool removeSelfDestructive(int mapobjectid)
+    {
+        return this.selfDestructives.Remove(mapobjectid);
     }
 
     private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, Player chr, IMapObject dropper, short dropDelay)
@@ -692,94 +613,6 @@ public class MapleMap : IMap, INamedInstance
         spawnDrop(drop, dropPos, reactor, chr, false, (chr.Party > 0 ? DropType.OwnerWithTeam : DropType.OnlyOwner), questid, dropDelay);
     }
 
-    private void stopItemMonitor()
-    {
-        itemMonitor?.cancel(false);
-        itemMonitor = null;
-
-        characterStatUpdateTask?.cancel(false);
-        characterStatUpdateTask = null;
-    }
-
-    private void cleanItemMonitor()
-    {
-        registeredDrops = new(registeredDrops.Where(x => x != null));
-    }
-
-    private void startItemMonitor()
-    {
-        if (itemMonitor != null)
-        {
-            return;
-        }
-
-        itemMonitor = ChannelServer.TimerManager.register(new MapTaskBase(this, "ItemMonitor", () =>
-        {
-            Send(m => m.ProcessItemMonitor());
-        }), YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
-
-
-        itemMonitorTimeout = 1;
-    }
-
-    public void ProcessItemMonitor()
-    {
-        if (characters.Count == 0)
-        {
-            if (itemMonitorTimeout == 0)
-            {
-                if (itemMonitor != null)
-                {
-                    stopItemMonitor();
-                }
-
-                return;
-            }
-            else
-            {
-                itemMonitorTimeout--;
-            }
-        }
-        else
-        {
-            itemMonitorTimeout = 1;
-        }
-
-        bool tryClean;
-
-        tryClean = registeredDrops.Count > 70;
-
-
-        if (tryClean)
-        {
-            cleanItemMonitor();
-        }
-    }
-
-    private bool hasItemMonitor()
-    {
-        return itemMonitor != null;
-    }
-
-    public void makeDisappearExpiredItemDrops()
-    {
-        List<MapItem> toDisappear = new();
-
-        long timeNow = ChannelServer.Node.getCurrentTime();
-
-        foreach (var it in getDroppedItems())
-        {
-            if (it.ExpiredTime < timeNow)
-            {
-                toDisappear.Add(it);
-            }
-        }
-
-        foreach (MapItem mmi in toDisappear)
-        {
-            makeDisappearItemFromMap(mmi);
-        }
-    }
 
     public List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<Player> partyMembers, Player? partyLeaver)
     {
@@ -861,68 +694,12 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, Player chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
-    {
-        var validPos = calcDropPos(dropPos, dropper.getPosition());
 
-        MapItem mdrop = new MapItem(idrop, validPos, dropper, chr, droptype, playerDrop, questid);
-        SpawnMapItem(mdrop, dropDelay);
-    }
-
-    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
-    {
-        var validPos = calcDropPos(position, dropper.getPosition());
-
-        MapItem mdrop = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
-        SpawnMapItem(mdrop, dropDelay);
-    }
-
-    void SpawnMapItem(MapItem mapItem, short dropDelay = 0)
-    {
-        spawnAndAddRangedMapObject(mapItem, c =>
-        {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, mapItem.getDropper().getPosition(), mapItem.getPosition(), (int)DropEnterFieldType.SpawnMapItem, dropDelay));
-        }, null);
-
-        instantiateItemDrop(mapItem);
-    }
-
-    public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
-    {
-        Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(item, droppos, dropper, owner, DropType.OwnerWithTeam, false);
-
-        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
-    }
-
-    public void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos)
-    {
-        Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(meso, droppos, dropper, owner, DropType.OwnerWithTeam, false);
-
-        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
-    }
 
     public Monster? getMonsterById(int id)
     {
         return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.getId() == id).FirstOrDefault();
     }
-
-
-    public int countReactors()
-    {
-        return getReactors().Count;
-    }
-
-    public List<IMapObject> getReactors()
-    {
-        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR);
-    }
-    public List<Reactor> getAllReactors()
-    {
-        return GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR);
-    }
-
     public int countMonster(int id)
     {
         return countMonster(id, id);
@@ -1116,6 +893,174 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
+
+    private Dictionary<int, IMapObject> getCopyMapObjects()
+    {
+        return new(mapobjects);
+    }
+
+    #region NPC
+    public void SpawnNpc(int npcId, Point pos)
+    {
+        var npc = LifeFactory.Instance.getNPC(npcId);
+        if (npc != null)
+        {
+            npc.setPosition(pos);
+            npc.setCy(pos.Y);
+            npc.setRx0(pos.X + 50);
+            npc.setRx1(pos.X - 50);
+            npc.setFh(Footholds.FindBelowFoothold(pos)!.getId());
+
+            addMapObject(npc);
+            broadcastMessage(PacketCreator.spawnNPC(npc));
+        }
+    }
+    public NPC? getNPCById(int id)
+    {
+        foreach (IMapObject obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.NPC)
+            {
+                NPC npc = (NPC)obj;
+                if (npc.getId() == id)
+                {
+                    return npc;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public bool containsNPC(int npcid)
+    {
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.NPC)
+            {
+                if (((NPC)obj).getId() == npcid)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void destroyNPC(int npcid)
+    {
+        // assumption: there's at most one of the same NPC in a map.
+        var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
+
+        foreach (IMapObject obj in npcs)
+        {
+            if (((NPC)obj).getId() == npcid)
+            {
+                broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
+                broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
+
+                removeMapObject(obj.getObjectId());
+            }
+        }
+    }
+
+    #endregion
+
+    public IMapObject? getMapObject(int oid)
+    {
+        return mapobjects.GetValueOrDefault(oid);
+    }
+
+    /**
+     * returns a monster with the given oid, if no such monster exists returns
+     * null
+     *
+     * @param oid
+     * @return
+     */
+    public Monster? getMonsterByOid(int oid)
+    {
+        IMapObject? mmo = getMapObject(oid);
+        return mmo as Monster;
+    }
+
+    #region Reactor
+    public void spawnReactor(Reactor reactor)
+    {
+        spawnAndAddRangedMapObject(reactor, c => c.sendPacket(reactor.makeSpawnData()));
+    }
+
+    public int countReactors()
+    {
+        return getReactors().Count;
+    }
+
+    public List<IMapObject> getReactors()
+    {
+        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR);
+    }
+    public List<Reactor> getAllReactors()
+    {
+        return GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR);
+    }
+    public Reactor? getReactorByOid(int oid)
+    {
+        IMapObject? mmo = getMapObject(oid);
+        return mmo as Reactor;
+    }
+
+    public Reactor? getReactorById(int Id)
+    {
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                if (((Reactor)obj).getId() == Id)
+                {
+                    return (Reactor)obj;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Reactor> getReactorsByIdRange(int first, int last)
+    {
+        List<Reactor> list = new();
+
+
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                Reactor mr = (Reactor)obj;
+
+                if (mr.getId() >= first && mr.getId() <= last)
+                {
+                    list.Add(mr);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    public Reactor? getReactorByName(string name)
+    {
+
+        foreach (IMapObject obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                if (((Reactor)obj).getName().Equals(name))
+                {
+                    return (Reactor)obj;
+                }
+            }
+        }
+        return null;
+    }
+
     public bool CanHitReactor(MapItem mapItem)
     {
         foreach (var item in mapobjects.Values.AsValueEnumerable())
@@ -1245,158 +1190,37 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    private Dictionary<int, IMapObject> getCopyMapObjects()
+    public void setReactorState()
     {
-        return new(mapobjects);
-    }
-
-    public NPC? getNPCById(int id)
-    {
-        foreach (IMapObject obj in getMapObjects())
+        foreach (IMapObject o in getMapObjects())
         {
-            if (obj.getType() == MapObjectType.NPC)
+            if (o.getType() == MapObjectType.REACTOR && o is Reactor mr)
             {
-                NPC npc = (NPC)obj;
-                if (npc.getId() == id)
+                if (mr.getState() < 1)
                 {
-                    return npc;
+                    mr.resetReactorActions(1);
+                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
                 }
             }
         }
-
-        return null;
     }
 
-    public bool containsNPC(int npcid)
+    public bool isAllReactorState(int reactorId, int state)
     {
-        foreach (var obj in getMapObjects())
+        foreach (var r in getAllReactors())
         {
-            if (obj.getType() == MapObjectType.NPC)
+            if (r.getId() == reactorId && r.getState() != state)
             {
-                if (((NPC)obj).getId() == npcid)
-                {
-                    return true;
-                }
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
-    public void destroyNPC(int npcid)
-    {
-        // assumption: there's at most one of the same NPC in a map.
-        var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
-
-        foreach (IMapObject obj in npcs)
-        {
-            if (((NPC)obj).getId() == npcid)
-            {
-                broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
-                broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
-
-                removeMapObject(obj.getObjectId());
-            }
-        }
-    }
-
-    public IMapObject? getMapObject(int oid)
-    {
-        return mapobjects.GetValueOrDefault(oid);
-    }
-
-    /**
-     * returns a monster with the given oid, if no such monster exists returns
-     * null
-     *
-     * @param oid
-     * @return
-     */
-    public Monster? getMonsterByOid(int oid)
-    {
-        IMapObject? mmo = getMapObject(oid);
-        return mmo as Monster;
-    }
-
-    public Reactor? getReactorByOid(int oid)
-    {
-        IMapObject? mmo = getMapObject(oid);
-        return mmo as Reactor;
-    }
-
-    public Reactor? getReactorById(int Id)
-    {
-        foreach (var obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                if (((Reactor)obj).getId() == Id)
-                {
-                    return (Reactor)obj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public List<Reactor> getReactorsByIdRange(int first, int last)
-    {
-        List<Reactor> list = new();
+    #endregion
 
 
-        foreach (var obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                Reactor mr = (Reactor)obj;
 
-                if (mr.getId() >= first && mr.getId() <= last)
-                {
-                    list.Add(mr);
-                }
-            }
-        }
-
-        return list;
-    }
-
-    public Reactor? getReactorByName(string name)
-    {
-
-        foreach (IMapObject obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                if (((Reactor)obj).getName().Equals(name))
-                {
-                    return (Reactor)obj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void spawnMonsterOnGroundBelow(int id, int x, int y)
-    {
-        var mob = LifeFactory.Instance.getMonster(id);
-        spawnMonsterOnGroundBelow(mob, new Point(x, y));
-    }
-
-    public void spawnMonsterOnGroundBelow(Monster? mob, Point pos)
-    {
-        if (mob == null)
-            return;
-
-        Point spos = new Point(pos.X, pos.Y - 1);
-        var calcedPos = calcPointBelow(spos);
-        if (calcedPos != null)
-        {
-            spos = calcedPos.Value;
-            spos.Y--;
-            mob.setPosition(spos);
-            spawnMonster(mob);
-        }
-
-    }
     /// <summary>
     /// 生成地图boss
     /// </summary>
@@ -1492,6 +1316,29 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
+    #region Monster
+    public void spawnMonsterOnGroundBelow(int id, int x, int y)
+    {
+        var mob = LifeFactory.Instance.getMonster(id);
+        spawnMonsterOnGroundBelow(mob, new Point(x, y));
+    }
+
+    public void spawnMonsterOnGroundBelow(Monster? mob, Point pos)
+    {
+        if (mob == null)
+            return;
+
+        Point spos = new Point(pos.X, pos.Y - 1);
+        var calcedPos = calcPointBelow(spos);
+        if (calcedPos != null)
+        {
+            spos = calcedPos.Value;
+            spos.Y--;
+            mob.setPosition(spos);
+            spawnMonster(mob);
+        }
+
+    }
     private List<SpawnPoint> getMonsterSpawn()
     {
         return new(monsterSpawn);
@@ -1526,11 +1373,9 @@ public class MapleMap : IMap, INamedInstance
         }
 
         monster.changeDifficulty(difficulty, isPq);
-
-        monster.setMap(this);
-        EventInstanceManager?.registerMonster(monster);
-
         spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, true)), null);
+
+        EventInstanceManager?.registerMonster(monster);
 
         monster.aggroUpdateController();
         updateBossSpawn(monster);
@@ -1552,7 +1397,6 @@ public class MapleMap : IMap, INamedInstance
 
     public void spawnMonsterWithEffect(Monster monster, int effect, Point pos)
     {
-        monster.setMap(this);
         Point spos = new Point(pos.X, pos.Y - 1);
         var d = calcPointBelow(spos);
         if (d == null)
@@ -1580,7 +1424,6 @@ public class MapleMap : IMap, INamedInstance
 
     public void spawnFakeMonster(Monster monster)
     {
-        monster.setMap(this);
         monster.setFake(true);
         spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
 
@@ -1598,12 +1441,14 @@ public class MapleMap : IMap, INamedInstance
         monster.aggroUpdateController();
         updateBossSpawn(monster);
     }
-
-    public void spawnReactor(Reactor reactor)
+    public void ProcessMonster(Action<Monster> action)
     {
-        reactor.setMap(this);
-        spawnAndAddRangedMapObject(reactor, c => c.sendPacket(reactor.makeSpawnData()));
+        ProcessMapObject(x => x.getType() == MapObjectType.MONSTER, o =>
+        {
+            action((Monster)o);
+        });
     }
+    #endregion
 
     public void spawnDoor(DoorObject door)
     {
@@ -1653,6 +1498,7 @@ public class MapleMap : IMap, INamedInstance
         broadcastMessage(kite.makeSpawnData());
     }
 
+    #region MapItem
     public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
     {
         spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
@@ -1668,19 +1514,65 @@ public class MapleMap : IMap, INamedInstance
         }
 
         Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
+        MapItem mapItem = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
 
-        spawnAndAddRangedMapObject(mdrop, c =>
+        spawnAndAddRangedMapObject(mapItem, c =>
         {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, 0));
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), droppos, (int)DropEnterFieldType.SpawnMapItem, 0));
         }, null);
 
         /// 不明，对比<see cref="spawnDrop"/> 多出来的一段 是否可以移除？
-
-        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 0);
-
-        instantiateItemDrop(mdrop);
+        broadcastItemDropMessage(mapItem, dropper.getPosition(), droppos, 0);
     }
+    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, Player chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
+    {
+        var validPos = calcDropPos(dropPos, dropper.getPosition());
+
+        MapItem mdrop = new MapItem(idrop, validPos, dropper, chr, droptype, playerDrop, questid);
+        SpawnMapItem(mdrop, dropDelay);
+    }
+
+    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
+    {
+        var validPos = calcDropPos(position, dropper.getPosition());
+
+        MapItem mdrop = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
+        SpawnMapItem(mdrop, dropDelay);
+    }
+
+    void SpawnMapItem(MapItem mapItem, short dropDelay = 0)
+    {
+        spawnAndAddRangedMapObject(mapItem, c =>
+        {
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, mapItem.getDropper().getPosition(), mapItem.getPosition(), (int)DropEnterFieldType.SpawnMapItem, dropDelay));
+        }, null);
+    }
+
+    public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
+    {
+        Point droppos = calcDropPos(pos, dropper.getPosition());
+        MapItem mdrop = new MapItem(item, droppos, dropper, owner, DropType.OwnerWithTeam, false);
+
+        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, (int)DropEnterFieldType.Destroy, rangedFrom: mdrop.getPosition());
+    }
+
+    public void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos)
+    {
+        Point droppos = calcDropPos(pos, dropper.getPosition());
+        MapItem mdrop = new MapItem(meso, droppos, dropper, owner, DropType.OwnerWithTeam, false);
+
+        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, (int)DropEnterFieldType.Destroy, rangedFrom: mdrop.getPosition());
+    }
+    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, Point? rangedFrom = null, short dropDelay = 0)
+    {
+        Broadcast(-1, rangedFrom == null ? double.PositiveInfinity : getRangedDistance(), rangedFrom, chr =>
+        {
+            chr.sendPacket(PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay));
+        });
+    }
+    #endregion
+
+
 
     private void registerMapSchedule(IWorldChannelCommand r, long delay)
     {
@@ -1697,7 +1589,6 @@ public class MapleMap : IMap, INamedInstance
         MapEffect = new MapEffect(msg, itemId, ChannelServer.Node.getCurrentTime() + time);
         broadcastMessage(MapEffect.makeStartData());
     }
-
 
     public Portal getRandomPlayerSpawnpoint()
     {
@@ -1832,50 +1723,6 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
-    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, double rangeSq = double.PositiveInfinity, Point? rangedFrom = null, short dropDelay = 0)
-    {
-        Broadcast(-1, rangeSq, rangedFrom, chr =>
-        {
-            chr.sendPacket(PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay));
-        });
-    }
-
-    public void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
-    {
-        broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, false);
-    }
-
-    public void broadcastGMSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
-    {
-        broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, true);
-    }
-
-    private void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField, bool gmBroadcast)
-    {
-        if (gmBroadcast)
-        {
-            foreach (Player chr in getAllPlayers())
-            {
-                if (chr.isGM())
-                {
-                    if (chr != source)
-                    {
-                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
-                    }
-                }
-            }
-        }
-        else
-        {
-            foreach (Player chr in getAllPlayers())
-            {
-                if (chr != source)
-                {
-                    chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
-                }
-            }
-        }
-    }
 
     public void broadcastUpdateCharLookMessage(Player source, Player player)
     {
@@ -1910,52 +1757,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    private void sendObjectPlacement(IChannelClient c)
-    {
-        var allMapObjects = getMapObjects();
-
-        var chr = c.OnlinedCharacter;
-        var chrPosition = chr.getPosition();
-        var rangeDistance = getRangedDistance();
-
-        List<int> removedSummonObjects = new List<int>();
-
-        foreach (var o in allMapObjects)
-        {
-            if (o.getType() == MapObjectType.SUMMON && o is Summon summon)
-            {
-                if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
-                {
-                    removedSummonObjects.Add(o.getObjectId());
-                    continue;
-                }
-            }
-
-            if (isNonRangedType(o.getType()))
-            {
-                o.sendSpawnData(c);
-            }
-
-            // rangedMapobjectTypes 和 NonRangedType都包含了NPC
-            if (IsObjectInRange(o, chrPosition, rangeDistance, MapGlobalData.rangedMapobjectTypes))
-            {
-                if (o.getType() == MapObjectType.REACTOR && o is Reactor reactor && !reactor.isAlive())
-                    continue;
-
-                o.sendSpawnData(chr.Client);
-                chr.addVisibleMapObject(o);
-
-                if (o.getType() == MapObjectType.MONSTER && o is Monster monster)
-                    monster.aggroUpdateController();
-            }
-        }
-
-        if (removedSummonObjects.Count > 0)
-        {
-            RemoveMapObjects(removedSummonObjects);
-        }
-    }
-
 
     public List<IMapObject> getMapObjects()
     {
@@ -1975,15 +1776,6 @@ public class MapleMap : IMap, INamedInstance
                 action(item);
         }
     }
-
-    public void ProcessMonster(Action<Monster> action)
-    {
-        ProcessMapObject(x => x.getType() == MapObjectType.MONSTER, o =>
-        {
-            action((Monster)o);
-        });
-    }
-
 
     public List<IMapObject> GetMapObjects(Func<IMapObject, bool> func)
     {
@@ -2125,8 +1917,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-
-
     private static void updateMapObjectVisibility(Player chr, IMapObject mo)
     {
         if (!chr.isMapObjectVisible(mo))
@@ -2153,44 +1943,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void movePlayer(Player player, Point newPosition)
-    {
-        player.setPosition(newPosition);
-
-        try
-        {
-            IMapObject[] visibleObjects = player.getVisibleMapObjects();
-
-            var mapObjects = getCopyMapObjects();
-            foreach (IMapObject mo in visibleObjects)
-            {
-                if (mo != null)
-                {
-                    if (mapObjects.GetValueOrDefault(mo.getObjectId()) == mo)
-                    {
-                        updateMapObjectVisibility(player, mo);
-                    }
-                    else
-                    {
-                        player.removeVisibleMapObject(mo);
-                    }
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-
-        foreach (var mo in getMapObjectsInRange(player.getPosition(), getRangedDistance(), MapGlobalData.rangedMapobjectTypes))
-        {
-            if (!player.isMapObjectVisible(mo))
-            {
-                mo.sendSpawnData(player.Client);
-                player.addVisibleMapObject(mo);
-            }
-        }
-    }
 
     public void toggleEnvironment(string ms)
     {
@@ -2283,81 +2035,7 @@ public class MapleMap : IMap, INamedInstance
         return getAllPlayers().FirstOrDefault(x => x.getName().Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public bool makeDisappearItemFromMap(IMapObject? mapobj)
-    {
-        if (mapobj is MapItem o)
-        {
-            return makeDisappearItemFromMap(o);
-        }
-        else
-        {
-            return mapobj == null;  // no drop to make disappear...
-        }
-    }
 
-    public bool makeDisappearItemFromMap(MapItem mapitem)
-    {
-        if (mapitem != null && mapitem == getMapObject(mapitem.getObjectId()))
-        {
-
-            if (mapitem.isPickedUp())
-            {
-                return true;
-            }
-
-            pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), DropLeaveFieldType.Expired, 0), mapitem);
-            return true;
-        }
-
-        return false;
-    }
-
-    //public class MobLootEntry : AbstractRunnable
-    //{
-
-    //    private byte droptype;
-    //    private int mobpos;
-    //    private int chRate;
-    //    private Point pos;
-    //    short delay;
-    //    private List<MonsterDropEntry> dropEntry;
-    //    private List<MonsterDropEntry> visibleQuestEntry;
-    //    private List<MonsterDropEntry> otherQuestEntry;
-    //    private List<MonsterGlobalDropEntry> globalEntry;
-    //    private Player chr;
-    //    private Monster mob;
-    //    IMap _map;
-    //    public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, Player chr, Monster mob)
-    //    {
-    //        _map = map;
-    //        this.droptype = droptype;
-    //        this.mobpos = mobpos;
-    //        this.chRate = chRate;
-    //        this.pos = pos;
-    //        this.delay = delay;
-    //        this.dropEntry = dropEntry;
-    //        this.visibleQuestEntry = visibleQuestEntry;
-    //        this.otherQuestEntry = otherQuestEntry;
-    //        this.globalEntry = globalEntry;
-    //        this.chr = chr;
-    //        this.mob = mob;
-    //    }
-
-    //    public override void HandleRun()
-    //    {
-    //        byte d = 1;
-
-    //        // Normal Drops
-    //        d = _map.dropItemsFromMonsterOnMap(dropEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
-
-    //        // Global Drops
-    //        d = _map.dropGlobalItemsFromMonsterOnMap(globalEntry, pos, d, droptype, mobpos, chr, mob, delay);
-
-    //        // Quest Drops
-    //        d = _map.dropItemsFromMonsterOnMap(visibleQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
-    //        _map.dropItemsFromMonsterOnMap(otherQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
-    //    }
-    //}
 
 
     private void instanceMapFirstSpawn()
@@ -2601,7 +2279,7 @@ public class MapleMap : IMap, INamedInstance
 
                         else if (item is MapItem mapItem)
                         {
-                            makeDisappearItemFromMap(item);
+                            makeDisappearItemFromMap(mapItem);
                         }
                     }
                 }
@@ -2701,8 +2379,7 @@ public class MapleMap : IMap, INamedInstance
     {
         ProcessMapObject(x => x.getType() == MapObjectType.ITEM, i =>
         {
-            this.broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), DropLeaveFieldType.Expired, 0));
-            unregisterItemDrop((MapItem)i);
+            pickItemDrop(PacketCreator.removeItemFromMap(i.getObjectId(), DropLeaveFieldType.Expired, 0), (MapItem)i);
         });
     }
 
@@ -2853,7 +2530,7 @@ public class MapleMap : IMap, INamedInstance
     }
 
     public void spawnHorntailOnGroundBelow(Point targetPoint)
-    {   
+    {
         // ayy lmao
         var htIntro = LifeFactory.Instance.getMonster(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
@@ -3069,26 +2746,6 @@ public class MapleMap : IMap, INamedInstance
     }
 
 
-    public void registerCharacterStatUpdate(Action r)
-    {
-        statUpdateRunnables.Writer.TryWrite(r);
-    }
-    public int _activeCounter;
-    public bool IsActive()
-    {
-        if (_hasLongLifeMob)
-            return true;
-
-        var exceptTypes = new List<MapObjectType> { MapObjectType.MONSTER, MapObjectType.NPC, MapObjectType.PLAYER_NPC, MapObjectType.REACTOR };
-        var isActive = GetMapObjects(x => !exceptTypes.Contains(x.getType())).Count > 0;
-        if (isActive)
-            _activeCounter = 5;
-        else
-            _activeCounter--;
-
-        return _activeCounter >= 0;
-    }
-
     bool disposed = false;
     public virtual void Dispose()
     {
@@ -3102,7 +2759,6 @@ public class MapleMap : IMap, INamedInstance
         clearMapObjects();
 
         ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;
-        statUpdateRunnables.Writer.Complete();
 
         EventInstanceManager = null;
         portals.Clear();
@@ -3113,22 +2769,50 @@ public class MapleMap : IMap, INamedInstance
 
         aggroMonitor.dispose();
 
-        if (itemMonitor != null)
-        {
-            itemMonitor.cancel(false);
-            itemMonitor = null;
-        }
-
-        if (characterStatUpdateTask != null)
-        {
-            characterStatUpdateTask.cancel(false);
-            characterStatUpdateTask = null;
-        }
         CommandLoop.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     #region Objects: Player
     private Dictionary<int, Player> characters = new();
+
+    public void movePlayer(Player player, Point newPosition)
+    {
+        player.setPosition(newPosition);
+
+        try
+        {
+            IMapObject[] visibleObjects = player.getVisibleMapObjects();
+
+            var mapObjects = getCopyMapObjects();
+            foreach (IMapObject mo in visibleObjects)
+            {
+                if (mo != null)
+                {
+                    if (mapObjects.GetValueOrDefault(mo.getObjectId()) == mo)
+                    {
+                        updateMapObjectVisibility(player, mo);
+                    }
+                    else
+                    {
+                        player.removeVisibleMapObject(mo);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error(e.ToString());
+        }
+
+        foreach (var mo in getMapObjectsInRange(player.getPosition(), getRangedDistance(), MapGlobalData.rangedMapobjectTypes))
+        {
+            if (!player.isMapObjectVisible(mo))
+            {
+                mo.sendSpawnData(player.Client);
+                player.addVisibleMapObject(mo);
+            }
+        }
+    }
     public int countPlayers()
     {
         return getAllPlayers().Count;
@@ -3180,11 +2864,11 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
+        addMapObject(chr, false);
+        GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
+
         chrSize = characters.Count;
 
-        itemMonitorTimeout = 1;
-
-        chr.setMap(this);
         chr.updateActiveEffects();
 
         chr.MapDamageNext = ChannelServer.Node.getCurrentTime() + chr.MapDamagePeriod;
@@ -3192,16 +2876,12 @@ public class MapleMap : IMap, INamedInstance
         MapScriptManager msm = ChannelServer.MapScriptManager;
         if (chrSize == 1)
         {
-            if (!hasItemMonitor())
-            {
-                startItemMonitor();
-            }
-
             if (onFirstUserEnter.Length != 0)
             {
                 msm.runMapScript(chr.getClient(), this, "onFirstUserEnter/" + onFirstUserEnter, true);
             }
         }
+
         if (onUserEnter.Length != 0)
         {
             if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
@@ -3211,6 +2891,7 @@ public class MapleMap : IMap, INamedInstance
 
             msm.runMapScript(chr.getClient(), this, "onUserEnter/" + onUserEnter, false);
         }
+
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
         {
             chr.cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
@@ -3226,7 +2907,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 Send(map =>
                 {
-                    map.FindPlayer(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
+                    map.getCharacterById(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
                 });
             }, travelTime);
         }
@@ -3239,7 +2920,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 Send(map =>
                 {
-                    map.FindPlayer(chr.Id)?.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
+                    map.getCharacterById(chr.Id)?.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
                 });
             }, travelTime);
         }
@@ -3252,7 +2933,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 Send(map =>
                 {
-                    map.FindPlayer(chr.Id)?.changeMap(MapId.ORBIS_STATION, 0);
+                    map.getCharacterById(chr.Id)?.changeMap(MapId.ORBIS_STATION, 0);
                 });
             }, travelTime);
         }
@@ -3265,7 +2946,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 Send(map =>
                 {
-                    map.FindPlayer(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
+                    map.getCharacterById(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
                 });
             }, travelTime);
         }
@@ -3324,8 +3005,6 @@ public class MapleMap : IMap, INamedInstance
             broadcastSpawnPlayerMapObjectMessage(chr, chr, true);
         }
 
-        sendObjectPlacement(chr.Client);
-
         if (isStartingEventMap() && !eventStarted())
         {
             chr.getMap().getPortal("join00")!.setPortalStatus(false);
@@ -3339,9 +3018,6 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.coconutScore(0, 0));
             chr.sendPacket(PacketCreator.showForcedEquip(chr.getTeam()));
         }
-
-        this.mapobjects.AddOrUpdate(chr.getObjectId(), chr);
-        GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
 
         // 访问商店/开店时应该没办法切换地图
         //if (chr.VisitingShop != null)
@@ -3369,8 +3045,7 @@ public class MapleMap : IMap, INamedInstance
         {
             var summon = chr.getSummonByKey(summonStat.getSourceId())!;
             summon.setPosition(chr.getPosition());
-            chr.getMap().spawnSummon(summon);
-            updateMapObjectVisibility(chr, summon);
+            spawnSummon(summon);
         }
         if (MapEffect != null)
         {
@@ -3409,29 +3084,110 @@ public class MapleMap : IMap, INamedInstance
         {
             chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
         }
-
+        sendObjectPlacement(chr.Client);
         OnPlayerEnter(chr);
+    }
+    private void sendObjectPlacement(IChannelClient c)
+    {
+        var allMapObjects = getMapObjects();
+
+        var chr = c.OnlinedCharacter;
+        var chrPosition = chr.getPosition();
+        var rangeDistance = getRangedDistance();
+
+        List<int> removedSummonObjects = new List<int>();
+
+        foreach (var o in allMapObjects)
+        {
+            if (o.getType() == MapObjectType.SUMMON && o is Summon summon)
+            {
+                if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
+                {
+                    removedSummonObjects.Add(o.getObjectId());
+                    continue;
+                }
+            }
+
+            if (isNonRangedType(o.getType()))
+            {
+                o.sendSpawnData(c);
+            }
+
+            // rangedMapobjectTypes 和 NonRangedType都包含了NPC
+            if (IsObjectInRange(o, chrPosition, rangeDistance, MapGlobalData.rangedMapobjectTypes))
+            {
+                if (o.getType() == MapObjectType.REACTOR && o is Reactor reactor && !reactor.isAlive())
+                    continue;
+
+                o.sendSpawnData(chr.Client);
+                chr.addVisibleMapObject(o);
+
+                if (o.getType() == MapObjectType.MONSTER && o is Monster monster)
+                    monster.aggroUpdateController();
+            }
+        }
+
+        if (removedSummonObjects.Count > 0)
+        {
+            RemoveMapObjects(removedSummonObjects);
+        }
+    }
+    public void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
+    {
+        broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, false);
+    }
+
+    public void broadcastGMSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField)
+    {
+        broadcastSpawnPlayerMapObjectMessage(source, player, enteringField, true);
+    }
+
+    void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField, bool gmBroadcast)
+    {
+        if (gmBroadcast)
+        {
+            foreach (Player chr in getAllPlayers())
+            {
+                if (chr.isGM())
+                {
+                    if (chr != source)
+                    {
+                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (Player chr in getAllPlayers())
+            {
+                if (chr != source)
+                {
+                    chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
+                }
+            }
+        }
     }
 
     public void removePlayer(Player chr)
     {
-        var cserv = chr.getClient().getChannelServer();
         chr.unregisterChairBuff();
 
 
         characters.Remove(chr.Id);
         GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
+
         if (XiGuai?.Controller == chr)
             XiGuai = null;
 
         if (MiniDungeonInfo.isDungeonMap(mapid))
         {
-            var mmd = cserv.getMiniDungeon(mapid);
+            var mmd = ChannelServer.getMiniDungeon(mapid);
             if (mmd != null)
             {
                 if (!mmd.unregisterPlayer(chr))
                 {
-                    cserv.removeMiniDungeon(mapid);
+                    ChannelServer.removeMiniDungeon(mapid);
                 }
             }
         }
@@ -3505,39 +3261,7 @@ public class MapleMap : IMap, INamedInstance
     #endregion
 
     #region Objects: MapItem
-    private List<MapItem> droppedItems = new();
-
-    private void instantiateItemDrop(MapItem mdrop)
-    {
-        if (droppedItems.Count >= YamlConfig.config.server.ITEM_LIMIT_ON_MAP)
-        {
-            IMapObject? mapobj;
-
-            do
-            {
-                mapobj = null;
-
-                while (mapobj == null)
-                {
-                    if (!registeredDrops.TryDequeue(out var item))
-                        break;
-
-                    if (item?.TryGetTarget(out var d) ?? false)
-                        mapobj = d;
-                }
-            } while (!makeDisappearItemFromMap(mapobj));
-        }
-
-
-        droppedItems.Add(mdrop);
-        registeredDrops.Enqueue(new(mdrop));
-    }
-
-    public void unregisterItemDrop(MapItem mdrop)
-    {
-        removeMapObject(mdrop);
-        droppedItems.Remove(mdrop);
-    }
+    private BoundedCollection<MapItem> droppedItems;
 
     private List<MapItem> getDroppedItems()
     {
@@ -3564,7 +3288,9 @@ public class MapleMap : IMap, INamedInstance
         broadcastMessage(pickupPacket, mdrop.getPosition());
 
         mdrop.setPickedUp(true);
-        unregisterItemDrop(mdrop);
+
+        removeMapObject(mdrop);
+        droppedItems.Remove(mdrop);
     }
 
     public int countItems()
@@ -3575,6 +3301,22 @@ public class MapleMap : IMap, INamedInstance
     public List<MapItem> getItems()
     {
         return getDroppedItems();
+    }
+
+    public bool makeDisappearItemFromMap(MapItem? mapitem)
+    {
+        if (mapitem != null && mapitem == getMapObject(mapitem.getObjectId()))
+        {
+            if (mapitem.isPickedUp())
+            {
+                return true;
+            }
+
+            pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), DropLeaveFieldType.Expired, 0), mapitem);
+            return true;
+        }
+
+        return false;
     }
     #endregion
 
@@ -3660,10 +3402,5 @@ public class MapleMap : IMap, INamedInstance
     public void Send(Func<IMap, Task> action)
     {
         Send(new AsyncMapDelegateCommand(action));
-    }
-
-    public Player? FindPlayer(int id)
-    {
-        return characters.GetValueOrDefault(id);
     }
 }

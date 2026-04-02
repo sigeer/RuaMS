@@ -2781,6 +2781,10 @@ public partial class Player
 
     public void respawn(int returnMap)
     {
+        if (returnMap == MapId.NONE)
+        {
+            returnMap = MapModel.Id;
+        }
         changeMap(returnMap);
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town

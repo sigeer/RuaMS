@@ -888,17 +888,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        var npc = LifeFactory.Instance.getNPC(npcId);
-        if (npc != null)
-        {
-            npc.setPosition(pos);
-            npc.setCy(pos.Y);
-            npc.setRx0(pos.X + 50);
-            npc.setRx1(pos.X - 50);
-            npc.setFh(map.Footholds.FindBelowFoothold(pos)!.getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-        }
+        map.SpawnNpc(npcId, pos);
     }
 
     public void spawnMonster(int id, int x, int y)

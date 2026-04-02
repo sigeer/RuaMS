@@ -119,7 +119,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         var actor = worldChannel.getPlayerStorage().GetCharacterActor(member);
                         actor?.Send(map =>
                         {
-                            map.FindPlayer(member)?.sendPacket(PacketCreator.messengerChat(res.Text));
+                            map.getCharacterById(member)?.sendPacket(PacketCreator.messengerChat(res.Text));
                         });
                     }
                 });

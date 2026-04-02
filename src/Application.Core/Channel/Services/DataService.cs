@@ -409,7 +409,7 @@ namespace Application.Core.Channel.Services
                 {
                     chr.MapModel.Send(map =>
                     {
-                        var mapChr = map.FindPlayer(chr.Id);
+                        var mapChr = map.getCharacterById(chr.Id);
                         if (mapChr != null)
                         {
                             if (o.LoginInfo.IsNewCommer)

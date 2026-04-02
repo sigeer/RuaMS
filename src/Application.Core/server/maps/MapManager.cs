@@ -143,15 +143,4 @@ public class MapManager : IDisposable, INamedInstance, ITickable
 
         this.evt = null;
     }
-
-    public void CheckActive()
-    {
-        foreach (var map in getMaps())
-        {
-            if (!map.Value.IsTrackedByEvent && map.Value.EventInstanceManager == null && !map.Value.IsActive())
-            {
-                RemoveMap(map.Key, out _);
-            }
-        }
-    }
 }

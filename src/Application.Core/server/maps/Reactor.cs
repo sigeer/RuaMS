@@ -488,11 +488,9 @@ public class Reactor : AbstractMapObject
                 {
                     return;
                 }
-                mapItem.setPickedUp(true);
-                MapModel.unregisterItemDrop(mapItem);
 
+                MapModel.pickItemDrop(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem);
                 setShouldCollect(false);
-                MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem.getPosition());
 
                 hitReactor(ownerClient);
 

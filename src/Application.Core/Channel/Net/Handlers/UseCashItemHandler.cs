@@ -664,7 +664,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 var mapActor = c.CurrentServer.getPlayerStorage().GetCharacterActor(player.Id);
                 mapActor?.Send(map =>
                 {
-                    var chr = map.FindPlayer(player.Id);
+                    var chr = map.getCharacterById(player.Id);
                     if (chr == null)
                     {
                         return;

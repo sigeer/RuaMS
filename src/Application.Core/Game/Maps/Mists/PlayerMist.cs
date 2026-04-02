@@ -20,7 +20,7 @@ namespace Application.Core.Game.Maps.Mists
         public TickableStatus Status { get; protected set; }
         public long ExpiredAt { get; }
 
-        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(owner.getMap(), mistPosition, 8)
+        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(mistPosition, 8)
         {
             this.OwnerId = owner.Id;
             this.Source = source;

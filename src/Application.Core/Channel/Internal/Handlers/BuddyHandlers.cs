@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             actor.Send(map =>
                             {
-                                map.FindPlayer(res.MasterId)?.Popup(nameof(ClientMessage.PlayerNotFound), res.TargetName);
+                                map.getCharacterById(res.MasterId)?.Popup(nameof(ClientMessage.PlayerNotFound), res.TargetName);
                             });
                             return;
                         }
@@ -40,7 +40,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             actor.Send(map =>
                             {
-                                var masterChr = map.FindPlayer(res.MasterId);
+                                var masterChr = map.getCharacterById(res.MasterId);
                                 if (masterChr != null)
                                 {
                                     masterChr.BuddyList.Set(worldChannel.Mapper.Map<BuddyCharacter>(res.Buddy));
@@ -57,7 +57,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         {
                             toActor.Send(map =>
                             {
-                                var chr = map.FindPlayer(res.Buddy.Id);
+                                var chr = map.getCharacterById(res.Buddy.Id);
                                 if (chr != null)
                                 {
                                     if (chr.BuddyList.Contains(res.Buddy.Id))
