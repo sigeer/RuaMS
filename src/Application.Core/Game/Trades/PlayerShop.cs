@@ -192,7 +192,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
-        using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShop:GainMeso");
+        using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShopGainMeso");
         activity?.SetTag("PlayerId", Owner.Id);
         activity?.SetTag("Player", Owner.Name);
         activity?.SetTag("Meso", meso);

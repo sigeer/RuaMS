@@ -2,6 +2,8 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeStartSyncAllPlayerCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeStartSyncAllPlayerCommand);
+
         bool _saveDB;
 
         public InvokeStartSyncAllPlayerCommand(bool saveDB)

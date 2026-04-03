@@ -3,6 +3,7 @@ namespace Application.Core.Channel.Commands
 
     internal class InvokeChannelBroadcastCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeChannelBroadcastCommand);
         IEnumerable<int> _receivers;
         Packet _packet;
 

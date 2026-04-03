@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterClearAttackCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterClearAttackCommand);
         Monster _mob;
         int _attackPos;
 
@@ -22,6 +23,7 @@ namespace Application.Core.Channel.Commands
 
     internal class MonsterClearSkillCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterClearSkillCommand);
         Monster _mob;
         MobSkill _mobSkill;
 
@@ -39,6 +41,7 @@ namespace Application.Core.Channel.Commands
 
     internal class MonsterClearEffectCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterClearEffectCommand);
         Monster _mob;
         Element _ele;
 

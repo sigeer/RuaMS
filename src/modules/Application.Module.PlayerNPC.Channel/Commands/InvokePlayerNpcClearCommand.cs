@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
@@ -12,6 +13,7 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 {
     internal class InvokePlayerNpcClearCommand: IWorldChannelCommand
     {
+        public string Name => nameof(InvokePlayerNpcClearCommand);
         RemoveAllPlayerNPCResponse data;
 
         public InvokePlayerNpcClearCommand(RemoveAllPlayerNPCResponse data)
@@ -19,9 +21,9 @@ namespace Application.Module.PlayerNPC.Channel.Commands
             this.data = data;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var mapFactory = ctx.WorldChannel.getMapFactory();
+            var mapFactory = ctx.getMapFactory();
 
             foreach (var mapId in data.MapIdList)
             {

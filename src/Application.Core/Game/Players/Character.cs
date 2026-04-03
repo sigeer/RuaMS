@@ -1261,6 +1261,15 @@ public partial class Player
         sendPacket(PacketCommon.serverNotice(type, message));
     }
 
+    public void Debug(int type, string message)
+    {
+        if (YamlConfig.config.server.USE_DEBUG)
+        {
+            TypedMessage(type, message);
+            Log.Debug(message);
+        }
+    }
+
     public void equipChanged()
     {
         MapModel.broadcastUpdateCharLookMessage(this, this);

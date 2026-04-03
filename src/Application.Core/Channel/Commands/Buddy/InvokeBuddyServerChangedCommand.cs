@@ -4,6 +4,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeBuddyPacketCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeBuddyPacketCommand);
         int id;
         IEnumerable<int> _ids;
         Packet p;

@@ -537,7 +537,7 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
@@ -605,9 +605,9 @@ namespace Application.Core.Login
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime());
         }
-        public void UpdateServerTime()
+        public void UpdateServerTime(long detal)
         {
-            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+            serverCurrentTime = currentTime.addAndGet(detal);
         }
 
         public void ForceUpdateServerTime()

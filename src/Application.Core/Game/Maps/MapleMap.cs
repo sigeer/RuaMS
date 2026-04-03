@@ -282,19 +282,16 @@ public class MapleMap : IMap, INamedInstance
         mapobject.setMap(this);
     }
 
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<Player, bool>? condition = null)
+    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery)
     {
         addMapObject(mapobject);
 
         foreach (Player chr in getAllPlayers())
         {
-            if (condition == null || condition.Invoke(chr))
+            if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
             {
-                if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
-                {
-                    chr.addVisibleMapObject(mapobject);
-                    packetbakery?.Invoke(chr.Client);
-                }
+                chr.addVisibleMapObject(mapobject);
+                packetbakery?.Invoke(chr.Client);
             }
         }
     }
@@ -448,6 +445,813 @@ public class MapleMap : IMap, INamedInstance
     public bool removeSelfDestructive(int mapobjectid)
     {
         return this.selfDestructives.Remove(mapobjectid);
+    }
+
+    public Monster? getMonsterById(int id)
+    {
+        return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.getId() == id).FirstOrDefault();
+    }
+    public int countMonster(int id)
+    {
+        return countMonster(id, id);
+    }
+
+    public int countMonster(int minid, int maxid)
+    {
+        return GetMapObjects(x => x.getType() == MapObjectType.MONSTER && x.GetSourceId() >= minid && x.GetSourceId() <= maxid).Count;
+    }
+
+    public int countMonsters()
+    {
+        return GetMapObjects(x => x.getType() == MapObjectType.MONSTER).Count;
+    }
+
+    public int countBosses()
+    {
+        return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
+    }
+
+    public void broadcastBalrogVictory(string leaderName)
+    {
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.", false);
+        });
+    }
+
+    public void broadcastHorntailVictory()
+    {
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!", false);
+        });
+    }
+
+    public void broadcastZakumVictory()
+    {
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6,
+                "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
+        });
+    }
+
+    public void broadcastPinkBeanVictory(int channel)
+    {
+        ChannelServer.NodeActor.Send(s =>
+        {
+            s.SendDropMessage(6,
+                "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!", false);
+        });
+    }
+
+    bool TryRemoveMapMonsterObject(Monster monster)
+    {
+        if (!removeMapObject(monster))
+        {
+            return false;
+        }
+
+        spawnedMonstersOnMap.decrementAndGet();
+        monster.disposeMapObject();
+        if (monster.hasBossHPBar())
+        {
+            // thanks resinate for noticing boss HPbar not clearing after mob defeat in certain scenarios
+            broadcastBossHpMessage(monster, monster.GetHashCode(), monster.makeBossHPBarPacket(), monster.getPosition());
+        }
+
+        return true;
+    }
+    public void RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0)
+    {
+        if (monster == null)
+        {
+            return;
+        }
+
+
+        if (TryRemoveMapMonsterObject(monster))
+        {
+            try
+            {
+                if (killer is Player chr)
+                {
+                    if (monster.getStats().getLevel() >= chr.getLevel() + 30 && !chr.isGM())
+                    {
+                        ChannelServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
+                    }
+
+                    int buff = monster.getBuffToGive();
+                    if (buff > -1)
+                    {
+                        ItemInformationProvider mii = ItemInformationProvider.getInstance();
+                        foreach (var character in getAllPlayers())
+                        {
+                            if (character.isAlive())
+                            {
+                                var statEffect = mii.getItemEffect(buff)!;
+                                character.sendPacket(PacketCreator.showOwnBuffEffect(buff, 1));
+                                broadcastMessage(character, PacketCreator.showBuffEffect(character.getId(), buff, 1), false);
+                                statEffect.applyTo(character);
+                            }
+                        }
+                    }
+
+
+                    var dropOwner = monster.killBy(chr);
+                    if (withDrops && dropOwner != null)
+                    {
+                        dropFromMonster(dropOwner, monster, false, dropDelay);
+                    }
+
+                    if (monster.hasBossHPBar())
+                    {
+                        foreach (Player mc in this.getAllPlayers())
+                        {
+                            if (mc.getTargetHpBarHash() == monster.GetHashCode())
+                            {
+                                mc.resetPlayerAggro();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                log.Error(e.ToString());
+            }
+            finally
+            {
+                // thanks resinate for pointing out a memory leak possibly from an exception thrown
+                monster.dispatchMonsterKilled(killer);
+                broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
+            }
+        }
+    }
+
+    public void killFriendlies(Monster mob)
+    {
+        this.RemoveMob(mob, getAllPlayers().ElementAtOrDefault(0), false);
+    }
+
+    public void killMonster(int mobId, bool withDrops = false)
+    {
+        Player? chr = getAllPlayers().ElementAtOrDefault(0);
+
+        ProcessMonster(mob =>
+        {
+            if (mob.getId() == mobId)
+            {
+                this.RemoveMob(mob, chr, withDrops);
+            }
+        });
+    }
+
+    public void killAllMonstersNotFriendly()
+    {
+        closeMapSpawnPoints();
+
+        ProcessMonster(monster =>
+        {
+            if (monster.getStats().isFriendly())
+            {
+                return;
+            }
+
+            RemoveMob(monster, null, false);
+        });
+    }
+
+    public void killAllMonsters()
+    {
+        closeMapSpawnPoints();
+
+        ProcessMonster(monster =>
+        {
+            RemoveMob(monster, null, false);
+        });
+    }
+
+
+
+    private Dictionary<int, IMapObject> getCopyMapObjects()
+    {
+        return new(mapobjects);
+    }
+
+    #region NPC
+    public void SpawnNpc(int npcId, Point pos)
+    {
+        var npc = LifeFactory.Instance.getNPC(npcId);
+        if (npc != null)
+        {
+            npc.setPosition(pos);
+            npc.setCy(pos.Y);
+            npc.setRx0(pos.X + 50);
+            npc.setRx1(pos.X - 50);
+            npc.setFh(Footholds.FindBelowFoothold(pos)!.getId());
+
+            addMapObject(npc);
+            broadcastMessage(PacketCreator.spawnNPC(npc));
+        }
+    }
+    public NPC? getNPCById(int id)
+    {
+        foreach (IMapObject obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.NPC)
+            {
+                NPC npc = (NPC)obj;
+                if (npc.getId() == id)
+                {
+                    return npc;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public bool containsNPC(int npcid)
+    {
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.NPC)
+            {
+                if (((NPC)obj).getId() == npcid)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void destroyNPC(int npcid)
+    {
+        // assumption: there's at most one of the same NPC in a map.
+        var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
+
+        foreach (IMapObject obj in npcs)
+        {
+            if (((NPC)obj).getId() == npcid)
+            {
+                broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
+                broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
+
+                removeMapObject(obj.getObjectId());
+            }
+        }
+    }
+
+    #endregion
+
+    public IMapObject? getMapObject(int oid)
+    {
+        return mapobjects.GetValueOrDefault(oid);
+    }
+
+
+    #region Objects:Reactor
+    public void spawnReactor(Reactor reactor)
+    {
+        spawnAndAddRangedMapObject(reactor, c => c.sendPacket(reactor.makeSpawnData()));
+    }
+
+    public int countReactors()
+    {
+        return getReactors().Count;
+    }
+
+    public List<IMapObject> getReactors()
+    {
+        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR);
+    }
+    public List<Reactor> getAllReactors()
+    {
+        return GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR);
+    }
+    public Reactor? getReactorByOid(int oid)
+    {
+        IMapObject? mmo = getMapObject(oid);
+        return mmo as Reactor;
+    }
+
+    public Reactor? getReactorById(int Id)
+    {
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                if (((Reactor)obj).getId() == Id)
+                {
+                    return (Reactor)obj;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Reactor> getReactorsByIdRange(int first, int last)
+    {
+        List<Reactor> list = new();
+
+
+        foreach (var obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                Reactor mr = (Reactor)obj;
+
+                if (mr.getId() >= first && mr.getId() <= last)
+                {
+                    list.Add(mr);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    public Reactor? getReactorByName(string name)
+    {
+
+        foreach (IMapObject obj in getMapObjects())
+        {
+            if (obj.getType() == MapObjectType.REACTOR)
+            {
+                if (((Reactor)obj).getName().Equals(name))
+                {
+                    return (Reactor)obj;
+                }
+            }
+        }
+        return null;
+    }
+
+    public bool CanHitReactor(MapItem mapItem)
+    {
+        foreach (var item in mapobjects.Values.AsValueEnumerable())
+        {
+            if (item is Reactor r && r.CheckHitItem(mapItem))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void TryHitReactorByMapItem(MapItem mapItem)
+    {
+        foreach (var item in mapobjects.Values.AsValueEnumerable())
+        {
+            if (item is Reactor r)
+            {
+                r.HitByMapItem(mapItem);
+                return;
+            }
+        }
+    }
+
+    public void destroyReactors(int first, int last)
+    {
+        List<Reactor> toDestroy = new();
+        var reactors = getReactors();
+
+        foreach (IMapObject obj in reactors)
+        {
+            Reactor mr = (Reactor)obj;
+            if (mr.getId() >= first && mr.getId() <= last)
+            {
+                toDestroy.Add(mr);
+            }
+        }
+
+        foreach (Reactor mr in toDestroy)
+        {
+            destroyReactor(mr.getObjectId());
+        }
+    }
+
+    public void destroyReactor(int oid)
+    {
+        var reactor = getReactorByOid(oid);
+
+        if (reactor != null)
+        {
+            if (reactor.destroy())
+            {
+                removeMapObject(reactor);
+            }
+        }
+    }
+
+    public void resetReactors()
+    {
+        List<Reactor> list = new();
+
+        foreach (IMapObject o in getMapObjects())
+        {
+            if (o.getType() == MapObjectType.REACTOR)
+            {
+                Reactor r = ((Reactor)o);
+                list.Add(r);
+            }
+        }
+
+        resetReactors(list);
+    }
+
+    public void resetReactors(List<Reactor> list)
+    {
+        foreach (Reactor r in list)
+        {
+            if (r.forceDelayedRespawn())
+            {  // thanks Conrad for suggesting reactor with delay respawning immediately
+                continue;
+            }
+
+            r.resetReactorActions(0);
+            r.setAlive(true);
+            broadcastMessage(PacketCreator.triggerReactor(r, 0));
+        }
+    }
+
+    public void shuffleReactors(int first = 0, int last = int.MaxValue)
+    {
+        List<Point> points = new();
+        var reactors = getReactors();
+        List<Reactor> targets = new();
+
+        foreach (var obj in reactors)
+        {
+            Reactor mr = (Reactor)obj;
+            if (mr.getId() >= first && mr.getId() <= last)
+            {
+                points.Add(mr.getPosition());
+                targets.Add(mr);
+            }
+        }
+        Collections.shuffle(points);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].setPosition(points[i]);
+        }
+    }
+
+    public void shuffleReactors(List<object> list)
+    {
+        List<Point> points = new();
+        List<IMapObject> listObjects = new();
+        List<Reactor> targets = new();
+
+        foreach (object ob in list)
+        {
+            if (ob is IMapObject mmo)
+            {
+                if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
+                {
+                    listObjects.Add(mmo);
+                }
+            }
+        }
+
+        foreach (var obj in listObjects)
+        {
+            Reactor mr = (Reactor)obj;
+
+            points.Add(mr.getPosition());
+            targets.Add(mr);
+        }
+        Collections.shuffle(points);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].setPosition(points[i]);
+        }
+    }
+
+    public void setReactorState()
+    {
+        foreach (IMapObject o in getMapObjects())
+        {
+            if (o.getType() == MapObjectType.REACTOR && o is Reactor mr)
+            {
+                if (mr.getState() < 1)
+                {
+                    mr.resetReactorActions(1);
+                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
+                }
+            }
+        }
+    }
+
+    public bool isAllReactorState(int reactorId, int state)
+    {
+        foreach (var r in getAllReactors())
+        {
+            if (r.getId() == reactorId && r.getState() != state)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    #endregion
+
+
+
+    /// <summary>
+    /// 生成地图boss
+    /// </summary>
+    /// <param name="bossId"></param>
+    /// <param name="mobTime"></param>
+    /// <param name="posX"></param>
+    /// <param name="posY"></param>
+    /// <param name="spawnMessage"></param>
+    public void SetupAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
+    {
+        if (_bossSp.TryGetValue(name, out var sp))
+        {
+            if (sp.shouldForceSpawn())
+            {
+                sp.SpawnMonster();
+            }
+            return;
+        }
+
+        var points = new List<RandomPoint>();
+        foreach (var item in rawList)
+        {
+            var dict = (IDictionary<string, object>)item;
+
+            var minX = Convert.ToInt32(dict.TryGetValue("minX", out var d1) ? d1 : 0);
+            var maxX = Convert.ToInt32(dict.TryGetValue("maxX", out var d2) ? d2 : 0);
+            var x = Convert.ToInt32(dict.TryGetValue("x", out var d3) ? d3 : 0);
+            var y = Convert.ToInt32(dict.TryGetValue("y", out var d4) ? d4 : 0);
+
+            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
+        }
+
+        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
+        _bossSp[name] = sp;
+        sp.SpawnMonster();
+    }
+
+
+
+    public Point getGroundBelow(Point pos)
+    {
+        Point spos = new Point(pos.X, pos.Y - 14); // Using -14 fixes spawning pets causing a lot of issues.
+        var calcedPos = calcPointBelow(spos);
+        if (calcedPos != null)
+        {
+            spos = calcedPos.Value;
+        }
+        spos.Y--;//shouldn't be null!
+        return spos;
+    }
+
+    public Point? getPointBelow(Point pos)
+    {
+        return calcPointBelow(pos);
+    }
+
+
+    #region Monster
+    public Monster? getMonsterByOid(int oid)
+    {
+        IMapObject? mmo = getMapObject(oid);
+        return mmo as Monster;
+    }
+    public void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos)
+    {
+        Point spos = getGroundBelow(pos);
+        mob.setPosition(spos);
+        spawnFakeMonster(mob);
+    }
+    public void spawnFakeMonster(Monster monster)
+    {
+        monster.setFake(true);
+        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
+
+        spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
+        addSelfDestructive(monster);
+    }
+    public void makeMonsterReal(Monster monster)
+    {
+        if (!monster.isFake())
+            return;
+        monster.setFake(false);
+        broadcastMessage(PacketCreator.makeMonsterReal(monster));
+        monster.aggroUpdateController();
+        updateBossSpawn(monster);
+    }
+    public void spawnMonsterOnGroundBelow(int id, int x, int y)
+    {
+        var mob = LifeFactory.Instance.getMonster(id);
+        spawnMonsterOnGroundBelow(mob, new Point(x, y));
+    }
+
+    public void spawnMonsterOnGroundBelow(Monster? mob, Point pos)
+    {
+        if (mob == null)
+            return;
+
+        Point spos = new Point(pos.X, pos.Y - 1);
+        var calcedPos = calcPointBelow(spos);
+        if (calcedPos != null)
+        {
+            spos = calcedPos.Value;
+            spos.Y--;
+            mob.setPosition(spos);
+            spawnMonster(mob);
+        }
+
+    }
+    private List<SpawnPoint> getMonsterSpawn()
+    {
+        return new(monsterSpawn);
+    }
+
+    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
+    {
+        foreach (SpawnPoint sp in getMonsterSpawn())
+        {
+            if (sp.getMonsterId() == id && sp.shouldForceSpawn())
+            {
+                sp.SpawnMonster(difficulty, isPq);
+            }
+        }
+    }
+
+
+    public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
+    {
+        foreach (SpawnPoint sp in getMonsterSpawn())
+        {
+            sp.SpawnMonster(difficulty, isPq);
+        }
+    }
+
+
+    public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
+    {
+        if (SourceTemplate.FixedMobCapacity != -1 && SourceTemplate.FixedMobCapacity == spawnedMonstersOnMap.get())
+        {
+            return;//PyPQ
+        }
+
+        monster.changeDifficulty(difficulty, isPq);
+        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, true)));
+
+        EventInstanceManager?.registerMonster(monster);
+
+        monster.aggroUpdateController();
+        updateBossSpawn(monster);
+
+        SetMonsterInfo(monster);
+
+        spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
+
+        addSelfDestructive(monster);
+    }
+
+    public void spawnDojoMonster(Monster monster)
+    {
+        Point[] pts = { new Point(140, 0), new Point(190, 7), new Point(187, 7) };
+        spawnMonsterWithEffect(monster, 15, pts[Randomizer.nextInt(3)]);
+    }
+
+    public void spawnMonsterWithEffect(Monster monster, int effect, Point pos)
+    {
+        Point spos = new Point(pos.X, pos.Y - 1);
+        var d = calcPointBelow(spos);
+        if (d == null)
+        {
+            return;
+        }
+        spos = d.Value;
+
+        EventInstanceManager?.registerMonster(monster);
+
+        spos.Y--;
+        monster.setPosition(spos);
+        monster.setSpawnEffect(effect);
+
+        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, true, effect)));
+
+        monster.aggroUpdateController();
+        updateBossSpawn(monster);
+
+        spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
+        addSelfDestructive(monster);
+    }
+    public void ProcessMonster(Action<Monster> action)
+    {
+        ProcessMapObject(x => x.getType() == MapObjectType.MONSTER, o =>
+        {
+            action((Monster)o);
+        });
+    }
+    #endregion
+
+    public void spawnDoor(DoorObject door)
+    {
+        spawnAndAddRangedMapObject(door, c =>
+        {
+            var chr = c.OnlinedCharacter;
+            if (chr != null)
+            {
+                door.sendSpawnData(c, false);
+                chr.addVisibleMapObject(door);
+            }
+        });
+    }
+
+    public Portal? getDoorPortal(int doorid)
+    {
+        Portal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
+        if (doorPortal == null)
+        {
+            log.Warning("[Door] {MapName} ({MapId}) does not contain door portalid {DoorId}", mapName, mapid, doorid);
+            return portals.GetValueOrDefault(0x80);
+        }
+
+        return doorPortal;
+    }
+
+    public void spawnSummon(Summon summon)
+    {
+        spawnAndAddRangedMapObject(summon, c =>
+        {
+            if (summon != null)
+            {
+                c.sendPacket(PacketCreator.spawnSummon(summon, true));
+            }
+        });
+    }
+
+    public void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery)
+    {
+        addMapObject(mist);
+        broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
+    }
+
+    public void spawnKite(Kite kite)
+    {
+        addMapObject(kite);
+        broadcastMessage(kite.makeSpawnData());
+    }
+
+    #region Objects:MapItem
+    public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
+    {
+        spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
+    }
+
+    private void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, DropType dropType, bool playerDrop)
+    {
+        if (FieldLimit.DROP_LIMIT.check(this.getFieldLimit()))
+        {
+            // thanks Conrad for noticing some maps shouldn't have loots available
+            this.disappearingItemDrop(dropper, owner, item, pos);
+            return;
+        }
+
+        Point droppos = calcDropPos(pos, dropper.getPosition());
+        MapItem mapItem = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
+
+        spawnAndAddRangedMapObject(mapItem, c =>
+        {
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), droppos, (int)DropEnterFieldType.SpawnMapItem, 0));
+        });
+
+        /// 不明，对比<see cref="spawnDrop"/> 多出来的一段 是否可以移除？
+        broadcastItemDropMessage(mapItem, dropper.getPosition(), droppos, 0);
+    }
+    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, Player chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
+    {
+        var validPos = calcDropPos(dropPos, dropper.getPosition());
+
+        MapItem mapItem = new MapItem(idrop, validPos, dropper, chr, droptype, playerDrop, questid);
+        spawnAndAddRangedMapObject(mapItem, c =>
+        {
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.SpawnMapItem, dropDelay));
+        });
+    }
+
+    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
+    {
+        var validPos = calcDropPos(position, dropper.getPosition());
+
+        MapItem mapItem = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
+        spawnAndAddRangedMapObject(mapItem, c =>
+        {
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.SpawnMapItem, dropDelay));
+        });
     }
 
     private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, byte dIndex, float chRate, DropType droptype, Player chr, IMapObject dropper, short dropDelay)
@@ -694,860 +1498,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-
-
-    public Monster? getMonsterById(int id)
-    {
-        return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.getId() == id).FirstOrDefault();
-    }
-    public int countMonster(int id)
-    {
-        return countMonster(id, id);
-    }
-
-    public int countMonster(int minid, int maxid)
-    {
-        return GetMapObjects(x => x.getType() == MapObjectType.MONSTER && x.GetSourceId() >= minid && x.GetSourceId() <= maxid).Count;
-    }
-
-    public int countMonsters()
-    {
-        return GetMapObjects(x => x.getType() == MapObjectType.MONSTER).Count;
-    }
-
-    public int countBosses()
-    {
-        return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
-    }
-
-    public void broadcastBalrogVictory(string leaderName)
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.", false);
-        });
-    }
-
-    public void broadcastHorntailVictory()
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!", false);
-        });
-    }
-
-    public void broadcastZakumVictory()
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6,
-                "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
-        });
-    }
-
-    public void broadcastPinkBeanVictory(int channel)
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6,
-                "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!", false);
-        });
-    }
-
-    bool TryRemoveMapMonsterObject(Monster monster)
-    {
-        if (!removeMapObject(monster))
-        {
-            return false;
-        }
-
-        spawnedMonstersOnMap.decrementAndGet();
-        monster.disposeMapObject();
-        if (monster.hasBossHPBar())
-        {
-            // thanks resinate for noticing boss HPbar not clearing after mob defeat in certain scenarios
-            broadcastBossHpMessage(monster, monster.GetHashCode(), monster.makeBossHPBarPacket(), monster.getPosition());
-        }
-
-        return true;
-    }
-    public void RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0)
-    {
-        if (monster == null)
-        {
-            return;
-        }
-
-
-        if (TryRemoveMapMonsterObject(monster))
-        {
-            try
-            {
-                if (killer is Player chr)
-                {
-                    if (monster.getStats().getLevel() >= chr.getLevel() + 30 && !chr.isGM())
-                    {
-                        ChannelServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
-                    }
-
-                    int buff = monster.getBuffToGive();
-                    if (buff > -1)
-                    {
-                        ItemInformationProvider mii = ItemInformationProvider.getInstance();
-                        foreach (var character in getAllPlayers())
-                        {
-                            if (character.isAlive())
-                            {
-                                var statEffect = mii.getItemEffect(buff)!;
-                                character.sendPacket(PacketCreator.showOwnBuffEffect(buff, 1));
-                                broadcastMessage(character, PacketCreator.showBuffEffect(character.getId(), buff, 1), false);
-                                statEffect.applyTo(character);
-                            }
-                        }
-                    }
-
-
-                    var dropOwner = monster.killBy(chr);
-                    if (withDrops && dropOwner != null)
-                    {
-                        dropFromMonster(dropOwner, monster, false, dropDelay);
-                    }
-
-                    if (monster.hasBossHPBar())
-                    {
-                        foreach (Player mc in this.getAllPlayers())
-                        {
-                            if (mc.getTargetHpBarHash() == monster.GetHashCode())
-                            {
-                                mc.resetPlayerAggro();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                log.Error(e.ToString());
-            }
-            finally
-            {
-                // thanks resinate for pointing out a memory leak possibly from an exception thrown
-                monster.dispatchMonsterKilled(killer);
-                broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
-            }
-        }
-    }
-
-    public void killFriendlies(Monster mob)
-    {
-        this.RemoveMob(mob, getAllPlayers().ElementAtOrDefault(0), false);
-    }
-
-    public void killMonster(int mobId, bool withDrops = false)
-    {
-        Player? chr = getAllPlayers().ElementAtOrDefault(0);
-
-        ProcessMonster(mob =>
-        {
-            if (mob.getId() == mobId)
-            {
-                this.RemoveMob(mob, chr, withDrops);
-            }
-        });
-    }
-
-    public void killAllMonstersNotFriendly()
-    {
-        closeMapSpawnPoints();
-
-        ProcessMonster(monster =>
-        {
-            if (monster.getStats().isFriendly())
-            {
-                return;
-            }
-
-            RemoveMob(monster, null, false);
-        });
-    }
-
-    public void killAllMonsters()
-    {
-        closeMapSpawnPoints();
-
-        ProcessMonster(monster =>
-        {
-            RemoveMob(monster, null, false);
-        });
-    }
-
-    public void TryHitReactorByMapItem(MapItem mapItem)
-    {
-        foreach (var item in mapobjects.Values.AsValueEnumerable())
-        {
-            if (item is Reactor r && r.CheckHitItem(mapItem))
-            {
-                r.HitByMapItem(mapItem);
-                return;
-            }
-        }
-    }
-
-
-    private Dictionary<int, IMapObject> getCopyMapObjects()
-    {
-        return new(mapobjects);
-    }
-
-    #region NPC
-    public void SpawnNpc(int npcId, Point pos)
-    {
-        var npc = LifeFactory.Instance.getNPC(npcId);
-        if (npc != null)
-        {
-            npc.setPosition(pos);
-            npc.setCy(pos.Y);
-            npc.setRx0(pos.X + 50);
-            npc.setRx1(pos.X - 50);
-            npc.setFh(Footholds.FindBelowFoothold(pos)!.getId());
-
-            addMapObject(npc);
-            broadcastMessage(PacketCreator.spawnNPC(npc));
-        }
-    }
-    public NPC? getNPCById(int id)
-    {
-        foreach (IMapObject obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.NPC)
-            {
-                NPC npc = (NPC)obj;
-                if (npc.getId() == id)
-                {
-                    return npc;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public bool containsNPC(int npcid)
-    {
-        foreach (var obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.NPC)
-            {
-                if (((NPC)obj).getId() == npcid)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public void destroyNPC(int npcid)
-    {
-        // assumption: there's at most one of the same NPC in a map.
-        var npcs = GetMapObjects(x => x.getType() == MapObjectType.NPC);
-
-        foreach (IMapObject obj in npcs)
-        {
-            if (((NPC)obj).getId() == npcid)
-            {
-                broadcastMessage(PacketCreator.removeNPCController(obj.getObjectId()));
-                broadcastMessage(PacketCreator.removeNPC(obj.getObjectId()));
-
-                removeMapObject(obj.getObjectId());
-            }
-        }
-    }
-
-    #endregion
-
-    public IMapObject? getMapObject(int oid)
-    {
-        return mapobjects.GetValueOrDefault(oid);
-    }
-
-    /**
-     * returns a monster with the given oid, if no such monster exists returns
-     * null
-     *
-     * @param oid
-     * @return
-     */
-    public Monster? getMonsterByOid(int oid)
-    {
-        IMapObject? mmo = getMapObject(oid);
-        return mmo as Monster;
-    }
-
-    #region Reactor
-    public void spawnReactor(Reactor reactor)
-    {
-        spawnAndAddRangedMapObject(reactor, c => c.sendPacket(reactor.makeSpawnData()));
-    }
-
-    public int countReactors()
-    {
-        return getReactors().Count;
-    }
-
-    public List<IMapObject> getReactors()
-    {
-        return GetMapObjects(x => x.getType() == MapObjectType.REACTOR);
-    }
-    public List<Reactor> getAllReactors()
-    {
-        return GetRequiredMapObjects<Reactor>(MapObjectType.REACTOR);
-    }
-    public Reactor? getReactorByOid(int oid)
-    {
-        IMapObject? mmo = getMapObject(oid);
-        return mmo as Reactor;
-    }
-
-    public Reactor? getReactorById(int Id)
-    {
-        foreach (var obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                if (((Reactor)obj).getId() == Id)
-                {
-                    return (Reactor)obj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public List<Reactor> getReactorsByIdRange(int first, int last)
-    {
-        List<Reactor> list = new();
-
-
-        foreach (var obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                Reactor mr = (Reactor)obj;
-
-                if (mr.getId() >= first && mr.getId() <= last)
-                {
-                    list.Add(mr);
-                }
-            }
-        }
-
-        return list;
-    }
-
-    public Reactor? getReactorByName(string name)
-    {
-
-        foreach (IMapObject obj in getMapObjects())
-        {
-            if (obj.getType() == MapObjectType.REACTOR)
-            {
-                if (((Reactor)obj).getName().Equals(name))
-                {
-                    return (Reactor)obj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public bool CanHitReactor(MapItem mapItem)
-    {
-        foreach (var item in mapobjects.Values.AsValueEnumerable())
-        {
-            if (item is Reactor r && r.CheckHitItem(mapItem))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void destroyReactors(int first, int last)
-    {
-        List<Reactor> toDestroy = new();
-        var reactors = getReactors();
-
-        foreach (IMapObject obj in reactors)
-        {
-            Reactor mr = (Reactor)obj;
-            if (mr.getId() >= first && mr.getId() <= last)
-            {
-                toDestroy.Add(mr);
-            }
-        }
-
-        foreach (Reactor mr in toDestroy)
-        {
-            destroyReactor(mr.getObjectId());
-        }
-    }
-
-    public void destroyReactor(int oid)
-    {
-        var reactor = getReactorByOid(oid);
-
-        if (reactor != null)
-        {
-            if (reactor.destroy())
-            {
-                removeMapObject(reactor);
-            }
-        }
-    }
-
-    public void resetReactors()
-    {
-        List<Reactor> list = new();
-
-        foreach (IMapObject o in getMapObjects())
-        {
-            if (o.getType() == MapObjectType.REACTOR)
-            {
-                Reactor r = ((Reactor)o);
-                list.Add(r);
-            }
-        }
-
-        resetReactors(list);
-    }
-
-    public void resetReactors(List<Reactor> list)
-    {
-        foreach (Reactor r in list)
-        {
-            if (r.forceDelayedRespawn())
-            {  // thanks Conrad for suggesting reactor with delay respawning immediately
-                continue;
-            }
-
-            r.resetReactorActions(0);
-            r.setAlive(true);
-            broadcastMessage(PacketCreator.triggerReactor(r, 0));
-        }
-    }
-
-    public void shuffleReactors(int first = 0, int last = int.MaxValue)
-    {
-        List<Point> points = new();
-        var reactors = getReactors();
-        List<Reactor> targets = new();
-
-        foreach (var obj in reactors)
-        {
-            Reactor mr = (Reactor)obj;
-            if (mr.getId() >= first && mr.getId() <= last)
-            {
-                points.Add(mr.getPosition());
-                targets.Add(mr);
-            }
-        }
-        Collections.shuffle(points);
-        for (int i = 0; i < targets.Count; i++)
-        {
-            targets[i].setPosition(points[i]);
-        }
-    }
-
-    public void shuffleReactors(List<object> list)
-    {
-        List<Point> points = new();
-        List<IMapObject> listObjects = new();
-        List<Reactor> targets = new();
-
-        foreach (object ob in list)
-        {
-            if (ob is IMapObject mmo)
-            {
-                if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
-                {
-                    listObjects.Add(mmo);
-                }
-            }
-        }
-
-        foreach (var obj in listObjects)
-        {
-            Reactor mr = (Reactor)obj;
-
-            points.Add(mr.getPosition());
-            targets.Add(mr);
-        }
-        Collections.shuffle(points);
-        for (int i = 0; i < targets.Count; i++)
-        {
-            targets[i].setPosition(points[i]);
-        }
-    }
-
-    public void setReactorState()
-    {
-        foreach (IMapObject o in getMapObjects())
-        {
-            if (o.getType() == MapObjectType.REACTOR && o is Reactor mr)
-            {
-                if (mr.getState() < 1)
-                {
-                    mr.resetReactorActions(1);
-                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
-                }
-            }
-        }
-    }
-
-    public bool isAllReactorState(int reactorId, int state)
-    {
-        foreach (var r in getAllReactors())
-        {
-            if (r.getId() == reactorId && r.getState() != state)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    #endregion
-
-
-
-    /// <summary>
-    /// 生成地图boss
-    /// </summary>
-    /// <param name="bossId"></param>
-    /// <param name="mobTime"></param>
-    /// <param name="posX"></param>
-    /// <param name="posY"></param>
-    /// <param name="spawnMessage"></param>
-    public void SetupAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
-    {
-        if (_bossSp.TryGetValue(name, out var sp))
-        {
-            if (sp.shouldForceSpawn())
-            {
-                sp.SpawnMonster();
-            }
-            return;
-        }
-
-        var points = new List<RandomPoint>();
-        foreach (var item in rawList)
-        {
-            var dict = (IDictionary<string, object>)item;
-
-            var minX = Convert.ToInt32(dict.TryGetValue("minX", out var d1) ? d1 : 0);
-            var maxX = Convert.ToInt32(dict.TryGetValue("maxX", out var d2) ? d2 : 0);
-            var x = Convert.ToInt32(dict.TryGetValue("x", out var d3) ? d3 : 0);
-            var y = Convert.ToInt32(dict.TryGetValue("y", out var d4) ? d4 : 0);
-
-            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
-        }
-
-        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
-        _bossSp[name] = sp;
-        sp.SpawnMonster();
-
-        _hasLongLifeMob = true;
-    }
-
-    public void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos)
-    {
-        Point spos = getGroundBelow(pos);
-        mob.setPosition(spos);
-        spawnFakeMonster(mob);
-    }
-
-    public Point getGroundBelow(Point pos)
-    {
-        Point spos = new Point(pos.X, pos.Y - 14); // Using -14 fixes spawning pets causing a lot of issues.
-        var calcedPos = calcPointBelow(spos);
-        if (calcedPos != null)
-        {
-            spos = calcedPos.Value;
-        }
-        spos.Y--;//shouldn't be null!
-        return spos;
-    }
-
-    public Point? getPointBelow(Point pos)
-    {
-        return calcPointBelow(pos);
-    }
-
-    private void applyRemoveAfter(Monster monster)
-    {
-        var selfDestruction = monster.getStats().selfDestruction();
-        if (monster.getStats().removeAfter() > 0 || selfDestruction != null && selfDestruction.Hp < 0)
-        {
-            IWorldChannelCommand removeAfterAction;
-
-            if (selfDestruction == null)
-            {
-                removeAfterAction = new KillMonsterCommand(this, monster, null, 1);
-                registerMapSchedule(removeAfterAction, monster.getStats().removeAfter() * 1000);
-            }
-            else
-            {
-                removeAfterAction = new KillMonsterCommand(this, monster, null, selfDestruction.Action);
-                registerMapSchedule(removeAfterAction, selfDestruction.RemoveAfter * 1000);
-            }
-
-            monster.pushRemoveAfterAction(removeAfterAction);
-        }
-    }
-
-    public void dismissRemoveAfter(Monster monster)
-    {
-        var removeAfterAction = monster.popRemoveAfterAction();
-        if (removeAfterAction != null)
-        {
-            OverallService service = this.getChannelServer().OverallService;
-            service.forceRunOverallAction(mapid, removeAfterAction);
-        }
-    }
-
-    #region Monster
-    public void spawnMonsterOnGroundBelow(int id, int x, int y)
-    {
-        var mob = LifeFactory.Instance.getMonster(id);
-        spawnMonsterOnGroundBelow(mob, new Point(x, y));
-    }
-
-    public void spawnMonsterOnGroundBelow(Monster? mob, Point pos)
-    {
-        if (mob == null)
-            return;
-
-        Point spos = new Point(pos.X, pos.Y - 1);
-        var calcedPos = calcPointBelow(spos);
-        if (calcedPos != null)
-        {
-            spos = calcedPos.Value;
-            spos.Y--;
-            mob.setPosition(spos);
-            spawnMonster(mob);
-        }
-
-    }
-    private List<SpawnPoint> getMonsterSpawn()
-    {
-        return new(monsterSpawn);
-    }
-
-    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
-    {
-        foreach (SpawnPoint sp in getMonsterSpawn())
-        {
-            if (sp.getMonsterId() == id && sp.shouldForceSpawn())
-            {
-                sp.SpawnMonster(difficulty, isPq);
-            }
-        }
-    }
-
-
-    public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
-    {
-        foreach (SpawnPoint sp in getMonsterSpawn())
-        {
-            sp.SpawnMonster(difficulty, isPq);
-        }
-    }
-
-
-    public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
-    {
-        if (SourceTemplate.FixedMobCapacity != -1 && SourceTemplate.FixedMobCapacity == spawnedMonstersOnMap.get())
-        {
-            return;//PyPQ
-        }
-
-        monster.changeDifficulty(difficulty, isPq);
-        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, true)), null);
-
-        EventInstanceManager?.registerMonster(monster);
-
-        monster.aggroUpdateController();
-        updateBossSpawn(monster);
-
-        SetMonsterInfo(monster);
-
-        spawnedMonstersOnMap.incrementAndGet();
-        XiGuai?.ApplyMonster(monster);
-
-        addSelfDestructive(monster);
-        applyRemoveAfter(monster);  // thanks LightRyuzaki for pointing issues with spawned CWKPQ mobs not applying this
-    }
-
-    public void spawnDojoMonster(Monster monster)
-    {
-        Point[] pts = { new Point(140, 0), new Point(190, 7), new Point(187, 7) };
-        spawnMonsterWithEffect(monster, 15, pts[Randomizer.nextInt(3)]);
-    }
-
-    public void spawnMonsterWithEffect(Monster monster, int effect, Point pos)
-    {
-        Point spos = new Point(pos.X, pos.Y - 1);
-        var d = calcPointBelow(spos);
-        if (d == null)
-        {
-            return;
-        }
-        spos = d.Value;
-
-        EventInstanceManager?.registerMonster(monster);
-
-        spos.Y--;
-        monster.setPosition(spos);
-        monster.setSpawnEffect(effect);
-
-        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnMonster(monster, true, effect)));
-
-        monster.aggroUpdateController();
-        updateBossSpawn(monster);
-
-        spawnedMonstersOnMap.incrementAndGet();
-        XiGuai?.ApplyMonster(monster);
-        addSelfDestructive(monster);
-        applyRemoveAfter(monster);
-    }
-
-    public void spawnFakeMonster(Monster monster)
-    {
-        monster.setFake(true);
-        spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
-
-        spawnedMonstersOnMap.incrementAndGet();
-        XiGuai?.ApplyMonster(monster);
-        addSelfDestructive(monster);
-    }
-
-    public void makeMonsterReal(Monster monster)
-    {
-        if (!monster.isFake())
-            return;
-        monster.setFake(false);
-        broadcastMessage(PacketCreator.makeMonsterReal(monster));
-        monster.aggroUpdateController();
-        updateBossSpawn(monster);
-    }
-    public void ProcessMonster(Action<Monster> action)
-    {
-        ProcessMapObject(x => x.getType() == MapObjectType.MONSTER, o =>
-        {
-            action((Monster)o);
-        });
-    }
-    #endregion
-
-    public void spawnDoor(DoorObject door)
-    {
-        spawnAndAddRangedMapObject(door, c =>
-        {
-            var chr = c.OnlinedCharacter;
-            if (chr != null)
-            {
-                door.sendSpawnData(c, false);
-                chr.addVisibleMapObject(door);
-            }
-        }, chr => chr.getMapId() == door.getFrom().getId());
-    }
-
-    public Portal? getDoorPortal(int doorid)
-    {
-        Portal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
-        if (doorPortal == null)
-        {
-            log.Warning("[Door] {MapName} ({MapId}) does not contain door portalid {DoorId}", mapName, mapid, doorid);
-            return portals.GetValueOrDefault(0x80);
-        }
-
-        return doorPortal;
-    }
-
-    public void spawnSummon(Summon summon)
-    {
-        spawnAndAddRangedMapObject(summon, c =>
-        {
-            if (summon != null)
-            {
-                c.sendPacket(PacketCreator.spawnSummon(summon, true));
-            }
-        }, null);
-    }
-
-    public void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery)
-    {
-        addMapObject(mist);
-        broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-    }
-
-    public void spawnKite(Kite kite)
-    {
-        addMapObject(kite);
-        broadcastMessage(kite.makeSpawnData());
-    }
-
-    #region MapItem
-    public void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
-    {
-        spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
-    }
-
-    private void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, DropType dropType, bool playerDrop)
-    {
-        if (FieldLimit.DROP_LIMIT.check(this.getFieldLimit()))
-        {
-            // thanks Conrad for noticing some maps shouldn't have loots available
-            this.disappearingItemDrop(dropper, owner, item, pos);
-            return;
-        }
-
-        Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mapItem = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
-
-        spawnAndAddRangedMapObject(mapItem, c =>
-        {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), droppos, (int)DropEnterFieldType.SpawnMapItem, 0));
-        }, null);
-
-        /// 不明，对比<see cref="spawnDrop"/> 多出来的一段 是否可以移除？
-        broadcastItemDropMessage(mapItem, dropper.getPosition(), droppos, 0);
-    }
-    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, Player chr, bool playerDrop, DropType droptype, short questid, short dropDelay)
-    {
-        var validPos = calcDropPos(dropPos, dropper.getPosition());
-
-        MapItem mdrop = new MapItem(idrop, validPos, dropper, chr, droptype, playerDrop, questid);
-        SpawnMapItem(mdrop, dropDelay);
-    }
-
-    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short dropDelay = 0)
-    {
-        var validPos = calcDropPos(position, dropper.getPosition());
-
-        MapItem mdrop = new MapItem(meso, validPos, dropper, owner, droptype, playerDrop);
-        SpawnMapItem(mdrop, dropDelay);
-    }
-
-    void SpawnMapItem(MapItem mapItem, short dropDelay = 0)
-    {
-        spawnAndAddRangedMapObject(mapItem, c =>
-        {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, mapItem.getDropper().getPosition(), mapItem.getPosition(), (int)DropEnterFieldType.SpawnMapItem, dropDelay));
-        }, null);
-    }
-
     public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
     {
         Point droppos = calcDropPos(pos, dropper.getPosition());
@@ -1712,12 +1662,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null)
     {
-        broadcastBossHpMessage(mm, bossHash, packet, getRangedDistance(), rangedFrom);
-    }
-
-    private void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, double rangeSq, Point? rangedFrom)
-    {
-        Broadcast(-1, rangeSq, rangedFrom, chr =>
+        Broadcast(-1, getRangedDistance(), rangedFrom, chr =>
         {
             chr.getClient().announceBossHpBar(mm, bossHash, packet);
         });
@@ -1867,20 +1812,12 @@ public class MapleMap : IMap, INamedInstance
             // -1 does not respawn and should not either but force ONE spawn
             sp.SpawnMonster();
         }
-
-        if (!_hasLongLifeMob && mobTime > 0)
-            _hasLongLifeMob = true;
     }
 
     public void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed)
     {
         addMonsterSpawn(mobId, pos, 0, 0, 0, 0, 0, mobTime, false, team);
     }
-
-    /// <summary>
-    /// 有mobTime > 0的野怪
-    /// </summary>
-    bool _hasLongLifeMob;
 
     public void removeMonsterSpawn(int mobId, int x, int y)
     {
@@ -2755,7 +2692,6 @@ public class MapleMap : IMap, INamedInstance
         disposed = true;
         Status = TickableStatus.Remove;
 
-        ProcessMonster(mm => mm.dispose());
         clearMapObjects();
 
         ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;

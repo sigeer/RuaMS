@@ -1,10 +1,12 @@
+using Application.Utility.Performance;
 using Application.Utility.Pipeline;
 
 namespace Application.Core.Channel.Actor
 {
-    public class NodeRequest : ICommand<WorldChannelServer>
+    public class NodeDelegateCommand : ICommand<WorldChannelServer>
     {
-        public NodeRequest(Action<WorldChannelServer> func)
+        public string? Name => Func.Target?.ToString();
+        public NodeDelegateCommand(Action<WorldChannelServer> func)
         {
             Func = func;
         }
@@ -16,9 +18,10 @@ namespace Application.Core.Channel.Actor
         }
     }
 
-    public class AsyncNodeRequest : IAsyncCommand<WorldChannelServer>
+    public class AsyncNodeDelegateCommand : IAsyncCommand<WorldChannelServer>
     {
-        public AsyncNodeRequest(Func<WorldChannelServer, Task> func)
+        public string? Name => Func.Target?.ToString();
+        public AsyncNodeDelegateCommand(Func<WorldChannelServer, Task> func)
         {
             Func = func;
         }

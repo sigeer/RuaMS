@@ -193,7 +193,7 @@ namespace Application.Core.Game.Players
         /// <returns>是否成功</returns>
         public bool TryGainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("Meso", gain);
@@ -218,7 +218,7 @@ namespace Application.Core.Game.Players
         /// <returns>超出上限后无法拾取的数量</returns>
         public int GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("Meso", gain);
@@ -289,7 +289,7 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainItem");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainItem");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("ItemId", itemId);

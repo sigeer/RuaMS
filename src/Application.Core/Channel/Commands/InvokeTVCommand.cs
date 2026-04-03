@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeTVCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeTVCommand);
         CreateTVMessageBroadcast res;
 
         public InvokeTVCommand(CreateTVMessageBroadcast res)
@@ -27,7 +28,7 @@ namespace Application.Core.Channel.Commands
 
     internal class InvokeTVFinishCommand : IWorldChannelCommand
     {
-
+        public string Name => nameof(InvokeTVFinishCommand);
         public void Execute(WorldChannel ctx)
         {
             ctx.broadcastPacket(PacketCreator.removeTV());

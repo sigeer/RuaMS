@@ -72,8 +72,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// 玩家对其造成的伤害记录
     /// </summary>
     private Dictionary<int, AtomicLong> takenDamage = new();
-    private ScheduledFuture? monsterItemDrop = null;
-    private IWorldChannelCommand? removeAfterAction = null;
+
+
     private bool availablePuppetUpdate = true;
     /// <summary>
     /// 有值时，不走默认的drop_data
@@ -109,9 +109,13 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     Lazy<List<Monster>> _revivingMonsters;
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
 
-    public long Period => throw new NotImplementedException();
+    public long Period { get; private set; } = -1;
 
-    public long Next => throw new NotImplementedException();
+    /// <summary>
+    /// removeAfter
+    /// </summary>
+    public long Next { get; private set; } = long.MaxValue;
+    int _autoRemoveAction = -1;
 
     public TickableStatus Status { get; private set; }
 
@@ -133,6 +137,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public override void setMap(IMap map)
     {
         base.setMap(map);
+
         DispatchMonsterSpawned();
     }
 
@@ -204,18 +209,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         this.calledMobOids = null;
     }
 
-    public void pushRemoveAfterAction(IWorldChannelCommand run)
-    {
-        this.removeAfterAction = run;
-    }
-
-    public IWorldChannelCommand? popRemoveAfterAction()
-    {
-        var r = this.removeAfterAction;
-        this.removeAfterAction = null;
-
-        return r;
-    }
 
     public int getHp()
     {
@@ -1004,7 +997,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 eim.friendlyKilled(this, killer != null);
             }
         }
-        getMap().dismissRemoveAfter(this);
     }
 
     private void processMonsterKilled(ICombatantObject? killer)
@@ -2318,11 +2310,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         this.setControllerKnowsAboutAggro(false);
     }
 
-    public int getRemoveAfter()
-    {
-        return stats.removeAfter();
-    }
-
     public void SetCustomeDrop(List<DropItemEntry> data)
     {
         CustomeDrops = data.Select(x => DropEntry.MobDrop(this.getId(), x.ItemId, x.Chance, x.MinCount, x.MaxCount, 0)).ToList();
@@ -2332,16 +2319,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         if (CustomeDrops == null)
             return YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? retrieveRelevantDrops() : MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         return CustomeDrops;
-    }
-
-    public void dispose()
-    {
-        if (monsterItemDrop != null)
-        {
-            monsterItemDrop.cancel(false);
-        }
-
-        this.getMap().dismissRemoveAfter(this);
     }
 
     public override string GetName()
@@ -2363,6 +2340,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     {
         OnSpawned?.Invoke(this, EventArgs.Empty);
 
+        var now = MapModel.ChannelServer.Node.getCurrentTime();
         var dropPeriodTime = getDropPeriodTime();
         if (dropPeriodTime > 0)
         {
@@ -2372,7 +2350,25 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             }
 
             _friendlyDropPeriod = dropPeriodTime;
-            _friendlyDropNext = MapModel.ChannelServer.Node.getCurrentTime() + _friendlyDropPeriod;
+            _friendlyDropNext = now + _friendlyDropPeriod;
+        }
+
+        if (getStats().removeAfter() > 0)
+        {
+            _autoRemoveAction = 1;
+            Period = getStats().removeAfter() * 1000;
+        }
+
+        var selfDestruction = getStats().selfDestruction();
+        if (selfDestruction != null && selfDestruction.Hp < 0)
+        {
+            _autoRemoveAction = selfDestruction.Action;
+            Period = selfDestruction.RemoveAfter * 1000;
+        }
+
+        if (_autoRemoveAction > 0)
+        {
+            Next = now + Period;
         }
 
         if (getId() == MobId.SUMMON_HORNTAIL)
@@ -2482,6 +2478,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             FriendlyDrop();
 
             _friendlyDropNext = now + _friendlyDropPeriod;
+        }
+
+        if (_autoRemoveAction > 0 && Next <= now)
+        {
+            MapModel.RemoveMob(this, null, true, _autoRemoveAction);
         }
     }
 }

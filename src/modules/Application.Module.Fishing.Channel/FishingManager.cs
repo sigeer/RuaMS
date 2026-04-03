@@ -155,7 +155,7 @@ namespace Application.Module.Fishing.Channel
                         break;
                 }
 
-                chr.getMap().dropMessage(6, chr.getName() + " found " + rewardStr);
+                chr.getMap().LightBlue(chr.getName() + " found " + rewardStr);
             }
 
             chr.sendPacket(PacketCreator.showInfo(fishingEffect));

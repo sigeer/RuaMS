@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterStatusRemoveCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterStatusRemoveCommand);
         Monster _mob;
         MonsterStatusEffect _statueEffect;
 

@@ -249,7 +249,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
-        using var activity = GameMetrics.ActivitySource.StartActivity("HiredMerchant:GainMeso");
+        using var activity = GameMetrics.ActivitySource.StartActivity("HiredMerchantGainMeso");
         activity?.SetTag("PlayerId", OwnerId);
         activity?.SetTag("Player", OwnerName);
         activity?.SetTag("Meso", meso);

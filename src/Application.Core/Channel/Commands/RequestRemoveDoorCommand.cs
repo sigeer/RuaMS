@@ -2,6 +2,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class RequestRemoveDoorCommand : IWorldChannelCommand
     {
+        public string Name => nameof(RequestRemoveDoorCommand);
         int _ownerId;
         public RequestRemoveDoorCommand(int ownerId)
         {
@@ -16,6 +17,7 @@ namespace Application.Core.Channel.Commands
 
     public class InvokeRemoveDoorCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeRemoveDoorCommand);
         int _ownerId;
         public InvokeRemoveDoorCommand(int ownerId)
         {

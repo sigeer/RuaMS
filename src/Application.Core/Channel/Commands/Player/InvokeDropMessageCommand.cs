@@ -2,6 +2,7 @@ namespace Application.Core.Channel.Commands
 {
     internal record InvokeDropMessageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeDropMessageCommand);
         int playerId;
         int type;
         string message;
@@ -23,6 +24,7 @@ namespace Application.Core.Channel.Commands
 
     internal record InvokeMultiDropMessageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeMultiDropMessageCommand);
         IEnumerable<int> playerIds;
         int type;
         string message;
@@ -62,6 +64,8 @@ namespace Application.Core.Channel.Commands
 
     internal record InvokeMultiDropMessageCommandPlus : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeMultiDropMessageCommandPlus);
+
         IEnumerable<int> playerIds;
         NoticeType type;
         Func<Player, string> _getMessage;

@@ -5,10 +5,13 @@ using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.Net.Logging;
+using Application.Utility.Performance;
+using client.inventory;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting;
 using scripting.npc;
+using System.Diagnostics;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -212,6 +215,10 @@ namespace Application.Core.Channel.Net
             {
                 log.LogDebug("Received packet id {Code}", opcode);
             }
+
+            using var activity = GameMetrics.ActivitySource.StartActivity("ProcessPacket");
+            activity?.SetTag("AccountId", AccountId);
+            activity?.SetTag("Handler", handler?.ToString());
 
             if (handler != null)
             {

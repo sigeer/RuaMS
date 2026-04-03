@@ -166,10 +166,6 @@ namespace Application.Core.Game.Maps
 
 
         void closeMapSpawnPoints();
-
-
-        void dismissRemoveAfter(Monster monster);
-
         void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);

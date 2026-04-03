@@ -1710,8 +1710,8 @@ public class PacketCreator
             p.writeByte(chr.getStance());
         }
 
-        p.writeShort(0);//chr.getFh()
-        p.writeByte(0);
+        p.writeShort(0);    // chr.getFh()
+        p.writeByte(0);     // admin？
         Pet?[] pet = chr.getPets();
         for (int i = 0; i < 3; i++)
         {

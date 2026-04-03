@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,6 +9,8 @@ namespace Application.Module.Marriage.Channel.Commands
 {
     internal class InvokeCheckMarriageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeCheckMarriageCommand);
+
         int _chrId;
 
         public InvokeCheckMarriageCommand(int chrId)
@@ -15,15 +18,15 @@ namespace Application.Module.Marriage.Channel.Commands
             _chrId = chrId;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var chr = ctx.WorldChannel.Players.getCharacterById(_chrId);
+            var chr = ctx.Players.getCharacterById(_chrId);
             if (chr == null)
             {
                 return;
             }
 
-            var service = ctx.WorldChannel.NodeService.ServiceProvider.GetRequiredService<MarriageManager>();
+            var service = ctx.NodeService.ServiceProvider.GetRequiredService<MarriageManager>();
             service.CheckMarriageData(chr);
         }
     }

@@ -2,6 +2,7 @@ namespace Application.Core.Login.Commands
 {
     internal class HandleMasterPacketCommand : IMasterCommand
     {
+        public string? Name => nameof(HandleMasterPacketCommand);
         ISocketClient _client;
         InPacket _inPacket;
 

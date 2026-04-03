@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     public class PlayerPreEnterChannelCommand : IWorldChannelCommand
     {
+        public string Name => nameof(PlayerPreEnterChannelCommand);
         int _chrId;
         IPEndPoint _channelSocket;
         bool fromChannel;

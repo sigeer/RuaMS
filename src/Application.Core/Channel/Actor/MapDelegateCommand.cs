@@ -6,6 +6,7 @@ namespace Application.Core.Channel.Actor
 {
     public class MapDelegateCommand : ICommand<IMap>
     {
+        public string? Name => Func.Target?.ToString();
         public MapDelegateCommand(Action<IMap> func)
         {
             Func = func;
@@ -21,6 +22,7 @@ namespace Application.Core.Channel.Actor
 
     public class AsyncMapDelegateCommand : IAsyncCommand<IMap>
     {
+        public string? Name => Func.Target?.ToString();
         public AsyncMapDelegateCommand(Func<IMap, Task> func)
         {
             Func = func;

@@ -9,7 +9,7 @@ namespace Application.Utility.Pipeline
     {
         void Start();
     }
-    public class CommandLoop<TContext> : IAsyncDisposable, ICommandPipeline where TContext: IActorInstance<TContext>
+    public class CommandLoop<TContext> : IAsyncDisposable, ICommandPipeline where TContext : IActorInstance<TContext>
     {
         private TContext _context;
         private Task? _runningTask;
@@ -37,34 +37,46 @@ namespace Application.Utility.Pipeline
 
         private async Task RunLoopAsync()
         {
-            Stopwatch sw = new();
-
-            //while (await _commands.Reader.WaitToReadAsync())
-            //{
-            //    GameMetrics.CommandCountTick(key, _commands.Reader.Count);
-            //    while (_commands.Reader.TryRead(out var item))
-            //    {
-            //        sw.Restart();
-            //        item.Execute(CreateContext());
-            //        sw.Stop();
-            //        GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
-            //    }
-            //}
-
+            Stopwatch sw = Stopwatch.StartNew();
             await foreach (var item in _command.Reader.ReadAllAsync())
             {
-                // GameMetrics.CommandCountTick(C, _command.Reader.Count);
-                sw.Restart();
-                if (item is IAsyncCommand<TContext> a)
+                Activity? activity = null;
+                if (item is not IIgnoreActivityCommand)
                 {
-                    await a.Execute(_context);
+                    activity = GameMetrics.ActivitySource.StartActivity("ActorActivity");
+                    activity?.SetTag("ActorType", typeof(TContext).Name);
+                    activity?.SetTag("Instance", _context.InstanceName);
+                    activity?.SetTag("Command", item.Name);
                 }
-                else if (item is ICommand<TContext> b)
+
+                try
                 {
-                    b.Execute(_context);
+                    sw.Restart();
+
+                    if (item is IAsyncCommand<TContext> a)
+                        await a.Execute(_context);
+                    else if (item is ICommand<TContext> b)
+                        b.Execute(_context);
                 }
-                sw.Stop();
-                GameMetrics.GameTick(_context.InstanceName, sw.Elapsed.TotalMilliseconds);
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex.ToString());
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.AddEvent(new ActivityEvent("exception",
+                        tags: new ActivityTagsCollection
+                        {
+                            ["exception.type"] = ex.GetType().Name,
+                            ["exception.message"] = ex.Message,
+                            ["exception.stacktrace"] = ex.StackTrace ?? ""
+                        }));
+                }
+                finally
+                {
+                    sw.Stop();
+                    GameMetrics.GameTick(_context.InstanceName, sw.Elapsed.TotalMilliseconds);
+                    activity?.Dispose();
+                    activity = null;
+                }
             }
         }
 

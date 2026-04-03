@@ -8,6 +8,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterApplyDamageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterApplyDamageCommand);
         readonly Monster _monster;
         private Player chr;
         private MonsterStatusEffect status;

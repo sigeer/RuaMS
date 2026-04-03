@@ -34,7 +34,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer, ITickableTree
+public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer
 {
     public int Id => channel;
     public string InstanceName { get; }

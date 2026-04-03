@@ -322,7 +322,6 @@ public class Pet : Item, ILoopTickable
             return;
         }
 
-
         if (Status == TickableStatus.Active && Next >= now)
         {
             if (step % YamlConfig.config.server.PET_EXHAUST_COUNT == 0)

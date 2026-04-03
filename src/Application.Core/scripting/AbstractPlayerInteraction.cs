@@ -694,12 +694,12 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void dropMessage(int type, string message)
     {
-        getPlayer().dropMessage(type, message);
+        getPlayer().TypedMessage(type, message);
     }
 
     public void mapMessage(int type, string message)
     {
-        getPlayer().getMap().dropMessage(type, message);
+        getPlayer().getMap().TypedMessage(type, message);
     }
 
     public void mapEffect(string path)
@@ -893,9 +893,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.Instance.GetMonsterTrust(id);
-        monster.setPosition(new Point(x, y));
-        getPlayer().getMap().spawnMonster(monster);
+        getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
     }
 
     public Monster? getMonsterLifeFactory(int mid)
@@ -1153,7 +1151,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
         applySealSkill(monster);
         applyReduceAvoid(monster);
-        map.dropMessage(6, message);
+        map.LightBlue(message);
     }
 
     private void applySealSkill(Monster monster)

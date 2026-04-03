@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterPuppetAggroCommand: IWorldChannelCommand
     {
+        public string Name => nameof(MonsterPuppetAggroCommand);
         Monster _mob;
 
         public MonsterPuppetAggroCommand(Monster mob)

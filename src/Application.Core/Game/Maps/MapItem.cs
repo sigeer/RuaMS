@@ -258,7 +258,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
             return;
         }
 
-        if (willHitReactor && Next <= now)
+        if (willHitReactor && !isPickedUp() && Next <= now)
         {
             MapModel.TryHitReactorByMapItem(this);
             Status = TickableStatus.InActive;

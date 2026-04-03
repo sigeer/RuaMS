@@ -131,7 +131,6 @@ public class EventManager : IDisposable, ITickableTree
     public IMap GetMap(int mapId)
     {
         var map = getChannelServer().getMapFactory().getMap(mapId);
-        map.IsTrackedByEvent = true;
         return map;
     }
 

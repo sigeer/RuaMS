@@ -2,6 +2,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokePlayerDisconnectCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokePlayerDisconnectCommand);
         int _chrId;
 
         public InvokePlayerDisconnectCommand(int chrId)

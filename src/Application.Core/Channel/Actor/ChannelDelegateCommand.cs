@@ -8,7 +8,7 @@ namespace Application.Core.Channel.Actor
 {
     public class ChannelDelegateCommand : ICommand<WorldChannel>
     {
-        
+        public string? Name => Func.Target?.ToString();
         public ChannelDelegateCommand(Action<WorldChannel> func)
         {
             Func = func;
@@ -23,6 +23,7 @@ namespace Application.Core.Channel.Actor
 
     public class AsyncChannelDelegateCommand : IAsyncCommand<WorldChannel>
     {
+        public string? Name => Func.Target?.ToString();
         public AsyncChannelDelegateCommand(Func<WorldChannel, Task> func)
         {
             Func = func;

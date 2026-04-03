@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeTeamUpdateCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeTeamUpdateCommand);
         UpdateTeamResponse res;
 
         public InvokeTeamUpdateCommand(UpdateTeamResponse res)

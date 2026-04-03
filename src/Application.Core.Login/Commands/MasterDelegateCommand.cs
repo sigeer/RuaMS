@@ -5,6 +5,7 @@ namespace Application.Core.Login.Commands
 
     public class MasterDelegateCommand : ICommand<MasterServer>
     {
+        public string? Name => Func.Target?.ToString();
         public MasterDelegateCommand(Action<MasterServer> func)
         {
             Func = func;
@@ -19,6 +20,7 @@ namespace Application.Core.Login.Commands
 
     public class AsyncMasterDelegateCommand : IAsyncCommand<MasterServer>
     {
+        public string? Name => Func.Target?.ToString();
         public AsyncMasterDelegateCommand(Func<MasterServer, Task> func)
         {
             Func = func;

@@ -2,6 +2,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeSyncAllPlayerCommand : IChannelCommand
     {
+        public string Name => nameof(InvokeSyncAllPlayerCommand);
         bool _saveDB;
         DistributeSessionDataWrapper<int, SyncProto.PlayerSaveDto> _data;
 

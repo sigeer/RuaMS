@@ -250,10 +250,7 @@ public class Reactor : AbstractMapObject
             cancelReactorTimeout();
             attackHit = wHit;
 
-            if (YamlConfig.config.server.USE_DEBUG)
-            {
-                c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
-            }
+            c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
             c.CurrentServer.ReactorScriptManager.onHit(c, this);
 
             int reactorType = stats.getType(state);
@@ -342,6 +339,7 @@ public class Reactor : AbstractMapObject
 
     /// <summary>
     /// 只要箱子能重生，就不会从地图上移除，只是看不见
+    /// 2次调用才会真的移除？
     /// </summary>
     /// <returns></returns>
     public bool destroy()

@@ -313,9 +313,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         {
             reactor.getMap().Send(map =>
             {
-                var monster = LifeFactory.Instance.GetMonsterTrust(mobId);
-                monster.setPosition(new Point(x, y));
-                map.spawnMonster(monster);
+                map.spawnMonsterOnGroundBelow(mobId, x, y);
                 map.broadcastMessage(PacketCreator.musicChange(bgm));
                 map.LightBlue(summonMessage);
             });

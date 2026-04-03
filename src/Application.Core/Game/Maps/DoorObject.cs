@@ -36,6 +36,9 @@ public class DoorObject : AbstractMapObject
     private IMap to;
     public bool InTown => TownPortal != null;
     public MysticDoorPortal? TownPortal { get; }
+    /// <summary>
+    /// 对应主城的门
+    /// </summary>
     public DoorObject LinkDoor { get; }
     public DoorObject(Player owner, Point currentPosition, IMap toMap, IMap fromMap, MysticDoorPortal townPortal) : base()
     {

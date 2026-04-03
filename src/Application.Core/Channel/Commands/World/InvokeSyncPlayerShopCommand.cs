@@ -6,6 +6,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeSyncPlayerShopCommand : IChannelCommand
     {
+        public string Name => nameof(InvokeSyncPlayerShopCommand);
         DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest> _data;
 
         public InvokeSyncPlayerShopCommand(DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest> data)

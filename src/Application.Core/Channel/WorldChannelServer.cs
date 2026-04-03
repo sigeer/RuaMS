@@ -13,6 +13,7 @@ using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility.Pipeline;
+using Application.Utility.Tickables;
 using Config;
 using Google.Protobuf;
 using ItemProto;
@@ -26,7 +27,7 @@ using System.Net;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActorInstance<WorldChannelServer>, IServiceCenter
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActorInstance<WorldChannelServer>, IServiceCenter, ITickable
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
@@ -100,7 +101,7 @@ namespace Application.Core.Channel
         #region Task
         public ServerMessageTask ServerMessageTask { get; }
 
-        public CharacterDiseaseTask CharacterDiseaseTask { get; }
+        public NodeTickTask NodeTickTask { get; }
         public MapOwnershipTask MapOwnershipTask { get; }
         #endregion
 
@@ -136,6 +137,9 @@ namespace Application.Core.Channel
         public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
 
         public CommandLoop<WorldChannelServer> CommandLoop { get; }
+
+        public TickableStatus Status => throw new NotImplementedException();
+
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -157,7 +161,7 @@ namespace Application.Core.Channel
 
 
             ServerMessageTask = new ServerMessageTask(this);
-            CharacterDiseaseTask = new CharacterDiseaseTask(this);
+            NodeTickTask = new NodeTickTask(this);
             MapOwnershipTask = new(this);
 
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
@@ -208,9 +212,9 @@ namespace Application.Core.Channel
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(serverCurrentTime);
         }
-        public void UpdateServerTime()
+        public void UpdateServerTime(long v)
         {
-            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+            serverCurrentTime = currentTime.addAndGet(v);
         }
 
         public void ForceUpdateServerTime()
@@ -247,7 +251,7 @@ namespace Application.Core.Channel
                 }
                 _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
-                await CharacterDiseaseTask.StopAsync();
+                await NodeTickTask.StopAsync();
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
 
@@ -368,7 +372,7 @@ namespace Application.Core.Channel
             }, cancellationToken);
 
 
-            CharacterDiseaseTask.Register(TimerManager);
+            NodeTickTask.Register(TimerManager);
             ServerMessageTask.Register(TimerManager);
             MapOwnershipTask.Register(TimerManager);
 
@@ -508,7 +512,7 @@ namespace Application.Core.Channel
         {
             foreach (var item in Servers.Values)
             {
-                item.Send(new AsyncChannelDelegateCommand(action));
+                item.Send(action);
             }
         }
 
@@ -516,7 +520,7 @@ namespace Application.Core.Channel
         {
             foreach (var item in Servers.Values)
             {
-                item.Send(new ChannelDelegateCommand(action));
+                item.Send(action);
             }
         }
 
@@ -537,12 +541,20 @@ namespace Application.Core.Channel
 
         public void Send(Func<WorldChannelServer, Task> action)
         {
-            CommandLoop.Register(new AsyncNodeRequest(action));
+            CommandLoop.Register(new AsyncNodeDelegateCommand(action));
         }
 
         public void Send(Action<WorldChannelServer> action)
         {
-            CommandLoop.Register(new NodeRequest(action));
+            CommandLoop.Register(new NodeDelegateCommand(action));
+        }
+
+        public void OnTick(long now)
+        {
+            foreach (var item in Servers.Values)
+            {
+                item.OnTick(now);
+            }
         }
     }
 }

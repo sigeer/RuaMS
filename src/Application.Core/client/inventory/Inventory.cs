@@ -385,7 +385,6 @@ public class Inventory : IEnumerable<Item>
     {
         SetItemPosition(item, slot);
 
-
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
             Owner.updateCouponRates();
