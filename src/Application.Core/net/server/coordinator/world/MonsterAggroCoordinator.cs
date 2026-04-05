@@ -275,14 +275,14 @@ public class MonsterAggroCoordinator : ILoopTickable
 
     public void OnTick(long now)
     {
-        if (this.IsAvailable())
+        if (!this.IsAvailable())
         {
             return;
         }
 
         if (Next <= now)
         {
-            int timeDelta = (int)Math.Ceiling((double)(now - Next) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+            int timeDelta = (int)Math.Ceiling((double)(now - Next) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL) + 1;
             runAggroUpdate(timeDelta);
             runSortLeadingCharactersAggro();
 

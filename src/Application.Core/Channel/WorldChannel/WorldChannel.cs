@@ -123,8 +123,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public CommandLoop<WorldChannel> CommandLoop { get; }
     public EventRecallManager? EventRecallManager { get; private set; }
 
-    ChannelTickableTask? _respawnTask;
-
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public IServerBase<IChannelServerTransport> Node { get; }
@@ -282,9 +280,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-        _respawnTask = new ChannelTickableTask(this);
-        _respawnTask.Register(TimerManager);
-
         EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(TimerManager);
 
@@ -329,11 +324,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
             await NettyServer.Stop();
             log.Information("[{ServerName}] 停止监听", InstanceName);
-
-            if (_respawnTask != null)
-            {
-                await _respawnTask.StopAsync();
-            }
 
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);

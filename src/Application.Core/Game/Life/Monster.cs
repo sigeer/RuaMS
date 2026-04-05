@@ -35,6 +35,7 @@ using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
+using System.Threading;
 using tools;
 using ZLinq;
 using static Application.Templates.Mob.MobTemplate;
@@ -1571,6 +1572,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         int mpCon = toUse.getMpCon();
         if (mp < mpCon)
+        {
+            return false;
+        }
+
+        if (toUse.getHP() < (int)(((float)getHp() / getMaxHp()) * 100))
         {
             return false;
         }

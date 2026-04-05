@@ -1,6 +1,7 @@
 using Application.Utility.Extensions;
 using Jint;
 using Jint.Runtime.Interop;
+using Serilog;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Scripting.JS
@@ -18,8 +19,17 @@ namespace Application.Scripting.JS
                     return new CustomeTypeConverter(o);
                 });
                 o.Strict = false;
+                o.CatchClrExceptions(e =>
+                {
+                    Log.Logger.Error(e.ToString());
+                    return true;
+                });
             });
         }
+
+#if DEBUG
+        Lock _oLock = new();
+#endif
         public void AddHostedObject(string name, object obj)
         {
             _engine.SetValue(name, obj);
@@ -46,8 +56,17 @@ namespace Application.Scripting.JS
         /// </returns>
         public ScriptResultWrapper CallFunction(string functionName, params object?[] paramsValue)
         {
+#if DEBUG
+            // 新的tickable设计下，断点调试时会报错
+            lock (_oLock)
+            {
+                var m = _engine.Invoke(functionName, paramsValue);
+                return new JintResultWrapper(m);
+            }
+#else
             var m = _engine.Invoke(functionName, paramsValue);
             return new JintResultWrapper(m);
+#endif
         }
 
         public void Dispose()

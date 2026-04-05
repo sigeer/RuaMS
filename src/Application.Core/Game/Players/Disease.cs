@@ -163,5 +163,12 @@ namespace Application.Core.Game.Players
                 dispelDebuff(item);
             }
         }
+
+        public void DebugListAllDisease()
+        {
+            Debug(6, string.Join(", ", Diseases.Values
+                    .Select(entry => $"type= {entry.Disease.name()}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
+            );
+        }
     }
 }

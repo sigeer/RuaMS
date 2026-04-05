@@ -88,6 +88,7 @@ public class StatEffect
     public int Prob { get; private set; }
     public char? DefenseAtt { get; private set; }
     public Disease? DefenseState { get; private set; }
+    public char DefenseStateChar { get; private set; }
 
 
     public bool isActive(Player applyto)
@@ -334,7 +335,9 @@ public class StatEffect
 
                 if (!string.IsNullOrEmpty(mobCard.DefenseState))
                 {
+                    DefenseStateChar = mobCard.DefenseState[0];
                     DefenseState = Disease.GetDiseaseByAb(mobCard.DefenseState);
+
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
 

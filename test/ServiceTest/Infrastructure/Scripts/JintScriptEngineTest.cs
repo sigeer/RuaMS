@@ -1,5 +1,7 @@
 using Application.Scripting.JS;
+using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace ServiceTest.Infrastructure.Scripts
 {
@@ -304,6 +306,44 @@ namespace ServiceTest.Infrastructure.Scripts
                 }
                 """;
             base.Script2CSharpArray();
+        }
+
+        [Test]
+        public async Task RaceCase()
+        {
+            var tasks = Enumerable.Range(0, 5).Select(_ => new Task(async () =>
+            {
+                var engine = new JintEngine();
+                engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
+                engine.Evaluate("""
+                function test() {
+                    return ScriptTestStaticClass.CheckOptional(false);
+                }
+                """);
+
+                while (true)
+                {
+                    engine.CallFunction("test");
+                    await Task.Delay(100);
+                }
+            }));
+
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    // unimportant code
+                    if (Random.Shared.NextDouble() < 0.3)
+                    {
+                        Debugger.Break();
+                    }
+
+                    await Task.Delay(100);
+                }
+            });
+
+            await Task.WhenAll(tasks);
+
         }
 
         //[Test]

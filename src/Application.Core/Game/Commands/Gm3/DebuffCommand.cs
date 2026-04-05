@@ -39,10 +39,7 @@ public class DebuffCommand : CommandBase
         {
             Player chr = (Player)mmo;
 
-            if (chr.getId() != player.getId())
-            {
-                chr.giveDebuff(disease, skill);
-            }
+            chr.giveDebuff(disease, skill);
         }
     }
 }

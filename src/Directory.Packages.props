@@ -37,7 +37,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.8" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Jint" Version="4.5.0" />
+    <PackageVersion Include="Jint" Version="4.7.1" />
     <PackageVersion Include="NLua" Version="1.7.8" />
     <PackageVersion Include="KeraLua" Version="1.4.9" />
   </ItemGroup>
