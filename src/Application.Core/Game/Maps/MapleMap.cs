@@ -286,10 +286,16 @@ public class MapleMap : IMap, INamedInstance
     {
         addMapObject(mapobject);
 
+        var mapItem = mapobject as MapItem;
         foreach (Player chr in getAllPlayers())
         {
             if (chr.getPosition().distanceSq(mapobject.getPosition()) <= getRangedDistance())
             {
+                if (mapItem != null && !chr.needQuestItem(mapItem.getQuest(), mapItem.getItemId()))
+                {
+                    continue;
+                }
+
                 chr.addVisibleMapObject(mapobject);
                 packetbakery?.Invoke(chr.Client);
             }
