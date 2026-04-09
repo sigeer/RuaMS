@@ -560,7 +560,10 @@ namespace Application.Core.Channel
         {
             foreach (var item in Servers.Values)
             {
-                item.OnTick(now);
+                item.Send(w =>
+                {
+                    w.OnTick(now);
+                });
             }
         }
     }

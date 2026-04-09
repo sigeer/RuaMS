@@ -14,7 +14,10 @@ namespace Application.Core.Channel.Tasks
         protected override void HandleRun()
         {
             _server.UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            _server.OnTick(_server.getCurrentTime());
+            _server.Send(n =>
+            {
+                n.OnTick(_server.getCurrentTime());
+            });
 
         }
 

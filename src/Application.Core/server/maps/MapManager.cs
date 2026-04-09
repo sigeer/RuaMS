@@ -102,7 +102,10 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         {
             if (item is ITickable tickable)
             {
-                tickable.OnTick(now);
+                item.Send(m =>
+                {
+                    m.OnTick(now);
+                });
 
                 if (tickable.Status == TickableStatus.Remove)
                 {

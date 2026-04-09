@@ -804,7 +804,7 @@ public class MapleMap : IMap, INamedInstance
     {
         foreach (var item in mapobjects.Values.AsValueEnumerable())
         {
-            if (item is Reactor r)
+            if (item is Reactor r && r.CheckHitItem(mapItem))
             {
                 r.HitByMapItem(mapItem);
                 return;
@@ -3015,7 +3015,6 @@ public class MapleMap : IMap, INamedInstance
         }
         sendObjectPlacement(chr.Client);
         OnPlayerEnter(chr);
-        hasLoadFirstUser = true;
     }
     private void sendObjectPlacement(IChannelClient c)
     {

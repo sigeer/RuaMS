@@ -23,7 +23,6 @@ namespace Application.Core.Game.Players
         /// <param name="target"></param>
         /// <param name="pto"></param>
         void forceChangeMap(IMap target, Portal? pto = null);
-        void enteredScript(string script, int mapid);
 
         void visitMap(IMap map);
 

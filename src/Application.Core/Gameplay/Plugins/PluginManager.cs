@@ -160,7 +160,7 @@ namespace Application.Core.Plugins
                 {
                     c.OnlinedCharacter.Pink(e.Message);
                 }
-                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}(FirstEnter)", reactor.getMap().Id, reactor.getId());
+                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
             }
         }
 
@@ -176,7 +176,7 @@ namespace Application.Core.Plugins
                 {
                     c.OnlinedCharacter.Pink(e.Message);
                 }
-                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}(FirstEnter)", reactor.getMap().Id, reactor.getId());
+                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
             }
         }
     }
