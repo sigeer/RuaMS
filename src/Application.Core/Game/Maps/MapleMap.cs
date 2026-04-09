@@ -2806,7 +2806,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (!chr.hasEntered(Id))
             {
-                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);\
+                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
                 chr.enteredScript(Id);
             }
         }
