@@ -22,6 +22,7 @@
     <Project Path="src/Application.Core/Application.Core.csproj" />
     <Project Path="src/Application.Host.Channel/Application.Host.Channel.csproj" />
     <Project Path="src/Application.Host/Application.Host.csproj" />
+    <Project Path="src/Application.Plugin.Script/Application.Plugin.Script.csproj" />
     <Project Path="src/Application.Protos/Application.Protos.csproj" />
     <Project Path="src/Application.Resources/Application.Resources.csproj" />
     <Project Path="src/Application.Scripting.JS/Application.Scripting.JS.csproj" />

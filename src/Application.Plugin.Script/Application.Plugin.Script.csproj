@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <BaseOutputPath>..\Application.Host\bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <Compile Remove="Events\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="Events\**" />
+    <None Remove="bin\**" />
+    <None Remove="Events\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+  </ItemGroup>
+
+</Project>

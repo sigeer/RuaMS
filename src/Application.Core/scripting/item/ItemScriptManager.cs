@@ -38,6 +38,7 @@ public class ItemScriptManager
 
     public void runItemScript(IChannelClient c, ScriptItemTemplate scriptItem)
     {
+        c.CurrentServer.NodeService.PluginManager.ItemScript(c, scriptItem.Npc, scriptItem.Script);
         c.CurrentServer.NPCScriptManager.StartScriptByItem(c, scriptItem.Npc, scriptItem.Script);
     }
 }

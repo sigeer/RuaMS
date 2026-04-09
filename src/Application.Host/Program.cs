@@ -161,6 +161,7 @@ try
         app.MapControllers();
     }
 
+    Demo.ExportNpc();
     app.Run();
 }
 catch (Exception ex)

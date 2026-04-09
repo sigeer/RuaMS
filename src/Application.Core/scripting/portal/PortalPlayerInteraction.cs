@@ -21,11 +21,11 @@
  */
 
 
-using scripting.map;
 using server.maps;
 using tools;
 
 namespace scripting.portal;
+
 public class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private Portal portal;
@@ -64,4 +64,6 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
     {
         return c.CurrentServer.NodeService.AdminService.GetServerStats().IsDevRoomAvailable;
     }
+
+
 }

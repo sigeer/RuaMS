@@ -9,6 +9,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
+using Application.Core.Plugins;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Servers;
@@ -139,6 +140,7 @@ namespace Application.Core.Channel
         public CommandLoop<WorldChannelServer> CommandLoop { get; }
 
         public TickableStatus Status => throw new NotImplementedException();
+        public PluginManager PluginManager { get; }
 
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
@@ -189,6 +191,8 @@ namespace Application.Core.Channel
 
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
+
+            PluginManager = new();
 
             _messageDispatcher = new(() => new(this));
             CommandLoop = new (this);
@@ -353,6 +357,9 @@ namespace Application.Core.Channel
 
             DataService.LoadAllPLife();
             DataService.LoadAllReactorDrops();
+
+            var plugin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.Script.dll");
+            PluginManager.LoadPlugin(plugin);
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {

@@ -40,13 +40,14 @@
 - **Application.Scripting.JS** js脚本引擎
 - **Application.Scripting.Lua** lua脚本引擎（未投入使用）
 - **Application.Benchmark** 重构代码时，在该项目测试新代码的性能是否优于旧代码
+- **Application.Plugin.Script** 脚本，使用C#重写，便于查找引用
 
 #### 资源说明
 
 ##### script
 
 当前使用的`scripts`来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server)。
-如果有其他java项目的脚本资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理（不能保证全覆盖）
+通过C#重写，需单独编译`Application.Plugin.Script`
 
 ##### wz
 

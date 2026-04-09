@@ -6,6 +6,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
+using Application.Core.Game.ContiMove;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
@@ -51,7 +52,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     private MapManager mapManager;
     public EventScriptManager EventScriptManager { get; }
-    public MapScriptManager MapScriptManager { get; }
     public ReactorScriptManager ReactorScriptManager { get; }
     public NPCScriptManager NPCScriptManager { get; }
     public PortalScriptManager PortalScriptManager { get; }
@@ -139,6 +139,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public List<ITickable> SubTickables { get; }
 
     public TickableStatus Status { get; }
+    public Dictionary<string, ContiMoveBase> ContiMoves { get; }
 
     public WorldChannel(int channelId, WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config, NettyChannelServer nettyServer)
     {
@@ -178,7 +179,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         OverallService = new OverallService(this);
 
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-        MapScriptManager = ActivatorUtilities.CreateInstance<MapScriptManager>(LifeScope.ServiceProvider, this);
         ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
         NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
         PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
@@ -192,7 +192,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         CommandLoop = new CommandLoop<WorldChannel>(this);
         InviteChannelHandlerRegistry = new();
 
-        SubTickables = [EventScriptManager, mapManager];
+        ContiMoves = new List<ContiMoveBase> { new AirPlane(this), new Boat(this), new Cabin(this), new Elevator(this), new Genie(this), new Subway(this), new Train(this) }
+            .ToDictionary(x => x.GetType().Name);
+        SubTickables = [];
     }
 
     public int getTransportationTime(double travelTime)
@@ -289,6 +291,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         InviteChannelHandlerRegistry.Register(new AllianceInviteChannelHandler(this, inviteHandlerLogger));
         InviteChannelHandlerRegistry.Register(new MessengerInviteChannelHandler(this, inviteHandlerLogger));
 
+        foreach (var item in ContiMoves)
+        {
+            item.Value.Initialize();
+        }
+        SubTickables.Add(mapManager);
+        SubTickables.Add(EventScriptManager); ;
+        SubTickables.AddRange(ContiMoves.Values);
+
         log.Information("[{ServerName}] 初始化完成", InstanceName);
 
         log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
@@ -303,6 +313,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
 
         CommandLoop.Start();
+        
         return Task.CompletedTask;
     }
 

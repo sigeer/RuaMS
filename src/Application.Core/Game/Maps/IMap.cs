@@ -20,10 +20,7 @@ namespace Application.Core.Game.Maps
     {
         int Id { get; }
         bool AutoRespawn { get; set; }
-        /// <summary>
-        /// "ChannelId_EventInstanceName_MapId";
-        /// </summary>
-        string InstanceName { get; }
+        bool IsPirateDocked { get; }
         XiGuai? XiGuai { get; set; }
         public WorldChannel ChannelServer { get; }
         FootholdTree Footholds { get; }
@@ -181,7 +178,6 @@ namespace Application.Core.Game.Maps
         List<Rectangle> getAreas();
         WorldChannel getChannelServer();
 
-        bool getDocked();
         Portal? getDoorPortal(int doorid);
         bool TryGetEffectiveDoorPortal(out MysticDoorPortal? portal);
 

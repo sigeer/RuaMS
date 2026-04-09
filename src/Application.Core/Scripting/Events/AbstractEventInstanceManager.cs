@@ -940,7 +940,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return list;
     }
 
-    private void dropExclusiveItems(Player chr)
+    public void dropExclusiveItems(Player chr)
     {
         chr.Bag.ClearPartyQuestItems();
         //AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();

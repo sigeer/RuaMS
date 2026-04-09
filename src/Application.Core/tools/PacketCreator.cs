@@ -6171,6 +6171,13 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet showHPQMoon()
+    {
+        OutPacket p = OutPacket.create(SendOpcode.BLOCKED_MAP);
+        p.writeInt(-1);
+        return p;
+    }
+
     public static Packet showEventInstructions()
     {
         OutPacket p = OutPacket.create(SendOpcode.GMEVENT_INSTRUCTIONS);

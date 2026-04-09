@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
+using Application.Core.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -14,6 +15,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public interface IServiceCenter
     {
+        PluginManager PluginManager { get; }
         ITimerManager TimerManager { get; }
         IServiceProvider ServiceProvider { get; }
         IItemDistributeService ItemDistributeService { get; }

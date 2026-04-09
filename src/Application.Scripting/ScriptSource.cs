@@ -44,6 +44,11 @@ namespace Application.Scripting
                 .Where(x => !x.StartsWith("__")).ToArray();
         }
 
+        public string[] GetSubScriptsPath(string types)
+        {
+            return Directory.GetFiles(Path.Combine(BaseDir, types)).ToArray();
+        }
+
         public string[] GetEvents() => GetSubScripts(EventDirName);
 
         public static ScriptSource Instance { get; set; } = null!;

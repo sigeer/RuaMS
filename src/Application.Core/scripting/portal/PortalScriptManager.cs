@@ -75,6 +75,10 @@ public class PortalScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
+            if (e is BusinessException)
+            {
+                c.OnlinedCharacter.Pink(e.Message);
+            }
             _logger.LogError(e, "Portal script error in: {ScriptName}", portal.getScriptName());
         }
         return false;

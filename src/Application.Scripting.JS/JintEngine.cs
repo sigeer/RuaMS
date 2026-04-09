@@ -56,17 +56,19 @@ namespace Application.Scripting.JS
         /// </returns>
         public ScriptResultWrapper CallFunction(string functionName, params object?[] paramsValue)
         {
-#if DEBUG
-            // 新的tickable设计下，断点调试时会报错
-            lock (_oLock)
-            {
-                var m = _engine.Invoke(functionName, paramsValue);
-                return new JintResultWrapper(m);
-            }
-#else
             var m = _engine.Invoke(functionName, paramsValue);
             return new JintResultWrapper(m);
-#endif
+//#if DEBUG
+//            // 新的tickable设计下，断点调试时会报错
+//            lock (_oLock)
+//            {
+//                var m = _engine.Invoke(functionName, paramsValue);
+//                return new JintResultWrapper(m);
+//            }
+//#else
+//            var m = _engine.Invoke(functionName, paramsValue);
+//            return new JintResultWrapper(m);
+//#endif
         }
 
         public void Dispose()

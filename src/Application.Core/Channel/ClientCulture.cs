@@ -35,7 +35,7 @@ namespace Application.Core.Channel
             var message = ClientMessage.ResourceManager.GetString(key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
-                Log.Logger.Warning("i18n未找到{Key}", key);
+                Log.Logger.Verbose("i18n未找到{Key}", key);
                 return key;
             }
             return string.Format(message, paramsValue);

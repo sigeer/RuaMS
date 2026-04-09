@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Acornima.Ast;
 using AllianceProto;
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
@@ -32,12 +33,15 @@ using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Events;
+using DotNetty.Transport.Channels;
 using GuildProto;
 using server;
 using server.expeditions;
 using server.partyquest;
+using System.Threading.Channels;
 using tools;
 using static server.partyquest.Pyramid;
+using static System.Collections.Specialized.BitVector32;
 
 
 namespace scripting.npc;
@@ -53,31 +57,20 @@ public class NPCConversationManager : AbstractPlayerInteraction
     private int npcOid;
     public ScriptMeta ScriptMeta { get; }
     private string? _getText;
-    private bool itemScript;
-    private List<Player> otherParty;
 
     public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
 
 
-
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<Player> otherParty, bool test) : base(c)
-    {
-        this.c = c;
-        this.npc = npc;
-        this.ScriptMeta = scriptName;
-        this.otherParty = otherParty;
-    }
-
-    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName, bool itemScript) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
         this.ScriptMeta = scriptName;
-        this.itemScript = itemScript;
-        this.otherParty = [];
+
+        _context = new ConversationContext(this);
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName)
     {
 
     }
@@ -766,6 +759,96 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
+
+
+    #region New Talk
+    ConversationContext _context;
+
+    public async Task Response(sbyte mode, sbyte type, int selection, string? inputText = null)
+    {
+        await _context.TalkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
+    }
+    public async Task SayNext(string text, byte speaker = 0)
+    {
+        var item = new ConversationItem(_context, NextLevelType.SEND_NEXT, text, speaker);
+        await SendNext(item);
+    } 
+
+    public async Task SendNext(ConversationItem item)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, item.Message, "00 01", item.Speaker));
+
+        await item.WaitingForAnswer();
+    }
+
+    public async Task SayPrev(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
+
+        var item = new ConversationItem(_context, NextLevelType.SEND_LAST, text, speaker);
+        await item.WaitingForPrevious();
+    }
+
+    public void SayNextPrev(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
+    }
+
+    public async Task SayOK(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
+        var item = new ConversationItem(_context, NextLevelType.SEND_OK, text, speaker);
+        await item.WaitingForAnswer();
+    }
+
+    public async Task<bool> SayYesNo(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
+        var item = new ConversationItem(_context, NextLevelType.SEND_YES_NO, text, speaker);
+        return await item.WaitingForAnswer();
+    }
+
+    public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
+        var item = new ConversationItem(_context, NextLevelType.SEND_ACCEPT_DECLINE, text, speaker);
+        return await item.WaitingForAnswer();
+    }
+
+    public async Task<int> SayOption(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
+        var item = new ConversationItem(_context, NextLevelType.SEND_SELECT, text);
+        return await item.WaitingForOption();
+    }
+
+    public async Task SayStyle(string text, int[] styles)
+    {
+        if (styles.Length > 0)
+        {
+            getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
+        }
+        else
+        {
+            // thanks Conrad for noticing empty styles crashing players
+            await SayOK("Sorry, there are no options of cosmetics available for you here at the moment.");
+        }
+    }
+
+    public async Task<int> SayInputNumber(string text, int def, int min, int max, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalkNum(npc, text, def, min, max, speaker));
+        var item = new ConversationItem(_context, NextLevelType.GET_INPUT_NUMBER, text, speaker);
+        return await item.WaitingForInputNumber();
+    }
+
+    public async Task<string?> SayInputText(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalkText(npc, text, "", speaker));
+        var item = new ConversationItem(_context, NextLevelType.GET_INPUT_TEXT, text, speaker);
+        return await item.WaitingForInputText();
+    }
+    #endregion
 
 
     #region NextLevelTalk

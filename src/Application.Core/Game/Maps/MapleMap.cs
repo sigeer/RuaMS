@@ -78,7 +78,7 @@ public class MapleMap : IMap, INamedInstance
     private int runningOid = 1000000001;
 
     private bool docked = false;
-    bool pirateDocked = false;
+    public bool IsPirateDocked { get; private set; }
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
 
     public bool AutoRespawn { get; set; }
@@ -2253,10 +2253,6 @@ public class MapleMap : IMap, INamedInstance
         this.docked = isDocked;
     }
 
-    public bool getDocked()
-    {
-        return this.docked;
-    }
 
     public int getSeats() => SourceTemplate.SeatCount;
 
@@ -2449,7 +2445,7 @@ public class MapleMap : IMap, INamedInstance
     public void broadcastEnemyShip(bool state)
     {
         broadcastMessage(PacketCreator.crogBoatPacket(state));
-        pirateDocked = state;
+        IsPirateDocked = state;
         this.setDocked(state);
     }
 
@@ -2773,7 +2769,7 @@ public class MapleMap : IMap, INamedInstance
     {
         ChannelServer.NodeService.TeamManager.ChannelNotify(chr);
 
-        if (pirateDocked)
+        if (IsPirateDocked)
         {
             chr.sendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
             chr.sendPacket(PacketCreator.crogBoatPacket(true));
@@ -2789,10 +2785,9 @@ public class MapleMap : IMap, INamedInstance
         // 可能离开了副本，新的地图没有EventInstanceManager
         chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
-
+    bool hasLoadFirstUser;
     public void addPlayer(Player chr)
     {
-        int chrSize;
 
         if (!characters.TryAdd(chr.Id, chr))
         {
@@ -2803,18 +2798,15 @@ public class MapleMap : IMap, INamedInstance
         addMapObject(chr, false);
         GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
 
-        chrSize = characters.Count;
-
         chr.updateActiveEffects();
 
         chr.MapDamageNext = ChannelServer.Node.getCurrentTime() + chr.MapDamagePeriod;
 
-        MapScriptManager msm = ChannelServer.MapScriptManager;
-        if (chrSize == 1)
+        if (onFirstUserEnter.Length != 0)
         {
-            if (onFirstUserEnter.Length != 0)
+            if (!hasLoadFirstUser)
             {
-                msm.runMapScript(chr.getClient(), this, "onFirstUserEnter/" + onFirstUserEnter, true);
+                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
             }
         }
 
@@ -2825,7 +2817,7 @@ public class MapleMap : IMap, INamedInstance
                 chr.saveLocation("INTRO");
             }
 
-            msm.runMapScript(chr.getClient(), this, "onUserEnter/" + onUserEnter, false);
+            chr.getClient().CurrentServer.NodeService.PluginManager.MapEnterScript(chr.getClient(), this);
         }
 
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
@@ -3022,6 +3014,7 @@ public class MapleMap : IMap, INamedInstance
         }
         sendObjectPlacement(chr.Client);
         OnPlayerEnter(chr);
+        hasLoadFirstUser = true;
     }
     private void sendObjectPlacement(IChannelClient c)
     {

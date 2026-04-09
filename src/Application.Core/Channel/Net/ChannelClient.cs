@@ -19,8 +19,6 @@ namespace Application.Core.Channel.Net
     public class ChannelClient : ClientBase, IChannelClient
     {
         IPacketProcessor<IChannelClient> _packetProcessor;
-        public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
-
         public ChannelClient(long sessionId, WorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
         {
@@ -168,7 +166,6 @@ namespace Application.Core.Channel.Net
             this.AccountEntity = null;
             this.Hwid = null;
             this.Character = null;
-            this.ScriptEngines.Dispose();
         }
 
 
@@ -320,21 +317,6 @@ namespace Application.Core.Channel.Net
             }
         }
 
-
-        public void setScriptEngine(string name, IEngine e)
-        {
-            ScriptEngines[name] = e;
-        }
-
-        public IEngine? getScriptEngine(string name)
-        {
-            return ScriptEngines[name];
-        }
-
-        public void removeScriptEngine(string name)
-        {
-            ScriptEngines.Remove(name);
-        }
         public bool GainCharacterSlot()
         {
             return CurrentServer.Node.Transport.GainCharacterSlot(AccountId);
