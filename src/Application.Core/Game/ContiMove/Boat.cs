@@ -18,7 +18,7 @@ namespace Application.Core.Game.ContiMove
         double _invasionARate = 0.42;
         double _invasionBRate = 0.42;
         public Boat(WorldChannel channelServer) : base(channelServer, 
-                200000100, 0, 101000300, 0, 
+                200000100, 0, 101000300, 1, 
                 200000112, 101000301, 
                 200090000, 200090010, 
                 200000111, 101000300, 5 * 60 * 1000, 4 * 60 * 1000, 10 * 60 * 1000,
@@ -115,8 +115,8 @@ namespace Application.Core.Game.ContiMove
         bool _summonAFlag;
         void SummonA()
         {
-            TransportAMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
-            TransportAMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
+            TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
+            TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
         }
 
         bool _approachBFlag;
@@ -136,8 +136,8 @@ namespace Application.Core.Game.ContiMove
         long _summonBDelay;
         void SummonB()
         {
-            TransportBMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
-            TransportBMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
+            TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
+            TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : IMapPlayer
     {
-        private Dictionary<int, string> entered = new();
+
 
         public override void setMap(IMap map)
         {
@@ -195,10 +195,27 @@ namespace Application.Core.Game.Players
             return -1;
         }
 
-        public void enteredScript(string script, int mapid)
+        private HashSet<int> entered = new();
+        public void enteredScript(int mapid)
         {
-            entered.TryAdd(mapid, script);
+            entered.Add(mapid);
         }
+
+        public void resetEnteredScript()
+        {
+            entered.Remove(MapModel.getId());
+        }
+
+        public void resetEnteredScript(int mapId)
+        {
+            entered.Remove(mapId);
+        }
+
+        public bool hasEntered(int mapId)
+        {
+            return entered.Contains(mapId);
+        }
+
 
         public void visitMap(IMap map)
         {

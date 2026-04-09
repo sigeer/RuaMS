@@ -5340,14 +5340,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 9220016 
-        [ScriptName("")]
-        public Task s_()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
         // Npc: 9220018 
         public Task guyfawkes_ch()

@@ -2785,7 +2785,7 @@ public class MapleMap : IMap, INamedInstance
         // 可能离开了副本，新的地图没有EventInstanceManager
         chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
-    bool hasLoadFirstUser;
+
     public void addPlayer(Player chr)
     {
 
@@ -2802,15 +2802,16 @@ public class MapleMap : IMap, INamedInstance
 
         chr.MapDamageNext = ChannelServer.Node.getCurrentTime() + chr.MapDamagePeriod;
 
-        if (onFirstUserEnter.Length != 0)
+        if (!string.IsNullOrEmpty(SourceTemplate.OnFirstUserEnter))
         {
-            if (!hasLoadFirstUser)
+            if (!chr.hasEntered(Id))
             {
-                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
+                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);\
+                chr.enteredScript(Id);
             }
         }
 
-        if (onUserEnter.Length != 0)
+        if (!string.IsNullOrEmpty(SourceTemplate.OnUserEnter))
         {
             if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
             {

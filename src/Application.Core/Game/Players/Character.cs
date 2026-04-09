@@ -2152,15 +2152,6 @@ public partial class Player
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
 
-    public bool hasEntered(string script)
-    {
-        return entered.Values.Any(x => x == script);
-    }
-
-    public bool hasEntered(string script, int mapId)
-    {
-        return entered.GetValueOrDefault(mapId) == script;
-    }
 
     public void hasGivenFame(Player to)
     {
@@ -3083,26 +3074,7 @@ public partial class Player
         this.battleshipHp = 400 * getSkillLevel(SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP)) + (bshipLevel * 200);
     }
 
-    public void resetEnteredScript()
-    {
-        entered.Remove(MapModel.getId());
-    }
 
-    public void resetEnteredScript(int mapId)
-    {
-        entered.Remove(mapId);
-    }
-
-    public void resetEnteredScript(string script)
-    {
-        foreach (int mapId in entered.Keys)
-        {
-            if (entered[mapId].Equals(script))
-            {
-                entered.Remove(mapId);
-            }
-        }
-    }
 
     public void saveLocationOnWarp()
     {  // suggestion to remember the map before warp command thanks to Lei

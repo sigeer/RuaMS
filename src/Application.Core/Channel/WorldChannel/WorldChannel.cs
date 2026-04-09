@@ -54,7 +54,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public EventScriptManager EventScriptManager { get; }
     public ReactorScriptManager ReactorScriptManager { get; }
     public NPCScriptManager NPCScriptManager { get; }
-    public PortalScriptManager PortalScriptManager { get; }
     public QuestScriptManager QuestScriptManager { get; }
     public DevtestScriptManager DevtestScriptManager { get; }
 
@@ -181,7 +180,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
         NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
-        PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
         Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();

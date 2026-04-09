@@ -246,7 +246,7 @@ namespace Application.Host.Services
         public static void ExportNpc()
         {
             var allWzData = ProviderSource.Instance.GetProvider<NpcProvider>()
-                .LoadAll().OfType<NpcTemplate>().Where(x => x.Script != null).Select(y => new { NpcId =y.TemplateId, y.Script })
+                .LoadAll().OfType<NpcTemplate>().Where(x => !string.IsNullOrEmpty(x.Script)).Select(y => new { NpcId =y.TemplateId, y.Script })
                 .GroupBy(x => x.Script).ToDictionary(x => x.Key, x => x.ToList());
 
             var allExsitedScripts = ScriptSource.Instance.GetSubScripts("npc")
