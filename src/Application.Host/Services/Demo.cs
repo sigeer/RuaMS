@@ -257,7 +257,7 @@ namespace Application.Host.Services
                     // Npc: {{string.Join(", ", x.Value.Select(y => y.NpcId ))}} {{(!IsValidMethodName(x.Key) ? (Environment.NewLine + "[ScriptName(\"" + x.Key + "\")]") : "")}}
                     public Task {{(!IsValidMethodName(x.Key) ? "s_" + x.Key : x.Key)}}()
                     {
-                        // TODO
+                        {{ (allExsitedScripts.Any(z => x.Key == z || x.Value.Any(y => y.NpcId.ToString() == z)) ? "// TODO" : "// NOT USED") }}
                         return Task.CompletedTask;
                     }
                     {{Environment.NewLine}}

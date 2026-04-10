@@ -503,6 +503,4 @@ public class Reactor : AbstractMapObject
             }
         }
     }
-
-    public string[]? GetScript() => getStats().ActionName;
 }

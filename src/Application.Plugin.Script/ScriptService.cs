@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.scripting.Infrastructure;
 using Application.Shared.Constants.Npc;
 using Application.Utility.Exceptions;
 using server.maps;
@@ -94,9 +95,25 @@ namespace Application.Plugin.Script
             }
 
             var talk = new NpcScript(c, npcId, npcObjectId);
-            c.NPCConversationManager = talk;
-            await (Task)methodInfo.Invoke(talk, null)!;
-            talk.dispose();
+            try
+            {
+                c.NPCConversationManager = talk;
+                await (Task)methodInfo.Invoke(talk, null)!;
+            }
+            catch (ConversationInterruptException)
+            {
+                // 对话中断
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                talk.dispose();
+            }
+
         }
 
         public async Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)

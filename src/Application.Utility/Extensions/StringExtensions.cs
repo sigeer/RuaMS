@@ -19,23 +19,5 @@ namespace Application.Utility.Extensions
                 str.AsSpan(start + oldStr.Length)
             );
         }
-
-        public static string[] SplitSuffixNumber(this string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return [input];
-
-            var match = Regex.Match(input, @"^(.*?)(\d+)$");
-            if (match.Success)
-            {
-                return new string[]
-                {
-                    match.Groups[1].Value,  // 前缀
-                    match.Groups[2].Value   // 数字
-                };
-            }
-
-            return [input];
-        }
     }
 }

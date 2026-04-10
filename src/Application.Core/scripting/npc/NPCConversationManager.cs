@@ -21,10 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Acornima.Ast;
 using AllianceProto;
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
@@ -33,7 +31,6 @@ using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Events;
-using DotNetty.Transport.Channels;
 using GuildProto;
 using server;
 using server.expeditions;
@@ -41,7 +38,6 @@ using server.partyquest;
 using System.Threading.Channels;
 using tools;
 using static server.partyquest.Pyramid;
-using static System.Collections.Specialized.BitVector32;
 
 
 namespace scripting.npc;
@@ -66,8 +62,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         this.npc = npc;
         this.npcOid = oid;
         this.ScriptMeta = scriptName;
-
-        _context = new ConversationContext(this);
     }
 
     public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName)
@@ -762,71 +756,145 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
 
     #region New Talk
-    ConversationContext _context;
+    Channel<TalkMoreAction> _talkChannel = System.Threading.Channels.Channel.CreateBounded<TalkMoreAction>(1);
 
     public async Task Response(sbyte mode, sbyte type, int selection, string? inputText = null)
     {
-        await _context.TalkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
+        await _talkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
     }
+
+    async Task<bool> WaitingForAnswer()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode == -1)
+        {
+            throw new ConversationInterruptException();
+        }
+
+        return action.Mode > 0;
+    }
+
+    async Task<int> WaitingForOption()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<int> WaitingForInputNumber()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<string?> WaitingForInputText()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.inputText;
+    }
+
     public async Task SayNext(string text, byte speaker = 0)
     {
-        var item = new ConversationItem(_context, NextLevelType.SEND_NEXT, text, speaker);
-        await SendNext(item);
-    } 
-
-    public async Task SendNext(ConversationItem item)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, item.Message, "00 01", item.Speaker));
-
-        await item.WaitingForAnswer();
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
+        await WaitingForAnswer();
     }
 
-    public async Task SayPrev(string text, byte speaker = 0)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="speaker"></param>
+    /// <param name="finalNext">最后一段显示下一步</param>
+    /// <returns></returns>
+    public async Task SaySpeech(string[] messages, byte speaker = 0, int current = 0, bool finalNext = true)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
-
-        var item = new ConversationItem(_context, NextLevelType.SEND_LAST, text, speaker);
-        await item.WaitingForPrevious();
+        while (current >= 0 && current < messages.Length)
+        {
+            var text = messages[current];
+            if (current == 0)
+            {
+                sendNext(text, speaker);
+                if (await WaitingForAnswer())
+                {
+                    current++;
+                }
+            }
+            else if (current == messages.Length - 1)
+            {
+                if (finalNext)
+                {
+                    sendNextPrev(text, speaker);
+                    current += (await WaitingForAnswer()) ? 1 : -1;
+                }
+                else
+                {
+                    sendPrev(text, speaker);
+                    if (!await WaitingForAnswer())
+                    {
+                        current--;
+                    }
+                }
+            }
+            else
+            {
+                sendNextPrev(text, speaker);
+                current += (await WaitingForAnswer()) ? 1 : -1;
+            }
+        }
     }
 
-    public void SayNextPrev(string text, byte speaker = 0)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
-    }
 
     public async Task SayOK(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
-        var item = new ConversationItem(_context, NextLevelType.SEND_OK, text, speaker);
-        await item.WaitingForAnswer();
+        sendOk(text, speaker);
+        await WaitingForAnswer();
     }
 
     public async Task<bool> SayYesNo(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
-        var item = new ConversationItem(_context, NextLevelType.SEND_YES_NO, text, speaker);
-        return await item.WaitingForAnswer();
+        sendYesNo(text, speaker);
+        return await WaitingForAnswer();
     }
 
     public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
-        var item = new ConversationItem(_context, NextLevelType.SEND_ACCEPT_DECLINE, text, speaker);
-        return await item.WaitingForAnswer();
+        sendAcceptDecline(text, speaker);
+        return await WaitingForAnswer();
     }
 
     public async Task<int> SayOption(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
-        var item = new ConversationItem(_context, NextLevelType.SEND_SELECT, text);
-        return await item.WaitingForOption();
+        sendSimple(text, speaker);
+        return await WaitingForOption();
+    }
+
+    public async Task<int> SayOption(string mainContent, IEnumerable<string> options, byte speaker = 0)
+    {
+        var finalContent = mainContent + "\r\n#b";
+        for (int i = 0; i < options.Count(); i++)
+        {
+            finalContent += $"#L{i}#{options.ElementAt(i)}#l\r\n";
+        }
+        finalContent += "#k";
+        return await SayOption(finalContent, speaker);
     }
 
     public async Task SayStyle(string text, int[] styles)
     {
         if (styles.Length > 0)
         {
-            getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
+            sendStyle(text, styles);
         }
         else
         {
@@ -837,16 +905,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public async Task<int> SayInputNumber(string text, int def, int min, int max, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalkNum(npc, text, def, min, max, speaker));
-        var item = new ConversationItem(_context, NextLevelType.GET_INPUT_NUMBER, text, speaker);
-        return await item.WaitingForInputNumber();
+        sendGetNumber(text, def, min, max, speaker);
+        return await WaitingForInputNumber();
     }
 
     public async Task<string?> SayInputText(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalkText(npc, text, "", speaker));
-        var item = new ConversationItem(_context, NextLevelType.GET_INPUT_TEXT, text, speaker);
-        return await item.WaitingForInputText();
+        sendGetText(text, speaker);
+        return await WaitingForInputText();
     }
     #endregion
 
