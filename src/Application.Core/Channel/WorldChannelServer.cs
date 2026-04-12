@@ -359,7 +359,10 @@ namespace Application.Core.Channel
             DataService.LoadAllReactorDrops();
 
             var plugin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.Script.dll");
-            PluginManager.LoadPlugin(plugin);
+            if (File.Exists(plugin))
+            {
+                PluginManager.LoadPlugin(plugin);
+            }            
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {

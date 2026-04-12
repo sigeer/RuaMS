@@ -2,6 +2,13 @@ namespace Application.Plugin.Script
 {
     internal partial class NpcScript
     {
+        // Npc: 1052001 
+        public Task rogue()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
 
         // Npc: 10203 
         public async Task infoRogue()
@@ -18,6 +25,14 @@ namespace Application.Plugin.Script
                 await SayNext("如果你想体验成为一个弓箭手的感觉，再来找我吧。");
             }
         }
+        // Npc: 1052114 
+        public Task enter_thief()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
         // Npc: 1072003 
         public async Task change_rogue()
         {

@@ -36,6 +36,22 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
+        // Npc: 1052004 
+        public Task face_henesys1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 1052005 
+        public Task face_henesys2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
 
         // Npc: 2041007 
         public Task hair_ludi1()
@@ -144,5 +160,60 @@ namespace Application.Plugin.Script
             // TODO
             return Task.CompletedTask;
         }
+
+        // Npc: 1052100 
+        public Task hair_kerning1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 1052101 
+        public Task hair_kerning2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+        // Npc: 2090100 
+        public Task hair_mureung1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 2090101 
+        public Task hair_mureung2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 2090102 
+        public Task skin_mureung1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 2090103 
+        public Task face_mureung1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 2090104 
+        public Task face_mureung2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
     }
 }
