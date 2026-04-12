@@ -28,9 +28,11 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using Application.Shared.Events;
+using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace server.expeditions;
 
@@ -87,6 +89,8 @@ public class Expedition : IClientMessenger
     private int minSize;
     private int maxSize;
 
+    public WorldChannel ChannelServer { get; }
+
     public Expedition(Player player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
     {
         leader = player;
@@ -97,6 +101,7 @@ public class Expedition : IClientMessenger
         minSize = (minPlayers != 0) ? minPlayers : type.getMinSize();
         maxSize = (maxPlayers != 0) ? maxPlayers : type.getMaxSize();
         bossLogs = new();
+        ChannelServer = startMap.getChannelServer();
     }
 
     public int getMinSize()
@@ -130,9 +135,9 @@ public class Expedition : IClientMessenger
         Expedition exped = this;
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMinutes(type.getRegistrationMinutes());
 
-        schedule = leader.Client.CurrentServer.TimerManager.schedule(() =>
+        schedule = ChannelServer.TimerManager.schedule(() =>
         {
-            leader.Client.CurrentServer.Post(new ExpeditionRegistrationTimeoutCommand(this));
+            ChannelServer.Send((c) => ProcessRegistrationTimeout());
         }, TimeSpan.FromMinutes(type.getRegistrationMinutes()));
     }
 
@@ -140,10 +145,16 @@ public class Expedition : IClientMessenger
     {
         if (registering)
         {
-            removeChannelExpedition(startMap.getChannelServer());
+            ChannelServer.Send(w =>
+            {
+                w.removeExpedition(this);
+            });
             if (!silent)
             {
-                startMap.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
+                startMap.Send(m =>
+                {
+                    m.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
+                });
             }
 
             dispose(false);
@@ -167,7 +178,11 @@ public class Expedition : IClientMessenger
     private void log()
     {
         string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
-        getLeader().Client.CurrentServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6, gmMessage, true));
+        ChannelServer.NodeActor
+            .Send(s =>
+            {
+                s.SendDropMessage(6, gmMessage, true);
+            });
 
         string log = type + " EXPEDITION\r\n";
         log += TimeUtils.GetTimeString(startTime) + "\r\n";
@@ -202,7 +217,11 @@ public class Expedition : IClientMessenger
             LightBlue(nameof(ClientMessage.Expedition_Start));
         }
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
-        startMap.ChannelServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName(), true));
+        ChannelServer.NodeActor
+            .Send(s =>
+            {
+                s.SendDropMessage(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName(), true);
+            });
     }
 
     public string addMember(Player player)

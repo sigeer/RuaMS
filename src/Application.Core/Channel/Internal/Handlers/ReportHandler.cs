@@ -17,7 +17,10 @@ namespace Application.Core.Channel.Internal.Handlers
         {
             if (res.Code != 0)
             {
-                _server.PushChannelCommand(new InvokeDropMessageCommand(res.MasterId, 5, $"玩家 {res.Victime} 不存在"));
+                _server.Broadcast(w =>
+                {
+                    w.Send(new InvokeDropMessageCommand(res.MasterId, 5, $"玩家 {res.Victime} 不存在"));
+                });
             }
 
         }

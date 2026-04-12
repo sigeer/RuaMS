@@ -23,10 +23,13 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.tools.RandomUtils;
+using Application.Scripting.JS;
 using Application.Templates.Item.Pet;
+using Application.Utility.Tickables;
 using client.inventory;
 using constants.game;
 using server.movement;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Game.Items;
@@ -34,7 +37,7 @@ namespace Application.Core.Game.Items;
 /**
  * @author Matze
  */
-public class Pet : Item
+public class Pet : Item, ILoopTickable
 {
     private int Fh;
     private Point pos;
@@ -51,6 +54,13 @@ public class Pet : Item
     public const int MaxLevel = 30;
 
     public override PetItemTemplate SourceTemplate { get; }
+
+    public long Period => 60_000;
+
+    public long Next { get; private set; }
+
+    public TickableStatus Status { get; private set; }
+
     public Pet(PetItemTemplate template, short position, long uniqueid) : base(template.TemplateId, position, 1)
     {
         SourceTemplate = template;
@@ -297,6 +307,48 @@ public class Pet : Item
         evolved.setExpiration(owner.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(nextPetTemplate.Life).ToUnixTimeMilliseconds());
 
         return evolved;
+    }
+
+    int step = 0;
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable() || PlayerInventory == null)
+        {
+            return;
+        }
+
+        if (PlayerInventory.Owner.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
+        {
+            return;
+        }
+
+        if (Status == TickableStatus.Active && Next >= now)
+        {
+            if (step % YamlConfig.config.server.PET_EXHAUST_COUNT == 0)
+            {
+                int newFullness = Fullness - SourceTemplate.Hungry;
+                if (newFullness <= 5)
+                {
+                    Fullness = 15;
+                    PlayerInventory.Owner.unequipPet(this, true, true);
+                    PlayerInventory.Owner.dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
+                }
+                else
+                {
+                    Fullness = newFullness;
+                    Item? petz = PlayerInventory.Owner.getInventory(InventoryType.CASH).getItem(getPosition());
+                    if (petz != null)
+                    {
+                        PlayerInventory.Owner.forceUpdateItem(petz);
+                    }
+                }
+            }
+            else
+            {
+                step++;
+            }
+            Next = now + Period;
+        }
     }
 }
 

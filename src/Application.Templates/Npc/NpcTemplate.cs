@@ -15,6 +15,10 @@ namespace Application.Templates.Npc
         public int? TrunkPut { get; set; }
         [WZPath("info/trunkGet")]
         public int? TrunkGet { get; set; }
+        [WZPath("info/guildRank")]
+        public bool GuildRank { get; set; }
+        [WZPath("info/parcel")]
+        public bool Parcel { get; }
         public NpcTemplate(int templateId)
             : base(templateId)
         {

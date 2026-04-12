@@ -58,7 +58,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             var options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver(),
+                ContractResolver = new PrivateContractResolver("ActionName", "Action"),
                 Formatting = Formatting.Indented
             };
 

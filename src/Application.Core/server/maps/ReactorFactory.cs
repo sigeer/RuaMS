@@ -76,6 +76,7 @@ public class ReactorFactory
                     stateInfo.TimeOut);
             }
         }
+        stats.SetAction(reactorData.Action);
         return stats;
     }
 
@@ -118,7 +119,7 @@ public class ReactorFactory
                 }
                 stats.addState((sbyte)item.State, statedatas, item.TimeOut);
             }
-
+            stats.SetAction(reactorData.Action);
             reactorStats[rid] = stats;
         }
         return stats;

@@ -48,10 +48,10 @@ public class QuestScriptManager : AbstractScriptManager
 
     private IEngine? getQuestScriptEngine(IChannelClient c, short questid)
     {
-        var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
+        var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()));
         if (engine == null && GameUtils.isMedalQuest(questid))
         {
-            engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"), c);   // start generic medal quest
+            engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"));   // start generic medal quest
         }
 
         return engine;
@@ -231,7 +231,6 @@ public class QuestScriptManager : AbstractScriptManager
         c.NPCConversationManager = null;
         _scripts.Remove(c);
         c.OnlinedCharacter.setNpcCooldown(c.CurrentServer.Node.getCurrentTime());
-        resetContext(GetQuestScriptPath(qm.getQuest().ToString()), c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 

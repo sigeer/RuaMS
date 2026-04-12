@@ -347,33 +347,20 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (chr.VisitingShop == null)
+                if (chr.VisitingShop == null || chr.VisitingShop.OwnerId != chr.Id)
                     return;
 
                 IPlayerShop manageShop = chr.VisitingShop;
-                if (chr.VisitingShop.Type == PlayerShopType.PlayerShop && chr.VisitingShop.OwnerId == chr.Id)
+                if (chr.VisitingShop.Type == PlayerShopType.PlayerShop)
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
                         chr.Bag.RemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
                     }
-
-                    var shop = (PlayerShop)chr.VisitingShop;
-
-                    chr.getMap().addMapObject(shop);
-                    chr.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(shop));
-
-                    shop.SetOpen();
                 }
-                if (chr.VisitingShop.Type == PlayerShopType.HiredMerchant && chr.VisitingShop.OwnerId == chr.Id)
-                {
-                    var merchant = (HiredMerchant)chr.VisitingShop;
-
-                    merchant.SetOpen();
-
-                    chr.getMap().addMapObject(merchant);
-                    chr.getMap().broadcastMessage(PacketCreator.spawnHiredMerchantBox(merchant));
-                }
+                chr.VisitingShop.SetOpen();
+                chr.MapModel.addMapObject(chr.VisitingShop);
+                chr.MapModel.broadcastMessage(chr.VisitingShop.MakeSpawnPacket());
                 c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())

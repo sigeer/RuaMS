@@ -6,6 +6,8 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterBuffRemoveCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterBuffRemoveCommand);
+
         Monster _mob;
         Dictionary<MonsterStatus, int> _stats;
 
@@ -15,7 +17,7 @@ namespace Application.Core.Channel.Commands
             _stats = stats;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {

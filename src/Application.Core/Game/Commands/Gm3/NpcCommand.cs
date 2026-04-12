@@ -18,16 +18,13 @@ public class NpcCommand : CommandBase
             player.yellowMessage("Syntax: !npc <npcid>");
             return;
         }
-        var npc = LifeFactory.Instance.getNPC(int.Parse(paramsValue[0]));
-        if (npc != null)
+
+        if (!int.TryParse(paramsValue[0], out var npcId))
         {
-            npc.setPosition(player.getPosition());
-            npc.setCy(player.getPosition().Y);
-            npc.setRx0(player.getPosition().X + 50);
-            npc.setRx1(player.getPosition().X - 50);
-            npc.setFh(player.getMap().Footholds.FindBelowFoothold(c.OnlinedCharacter.getPosition()).getId());
-            player.getMap().addMapObject(npc);
-            player.getMap().broadcastMessage(PacketCreator.spawnNPC(npc));
+            player.yellowMessage("Syntax: !npc <npcid>");
+            return;
         }
+
+        player.MapModel.SpawnNpc(npcId, player.getPosition());
     }
 }

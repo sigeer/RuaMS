@@ -57,5 +57,6 @@ namespace Application.Core.Game.Trades
         void SetMaintenance(Player chr);
 
         void sendMessage(Player fromChr, string msg);
+        Packet MakeSpawnPacket();
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Application.Shared.MapObjects
 {
-    public enum DropEnterFieldType
+    public enum DropEnterFieldType: byte
     {
         None = 0,
         SpawnMapItem = 1,

@@ -45,7 +45,10 @@ public class MiniDungeon
 
         timeoutTask = worldChannel.TimerManager.schedule(() =>
         {
-            worldChannel.Post(new MiniDungeonTimeoutCommand(this));
+            worldChannel.Send(w =>
+            {
+                ProcessTimeout();
+            });
         }, expireTime);
         expireTime += worldChannel.Node.getCurrentTime();
     }

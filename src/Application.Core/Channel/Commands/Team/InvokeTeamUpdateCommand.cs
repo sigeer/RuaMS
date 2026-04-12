@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeTeamUpdateCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeTeamUpdateCommand);
         UpdateTeamResponse res;
 
         public InvokeTeamUpdateCommand(UpdateTeamResponse res)
@@ -14,13 +15,13 @@ namespace Application.Core.Channel.Commands
             this.res = res;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             var operation = (PartyOperation)res.Request.Operation;
             var errorCode = (UpdateTeamCheckResult)res.Code;
             if (errorCode != UpdateTeamCheckResult.Success)
             {
-                var operatorPlayer = ctx.WorldChannel.getPlayerStorage().getCharacterById(res.Request.FromId);
+                var operatorPlayer = ctx.getPlayerStorage().GetCharacterClientById(res.Request.FromId);
                 if (operatorPlayer != null && operation != PartyOperation.SILENT_UPDATE && operation != PartyOperation.LOG_ONOFF)
                 {
                     // 人数已满
@@ -38,7 +39,7 @@ namespace Application.Core.Channel.Commands
 
             // ctx.WorldChannel.NodeService.TeamManager.SetTeam(res.Team);
 
-            var partyMembers = res.Team.Members.Select(x => ctx.WorldChannel.getPlayerStorage().getCharacterById(x.Id))
+            var partyMembers = res.Team.Members.Select(x => ctx.getPlayerStorage().getCharacterById(x.Id))
                 .Where(x => x != null && x.isLoggedinWorld()).ToList()!;
 
             foreach (var partychar in partyMembers)
@@ -47,7 +48,7 @@ namespace Application.Core.Channel.Commands
                 partychar.sendPacket(TeamPacketCreator.UpdateParty(partychar.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
             }
 
-            var targetPlayer = ctx.WorldChannel.getPlayerStorage().getCharacterById(res.Request.TargetId);
+            var targetPlayer = ctx.getPlayerStorage().getCharacterById(res.Request.TargetId);
             if (operation == PartyOperation.JOIN)
             {
                 if (targetPlayer != null)
@@ -117,7 +118,7 @@ namespace Application.Core.Channel.Commands
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
             {
-                var mc = ctx.WorldChannel.getPlayerStorage().getCharacterById(res.Request.FromId);
+                var mc = ctx.getPlayerStorage().getCharacterById(res.Request.FromId);
                 if (mc != null && targetPlayer != null && mc.Channel == targetPlayer.Channel)
                 {
                     var eim = mc.getEventInstance();
@@ -132,9 +133,9 @@ namespace Application.Core.Channel.Commands
 
                         if (MiniDungeonInfo.isDungeonMap(oldLeaderMapid))
                         {
-                            if (oldLeaderMapid != targetPlayer.getMapId() && ctx.WorldChannel.Id == mc.Channel)
+                            if (oldLeaderMapid != targetPlayer.getMapId() && ctx.Id == mc.Channel)
                             {
-                                var mmd = ctx.WorldChannel.getMiniDungeon(oldLeaderMapid);
+                                var mmd = ctx.getMiniDungeon(oldLeaderMapid);
                                 if (mmd != null)
                                 {
                                     mmd.close();

@@ -1,3 +1,4 @@
+using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
@@ -5,6 +6,8 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
+using Application.Core.Game.ContiMove;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.ServerTransports;
@@ -12,6 +15,7 @@ using Application.Shared.Events;
 using Application.Shared.Servers;
 using Application.Utility.Performance;
 using Application.Utility.Pipeline;
+using Application.Utility.Tickables;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
@@ -24,13 +28,14 @@ using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<ChannelCommandContext>, INamedInstance, IChannelServer
+public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer
 {
     public int Id => channel;
     public string InstanceName { get; }
@@ -46,11 +51,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public AbstractNettyServer NettyServer { get; }
 
     private MapManager mapManager;
-    private EventScriptManager eventSM;
-    public MapScriptManager MapScriptManager { get; }
+    public EventScriptManager EventScriptManager { get; }
     public ReactorScriptManager ReactorScriptManager { get; }
     public NPCScriptManager NPCScriptManager { get; }
-    public PortalScriptManager PortalScriptManager { get; }
     public QuestScriptManager QuestScriptManager { get; }
     public DevtestScriptManager DevtestScriptManager { get; }
 
@@ -116,29 +119,27 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
-    public WorldChannelCommandLoop CommandLoop { get; }
+    public CommandLoop<WorldChannel> CommandLoop { get; }
     public EventRecallManager? EventRecallManager { get; private set; }
-
-    RespawnTask? _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public IServerBase<IChannelServerTransport> Node { get; }
-    public IActor<ChannelNodeCommandContext> NodeActor { get; }
+    public IActorInstance<WorldChannelServer> NodeActor { get; }
     public IServiceCenter NodeService { get; }
     public IMapper Mapper { get; }
     public ITimerManager TimerManager { get; private set; } = null!;
 
-    public CharacterDiseaseManager CharacterDiseaseManager { get; }
-    public PetHungerManager PetHungerManager { get; }
-
-    public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
-    public MapObjectManager MapObjectManager { get; }
-    public MountTirednessManager MountTirednessManager { get; }
     public MapOwnershipManager MapOwnershipManager { get; }
     public ServerMessageManager ServerMessageManager { get; }
     public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
     public Dictionary<int, Door?> PlayerDoors { get; }
+
+    public List<ITickable> SubTickables { get; }
+
+    public TickableStatus Status { get; }
+    public Dictionary<string, ContiMoveBase> ContiMoves { get; }
+
     public WorldChannel(int channelId, WorldChannelServer serverContainer, IServiceScope scope, string serverHost, ChannelConfig config, NettyChannelServer nettyServer)
     {
         channel = channelId;
@@ -176,26 +177,22 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         MobStatusService = new MobStatusService(this);
         OverallService = new OverallService(this);
 
-        eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-        MapScriptManager = ActivatorUtilities.CreateInstance<MapScriptManager>(LifeScope.ServiceProvider, this);
+        EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
         NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
-        PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
         Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();
 
-        CharacterDiseaseManager = new CharacterDiseaseManager(this);
-        PetHungerManager = new PetHungerManager(this);
-
-        CharacterHpDecreaseManager = new CharacterHpDecreaseManager(this);
-        MapObjectManager = new MapObjectManager(this);
-        MountTirednessManager = new MountTirednessManager(this);
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
 
-        CommandLoop = new WorldChannelCommandLoop(this);
+        CommandLoop = new CommandLoop<WorldChannel>(this);
         InviteChannelHandlerRegistry = new();
+
+        ContiMoves = new List<ContiMoveBase> { new AirPlane(this), new Boat(this), new Cabin(this), new Elevator(this), new Genie(this), new Subway(this), new Train(this) }
+            .ToDictionary(x => x.GetType().Name);
+        SubTickables = [];
     }
 
     public int getTransportationTime(double travelTime)
@@ -267,9 +264,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             return;
         }
 
-        eventSM.dispose();
-        eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-        eventSM.ReloadEventScript();
+        EventScriptManager.ReloadEventScript();
     }
     public async Task Initialize(Config.RegisterServerResult config)
     {
@@ -280,14 +275,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         log.Information("[{ServerName}] 初始化事件...", InstanceName);
-        var loadedEventsCount = eventSM.ReloadEventScript();
+        var loadedEventsCount = EventScriptManager.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
-
-        _respawnTask = new RespawnTask(this);
-        _respawnTask.Register(TimerManager);
-        new ChannelTickTask(this).Register(TimerManager);
 
         EventRecallManager = new EventRecallManager(this);
         EventRecallManager.Register(TimerManager);
@@ -297,6 +288,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         InviteChannelHandlerRegistry.Register(new GuildInviteChannelHandler(this, inviteHandlerLogger));
         InviteChannelHandlerRegistry.Register(new AllianceInviteChannelHandler(this, inviteHandlerLogger));
         InviteChannelHandlerRegistry.Register(new MessengerInviteChannelHandler(this, inviteHandlerLogger));
+
+        foreach (var item in ContiMoves)
+        {
+            item.Value.Initialize();
+        }
+        SubTickables.Add(mapManager);
+        SubTickables.Add(EventScriptManager); ;
+        SubTickables.AddRange(ContiMoves.Values);
 
         log.Information("[{ServerName}] 初始化完成", InstanceName);
 
@@ -311,7 +310,8 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         IsRunning = true;
         log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
 
-        CommandLoop.Start(InstanceName);
+        CommandLoop.Start();
+        
         return Task.CompletedTask;
     }
 
@@ -334,16 +334,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
             await NettyServer.Stop();
             log.Information("[{ServerName}] 停止监听", InstanceName);
 
-            if (_respawnTask != null)
-            {
-                await _respawnTask.StopAsync();
-            }
-
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);
             await PlayerShopManager.DisposeAsync();
 
-            eventSM.dispose();
+            EventScriptManager.Dispose();
 
             mapManager.Dispose();
 
@@ -466,7 +461,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
 
     public EventScriptManager getEventSM()
     {
-        return eventSM;
+        return EventScriptManager;
     }
 
     public void broadcastGMPacket(Packet packet)
@@ -539,12 +534,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         return new(expeditions.Values);
     }
 
-
-    public bool isActive()
-    {
-        EventScriptManager esm = this.getEventSM();
-        return esm != null && esm.isActive();
-    }
 
     public void setServerMessage(string message)
     {
@@ -773,8 +762,23 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, IActor<Chan
         }
     }
 
-    public void Post(ICommand<ChannelCommandContext> command)
+    public void Send(ICommand command)
     {
         CommandLoop.Register(command);
+    }
+
+    public void OnTick(long now)
+    {
+        this.ProcessSubTickables(now);
+    }
+
+    public void Send(Func<WorldChannel, Task> action)
+    {
+        Send(new AsyncChannelDelegateCommand(action)); 
+    }
+
+    public void Send(Action<WorldChannel> action)
+    {
+        Send(new ChannelDelegateCommand(action));
     }
 }

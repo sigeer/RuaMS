@@ -8,6 +8,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterApplyDamageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MonsterApplyDamageCommand);
         readonly Monster _monster;
         private Player chr;
         private MonsterStatusEffect status;
@@ -25,7 +26,7 @@ namespace Application.Core.Channel.Commands
             this.map = chr.getMap();
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             int curHp = _monster.getHp();
             if (curHp <= 1)

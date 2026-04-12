@@ -1,9 +1,11 @@
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using AutoMapper;
+using client.inventory;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using ItemProto;
+using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
@@ -21,7 +23,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(UseItemMegaphoneBroadcast res)
             {
-                _server.PushChannelCommand(new InvokeMegaphoneCommand(res));
+                _server.Broadcast(w =>
+                {
+                    var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.Map<Item>(res.Request.Item));
+                    w.broadcastPacket(p);
+                });
             }
 
             protected override UseItemMegaphoneBroadcast Parse(ByteString data) => UseItemMegaphoneBroadcast.Parser.ParseFrom(data);

@@ -53,13 +53,11 @@ namespace Application.Core.Game.Players
 
         public void collectDiseases()
         {
-            var chrDiseases = Diseases.Values.ToList();
-
             foreach (Player chr in MapModel.getAllPlayers())
             {
                 int cid = chr.getId();
 
-                foreach (var di in chrDiseases)
+                foreach (var di in chr.Diseases.Values.ToList())
                 {
                     Disease disease = di.Disease;
                     MobSkill skill = di.FromMobSkill;
@@ -164,6 +162,13 @@ namespace Application.Core.Game.Players
             {
                 dispelDebuff(item);
             }
+        }
+
+        public void DebugListAllDisease()
+        {
+            Debug(6, string.Join(", ", Diseases.Values
+                    .Select(entry => $"type= {entry.Disease.name()}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
+            );
         }
     }
 }

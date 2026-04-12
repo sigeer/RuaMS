@@ -24,97 +24,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        long _itemExpiredNextCheck = 0;
-        public void ClearExpiredItems(long currenttime)
-        {
-            if (_itemExpiredNextCheck > 0 && _itemExpiredNextCheck - currenttime < 60_000)
-            {
-                return;
-            }
-
-            _itemExpiredNextCheck = currenttime;
-
-            bool deletedCoupon = false;
-
-            List<Item> toberemove = new();
-            foreach (Inventory inv in Bag.GetValues())
-            {
-                foreach (Item item in inv.list())
-                {
-                    long expiration = item.getExpiration();
-
-                    if (expiration != -1 && (expiration < currenttime) && ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK))
-                    {
-                        short lockObj = item.getFlag();
-                        lockObj &= ~(ItemConstants.LOCK);
-                        item.setFlag(lockObj); //Probably need a check, else people can make expiring items into permanent items...
-                        item.setExpiration(-1);
-                        forceUpdateItem(item);   //TEST :3
-                    }
-                    else if (expiration != -1 && expiration < currenttime)
-                    {
-                        if (!ItemConstants.isPet(item.getItemId()))
-                        {
-                            sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                            toberemove.Add(item);
-                            if (ItemConstants.isRateCoupon(item.getItemId()))
-                            {
-                                deletedCoupon = true;
-                            }
-                        }
-                        else if (item is Pet pet)
-                        {
-                            if (pet != null)
-                            {
-                                unequipPet(pet, true);
-                            }
-
-                            if (ItemConstants.isExpirablePet(item.getItemId()))
-                            {
-                                sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                                toberemove.Add(item);
-                            }
-                            else
-                            {
-                                item.setExpiration(-1);
-                                forceUpdateItem(item);
-                            }
-                        }
-                    }
-                }
-
-                if (toberemove.Count > 0)
-                {
-                    foreach (Item item in toberemove)
-                    {
-                        Bag.RemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
-                    }
-
-                    ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                    foreach (Item item in toberemove)
-                    {
-                        var replace = ii.GetReplaceItemTemplate(item.getItemId());
-                        if (replace != null)
-                        {
-                            if (!string.IsNullOrEmpty(replace.Message))
-                            {
-                                Notice(replace.Message);
-                            }
-                            GainItem(replace.ItemId, 1,
-                                expires: (long)TimeSpan.FromMinutes(replace.Period).TotalMilliseconds);
-                        }
-                    }
-
-                    toberemove.Clear();
-                }
-
-                if (deletedCoupon)
-                {
-                    updateCouponRates();
-                }
-            }
-        }
-
         public Inventory getInventory(InventoryType type)
         {
             return Bag[type];
@@ -284,7 +193,7 @@ namespace Application.Core.Game.Players
         /// <returns>是否成功</returns>
         public bool TryGainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("Meso", gain);
@@ -309,7 +218,7 @@ namespace Application.Core.Game.Players
         /// <returns>超出上限后无法拾取的数量</returns>
         public int GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainMeso");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("Meso", gain);
@@ -380,7 +289,7 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            using var activity = GameMetrics.ActivitySource.StartActivity("Player:GainItem");
+            using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainItem");
             activity?.SetTag("PlayerId", Id);
             activity?.SetTag("Player", Name);
             activity?.SetTag("ItemId", itemId);

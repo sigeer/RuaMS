@@ -37,12 +37,19 @@ namespace Application.Scripting
             return relativePath;
         }
 
-        public string[] GetEvents()
+        public string[] GetSubScripts(string types)
         {
-            return Directory.GetFiles(Path.Combine(BaseDir, EventDirName))
+            return Directory.GetFiles(Path.Combine(BaseDir, types))
                 .Select(x => Path.GetFileNameWithoutExtension(x))
                 .Where(x => !x.StartsWith("__")).ToArray();
         }
+
+        public string[] GetSubScriptsPath(string types)
+        {
+            return Directory.GetFiles(Path.Combine(BaseDir, types)).ToArray();
+        }
+
+        public string[] GetEvents() => GetSubScripts(EventDirName);
 
         public static ScriptSource Instance { get; set; } = null!;
     }

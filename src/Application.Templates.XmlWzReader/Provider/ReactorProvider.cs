@@ -36,7 +36,7 @@ namespace Application.Templates.XmlWzReader.Provider
                 int linkedId = -1;
                 foreach (var rootPropNode in xDoc.Elements())
                 {
-                    var rootPropName = rootPropNode.Attribute("name")?.Value;
+                    var rootPropName = rootPropNode.GetName();
                     if (rootPropName == "info")
                     {
                         foreach (var infoPropNode in rootPropNode.Elements())
@@ -98,6 +98,10 @@ namespace Application.Templates.XmlWzReader.Provider
                             }
                         }
                         list.Add(stateInfo);
+                    }
+                    else if (rootPropName == "action")
+                    {
+                        pEntry.Action = rootPropNode.GetStringValue();
                     }
                 }
                 pEntry.StateInfoList = list.OrderBy(x => x.State).ToArray();

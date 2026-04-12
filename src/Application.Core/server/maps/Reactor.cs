@@ -23,8 +23,12 @@
 
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
+using Jint;
+using Jint.Runtime;
 using net.server.services.task.channel;
 using server.partyquest;
+using System.Numerics;
+using System.Xml.Linq;
 using tools;
 
 namespace server.maps;
@@ -174,11 +178,6 @@ public class Reactor : AbstractMapObject
         cancelReactorTimeout();
         setShouldCollect(true);
         refreshReactorTimeout();
-
-        if (MapModel != null)
-        {
-            MapModel.searchItemReactors(this);
-        }
     }
 
     public void forceHitReactor(sbyte newState)
@@ -214,8 +213,10 @@ public class Reactor : AbstractMapObject
             {
                 timeoutTask = null;
 
-                MapModel.ChannelServer.Post(new ReactorSetStateCommand(this, nextState));
-
+                MapModel.Send(map =>
+                {
+                    tryForceHitReactor(nextState);
+                });
             }, timeOut);
         }
     }
@@ -224,7 +225,10 @@ public class Reactor : AbstractMapObject
     {
         c.CurrentServer.TimerManager.schedule(() =>
         {
-            c.CurrentServer.Post(new ReactorHitCommand(this, c));
+            MapModel.Send(map =>
+            {
+                hitReactor(c);
+            });
         }, delay);
     }
 
@@ -246,10 +250,7 @@ public class Reactor : AbstractMapObject
             cancelReactorTimeout();
             attackHit = wHit;
 
-            if (YamlConfig.config.server.USE_DEBUG)
-            {
-                c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
-            }
+            c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
             c.CurrentServer.ReactorScriptManager.onHit(c, this);
 
             int reactorType = stats.getType(state);
@@ -310,10 +311,6 @@ public class Reactor : AbstractMapObject
 
                             setShouldCollect(true);     // refresh collectability on item drop-based reactors
                             refreshReactorTimeout();
-                            if (stats.getType(state) == 100)
-                            {
-                                MapModel.searchItemReactors(this);
-                            }
                         }
                         break;
                     }
@@ -330,10 +327,6 @@ public class Reactor : AbstractMapObject
 
                 setShouldCollect(true);
                 refreshReactorTimeout();
-                if (stats.getType(state) == 100)
-                {
-                    MapModel.searchItemReactors(this);
-                }
             }
 
 
@@ -346,6 +339,7 @@ public class Reactor : AbstractMapObject
 
     /// <summary>
     /// 只要箱子能重生，就不会从地图上移除，只是看不见
+    /// 2次调用才会真的移除？
     /// </summary>
     /// <returns></returns>
     public bool destroy()
@@ -455,38 +449,57 @@ public class Reactor : AbstractMapObject
         return getName();
     }
 
+    public bool CheckHitItem(MapItem mapItem)
+    {
+        if (getReactorType() != 100)
+        {
+            return false;
+        }
+
+        if (!getArea().Contains(mapItem.getPosition()))
+        {
+            return false;
+        }
+
+        var reactItem = getReactItem(getEventState());
+        if (reactItem == null)
+        {
+            return false;
+        }
+
+        return reactItem.ItemId == mapItem.getItemId() && reactItem.Quantity == mapItem.getItem()!.getQuantity();
+    }
+
     public void HitByMapItem(MapItem mapItem)
     {
         if (getReactorType() == 100)
         {
             if (getShouldCollect() == true && mapItem != null && mapItem == MapModel.getMapObject(mapItem.getObjectId()))
             {
-                    if (mapItem.isPickedUp())
-                    {
-                        return;
-                    }
+                if (mapItem.isPickedUp())
+                {
+                    return;
+                }
 
-                    var ownerClient = mapItem.getOwnerClient();
-                    if (ownerClient == null)
-                    {
-                        return;
-                    }
-                    mapItem.setPickedUp(true);
-                    MapModel.unregisterItemDrop(mapItem);
+                var ownerClient = mapItem.getOwnerClient();
+                if (ownerClient == null)
+                {
+                    return;
+                }
 
-                    setShouldCollect(false);
-                    MapModel.broadcastMessage(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem.getPosition());
+                MapModel.pickItemDrop(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem);
+                setShouldCollect(false);
 
-                    hitReactor(ownerClient);
+                hitReactor(ownerClient);
 
-                    if (getDelay() > 0)
-                    {
-                        var reactorMap = getMap();
+                if (getDelay() > 0)
+                {
+                    var reactorMap = getMap();
 
-                        OverallService service = reactorMap.getChannelServer().OverallService;
-                        service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
-                    }
-  
+                    OverallService service = reactorMap.getChannelServer().OverallService;
+                    service.registerOverallAction(reactorMap.getId(), new ReactorRespawnCommand(this, false), getDelay());
+                }
+
             }
         }
     }

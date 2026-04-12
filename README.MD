@@ -1,11 +1,14 @@
 
-## 项目介绍
+# 项目介绍
+
+![.NET](https://img.shields.io/badge/net10.0-512bd4?logo=.NET&labelColor=gray)
+[![Build Check](https://github.com/sigeer/RuaMS/actions/workflows/build.yml/badge.svg)](https://github.com/sigeer/RuaMS/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/sigeer/RuaMS)](https://github.com/sigeer/RuaMS/blob/master/LICENSE)
 
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-
-### 注意 ❗
+## 注意 ❗
 
 大量内容未经测试，可能出现大量BUG，不建议搭建游玩。
 
@@ -37,13 +40,14 @@
 - **Application.Scripting.JS** js脚本引擎
 - **Application.Scripting.Lua** lua脚本引擎（未投入使用）
 - **Application.Benchmark** 重构代码时，在该项目测试新代码的性能是否优于旧代码
+- **Application.Plugin.Script** 脚本，使用C#重写，便于查找引用
 
 #### 资源说明
 
 ##### script
 
 当前使用的`scripts`来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server)。
-如果有其他java项目的脚本资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理（不能保证全覆盖）
+通过C#重写，需单独编译`Application.Plugin.Script`
 
 ##### wz
 
@@ -52,7 +56,7 @@
 ### tools
 
 - **CodeMigration**：转换代码的迁移工具
-	- ReplaceJsContent类：用于替换js脚本中的Java代码
+  - ReplaceJsContent类：用于替换js脚本中的Java代码
 
 ### test
 
@@ -80,7 +84,6 @@
 
 1. `Application.Host`的设置：解除`Kestrel:Endpoints:grpc`节的注释
 2. `Application.Host.Channel`的设置`Services:ruams-master:grpc`
-
 
 ### 单进程模式（master-standalone）
 

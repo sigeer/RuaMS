@@ -57,8 +57,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity = [];
         SoldHistory = [];
         BlackList = [];
-
-        setMap(owner.getMap());
         Channel = owner.Channel;
 
         TypeName = "shop";
@@ -194,7 +192,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public void GainMeso(int meso)
     {
-        using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShop:GainMeso");
+        using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShopGainMeso");
         activity?.SetTag("PlayerId", Owner.Id);
         activity?.SetTag("Player", Owner.Name);
         activity?.SetTag("Meso", meso);
@@ -464,6 +462,8 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     {
         client.sendPacket(PacketCreator.updatePlayerShopBox(this));
     }
+
+    public Packet MakeSpawnPacket() => PacketCreator.updatePlayerShopBox(this);
 
     public override MapObjectType getType()
     {

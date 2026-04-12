@@ -53,7 +53,7 @@ namespace Application.Utility.Extensions
         {
             ref TValue? v = ref CollectionsMarshal.GetValueRefOrAddDefault(dictionary, key, out var exisits);
             if (exisits)
-                return v;
+                return v!;
             v = value;
             return v;
         }
@@ -62,7 +62,7 @@ namespace Application.Utility.Extensions
         {
             ref TValue? v = ref CollectionsMarshal.GetValueRefOrAddDefault(dictionary, key, out var exisits);
             if (exisits )
-                return v;
+                return v!;
             v = valueFuc();
             return v;
         }

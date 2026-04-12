@@ -1,13 +1,18 @@
+using Application.Utility.Tickables;
 using tools;
 
 namespace Application.Core.Game.Maps;
 
 
-public class Kite : AbstractMapObject
+public class Kite : AbstractMapObject, ILifedTickable
 {
     private Point pos;
     public int OwnerId { get; }
     public string OwnerName { get; }
+
+    public long ExpiredAt { get; }
+    public TickableStatus Status { get; protected set; }
+
     private string text;
     private int ft;
     private int itemid;
@@ -20,6 +25,8 @@ public class Kite : AbstractMapObject
         ft = owner.getFh();
         this.text = text;
         itemid = itemId;
+
+        ExpiredAt = owner.getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.KITE_EXPIRE_TIME;
     }
 
     public override MapObjectType getType()
@@ -51,5 +58,19 @@ public class Kite : AbstractMapObject
     public Packet makeDestroyData()
     {
         return PacketCreator.removeKite(getObjectId(), 0);
+    }
+
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable())
+        {
+            return;
+        }
+
+        if (ExpiredAt <= now)
+        {
+            Status = TickableStatus.Remove;
+            return;
+        }
     }
 }

@@ -27,27 +27,22 @@ using Application.Core.Channel.Events;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Resources.Messages;
-using Application.Shared.Objects;
 using Application.Shared.WzEntity;
+using Application.Utility.Tickables;
 using client.status;
-using Google.Protobuf.Collections;
-using Jint.Native.ShadowRealm;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
-using server.loot;
 using System.Threading;
 using tools;
 using ZLinq;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Life;
 
-public class Monster : AbstractLifeObject, ICombatantObject
+public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 {
     private ILogger log;
 
@@ -78,8 +73,8 @@ public class Monster : AbstractLifeObject, ICombatantObject
     /// 玩家对其造成的伤害记录
     /// </summary>
     private Dictionary<int, AtomicLong> takenDamage = new();
-    private ScheduledFuture? monsterItemDrop = null;
-    private IWorldChannelCommand? removeAfterAction = null;
+
+
     private bool availablePuppetUpdate = true;
     /// <summary>
     /// 有值时，不走默认的drop_data
@@ -115,6 +110,16 @@ public class Monster : AbstractLifeObject, ICombatantObject
     Lazy<List<Monster>> _revivingMonsters;
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
 
+    public long Period { get; private set; } = -1;
+
+    /// <summary>
+    /// removeAfter
+    /// </summary>
+    public long Next { get; private set; } = long.MaxValue;
+    int _autoRemoveAction = -1;
+
+    public TickableStatus Status { get; private set; }
+
     public Monster(int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id)
     {
         setStance(5);
@@ -133,6 +138,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     public override void setMap(IMap map)
     {
         base.setMap(map);
+
         DispatchMonsterSpawned();
     }
 
@@ -204,18 +210,6 @@ public class Monster : AbstractLifeObject, ICombatantObject
         this.calledMobOids = null;
     }
 
-    public void pushRemoveAfterAction(IWorldChannelCommand run)
-    {
-        this.removeAfterAction = run;
-    }
-
-    public IWorldChannelCommand? popRemoveAfterAction()
-    {
-        var r = this.removeAfterAction;
-        this.removeAfterAction = null;
-
-        return r;
-    }
 
     public int getHp()
     {
@@ -458,14 +452,14 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 // should work ;p
                 if (getHp() <= selfDestr.Hp)
                 {
-                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, delay);
+                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
                     return true;
                 }
             }
 
             if (!this.isAlive())
             {
-                MapModel.RemoveMob(this, attacker, true, delay);
+                MapModel.RemoveMob(this, attacker, true, dropDelay: delay);
             }
             return true;
         }
@@ -914,24 +908,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
         return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
     }
 
-    void dropFromFriendlyMonster(long delay)
-    {
-        Monster m = this;
-        monsterItemDrop = MapModel.ChannelServer.TimerManager.register(() =>
-        {
-            MapModel.ChannelServer.Post(new MonsterFriendlyDropCommand(m));
-        }, delay, delay);
-    }
-
     public void FriendlyDrop()
     {
         if (!isAlive())
         {
-            if (monsterItemDrop != null)
-            {
-                monsterItemDrop.cancel(false);
-            }
-
             return;
         }
 
@@ -990,7 +970,10 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
             MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
             {
-                MapModel.ChannelServer.Post(new MonsterReviveCommand(this, killer, lastController));
+                MapModel.Send(map =>
+                {
+                    Revive(killer, lastController);
+                });
             }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
         else
@@ -1015,7 +998,6 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 eim.friendlyKilled(this, killer != null);
             }
         }
-        getMap().dismissRemoveAfter(this);
     }
 
     private void processMonsterKilled(ICombatantObject? killer)
@@ -1329,7 +1311,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
 
         Action cancelTask = () =>
         {
-            MapModel.ChannelServer.Post(new MonsterStatusRemoveCommand(this, status));
+            MapModel.ChannelServer.Send(new MonsterStatusRemoveCommand(this, status));
         };
         IWorldChannelCommand? overtimeAction = null;
         int overtimeDelay = -1;
@@ -1594,6 +1576,11 @@ public class Monster : AbstractLifeObject, ICombatantObject
             return false;
         }
 
+        if (toUse.getHP() < (int)(((float)getHp() / getMaxHp()) * 100))
+        {
+            return false;
+        }
+
         /*
         if (!this.applyAnimationIfRoaming(-1, toUse)) {
             return false;
@@ -1711,31 +1698,31 @@ public class Monster : AbstractLifeObject, ICombatantObject
         return this.stats.getBuffToGive();
     }
 
-    public class DamageTask : AbstractRunnable
-    {
+    //public class DamageTask : AbstractRunnable
+    //{
 
-        private int dealDamage;
-        private Player chr;
-        private MonsterStatusEffect status;
-        private int type;
-        private IMap map;
-        readonly Monster _monster;
+    //    private int dealDamage;
+    //    private Player chr;
+    //    private MonsterStatusEffect status;
+    //    private int type;
+    //    private IMap map;
+    //    readonly Monster _monster;
 
-        public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
-        {
-            _monster = mapleMonster;
-            this.dealDamage = dealDamage;
-            this.chr = chr;
-            this.status = status;
-            this.type = type;
-            this.map = chr.getMap();
-        }
+    //    public DamageTask(Monster mapleMonster, int dealDamage, Player chr, MonsterStatusEffect status, int type)
+    //    {
+    //        _monster = mapleMonster;
+    //        this.dealDamage = dealDamage;
+    //        this.chr = chr;
+    //        this.status = status;
+    //        this.type = type;
+    //        this.map = chr.getMap();
+    //    }
 
-        public override void HandleRun()
-        {
-            chr.Client.CurrentServer.Post(new MonsterApplyDamageCommand(_monster, chr, status, dealDamage, type));
-        }
-    }
+    //    public override void HandleRun()
+    //    {
+    //        chr.Client.CurrentServer.Post(new MonsterApplyDamageCommand(_monster, chr, status, dealDamage, type));
+    //    }
+    //}
 
     public string getName()
     {
@@ -2329,11 +2316,6 @@ public class Monster : AbstractLifeObject, ICombatantObject
         this.setControllerKnowsAboutAggro(false);
     }
 
-    public int getRemoveAfter()
-    {
-        return stats.removeAfter();
-    }
-
     public void SetCustomeDrop(List<DropItemEntry> data)
     {
         CustomeDrops = data.Select(x => DropEntry.MobDrop(this.getId(), x.ItemId, x.Chance, x.MinCount, x.MaxCount, 0)).ToList();
@@ -2343,16 +2325,6 @@ public class Monster : AbstractLifeObject, ICombatantObject
         if (CustomeDrops == null)
             return YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? retrieveRelevantDrops() : MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         return CustomeDrops;
-    }
-
-    public void dispose()
-    {
-        if (monsterItemDrop != null)
-        {
-            monsterItemDrop.cancel(false);
-        }
-
-        this.getMap().dismissRemoveAfter(this);
     }
 
     public override string GetName()
@@ -2374,6 +2346,7 @@ public class Monster : AbstractLifeObject, ICombatantObject
     {
         OnSpawned?.Invoke(this, EventArgs.Empty);
 
+        var now = MapModel.ChannelServer.Node.getCurrentTime();
         var dropPeriodTime = getDropPeriodTime();
         if (dropPeriodTime > 0)
         {
@@ -2382,7 +2355,26 @@ public class Monster : AbstractLifeObject, ICombatantObject
                 dropPeriodTime = dropPeriodTime / 3;
             }
 
-            dropFromFriendlyMonster(dropPeriodTime);
+            _friendlyDropPeriod = dropPeriodTime;
+            _friendlyDropNext = now + _friendlyDropPeriod;
+        }
+
+        if (getStats().removeAfter() > 0)
+        {
+            _autoRemoveAction = 1;
+            Period = getStats().removeAfter() * 1000;
+        }
+
+        var selfDestruction = getStats().selfDestruction();
+        if (selfDestruction != null && selfDestruction.Hp < 0)
+        {
+            _autoRemoveAction = selfDestruction.Action;
+            Period = selfDestruction.RemoveAfter * 1000;
+        }
+
+        if (_autoRemoveAction > 0)
+        {
+            Next = now + Period;
         }
 
         if (getId() == MobId.SUMMON_HORNTAIL)
@@ -2469,6 +2461,34 @@ public class Monster : AbstractLifeObject, ICombatantObject
             {
                 eim.reviveMonster(mob);
             }
+        }
+    }
+
+    long _friendlyDropNext;
+    long _friendlyDropPeriod;
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable())
+        {
+            return;
+        }
+
+        if (!isAlive())
+        {
+            Status = TickableStatus.Remove;
+            return;
+        }
+
+        if (_friendlyDropPeriod > 0 && _friendlyDropNext <= now)
+        {
+            FriendlyDrop();
+
+            _friendlyDropNext = now + _friendlyDropPeriod;
+        }
+
+        if (_autoRemoveAction > 0 && Next <= now)
+        {
+            MapModel.RemoveMob(this, null, true, _autoRemoveAction);
         }
     }
 }

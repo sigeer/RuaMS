@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using AllianceProto;
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
@@ -36,6 +35,7 @@ using GuildProto;
 using server;
 using server.expeditions;
 using server.partyquest;
+using System.Threading.Channels;
 using tools;
 using static server.partyquest.Pyramid;
 
@@ -53,31 +53,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
     private int npcOid;
     public ScriptMeta ScriptMeta { get; }
     private string? _getText;
-    private bool itemScript;
-    private List<Player> otherParty;
 
     public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
 
 
-
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<Player> otherParty, bool test) : base(c)
-    {
-        this.c = c;
-        this.npc = npc;
-        this.ScriptMeta = scriptName;
-        this.otherParty = otherParty;
-    }
-
-    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName, bool itemScript) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
         this.ScriptMeta = scriptName;
-        this.itemScript = itemScript;
-        this.otherParty = [];
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName)
     {
 
     }
@@ -697,11 +684,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public Player? getChrById(int id)
-    {
-        return c.CurrentServer.getPlayerStorage().getCharacterById(id);
-    }
-
     public void mapClock(int time)
     {
         getPlayer().getMap().broadcastMessage(PacketCreator.getClock(time));
@@ -771,6 +753,168 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
+
+
+    #region New Talk
+    Channel<TalkMoreAction> _talkChannel = System.Threading.Channels.Channel.CreateBounded<TalkMoreAction>(1);
+
+    public async Task Response(sbyte mode, sbyte type, int selection, string? inputText = null)
+    {
+        await _talkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
+    }
+
+    async Task<bool> WaitingForAnswer()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode == -1)
+        {
+            throw new ConversationInterruptException();
+        }
+
+        return action.Mode > 0;
+    }
+
+    async Task<int> WaitingForOption()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<int> WaitingForInputNumber()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<string?> WaitingForInputText()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.inputText;
+    }
+
+    public async Task SayNext(string text, byte speaker = 0)
+    {
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
+        await WaitingForAnswer();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="speaker"></param>
+    /// <param name="finalNext">最后一段显示下一步</param>
+    /// <returns></returns>
+    public async Task SaySpeech(string[] messages, byte speaker = 0, int current = 0, bool finalNext = true)
+    {
+        while (current >= 0 && current < messages.Length)
+        {
+            var text = messages[current];
+            if (current == 0)
+            {
+                sendNext(text, speaker);
+                if (await WaitingForAnswer())
+                {
+                    current++;
+                }
+            }
+            else if (current == messages.Length - 1)
+            {
+                if (finalNext)
+                {
+                    sendNextPrev(text, speaker);
+                    current += (await WaitingForAnswer()) ? 1 : -1;
+                }
+                else
+                {
+                    sendPrev(text, speaker);
+                    if (!await WaitingForAnswer())
+                    {
+                        current--;
+                    }
+                }
+            }
+            else
+            {
+                sendNextPrev(text, speaker);
+                current += (await WaitingForAnswer()) ? 1 : -1;
+            }
+        }
+    }
+
+
+    public async Task SayOK(string text, byte speaker = 0)
+    {
+        sendOk(text, speaker);
+        await WaitingForAnswer();
+    }
+
+    public async Task<bool> SayYesNo(string text, byte speaker = 0)
+    {
+        sendYesNo(text, speaker);
+        return await WaitingForAnswer();
+    }
+
+    public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
+    {
+        sendAcceptDecline(text, speaker);
+        return await WaitingForAnswer();
+    }
+
+    public async Task<int> SayOption(string text, byte speaker = 0)
+    {
+        sendSimple(text, speaker);
+        return await WaitingForOption();
+    }
+
+    public async Task<int> SayOption(string mainContent, IEnumerable<string> options, byte speaker = 0)
+    {
+        var finalContent = mainContent + "\r\n#b";
+        for (int i = 0; i < options.Count(); i++)
+        {
+            finalContent += $"#L{i}#{options.ElementAt(i)}#l\r\n";
+        }
+        finalContent += "#k";
+        return await SayOption(finalContent, speaker);
+    }
+
+    public async Task SayStyle(string text, int[] styles)
+    {
+        if (styles.Length > 0)
+        {
+            sendStyle(text, styles);
+        }
+        else
+        {
+            // thanks Conrad for noticing empty styles crashing players
+            await SayOK("Sorry, there are no options of cosmetics available for you here at the moment.");
+        }
+    }
+
+    public async Task<int> SayInputNumber(string text, int def, int min, int max, byte speaker = 0)
+    {
+        sendGetNumber(text, def, min, max, speaker);
+        return await WaitingForInputNumber();
+    }
+
+    public async Task<string?> SayInputText(string text, byte speaker = 0)
+    {
+        sendGetText(text, speaker);
+        return await WaitingForInputText();
+    }
+    #endregion
 
 
     #region NextLevelTalk

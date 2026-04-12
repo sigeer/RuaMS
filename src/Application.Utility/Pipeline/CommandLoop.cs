@@ -5,14 +5,20 @@ using System.Threading.Channels;
 
 namespace Application.Utility.Pipeline
 {
-    public abstract class CommandLoop<TContext> : IAsyncDisposable where TContext: class, ICommandContext
+    public interface ICommandPipeline
     {
-        private readonly Channel<ICommand<TContext>> _commands;
+        void Start();
+    }
+    public class CommandLoop<TContext> : IAsyncDisposable, ICommandPipeline where TContext : IActorInstance<TContext>
+    {
+        private TContext _context;
         private Task? _runningTask;
+        private Channel<ICommand> _command;
 
-        public CommandLoop()
+        public CommandLoop(TContext context)
         {
-            _commands = Channel.CreateBounded<ICommand<TContext>>(new BoundedChannelOptions(100_000)
+            _context = context;
+            _command = Channel.CreateBounded<ICommand>(new BoundedChannelOptions(100_000)
             {
                 SingleReader = true,
                 SingleWriter = false,
@@ -20,54 +26,71 @@ namespace Application.Utility.Pipeline
             });
         }
 
-        public void Start(string key)
+        public void Start()
         {
             if (_runningTask != null)
                 throw new InvalidOperationException("Already running");
 
-            _runningTask = RunLoopAsync(key);
+            _runningTask = RunLoopAsync();
             return;
         }
 
-        protected abstract TContext CreateContext();
-
-        private async Task RunLoopAsync(string key)
+        private async Task RunLoopAsync()
         {
-            Stopwatch sw = new();
-
-            //while (await _commands.Reader.WaitToReadAsync())
-            //{
-            //    GameMetrics.CommandCountTick(key, _commands.Reader.Count);
-            //    while (_commands.Reader.TryRead(out var item))
-            //    {
-            //        sw.Restart();
-            //        item.Execute(CreateContext());
-            //        sw.Stop();
-            //        GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
-            //    }
-            //}
-
-            await foreach (var item in _commands.Reader.ReadAllAsync())
+            Stopwatch sw = Stopwatch.StartNew();
+            await foreach (var item in _command.Reader.ReadAllAsync())
             {
-                GameMetrics.CommandCountTick(key, _commands.Reader.Count);
-                sw.Restart();
-                item.Execute(CreateContext());
-                sw.Stop();
-                GameMetrics.GameTick(key, sw.Elapsed.TotalMilliseconds);
+                Activity? activity = null;
+                if (item is not IIgnoreActivityCommand)
+                {
+                    activity = GameMetrics.ActivitySource.StartActivity("ActorActivity");
+                    activity?.SetTag("ActorType", typeof(TContext).Name);
+                    activity?.SetTag("Instance", _context.InstanceName);
+                    activity?.SetTag("Command", item.Name);
+                }
+
+                try
+                {
+                    sw.Restart();
+
+                    if (item is IAsyncCommand<TContext> a)
+                        await a.Execute(_context);
+                    else if (item is ICommand<TContext> b)
+                        b.Execute(_context);
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex.ToString());
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.AddEvent(new ActivityEvent("exception",
+                        tags: new ActivityTagsCollection
+                        {
+                            ["exception.type"] = ex.GetType().Name,
+                            ["exception.message"] = ex.Message,
+                            ["exception.stacktrace"] = ex.StackTrace ?? ""
+                        }));
+                }
+                finally
+                {
+                    sw.Stop();
+                    GameMetrics.GameTick(_context.InstanceName, sw.Elapsed.TotalMilliseconds);
+                    activity?.Dispose();
+                    activity = null;
+                }
             }
         }
 
-        public void Register(ICommand<TContext> tickable)
+        public void Register(ICommand tickable)
         {
-            if (!_commands.Writer.TryWrite(tickable))
+            if (!_command.Writer.TryWrite(tickable))
             {
-                Log.Logger.Fatal("命令写入失败 {Info}，当前命令队列长度 {Length}", tickable.GetType().Name, _commands.Reader.Count);
+                Log.Logger.Fatal("命令写入失败 {Info}，当前命令队列长度 {Length}", tickable.GetType().Name, _command.Reader.Count);
             }
         }
 
         public async Task StopAsync()
         {
-            _commands.Writer.TryComplete();
+            _command.Writer.TryComplete();
 
             if (_runningTask != null)
             {

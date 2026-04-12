@@ -19,20 +19,20 @@ namespace Application.Core.Channel.Invitation
 
             if (result == InviteResultType.DENIED)
             {
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                senderActor?.Send(m =>
                 {
-                    sender.sendPacket(TeamPacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
-                }
+                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(TeamPacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
+                });
             }
 
             if (result == InviteResultType.NOT_FOUND)
             {
-                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
-                if (receiver != null)
+                var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
+                receiverActor?.Send(m =>
                 {
-                    receiver.Pink(nameof(ClientMessage.Team_InvitationExpired));
-                }
+                    m.getCharacterById(data.ReceivePlayerId)?.Pink(nameof(ClientMessage.Team_InvitationExpired));
+                });
             }
         }
 
@@ -41,39 +41,44 @@ namespace Application.Core.Channel.Invitation
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)
             {
-                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
-                if (receiver != null)
+                var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
+                receiverActor?.Send(m =>
                 {
-                    receiver.sendPacket(TeamPacketCreator.partyInvite(data.Key, data.SenderPlayerName));
-                }
+                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(TeamPacketCreator.partyInvite(data.Key, data.SenderPlayerName));
+                });
             }
             else
             {
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                senderActor?.Send(m =>
                 {
-                    switch (code)
+                    var sender = m.getCharacterById(data.SenderPlayerId);
+                    if (sender != null)
                     {
-                        case InviteResponseCode.MANAGING_INVITE:
-                            sender.sendPacket(TeamPacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
-                            break;
-                        case InviteResponseCode.InviteesNotFound:
-                            sender.sendPacket(TeamPacketCreator.partyStatusMessage(19));
-                            break;
-                        case InviteResponseCode.Team_AlreadyInTeam:
-                            sender.sendPacket(TeamPacketCreator.AlreadInTeam());
-                            break;
-                        case InviteResponseCode.Team_CapacityFull:
-                            sender.sendPacket(TeamPacketCreator.TeamFullCapacity());
-                            break;
-                        case InviteResponseCode.Team_BeginnerLimit:
-                            sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
-                            break;
-                        default:
-                            _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);
-                            break;
+                        switch (code)
+                        {
+                            case InviteResponseCode.MANAGING_INVITE:
+                                sender.sendPacket(TeamPacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
+                                break;
+                            case InviteResponseCode.InviteesNotFound:
+                                sender.sendPacket(TeamPacketCreator.partyStatusMessage(19));
+                                break;
+                            case InviteResponseCode.Team_AlreadyInTeam:
+                                sender.sendPacket(TeamPacketCreator.AlreadInTeam());
+                                break;
+                            case InviteResponseCode.Team_CapacityFull:
+                                sender.sendPacket(TeamPacketCreator.TeamFullCapacity());
+                                break;
+                            case InviteResponseCode.Team_BeginnerLimit:
+                                sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
+                                break;
+                            default:
+                                _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);
+                                break;
+                        }
                     }
-                }
+                });
+
             }
         }
     }

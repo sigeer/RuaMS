@@ -18,6 +18,8 @@ namespace Application.Utility.Exceptions
         }
     }
 
+    public class BusinessOutOfInstance() : BusinessException("不在FB中");
+
 
     /// <summary>
     /// 1. wz（或其他）资源未获取到或者不合法 - 用存在的id去获取一个应该存在但实际上不存在的数据

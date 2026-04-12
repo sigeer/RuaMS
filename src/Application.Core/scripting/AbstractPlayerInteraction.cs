@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.ContiMove;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -239,9 +240,25 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getClient().getEventManager(@event);
     }
 
+    public TEventManager GetEventManager<TEventManager>(string @event)where TEventManager : EventManager
+    {
+        var em = getClient().getEventManager(@event);
+        if (em == null)
+        {
+            throw new BusinessNotsupportException($"Event: {@event}");
+        }
+
+        return (em as TEventManager) ?? throw new BusinessException($"Error: {@event} 不是 {typeof(TEventManager).Name}");
+    }
+
     public AbstractEventInstanceManager? getEventInstance()
     {
         return getPlayer().getEventInstance();
+    }
+
+    public AbstractEventInstanceManager GetEventInstanceTrust()
+    {
+        return getPlayer().getEventInstance() ?? throw new BusinessOutOfInstance();
     }
 
     public Inventory getInventory(int type)
@@ -694,12 +711,12 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void dropMessage(int type, string message)
     {
-        getPlayer().dropMessage(type, message);
+        getPlayer().TypedMessage(type, message);
     }
 
     public void mapMessage(int type, string message)
     {
-        getPlayer().getMap().dropMessage(type, message);
+        getPlayer().getMap().TypedMessage(type, message);
     }
 
     public void mapEffect(string path)
@@ -888,24 +905,12 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        var npc = LifeFactory.Instance.getNPC(npcId);
-        if (npc != null)
-        {
-            npc.setPosition(pos);
-            npc.setCy(pos.Y);
-            npc.setRx0(pos.X + 50);
-            npc.setRx1(pos.X - 50);
-            npc.setFh(map.Footholds.FindBelowFoothold(pos)!.getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-        }
+        map.SpawnNpc(npcId, pos);
     }
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.Instance.GetMonsterTrust(id);
-        monster.setPosition(new Point(x, y));
-        getPlayer().getMap().spawnMonster(monster);
+        getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
     }
 
     public Monster? getMonsterLifeFactory(int mid)
@@ -1163,7 +1168,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
         applySealSkill(monster);
         applyReduceAvoid(monster);
-        map.dropMessage(6, message);
+        map.LightBlue(message);
     }
 
     private void applySealSkill(Monster monster)
@@ -1246,16 +1251,16 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
         string status = qs.getMedalProgress().ToString();
         getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 Completed"));
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage("The One Who's Touched the Sky title in progress."));
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 已完成"));
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
         if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
         {
-            showInfoText("The One Who's Touched the Sky title has been rewarded. Please see NPC Dalair to receive your Medal.");
+            showInfoText("T站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
             getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else
         {
-            showInfoText("The One Who's Touched the Sky title in progress. " + status + "/5 Completed");
+            showInfoText("站在巅峰的人 勋章挑战正在进行中。 " + status + "/5 已完成");
         }
     }
     #endregion
@@ -1266,4 +1271,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.CurrentServer.NodeService.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
+
+    public ContiMoveBase? GetContiMove()
+    {
+        return c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap == c.OnlinedCharacter.MapModel || x.StationBMap == c.OnlinedCharacter.MapModel).FirstOrDefault();
+    }
 }

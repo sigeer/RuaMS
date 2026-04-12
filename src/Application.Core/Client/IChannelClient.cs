@@ -17,8 +17,6 @@ namespace Application.Core.Client
         ClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
-        EngineStorage ScriptEngines { get; set; }
-
         void Disconnect(bool isShutdown, bool fromCashShop = false);
 
         void enableCSActions();

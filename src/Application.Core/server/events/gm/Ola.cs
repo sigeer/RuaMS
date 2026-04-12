@@ -44,7 +44,10 @@ public class Ola
         this.chr = chr;
         this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
         {
-            chr.Client.CurrentServer.Post(new EventOlaTimeoutCommand(this));
+            chr.MapModel.Send(m =>
+            {
+                ProcessTimeout();
+            });
         }, 360_000);
     }
 

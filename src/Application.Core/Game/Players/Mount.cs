@@ -1,26 +1,27 @@
-﻿using Application.Core.Game.Items;
+using Application.Core.Game.Items;
 using tools;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public IMount? MountModel { get; private set; }
+        public Mount? MountModel { get; private set; }
 
-        public void SetMount(IMount? mount)
+        public void SetMount(Mount? mount)
         {
             MountModel = mount;
         }
 
-        public IMount? getMount()
+        public Mount? getMount()
         {
             return MountModel;
         }
-        public IMount mount(int id, int skillid)
+        public Mount mount(int id, int skillid)
         {
             var mount = MountModel!;
             mount.setItemId(id);
             mount.setSkillId(skillid);
+            mount.setActive(true);
             return mount;
         }
 

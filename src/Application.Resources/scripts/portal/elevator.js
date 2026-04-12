@@ -1,16 +1,13 @@
 function enter(pi) {
     try {
-        var elevator = pi.getEventManager("Elevator");
+        var elevator = pi.GetElevator();
         if (elevator == null) {
             pi.getPlayer().dropMessage(5, "电梯正在维护。");
             return false
         }
 
-        const elevatorMap = elevator.getIntProperty("current")
-        const currentMapId = pi.getMapId();
-        if (currentMapId == elevatorMap) {
+        if (elevator.Enter(pi.getPlayer())) {
             pi.playPortalSound();
-            pi.warp(elevatorMap + 10, 0);
             return true;
         }
 

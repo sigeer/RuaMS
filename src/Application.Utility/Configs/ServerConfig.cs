@@ -9,6 +9,9 @@ public class ServerConfig
     public long PURGING_INTERVAL;
     public long RANKING_INTERVAL;
     public long COUPON_INTERVAL;
+    /// <summary>
+    /// 777
+    /// </summary>
     public long UPDATE_INTERVAL;
 
     public bool ENABLE_PIC;

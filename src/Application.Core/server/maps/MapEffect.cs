@@ -21,21 +21,25 @@
 */
 
 
+using Application.Utility.Tickables;
 using tools;
 
 namespace server.maps;
 
-public class MapEffect
+public class MapEffect: ILifedTickable
 {
     private string msg;
     private int itemId;
     private bool active = true;
 
-    public MapEffect(string msg, int itemId)
+    public MapEffect(string msg, int itemId, long expiredAt)
     {
         this.msg = msg;
         this.itemId = itemId;
+        ExpiredAt = expiredAt;
     }
+
+
 
     public Packet makeDestroyData()
     {
@@ -50,5 +54,22 @@ public class MapEffect
     public void sendStartData(IChannelClient client)
     {
         client.sendPacket(makeStartData());
+    }
+
+    public long ExpiredAt { get; }
+
+    public TickableStatus Status { get; private set; }
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable())
+        {
+            return;
+        }
+
+        if (ExpiredAt <= now)
+        {
+            Status = TickableStatus.Remove;
+            return;
+        }
     }
 }

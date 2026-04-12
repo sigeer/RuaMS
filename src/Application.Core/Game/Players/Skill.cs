@@ -209,17 +209,32 @@ namespace Application.Core.Game.Players
             return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
         }
 
-        public bool LearnSkill(int skillId)
+        public bool LearnSkill(int skillId, int skillLevel = -1)
         {
             var skill = SkillFactory.getSkill(skillId);
             if (skill == null)
             {
                 return false;
             }
-            changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
+            var level = skillLevel == -1 ? skill.getMaxLevel() : skillLevel;
+            changeSkillLevel(skill, (sbyte)level, level, -1);
             changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
             sendKeymap();
             return true;
+        }
+
+        public bool CheckSkill(int skillId)
+        {
+            return !isGM() && JobModel.CheckSkill(skillId);
+        }
+
+        public bool CheckBuff(BuffStatValueHolder buff)
+        {
+            if (!buff.Effect.isSkill())
+            {
+                return true;
+            }
+            return !isGM() && JobModel.CheckSkill(buff.Effect.getSourceId());
         }
 
     }

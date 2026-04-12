@@ -24,14 +24,17 @@ using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
 using Application.Utility.Performance;
+using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace server.maps;
 
-public class MapManager : IDisposable, INamedInstance
+public class MapManager : IDisposable, INamedInstance, ITickable
 {
     public string InstanceName { get; }
+    public TickableStatus Status { get; private set; }
+
     private AbstractEventInstanceManager? evt;
     readonly WorldChannel _channelServer;
 
@@ -89,14 +92,28 @@ public class MapManager : IDisposable, INamedInstance
         return new(maps);
     }
 
-    public void updateMaps()
+    public List<IMap> GetAllMaps() => maps.Values.ToList();
+
+    public void OnTick(long now)
     {
         var sw = Stopwatch.StartNew();
-        foreach (IMap map in getMaps().Values)
+
+        foreach (var item in maps.Values.ToList())
         {
-            map.respawn();
-            map.mobMpRecovery();
+            if (item is ITickable tickable)
+            {
+                item.Send(m =>
+                {
+                    m.OnTick(now);
+                });
+
+                if (tickable.Status == TickableStatus.Remove)
+                {
+                    RemoveMap(item.Id, out _);
+                }
+            }
         }
+
         sw.Stop();
 
         GameMetrics.MapTickDuration.Record(sw.Elapsed.TotalMilliseconds,
@@ -115,30 +132,18 @@ public class MapManager : IDisposable, INamedInstance
         }
     }
 
-    bool disposed = false;
 
     public void Dispose()
     {
-        if (disposed)
+        if (!this.IsAvailable())
             return;
 
-        disposed = true;
+        Status = TickableStatus.Remove;
         foreach (var kv in getMaps())
         {
             RemoveMap(kv.Key, out _);
         }
 
         this.evt = null;
-    }
-
-    public void CheckActive()
-    {
-        foreach (var map in getMaps())
-        {
-            if (!map.Value.IsTrackedByEvent && map.Value.EventInstanceManager == null && !map.Value.IsActive())
-            {
-                RemoveMap(map.Key, out _);
-            }
-        }
     }
 }

@@ -114,7 +114,8 @@ namespace Application.Core.Game.Players
                 }
                 else
                 {
-                    checkBerserk(isHidden());
+                    // 每次血量变化，都会重置这个技能效果的生效时间？
+                    // checkBerserk(isHidden());
                 }
             }
         }

@@ -5,10 +5,13 @@ using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
 using Application.Shared.Events;
 using Application.Shared.Net.Logging;
+using Application.Utility.Performance;
+using client.inventory;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting;
 using scripting.npc;
+using System.Diagnostics;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -16,8 +19,6 @@ namespace Application.Core.Channel.Net
     public class ChannelClient : ClientBase, IChannelClient
     {
         IPacketProcessor<IChannelClient> _packetProcessor;
-        public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
-
         public ChannelClient(long sessionId, WorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
         {
@@ -150,11 +151,6 @@ namespace Application.Core.Channel.Net
                 {
                     player.getChannelServer().freeDojoSectionIfEmpty(mapId);
                 }
-
-                if (player.getMap().getHPDec() > 0)
-                {
-                    player.getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(player);
-                }
             }
         }
 
@@ -170,7 +166,6 @@ namespace Application.Core.Channel.Net
             this.AccountEntity = null;
             this.Hwid = null;
             this.Character = null;
-            this.ScriptEngines.Dispose();
         }
 
 
@@ -193,7 +188,20 @@ namespace Application.Core.Channel.Net
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            CurrentServer.Post(new HandleChannelPacketCommand(this, msg));
+            if (Character == null)
+            {
+                CurrentServer.Send(w =>
+                {
+                    ProcessPacket(msg);
+                });
+            }
+            else
+            {
+                Character.MapModel.Send(m =>
+                {
+                    ProcessPacket(msg);
+                });
+            }
         }
         public override void ProcessPacket(InPacket packet)
         {
@@ -204,6 +212,10 @@ namespace Application.Core.Channel.Net
             {
                 log.LogDebug("Received packet id {Code}", opcode);
             }
+
+            using var activity = GameMetrics.ActivitySource.StartActivity("ProcessPacket");
+            activity?.SetTag("AccountId", AccountId);
+            activity?.SetTag("Handler", handler?.ToString());
 
             if (handler != null)
             {
@@ -305,21 +317,6 @@ namespace Application.Core.Channel.Net
             }
         }
 
-
-        public void setScriptEngine(string name, IEngine e)
-        {
-            ScriptEngines[name] = e;
-        }
-
-        public IEngine? getScriptEngine(string name)
-        {
-            return ScriptEngines[name];
-        }
-
-        public void removeScriptEngine(string name)
-        {
-            ScriptEngines.Remove(name);
-        }
         public bool GainCharacterSlot()
         {
             return CurrentServer.Node.Transport.GainCharacterSlot(AccountId);
@@ -360,7 +357,8 @@ namespace Application.Core.Channel.Net
                 Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                     .ContinueWith(t =>
                     {
-                        CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
+                        
+                        CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
                     });
             }
             catch (IOException e)
@@ -394,7 +392,7 @@ namespace Application.Core.Channel.Net
             Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
                 .ContinueWith(t =>
                 {
-                    CurrentServer.Post(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
+                    CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
                 });
         }
 

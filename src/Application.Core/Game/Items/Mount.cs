@@ -1,42 +1,24 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-		       Matthias Butz <matze@odinms.de>
-		       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using Application.Core.Channel;
+using Application.Utility.Tickables;
+using constants.game;
+using System.Runtime.ConstrainedExecution;
+using tools;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Core.Game.Items;
 
-/**
- * @author PurpleMadness < Patrick :O >
- */
-public class Mount : IMount
+public class Mount : ILoopTickable, IDisposable
 {
-    private int itemid;
-    private int skillid;
-    private int tiredness;
-    private int exp;
-    private int level;
+    public int itemid;
+    public int skillid;
+    public int Tiredness { get; private set; }
+    public int Exp { get; private set; }
+    public int Level { get; private set; }
     private Player owner;
-    private bool active;
 
-    public WorldChannel ChannelServer => owner.getChannelServer();
+    public TickableStatus Status { get; private set; }
+    public long Next { get; private set; }
+    public long Period => 60_000;
 
     public Mount(Player owner, int id)
     {
@@ -44,10 +26,11 @@ public class Mount : IMount
         itemid = id;
 
         skillid = owner.getJobType() * 10000000 + 1004;
-        tiredness = 0;
-        level = 1;
-        exp = 0;
-        active = true;
+        Tiredness = owner.Mounttiredness;
+        Level = owner.MountLevel;
+        Exp = owner.MountExp;
+
+        owner.SetMount(this);
     }
 
     public int getItemId()
@@ -86,39 +69,45 @@ public class Mount : IMount
 
     public int getTiredness()
     {
-        return tiredness;
+        return Tiredness;
     }
 
     public int getExp()
     {
-        return exp;
+        return Exp;
     }
 
     public int getLevel()
     {
-        return level;
+        return Level;
     }
 
     public void setTiredness(int newtiredness)
     {
-        tiredness = Math.Max(newtiredness, 0);
+        Tiredness = Math.Max(newtiredness, 0);
     }
 
     public int incrementAndGetTiredness()
     {
-        tiredness++;
-        return tiredness;
+        Tiredness++;
+        return Tiredness;
     }
 
-    public void setExp(int newexp)
+    public void AddExp(float delta)
     {
-        exp = newexp;
+        if (delta > 0.0f)
+        {
+            Exp += (int)Math.Ceiling(delta * (2 * Level + 6));
+            bool levelup = Exp >= ExpTable.getMountExpNeededForLevel(Level) && Level < 31;
+            if (levelup)
+            {
+                Level++;
+
+                owner.MapModel.broadcastMessage(PacketCreator.updateMount(owner.Id, this, true));
+            }
+        }
     }
 
-    public void setLevel(int newlevel)
-    {
-        level = newlevel;
-    }
 
     public void setItemId(int newitemid)
     {
@@ -132,19 +121,46 @@ public class Mount : IMount
 
     public void setActive(bool set)
     {
-        active = set;
+        Status = set ? TickableStatus.Active : TickableStatus.InActive;
     }
 
-    public bool isActive()
+    public void Dispose()
     {
-        return active;
+        setActive(false);
     }
 
-    public void empty()
+    int step = 0;
+    public void OnTick(long now)
     {
-        if (owner != null)
+        if (!this.IsAvailable())
         {
-            ChannelServer.MountTirednessManager.unregisterMountHunger(owner);
+            return;
         }
+
+        if (owner.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
+        {
+            return;
+        }
+
+        if (Status == TickableStatus.Active && Next >= now)
+        {
+            if (step % YamlConfig.config.server.MOUNT_EXHAUST_COUNT == 0)
+            {
+                int tiredness = incrementAndGetTiredness();
+
+                this.owner.MapModel.broadcastMessage(PacketCreator.updateMount(this.getId(), this, false));
+                if (tiredness > 99)
+                {
+                    setTiredness(99);
+                    owner.dispelSkill(owner.getJobType() * 10000000 + 1004);
+                    owner.dropMessage(6, "Your mount grew tired! Treat it some revitalizer before riding it again!");
+                }
+            }
+            else
+            {
+                step++;
+            }
+            Next = now + Period;
+        }        
     }
 }

@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Core.Channel.Commands
 {
     internal class InvokePlayerDisconnectCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokePlayerDisconnectCommand);
         int _chrId;
 
         public InvokePlayerDisconnectCommand(int chrId)
@@ -13,14 +10,14 @@ namespace Application.Core.Channel.Commands
             _chrId = chrId;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(_chrId);
+            var chr = ctx.getPlayerStorage().GetCharacterClientById(_chrId);
             if (chr != null)
             {
                 chr.Client.Disconnect(false, false);
             }
-            
+
         }
     }
 }

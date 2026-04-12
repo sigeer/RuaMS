@@ -2,6 +2,8 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeStartSyncAllPlayerCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeStartSyncAllPlayerCommand);
+
         bool _saveDB;
 
         public InvokeStartSyncAllPlayerCommand(bool saveDB)
@@ -9,14 +11,14 @@ namespace Application.Core.Channel.Commands
             _saveDB = saveDB;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             List<SyncProto.PlayerSaveDto> list = [];
-            foreach (var player in ctx.WorldChannel.getPlayerStorage().getAllCharacters())
+            foreach (var player in ctx.getPlayerStorage().getAllCharacters())
             {
-                list.Add(ctx.WorldChannel.NodeService.DataService.Deserialize(player));
+                list.Add(ctx.NodeService.DataService.Deserialize(player));
             }
-            ctx.WorldChannel.NodeActor.Post(new InvokeSyncAllPlayerCommand(_saveDB, new DistributeSessionDataWrapper<int, SyncProto.PlayerSaveDto>(ctx.WorldChannel.Id, list)));
+            ctx.NodeActor.Send(new InvokeSyncAllPlayerCommand(_saveDB, new DistributeSessionDataWrapper<int, SyncProto.PlayerSaveDto>(ctx.Id, list)));
         }
     }
 }

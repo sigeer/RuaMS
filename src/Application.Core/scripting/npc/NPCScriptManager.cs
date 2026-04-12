@@ -47,7 +47,7 @@ public class NPCScriptManager : AbstractScriptManager
         IEngine? engine = null;
         if (fileName != null)
         {
-            engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c);
+            engine = getInvocableScriptEngine(GetNpcScriptPath(fileName));
         }
 
         return engine != null;
@@ -76,35 +76,6 @@ public class NPCScriptManager : AbstractScriptManager
     public bool StartScriptByItem(IChannelClient c, int npc, string? script)
     {
         return start(c, npc, -1, script, null, true, "im");
-    }
-
-    public void start(string filename, IChannelClient c, int npc, List<Player> chrs)
-    {
-        try
-        {
-            if (c.NPCConversationManager != null)
-                c.NPCConversationManager.dispose();
-
-
-            var scriptMeta = GetScriptMeta(GetNpcScriptPath(filename));
-            var engine = getInvocableScriptEngine(scriptMeta, c);
-            if (engine == null)
-            {
-                c.OnlinedCharacter.dropMessage(1, "NPC " + npc + " is uncoded.");
-                return;
-            }
-
-            c.NPCConversationManager = new NPCConversationManager(c, npc, scriptMeta!, chrs, true);
-            engine.AddHostedObject("cm", c.NPCConversationManager);
-            _scripts[c] = engine;
-
-            engine.CallFunction("start", chrs);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
-            c.NPCConversationManager?.dispose();
-        }
     }
 
     private bool start(IChannelClient c, int npc, int oid, string? fileName, Player? chr, bool itemScript, string engineName)
@@ -145,8 +116,8 @@ public class NPCScriptManager : AbstractScriptManager
                     return false;
                 }
 
-                var engine = getInvocableScriptEngine(scriptMeta, c);
-                c.NPCConversationManager = new NPCConversationManager(c, npc, oid, scriptMeta, itemScript);
+                var engine = getInvocableScriptEngine(scriptMeta);
+                c.NPCConversationManager = new NPCConversationManager(c, npc, oid, scriptMeta);
                 if (engine == null)
                 {
                     c.NPCConversationManager.dispose();
@@ -227,9 +198,6 @@ public class NPCScriptManager : AbstractScriptManager
         c.OnlinedCharacter.setNpcCooldown(c.CurrentServer.Node.getCurrentTime());
         c.NPCConversationManager = null;
         _scripts.Remove(c);
-
-        if (cm.ScriptMeta != null)
-            resetContext(cm.ScriptMeta.ScriptFile, c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 }

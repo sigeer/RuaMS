@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using SystemProto;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
 namespace Application.Core.Login
@@ -31,7 +32,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActor<MasterCommandContext>
+    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActorInstance<MasterServer>
     {
         public bool IsRunning { get; private set; }
         public bool IsShuttingdown => isShuttingdown;
@@ -159,7 +160,7 @@ namespace Application.Core.Login
         public ITimerManager TimerManager { get; private set; } = null!;
         Lazy<MessageDispatcherNew> _messageDispatcher;
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
-        public MasterCommandLoop CommandLoop { get; }
+        public CommandLoop<MasterServer> CommandLoop { get; }
         public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
         {
@@ -374,7 +375,7 @@ namespace Application.Core.Login
                 await NettyServer.Start();
                 _logger.LogInformation(SystemMessage.Server_StartSuccess, InstanceName, "成功", Port);
 
-                CommandLoop.Start(InstanceName);
+                CommandLoop.Start();
                 StartupTime = DateTimeOffset.UtcNow;
                 ForceUpdateServerTime();
 
@@ -536,7 +537,7 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
@@ -604,9 +605,9 @@ namespace Application.Core.Login
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime());
         }
-        public void UpdateServerTime()
+        public void UpdateServerTime(long detal)
         {
-            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+            serverCurrentTime = currentTime.addAndGet(detal);
         }
 
         public void ForceUpdateServerTime()
@@ -621,9 +622,24 @@ namespace Application.Core.Login
             return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
         }
 
-        public void Post(ICommand<MasterCommandContext> command)
+        public void Post(ICommand<MasterServer> command)
         {
             CommandLoop.Register(command);
+        }
+
+        public void Send(ICommand command)
+        {
+            CommandLoop.Register(command);
+        }
+
+        public void Send(Func<MasterServer, Task> action)
+        {
+            CommandLoop.Register(new AsyncMasterDelegateCommand(action));
+        }
+
+        public void Send(Action<MasterServer> action)
+        {
+            CommandLoop.Register(new MasterDelegateCommand(action));
         }
     }
 }
