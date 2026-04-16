@@ -1,13 +1,8 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Gameplay;
-using Application.Shared.MapObjects;
-using net.server;
-using net.server.channel;
 using server.life;
 using server.maps;
-using System.Diagnostics;
 using tools;
 
 namespace ServiceTest.Games.Gameplay
@@ -132,7 +127,7 @@ namespace ServiceTest.Games.Gameplay
         //}
 
         [Test]
-        public void MapItemInfo()
+        public async Task MapItemInfo()
         {
             var mapId = 103000201;
 
@@ -140,16 +135,22 @@ namespace ServiceTest.Games.Gameplay
             var map = LoadMap(mapId);
 
             chr.changeMap(map, map.getPortal(0));
-            map.ProcessMonster(m =>
+            chr.setMapTransitionComplete();
+
+            map.Send(mapChr =>
             {
-                m.DamageBy(chr, int.MaxValue, 0);
+                map.ProcessMonster(m =>
+                {
+                    m.DamageBy(chr, int.MaxValue, 0);
+                });
+
+                var items = map.getItems();
+                Assert.That(items.Count > 0);
+
+                var mapItem = items[0];
+                Assert.That(mapItem.MapModel is not null);
             });
-
-            var items = map.getItems();
-            Assert.That(items.Count > 0);
-
-            var mapItem = items[0];
-            Assert.That(mapItem.MapModel is not null);
+            await Task.Delay(5000);
         }
 
         //[Test]

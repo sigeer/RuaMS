@@ -2007,10 +2007,27 @@ public partial class Player
         return sl.getMapId();
     }
 
+    public int PeekSavedLocation(SavedLocationType type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl == null)
+        {
+            return -1;
+        }
+        return sl.getMapId();
+    }
+
     public int getSavedLocation(string type)
     {
         int m = peekSavedLocation(type);
         clearSavedLocation(SavedLocationTypeUtils.fromString(type));
+
+        return m;
+    }
+    public int GetSavedLocation(SavedLocationType type)
+    {
+        int m = PeekSavedLocation(type);
+        clearSavedLocation(type);
 
         return m;
     }
@@ -3085,6 +3102,12 @@ public partial class Player
     }
 
     public void saveLocation(string type)
+    {
+        Portal? closest = MapModel.findClosestPortal(getPosition());
+        SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
+    }
+
+    public void SaveLocation(SavedLocationType type)
     {
         Portal? closest = MapModel.findClosestPortal(getPosition());
         SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));

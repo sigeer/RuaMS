@@ -292,7 +292,7 @@ namespace Application.Core.Game.Maps
         void warpOutByTeam(int team, int mapid);
 
         void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
-        void SetupAreaBoss(string name, int bossId, int mobTime, List<object> points, string spawnMessage);
+        void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
 
         #region Reactors
         void spawnReactor(Reactor reactor);

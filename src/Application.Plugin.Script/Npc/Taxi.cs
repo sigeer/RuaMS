@@ -80,5 +80,28 @@ namespace Application.Plugin.Script
             return NormalTaxi([(100000000, 1000), (102000000, 1000), (101000000, 800), (103000000, 1000), (120000000, 800)]);
         }
 
+        Task DangerTaxi()
+        {
+            return Task.CompletedTask;
+        }
+
+        // Npc: 2023000 
+        public Task ossyria_taxi()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        /// <summary>
+        /// 世界旅游
+        /// </summary>
+        /// <returns></returns>
+        // Npc: 9000020 
+        public Task world_trip()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
     }
 }

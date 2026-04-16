@@ -3192,19 +3192,27 @@ public class PacketCreator
     /// <param name="talk"></param>
     /// <param name="endBytes"></param>
     /// <param name="speaker">
-    /// <para>0: Npc talking (left)</para>
-    /// <para>1: Npc talking (right)</para>
-    /// <para>2: Player talking (left)</para>
-    /// <para>3: Player talking (left)？？</para>
+    /// <para>0: NPC左边</para>
+    /// <para>1: NPC左边、无结束对话</para>
+    /// <para>2: 玩家右边</para>
+    /// <para>3: 玩家右边、无结束对话</para>
+    /// <para>4: NPC右边，取speakerNpc</para>
+    /// <para>5: NPC右边，取speakerNpc、无结束对话</para>
+    /// <para>6: 同2</para>
+    /// <para>7: 同3</para>
     /// </param>
     /// <returns></returns>
-    public static Packet getNPCTalk(int npc, byte msgType, string talk, string endBytes, byte speaker)
+    public static Packet getNPCTalk(int npc, byte msgType, string talk, string endBytes, byte speaker, int speakerNpc = 0)
     {
         OutPacket p = OutPacket.create(SendOpcode.NPC_TALK);
         p.writeByte(4); // ?
         p.writeInt(npc);
         p.writeByte(msgType);
         p.writeByte(speaker);
+        if ((speaker & 4) > 0)
+        {
+            p.writeInt(speakerNpc);
+        }
         p.writeString(talk);
         p.writeBytes(HexTool.toBytes(endBytes));
         return p;

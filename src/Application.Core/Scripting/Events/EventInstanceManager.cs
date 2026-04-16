@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 
 namespace scripting.Event;

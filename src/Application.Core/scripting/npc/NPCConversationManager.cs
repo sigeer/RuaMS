@@ -82,6 +82,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public virtual void dispose()
     {
+        _talkChannel.Writer.Complete();
         NextLevelContext.Clear();
         c.CurrentServer.NPCScriptManager.dispose(this);
         getClient().sendPacket(PacketCreator.enableActions());
@@ -817,14 +818,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
     /// <param name="speaker"></param>
     /// <param name="finalNext">最后一段显示下一步</param>
     /// <returns></returns>
-    public async Task SaySpeech(string[] messages, byte speaker = 0, int current = 0, bool finalNext = true)
+    public async Task SaySpeech(string[] messages, int current = 0, bool finalNext = true)
     {
         while (current >= 0 && current < messages.Length)
         {
             var text = messages[current];
             if (current == 0)
             {
-                sendNext(text, speaker);
+                sendNext(text, 0);
                 if (await WaitingForAnswer())
                 {
                     current++;
@@ -834,12 +835,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
             {
                 if (finalNext)
                 {
-                    sendNextPrev(text, speaker);
+                    sendNextPrev(text, 0);
                     current += (await WaitingForAnswer()) ? 1 : -1;
                 }
                 else
                 {
-                    sendPrev(text, speaker);
+                    sendPrev(text, 0);
                     if (!await WaitingForAnswer())
                     {
                         current--;
@@ -848,7 +849,52 @@ public class NPCConversationManager : AbstractPlayerInteraction
             }
             else
             {
-                sendNextPrev(text, speaker);
+                sendNextPrev(text, 0);
+                current += (await WaitingForAnswer()) ? 1 : -1;
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="speaker"></param>
+    /// <param name="finalNext">最后一段显示下一步</param>
+    /// <returns></returns>
+    public async Task SaySpeech(SpeechText[] messages, int current = 0, bool finalNext = true)
+    {
+        while (current >= 0 && current < messages.Length)
+        {
+            var text = messages[current];
+            if (current == 0)
+            {
+                sendNext(text.Text, text.Speaker);
+                if (await WaitingForAnswer())
+                {
+                    current++;
+                }
+            }
+            else if (current == messages.Length - 1)
+            {
+                if (finalNext)
+                {
+                    sendNextPrev(text.Text, text.Speaker);
+                    current += (await WaitingForAnswer()) ? 1 : -1;
+                }
+                else
+                {
+                    sendPrev(text.Text, text.Speaker);
+                    if (!await WaitingForAnswer())
+                    {
+                        current--;
+                    }
+                }
+            }
+            else
+            {
+                sendNextPrev(text.Text, text.Speaker);
                 current += (await WaitingForAnswer()) ? 1 : -1;
             }
         }

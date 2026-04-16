@@ -22,57 +22,46 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Game.Commands;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
-using Application.Shared.Events;
 using Application.Utility.Tickables;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
 
-
-
 /**
  * @author Matze
  */
-public class EventScriptManager : AbstractScriptManager, ITickableTree, IDisposable
+public class EventScriptManager : ITickableTree, IDisposable
 {
-    private const string INJECTED_VARIABLE_NAME = "em";
-
     private ConcurrentDictionary<string, EventManager> events = new();
     public bool IsActive => events.Count > 0;
+    public WorldChannel ChannelServer { get; }
 
-    public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IEnumerable<IAddtionalRegistry> addtionalRegistries)
-        : base(logger, commandExecutor, channel, addtionalRegistries)
+    public EventScriptManager(WorldChannel channel)
     {
-
+        ChannelServer = channel;
     }
 
-    public int ReloadEventScript()
+
+    public int ReloadEventScript(List<EventManager> emList)
     {
         DisposeEvents();
-
-        foreach (string script in ScriptSource.Instance.GetEvents())
+        try
         {
-            if (!string.IsNullOrEmpty(script))
+            foreach (var em in emList)
             {
-                var em = initializeEventEntry(script);
-
-                try
-                {
-                    em.getIv().CallFunction("init").ToString();
-                }
-                catch (Exception ex)
-                {
-                    throw new BusinessFatalException($"事件脚本{script}加载失败：" + ex.Message);
-                }
+                em.Initialize();
 
                 if (!events.TryAdd(em.getName(), em))
                 {
                     throw new BusinessFatalException($"事件名重复，名称：{em.getName()}");
                 }
             }
+        }
+        catch (Exception)
+        {
+            throw;
         }
         return events.Count;
     }
@@ -97,48 +86,7 @@ public class EventScriptManager : AbstractScriptManager, ITickableTree, IDisposa
         return IsActive;
     }
 
-
-    private EventManager initializeEventEntry(string script)
-    {
-        var scriptFile = GetEventScriptPath(script);
-        var engine = getInvocableScriptEngine(scriptFile);
-
-        EventManager em;
-        var evenTypeStr = engine.GetValue("eventType").ToObject<string>();
-        if (Enum.TryParse<EventType>(evenTypeStr, true, out var type))
-        {
-            switch (type)
-            {
-                case EventType.PartyQuest:
-                    em = new PartyQuestEventManager(_channelServer, engine, scriptFile);
-                    break;
-                case EventType.Expedition:
-                    em = new ExpeditionEventManager(_channelServer, engine, scriptFile);
-                    break;
-                case EventType.Solo:
-                    em = new SoloEventManager(_channelServer, engine, scriptFile);
-                    break;
-                case EventType.GuildQuest:
-                    em = new GuildQuestEventManager(_channelServer, engine, scriptFile);
-                    break;
-                case EventType.CPQ:
-                    em = new MonsterCarnivalEventManager(_channelServer, engine, scriptFile);
-                    break;
-                default:
-                    em = new EventManager(_channelServer, engine, scriptFile);
-                    break;
-            }
-        }
-        else
-        {
-            em = new EventManager(_channelServer, engine, scriptFile);
-        }
-        engine.AddHostedObject(INJECTED_VARIABLE_NAME, em);
-        return em;
-    }
-
-
-    void DisposeEvents()
+    public void DisposeEvents()
     {
         var cleanEvents = events.Values.ToList();
         foreach (var old in cleanEvents)

@@ -1,18 +1,21 @@
 using Application.Core.Client;
+using Application.Core.Game.ContiMove;
+using Application.Core.Game.Life;
+using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
-using Application.Shared.Events;
+using Application.Shared.Constants.Job;
+using Application.Shared.MapObjects;
 using Application.Utility;
+using Application.Utility.Exceptions;
 using Humanizer;
-using Microsoft.Win32.SafeHandles;
-using Quartz.Util;
 using scripting.npc;
 using server.life;
 using System.Drawing;
-using System.Linq;
 using tools;
-using static System.Collections.Specialized.BitVector32;
-using static System.Net.Mime.MediaTypeNames;
+
 
 namespace Application.Plugin.Script
 {
@@ -32,8 +35,10 @@ namespace Application.Plugin.Script
 
     internal partial class NpcScript : NPCConversationManager
     {
-        public NpcScript(IChannelClient c, int npc, int npcOId) : base(c, npc, npcOId, null)
+        NPC? _npcObj;
+        public NpcScript(IChannelClient c, int npc, NPC? npcObj) : base(c, npc, npcObj?.getObjectId() ?? -1, null)
         {
+            _npcObj = npcObj;
         }
 
         // Npc: 2003 
@@ -66,7 +71,100 @@ namespace Application.Plugin.Script
                         "为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。"
                         ]);
                     break;
+                case 1:
+                    await SaySpeech([
+                        "这里是如何击败怪物的方法。每个怪物都有自己的生命值，你可以用武器或法术来攻击它们。当然，它们越强大，就越难击败。",
+                        "一旦你进行职业转职，你将获得不同类型的技能，你可以将它们分配到快捷键上以便更容易地使用。如果是攻击技能，你不需要按下Ctrl键来攻击，只需按下分配为快捷键的按钮。"
+                        ]);
+                    break;
+                case 2:
+                    await SaySpeech([
+                        "这就是你收集物品的方法。一旦你打倒一个怪物，一个物品就会掉到地上。当这种情况发生时，站在物品前面，按#bZ#k或#b小键盘上的0#k来获取物品。",
+                        "请记住，如果你的物品栏已满，你将无法获得更多物品。因此，如果你有一件不需要的物品，就卖掉它，这样你就可以从中获利。当你进行职业转职后，物品栏可能会扩展。"
+                        ]);
+                    break;
+                case 3:
+                    await SaySpeech([
+                        "当你死亡时，你会变成一个幽灵。当你的生命值降到0时，会在那个地方出现一块墓碑，你将无法移动，但仍然可以进行聊天。",
+                        "如果你只是一个新手，死亡并不会让你失去太多。但一旦你有了职业，情况就不一样了。当你死亡时，你会失去一部分经验，所以一定要尽量避免危险和死亡。"
+                        ]);
+                    break;
+                case 4:
+                    await SaySpeech([
+                        "想知道什么时候能转职？哈哈~！你真性急。每个职业都有固有的转职条件。一般8~10级你就可以选择职业。努力啊！",
+                        "等级并不是唯一决定进步的因素。你还需要根据职业提升特定能力的等级。例如，要成为一名战士，你的力量属性必须超过35，你知道我在说什么吗？确保提升与你的职业直接相关的能力。"
+                        ]);
+                    break;
+                case 5:
+                    await SaySpeech([
+                        "想知道这个岛的情况？这里是叫彩虹岛的空中浮动岛。从远古就在天空上飞行了，因此这里很少出现凶猛的怪物。所以是相对安全的岛，是新手练习的好地方。",
+                        "但是，如果你想成为一个强大的玩家，最好不要考虑在这里呆太久。你也不会找到工作。这个岛屿下面有一个叫做金银岛的巨大岛屿。那个地方比这里大得多，甚至有些荒谬。"
+                        ]);
+                    break;
+                case 6:
+                    await SaySpeech([
+                        "你想当#b战士#k吗？嗯。。。那么你必须要去金银岛。金银岛北部有战士之村，叫#r勇士部落#k。去那里找#b武术教练#k后收下他的培训，你就会当战士。但要当战士你的等级必需达到10级.",
+                        "为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。"
+                        ]);
+                    break;
+                case 7:
+                    await SaySpeech([
+                        "你想当弓箭手吗？在金银岛你会当弓箭手。在金银岛南部有弓箭手的村落，射手村。在那里赫丽娜会告诉你当弓箭手的方法。但关键是要当弓箭手你的等级应该是10级。",
+                        ]);
+                    break;
+                case 8:
+                    await SaySpeech([
+                        "你想当魔法师是吗？那你要去金银岛东部的魔法密林。在那里你会见到很多魔法师。而且在那里你要见汉斯。他就会让你当魔法师。",
+                        "哦，顺便说一下，与其他职业不同，要成为一个魔法师，你只需要达到8级。提前进行职业转职所带来的好处也伴随着成为一名真正强大的法师所需付出的艰辛。在选择你的道路之前，请仔细考虑。"
+                        ]);
+                    break;
+                case 9:
+                    await SaySpeech([
+                        "你你想当飞侠吗？那你要去金银岛西部的废弃都市。废都的达克鲁就会告诉你当飞侠的办法。关键的是为了当飞侠，你的等级应该是10级。",
+                        ]);
+                    break;
+                case 10:
+                    await SaySpeech([
+                        "你想知道如何提升你角色的能力属性吗？首先按下#bS#k来查看能力窗口。每次升级时，你会获得5个能力点，也就是AP。将这些AP分配到你选择的能力上。就是这么简单。",
+                        "将鼠标光标放在所有技能上方，以获得简要解释。例如，战士的STR，弓箭手的DEX，魔法师的INT，以及盗贼的LUK。但这并不是你需要了解的全部，所以你需要仔细思考如何通过分配点数来强调你角色的优势。"
+                        ]);
+                    break;
+                case 11:
+                    await SaySpeech([
+                        "你想知道如何查看你捡起的物品，是吗？当你打败一个怪物时，它会掉落一个物品在地上，你可以按#bZ#k来捡起这个物品。这个物品将被存储在你的物品库存中，你可以通过简单地按#bI#k来查看它。",
+                        ]);
+                    break;
+                case 12:
+                    await SaySpeech([
+                        "你想知道如何穿戴物品，对吧？按下#bI#k来查看你的物品库存。将鼠标光标放在物品上，双击它就可以穿在你的角色身上。如果你发现自己无法穿戴该物品，很可能是你的角色不符合等级和属性要求。你也可以通过打开装备库存(#bE#k)并将物品拖入其中来穿戴物品。要脱下物品，双击装备库存中的物品。",
+                        ]);
+                    break;
+                case 13:
+                    await SaySpeech([
+                        "你想要检查已装备的物品，对吧？按下#bE#k打开装备栏，你会看到你当前穿着的物品。要脱下一个物品，双击该物品。该物品将被发送到物品栏。",
+                        ]);
+                    break;
+                case 14:
+                    await SaySpeech([
+                        "获得职业后获得的特殊“能力”被称为技能。你将获得专门针对该职业的技能。你现在还没有达到那个阶段，所以还没有任何技能，但记住，要查看你的技能，请按#bK#k打开技能书。这将在日后帮助你。",
+                        ]);
+                    break;
+                case 15:
+                    await SaySpeech([
+                        "你如何到达金银岛？在这个岛的东部有一个叫做南港的港口。在那里，你会找到一艘在空中飞行的船。船前站着船长。问他关于这件事。",
+                        "哦，是的！在我离开之前，还有一条信息要告诉你。如果你不确定自己在哪里，记得按下#bW#k。世界地图会弹出来，显示你所在的位置。有了这个，你就不用担心迷路了。"
+                        ]);
+                    break;
+                case 16:
+                    await SaySpeech([
+                        "是冒险岛中使用的货币。你可以通过冒险币购买物品。要赚取冒险币，你可以击败怪物，将物品出售给商店，或者完成任务...",
+                        ]);
+                    break;
+                default:
+                    await begin5();
+                    break;
             }
+            await begin5();
         }
 
 
@@ -365,12 +463,7 @@ namespace Application.Plugin.Script
             }
         }
 
-        // Npc: 1012002 
-        public Task refine_henesys()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+
 
         // Npc: 1012008, 2040014 
         public Task minigame00()
@@ -408,77 +501,21 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1012119 
-        public Task enter_archer()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1022000 
-        public Task fighter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-
-        // Npc: 1022003 
-        public Task refine_perion()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1022004 
-        public Task refine_perion2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 1022101 
-        public Task go_xmas()
+        public async Task go_xmas()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
+            {
+                getPlayer().SaveLocation(SavedLocationType.HAPPYVILLE);
+                warp(209000000, 0);
+            }
         }
 
 
         // Npc: 1022103 
         public Task s4strike_statue()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1022105 
-        public Task enter_warrior()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-        // Npc: 1032001 
-        public Task magician()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1032002 
-        public Task refine_ellinia()
         {
             // TODO
             return Task.CompletedTask;
@@ -543,7 +580,23 @@ namespace Application.Plugin.Script
         // Npc: 1032007, 2012000, 2040000, 2082000, 2102002 
         public async Task sell_ticket()
         {
-            var currentContiMove = GetContiMove();
+            ContiMoveBase? currentContiMove;
+
+            if (npc == 2012000)
+            {
+                // 天空之城
+
+                ContiMoveBase[] list = c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap.Id == getMapId()).ToArray();
+                var option = await SayOption("您好，我是天空之城售票员，我负责销售开往各地船票。你想购买去那里的船票呢？",
+                    list.Select(x => x.GetDestinationMapName(getPlayer())));
+
+                currentContiMove = list[option];
+            }
+            else
+            {
+                currentContiMove = GetContiMove();
+            }
+
             if (currentContiMove == null)
             {
                 await SayOK("无法与我对话");
@@ -557,16 +610,22 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            if (await SayYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每15分钟出发一次，票价为#b{currentContiMove.TicketPrice}金币#k。你确定要购买#b#t${currentContiMove.TicketItemId}##k吗？"))
+            var p = currentContiMove.GetTicket(getPlayer());
+            if (p == null)
             {
-                if (getMeso() >= currentContiMove.TicketPrice && canHold(currentContiMove.TicketItemId))
+                await SayOK("无法与我对话");
+                return;
+            }
+            if (await SayYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t${p.Value.TicketItemId}##k吗？"))
+            {
+                if (getMeso() >= p.Value.TicketPrice && canHold(p.Value.TicketItemId))
                 {
-                    gainItem(currentContiMove.TicketItemId, 1);
-                    gainMeso(-currentContiMove.TicketPrice);
+                    gainItem(p.Value.TicketItemId, 1);
+                    gainMeso(-p.Value.TicketPrice);
                 }
                 else
                 {
-                    await SayOK("你确定你有 #b" + currentContiMove.TicketPrice + " 金币#k 吗？如果是的话，请检查你的其它物品栏，看看是否已经满了。");
+                    await SayOK("你确定你有 #b" + p.Value.TicketPrice + " 金币#k 吗？如果是的话，请检查你的其它物品栏，看看是否已经满了。");
                 }
             }
             else
@@ -593,9 +652,16 @@ namespace Application.Plugin.Script
                 return;
             }
 
+            var p = currentContiMove.GetTicket(getPlayer());
+            if (p == null)
+            {
+                await SayOK("无法与我对话");
+                return;
+            }
+
             var next = DateTimeOffset.FromUnixTimeMilliseconds(currentContiMove.ArriveAt).ToLocalTime().Humanize();
 
-            if (haveItem(currentContiMove.TicketItemId))
+            if (haveItem(p.Value.TicketItemId))
             {
                 if (currentContiMove.CanEnter)
                 {
@@ -603,12 +669,13 @@ namespace Application.Plugin.Script
                     {
                         if (currentContiMove.Enter(getPlayer()))
                         {
-                            gainItem(currentContiMove.TicketItemId, -1);
+                            gainItem(p.Value.TicketItemId, -1);
                         }
                         else
                         {
                             await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 ${next}抵达。");
                         }
+                        return;
                     }
                     else
                     {
@@ -808,20 +875,7 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
-        // Npc: 1052002 
-        public Task refine_kerning()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
-
-        // Npc: 1052003 
-        public Task refine_kerning2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 1052006 
@@ -855,10 +909,10 @@ namespace Application.Plugin.Script
             {
                 selStr += "\r\n#L" + i + "#Construction site B" + (i + 1) + " (" + cost + " mesos)#l";
             }
-            var option =  await SayOption(selStr);
+            var option = await SayOption(selStr);
             if (getMeso() < cost)
             {
-               await SayOK("你没有足够的金币。");
+                await SayOK("你没有足够的金币。");
             }
             else
             {
@@ -875,11 +929,9 @@ namespace Application.Plugin.Script
             switch (option)
             {
                 case 0:
-                    var em0 = GetEventManager<SoloEventManager>("KerningTrain");
-                    if (!em0.startInstance(getPlayer()))
-                    {
-                        await SayOK("客运车已经满了。稍后再试一次。");
-                    }
+                    var em0 = GetEventManager<PrivateContiMove>("KerningTrain");
+                    var r = em0.StartInstance(getPlayer());
+                    await em0.HandleCreateInstanceResult(r, this);
                     break;
                 case 1:
                     if (haveItem(4031036) || haveItem(4031037) || haveItem(4031038))
@@ -899,41 +951,11 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        sendOk("看起来你好像没有票！");
-
+                        await SayOK("看起来你好像没有票！");
                     }
                     break;
                 case 2:
-                    if (!haveItem(4031711) && getPlayer().getMapId() == 103000100)
-                    {
-                        await SayOK("看起来你没有票！你可以从贝尔那里买一张。");
-                        return;
-                    }
-                    var em2 = GetEventManager<SoloEventManager>("KerningTrain");
-                    if (em2.getProperty("entry") == "true")
-                    {
-                        if (await SayYesNo("列车已经进站,请出示你的票，这样我就可以让你进去了。乘坐时间不会很长，你会安全到达目的地的。你觉得怎么样？想要乘坐这趟列车吗？"))
-                        {
-                            if (haveItem(4031711))
-                            {
-                                if (em2.getProperty("entry") == "false")
-                                {
-                                    await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
-                                }
-                                else
-                                {
-                                    gainItem(4031711, -1);
-                                    warp(600010004);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
-                        return;
-
-                    }
+                    await ContiMove_NLC();
                     break;
                 default:
                     break;
@@ -1005,10 +1027,20 @@ namespace Application.Plugin.Script
 
 
         // Npc: 1052012 
-        public Task go_pc()
+        public async Task go_pc()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("那么，你打算使用网吧吗？在那里使用空间是需要付费的，费用是#b5,000金币#k。你要进入网吧吗？"))
+            {
+                if (getMeso() < 5000)
+                {
+                    await SayOK("哦，你没有钱，对吧？抱歉，我不能让你进去。");
+                }
+                else
+                {
+                    gainMeso(-5000);
+                    warp(193000000, "out00");
+                }
+            }
         }
 
 
@@ -1135,11 +1167,9 @@ namespace Application.Plugin.Script
                 case 0:
                     if (isQuestStarted(2286) || isQuestStarted(2287) || isQuestStarted(2288))
                     {
-                        var em = GetEventManager<SoloEventManager>("RockSpirit");
-                        if (!em.startInstance(getPlayer()))
-                        {
-                            await SayOK("嗯...看起来前面的房间有点拥挤。请在这里等一会，好吗？");
-                        }
+                        var em = GetEventManager<RockSpirit>("RockSpirit");
+                        var r = em.StartInstance(getPlayer());
+                        await em.HandleCreateInstanceResult(r, this);
                         return;
                     }
                     else
@@ -1170,12 +1200,7 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1061000 
-        public Task refine_sleepy()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+
 
 
         // Npc: 1061006 
@@ -1202,8 +1227,6 @@ namespace Application.Plugin.Script
                 var option = await SayOption("它的力量让你能够深入森林深处。", maps.Take(zones).Select(x => $"#m{x}#"));
                 warp(maps[option], 0);
             }
-
-
         }
 
 
@@ -1217,20 +1240,44 @@ namespace Application.Plugin.Script
         }
 
 
+        /// <summary>
+        /// 异界之门
+        /// </summary>
+        /// <returns></returns>
         // Npc: 1061009 
-        public Task crack()
+        public async Task crack()
         {
-            // TODO
-            return Task.CompletedTask;
+            Dictionary<int, int> allowedJob = new()
+            {
+                {1, 105070001 },
+                {2, 100040106 },
+                {3, 105040305 },
+                {4, 107000402 },
+                {5, 105070200 },
+            };
+            var jobStyle = getJob().GetJobNiche();
+            if (isQuestStarted(-jobStyle * 10000 - 3000 - 1) && getMapId() == allowedJob.GetValueOrDefault(jobStyle) && !haveItem(4031059))
+            {
+                // getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.EVENT);
+                var em = GetEventManager<S3rdJob>(nameof(S3rdJob) + jobStyle);
+                await em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), this);
+            }
+            else
+            {
+                await SayOK(GetDefault0());
+            }
         }
 
 
         // Npc: 1061010 
         [ScriptName("3jobExit")]
-        public Task s_3jobExit()
+        public async Task s_3jobExit()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("你想离开吗？"))
+            {
+                var p = getPlayer().GetSavedLocation(Shared.MapObjects.SavedLocationType.EVENT);
+                warpMap(p);
+            }
         }
 
 
@@ -1486,11 +1533,11 @@ namespace Application.Plugin.Script
         // Npc: 1063017 
         public async Task DollWayKeeper2()
         {
-            if (await SayYesNo("前方等待着大师本人。你准备好面对他了吗？"))
+            if (await SayYesNo("欢迎回来，弗朗西斯主人。要进入主人的洞窟吗？"))
             {
                 if (getMap(925020010).getAllPlayers().Count > 0)
                 {
-                    await SayOK("有人已经在挑战大师了。请稍后再试。");
+                    await SayOK("有人在里面了。请稍后再进入。");
                 }
                 else
                 {
@@ -1501,12 +1548,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1072008 
-        public Task inside_pirate()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 1081001 
@@ -1529,12 +1570,7 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1090000 
-        public Task kairinT()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+
 
 
         // Npc: 1091003 
@@ -1551,7 +1587,7 @@ namespace Application.Plugin.Script
             await SaySpeech([
                 "好的，我现在会把你送到我的牛棚去。小心那些喝光所有牛奶的小牛犊。你可不想白费力气。",
                 "这不容易一眼就分辨出小牛和母牛。这些小牛可能只有一个月或两个月大，但它们已经长到和它们的母亲一样大了。它们甚至看起来很像……有时候连我自己都会感到困惑！祝你好运！"
-                ], finalNext: true);
+                ]);
             if (canHold(4031847))
             {
                 gainItem(4031847, 1);
@@ -1649,26 +1685,122 @@ namespace Application.Plugin.Script
 
 
         // Npc: 1092019 
-        public Task s4strike()
+        public async Task s4strike()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (!isQuestStarted(6400))
+            {
+                await SayOK(GetDefault0());
+            }
+            else
+            {
+                var seagullProgress = getQuestProgressInt(6400, 1);
+                if (seagullProgress == 0)
+                {
+                    string[] seagullQuestion = [
+                    "One day, I went to the ocean and caught 62 Octopi for dinner. But then some kid came by and gave me 10 Octopi as a gift! How many Octopi do I have then, in total?"
+                    ];
+                    string[] seagullAnswer = ["72"];
+                    await SayNext("好的！我现在就给你第一个问题！你最好准备好，因为这个问题很难。甚至这里的海鸥都觉得这个问题相当棘手。这是一个相当困难的问题。");
+                    for (int i = 0; i < seagullQuestion.Length; i++)
+                    {
+                        var inputAnswer = await SayInputText(seagullQuestion[i]);
+                        if (inputAnswer == seagullAnswer[i])
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            await SayOK("嗯，那不太符合我的记忆。再试一次吧！");
+                            return;
+                        }
+                    }
+                    setQuestProgress(6400, 1, 1);
+                    await SayNext("什么！我简直不敢相信你有多聪明！不可思议！在海鸥世界里，这种智慧会让你获得博士学位，甚至更多。你真是太了不起了……我简直不敢相信……我简直不敢相信！");
+                    return;
+                }
+                else if (seagullProgress == 1)
+                {
+                    await SaySpeech([
+                        "现在~让我们继续下一个问题。这个问题真的很难。我要让巴特来帮我。你认识巴特，对吧？",
+                        "我要把你送到尼奥之舟的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
+                        "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
+                        ]);
+                    var em = GetEventManager<SoloEventManager>("4jaerial");
+                    await em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), this);
+                }
+                else
+                {
+                    await SayOK("哦！哇，这真是令人印象深刻！我认为我的考验相当困难，而你竟然通过了……你确实是海盗家族中不可或缺的一员，也是海鸥的朋友。我们现在因着持久的友谊而结为知己！最重要的是，朋友就是在你陷入困境时伸出援手的。如果你遇到紧急情况，就呼唤我们海鸥吧。");
+                }
+
+            }
+
         }
 
 
+        async Task MomCow(int idx)
+        {
+            if (getQuestProgressInt(2180, 1) == idx)
+            {
+                await SayNext("你最近已经从这头牛身上挤过奶了，请检查另一头牛。");
+                return;
+            }
+
+            if (canHold(4031848) && haveItem(4031847))
+            {
+                gainItem(4031847, -1);
+                gainItem(4031848, 1);
+
+                setQuestProgress(2180, 1, idx);
+
+                await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之一的牛奶。");
+            }
+            else if (canHold(4031849, 1) && haveItem(4031848))
+            {
+                gainItem(4031848, -1);
+                gainItem(4031849, 1);
+
+                setQuestProgress(2180, 1, idx);
+
+                await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之二的牛奶。");
+            }
+            else if (canHold(4031850) && haveItem(4031849))
+            {
+                gainItem(4031849, -1);
+                gainItem(4031850, 1);
+
+                setQuestProgress(2180, 1, idx);
+
+                await SayNext("现在用牛奶把瓶子装满。瓶子现在完全装满了牛奶。");
+            }
+            else
+            {
+                await SayNext("你的背包已满，没有空间放牛奶瓶。");
+            }
+        }
         // Npc: 1092090, 1092091, 1092092 
         public Task mom_cow()
         {
-            // TODO
-            return Task.CompletedTask;
+            return MomCow(getNpc() - 1092089);
         }
 
 
         // Npc: 1092093, 1092094, 1092095 
-        public Task baby_cow()
+        public async Task baby_cow()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4031847))
+            {
+                await SayNext("小牛饿了，正在喝光所有的牛奶！奶瓶里一滴奶都没有了……");
+            }
+            else if (haveItem(4031848) || haveItem(4031849) || haveItem(4031850))
+            {
+                gainItem(4031848, -1);
+                gainItem(4031849, -1);
+                gainItem(4031850, -1);
+
+                gainItem(4031847, 1);
+                await SayNext("小牛很饿，正在喝光所有的牛奶！奶瓶现在空了。");
+            }
         }
 
         // Npc: 1094002, 1094003, 1094004, 1094005, 1094006 
@@ -1712,14 +1844,6 @@ namespace Application.Plugin.Script
             {
                 warp(120000104);
             }
-        }
-
-
-        // Npc: 1095002 
-        public Task enter_pirate()
-        {
-            // TODO
-            return Task.CompletedTask;
         }
 
 
@@ -1827,18 +1951,53 @@ namespace Application.Plugin.Script
 
 
         // Npc: 1101001 
-        public Task createCygnus()
+        public async Task createCygnus()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getPlayer().isCygnus() && GameConstants.getJobBranch(getJob()) > 2)
+            {
+                useItem(2022458);
+                await SayOK("让我为你祈福，我的骑士。请保护冒险岛的世界……");
+            }
+            else
+            {
+                await SayOK("不要停止训练。你的每一分能量都需要用来保护冒险岛的世界……");
+            }
         }
 
 
         // Npc: 1101008 
-        public Task helperCygnus()
+        public async Task helperCygnus()
         {
-            // TODO
-            return Task.CompletedTask;
+            var option = await SayOption("等等！等你达到10级的时候，你会自己搞清楚这些东西的，但如果你绝对想提前准备，你可以查看以下信息。\r\n\r\n 告诉我，你想知道什么？\r\n#b#L0#关于你#l\r\n#L1#小地图#l\r\n#L2#任务窗口#l\r\n#L3#背包#l\r\n#L4#普通攻击狩猎#l\r\n#L5#如何拾取物品#l\r\n#L6#如何装备物品#l\r\n#L7#技能窗口#l\r\n#L8#如何使用快捷栏#l\r\n#L9#如何打开箱子#l\r\n#L10#如何坐在椅子上#l\r\n#L11#世界地图#l\r\n#L12#任务通知#l\r\n#L13#增强属性#l\r\n#L14#谁是皇家骑士？#l");
+            switch (option)
+            {
+                case 0:
+                    await SaySpeech([
+                        "我侍奉着守护女皇希纳斯。我的主人命令我引导所有来到枫之世界的人加入皇家骑士团。在你成为骑士或达到11级之前，我会一直在你身边协助和跟随你。如果你有任何问题，请告诉我。",
+                        "现在没有必要检查这些信息。这些都是你在游戏中会逐渐学会的基础知识。当你达到10级后，你可以随时问我遇到的问题，所以放松一点吧。"
+                        ]);
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                    guideHint(option);
+                    break;
+                case 14:
+                    await SayOK("黑魔法师正试图复活并征服我们和平的枫之世界。作为对这一威胁的回应，女皇希纳斯组建了一个骑士团，现在被称为皇家骑士团。当你达到10级时，你可以成为一名骑士。");
+                    break;
+                default:
+                    break;
+            }
         }
 
 
@@ -1859,167 +2018,261 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1102003 
-        public Task cygnus_lv120()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
 
         // Npc: 1103005 
-        public Task erebWarp()
+        public async Task erebWarp()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayAcceptDecline("Becoming a Knight of Cygnus requires talent, faith, courage, and will power... and it looks like you are more than qualified to become a Knight of Cygnus. What do you think? If you wish to become one right this minute, I'll take you straight to Erev. Would you like to head over to Erev right now?"))
+            {
+                warp(130000000);
+            }
+            else
+            {
+                warp(getPlayer().getSavedLocation("CYGNUSINTRO"));
+            }
         }
 
 
-        // Npc: 1104000 
-        public Task DollMaster()
+        // Npc: 1104000, 1204006 
+        public async Task DollMaster()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() == 910400000)
+            {
+                await SaySpeech([
+                    new SpeechText("哼……真的找来了，太容易了？看来你的变身术还是有点用处的嘛。巴洛克，我们走。", 1),
+                    new SpeechText("切……这笔帐将来再算。", 5, 1204004),
+                    new SpeechText("来得正好。上一次因为刚和冒险骑士团的骑士们战斗完，已经没什么余力了，才会让你得逞。这次我可没那么好惹了！碍眼的家伙，消失掉吧！",1)
+                    ]);
+                setQuestProgress(21733, 21762, 1);
+
+                var mapObj = getMap();
+                if (mapObj.countMonster(9300382) > 0)
+                {
+                    mapObj.killMonster(9300382);
+                }
+
+                var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
+                mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300345), 12, new Point(npcPos.X + 50, npcPos.Y));
+                mapObj.destroyNPC(getNpc());
+            }
+            else
+            {
+                await SayNext("什么……你不属于这里！");
+                var puppet = GetEventManager<Puppeteer>("Puppeteer");
+                puppet.setProperty("player", getPlayer().getName());
+                var r = puppet.StartInstance(getPlayer());
+                await puppet.HandleCreateInstanceResult(r, this);
+
+            }
         }
 
 
         // Npc: 1104002 
-        public Task blackWitch()
+        public async Task blackWitch()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
+            if (!isQuestStarted(20407))
+            {
+                await SayOK("... Knight, you still #bseem unsure to face this fight#k, don't you? There's no grace in challenging someone when they are still not mentally ready for the battle. Talk your peace to that big clumsy bird of yours, maybe it'll put some guts on you.");
+                return;
+            }
 
+            if (await SayAcceptDecline("Hahahahaha! This place's Empress is already under my domain, that's surely a great advance on the #bBlack Wings#k' overthrow towards Maple World... And you, there? Still wants to face us? Or, better yet, since you seem strong enough to be quite a supplementary reinforcement at our service, #rwill you meet our expectations and fancy joining us#k since there's nothing more you can do?"))
+            {
+                Pink("Eleanor: Oh, lost the Empress and still challenging us? Now you've done it! Prepare yourself!!!");
 
-        // Npc: 1104100 
-        public Task desguiseSoul()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+                getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9001010), new Point(850, 0));
+                getMap().destroyNPC(1104002);
 
-
-        // Npc: 1104101 
-        public Task desguiseFlame()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1104102 
-        public Task desguiseWind()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1104103 
-        public Task desguiseNight()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1104104 
-        public Task desguiseStrike()
-        {
-            // TODO
-            return Task.CompletedTask;
+            }
+            else
+            {
+                await SayOK("Heh, cowards have no place on the #rBlack Mage's#k army. Begone!");
+            }
         }
 
 
         // Npc: 1104200 
-        public Task enterBlackEreb()
+        public async Task enterBlackEreb()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayNext("#b#p1104002##k... The black witch... Trapped me here... There's no time now, she's already on her way to #rattack Ereve#k!");
+            if (await SayYesNo("Fellow Knight, you must reach to #rEreve#k right now, #rthe Empress is in danger#k!! Even in this condition, I can still Magic Warp you there. When you're ready talk to me. #bAre you ready to face Eleanor?#k"))
+            {
+                if (getWarpMap(913030000).countPlayers() == 0)
+                {
+                    warp(913030000, 0);
+                }
+                else
+                {
+                    await SayOK("There's someone already challenging her. Please wait awhile.");
+                }
+            }
         }
 
 
         // Npc: 1200003 
-        public Task contimoveRieRit()
+        public async Task contimoveRieRit()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
+            {
+                if (haveItem(4031801))
+                {
+                    await SaySpeech([
+                        "搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？",
+                        "既然你有推荐信，我不会收你任何的费用。收起來，我们前往金银岛，坐好，旅途中可能会有点动荡！"
+                        ], current: 1);
+                    warp(200090070);
+                }
+                else
+                {
+                    await SayNext("真的只要 #e80 金币#n 就能搭船!!");
+
+                    if (getLevel() >= 8)
+                    {
+                        if (getMeso() < 80)
+                        {
+                            await SayOK("什么？你说你想搭免费的船？ 你真是个怪人！");
+                            return;
+                        }
+                        else
+                        {
+                            await SayNext("哇! #e80#n 金币我收到了！ 好，准备触发去明珠港喽！");
+
+                            gainMeso(-80);
+                            warp(200090070);
+                        }
+                    }
+                    else
+                    {
+                        await SayOK("让我看看... 我觉得你还不够强。 你至少要达到7级我才能让你到明珠港哦。");
+                        return;
+                    }
+                }
+
+            }
         }
 
 
         // Npc: 1200004 
-        public Task contimoveRitRie()
+        public async Task contimoveRitRie()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayNext("你考虑离开金银岛前往我们的城镇吗？如果你登上这艘船，我可以带你从#b明珠港#k到#b里恩#k，然后再返回。但你必须支付#b800#k金币的费用。你想去#b里恩#k吗？");
+            if (getMeso() < 800)
+            {
+                await SayNext("嗯... 你确定你有 #b800#k 金币吗？检查一下你的背包，确保你有足够的金币。你必须支付费用，否则我不能让你上船...");
+            }
+            else
+            {
+                gainMeso(-800);
+                warp(200090060);
+            }
         }
 
 
         // Npc: 1200005 
-        public Task PurotalkRie()
+        public async Task PurotalkRie()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
         // Npc: 1200006 
-        public Task PurotalkVic()
+        public async Task PurotalkVic()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1202000 
-        public Task awake()
-        {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
         // Npc: 1202009 
-        public Task enterWolf()
+        public async Task enterWolf()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1202010 
-        public Task aran_lv200()
-        {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItemWithId(1902016, true))
+            {
+                warp(140010210, 0);
+            }
+            else
+            {
+                await SayOK("这是什么？如果你是来浪费我的时间的，滚开！");
+            }
         }
 
 
         // Npc: 1204001 
-        public Task dollMaster00()
+        public async Task dollMaster00()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SaySpeech([
+                new SpeechText("我是黑色之翼的人偶师弗朗西斯。你把我安置的好几个人偶都给找出来了……坏了我的好事。虽然我很恼火，不过这次先放你一马。你要是再敢和我作对………我以黑魔法师大人的名义发誓，绝不放过你。", 9),
+                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商里商里。）#k", 3)
+                ]);
+
+            completeQuest(21719);
+            warp(105040200, 10);
+        }
+
+        // Npc: 1204005 
+        public async Task downTrue()
+        {
+            if (getQuestProgressInt(21733, 21762) == 2)
+            {
+                await SayOK(GetDefault0());
+                return;
+            }
+
+            setQuestProgress(21733, 21762, 2);
+
+            await SayNext("啊……那些家伙全都消灭了？哈哈……真不愧是英雄大人！呃，先整理整理再说。");
+            warp(104000004);
+        }
+
+
+        // Npc: 1204010 
+        public async Task giantDagoth()
+        {
+            await SaySpeech([
+                new SpeechText("嗯？怎么回事，你？", 1),
+                new SpeechText("前不久倒是听说金银岛上的人偶师被人打倒了，难道是你……", 1),
+                new SpeechText("嘿嘿，那反倒好办了！既拿到了#b天空之城封印石#k，又能顺便打倒你的话，我就能在人偶师之上了！出招吧！", 1)
+                ]);
+
+            var mapObj = getMap();
+            var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
+            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300348), 12, new Point(npcPos.X + 50, npcPos.Y));
+            mapObj.destroyNPC(getNpc());
+        }
+
+        // Npc: 1204020 
+        public async Task ShadowWarrier()
+        {
+            await SaySpeech([
+                new SpeechText("我一直在等你……英雄的后裔啊……", 8),
+                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", 2),
+                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", 8),
+                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", 2)
+                ]);
+
+            var mapObj = getMap();
+            var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
+            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300351), 12, new Point(npcPos.X + 50, npcPos.Y));
+            mapObj.destroyNPC(getNpc());
         }
 
 
         // Npc: 1209000 
         public async Task talkHelena()
         {
-            await SayNext("战神，你醒了！你感觉怎么样？嗯？你想知道发生了什么事情吗？");
-            await SayNext("我们几乎准备好逃跑了。你不用担心。我尽可能找到的每个人都已经登上了方舟，神树也同意引领我们的道路。一旦完成剩下的准备工作，我们就会立即前往金银岛。");
-            await SayNext("其他的英雄们？他们已经离开去对抗黑魔法师了。他们在为我们争取时间逃跑。什么？你想和他们一起战斗吗？不！你不能！你受伤了。你必须和我们一起离开！");
+            await SaySpeech([
+                "醒了？战神？伤口还好吧？……什么？现在的状况？",
+                "避难准备都做好了，所有的人都上了方舟。避难船飞行的时候就只有听天由命了，没啥可担心的。准备得差不多就该向金银岛出发了。",
+                "战神的同伴们？他们……已经去找黑魔法师了。在我们避难的时候，他们打算阻止黑魔法师的进攻……什么？你也要去找黑魔法师？不行！你伤得太重，跟我们一起吧！"
+                ]);
+            setQuestProgress(21000, 21002, 1);
             showIntro("Effect/Direction1.img/aranTutorial/Trio");
         }
 
 
         // Npc: 1300012 
-        public Task TD_MC_bossEnter()
+        public async Task TD_MC_bossEnter()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
@@ -2045,7 +2298,6 @@ namespace Application.Plugin.Script
                     await SayNext("这里...似乎有点奇怪...？！", 3);
                     await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", 3);
                     await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", 3);
-                    await SayNext("await SayNext(\"显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。\", 3);", 3);
                 }
                 else if (haveItem(2430014))
                 {
@@ -2065,74 +2317,78 @@ namespace Application.Plugin.Script
 
 
         // Npc: 2001000 
-        public Task desc_tree()
+        public async Task desc_tree()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SaySpeech([
+                "你看到那边站着一群雪人吗？去和他们中的一个交谈，它会带你去这里著名的巨大圣诞树。这棵树可以用各种装饰品来装饰。你觉得怎么样？听起来很有趣，对吧？",
+                "只有6个人可以同时在树所在的地方，你不能在那里进行交易或者开设商店。你丢下的饰品只能由你自己捡起来，所以不用担心在这里丢失你的饰品。",
+                "当然，掉落在那里的物品永远不会消失。一旦你通过里面的雪人离开那里，你在那张地图上掉落的所有物品都会回到你身边，所以你离开那个地方之前不必捡起所有这些物品。是不是很方便呢？",
+                "Well then, go see #p2002001#, buy some Christmas ornaments there, and then decorate the tree with those~ Oh yeah! The biggest, the most beautiful ornament cannot be bought from him. It's probably ... taken by a monster ... huh huh .."
+                ], finalNext: false);
         }
 
 
         // Npc: 2001001 
-        public Task go_tree1()
+        public async Task go_tree1()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            {
+                warp(209000001);
+            }
         }
 
 
         // Npc: 2001002 
-        public Task go_tree2()
+        public async Task go_tree2()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            {
+                warp(209000002);
+            }
         }
 
 
         // Npc: 2001003 
-        public Task go_tree3()
+        public async Task go_tree3()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            {
+                warp(209000003);
+            }
         }
 
 
         // Npc: 2001004 
-        public Task out_tree()
+        public async Task out_tree()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("那么，你准备好离开这里了吗？"))
+            {
+                warp(209000000);
+            }
         }
 
 
         // Npc: 2001005 
         public Task job_3th()
         {
-            // TODO
+            // NOT USED
             return Task.CompletedTask;
         }
 
 
         // Npc: 2002000 
-        public Task go_victoria()
+        public async Task go_victoria()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
+            if (await SayYesNo("你想离开快乐村吗？"))
+            {
+                var map = getPlayer().GetSavedLocation(SavedLocationType.HAPPYVILLE);
+                if (map == -1)
+                {
+                    map = 101000000;
+                }
 
-
-        // Npc: 2010000 
-        public Task carlie()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2010003 
-        public Task make_orbis()
-        {
-            // TODO
-            return Task.CompletedTask;
+                warp(map, 0);
+            }
         }
 
 
@@ -2160,10 +2416,9 @@ namespace Application.Plugin.Script
 
 
         // Npc: 2012012 
-        public Task oldBook2()
+        public async Task oldBook2()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
@@ -2326,107 +2581,169 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2013000 
-        public Task party3_enter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2013001 
-        public Task party3_play()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2013002 
-        public Task party3_minerva()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2020000 
-        public Task refine_elnath()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2020002 
-        public Task make_elnath()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2020005 
         public Task oldBook1()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
-
-        // Npc: 2020008 
-        public Task warrior3()
+        async Task Job3(int type, string preNpcMap, int preNpc)
         {
-            // TODO
-            return Task.CompletedTask;
+            var option = await SayOption("我可以帮你吗？", [
+                "我想进行第三次职业转职。",
+                "请允许我进行扎昆地牢任务。"
+                ]);
+            switch (option)
+            {
+                case 0:
+                    // 自定义任务、用来记录状态
+                    var questBase = -10000 * type - 3000;
+                    var baseJob = JobFactory.GetById(type * 100);
+                    var baseJobStr = c.CurrentCulture.GetJobName(baseJob);
+                    if (isQuestStarted(questBase - 1))
+                    {
+                        if (haveItem(4031057))
+                        {
+                            await SayNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
+                            if (haveItem(4031057))
+                            {
+                                gainItem(4031057, -1);
+                                completeQuest(questBase - 1);
+
+                                await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
+                                startQuest(questBase - 2);
+                                return;
+                            }
+                            else
+                            {
+                                // 原先这里只需要判断进度，并不强制需要物品（力量项链），我这里强制任务道具丢失需要重做
+                                await SayNext($"东西不见了？找#b#p{preNpc}##k重做");
+                                return;
+                            }
+
+                        }
+                        else
+                        {
+                            await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
+                        }
+                        return;
+                    }
+                    else if (isQuestStarted(questBase - 2))
+                    {
+                        if (haveItem(4031058))
+                        {
+                            await SayNext("做得好，完成了测试的智力部分。你明智地回答了所有问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
+                            if (haveItem(4031058))
+                            {
+                                gainItem(4031058, -1);
+                                completeQuest(questBase - 2);
+
+                                await Apply3rdJobChange();
+                            }
+                            else
+                            {
+                                await SayNext("东西不见了？找#b#p2030006##k重做");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            await SayNext("去，和#b#p2030006#对话#k，然后给我带来#b#t4031058##。");
+                        }
+
+                        return;
+                    }
+                    else if (isQuestCompleted(questBase - 2))
+                    {
+                        await Apply3rdJobChange();
+                        return;
+                    }
+                    else if (await SayYesNo($"欢迎。我是#b#p{getNpc()}##k，所有{baseJobStr}的首领。你似乎已经准备好迈出这一步，准备好迎接第三职业转职的挑战。太多的{baseJobStr}来来去去，无法达到第三职业转职的标准。你呢？你准备好接受考验，进行第三职业转职了吗？"))
+                    {
+                        await SaySpeech([
+                            $"好的。你将在{baseJobStr}的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的力量部分。还记得在{preNpcMap}的#b#p{preNpc}##k吗？去找他，他会告诉你第一部分测试的细节。请完成任务，并从#p{preNpc}#那里得到#b#t4031057##k。",
+                            $"测试智慧的部分只能在你通过了力量测试之后才能开始。#b#t4031057##k 将证明你确实通过了测试。我会提前告诉#b#p{preNpc}##k你要前往那里，所以做好准备。这不会很容易，但我对你有信心。祝你好运。"
+                            ]);
+                        startQuest(questBase - 1);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
-
-        // Npc: 2020009 
-        public Task wizard3()
+        async Task Apply3rdJobChange()
         {
-            // TODO
-            return Task.CompletedTask;
+            var nextJob = getJobId() + 1;
+            var job = JobFactory.GetById(nextJob);
+            var jobStr = c.CurrentCulture.GetJobName(job);
+            if (!await SayYesNo($"好的！现在，我将让你成为{jobStr}。在这之前，请确保你的SP已经被充分使用了，你需要用完70级之前获得的所有SP。哦，还有，由于你已经在第二次转职时选择了职业方向，所以在第三次转职时就不需要再次选择了。你现在要进行转职吗？"))
+            {
+                return;
+            }
+
+            if (getPlayer().getRemainingSp() > (getLevel() - 70) * 3)
+            {
+                await SayNext("请在继续之前使用你所有的SP。");
+                return;
+            }
+
+            changeJobById(nextJob);
+            if (job == Job.CRUSADER)
+            {
+                await SaySpeech([
+                    "你刚刚成为了#b勇士#k。一些新的攻击技能，比如#b怒吼#k和#b连击#k都非常强大，而#b破甲#k将会削弱怪物的防御能力。最好集中精力学习你在战士时期掌握的武器技能。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+            else if (job == Job.WHITEKNIGHT)
+            {
+                await SaySpeech([
+                    "你刚刚成为了#b圣骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议白骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使白骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+            else if (job == Job.DRAGONKNIGHT)
+            {
+                await SaySpeech([
+                    $"你刚刚成为了#b龙骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议白骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使白骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+            else if (getJob() == Job.FP_MAGE)
+            {
+                await SaySpeech([
+                    "你现在是#b巫师（火毒）#k了。新的技能书包含了新的和改进的火毒系法术，还有像#b魔力激化#k（增强元素法术）和#b魔法狂暴#k（提高攻击法术的速度）这样的技能，能够让你快速有效地攻击怪物。防御性法术如#b火毒抗性#k（使你对某些元素攻击更强）和#b封印#k（封印怪物）将有助于弥补法师生命值不足的弱点。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+            else if (getJob() == Job.IL_MAGE)
+            {
+                await SaySpeech([
+                    "你现在是#b巫师（冰雷）#k了。新的技能书包含了全新和改进的冰雷系法术，还有像#b魔力激化#k（增强元素法术）和#b魔法狂暴#k（提高攻击法术的速度）这样的技能，能够让你快速有效地攻击怪物。防御性法术如#b冰雷抗性#k（增强对特定元素攻击的抵抗力）和#b封印术#k（封印怪物）将有助于弥补法师生命值不足的弱点。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+            else if (getJob() == Job.PRIEST)
+            {
+                await SaySpeech([
+                    "你现在是#b祭司#k了。新的技能书包含了新的和改进的神圣法术，比如#b圣光#k和#b圣龙召唤#k，以及#b时空门#k（创建通往最近城镇的门）和#b神圣祈祷#k（提高经验值获取）等技能对于组队游戏至关重要。像#b巫毒术#k（将怪物变成蜗牛）这样与众不同的法术使牧师成为所有职业中最独特的职业。",
+                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                ]);
+            }
+
         }
 
 
-        // Npc: 2020010 
-        public Task bowman3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
-        // Npc: 2020011 
-        public Task thief3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2020013 
-        public Task pirate3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 2022004 
-        public Task s4common1_out()
+        public async Task s4common1_out()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2023000 
-        public Task ossyria_taxi()
-        {
-            // TODO
-            return Task.CompletedTask;
+            await SayNext("你在那里做得很好，#h0#，干得漂亮。现在我会把你送回埃尔奈斯。当你准备好学习新技能时，带着护身符和我交谈。");
+            warp(211000000, "in01");
         }
 
 
@@ -2439,49 +2756,108 @@ namespace Application.Plugin.Script
 
 
         // Npc: 2030006 
-        public Task holyStone()
+        public async Task holyStone()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
+            List<(string quest, string[] options, int answer)> questList = [
+        ("在冒险岛中，从Lv1升到Lv2需要多少经验值？", ["20", "15", "4", "12", "16"], 1),
+        ("各职业一转时，下列哪项要求是错误的？", ["魔法师 - 等级8级", "海盗 - 敏捷不低于20", "弓箭手 - 敏捷不低于25", "飞侠 - 敏捷不低于20", "战士 - 力量不低于35"], 3),
+        ("被怪物攻击时特别的异常状态没有被正确说明的是哪一项？", ["封印 - 不能释放技能", "不死族 - 变成不死族 & 恢复效果减半", "虚弱-移动速度降低", "诅咒 - 经验减少", "昏迷 - 无法移动"], 2),
+        ("各职业一转时，下列哪项要求是正确的？", ["海盗 - 25幸运", "魔法师 - 10级", "飞侠 - 25 幸运", "战士 - 30力量", "弓箭手 - 25敏捷"], 4),
 
 
-        // Npc: 2030008 
-        public Task Zakum00()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        ("下列怪物中，哪组怪物与打倒他所能得到的战利品是正确的对应关系？", ["仙人掌宝宝 - 刺针", "钢甲猪 - 野猪牙", "红小丑 - 黄小丑的帽子", "松松 - 坚果", "蝙蝠 - 蝙蝠翅膀"], 4),
+        ("下列怪物中，哪组怪物与打倒他所能得到的战利品是错误的对应关系", ["大侠 - 大侠勋章", "食人花 - 食人花的叶子", "古木妖 - 苗木", "小海象 - 海象尖牙", "僵尸 - 僵尸丢失的臼齿"], 1),
+        ("In GM Event, how many FRUIT CAKE you can get as reward?", ["20", "200", "5", "25", "100"], 2),
+        ("下列药品中，哪组药品与功能是正确的对应关系？", ["活力神水 - 攻击 +5 持续 3 分钟", "纯净水 - 回复 700 MP", "蛋糕 - 回复 150 HP & MP", "沙拉 - 回复 300 MP", "披萨饼 - 回复400 HP"], 4),
+        ("下列药品中，哪组药品与功能是错误的对应关系？", ["活力神水 - 回复 300 MP", "补药 - 恢复虚弱状态", "苹果 - 回复 30 HP", "清晨之露 - 回复3000 MP", "拉面 - 回复 1000 HP"], 3),
 
 
-        // Npc: 2030010 
-        public Task Zakum06()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        ("绿蘑菇，木妖，蓝水灵，斧木妖，三眼章鱼中级别最高的怪物是哪一个？", ["三眼章鱼", "蓝水灵", "斧木妖", "木妖", "绿蘑菇"], 2),
+        ("往返于魔法密林/天空之城的船上会出现哪个怪物？", ["狼人", "绿水灵", "蝙蝠魔", "扎昆", "皮克西"], 2),
+        ("在彩虹岛没有出现的怪物是？", ["蘑菇仔", "蓝蜗牛", "绿水灵", "红蜗牛", "飘飘猪"], 4),
+        ("在金银岛没有出现的怪物是？", ["火独眼兽", "石球", "蝙蝠怪", "黑木妖", "绿蜗牛"], 1),
+        ("在冰封雪域没有出现的怪物是？", ["黑雪人", "黑鳄鱼", "法老王企鹅", "火焰猎犬", "僵尸"], 1),
+        ("以下哪种怪物会飞?", ["巫婆", "鳄鱼", "冰独眼兽", "猫鼬", "阿丽莎乐"], 0),
+        ("在神秘岛没有出现的怪物是？", ["星光精灵", "幼黄独角狮", "幼红独角狮", "鳄鱼", "野狼"], 3),
+        ("在彩虹岛没有出现的怪物是？", ["绿蜗牛", "蘑菇仔", "火独眼兽", "花蘑菇", "蓝水灵"], 2),
+
+        ("唤醒麦吉不需要的材料是哪一个？", ["火焰羽毛", "旧战剑", "冰块", "星石", "妖精之翼"], 4),
+        ("以下哪项任务是可以重复完成的?", ["医院之谜", "正义的捐赠", "幽灵的行踪", "艾温的玻璃鞋", "玛雅和奇怪的药物"], 3),
+        ("以下哪项不是二转职业", ["巫师", "牧师", "刺客", "枪手", "勇士"], 0),
+        ("以下哪项任务要求的等级最高？", ["丘比特信使", "迷失在海洋中", "阿尔卡斯特和黑暗水晶", "消灭兔子", "庞庞的战争"], 2),
 
 
-        // Npc: 2030011 
-        public Task Zakum04()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        ("金银岛没有的村落是？", ["金海滩", "彩虹村", "明珠港", "勇士部落", "魔法密林"], 1),
+        ("你在彩虹岛遇到的第一个NPC是谁？", ["塞拉", "希娜", "路卡斯", "罗杰", "尚克斯"], 1),
+        ("在冰封雪域看不到的NPC是？", ["伯坚", "索菲亚", "佩德罗", "珀斯上尉", "卢米"], 1),
+        ("在冰封雪域看不到的NPC是？", ["魔法石", "格里巴", "杰夫", "神圣的石头", "保姆珥玛"], 4),
+        ("在勇士部落看不到的NPC是？", ["伊安", "索菲亚", "斯密斯", "易德", "麦吉"], 3),
+        ("在射手村看不到的NPC是？", ["特奥", "赫丽娜", "玛亚", "皮亚", "莉娜"], 0),
+        ("在魔法密林看不到的NPC是？", ["汉斯", "易德", "露饵", "妖精路易", "赛恩"], 2),
+        ("在废弃都市看不到的NPC是？", ["后街吉姆", "马龙", "休咪", "鲁克", "钱老板"], 3),
+        ("哪个NPC与宠物无关?", ["科尔", "比休斯", "帕特里沙", "威巴", "科洛伊"], 1),
+        ("废弃都市中，离家出走的少年阿列克斯的父亲是谁？", ["长老斯坦", "后街吉姆", "铭仁", "比休斯", "卢克"], 0),
+        ("哪个NPC不属于天空之城阿尔法小队？", ["查理中士", "巴伯下士", "伊吉上等兵", "珀斯上尉", "彼特"], 4),
+        ("在二转过程中，收集30个黑色珠子给转职教官后可以得到什么？", ["古老的戒指", "记忆粉", "仙尘", "英雄证书", "秘密卷轴"], 3),
+        ("为了给射手村的玛雅治病，需要给她什么？", ["苹果", "强力灵药", "奇怪的药", "菊花", "橙汁"], 2),
+        ("以下与合成或冶炼工作没有关系的NPC是？", ["奈巴", "塞利尔", "塞恩", "易德", "后街吉姆"], 2),
+        ("在彩虹岛看不到的NPC是？", ["巴里", "特奥", "皮奥", "赛德", "玛利亚"], 1),
+        ("在导航室的监视器里能看到谁和Kyrin在一起？", ["路卡斯", "金博士", "长老斯坦", "斯卡德", "弗利维教授"], 1),
+        ("你知道射手村的赫丽娜吗？他的眼睛是什么颜色？", ["蓝色", "绿色", "棕色", "红色", "黑色"], 1),
+        ("勇士部落武术教练的帽子上有多少根羽毛？", ["7", "8", "3", "13", "16"], 3),
+        ("魔法密林汉斯持有的宝珠是什么颜色?", ["白色", "橙色", "蓝色", "紫色", "绿色"], 2)
+    ];
 
-
-        // Npc: 2030013 
-        public Task zakum_accept()
-        {
-            // TODO
-            return Task.CompletedTask;
+            var questId = -(getJobId() / 100) * 10000 - 3000 - 2;
+            if (isQuestStarted(questId) && !haveItem(4031058))
+            {
+                if (haveItem(4005004, 1))
+                {
+                    if (!canHold(4031058))
+                    {
+                        await SayNext("接受此试炼前，请确保有一个空闲的ETC槽位。");
+                        return;
+                    }
+                    else
+                    {
+                        await SayNext("好的...我将在这里测试你的智慧。所有问题回答正确，你就会通过测试，但是，如果你答错一次，那么你就得重新开始，好吗，我们开始吧。");
+                        gainItem(4005004, -1);
+                        var questions = questList.OrderBy(x => Guid.NewGuid()).Take(5).ToList();
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var q = questions[i];
+                            var inputAnswer = await SayOption(q.quest, q.options);
+                            if (inputAnswer != q.answer)
+                            {
+                                await SayNext("答错了");
+                                return;
+                            }
+                        }
+                        gainItem(4031058, 1);
+                        await SayOK("好的。你所有问题都答对了。你的智慧得到了验证。拿着这条项链回去吧。");
+                    }
+                }
+                else
+                {
+                    await SayNext("给我带来一个 #b#t4005004##k 以继续进行试炼。");
+                    return;
+                }
+            }
+            await SayOK(GetDefault0());
         }
 
 
         // Npc: 2030014 
         public Task s4freeze_item()
         {
-            // TODO
+            if (haveItem(4031450, 1))
+            {
+                if (canHold(2280011, 1))
+                {
+                    gainItem(2280011, 1);
+                    gainItem(4031450, -1);
+                }
+            }
             return Task.CompletedTask;
         }
 
@@ -2494,27 +2870,15 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2032002 
-        public Task Zakum01()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2032003 
-        public Task Zakum02()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2040002 
-        public Task ludi023()
+        public async Task ludi023()
         {
             // TODO
-            return Task.CompletedTask;
+            if (!isQuestStarted(3230))
+            {
+                await SayOK(GetDefault0());
+                return;
+            }
         }
 
 
@@ -2526,132 +2890,123 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2040016 
-        public Task make_ludi1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040019 
-        public Task face_ludi2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040020 
-        public Task make_ludi2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040021 
-        public Task make_ludi3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040022 
-        public Task make_ludi4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2040024 
-        public Task ludi014()
+        public async Task ludi014()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4001020))
+            {
+                if (await SayYesNo("您可以使用#b#t4001020##k来激活#b第一个玩具塔石#k。您要传送到第71层的#b第二个玩具塔石#k吗？"))
+                {
+                    if (haveItem(4001020))
+                    {
+                        gainItem(4001020, -1);
+                        warp(221022900, 3);
+                    }
+
+                }
+            }
+            else
+            {
+                await SayOK("玩具塔石可以让你传送到#b第二个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+            }
         }
 
 
         // Npc: 2040025 
-        public Task ludi015()
+        public async Task ludi015()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4001020))
+            {
+                (string desc, int map)[] options = [("第一个玩具塔石（第100层）", 221024400), ("第三个玩具塔石（第41层）", 221021700)];
+                var option = await SayOption("您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+
+                if (await SayYesNo($"您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                {
+                    if (haveItem(4001020))
+                    {
+                        gainItem(4001020, -1);
+                        warp(options[option].map, 3);
+                    }
+                }
+            }
+            else
+            {
+                await SayOK("玩具塔石可以让你传送到#b第一或者第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+            }
         }
 
 
         // Npc: 2040026 
-        public Task ludi016()
+        public async Task ludi016()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4001020))
+            {
+                (string desc, int map)[] options = [("第二个玩具塔石（第71层）", 221022900), ("第四个玩具塔石（第1层）", 221020000)];
+                var option = await SayOption("您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+
+                if (await SayYesNo($"您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                {
+                    if (haveItem(4001020))
+                    {
+                        gainItem(4001020, -1);
+                        warp(options[option].map, 3);
+                    }
+                }
+            }
+            else
+            {
+                await SayOK("玩具塔石可以让你传送到#b第二或者第四个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+            }
         }
 
 
         // Npc: 2040027 
-        public Task ludi017()
+        public async Task ludi017()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4001020))
+            {
+                if (await SayYesNo("您可以使用#b#t4001020##k来激活#b第四个玩具塔石#k。您要传送到第41层的#b第三个玩具塔石#k吗？"))
+                {
+                    if (haveItem(4001020))
+                    {
+                        gainItem(4001020, -1);
+                        warp(221021700, 3);
+                    }
+
+                }
+            }
+            else
+            {
+                await SayOK("玩具塔石可以让你传送到#b第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+            }
         }
 
 
         // Npc: 2040028 
-        public Task ludi024()
+        public async Task ludi024()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040030 
-        public Task ludi026()
-        {
-            // TODO
-            return Task.CompletedTask;
+            var greeting = "感谢你找到了钟摆。你准备好返回玩具塔了吗？";
+            if (isQuestStarted(3230))
+            {
+                if (haveItem(4031094))
+                {
+                    completeQuest(3230);
+                    gainItem(4031094, -1);
+                }
+                else
+                {
+                    greeting = "你还没有找到那个钟摆。你想回到玩具塔吗？";
+                }
+            }
+            if (await SayYesNo(greeting))
+            {
+                warp(221024400, 4);
+            }
         }
 
 
         // Npc: 2040031 
-        public Task ludi027()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040032 
-        public Task ludi028()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040033 
-        public Task ludi029()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040034 
-        public Task party2_enter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040035, 2040036, 2040037, 2040038, 2040039, 2040040, 2040041, 2040042, 2040043, 2040044, 2040045 
-        public Task party2_play()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        public Task ludi027() => SayOK(GetDefault0());
 
 
         // Npc: 2040046 
@@ -2659,22 +3014,6 @@ namespace Application.Plugin.Script
         {
             // TODO
             return friend00();
-        }
-
-
-        // Npc: 2040047 
-        public Task party2_out()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2040050 
-        public Task make_ston()
-        {
-            // TODO
-            return Task.CompletedTask;
         }
 
 
@@ -2816,7 +3155,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        if (em.startInstance(getPlayer()))
+                        if (em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                         {
                             removeAll(4031507);
                             removeAll(4031508);
@@ -2936,13 +3275,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2081005 
-        public Task hontale_keroben()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
         // Npc: 2081009 
         public async Task s4blocking_enter()
@@ -2979,41 +3311,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2081100 
-        public Task warrior4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-
-        // Npc: 2081300 
-        public Task archer4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2081400 
-        public Task thief4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2081500 
-        public Task pirate4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2082003 
         public async Task flyminidraco()
         {
@@ -3030,45 +3327,18 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2083000 
-        public Task hontale_enterToE()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2083001 
-        public Task hontale_enter1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2083002 
-        public Task hontale_out()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-        // Npc: 2083004 
-        public Task hontale_accept()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2083005 
-        public Task s4holycharge()
+        public async Task s4holycharge()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (isQuestStarted(6280))
+            {
+                if (hasItem(4031454))
+                {
+                    await SayOK("你从喷泉里往杯子里倒了一些水。");
+                    gainItem(4031454, -1);
+                    gainItem(4031455, 1);
+                }
+            }
         }
 
 
@@ -3078,10 +3348,6 @@ namespace Application.Plugin.Script
             // TODO
             return Task.CompletedTask;
         }
-
-
-
-
 
 
         // Npc: 2090004 
@@ -3098,9 +3364,6 @@ namespace Application.Plugin.Script
             // TODO
             return Task.CompletedTask;
         }
-
-
-      
 
 
         // Npc: 2091009 
@@ -3182,9 +3445,6 @@ namespace Application.Plugin.Script
                 await SayNext("嗯...你是害怕速度还是高度？你不相信我的飞行技能？相信我，我已经解决了所有的问题！");
             }
         }
-
-
-
 
 
         // Npc: 2103013 
@@ -3319,7 +3579,19 @@ namespace Application.Plugin.Script
         // Npc: 2111020 
         public Task alceCircle1()
         {
-            // TODO
+            if (isQuestStarted(3345))
+            {
+                var progress = getQuestProgressInt(3345);
+
+                if (progress == 0)
+                {
+                    setQuestProgress(3345, 1);
+                }
+                else if (progress < 4)
+                {
+                    setQuestProgress(3345, 0);
+                }
+            }
             return Task.CompletedTask;
         }
 
@@ -3327,7 +3599,19 @@ namespace Application.Plugin.Script
         // Npc: 2111021 
         public Task alceCircle2()
         {
-            // TODO
+            if (isQuestStarted(3345))
+            {
+                var progress = getQuestProgressInt(3345);
+
+                if (progress == 0)
+                {
+                    setQuestProgress(3345, 2);
+                }
+                else if (progress < 4)
+                {
+                    setQuestProgress(3345, 0);
+                }
+            }
             return Task.CompletedTask;
         }
 
@@ -3335,16 +3619,44 @@ namespace Application.Plugin.Script
         // Npc: 2111022 
         public Task alceCircle3()
         {
-            // TODO
+            if (isQuestStarted(3345))
+            {
+                var progress = getQuestProgressInt(3345);
+
+                if (progress == 0)
+                {
+                    setQuestProgress(3345, 3);
+                }
+                else if (progress < 4)
+                {
+                    setQuestProgress(3345, 0);
+                }
+            }
             return Task.CompletedTask;
         }
 
 
         // Npc: 2111023 
-        public Task alceCircle4()
+        public async Task alceCircle4()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (isQuestStarted(3345))
+            {
+                var progress = getQuestProgressInt(3345);
+
+                if (progress == 3 && haveItem(4031739, 1) && haveItem(4031740, 1) && haveItem(4031741, 1))
+                {
+                    setQuestProgress(3345, 4);
+                    gainItem(4031739, -1);
+                    gainItem(4031740, -1);
+                    gainItem(4031741, -1);
+
+                    await SayOK("当你放置碎片时，一道光芒照耀着圆圈，驱散了这件神器内部酝酿的不祥之兆。");
+                }
+                else if (progress < 4)
+                {
+                    setQuestProgress(3345, 0);
+                }
+            }
         }
 
 
@@ -3370,92 +3682,11 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 2112000 
-        public Task yurete_mad()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112001 
-        public Task yurete_dead()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-        // Npc: 2112003 
-        public Task juliet_start()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112004 
-        public Task romio_start()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112005 
-        public Task juliet()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112006 
-        public Task romio()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112007 
-        public Task rnj_look()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112008 
-        public Task juliet_dead()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112009 
-        public Task romio_dead()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2112010 
-        public Task yurete2_mad()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2112011 
         public async Task yurete2_dead()
         {
             await SayOption(
-                "被打败了...这就是Yulete的遗产将如何结束的方式，哦，这是多么的悲哀...希望你们现在很开心，因为我将度过余生在一个黑暗的地窖里。我所做的一切都是为了马加提亚的利益！！（哭泣）",
+                "被打败了...这就是犹泰的遗产将如何结束的方式，哦，这是多么的悲哀...希望你们现在很开心，因为我将度过余生在一个黑暗的地窖里。我所做的一切都是为了马加提亚的利益！！（哭泣）",
                 ["嘿，伙计，振作点！这里没有太多无法解决的损害。马加提亚制定了这些严厉的法律，是为了保护它的人民免受像这样的强大力量落入错误的手中所带来的危害。这并不是你的终结，接受社会的康复，一切都会好起来的！"]
                 );
             await SayNext("…在我所做的一切之后，你们原谅我了吗？嗯，我想我被那种可以通过这种方式发现的巨大力量冲昏了头脑，也许他们说得对，人类不能简单地理解并运用这些力量，而不在途中腐化自己…我深感抱歉，为了弥补自己对每个人，我愿意在炼金术的进展中再次帮助各个组织。谢谢。");
@@ -3467,20 +3698,43 @@ namespace Application.Plugin.Script
         }
 
 
-
-        // Npc: 2112013 
-        public Task jnr_look()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 2112016 
-        public Task q3367npc()
+        public async Task q3367npc()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (isQuestStarted(3367))
+            {
+                var c = getQuestProgressInt(3367, 30);
+                if (c >= 30)
+                {
+                    await SayNext("（所有文件已整理好。向尤莱特报告找到的文件。）");
+                    return;
+                }
+
+                var book = (getNpcObjectId() % 30);
+                var prog = getQuestProgressInt(3367, book);
+                if (prog == 0)
+                {
+                    c++;
+
+                    if (book < 20)
+                    {
+                        if (!canHold(4031797, 1))
+                        {
+                            await SayNext("（你找到了一份报告文件，但由于你的杂项栏已满，你选择将文件放在你找到的地方。）");
+                            return;
+                        }
+                        else
+                        {
+                            gainItem(4031797, 1);
+                            setQuestProgress(3367, 31, getQuestProgressInt(3367, 31) + 1);
+                        }
+                    }
+
+                    setQuestProgress(3367, book, 1);
+                    setQuestProgress(3367, 30, c);
+                    await SayNext("（整理文件。#r" + (30 - c) + "#k 剩余。）");
+                }
+            }
         }
 
 
@@ -3501,105 +3755,6 @@ namespace Application.Plugin.Script
         }
 
 
-
-        // Npc: 2141000 
-        public Task PinkBeen_Summon()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2141001 
-        public Task PinkBeen_accept()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2141002 
-        public Task PinkBeen_Out()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000000, 9000001, 9000011, 9000013 
-        public Task Event00()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000002 
-        public Task Event02()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000003, 9000004, 9000005, 9000006 
-        public Task Event03()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000007 
-        public Task Event04()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000008 
-        public Task Event05()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000009 
-        public Task Event03_1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000010 
-        public Task Event06()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9000012 
-        public Task Event09()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-        // Npc: 9000020 
-        public Task world_trip()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 9000021 
         public async Task getRank()
         {
@@ -3608,7 +3763,7 @@ namespace Application.Plugin.Script
             if (await SayAcceptDecline("如果你觉得自己足够强大，你可以像其他人一样在我们举办权力竞赛的地方加入。...那么，你的决定是什么？您现在进入举行比赛的地方吗？"))
             {
                 await SayOK("非常好。记住，在那里你可以组建一个团队，或者独自进行战斗，这取决于你。祝你好运！");
-                getPlayer().saveLocation("BOSSPQ");
+                getPlayer().SaveLocation(SavedLocationType.BOSSPQ);
                 warp(970030000, "out00");
             }
         }
@@ -3659,10 +3814,6 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
-
-
-
-
         // Npc: 9001102 
         public Task giveupMoonPicture()
         {
@@ -3679,31 +3830,15 @@ namespace Application.Plugin.Script
         }
 
 
-
-        // Npc: 9010001, 9010002, 9010003 
-        public Task Event07()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 9010004 
-        public Task ludiEvent()
+        public async Task ludiEvent()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
-
-
 
 
         // Npc: 9010021 
-        public Task RyuhoRank()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        public Task RyuhoRank() => SayOK(GetDefault0());
 
 
         // Npc: 9010022 
@@ -3714,295 +3849,36 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 9020000 
-        public Task party1_enter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9020001 
-        public Task party1_play()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9020002 
-        public Task party1_out()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040000 
-        public Task guildquest1_enter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040001 
-        public Task guildquest1_clear()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040002 
-        public Task guildquest1_comment()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040003 
-        public Task guildquest1_NPC1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040005 
-        public Task guildquest1_out()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040006 
-        public Task guildquest1_baseball()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040007 
-        public Task guildquest1_will()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040009 
-        public Task guildquest1_statue()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040010 
-        public Task guildquest1_bonus()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040011 
-        public Task guildquest1_board()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9040012 
-        public Task guildquest1_knight()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050000, 9100107, 9110017, 9310023 
-        public Task gachapon8()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050001, 9100108, 9100111, 9310024 
-        public Task gachapon9()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050002, 9100109, 9310025 
-        public Task gachapon10()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050003, 9100110, 9310026 
-        public Task gachapon11()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050004, 9310027 
-        public Task gachapon12()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050005, 9100112, 9270043, 9310028 
-        public Task gachapon13()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050006, 9310029 
-        public Task gachapon14()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050007, 9310061 
-        public Task gachapon15()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050009 
-        public Task pigmy_guide()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9050010 
-        public Task gachapon16()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
         // Npc: 9060000 
-        public Task tamepig_out()
+        public async Task tamepig_out()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4031508, 5) && haveItem(4031507, 5))
+            {
+                await SayNext("哇~ 你成功收集了5个#b#t4031508##k和#b#t4031507##k。好的，那么我会送你去动物园。到了之后请再和我交谈。");
+                //
+            }
+            else
+            {
+                if (await SayYesNo("你还没有完成要求。你确定要离开吗？"))
+                {
+                    warp(923010100, 0);
+                }
+            }
         }
-
-
-
-
-        // Npc: 9100100 
-        public Task gachapon1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100101 
-        public Task gachapon2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100102, 9110011 
-        public Task gachapon3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100103, 9110012 
-        public Task gachapon4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100104, 9110013 
-        public Task gachapon5()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100105, 9110014 
-        public Task gachapon6()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100106, 9110016 
-        public Task gachapon7()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9100117, 9310092 
-        public Task gachapon18()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
 
 
         // Npc: 9101001 
-        public Task begin_jp2()
+        public async Task begin_jp2()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
+            await SaySpeech([
+                "你已经完成了所有的训练。干得好。你似乎已经准备好立刻开始旅程了！很好，我会让你继续前往下一个地方。",
+                "但记住，一旦你离开这里，你将进入一个充满怪物的村庄。那么，再见！"
+                ]);
+            warp(40000, 0);
+            gainExp(3);
 
-
-        // Npc: 9102100 
-        public Task multipet_success()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9102101 
-        public Task multipet_fail()
-        {
-            // TODO
-            return Task.CompletedTask;
         }
 
 
@@ -4067,15 +3943,22 @@ namespace Application.Plugin.Script
 
 
 
-
-
-
-
         // Npc: 9120003 
-        public Task in_bath()
+        public async Task in_bath()
         {
-            // TODO
-            return Task.CompletedTask;
+            var price = 300;
+            if (await SayYesNo("你想进入浴池吗？这将是" + price + "金币。"))
+            {
+                if (getMeso() < price)
+                {
+                    await SayOK("请检查并查看您是否有" + price + "金币进入这个地方。");
+                }
+                else
+                {
+                    gainMeso(-price);
+                    warp(801000100 + 100 * getPlayer().getGender(), "out00");
+                }
+            }
         }
 
 
@@ -4097,53 +3980,37 @@ namespace Application.Plugin.Script
 
         // Npc: 9120015 
         [ScriptName("To the Showa manor...")]
-        public Task s_To_the_Showa_manor()
+        public async Task s_To_the_Showa_manor()
         {
-            // TODO
-            return Task.CompletedTask;
+            var option = await SayOption("你想从我这里得到什么？\r\n#L0##b收集一些有关藏身之处的信息。#l\r\n#L1#带我去藏身之处。#l\r\n#L2#什么都不要。#k");
+            switch (option)
+            {
+                case 0:
+                    await SayNext("我可以带你去藏身之处，但那个地方到处都是寻衅滋事的暴徒。你需要既非常强壮又勇敢才能进入那个地方。在藏身之处，你会找到控制这个地区所有其他头目的老大。到达藏身之处很容易，但那个地方顶层的房间每天只能进入一次。老大的房间不是一个可以胡闹的地方。我建议你不要在那里待得太久；一旦进去，你需要迅速处理好事情。老大本人是一个强大的对手，但在去见老大的路上你会遇到一些非常强大的敌人！这并不会容易。");
+                    break;
+                case 1:
+                    await SayNext("Oh, the brave one. I've been awaiting your arrival. If these\r\nthugs are left unchecked, there's no telling what going to\r\nhappen in this neighborhood. Before that happens, I hope\r\nyou take care of all them and beat the boss, who resides\r\non the 5th floor. You'll need to be on alert at all times, since\r\nthe boss is too tough for even wisemen to handle.\r\nLooking at your eyes, however, I can see that eye of the\r\ntiger, the eyes that tell me you can do this. Let's go!");
+                    break;
+
+                case 2:
+                    await SayOK("我很忙！如果你只是需要这个，就别打扰我！");
+                    break;
+                default:
+                    break;
+            }
         }
-
-
-
-
-        // Npc: 9120100 
-        public Task hair_shouwa1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9120101 
-        public Task hair_shouwa2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9120102 
-        public Task face_shouwa1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9120103 
-        public Task face_shouwa2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
 
         // Npc: 9120200 
-        public Task con2()
+        public async Task con2()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("你就在藏身处前面！什么？你想返回#m801000000#？"))
+            {
+                warp(801000000);
+            }
+            else
+            {
+                await SayOK("如果你想回到#m801000000#，就来找我。");
+            }
         }
 
 
@@ -4164,79 +4031,10 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9120203 
-        public Task con4()
+        public async Task con4()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-        // Npc: 9200100 
-        public Task lens_henesys1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9200101 
-        public Task lens_orbis1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9200102 
-        public Task lens_ludi1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-
-        // Npc: 9201015 
-        public Task hair_wedding1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201016 
-        public Task hair_wedding2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201017 
-        public Task lens_wedding1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201018 
-        public Task face_wedding1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201019 
-        public Task face_wedding2()
-        {
-            // TODO
-            return Task.CompletedTask;
+            await SayNext("啊，Boss已经被打败了。这真是个快乐的日子！恭喜大家。跟着这条路返回城镇。");
+            warp(801000000);
         }
 
 
@@ -4248,53 +4046,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 9201022 
-        public Task Thomas()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201023 
-        public Task ProofKern()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201024 
-        public Task ProofElli()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201025 
-        public Task ProofOrbi()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201026 
-        public Task ProofLudi()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201027 
-        public Task ProofPeri()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
         // Npc: 9201033 
         public Task go_xmas06()
@@ -4303,79 +4054,6 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
-
-        // Npc: 9201039 
-        public Task hair_wedding3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-
-
-        // Npc: 9201042 
-        public Task TickShop()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201043 
-        public Task PartyAmoria_enter()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201044 
-        public Task PartyAmoria_play()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201045 
-        public Task PartyAmoria_play3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201046 
-        public Task PartyAmoria_playBo()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201047 
-        public Task PartyAmoria_play2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201048 
-        public Task PartyAmoria_enter2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201049 
-        public Task ExitWedding()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 9201050 
@@ -4389,24 +4067,15 @@ namespace Application.Plugin.Script
         // Npc: 9201051 
         public Task naomi()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
-
-        // Npc: 9201052 
-        public Task refine_TCG1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
 
 
         // Npc: 9201054 
         public Task Lost_Trans1()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
@@ -4419,58 +4088,95 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9201057 
-        public Task NLC_ticketing()
+        public async Task NLC_ticketing()
         {
-            // TODO
-            return Task.CompletedTask;
+            var subway = c.CurrentServer.ContiMoves.GetValueOrDefault(nameof(Subway)) ?? throw new BusinessNotsupportException(nameof(Subway));
+            if (getMap() == subway.StationAMap || getMap() == subway.StationBMap)
+            {
+                var p = subway.GetTicket(getPlayer());
+                if (p == null)
+                {
+                    await SayOK("无法与我对话");
+                    return;
+                }
+
+                var target = subway.GetDestinationMapName(getPlayer());
+                if (target == null)
+                {
+                    await SayOK("无法与我对话");
+                    return;
+                }
+
+                if (await SayYesNo($"每分钟都有前往{target}的地铁出发，票价为#b{p.Value.TicketPrice}金币#k。您确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
+                {
+                    if (!canHold(p.Value.TicketItemId))
+                    {
+                        await SayNext("你没有可用的ETC空余的栏位。");
+                    }
+                    else if (getMeso() >= p.Value.TicketPrice)
+                    {
+                        gainMeso(-p.Value.TicketPrice);
+                        gainItem(p.Value.TicketItemId, 1);
+                        await SayNext("请收好您的票。");
+                    }
+                    else
+                    {
+                        await SayNext("你没有足够的金币。");
+                    }
+                }
+            }
+            else
+            {
+                if (await SayYesNo("列车启动前你想离开吗？车票将不会退款。"))
+                {
+                    WarpReturn();
+                }
+            }
+
         }
 
 
-        // Npc: 9201061 
-        public Task NLC_LensExp()
+        async Task ContiMove_NLC()
         {
-            // TODO
-            return Task.CompletedTask;
+            var subway = c.CurrentServer.ContiMoves.GetValueOrDefault(nameof(Subway)) ?? throw new BusinessNotsupportException(nameof(Subway));
+            var p = subway.GetTicket(getPlayer());
+            if (p == null)
+            {
+                await SayOK("无法与我对话");
+                return;
+            }
+            if (subway.CanEnter)
+            {
+                if (await SayYesNo("列车已经进站,请出示你的票，这样我就可以让你进去了。乘坐时间不会很长，你会安全到达目的地的。你觉得怎么样？想要乘坐这趟列车吗？"))
+                {
+                    if (haveItem(p.Value.TicketItemId))
+                    {
+                        if (subway.Enter(getPlayer()))
+                        {
+                            gainItem(p.Value.TicketItemId, -1);
+                        }
+                        else
+                        {
+                            await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
+                        }
+                    }
+                    else
+                    {
+                        await SayOK("抱歉，您需要一张门票才能进入！");
+                    }
+                    return;
+                }
+            }
+            else
+            {
+                await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
+                return;
+            }
         }
-
-
-        // Npc: 9201062 
-        public Task NLC_LensVip()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201063 
-        public Task NLC_HairExp()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201064 
-        public Task NLC_HairVip()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201065 
-        public Task NLC_Skin()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 9201068 
         public Task NLC_Move()
         {
-            // TODO
-            return Task.CompletedTask;
+            return ContiMove_NLC();
         }
 
 
@@ -4491,52 +4197,43 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9201071 
-        public Task Sunstone()
+        public async Task Sunstone()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
         // Npc: 9201072 
-        public Task Moonstone()
+        public async Task Moonstone()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
         // Npc: 9201073 
-        public Task Tombstone()
+        public async Task Tombstone()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
-
-
-
 
         // Npc: 9201082 
         public Task naomi1()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
         // Npc: 9201083 
         public Task Lost_Trans2()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
         // Npc: 9201084 
         public Task Tomb_Hall()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
@@ -4544,81 +4241,57 @@ namespace Application.Plugin.Script
         // Npc: 9201093 
         public Task suzy_lost()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
         // Npc: 9201094 
         public Task TCG3()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201095 
-        public Task Gear_Upgrade()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201096 
-        [ScriptName("Jack_Additional ")]
-        public Task s_Jack_Additional()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201097 
-        public Task Badge_Bounty()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201098 
-        public Task Brewing_Storm()
-        {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
         // Npc: 9201099 
-        public Task MoStore()
+        public async Task MoStore()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getQuestStatus(8224) == 2)
+            {
+                openShopNPC(getNpc());
+            }
+            else
+            {
+                await SayOK("嗯，你觉得你在看谁？");
+            }
+
         }
 
 
         // Npc: 9201100 
-        public Task Fallen_Woods()
+        public async Task Fallen_Woods()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getQuestStatus(8224) == 2)
+            {
+                await SayOK("你好，同伴。如果你需要帮助，可以尝试与我们的成员交谈。");
+            }
+            else
+            {
+                await SayOK("你好，陌生人。我们是著名的渡鸦爪佣兵团，我是他们的领袖。");
+            }
         }
 
 
         // Npc: 9201101 
         public Task tcg4_7()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
         // Npc: 9201102 
         public Task tcg4_8()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
@@ -4713,7 +4386,14 @@ namespace Application.Plugin.Script
         // Npc: 9201114 
         public Task glpqEnter()
         {
-            // TODO
+            if (haveItem(3992041, 1))
+            {
+                warp(610030020, "out00");
+            }
+            else
+            {
+                playerMessage(5, "The giant gate of iron will not budge no matter what, however there is a visible key-shaped socket.");
+            }
             return Task.CompletedTask;
         }
 
@@ -4726,59 +4406,110 @@ namespace Application.Plugin.Script
         }
 
 
+        async Task JobWarp(Job job)
+        {
+            Dictionary<Job, int> jobMap = new()
+            {
+                { Job.WARRIOR, 102000003 },
+                { Job.MAGICIAN, 101000003 },
+                { Job.BOWMAN,  100000201},
+                { Job.THIEF,  103000003},
+                { Job.PIRATE,  120000101},
+            };
+            var jobType = job.Id / 100;
+            if (getJob() == Job.BEGINNER)
+            {
+                var requiredLevel = job == Job.MAGICIAN ? 8 : 10;
+                if (getLevel() >= requiredLevel && canGetFirstJob(jobType))
+                {
+                    var map = jobMap[job];
+                    if (await SayYesNo("你好 #h0#，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
+                    {
+                        warp(map, 0);
+                    }
+                    ;
+                }
+                else
+                {
+                    await SayOK($"如果你想成为#b{c.CurrentCulture.GetJobName(job)}#k，你需要到达#b{requiredLevel}级，{getFirstJobStatRequirement(jobType)}#k。");
+                }
+            }
+            else
+            {
+                await SayOK("我只招待新人！");
+            }
+        }
 
         // Npc: 9201123 
         public Task goPerion()
         {
-            // TODO
-            return Task.CompletedTask;
+            return JobWarp(Job.WARRIOR);
         }
 
 
         // Npc: 9201124 
         public Task goHenesys()
         {
-            // TODO
-            return Task.CompletedTask;
+            return JobWarp(Job.BOWMAN);
         }
 
 
         // Npc: 9201125 
         public Task goElinia()
         {
-            // TODO
-            return Task.CompletedTask;
+            return JobWarp(Job.MAGICIAN);
         }
 
 
         // Npc: 9201126 
         public Task goKerningCity()
         {
-            // TODO
-            return Task.CompletedTask;
+            return JobWarp(Job.THIEF);
         }
 
 
         // Npc: 9201127 
         public Task goNautilus()
         {
-            // TODO
-            return Task.CompletedTask;
+            return JobWarp(Job.PIRATE);
         }
 
 
         // Npc: 9201128 
-        public Task Enter_Darkportal_W()
+        public async Task Enter_Darkportal_W()
         {
-            // TODO
-            return Task.CompletedTask;
+            var map = 677000004;
+            var quest = 28179;
+            var questItem = 4032491;
+            if (isQuestStarted(quest))
+            {
+                if (haveItem(questItem))
+                {
+                    if (await SayYesNo("你想要移动到 #b#m" + map + "##k 吗？"))
+                    {
+                        // 物品不存在，这个NPC也许并不会被使用？
+                        gainItem(4001341, -1);
+                        gainItem(4032478, -1);
+
+                        warp(map, 0);
+                    }
+                }
+                else
+                {
+                    await SayOK("入口被一种力量封锁，只有持有徽章的人才能解除。");
+                }
+            }
+            else
+            {
+                sendOk("入口被一股奇怪的力量阻挡住了。");
+            }
         }
 
 
         // Npc: 9201129 
         public Task Enter_Darkportal_M()
         {
-            // TODO
+            // NOT USED
             return Task.CompletedTask;
         }
 
@@ -4786,7 +4517,7 @@ namespace Application.Plugin.Script
         // Npc: 9201130 
         public Task Enter_Darkportal_T()
         {
-            // TODO
+            // NOT USED
             return Task.CompletedTask;
         }
 
@@ -4794,7 +4525,7 @@ namespace Application.Plugin.Script
         // Npc: 9201131 
         public Task Enter_Darkportal_H()
         {
-            // TODO
+            // NOT USED
             return Task.CompletedTask;
         }
 
@@ -4802,7 +4533,7 @@ namespace Application.Plugin.Script
         // Npc: 9201132 
         public Task Enter_Darkportal_P()
         {
-            // TODO
+            // NOT USED
             return Task.CompletedTask;
         }
 
@@ -4844,8 +4575,7 @@ namespace Application.Plugin.Script
         // Npc: 9201143 
         public Task oliviaEnter()
         {
-            // TODO
-            return Task.CompletedTask;
+            return SayOK(GetDefault0());
         }
 
 
@@ -4883,10 +4613,26 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9220005 
-        public Task Jump_rudolph()
+        public async Task Jump_rudolph()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getChar().getMapId() == 209000000)
+            {
+                if (await SayYesNo($"你想前往 #b#m209080000##k 吗？"))
+                {
+                    warp(209080000, 0);
+                }
+            }
+            else if (getChar().getMapId() == 209080000)
+            {
+                if (await SayYesNo($"你想回到 #b#m209000000##k 吗？"))
+                {
+                    warp(209000000, 0);
+                }
+            }
+            else
+            {
+                await SayOK(GetDefault0());
+            }
         }
 
 
@@ -4916,94 +4662,125 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9270017 
-        public Task goback_kerning()
+        public async Task goback_kerning()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (await SayYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
+            {
+                await SayNext("机票不可退，希望再次见到你！");
+                WarpReturn();
+            }
+            else
+            {
+                await SayOK("请稍等一下，飞机即将起飞。谢谢您的耐心等待。");
+            }
         }
 
 
         // Npc: 9270018 
-        public Task goback_cbd()
+        public async Task goback_cbd()
         {
-            // TODO
-            return Task.CompletedTask;
+            var airPlane = c.CurrentServer.ContiMoves.GetValueOrDefault(nameof(AirPlane)) ?? throw new BusinessNotsupportException(nameof(AirPlane));
+            var target = airPlane.GetDestinationMapName(getPlayer());
+            if (target == null)
+            {
+                await SayOK("无法与我对话");
+                return;
+            }
+
+            if (airPlane.IsTransporting(getMap()))
+            {
+                await SayOK($"我们马上就要到{target}了，请坐下等候。");
+                return;
+            }
+            else if (airPlane.IsWaiting(getMap()))
+            {
+                if (await SayYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
+                {
+                    WarpReturn();
+                }
+                else
+                {
+                    await SayOK("请稍等一下，飞机即将起飞。谢谢您的耐心等待。");
+                }
+            }
         }
 
-
-        // Npc: 9270023 
-        public Task face_sg2()
+        async Task ContiMoveAirPlane()
         {
-            // TODO
-            return Task.CompletedTask;
+            var airPlane = c.CurrentServer.ContiMoves.GetValueOrDefault(nameof(AirPlane)) as AirPlane ?? throw new BusinessNotsupportException(nameof(AirPlane));
+            var target = airPlane.GetDestinationMapName(getPlayer());
+            if (target == null)
+            {
+                await SayOK("无法与我对话");
+                return;
+            }
+
+            var t = airPlane.GetTicket(getPlayer());
+            if (t == null)
+            {
+                await SayOK("无法与我对话");
+                return;
+            }
+
+            var option = await SayOption($"你好，我是来自新加坡机场的#p{getNpc()}#。我可以帮助你迅速到达{target}。你想去{target}吗？\r\n#b#L0#我想买一张去{target}的飞机票\r\n#b#L1#让我进入出发点。");
+            switch (option)
+            {
+                case 0:
+                    if (await SayYesNo($"机票的价格是{t.Value.TicketPrice}金币。你要购买吗？"))
+                    {
+                        if (!canHold(t.Value.TicketItemId))
+                        {
+                            await SayOK("其他栏空间不足");
+                            return;
+                        }
+                        if (getMeso() < t.Value.TicketPrice)
+                        {
+                            await SayOK("你没有足够的金币");
+                            return;
+                        }
+
+                        gainMeso(-t.Value.TicketPrice);
+                        gainItem(t.Value.TicketItemId);
+                        await SayOK("Thank you for choosing Wizet Airline! Enjoy your flight!");
+
+                    }
+                    break;
+                case 1:
+                    if (haveItem(t.Value.TicketItemId))
+                    {
+                        if (airPlane.Enter(getPlayer()))
+                        {
+                            gainItem(t.Value.TicketItemId, -1);
+                        }
+                        else
+                        {
+                            await SayOK("抱歉，飞机已经起飞，请稍等几分钟。");
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        await SayOK($"你需要一个#b#t{t.Value.TicketItemId}##k才能上飞机！");
+                    }
+
+                    break;
+                default:
+                    break;
+            }
         }
-
-
-        // Npc: 9270024 
-        public Task face_sg1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9270025 
-        public Task skin_sg1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9270026 
-        public Task lens_sg1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9270033 
-        public Task captinsg01()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9270036 
-        public Task hair_sg1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9270037 
-        public Task hair_sg2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
 
         // Npc: 9270038 
         public Task sellticket_cbd()
         {
-            // TODO
-            return Task.CompletedTask;
+            return ContiMoveAirPlane();
         }
 
 
         // Npc: 9270041 
         public Task sellticket_sg()
         {
-            // TODO
-            return Task.CompletedTask;
+            return ContiMoveAirPlane();
         }
-
-
-
 
 
         // Npc: 9270047 
@@ -5095,7 +4872,6 @@ namespace Application.Plugin.Script
         }
 
 
-
         // Npc: 9901000, 9901001, 9901002, 9901003, 9901004, 9901005, 9901006, 9901007, 9901008, 9901009, 9901010, 9901011 ...
         public Task rank_user()
         {
@@ -5109,6 +4885,21 @@ namespace Application.Plugin.Script
         {
             // TODO
             return Task.CompletedTask;
+        }
+
+        // Npc: 1012119 
+        public async Task EnterTranningMap(int start)
+        {
+            if (getLevel() >= 20)
+            {
+                await SayOK("只有低于20级才能进入训练中心。");
+                return;
+            }
+
+            var option = await SayOption("你要进入训练中心吗？",
+                Enumerable.Range(0, 5).Select(i => $"训练中心 {i}")
+                );
+            warp(start + option, 0);
         }
 
     }

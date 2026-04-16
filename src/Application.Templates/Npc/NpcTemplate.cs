@@ -1,7 +1,9 @@
+using Application.Templates.Map;
+
 namespace Application.Templates.Npc
 {
     [GenerateTag]
-    public sealed class NpcTemplate : AbstractTemplate
+    public sealed class NpcTemplate : AbstractTemplate, ILinkTemplate<NpcTemplate>
     {
 
         [WZPath("info/MapleTV")]
@@ -18,10 +20,19 @@ namespace Application.Templates.Npc
         [WZPath("info/guildRank")]
         public bool GuildRank { get; set; }
         [WZPath("info/parcel")]
-        public bool Parcel { get; }
+        public bool Parcel { get; set; }
         public NpcTemplate(int templateId)
             : base(templateId)
         {
+        }
+        public void CloneLink(NpcTemplate sourceTemplate)
+        {
+            sourceTemplate.Script = Script;
+            sourceTemplate.TrunkPut = TrunkPut;
+            sourceTemplate.TrunkGet = TrunkGet;
+            sourceTemplate.MapleTV = MapleTV;
+            sourceTemplate.Parcel = Parcel;
+            sourceTemplate.GuildRank = GuildRank;
         }
     }
 }

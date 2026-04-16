@@ -81,7 +81,7 @@ namespace Application.Core.Game.Players
             changeMap(warpMap, warpMap.getPortal(portal));
         }
 
-        public void changeMap(int map, Portal portal)
+        public void changeMap(int map, Portal? portal)
         {
             changeMap(getWarpMap(map), portal);
         }

@@ -5,9 +5,9 @@ using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public class ExpeditionEventManager : AbstractInstancedEventManager
+    public abstract class ExpeditionEventManager : AbstractInstancedEventManager
     {
-        public ExpeditionEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+        public ExpeditionEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
         }
 
@@ -71,10 +71,10 @@ namespace Application.Core.Scripting.Events
                                 }
                             }
 
-                            ExpeditionEventInstanceManager eim;
+                            ExpeditionEventInstanceManager? eim = null;
                             try
                             {
-                                eim = createInstance<ExpeditionEventInstanceManager>("setup", leader.getClient().getChannel());
+                                eim = CreateInstance(1, lobbyId) as ExpeditionEventInstanceManager;
                                 registerEventInstance(eim, lobbyId);
                             }
                             catch (EventInstanceInProgressException)

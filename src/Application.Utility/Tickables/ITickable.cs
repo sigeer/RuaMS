@@ -51,7 +51,7 @@ namespace Application.Utility.Tickables
 
         public long Next { get; }
 
-        public TickableStatus Status { get; private set; }
+        public TickableStatus Status { get; set; }
 
         public void OnTick(long now)
         {

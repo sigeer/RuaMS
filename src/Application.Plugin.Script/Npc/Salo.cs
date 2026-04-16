@@ -68,7 +68,6 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
-
         // Npc: 2041010 
         public Task face_ludi1()
         {
@@ -215,5 +214,203 @@ namespace Application.Plugin.Script
             return Task.CompletedTask;
         }
 
+
+        // Npc: 9270023 
+        public Task face_sg2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270024 
+        public Task face_sg1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270025 
+        public Task skin_sg1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270026 
+        public Task lens_sg1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270033 
+        public Task captinsg01()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270036 
+        public Task hair_sg1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9270037 
+        public Task hair_sg2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+        // Npc: 9201039 
+        public Task hair_wedding3()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+        // Npc: 9201061 
+        public Task NLC_LensExp()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201062 
+        public Task NLC_LensVip()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201063 
+        public Task NLC_HairExp()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201064 
+        public Task NLC_HairVip()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201065 
+        public Task NLC_Skin()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+        // Npc: 9200100 
+        public Task lens_henesys1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9200101 
+        public Task lens_orbis1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9200102 
+        public Task lens_ludi1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+
+
+
+        // Npc: 9201015 
+        public Task hair_wedding1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201016 
+        public Task hair_wedding2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201017 
+        public Task lens_wedding1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201018 
+        public Task face_wedding1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9201019 
+        public Task face_wedding2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+        // Npc: 9120100 
+        public Task hair_shouwa1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9120101 
+        public Task hair_shouwa2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9120102 
+        public Task face_shouwa1()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
+
+        // Npc: 9120103 
+        public Task face_shouwa2()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
     }
 }

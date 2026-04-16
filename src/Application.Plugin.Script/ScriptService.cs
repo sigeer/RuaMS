@@ -1,9 +1,17 @@
+using Application.Core.Channel;
 using Application.Core.Client;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.Infrastructure;
+using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
+using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Npc;
 using Application.Utility.Exceptions;
+using client.inventory;
+using scripting.Event;
+using Serilog;
 using server.maps;
 using System.Reflection;
 
@@ -11,14 +19,16 @@ namespace Application.Plugin.Script
 {
     internal class ScriptService : IScriptService
     {
-        static Dictionary<string, MethodInfo> _portalSource;
-        static Dictionary<string, MethodInfo> _npcSource;
-        static Dictionary<string, MethodInfo> _itemSource;
-        static Dictionary<string, MethodInfo> _mapEnterSource;
-        static Dictionary<string, MethodInfo> _mapFirstEnterSource;
-        static Dictionary<string, MethodInfo> _reactorHitSource;
-        static Dictionary<string, MethodInfo> _reactorActSource;
-        static ScriptService()
+        Dictionary<string, MethodInfo> _portalSource;
+        Dictionary<string, MethodInfo> _npcSource;
+        Dictionary<string, MethodInfo> _itemSource;
+        Dictionary<string, MethodInfo> _mapEnterSource;
+        Dictionary<string, MethodInfo> _mapFirstEnterSource;
+        Dictionary<string, MethodInfo> _reactorHitSource;
+        Dictionary<string, MethodInfo> _reactorActSource;
+
+        List<Type> _eventSource;
+        public ScriptService()
         {
             _portalSource = ExtractMethodsToDictionary(typeof(PortalScript));
             _npcSource = ExtractMethodsToDictionary(typeof(NpcScript));
@@ -29,6 +39,10 @@ namespace Application.Plugin.Script
 
             _reactorHitSource = ExtractMethodsToDictionary(typeof(ReactorHitScript));
             _reactorActSource = ExtractMethodsToDictionary(typeof(ReactorActScript));
+
+            _eventSource = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.IsAssignableFrom(typeof(EventManager)) && x.IsClass && !x.IsAbstract)
+                .ToList();
         }
 
         static Dictionary<string, MethodInfo> ExtractMethodsToDictionary(Type type)
@@ -85,24 +99,43 @@ namespace Application.Plugin.Script
             return (Task<bool>)methodInfo.Invoke(script, null)!;
         }
 
-        public async Task Start(IChannelClient c, int npcId, int npcObjectId, string scriptName)
+        public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
         {
             if (!_npcSource.TryGetValue(scriptName, out var methodInfo))
             {
                 // 
                 c.OnlinedCharacter.Pink($"不支持的脚本{scriptName}");
-                return;
+                return false;
             }
 
-            var talk = new NpcScript(c, npcId, npcObjectId);
+            if (c.NPCConversationManager != null)
+            {
+                return false;
+            }
+
+
+            var talk = new NpcScript(c, npcId, npcObject);
             try
             {
+                if (npcObject != null && c.OnlinedCharacter.getEventInstance() != npcObject.getMap().getEventInstance())
+                {
+                    throw new ConversationDiffInstanceException();
+                }
+
                 c.NPCConversationManager = talk;
                 await (Task)methodInfo.Invoke(talk, null)!;
+                return true;
             }
             catch (ConversationInterruptException)
             {
                 // 对话中断
+                return true;
+            }
+            catch (ConversationDiffInstanceException)
+            {
+                await talk.SayOK(talk.GetDefault0());
+                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return true;
             }
             catch (Exception)
             {
@@ -189,6 +222,25 @@ namespace Application.Plugin.Script
 
             var script = new ReactorActScript(c, r);
             await (Task)methodInfo.Invoke(script, null)!;
+        }
+
+        public int RegisterEvents(WorldChannel channel)
+        {
+            return channel.EventScriptManager.ReloadEventScript([
+                new PQ_Henesys(channel),
+                new PQ_Kerning(channel),
+                new PQ_WuGong(channel),
+                new PQ_CPQ1(channel),
+                new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
+                new S3rdJob(channel, Job.WARRIOR.GetJobNiche().ToString(), 108010300, 105070001, 108010300, 108010301),
+                new S3rdJob(channel, Job.MAGICIAN.GetJobNiche().ToString(), 108010200, 100040106, 108010200, 108010201),
+                new S3rdJob(channel, Job.BOWMAN.GetJobNiche().ToString(), 108010100, 105040305, 108010100, 108010101),
+                new S3rdJob(channel, Job.THIEF.GetJobNiche().ToString(), 108010400, 107000402, 108010400, 108010401),
+                new S3rdJob(channel, Job.PIRATE.GetJobNiche().ToString(), 108010500, 105070200, 108010500, 108010501),
+                new RockSpirit(channel),
+                new Puppeteer(channel),
+                new MK_PrimeMinister(channel),
+                ]);
         }
     }
 }

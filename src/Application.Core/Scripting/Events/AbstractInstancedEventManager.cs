@@ -1,8 +1,15 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Gameplay.ChannelEvents;
+using Application.Core.scripting.Events.Abstraction;
+using Application.Resources.Messages;
+using Application.Shared.Login;
 using Application.Utility.Performance;
 using Application.Utility.Tickables;
 using scripting.Event;
+using scripting.npc;
 using System.Collections.Concurrent;
 using tools.exceptions;
 
@@ -29,8 +36,38 @@ namespace Application.Core.Scripting.Events
         protected HashSet<int> playerPermit = new();
         protected SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
 
-        public AbstractInstancedEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+
+        public int MinCount { get; protected set; } = 1;
+        public int MaxCount { get; init; } = 6;
+
+        public int MinLevel { get; protected set; } = 1;
+        public int MaxLevel { get; init; } = 255;
+
+        public int EntryMap { get; init; } = MapId.NONE;
+        public int EntryPortal { get; init; }
+        public int ExitMap { get; init; } = MapId.NONE;
+        public int ExitPortal { get; init; }
+
+        public int ClearMap { get; init; }
+
+        public int MinMap { get; init; }
+        public int MaxMap { get; init; }
+
+        /// <summary>
+        /// 单位：秒
+        /// </summary>
+        public int EventTime { get; protected set; }
+        public bool AllowReconnect { get; init; } = true;
+
+
+        public AbstractInstancedEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
+
+        }
+
+        public override void Initialize()
+        {
+            MinCount = YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : MinCount;
         }
 
         #region Instances
@@ -48,7 +85,7 @@ namespace Application.Core.Scripting.Events
             return instances.Values.ToList();
         }
 
-        public virtual AbstractEventInstanceManager newInstance(string instanceName)
+        protected AbstractEventInstanceManager newInstance(string instanceName)
         {
             var ret = getReadyInstance() ?? CreateNewInstance(instanceName);
 
@@ -57,7 +94,7 @@ namespace Application.Core.Scripting.Events
         }
 
 
-        protected virtual bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
+        bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
         {
             if (instances.TryAdd(instanceName, eim))
             {
@@ -89,22 +126,14 @@ namespace Application.Core.Scripting.Events
 
         public void ProcessDisposeInstanceInternal(string name) => DisposeInstanceInternal(name);
 
-        public void disposeInstance(string name)
+        public void DisposeInstance(string instanceName)
         {
-            SubTickables.Add(new DelayedDisposeRequest(this, name, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));
+            SubTickables.Add(new DelayedDisposeRequest(this, instanceName, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));
         }
 
-        /// <summary>
-        /// C# -> js.setup -> C#.<see cref="newInstance"/> -> C#.<see cref="CreateNewInstance(string)"/>
-        /// </summary>
-        /// <typeparam name="TEIM"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        /// <exception cref="EventInstanceInProgressException"></exception>
-        protected TEIM createInstance<TEIM>(string name, params object?[] args) where TEIM : AbstractEventInstanceManager
+        protected AbstractEventInstanceManager CreateInstance(int level, int lobbyId) 
         {
-            return iv.CallFunction(name, args).ToObject<TEIM>() ?? throw new EventInstanceInProgressException(name, this.getName());
+            return Setup(level, lobbyId);
         }
 
 
@@ -161,30 +190,38 @@ namespace Application.Core.Scripting.Events
 
             instantiateQueuedInstance();    // keep filling the queue until reach threshold.
         }
-
+        public virtual async Task HandleCreateInstanceResult(CreateInstanceResult r, NPCConversationManager cm)
+        {
+            switch (r)
+            {
+                case CreateInstanceResult.Success:
+                    break;
+                case CreateInstanceResult.RequiredParty:
+                    await cm.SayOK("需要组队");
+                    break;
+                case CreateInstanceResult.RequiredLeader:
+                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk)));
+                    break;
+                case CreateInstanceResult.Requirement:
+                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_CannotStart_Req)));
+                    break;
+                case CreateInstanceResult.LobbyLimited:
+                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull)));
+                    break;
+                case CreateInstanceResult.Disposed:
+                case CreateInstanceResult.Unknown:
+                    await cm.SayOK("未知错误");
+                    break;
+                default:
+                    break;
+            }
+        }
         #endregion
 
         #region Lobby
-        private int getMaxLobbies()
-        {
-            if (MaxLobbys > 0)
-                return MaxLobbys;
 
-            try
-            {
-                MaxLobbys = iv.CallFunction("getMaxLobbies").ToObject<int>();
-            }
-            catch (Exception ex)
-            {
-                // they didn't define a lobby range
-                log.Error(ex, "Script: {Script}", _name);
-                MaxLobbys = DefaultMaxLobbys;
-            }
-            return MaxLobbys;
-        }
         protected void UnregisterLobby(int lobbyId)
         {
-
             openedLobbys[lobbyId] = false;
         }
 
@@ -206,7 +243,7 @@ namespace Application.Core.Scripting.Events
 
         protected int GetAvailableLobbyInstance()
         {
-            int maxLobbies = getMaxLobbies();
+            int maxLobbies = MaxLobbys;
 
             if (maxLobbies > 0)
             {
@@ -222,6 +259,209 @@ namespace Application.Core.Scripting.Events
             return -1;
         }
 
+        #endregion
+
+        public abstract CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1);
+
+        #region Events
+        public virtual AbstractEventInstanceManager Setup(int level, int lobbyId)
+        {
+            var eim = newInstance(_name + lobbyId);
+            eim.setProperty("level", level);
+
+            OnSetup(eim, level, lobbyId);
+
+            respawnStages(eim);
+
+            eim.startEventTimer(EventTime * 1000);
+            setEventRewards(eim);
+
+            return eim;
+        }
+        protected virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+
+        }
+
+        public virtual void AfterSeup(AbstractEventInstanceManager eim)
+        {
+
+        }
+        protected virtual void respawnStages(AbstractEventInstanceManager eim) { }
+        protected virtual void setEventRewards(AbstractEventInstanceManager eim) { }
+        public virtual List<Player> GetEligibleParty(Player leader)
+        {
+            var members = leader.getPartyMembersOnSameMap();
+
+            if (members.Count >= MinCount
+                && members.Count <= MaxCount
+                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
+            {
+                return members;
+            }
+            return [];
+        }
+
+        /// <summary>
+        /// 结束FB
+        /// </summary>
+        /// <param name="eim"></param>
+        protected virtual void End(AbstractEventInstanceManager eim)
+        {
+            var party = eim.getPlayers();
+            foreach (Player player in party)
+            {
+                OnPlayerExit(eim, player);
+            }
+            eim.Dispose();
+        }
+
+
+        public virtual void OnTimeOut(AbstractEventInstanceManager eim)
+        {
+            End(eim);
+        }
+
+        public virtual void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        {
+            chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getReturnMapId() : EntryMap, EntryPortal);
+        }
+
+        public virtual void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
+        {
+            eim.unregisterPlayer(player);
+            player.changeMap(ExitMap == MapId.NONE ? player.MapModel.getForcedReturnId() : ExitMap, ExitPortal);
+        }
+
+        public virtual void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
+        {
+        }
+
+
+        /// <summary>
+        /// 切换地图（前）
+        /// </summary>
+        /// <param name="eim"></param>
+        /// <param name="player"></param>
+        /// <param name="mapid"></param>
+        public virtual void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+            if (mapid < MinMap || mapid > MaxMap)
+            {
+                if (eim.isEventTeamLackingNow(true, MinCount, player))
+                {
+                    eim.unregisterPlayer(player);
+                    End(eim);
+                }
+                else
+                {
+                    eim.unregisterPlayer(player);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 切换地图（后）
+        /// </summary>
+        /// <param name="eim"></param>
+        /// <param name="player"></param>
+        /// <param name="mapid"></param>
+        public virtual void OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+
+        }
+
+        public virtual void OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
+        {
+            var mapid = leader.getMapId();
+            if (!eim.isEventCleared() && (mapid < MinMap || mapid > MaxMap))
+            {
+                End(eim);
+            }
+        }
+
+        public virtual void OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
+        {
+
+        }
+
+        public virtual void OnPlayerDisconnected(AbstractEventInstanceManager eim, Player player)
+        {
+            if (eim.isEventTeamLackingNow(true, MinCount, player))
+            {
+                eim.unregisterPlayer(player);
+                End(eim);
+            }
+            else
+            {
+                eim.unregisterPlayer(player);
+            }
+        }
+
+        public virtual void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
+        {
+            if (eim.isEventTeamLackingNow(false, MinCount, player))
+            {
+                End(eim);
+            }
+            else
+            {
+                if (!eim.isEventCleared())
+                {
+                    OnPlayerExit(eim, player);
+                }
+            }
+        }
+
+        public virtual void OnPartyDisband(AbstractEventInstanceManager eim)
+        {
+            if (!eim.isEventCleared())
+            {
+                End(eim);
+            }
+        }
+
+        public virtual bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
+        {
+            if (eim.isEventTeamLackingNow(true, MinCount, player))
+            {
+                eim.unregisterPlayer(player);
+                End(eim);
+            }
+            else
+            {
+                eim.unregisterPlayer(player);
+            }
+            return true;
+        }
+
+        public virtual void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+        }
+
+        public virtual void OnMobRevive(AbstractEventInstanceManager eim, Monster mob)
+        {
+        }
+
+        public virtual void OnMobClear(AbstractEventInstanceManager eim)
+        {
+        }
+
+        public virtual void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker)
+        {
+        }
+        public virtual void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+        }
+        public virtual void OnFriendlyMobDrop(AbstractEventInstanceManager eim, Monster mob)
+        {
+        }
+
+        public virtual void ClearPQ(AbstractEventInstanceManager eim)
+        {
+            eim.stopEventTimer();
+            eim.setEventCleared();
+        }
         #endregion
 
         public override void Dispose()

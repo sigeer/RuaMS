@@ -3,7 +3,9 @@ using Application.Core.Game.ContiMove;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
@@ -292,7 +294,7 @@ namespace Application.Plugin.Script
                 return Task.FromResult(false);
             }
             showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide1");
-            message("要对怪物使用普通攻击，请按Ctrl键。");
+            message("按一下Ctrl键，能够对怪兽进行一般攻击。");
             updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o");
             return Task.FromResult(true);
         }
@@ -307,7 +309,7 @@ namespace Application.Plugin.Script
                 return Task.FromResult(false);
             }
             showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide2");
-            message("您可以通过多次按下Ctrl键来使用连续攻击。");
+            message("按住Ctrl键，能够进行连续攻击。");
             updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return Task.FromResult(true);
         }
@@ -322,7 +324,7 @@ namespace Application.Plugin.Script
                 return Task.FromResult(false);
             }
             showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide3");
-            message("在连续攻击后，您可以通过同时按下箭头键和攻击键来使用命令攻击。");
+            message("连续攻击后，通过方向键和攻击键可以实现命令攻击。");
             updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return Task.FromResult(true);
         }
@@ -595,36 +597,26 @@ namespace Application.Plugin.Script
                     throw new BusinessNotsupportException($"Event: LatanicaBattle");
                 }
 
-                var chrParty = getParty();
-                if (chrParty == null)
+                var r = em.StartInstance(getPlayer());
+                switch (r)
                 {
-                    playerMessage(5, "You are currently not in a party, create one to attempt the boss.");
-                    return Task.FromResult(false);
-                }
-                else if (!isLeader())
-                {
-                    playerMessage(5, "Your party leader must enter the portal to start the battle.");
-                    return Task.FromResult(false);
-                }
-                else
-                {
-                    var eli = em.getEligibleParty(chrParty);
-                    if (eli.Count > 0)
-                    {
-                        if (!em.StartPQInstance(getPlayer(), eli))
-                        {
-                            playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
-                            return Task.FromResult(false);
-                        }
-                    }
-                    else
-                    {  //this should never appear
-                        playerMessage(5, "You cannot start this battle yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
+                    case CreateInstanceResult.Success:
+                        playPortalSound();
+                        return Task.FromResult(true);
+                    case CreateInstanceResult.RequiredParty:
+                        playerMessage(5, "You are currently not in a party, create one to attempt the boss.");
                         return Task.FromResult(false);
-                    }
-
-                    playPortalSound();
-                    return Task.FromResult(true);
+                    case CreateInstanceResult.RequiredLeader:
+                        playerMessage(5, "Your party leader must enter the portal to start the battle.");
+                        return Task.FromResult(false);
+                    case CreateInstanceResult.Requirement:
+                        playerMessage(5, "Your party must consist of at least 2 players to attempt the boss.");
+                        return Task.FromResult(false);
+                    case CreateInstanceResult.LobbyLimited:
+                        playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
+                        return Task.FromResult(false);
+                    default:
+                        return Task.FromResult(false);
                 }
             }
         }
@@ -946,8 +938,8 @@ namespace Application.Plugin.Script
         public Task<bool> Depart_ToKerning()
         {
 
-            var em = GetEventManager<SoloEventManager>("KerningTrain");
-            if (!em.startInstance(getPlayer()))
+            var em = GetEventManager<PrivateContiMove>("KerningTrain");
+            if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
             {
                 message("The passenger wagon is already full. Try again a bit later.");
                 return Task.FromResult(false);
@@ -1153,7 +1145,7 @@ namespace Application.Plugin.Script
             else if (isQuestStarted(100203) || getPlayer().haveItem(4001094))
             {
                 var em = GetEventManager<SoloEventManager>("NineSpirit");
-                if (!em.startInstance(getPlayer()))
+                if (em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
                     message("There is currently someone in this map, come back later.");
                     return Task.FromResult(false);
@@ -1594,17 +1586,19 @@ namespace Application.Plugin.Script
 
         public Task<bool> enterInfo()
         {
-
-            var mapobj = getWarpMap(104000004);
-            if (isQuestActive(21733) && getQuestProgressInt(21733, 9300345) == 0 && mapobj.countMonsters() == 0)
+            var mapObj = getWarpMap(910400000);
+            if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
             {
-                mapobj.spawnMonsterOnGroundBelow(9300345, 0, 0);
-                setQuestProgress(21733, 21762, 2);
+                if (mapObj.countPlayers() > 0)
+                {
+                    playPortalSound();
+                    warp(mapObj.Id);
+                    return Task.FromResult(true);
+                }
             }
 
-            playPortalSound();
-            warp(104000004, 1);
-            return Task.FromResult(true);
+            message("目标地图有人，请稍后再尝试进入。");
+            return Task.FromResult(false);
         }
 
 
@@ -1615,7 +1609,7 @@ namespace Application.Plugin.Script
             {
                 var cml = GetEventManager<SoloEventManager>("Cygnus_Magic_Library");
                 cml.setProperty("player", getPlayer().getName());
-                cml.startInstance(getPlayer());
+                cml.StartInstance(getPlayer());
                 playPortalSound();
             }
             else
@@ -1747,7 +1741,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    if (!em.startInstance(getPlayer()))
+                    if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
                     {
                         message("There is currently someone in this map, come back later.");
                         return Task.FromResult(false);
@@ -5399,7 +5393,7 @@ namespace Application.Plugin.Script
 
             playPortalSound();
             warp(300000100, "out00");
-            playerMessage(5, "Now passing the Time Gate.");
+            Pink("移动到时间之门的另一端。");
             return Task.FromResult(true);
         }
 
@@ -6381,36 +6375,31 @@ namespace Application.Plugin.Script
             {
                 var em = GetEventManager<PartyQuestEventManager>("PapulatusBattle");
 
-                var party = getParty();
-                if (party == null)
+                var r = em.StartInstance(getPlayer());
+                if (r == CreateInstanceResult.Success)
+                {
+                    playPortalSound();
+                    return Task.FromResult(true);
+                }
+                else if (r == CreateInstanceResult.RequiredParty)
                 {
                     playerMessage(5, "You are currently not in a party, create one to attempt the boss.");
                     return Task.FromResult(false);
                 }
-                else if (!isLeader())
+                else if (r == CreateInstanceResult.RequiredLeader)
                 {
                     playerMessage(5, "Your party leader must enter the portal to start the battle.");
                     return Task.FromResult(false);
                 }
+                else if (r == CreateInstanceResult.Requirement)
+                {
+                    playerMessage(5, "You cannot start this battle yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
+                    return Task.FromResult(false);
+                }
                 else
                 {
-                    var eli = em.getEligibleParty(party);
-                    if (eli.Count > 0)
-                    {
-                        if (!em.StartPQInstance(getPlayer(), eli))
-                        {
-                            playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
-                            return Task.FromResult(false);
-                        }
-                    }
-                    else
-                    {  //this should never appear
-                        playerMessage(5, "You cannot start this battle yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
-                        return Task.FromResult(false);
-                    }
-
-                    playPortalSound();
-                    return Task.FromResult(true);
+                    playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
+                    return Task.FromResult(false);
                 }
             }
             else
@@ -6758,7 +6747,7 @@ namespace Application.Plugin.Script
         public Task<bool> rienTutor5()
         {
 
-            talkGuide("你离城镇很近了。我先去那边处理一些事情，你慢慢来。");
+            talkGuide("前面不远就是村子了。我先走一步了，还有一些需要整理的东西。战神，慢慢过来就行。");
             blockPortal();
             return Task.FromResult(false);
         }
@@ -7774,36 +7763,26 @@ namespace Application.Plugin.Script
                 return Task.FromResult(false);
             }
 
-            var party = getParty();
-            if (party == null)
+            var r = em.StartInstance(getPlayer());
+            switch (r)
             {
-                playerMessage(5, "You are currently not in a party, create one to attempt the boss.");
-                return Task.FromResult(false);
-            }
-            else if (!isLeader())
-            {
-                playerMessage(5, "Your party leader must enter the portal to start the battle.");
-                return Task.FromResult(false);
-            }
-            else
-            {
-                var eli = em.getEligibleParty(party);
-                if (eli.Count > 0)
-                {
-                    if (!em.StartPQInstance(getPlayer(), eli))
-                    {
-                        playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
-                        return Task.FromResult(false);
-                    }
-                }
-                else
-                {
+                case CreateInstanceResult.Success:
+                    playPortalSound();
+                    return Task.FromResult(true);
+                case CreateInstanceResult.RequiredParty:
+                    playerMessage(5, "You are currently not in a party, create one to attempt the boss.");
+                    return Task.FromResult(false);
+                case CreateInstanceResult.RequiredLeader:
+                    playerMessage(5, "Your party leader must enter the portal to start the battle.");
+                    return Task.FromResult(false);
+                case CreateInstanceResult.Requirement:
                     playerMessage(5, "Your party must consist of at least 2 players to attempt the boss.");
                     return Task.FromResult(false);
-                }
-
-                playPortalSound();
-                return Task.FromResult(true);
+                case CreateInstanceResult.LobbyLimited:
+                    playerMessage(5, "The battle against the boss has already begun, so you may not enter this place yet.");
+                    return Task.FromResult(false);
+                default:
+                    return Task.FromResult(false);
             }
         }
 
@@ -7878,76 +7857,38 @@ namespace Application.Plugin.Script
                 getPlayer().message("找到了公主！");
                 giveCharacterExp(4400, getPlayer());
 
-                var em = GetEventManager<PartyQuestEventManager>("MK_PrimeMinister");
-                var party = getPlayer().getParty();
-                if (party != null)
+                var em = GetEventManager<MK_PrimeMinister>("MK_PrimeMinister");
+                var r = em.StartInstance(getPlayer());
+                if (r == CreateInstanceResult.Success)
                 {
-                    var eli = em.getEligibleParty(party);   // thanks Conrad for pointing out missing eligible party declaration here
-                    if (eli.Count > 0)
-                    {
-                        if (em.StartPQInstance(getPlayer(), eli))
-                        {
-                            playPortalSound();
-                            return Task.FromResult(true);
-                        }
-                        else
-                        {
-                            message("有其它团队正在此频道挑战BOSS。");
-                            return Task.FromResult(false);
-                        }
-                    }
+                    playPortalSound();
+                    return Task.FromResult(true);
                 }
-                else
+                else if (r == CreateInstanceResult.LobbyLimited)
                 {
-                    if (em.startInstance(getPlayer()))
-                    { // thanks RedHat for noticing an issue here
-                        playPortalSound();
-                        return Task.FromResult(true);
-                    }
-                    else
-                    {
-                        message("有其它团队正在此频道挑战BOSS。");
-                        return Task.FromResult(false);
-                    }
+                    message("有其它团队正在此频道挑战BOSS。");
+                    return Task.FromResult(false);
                 }
 
                 return Task.FromResult(false);
             }
             else if (isQuestStarted(2333) || (isQuestCompleted(2332) && !isQuestStarted(2333)))
             {
-                var em = GetEventManager<PartyQuestEventManager>("MK_PrimeMinister");
+                var em = GetEventManager<MK_PrimeMinister>("MK_PrimeMinister");
 
-                var party = getPlayer().getParty();
-                if (party != null)
+                var r = em.StartInstance(getPlayer());
+                if (r == CreateInstanceResult.Success)
                 {
-                    var eli = em.getEligibleParty(party);
-                    if (eli.Count > 0)
-                    {
-                        if (em.StartPQInstance(getPlayer(), eli))
-                        {
-                            playPortalSound();
-                            return Task.FromResult(true);
-                        }
-                        else
-                        {
-                            message("有其它团队正在此频道挑战BOSS。");
-                            return Task.FromResult(false);
-                        }
-                    }
+                    playPortalSound();
+                    return Task.FromResult(true);
                 }
-                else
+                else if (r == CreateInstanceResult.LobbyLimited)
                 {
-                    if (em.startInstance(getPlayer()))
-                    {
-                        playPortalSound();
-                        return Task.FromResult(true);
-                    }
-                    else
-                    {
-                        message("有其它团队正在此频道挑战BOSS。");
-                        return Task.FromResult(false);
-                    }
+                    message("有其它团队正在此频道挑战BOSS。");
+                    return Task.FromResult(false);
                 }
+
+                return Task.FromResult(false);
             }
             else
             {
@@ -8016,7 +7957,7 @@ namespace Application.Plugin.Script
                         return Task.FromResult(false);
                     }
 
-                    if (!nex.startInstance(i, getPlayer()))
+                    if (nex.StartInstance(getPlayer(), lobbyId: i) != CreateInstanceResult.Success)
                     {
                         message("Someone is already challenging Nex. Wait for them to finish before you enter.");
                         return Task.FromResult(false);

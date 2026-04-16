@@ -1,7 +1,11 @@
+using Application.Core.Channel;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.Scripting.Events;
 using server.maps;
 using System.Collections.Concurrent;
+using tools.exceptions;
 
 namespace Application.Core.Plugins
 {
@@ -43,11 +47,11 @@ namespace Application.Core.Plugins
             }
         }
 
-        public void StartNpcConversation(IChannelClient c, int npcId, int npcObjectId, string scriptName)
+        public bool StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
         {
             try
             {
-                _scriptService?.Start(c, npcId, npcObjectId, scriptName);
+                return _scriptService?.Start(c, npcId, npcObject, scriptName)?.Result ?? false;
             }
             catch (Exception e)
             {
@@ -56,6 +60,7 @@ namespace Application.Core.Plugins
                     c.OnlinedCharacter.Pink(e.Message);
                 }
                 Log.Logger.Error(e, "Npc script error in: {ScriptName}", scriptName);
+                return false;
             }
         }
 
@@ -178,6 +183,19 @@ namespace Application.Core.Plugins
                 }
                 Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
             }
+        }
+
+        internal int RegisterEvents(WorldChannel channel)
+        {
+            try
+            {
+                return _scriptService?.RegisterEvents(channel) ?? 0;
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error(e.ToString());
+            }
+            return 0;
         }
     }
 }

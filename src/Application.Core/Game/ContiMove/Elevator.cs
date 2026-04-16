@@ -17,7 +17,7 @@ namespace Application.Core.Game.ContiMove
                   222020111, 222020211,
                   -1, -1,
                   60 * 1000, 60 * 1000, 60 * 1000,
-                  0, 0)
+                  0, 0, 0, 0)
         {
             _current = StationAMap;
 

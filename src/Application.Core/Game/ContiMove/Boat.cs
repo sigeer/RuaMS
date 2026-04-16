@@ -22,7 +22,8 @@ namespace Application.Core.Game.ContiMove
                 200000112, 101000301, 
                 200090000, 200090010, 
                 200000111, 101000300, 5 * 60 * 1000, 4 * 60 * 1000, 10 * 60 * 1000,
-                4031045, 1500)
+                4031047, 5000,
+                4031045, 5000)
         {
             CabinAMap = channelServer.getMapFactory().getMap(200090001);
             CabinBMap = channelServer.getMapFactory().getMap(200090011);

@@ -1,4 +1,5 @@
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
 using Application.Scripting.JS;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Map;
@@ -108,18 +109,13 @@ namespace Application.Plugin.Script
                         break;
                 }
             }
-
-
-
-
-
         }
 
 
         // Npc: 9310006 
         public async Task shanghai003()
         {
-            var em = GetEventManager<PartyQuestEventManager>("WuGongPQ");
+            var em = GetEventManager<PQ_WuGong>("WuGongPQ");
             var option = await SayOption($"敬礼！\r\n你好，#e#b#h ##k#n，我是#b#e#p{getNpc()}##k#n\r\n\r\n#L0##b秘密任务#l\r\b\r\n#L1#离开#l#k");
             switch (option)
             {
@@ -141,30 +137,20 @@ namespace Application.Plugin.Script
                         {
                             //完成了赤珠任务将传送到一个地图
                             var level = getLevel();
-                            if (level >= LevelMin && level <= LevelMax)
+                            if (level >= em.MinLevel && level <= em.MaxLevel)
                             {
                                 warp(701010324);
                             }
                             else
                             {
-                                await SayOK($"你目前无法执行这个#b秘密任务#k，因你不符合要求：\r\n\r\n:等级要求：{LevelMin}~ {LevelMax}");
+                                await SayOK($"你目前无法执行这个#b秘密任务#k，因你不符合要求：\r\n\r\n:等级要求：{em.MinLevel}~ {em.MaxLevel}");
                             }
                         }
                         else
                         {
-                            var eli = em.getEligibleParty(party);
-                            if (eli.Count > 0)
-                            {
-                                if (!em.StartPQInstance(getPlayer(), eli, 1))
-                                {
-                                    await SayOK($"已经有其他人员在执行#b秘密任务#k了，请稍后再试。");
-                                }
-                            }
-                            else
-                            {
-                                await SayOK($"你目前无法执行这个#b秘密任务#k，因你不符合要求");
-                                // msg = '你目前无法执行这个#b秘密任务#k，因你不符合要求：' + em.getProperty('party');
-                            }
+                            var r = em.StartInstance(getPlayer());
+                            await em.HandleCreateInstanceResult(r, this);
+                            return;
                         }
                     }
                     break;

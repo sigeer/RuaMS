@@ -41,11 +41,10 @@ namespace Application.Core.Game.ContiMove
         public long CloseTime { get; }
         public long RideTime { get; }
 
-        /// <summary>
-        /// 0. meso
-        /// </summary>
-        public int TicketItemId { get; }
-        public int TicketPrice { get; }
+        private int TicketAItemId ;
+        private int TicketAPrice ;
+        private int TicketBItemId ;
+        private int TicketBPrice;
 
         protected float _currentTransitionRate;
         protected long _currentBeginTime;
@@ -59,7 +58,8 @@ namespace Application.Core.Game.ContiMove
             int transportAMap, int transportBMap,
             int dockAMap, int dockBMap,
             long beginTime, long closeTime, long rideTime,
-            int ticketItemId, int ticketPrice)
+            int ticketAItemId, int ticketAPrice,
+            int ticketBItemId, int ticketBPrice)
         {
             ChannelServer = channelServer;
             var mapManager = ChannelServer.getMapFactory();
@@ -78,8 +78,10 @@ namespace Application.Core.Game.ContiMove
             CloseTime = closeTime;
             RideTime = rideTime;
 
-            TicketItemId = ticketItemId;
-            TicketPrice = ticketPrice;
+            TicketAItemId = ticketAItemId;
+            TicketAPrice = ticketAPrice;
+            TicketBItemId = ticketBItemId;
+            TicketBPrice = ticketBPrice;
 
         }
 
@@ -150,17 +152,30 @@ namespace Application.Core.Game.ContiMove
             return false;
         }
 
-        public string GetDestinationMapName(Player chr)
+        public string? GetDestinationMapName(Player chr)
         {
-            if (chr.MapModel == StationAMap)
+            if (chr.MapModel == StationAMap || chr.MapModel == WaitingRoomAMap || chr.MapModel == TransportAMap)
             {
                 return chr.Client.CurrentCulture.GetMapStreetName(StationBMap.Id);
             }
-            if (chr.MapModel == StationBMap)
+            if (chr.MapModel == StationBMap || chr.MapModel == WaitingRoomBMap || chr.MapModel == TransportBMap)
             {
                 return chr.Client.CurrentCulture.GetMapStreetName(StationAMap.Id);
             }
-            return "";
+            return null;
+        }
+
+        public (int TicketItemId, int TicketPrice)? GetTicket(Player chr)
+        {
+            if (chr.MapModel == StationAMap)
+            {
+                return (TicketAItemId, TicketAPrice);
+            }
+            if (chr.MapModel == StationBMap)
+            {
+                return (TicketBItemId, TicketBPrice);
+            }
+            return null;
         }
 
         public virtual void OnStart()
@@ -207,6 +222,16 @@ namespace Application.Core.Game.ContiMove
                 OnArrived();
                 _arriveFlag = false;
             }
+        }
+
+        public bool IsTransporting(IMap map)
+        {
+            return map == TransportAMap || map == TransportBMap;
+        }
+
+        public bool IsWaiting(IMap map)
+        {
+            return map == WaitingRoomAMap || map == WaitingRoomBMap;
         }
     }
 }

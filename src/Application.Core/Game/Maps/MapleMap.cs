@@ -974,7 +974,7 @@ public class MapleMap : IMap, INamedInstance
     /// <param name="posX"></param>
     /// <param name="posY"></param>
     /// <param name="spawnMessage"></param>
-    public void SetupAreaBoss(string name, int bossId, int mobTime, List<object> rawList, string spawnMessage)
+    public void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> rawList, string spawnMessage)
     {
         if (_bossSp.TryGetValue(name, out var sp))
         {
@@ -985,20 +985,7 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
-        var points = new List<RandomPoint>();
-        foreach (var item in rawList)
-        {
-            var dict = (IDictionary<string, object>)item;
-
-            var minX = Convert.ToInt32(dict.TryGetValue("minX", out var d1) ? d1 : 0);
-            var maxX = Convert.ToInt32(dict.TryGetValue("maxX", out var d2) ? d2 : 0);
-            var x = Convert.ToInt32(dict.TryGetValue("x", out var d3) ? d3 : 0);
-            var y = Convert.ToInt32(dict.TryGetValue("y", out var d4) ? d4 : 0);
-
-            points.Add(new RandomPoint { MinX = minX, MaxX = maxX, X = x, Y = y });
-        }
-
-        sp = new AreaBossSpawnPoint(name, this, bossId, points, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
+        sp = new AreaBossSpawnPoint(name, this, bossId, rawList, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
         _bossSp[name] = sp;
         sp.SpawnMonster();
     }

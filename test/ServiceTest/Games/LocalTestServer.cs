@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using ServiceTest.TestUtilities;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using Yitter.IdGenerator;
 
@@ -111,6 +112,7 @@ namespace ServiceTest.Games
             //    .Returns(1);
             var p = charSrv.Serialize(client, obj);
             channel.addPlayer(p);
+            p.setMapTransitionComplete();
             return p;
         }
     }

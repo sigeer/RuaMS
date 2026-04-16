@@ -1,3 +1,6 @@
+using Application.Shared.Constants.Job;
+using static System.Collections.Specialized.BitVector32;
+
 namespace Application.Plugin.Script
 {
     internal partial class NpcScript
@@ -58,7 +61,7 @@ namespace Application.Plugin.Script
                     return;
                 }
             }
-            else if (getLevel() >= 30 && getJobId() == 300)
+            else if (getLevel() >= 30 && getJob() == Job.BOWMAN)
             {
                 if (haveItem(4031012))
                 {
@@ -76,7 +79,7 @@ namespace Application.Plugin.Script
                         case 1:
                             await SayNext("精通弓弩的弩弓手。\r\n\r\n与猎人相比，弩弓手的攻击力随等级提高而增加。弩弓手可以使用更强大的攻击技能#r铁箭#k，该技能不会自动追踪敌人，但可以穿墙。");
                             break;
-                        case 3:
+                        case 2:
                             var select = await SayOption("现在... 你决定好了吗？请选择你想要在二转时选择的职业。#b\r\n#L0#猎人\r\n#L1#弩手");
                             var job = 300 + select * 10;
                             var jobStr = (job == 310 ? "#b猎人#k" : "#b弩弓手#k");
@@ -124,6 +127,36 @@ namespace Application.Plugin.Script
                     }
                 }
             }
+            else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.BOWMAN))
+            {
+                if (isQuestStarted(-33001))
+                {
+                    if (haveItem(4031057))
+                    {
+                        await SayNext("看来你已经准备好第三次转职了，把#b#t4031057##k带给#b#p2020010##k，他会帮助你进行第三次转职的，祝你好运！");
+                    }
+                    else if (haveItem(4031059))
+                    {
+                        gainItem(4031059, -1);
+                        gainItem(4031057, 1);
+
+                        await SayNext("你成功击败了我的分身并带回了#b#t4031059##k！看来你已经准备好第三次转职了，把#b#t4031057##k带给#b#p2020010##k，他会帮助你进行第三次转职的，祝你好运！");
+                    }
+                    else
+                    {
+                        await SayNext("我一直在等你！几天前，我从#b#p2020010##k听到了你的消息，你现在可以变得更强，但是你得通过我的考验。在森林迷宫深处有一个异界之门，里面有我的分身，你去击败它并带回#b#t4031059##k。");
+                        await SayNext("我的分身相当强大，他会使用特殊技能，你要跟他一对一战斗，击败他并带回#b#t4031059##k，祝你好运！");
+                    }
+                    return;
+                }
+            }
+            await SayOK(GetDefault0());
+        }
+
+        // Npc: 1012119 
+        public Task enter_archer()
+        {
+            return EnterTranningMap(910060000);
         }
 
         // Npc: 1072002 
@@ -177,6 +210,91 @@ namespace Application.Plugin.Script
                 await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
             }
             warp(106010000, 9);
+        }
+
+        // Npc: 2020010 
+        public Task bowman3()
+        {
+            return Job3((int)JobStyle.BOWMAN,
+                "射手村", 1012100);
+        }
+
+
+        // Npc: 2081300 
+        public async Task archer4()
+        {
+            if (getLevel() < 120 || !getJob().IsSameJobGroup(Job.BOWMAN))
+            {
+                await SayOK("请不要现在打扰我，我正在集中精力。");
+                return;
+            }
+            else if (!isQuestCompleted(6924))
+            {
+                await SayOK("你还没有通过我的考验。在你通过考验之前，我无法提升你的等级。");
+                return;
+            }
+            else if (getJob().Rank == 3)
+            {
+                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                {
+                    if (canHold(2280003, 1))
+                    {
+                        changeJobById(getJobId() + 1);
+                        if (getJob() == Job.BOWMASTER)
+                        {
+                            teachSkill(3121002, 0, 10, -1);
+                            teachSkill(3121005, 0, 10, -1);
+                            teachSkill(3121007, 0, 10, -1);
+                        }
+                        else if (getJob() == Job.MARKSMAN)
+                        {
+                            teachSkill(3221002, 0, 10, -1);
+                            teachSkill(3221004, 0, 10, -1);
+                            teachSkill(3221006, 0, 10, -1);
+                        }
+                        gainItem(2280003, 1);
+                    }
+                    else
+                    {
+                        await SayOK("请在#b使用#k的物品栏中留出一个空位，以便接收技能书。");
+                    }
+                }
+            }
+            else
+            {
+                await SayOption("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
+                if (getJob() == Job.BOWMASTER)
+                {
+                    if (getPlayer().getSkillLevel(3121008) == 0)
+                    {
+                        teachSkill(3121008, 0, 10, -1);
+                    }
+                    if (getPlayer().getSkillLevel(3121006) == 0)
+                    {
+                        teachSkill(3121006, 0, 10, -1);
+                    }
+                    if (getPlayer().getSkillLevel(3121004) == 0)
+                    {
+                        teachSkill(3121004, 0, 10, -1);
+                    }
+                }
+                else if (getJob() == Job.MARKSMAN)
+                {
+                    if (getPlayer().getSkillLevel(3221007) == 0)
+                    {
+                        teachSkill(3221007, 0, 10, -1);
+                    }
+                    if (getPlayer().getSkillLevel(3221005) == 0)
+                    {
+                        teachSkill(3221005, 0, 10, -1);
+                    }
+                    if (getPlayer().getSkillLevel(3221001) == 0)
+                    {
+                        teachSkill(3221001, 0, 10, -1);
+                    }
+                }
+                await SayOK("好了");
+            }
         }
     }
 }

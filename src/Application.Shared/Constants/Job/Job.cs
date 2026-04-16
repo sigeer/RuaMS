@@ -208,6 +208,12 @@ namespace Application.Shared.Constants.Job
 
         }
 
+        /// <summary>
+        /// 是<paramref name="basejob"/>的上位职业，
+        /// 取代<see cref="isA(Job)"/>
+        /// </summary>
+        /// <param name="baseJob"></param>
+        /// <returns></returns>
         public bool IsSameJobGroup(Job baseJob)
         {
             if (Id == baseJob.Id)

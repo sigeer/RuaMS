@@ -1,4 +1,5 @@
 using Application.Core.Game.Life;
+using Application.Core.scripting.Events.Abstraction;
 using server.expeditions;
 
 namespace Application.Core.Scripting.Events
@@ -27,7 +28,7 @@ namespace Application.Core.Scripting.Events
             {
                 expedition.dispose(eventCleared);
 
-                expedition.removeChannelExpedition(EventManager.getChannelServer());
+                expedition.removeChannelExpedition(EventManager.ChannelServer);
 
                 expedition = null;
             }

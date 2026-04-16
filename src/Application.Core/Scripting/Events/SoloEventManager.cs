@@ -1,41 +1,30 @@
 using Application.Core.Channel;
-using scripting.Event;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.Core.scripting.Events.Abstraction;
+using Application.Shared.Events;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public class SoloEventManager : AbstractInstancedEventManager
+    public abstract class SoloEventManager : AbstractInstancedEventManager
     {
-        public SoloEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+        public SoloEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
         }
+
 
         #region Start Instance
-        public bool startInstance(Player chr)
-        {
-            return startInstance(-1, chr);
-        }
-
-        public bool startInstance(int lobbyId, Player leader, int difficult = 1)
-        {
-            return startInstance(lobbyId, leader, leader, difficult);
-        }
-
-        bool startInstance(int lobbyId, Player chr, Player leader, int difficulty)
+        public override CreateInstanceResult StartInstance(Player chr, int difficulty = 1, int lobbyId = -1)
         {
             if (this.isDisposed())
             {
-                return false;
+                return CreateInstanceResult.Disposed;
             }
 
             try
             {
-                if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
+                if (!playerPermit.Contains(chr.getId()) && startSemaphore.Wait(7777))
                 {
-                    playerPermit.Add(leader.getId());
+                    playerPermit.Add(chr.getId());
 
                     try
                     {
@@ -46,21 +35,21 @@ namespace Application.Core.Scripting.Events
                                 lobbyId = GetAvailableLobbyInstance();
                                 if (lobbyId == -1)
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
                             else
                             {
                                 if (!TryRegisterLobby(lobbyId))
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
 
-                            EventInstanceManager eim;
+                            AbstractEventInstanceManager eim;
                             try
                             {
-                                eim = createInstance<EventInstanceManager>("setup", difficulty, (lobbyId > -1) ? lobbyId : leader.getId());
+                                eim = CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : chr.getId());
                                 registerEventInstance(eim, lobbyId);
                             }
                             catch (EventInstanceInProgressException)
@@ -68,7 +57,7 @@ namespace Application.Core.Scripting.Events
                                 UnregisterLobby(lobbyId);
                                 throw;
                             }
-                            eim.setLeader(leader);
+                            eim.setLeader(chr);
 
                             if (chr != null)
                             {
@@ -80,14 +69,14 @@ namespace Application.Core.Scripting.Events
                         catch (Exception ex)
                         {
                             log.Error(ex, "Event script startInstance");
-                            return false;
+                            return CreateInstanceResult.Unknown;
                         }
 
-                        return true;
+                        return CreateInstanceResult.Success;
                     }
                     finally
                     {
-                        playerPermit.Remove(leader.getId());
+                        playerPermit.Remove(chr.getId());
                         startSemaphore.Release();
                     }
                 }
@@ -95,11 +84,25 @@ namespace Application.Core.Scripting.Events
             catch (ThreadInterruptedException ie)
             {
                 log.Error(ie.ToString());
-                playerPermit.Remove(leader.getId());
+                playerPermit.Remove(chr.getId());
             }
 
-            return false;
+            return CreateInstanceResult.Unknown;
         }
         #endregion
+
+
+        public override List<Player> GetEligibleParty(Player leader)
+        {
+            List<Player> members = [leader];
+
+            if (members.Count >= MinCount
+                && members.Count <= MaxCount
+                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
+            {
+                return members;
+            }
+            return [];
+        }
     }
 }

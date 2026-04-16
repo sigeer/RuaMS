@@ -9,11 +9,8 @@
 
   <ItemGroup>
     <Compile Remove="bin\**" />
-    <Compile Remove="Events\**" />
     <EmbeddedResource Remove="bin\**" />
-    <EmbeddedResource Remove="Events\**" />
     <None Remove="bin\**" />
-    <None Remove="Events\**" />
   </ItemGroup>
 
   <ItemGroup>

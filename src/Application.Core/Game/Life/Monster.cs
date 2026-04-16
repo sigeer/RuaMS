@@ -486,7 +486,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (getStats().isFriendly())
         {
-            MapModel.EventInstanceManager?.friendlyDamaged(this);
+            MapModel.EventInstanceManager?.friendlyDamaged(this, from);
         }
 
         if (from is Player chr)
@@ -991,11 +991,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             if (!this.getStats().isFriendly())
             {
-                eim.monsterKilled(this, killer != null);
+                eim.monsterKilled(this, killer);
             }
             else
             {
-                eim.friendlyKilled(this, killer != null);
+                eim.friendlyKilled(this, killer);
             }
         }
     }

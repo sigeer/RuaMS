@@ -31,13 +31,9 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
-using Application.Shared.KeyMaps;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using client.keybind;
-using constants.game;
-using scripting.Event;
 using server.expeditions;
 using server.life;
 using server.partyquest;
@@ -240,7 +236,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getClient().getEventManager(@event);
     }
 
-    public TEventManager GetEventManager<TEventManager>(string @event)where TEventManager : EventManager
+    public TEventManager GetEventManager<TEventManager>(string @event) where TEventManager : EventManager
     {
         var em = getClient().getEventManager(@event);
         if (em == null)
@@ -685,7 +681,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats, 
+        return getPlayer().GainItem(id, quantity, randomStats,
             showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires: expires);
     }
 

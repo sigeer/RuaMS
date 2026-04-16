@@ -1,7 +1,11 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Shared.Constants.Map;
 using Application.Utility;
 using scripting.map;
+using server.life;
+using server.quest;
+using System.Drawing;
 
 namespace Application.Plugin.Script
 {
@@ -554,8 +558,49 @@ namespace Application.Plugin.Script
         // Map: 910400000 
         public Task dangerInfo()
         {
-            // TODO
+            var questMap = 910400000;
+            var normalMap = 104000004;
 
+            if (!isQuestStarted(21733))
+            {
+                warp(normalMap);
+                return Task.CompletedTask;
+            }
+
+            var questProgress = getQuestProgressInt(21733, 21762);
+            // 已完成（未提交）
+            if (questProgress == 2)
+            {
+                warp(normalMap);
+                return Task.CompletedTask;
+            }
+
+            var mapObj = getWarpMap(questMap);
+            if (mapObj.countPlayers() > 0)
+            {
+                warp(104000000);
+                // 如果有人一直在里面挂机？ TODO: 改成单人FB
+                Pink("里面已经有人了");
+                return Task.CompletedTask;
+            }
+
+            if (questProgress == 1)
+            {
+                // 清理遗留的mob，npc
+                mapObj.resetPQ(1);
+                mapObj.destroyNPC(1204006);
+
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300345), new Point(125, 0));
+                return Task.CompletedTask;
+            }
+
+            spawnNpc(1204006, new Point(75, 0), mapObj);
+
+            var monsterObj = LifeFactory.Instance.GetMonsterTrust(9300382);
+            monsterObj.setStance(4);
+            mapObj.spawnFakeMonsterOnGroundBelow(monsterObj, new Point(225, 0));
+
+            Pink("情报商店被人偶师占领了！确认情况后，击退人偶师！");
             return Task.CompletedTask;
         }
 
@@ -635,8 +680,14 @@ namespace Application.Plugin.Script
         // Map: 920030001 
         public Task sealGarden()
         {
-            // TODO
+            var mapObj = getMap();
+            if (getQuestProgressInt(21739, 9300348) > 0 || mapObj.countMonster(9300348) > 0 || mapObj.containsNPC(1204010))
+            {
+                return Task.CompletedTask;
+            }
 
+
+            spawnNpc(1204010, new Point(740, 0), mapObj);
             return Task.CompletedTask;
         }
 

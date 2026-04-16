@@ -1,4 +1,7 @@
+using Application.Core.Channel;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Scripting.Events;
 using server.maps;
 
 namespace Application.Core.Gameplay.Plugins
@@ -11,7 +14,7 @@ namespace Application.Core.Gameplay.Plugins
 
 
         #region NPC
-        Task Start(IChannelClient c, int npcId, int npcObjectId, string scriptName);
+        Task<bool> Start(IChannelClient c, int npcId, NPC? npcObjectId, string scriptName);
         Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null);
         #endregion
 
@@ -23,5 +26,6 @@ namespace Application.Core.Gameplay.Plugins
         Task ReactorHit(IChannelClient c, Reactor r);
         Task ReactorAct(IChannelClient c, Reactor r);
 
+        int RegisterEvents(WorldChannel channel);
     }
 }

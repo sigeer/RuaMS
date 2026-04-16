@@ -1,46 +1,73 @@
 using Application.Core.Channel;
-using Application.Core.Game.Maps;
-using Application.Core.Game.Relation;
-using scripting.Event;
-using Serilog;
-using server;
-using System.IO;
-using System.Runtime.ConstrainedExecution;
+using Application.Core.scripting.Events.Abstraction;
+using Application.Resources.Messages;
+using scripting.npc;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public class PartyQuestEventManager : SoloEventManager
+    public abstract class PartyQuestEventManager : AbstractInstancedEventManager
     {
-        public PartyQuestEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+
+        public int RecruitMap { get; init; }
+
+        public PartyQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
+        }
+
+        public override List<Player> GetEligibleParty(Player leader)
+        {
+            var party = leader.getParty();
+            if (party == null)
+            {
+                return [];
+            }
+
+            var members = party.GetChannelMembers(ChannelServer)
+                .Where(x => x.MapModel == leader.MapModel && x.MapModel.Id == RecruitMap).ToList();
+
+            if (members.Count >= MinCount
+                && members.Count <= MaxCount
+                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
+            {
+                return members;
+            }
+            return [];
+        }
+
+        public string GetRequirementDescription(IChannelClient client)
+        {
+            var countRange = MinCount == MaxCount ? MinCount.ToString() : MinCount + " ~ " + MaxCount;
+            var levelRange = MinLevel == MaxLevel ? MinLevel.ToString() : MinLevel + " ~ " + MaxLevel;
+            return client.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_Requirement),
+                countRange,
+                levelRange,
+                (EventTime / 60).ToString());
         }
 
 
         #region StartInstance
-        public bool StartPQInstance(Player leader, List<Player> eligibleMembers, int difficulty = 1)
-            => StartPQInstance(-1, leader, eligibleMembers, difficulty);
-        public bool StartPQInstance(int lobbyId, Player leader, List<Player>? eligibleMembers = null, int difficulty = 1)
+        public override CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1)
         {
-            if (leader == null)
-            {
-                log.Information("队长不在同一频道");
-                return false;
-            }
             if (this.isDisposed())
             {
-                return false;
+                return CreateInstanceResult.Disposed;
             }
 
-            eligibleMembers ??= leader.getPartyMembersOnSameMap();
-            if (eligibleMembers.Count == 0 || !eligibleMembers.Contains(leader))
+            if (leader.getParty() == null)
             {
-                return false;
+                return CreateInstanceResult.RequiredParty;
             }
 
-            if (eligibleMembers.Any(x => x.MapModel != leader.MapModel))
+            if (!leader.isLeader())
             {
-                return false;
+                return CreateInstanceResult.RequiredLeader;
+            }
+
+            var members = GetEligibleParty(leader);
+            if (members.Count == 0)
+            {
+                return CreateInstanceResult.Requirement;
             }
 
             try
@@ -58,21 +85,21 @@ namespace Application.Core.Scripting.Events
                                 lobbyId = GetAvailableLobbyInstance();
                                 if (lobbyId == -1)
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
                             else
                             {
                                 if (!TryRegisterLobby(lobbyId))
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
 
-                            EventInstanceManager? eim = null;
+                            AbstractEventInstanceManager? eim = null;
                             try
                             {
-                                eim = createInstance<EventInstanceManager>("setup", difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
+                                eim = CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
                                 registerEventInstance(eim, lobbyId);
                                 eim.Type = Application.Shared.Events.EventInstanceType.PartyQuest;
                             }
@@ -84,7 +111,7 @@ namespace Application.Core.Scripting.Events
 
                             eim.setLeader(leader);
 
-                            foreach (var item in eligibleMembers)
+                            foreach (var item in members)
                             {
                                 eim.registerPlayer(item);
                             }
@@ -94,10 +121,10 @@ namespace Application.Core.Scripting.Events
                         catch (Exception ex)
                         {
                             log.Error(ex, "Event script startInstance");
-                            return false;
+                            return CreateInstanceResult.Unknown;
                         }
 
-                        return true;
+                        return CreateInstanceResult.Success;
                     }
                     finally
                     {
@@ -111,9 +138,9 @@ namespace Application.Core.Scripting.Events
                 log.Error(ie.ToString());
                 playerPermit.Remove(leader.getId());
             }
-
-            return false;
+            return CreateInstanceResult.Unknown;
         }
         #endregion
+
     }
 }

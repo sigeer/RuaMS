@@ -1,62 +1,77 @@
-using Acornima;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Game.Relation;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Resources.Messages;
+using Application.Shared.Events;
 using tools;
 
 namespace Application.Core.Scripting.Events
 {
+    public enum MonsterCarnivalStage
+    {
+        /// <summary>
+        /// 房间无人
+        /// </summary>
+        None,
+        /// <summary>
+        /// 等待室匹配
+        /// </summary>
+        Waiting,
+        /// <summary>
+        /// 完成匹配，等待开始
+        /// </summary>
+        Matched,
+
+        Battle,
+        /// <summary>
+        /// 结束
+        /// </summary>
+        Completed
+    }
     public class MonsterCarnivalEventInstanceManager : AbstractEventInstanceManager
     {
-        public MonsterCarnivalPreparationRoom Room { get; set; } = null!;
+        public int MinCount { get; }
+        int _lobbyMapId;
+        int _eventMapId;
         public IMap LobbyMap { get; set; } = null!;
         public ICPQMap EventMap { get; set; } = null!;
-        public int CurrentStage { get; set; }
 
         /// <summary>
         /// 红队
         /// </summary>
         public TeamRegistry? Team0 { get; set; }
-        public MonsterCarnivalTeam? MCTeam0 { get; set; }
         /// <summary>
         /// 蓝队
         /// </summary>
         public TeamRegistry? Team1 { get; set; }
-        public MonsterCarnivalTeam? MCTeam1 { get; set; }
+        public MonsterCarnivalStage CurrentStage { get; private set; }
 
-        public MonsterCarnivalEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
+        public override MonsterCarnivalEventManager EventManager { get; }
+        public MonsterCarnivalEventInstanceManager(MonsterCarnivalEventManager em, string name, int minCount, int lobbyMapId, int eventMapId) : base(em, name)
         {
+            EventManager = em;
+            MinCount = minCount;
+            _lobbyMapId = lobbyMapId;
+            _eventMapId = eventMapId;
         }
 
-        public void Initialize(TeamRegistry team, MonsterCarnivalPreparationRoom room)
+        public void EnterLobby(TeamRegistry team)
         {
             Team0 = team;
-            Room = room;
-            LobbyMap = getInstanceMap(Room.Map)!;
-            EventMap = (getInstanceMap(Room.Map + (Room.RecruitMap == 980030000 ? 100 : 1)) as ICPQMap)!;
-            CurrentStage = 0;
-        }
-
-
-        public override void unregisterPlayer(Player chr)
-        {
-            base.unregisterPlayer(chr);
-
-            if (chr.Party == Team0?.Team)
+            foreach (var pChr in team.EligibleMembers)
             {
-                Team0.EligibleMembers.Remove(chr);
-            }
-            if (chr.Party == Team1?.Team)
-            {
-                Team1.EligibleMembers.Remove(chr);
+                registerPlayer(pChr);
             }
 
-            chr.ClearMC();
+            LobbyMap = getInstanceMap(_lobbyMapId)!;
+            EventMap = (getInstanceMap(_eventMapId) as ICPQMap)!;
+            CurrentStage = MonsterCarnivalStage.Waiting;
+
+            startEventTimer(EventManager.EventTime * 1000);
         }
+
         public void AcceptChallenge(bool accept)
         {
             if (accept)
@@ -67,7 +82,9 @@ namespace Application.Core.Scripting.Events
                     {
                         registerPlayer(item);
                     }
-                    invokeScriptFunction("setStage", this, 1);
+
+                    restartEventTimer(10_000);
+                    CurrentStage = MonsterCarnivalStage.Matched;
                 }
 
             }
@@ -97,10 +114,15 @@ namespace Application.Core.Scripting.Events
             }
             base.Dispose();
 
+            Team0?.MCTeam?.Dispose();
             Team0 = null;
+
+            Team1?.MCTeam?.Dispose();
             Team1 = null;
-            MCTeam0?.Dispose();
-            MCTeam1?.Dispose();
+
+
+            CurrentStage = MonsterCarnivalStage.None;
+            disposed = false;
         }
 
 
@@ -110,20 +132,22 @@ namespace Application.Core.Scripting.Events
         /// <exception cref="Exception"></exception>
         public bool Complete()
         {
-            if (MCTeam0 == null || MCTeam1 == null)
+            if (Team0?.MCTeam == null || Team1?.MCTeam == null)
             {
                 // 数据不正常
                 Dispose();
                 return false;
             }
-            if (MCTeam0.TotalCP != MCTeam1.TotalCP)
+            if (Team0.MCTeam.TotalCP != Team1.MCTeam.TotalCP)
             {
                 EventMap.killAllMonsters();
 
-                bool redWin = MCTeam0.TotalCP > MCTeam1.TotalCP;
+                bool redWin = Team0.MCTeam.TotalCP > Team1.MCTeam.TotalCP;
 
-                this.MCTeam0.Complete(redWin);
-                this.MCTeam1.Complete(!redWin);
+                Team0.MCTeam.Complete(redWin);
+                Team1.MCTeam.Complete(!redWin);
+
+                CurrentStage = MonsterCarnivalStage.Completed;
                 return true;
             }
             else
@@ -132,61 +156,36 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public void StartEvent()
+        public override void startEvent()
         {
+            base.startEvent();
+
             if (Team1 == null)
                 return;
 
-            MCTeam0 = new MonsterCarnivalTeam(this, Team0!, 0);
-            MCTeam1 = new MonsterCarnivalTeam(this, Team1, 1);
+            Team0.MCTeam = new MonsterCarnivalTeam(this, Team0!, 0);
+            Team1.MCTeam = new MonsterCarnivalTeam(this, Team1!, 0);
 
-            MCTeam0.Initialize(MCTeam1);
-            MCTeam1.Initialize(MCTeam0);
-        }
+            Team0.MCTeam.Initialize(Team1.MCTeam);
+            Team1.MCTeam.Initialize(Team0.MCTeam);
 
-        public override void playerKilled(Player chr)
-        {
-            base.playerKilled(chr);
-
-            int losing = EventMap.DeathCP;
-            if (chr.AvailableCP < losing)
-            {
-                losing = chr.AvailableCP;
-            }
-            chr.gainCP(-losing);
-            EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(chr.Name, losing, chr.MCTeam!.TeamFlag));
-        }
-
-        public override void monsterKilled(Player chr, Monster mob)
-        {
-            base.monsterKilled(chr, mob);
-
-            if (mob.getCP() > 0)
-            {
-                chr.gainCP(mob.getCP());
-            }
-        }
-
-        public override void changedMap(Player chr, int mapId)
-        {
-            base.changedMap(chr, mapId);
-        }
-
-        public override void afterChangedMap(Player chr, int mapId)
-        {
-            base.afterChangedMap(chr, mapId);
-
-            if (chr.MCTeam != null)
-                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
+            CurrentStage = MonsterCarnivalStage.Battle;
         }
 
         public override void setEventCleared()
         {
-            base.setEventCleared();
+            eventCleared = true;
 
-            MCTeam0?.MoveToReward();
-            MCTeam1?.MoveToReward();
+            foreach (Player chr in getPlayers())
+            {
+                chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
+            }
+
+            Team0?.MCTeam?.MoveToReward();
+            Team1?.MCTeam?.MoveToReward();
         }
+
+
 
         public int GetAveLevel()
         {
