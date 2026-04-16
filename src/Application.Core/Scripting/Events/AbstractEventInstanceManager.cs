@@ -28,7 +28,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
-    public virtual AbstractInstancedEventManager EventManager { get; }
+    public AbstractInstancedEventManager EventManager { get; }
 
     protected MapManager mapManager;
     private string name;
@@ -257,7 +257,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
             if (scriptResult > 1)
             {
-                EventManager.OnMobClear(this);
+                EventManager.OnMobClear(this, mob.getMap());
             }
         }
     }

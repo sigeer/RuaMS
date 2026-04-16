@@ -114,6 +114,11 @@ namespace Application.Core.Game.Players
 
         public void TypedMessage(int type, string messageKey, params string[] param)
         {
+            if (string.IsNullOrEmpty(messageKey))
+            {
+                return;
+            }
+
             if (type == -1)
             {
                 Yellow(messageKey, param);

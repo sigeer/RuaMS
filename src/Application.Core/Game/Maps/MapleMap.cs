@@ -81,7 +81,6 @@ public class MapleMap : IMap, INamedInstance
     public bool IsPirateDocked { get; private set; }
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
 
-    public bool AutoRespawn { get; set; }
 
     private string mapName;
     private string streetName;
@@ -180,7 +179,6 @@ public class MapleMap : IMap, INamedInstance
         droppedItems = new(YamlConfig.config.server.ITEM_LIMIT_ON_MAP);
         droppedItems.OnOverWrite += (s, o) => makeDisappearItemFromMap(o);
 
-        AutoRespawn = eim == null;
         CommandLoop = new CommandLoop<IMap>(this);
         CommandLoop.Start();
     }
@@ -299,6 +297,11 @@ public class MapleMap : IMap, INamedInstance
                 chr.addVisibleMapObject(mapobject);
                 packetbakery?.Invoke(chr.Client);
             }
+        }
+
+        if (mapItem != null)
+        {
+            droppedItems.Add(mapItem);
         }
     }
 
@@ -2123,10 +2126,6 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
-        if (!AutoRespawn)
-        {
-            return;
-        }
 
         int numPlayers;
 
@@ -2694,7 +2693,7 @@ public class MapleMap : IMap, INamedInstance
 
         aggroMonitor.dispose();
 
-        CommandLoop.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _ = CommandLoop.DisposeAsync();
     }
 
     #region Objects: Player

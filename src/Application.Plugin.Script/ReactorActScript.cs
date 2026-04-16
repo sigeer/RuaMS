@@ -2693,8 +2693,9 @@ namespace Application.Plugin.Script
         public Task pFBack0()
         {
             // TODO
-            // 3008000
-
+            var eim = getEventInstance();
+            if (eim != null)
+                eim.giveEventPlayersExp(52000, getMapId());
 
             return Task.CompletedTask;
         }

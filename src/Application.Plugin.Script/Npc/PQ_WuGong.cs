@@ -149,7 +149,7 @@ namespace Application.Plugin.Script
                         else
                         {
                             var r = em.StartInstance(getPlayer());
-                            await em.HandleCreateInstanceResult(r, this);
+                            await SayOK(em.HandleCreateInstanceResult(r, c));
                             return;
                         }
                     }

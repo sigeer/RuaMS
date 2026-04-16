@@ -1,10 +1,8 @@
 using Application.Core.Channel;
+using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
-using Application.Shared.Constants.Map;
-using scripting.npc;
-using tools;
 
 namespace Application.Plugin.Script.Events
 {
@@ -30,9 +28,9 @@ namespace Application.Plugin.Script.Events
         }
 
 
-        public override AbstractEventInstanceManager Setup(int level, int lobbyId)
+        protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
-            return newInstance(Name + lobbyId.ToString());
+            EventTime = GetTransportingTime();
         }
 
         public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
@@ -47,27 +45,21 @@ namespace Application.Plugin.Script.Events
             var onRide = ChannelServer.getMapFactory().getMap(Transportings[1 - curIdx]);
 
             chr.changeMap(onRide, onRide.getPortal(0));
-            chr.sendPacket(PacketCreator.getClock(local / 1000));
             // chr.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
-
-            eim.startEventTimer(local);
         }
 
-        public override async Task HandleCreateInstanceResult(CreateInstanceResult r, NPCConversationManager cm)
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
         {
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    break;
+                    return null;
                 case CreateInstanceResult.LobbyLimited:
-                    await cm.SayOK("客运车已经满了。稍后再试一次。");
-                    break;
+                    return "客运车已经满了。稍后再试一次。";
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    await cm.SayOK("未知错误");
-                    break;
                 default:
-                    break;
+                    return "未知错误";
             }
         }
     }

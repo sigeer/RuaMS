@@ -80,4 +80,21 @@ public class Randomizer
         return list.ElementAt(nextInt(len));
     }
 
+    /// <summary>
+    /// 从 [0, N-1] 中随机选取 M 个不重复的数。
+    /// </summary>
+    /// <param name="M">要选取的个数</param>
+    /// <param name="N">范围上限（不包含 N）</param>
+    /// <returns>包含 M 个随机不重复数的数组</returns>
+    /// <exception cref="ArgumentException">当 M >= N 或 M < 0 时抛出</exception>
+    public static int[] Take(int M, int N)
+    {
+        if (M < 0 || M >= N)
+            throw new ArgumentException("M 必须大于等于 0 且小于 N");
+
+        int[] result = Enumerable.Range(0, N).ToArray();
+        Random.Shared.Shuffle(result); // .NET 8+ 有内置 Shuffle
+        return result[..M];
+    }
+
 }

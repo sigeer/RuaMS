@@ -341,6 +341,12 @@ namespace Application.Core.Channel
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
 
+            var plugin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.Script.dll");
+            if (File.Exists(plugin))
+            {
+                PluginManager.LoadPlugin(plugin);
+            }
+
             var channel = configs.StartChannel;
             foreach (var server in effectChannels)
             {
@@ -358,11 +364,7 @@ namespace Application.Core.Channel
             DataService.LoadAllPLife();
             DataService.LoadAllReactorDrops();
 
-            var plugin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.Script.dll");
-            if (File.Exists(plugin))
-            {
-                PluginManager.LoadPlugin(plugin);
-            }            
+           
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {

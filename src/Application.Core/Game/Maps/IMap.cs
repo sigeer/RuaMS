@@ -19,7 +19,6 @@ namespace Application.Core.Game.Maps
     public interface IMap : IDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
     {
         int Id { get; }
-        bool AutoRespawn { get; set; }
         bool IsPirateDocked { get; }
         XiGuai? XiGuai { get; set; }
         public WorldChannel ChannelServer { get; }

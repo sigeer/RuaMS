@@ -137,20 +137,18 @@ namespace ServiceTest.Games.Gameplay
             chr.changeMap(map, map.getPortal(0));
             chr.setMapTransitionComplete();
 
-            map.Send(mapChr =>
+            await Task.Delay(2000);
+
+            map.ProcessMonster(m =>
             {
-                map.ProcessMonster(m =>
-                {
-                    m.DamageBy(chr, int.MaxValue, 0);
-                });
-
-                var items = map.getItems();
-                Assert.That(items.Count > 0);
-
-                var mapItem = items[0];
-                Assert.That(mapItem.MapModel is not null);
+                m.DamageBy(chr, int.MaxValue, 0);
             });
-            await Task.Delay(5000);
+
+            var items = map.getItems();
+            Assert.That(items.Count > 0);
+
+            var mapItem = items[0];
+            Assert.That(mapItem.MapModel is not null);
         }
 
         //[Test]

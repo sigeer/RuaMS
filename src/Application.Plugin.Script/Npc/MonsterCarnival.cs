@@ -49,10 +49,18 @@ namespace Application.Plugin.Script
                 switch (selectedRoom.CurrentStage)
                 {
                     case MonsterCarnivalStage.None:
-                        await em.HandleCreateInstanceResult(em.StartInstance(getPlayer(), lobby: option), this);
+                        var r = em.StartInstance(getPlayer(), lobby: option);
+                        if (r != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
+                        {
+                            await SayOK(em.HandleCreateInstanceResult(r, c));
+                        }
+                        else
+                        {
+                            Pink(em.HandleCreateInstanceResult(r, c) ?? "");
+                        }
                         break;
                     case MonsterCarnivalStage.Waiting:
-                        await em.HandleJoinInstanceResult(em.JoinInstance(getPlayer(), option), this);
+                        await SayOK(em.HandleJoinInstanceResult(em.JoinInstance(getPlayer(), option), c));
                         break;
                     case MonsterCarnivalStage.Matched:
                     case MonsterCarnivalStage.Battle:
@@ -140,7 +148,7 @@ namespace Application.Plugin.Script
 
                 await SayNext(messageList[idx]);
 
-                warp(eim.EventManager.RecruitMap);
+                warp(eim.CurrentEventManager.RecruitMap);
             }
             else
             {

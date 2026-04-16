@@ -7127,7 +7127,6 @@ namespace Application.Plugin.Script
                 if (mapobj.countPlayers() == 0)
                 {
                     resetMapObjects(910500200);
-                    mapobj.shuffleReactors();
                     playPortalSound();
                     warp(910500200, "out01");
 

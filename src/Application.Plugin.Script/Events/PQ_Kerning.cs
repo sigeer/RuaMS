@@ -1,11 +1,14 @@
 using Application.Core.Channel;
+using Application.Core.Game.Players;
 using Application.Core.Scripting.Events;
+using Application.Utility;
+using scripting.npc;
 
 namespace Application.Plugin.Script.Events
 {
     internal class PQ_Kerning : PartyQuestEventManager
     {
-        public PQ_Kerning(WorldChannel cserv) : base(cserv, nameof(PQ_Henesys))
+        public PQ_Kerning(WorldChannel cserv) : base(cserv, nameof(PQ_Kerning))
         {
             MinCount = 3;
             MaxCount = 6;
@@ -18,14 +21,6 @@ namespace Application.Plugin.Script.Events
             MinMap = 103000800;
             MaxMap = 103000805;
             EventTime = 30 * 60;
-        }
-
-        protected override void respawnStages(AbstractEventInstanceManager eim)
-        {
-            eim.getMapInstance(103000800).instanceMapRespawn();
-            eim.getMapInstance(103000805).instanceMapRespawn();
-
-            eim.Schedule(respawnStages, 15 * 1000);
         }
 
         protected override void setEventRewards(AbstractEventInstanceManager eim)

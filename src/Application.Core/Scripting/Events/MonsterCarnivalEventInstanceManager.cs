@@ -48,10 +48,10 @@ namespace Application.Core.Scripting.Events
         public TeamRegistry? Team1 { get; set; }
         public MonsterCarnivalStage CurrentStage { get; private set; }
 
-        public override MonsterCarnivalEventManager EventManager { get; }
+        public MonsterCarnivalEventManager CurrentEventManager { get; }
         public MonsterCarnivalEventInstanceManager(MonsterCarnivalEventManager em, string name, int minCount, int lobbyMapId, int eventMapId) : base(em, name)
         {
-            EventManager = em;
+            CurrentEventManager = em;
             MinCount = minCount;
             _lobbyMapId = lobbyMapId;
             _eventMapId = eventMapId;

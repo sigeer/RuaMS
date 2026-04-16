@@ -190,30 +190,25 @@ namespace Application.Core.Scripting.Events
 
             instantiateQueuedInstance();    // keep filling the queue until reach threshold.
         }
-        public virtual async Task HandleCreateInstanceResult(CreateInstanceResult r, NPCConversationManager cm)
+        public virtual string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
         {
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    break;
+                    return null;
                 case CreateInstanceResult.RequiredParty:
-                    await cm.SayOK("需要组队");
-                    break;
+                    return "需要组队";
                 case CreateInstanceResult.RequiredLeader:
-                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk));
                 case CreateInstanceResult.Requirement:
-                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_CannotStart_Req)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_CannotStart_Req));
                 case CreateInstanceResult.LobbyLimited:
-                    await cm.SayOK(cm.GetTalkMessage(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull));
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    await cm.SayOK("未知错误");
-                    break;
+
                 default:
-                    break;
+                    return "未知错误";
             }
         }
         #endregion
@@ -443,7 +438,7 @@ namespace Application.Core.Scripting.Events
         {
         }
 
-        public virtual void OnMobClear(AbstractEventInstanceManager eim)
+        public virtual void OnMobClear(AbstractEventInstanceManager eim, IMap map)
         {
         }
 

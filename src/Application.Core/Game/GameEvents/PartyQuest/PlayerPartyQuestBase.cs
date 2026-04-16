@@ -1,5 +1,6 @@
 using Application.Core.Scripting.Events;
 using scripting.Event;
+using scripting.npc;
 
 namespace Application.Core.Game.GameEvents.PartyQuest
 {
@@ -24,13 +25,12 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             EventFamily = evtFamily;
             Player = player;
 
-            var currentJs = EventManager.getIv();
-            MinCount = Convert.ToInt32(currentJs.GetValue("minPlayers"));
-            MaxCount = Convert.ToInt32(currentJs.GetValue("maxPlayers"));
-            MinLevel = Convert.ToInt32(currentJs.GetValue("minLevel"));
-            MaxLevel = Convert.ToInt32(currentJs.GetValue("maxLevel"));
-            FirstMapId = Convert.ToInt32(currentJs.GetValue("entryMap"));
-            EndMapId = Convert.ToInt32(currentJs.GetValue("clearMap"));
+            MinCount = EventManager.MinCount;
+            MaxCount = EventManager.MaxCount;
+            MinLevel = EventManager.MinLevel;
+            MaxLevel = EventManager.MaxLevel;
+            FirstMapId = EventManager.EntryMap;
+            EndMapId = EventManager.ExitMap;
         }
         public void StartQuest()
         {
@@ -47,12 +47,9 @@ namespace Application.Core.Game.GameEvents.PartyQuest
                 Player.dropMessage(1, "队伍人数或者等级不符合要求");
                 return;
             }
+            var r = EventManager.StartInstance(Player);
+            Player.Pink(EventManager.HandleCreateInstanceResult(r, Player.Client) ?? "");
 
-            if (!EventManager.StartPQInstance(Player, effectTeam, 1))
-            {
-                Player.dropMessage(1, "当前频道已经有一个队伍正在进行任务");
-                return;
-            }
         }
 
         protected virtual void PassStage(AbstractEventInstanceManager eim, int curStg, int curMapId)

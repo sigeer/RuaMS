@@ -47,9 +47,9 @@ public class EventScriptManager : ITickableTree, IDisposable
     public int ReloadEventScript(List<EventManager> emList)
     {
         DisposeEvents();
-        try
+        foreach (var em in emList)
         {
-            foreach (var em in emList)
+            try
             {
                 em.Initialize();
 
@@ -57,11 +57,12 @@ public class EventScriptManager : ITickableTree, IDisposable
                 {
                     throw new BusinessFatalException($"事件名重复，名称：{em.getName()}");
                 }
+
             }
-        }
-        catch (Exception)
-        {
-            throw;
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex.ToString());
+            }
         }
         return events.Count;
     }

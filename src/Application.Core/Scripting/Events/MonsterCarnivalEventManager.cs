@@ -3,7 +3,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Resources.Messages;
-using scripting.npc;
 using tools;
 
 namespace Application.Core.Scripting.Events
@@ -246,58 +245,50 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public override async Task HandleCreateInstanceResult(CreateInstanceResult r, NPCConversationManager cm)
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
         {
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    cm.Pink(cm.GetClientMessage(nameof(ClientMessage.CPQ_EntryLobby)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_EntryLobby));
                 case CreateInstanceResult.RequiredParty:
-                    await cm.SayOK("在你加入战斗之前，你需要先创建一个队伍！");
-                    break;
+                    return "在你加入战斗之前，你需要先创建一个队伍！";
                 case CreateInstanceResult.RequiredLeader:
-                    await cm.SayOK("如果你想开始战斗，让#b队长#k和我对话。");
-                    break;
+                    return "如果你想开始战斗，让#b队长#k和我对话。";
                 case CreateInstanceResult.Requirement:
-                    await cm.SayOK("队伍不满足条件。");
-                    break;
+                    return "队伍不满足条件。";
                 case CreateInstanceResult.LobbyLimited:
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    await cm.SayOK(cm.GetClientMessage(nameof(ClientMessage.CPQ_Error)));
-                    break;
                 default:
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
             }
         }
-        public virtual async Task HandleJoinInstanceResult(MCJoinInstanceResult r, NPCConversationManager cm)
+        public string? HandleJoinInstanceResult(MCJoinInstanceResult r, IChannelClient c)
         {
             switch (r)
             {
                 case MCJoinInstanceResult.Success:
-                    await cm.SayOK(cm.GetClientMessage(nameof(ClientMessage.CPQ_ChallengeRoomSent)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomSent));
+
                 case MCJoinInstanceResult.RequiredParty:
-                    await cm.SayOK("在你加入战斗之前，你需要先创建一个队伍！");
-                    break;
+                    return "在你加入战斗之前，你需要先创建一个队伍！";
+
                 case MCJoinInstanceResult.RequiredLeader:
-                    await cm.SayOK("如果你想开始战斗，让#b队长#k和我对话。");
-                    break;
+                    return "如果你想开始战斗，让#b队长#k和我对话。";
+
                 case MCJoinInstanceResult.Requirement:
-                    await cm.SayOK("队伍不满足条件。需要与被挑战的队伍人数一致！");
-                    break;
+                    return "队伍不满足条件。需要与被挑战的队伍人数一致！";
+
                 case MCJoinInstanceResult.NotInWaiting:
-                    await cm.SayOK(cm.GetClientMessage(nameof(ClientMessage.CPQ_FindError)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_FindError));
+
                 case MCJoinInstanceResult.AnthorRequest:
-                    await cm.SayOK(cm.GetClientMessage(nameof(ClientMessage.CPQ_ChallengeRoomAnswer)));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomAnswer));
                 case MCJoinInstanceResult.Unknown:
-                    await cm.SayOK(cm.GetClientMessage(nameof(ClientMessage.CPQ_Error)));
-                    break;
+
                 default:
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
             }
         }
     }

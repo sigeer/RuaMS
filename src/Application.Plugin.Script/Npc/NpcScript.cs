@@ -931,7 +931,7 @@ namespace Application.Plugin.Script
                 case 0:
                     var em0 = GetEventManager<PrivateContiMove>("KerningTrain");
                     var r = em0.StartInstance(getPlayer());
-                    await em0.HandleCreateInstanceResult(r, this);
+                    await SayOK(em0.HandleCreateInstanceResult(r, c));
                     break;
                 case 1:
                     if (haveItem(4031036) || haveItem(4031037) || haveItem(4031038))
@@ -1169,7 +1169,7 @@ namespace Application.Plugin.Script
                     {
                         var em = GetEventManager<RockSpirit>("RockSpirit");
                         var r = em.StartInstance(getPlayer());
-                        await em.HandleCreateInstanceResult(r, this);
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
                         return;
                     }
                     else
@@ -1260,7 +1260,7 @@ namespace Application.Plugin.Script
             {
                 // getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.EVENT);
                 var em = GetEventManager<S3rdJob>(nameof(S3rdJob) + jobStyle);
-                await em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), this);
+                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
             }
             else
             {
@@ -1726,7 +1726,7 @@ namespace Application.Plugin.Script
                         "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
                         ]);
                     var em = GetEventManager<SoloEventManager>("4jaerial");
-                    await em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), this);
+                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
                 }
                 else
                 {
@@ -2061,7 +2061,7 @@ namespace Application.Plugin.Script
                 var puppet = GetEventManager<Puppeteer>("Puppeteer");
                 puppet.setProperty("player", getPlayer().getName());
                 var r = puppet.StartInstance(getPlayer());
-                await puppet.HandleCreateInstanceResult(r, this);
+                await SayOK(puppet.HandleCreateInstanceResult(r, c));
 
             }
         }

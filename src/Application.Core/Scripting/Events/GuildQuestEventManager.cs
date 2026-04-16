@@ -1,6 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
-using Google.Protobuf;
 
 namespace Application.Core.Scripting.Events
 {
@@ -9,7 +7,7 @@ namespace Application.Core.Scripting.Events
         private Queue<int> queuedGuilds = new();
         private Dictionary<int, int> queuedGuildLeaders = new();
 
-        public GuildQuestEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+        public GuildQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
         }
 
@@ -123,7 +121,7 @@ namespace Application.Core.Scripting.Events
                 chr = cserv.getPlayerStorage().getCharacterById(guildInstance.get(1));
             }
 
-            if (startInstance(chr))
+            if (StartInstance(chr) != scripting.Events.Abstraction.CreateInstanceResult.Success)
             {
                 exportReadyGuild(guildInstance!.get(0));
                 return true;

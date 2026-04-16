@@ -901,8 +901,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public async Task SayOK(string text, byte speaker = 0)
+    public async Task SayOK(string? text, byte speaker = 0)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+
         sendOk(text, speaker);
         await WaitingForAnswer();
     }

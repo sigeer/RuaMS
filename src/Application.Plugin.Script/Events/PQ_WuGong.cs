@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
@@ -26,30 +27,28 @@ namespace Application.Plugin.Script.Events
             EventTime = 30 * 60;
         }
 
-        public override async Task HandleCreateInstanceResult(CreateInstanceResult r, NPCConversationManager cm)
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
         {
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    break;
+                    return null;
                 case CreateInstanceResult.RequiredParty:
-                    await cm.SayOK("该项#b秘密任务#k十分危险，你需要进行一个组队才能进入执行。");
-                    break;
+                    return "该项#b秘密任务#k十分危险，你需要进行一个组队才能进入执行。";
+
                 case CreateInstanceResult.RequiredLeader:
-                    await cm.SayOK("请让你的队长来开始这个任务。");
-                    break;
+                    return "请让你的队长来开始这个任务。";
+
                 case CreateInstanceResult.Requirement:
-                    await cm.SayOK("你目前无法执行这个#b秘密任务#k，因你不符合要求");
-                    break;
+                    return "你目前无法执行这个#b秘密任务#k，因你不符合要求";
+
                 case CreateInstanceResult.LobbyLimited:
-                    await cm.SayOK("已经有其他人员在执行#b秘密任务#k了，请稍后再试。");
-                    break;
+                    return "已经有其他人员在执行#b秘密任务#k了，请稍后再试。";
+
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    await cm.SayOK("未知错误");
-                    break;
                 default:
-                    break;
+                    return "未知错误";
             }
         }
     }

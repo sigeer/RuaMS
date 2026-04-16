@@ -35,6 +35,8 @@ namespace Application.Templates.Map
         public string? OnFirstUserEnter { get; set; }
         [WZPath("info/onUserEnter")]
         public string? OnUserEnter { get; set; }
+        [WZPath("info/reactorShuffle")]
+        public bool ReactorShuffle { get; set; }
 
         [WZPath("info/fieldType")]
         public int FieldType { get; set; }
