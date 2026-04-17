@@ -31,6 +31,7 @@ namespace Application.Plugin.Script
                         {
                             gainItem(4001101, -20);
                             gainItem(1002798, 1);
+
                             await SayNext(GetTalkMessage(nameof(ScriptTalk.Redeem_Success)));
                         }
                         else

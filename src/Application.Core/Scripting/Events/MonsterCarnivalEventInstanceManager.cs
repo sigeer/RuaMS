@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -48,10 +49,9 @@ namespace Application.Core.Scripting.Events
         public TeamRegistry? Team1 { get; set; }
         public MonsterCarnivalStage CurrentStage { get; private set; }
 
-        public MonsterCarnivalEventManager CurrentEventManager { get; }
-        public MonsterCarnivalEventInstanceManager(MonsterCarnivalEventManager em, string name, int minCount, int lobbyMapId, int eventMapId) : base(em, name)
+        public MonsterCarnivalEventManager CurrentEventManager  => this.EventManager as MonsterCarnivalEventManager;
+        public MonsterCarnivalEventInstanceManager(WorldChannel worldChannel, string emName, string name, int minCount, int lobbyMapId, int eventMapId) : base(worldChannel, emName, name)
         {
-            CurrentEventManager = em;
             MinCount = minCount;
             _lobbyMapId = lobbyMapId;
             _eventMapId = eventMapId;

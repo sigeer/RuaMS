@@ -8,6 +8,7 @@ using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Npc;
+using Application.Utility.Compatible.Atomics;
 using Application.Utility.Exceptions;
 using client.inventory;
 using scripting.Event;
@@ -229,18 +230,35 @@ namespace Application.Plugin.Script
             return channel.EventScriptManager.ReloadEventScript([
                 new PQ_Henesys(channel),
                 new PQ_Kerning(channel),
+                new PQ_Ellin(channel),
+                new PQ_Ludi(channel),
                 new PQ_WuGong(channel),
                 new PQ_CPQ1(channel),
                 new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
+                // new PrivateContiMove(channel, "Hak", [200000141, 250000100], [200090300, 200090310], 60),
                 new S3rdJob(channel, Job.WARRIOR.GetJobNiche().ToString(), 108010300, 105070001, 108010300, 108010301),
                 new S3rdJob(channel, Job.MAGICIAN.GetJobNiche().ToString(), 108010200, 100040106, 108010200, 108010201),
                 new S3rdJob(channel, Job.BOWMAN.GetJobNiche().ToString(), 108010100, 105040305, 108010100, 108010101),
                 new S3rdJob(channel, Job.THIEF.GetJobNiche().ToString(), 108010400, 107000402, 108010400, 108010401),
                 new S3rdJob(channel, Job.PIRATE.GetJobNiche().ToString(), 108010500, 105070200, 108010500, 108010501),
+                new DollHouse(channel),
+                new q3239(channel),
                 new RockSpirit(channel),
                 new Puppeteer(channel),
                 new MK_PrimeMinister(channel),
                 ]);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _eventSource.Clear();
+            _itemSource.Clear();
+            _mapEnterSource.Clear();
+            _mapFirstEnterSource.Clear();
+            _npcSource.Clear();
+            _portalSource.Clear();
+            _reactorActSource.Clear();
+            _reactorHitSource.Clear();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Application.Core.Scripting.Events
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            return new ExpeditionEventInstanceManager(this, instanceName);
+            return new ExpeditionEventInstanceManager(cserv, Name, instanceName);
         }
 
         #region Expedition

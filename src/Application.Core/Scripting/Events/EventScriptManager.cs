@@ -47,6 +47,7 @@ public class EventScriptManager : ITickableTree, IDisposable
     public int ReloadEventScript(List<EventManager> emList)
     {
         DisposeEvents();
+
         foreach (var em in emList)
         {
             try

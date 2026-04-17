@@ -5,6 +5,9 @@ public class ServerConfig
     //Login Configuration
     public int CHANNEL_LOCKS;
 
+    /// <summary>
+    /// 10_000
+    /// </summary>
     public long RESPAWN_INTERVAL;
     public long PURGING_INTERVAL;
     public long RANKING_INTERVAL;

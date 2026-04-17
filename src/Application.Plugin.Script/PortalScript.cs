@@ -624,7 +624,6 @@ namespace Application.Plugin.Script
 
         public Task<bool> catPriest_map()
         {
-
             playPortalSound();
             warp(925000000, 2);
             return Task.FromResult(true);

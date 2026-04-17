@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Shared.Constants.Map;
+using Application.Shared.Constants.Mob;
 using scripting.reactor;
 using server.life;
 using server.maps;
@@ -1469,7 +1471,6 @@ namespace Application.Plugin.Script
         public Task boss()
         {
             // TODO
-            // 2111001
             var eim = getEventInstance();
             if (eim != null)
             {
@@ -1501,8 +1502,6 @@ namespace Application.Plugin.Script
             // TODO
             // 2112004
             dropItems();
-            // 2112011
-            dropItems();
 
             return Task.CompletedTask;
         }
@@ -1513,8 +1512,6 @@ namespace Application.Plugin.Script
         {
             // TODO
             // 2112005
-            dropItems();
-            // 2112012
             dropItems();
 
             return Task.CompletedTask;
@@ -1645,10 +1642,8 @@ namespace Application.Plugin.Script
         // Reactor: 2200000 
         public Task go221024400()
         {
-            // TODO
-            // 2200000
-            playerMessage(5, "Gotcha! Try again next time!");
-            warp(221023200);
+            playerMessage(5, "差一点就成功了！下次再挑战吧！");
+            warp(221024400);
 
             return Task.CompletedTask;
         }
@@ -3692,13 +3687,17 @@ namespace Application.Plugin.Script
         // Reactor: 9101000 
         public Task moonMob0()
         {
-            // TODO
-            // 9101000
-            spawnMonster(9300061, 1, 0, 0); // (0, 0) is temp position
-            getMap().startMapEffect("Protect the Moon Bunny that's pounding the mill, and gather up 10 Moon Bunny's Rice Cakes!", 5120016, 7000);
-            getMap().broadcastMessage(PacketCreator.bunnyPacket()); // Protect the Moon Bunny!
-            getMap().broadcastMessage(PacketCreator.showHPQMoon());
-            // getMap().showAllMonsters();
+            var eim = getEventInstance();
+            if (eim != null)
+            {
+                eim.ClearedMaps[getMapId()] = Core.scripting.Events.Abstraction.StageStatus.Started;
+                spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
+                getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", 5120016, 7000);
+                getMap().broadcastMessage(PacketCreator.bunnyPacket()); // Protect the Moon Bunny!
+                getMap().broadcastMessage(PacketCreator.showHPQMoon());
+                getMap().allowSummonState(true);
+            }
+
 
             return Task.CompletedTask;
         }

@@ -143,11 +143,10 @@ namespace Application.Plugin.Script
                     "很遗憾，你要么打成了平局，要么输掉了战斗，你的表现清楚地反映了这一点。我希望你下次能做得更好。\r\n\r\n#b你的成绩：#rD#k",
                     ];
 
-                eim.GiveEventClearReward(getPlayer(), idx);
-                eim.unregisterPlayer(getPlayer());
-
                 await SayNext(messageList[idx]);
 
+                eim.GiveEventClearReward(getPlayer(), idx);
+                eim.unregisterPlayer(getPlayer());
                 warp(eim.CurrentEventManager.RecruitMap);
             }
             else

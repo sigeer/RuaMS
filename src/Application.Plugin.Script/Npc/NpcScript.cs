@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Life;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
@@ -11,6 +12,7 @@ using Application.Shared.MapObjects;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using Humanizer;
+using Microsoft.VisualBasic;
 using scripting.npc;
 using server.life;
 using System.Drawing;
@@ -2873,20 +2875,45 @@ namespace Application.Plugin.Script
         // Npc: 2040002 
         public async Task ludi023()
         {
-            // TODO
             if (!isQuestStarted(3230))
             {
                 await SayOK(GetDefault0());
                 return;
             }
+
+            if (await SayYesNo("你准备好进入玩偶屋地图了吗？"))
+            {
+                var em = GetEventManager<DollHouse>(nameof(DollHouse));
+                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+            }
         }
 
 
         // Npc: 2040003 
-        public Task ludi020()
+        public async Task ludi020()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() == 922000000)
+            {
+                if (await SayYesNo("你准备好离开这个地方了吗？"))
+                {
+                    WarpOut();
+                }
+            }
+            else
+            {
+                if (!isQuestStarted(3239))
+                {
+                    await SayOK(GetDefault0());
+                    return;
+                }
+
+                if (await SayYesNo("你准备好进入#b#m922000000##k了吗？"))
+                {
+                    var em = GetEventManager<q3239>(nameof(q3239));
+                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                }
+            }
+
         }
 
 
@@ -2907,7 +2934,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOK("玩具塔石可以让你传送到#b第二个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK("可以让你传送到#b第二个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
             }
         }
 
@@ -2931,7 +2958,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOK("玩具塔石可以让你传送到#b第一或者第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK("可以让你传送到#b第一或者第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
             }
         }
 
@@ -2955,7 +2982,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOK("玩具塔石可以让你传送到#b第二或者第四个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK("可以让你传送到#b第二或者第四个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
             }
         }
 
@@ -3148,14 +3175,14 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    var em = getEventManager("3rdJob_mount") as SoloEventManager;
+                    var em = GetEventManager<SoloEventManager>("3rdJob_mount");
                     if (em == null)
                     {
                         await SayOK("抱歉，但是三转职业（骑宠）已关闭。");
                     }
                     else
                     {
-                        if (em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
+                        if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
                         {
                             removeAll(4031507);
                             removeAll(4031508);

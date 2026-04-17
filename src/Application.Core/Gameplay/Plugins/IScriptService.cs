@@ -6,7 +6,7 @@ using server.maps;
 
 namespace Application.Core.Gameplay.Plugins
 {
-    public interface IScriptService
+    public interface IScriptService: IAsyncDisposable
     {
         #region Portal
         Task<bool> Enter(IChannelClient c, Portal p);

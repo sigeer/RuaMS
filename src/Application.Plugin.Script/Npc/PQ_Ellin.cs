@@ -1,9 +1,6 @@
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Plugin.Script.Events;
-using Application.Shared.Constants.Map;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script
 {
@@ -33,6 +30,7 @@ namespace Application.Plugin.Script
         {
             var eim = getEventInstance() ?? throw new ConversationDiffInstanceException();
 
+            var curStage = eim.ClearedMaps.GetValueOrDefault(getMapId(), StageStatus.NotStarted);
             if (getMapId() == 930000000)
             {
                 await SayNext("Welcome to the Forest of Poison Haze. Proceed by entering the portal.");
@@ -46,13 +44,13 @@ namespace Application.Plugin.Script
 
             else if (getMapId() == 930000300)
             {
-                if (eim.getIntProperty("statusStg4") == 0)
+                if (curStage == StageStatus.NotStarted)
                 {
                     eim.showClearEffect(getMapId());
-                    eim.setIntProperty("statusStg4", 1);
+                    eim.ClearedMaps[getMapId()] = StageStatus.Completed;
                 }
 
-                await SayNext("Oh great, you have reached me. We can now proceed further inside the forest.");
+                await SayNext("哦，太好了，你找到我了。我们现在可以在森林里继续前进了。");
                 eim.warpEventTeam(930000400);
             }
             else if (getMapId() == 930000400)
@@ -71,7 +69,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await SayOK("你已经带来了他们，但你不是队长！请让队长把弹珠给我……");
+                        await SayOK("你已经带来了他们，但你不是队长！请让队长把#t4001169#给我……");
                         return;
                     }
                 }
@@ -86,7 +84,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await SayOK("在领取净化器之前，请确保你的使用物品栏有足够的空间！");
+                        await SayOK("在领取#t2270004#之前，请确保你的使用物品栏有足够的空间！");
                         return;
                     }
                 }
@@ -111,15 +109,15 @@ namespace Application.Plugin.Script
         {
             if (!haveItem(4001163) || !isEventLeader())
             {
-                if (await SayYesNo("让你的队长在这里给我看魔法紫石。\r\n\r\n或者你想要#r离开这片森林#k吗？现在离开意味着抛弃你的伙伴，记住这一点。"))
+                if (await SayYesNo("让你的队长在这里给我看#t4001163#。\r\n\r\n或者你想要#r离开这片森林#k吗？现在离开意味着抛弃你的伙伴，记住这一点。"))
                 {
                     WarpOut();
                 }
             }
             else
             {
-                await SayNext("太好了，你有了紫色魔法石。我会带你们去通往石头祭坛的路。跟我来吧。");
-                getEventInstance().warpEventTeam(930000600);
+                await SayNext("太好了，你有了#t4001163#。我会带你们去通往石头祭坛的路。跟我来吧。");
+                getEventInstance()?.warpEventTeam(930000600);
             }
         }
     }

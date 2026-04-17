@@ -28,12 +28,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
-    public AbstractInstancedEventManager EventManager { get; }
+    public AbstractInstancedEventManager EventManager => ChannelServer.getEventSM().getEventManager(EventName) as AbstractInstancedEventManager;
 
     protected MapManager mapManager;
     private string name;
     private Dictionary<string, object> props = new();
-    private Dictionary<string, object> objectProps = new();
+
     private long timeStarted = 0;
     private long eventTime = 0;
 
@@ -61,12 +61,22 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private HashSet<int> exclusiveItems = new();
     public EventInstanceType Type { get; set; }
 
-    public AbstractEventInstanceManager(AbstractInstancedEventManager em, string name)
-    {
-        EventManager = em;
-        this.name = name;
+    public Dictionary<string, string> Properties { get; set; } = new();
 
-        this.mapManager = new MapManager(this, EventManager.ChannelServer);
+    /// <summary>
+    /// 已通过关卡
+    /// </summary>
+    public Dictionary<int, StageStatus> ClearedMaps { get; set; } = [];
+    public int Level { get; set; } = 1;
+    public string EventName { get; }
+    public WorldChannel ChannelServer { get; }
+    public AbstractEventInstanceManager(WorldChannel worldChannel, string emName, string instanceName)
+    {
+        ChannelServer = worldChannel;
+        EventName = emName;
+        this.name = instanceName;
+
+        this.mapManager = new MapManager(this, ChannelServer);
 
         SubTickables = [mapManager];
     }
@@ -535,7 +545,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         killCount.Clear();
         props.Clear();
-        objectProps.Clear();
 
         if (!eventCleared)
         {
@@ -608,10 +617,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return props.AddOrUpdateReturnOldValue(key, value);
     }
 
-    public void setObjectProperty(string key, object obj)
-    {
-        objectProps.AddOrUpdate(key, obj);
-    }
 
     public string? getProperty(string key)
     {
@@ -624,12 +629,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         var d = props.GetValueOrDefault(key);
         return Convert.ToInt32(d);
-    }
-
-    public object? getObjectProperty(string key)
-    {
-
-        return objectProps.GetValueOrDefault(key);
     }
 
 
@@ -768,24 +767,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return onMapClearMeso.ElementAt(stage - 1);
     }
 
-    List<int> getClearStageBonus(int stage)
-    {
-        List<int> list = new();
-        list.Add(getClearStageExp(stage));
-        list.Add(getClearStageMeso(stage));
-
-        return list;
-    }
-
     public void dropExclusiveItems(Player chr)
     {
         chr.Bag.ClearPartyQuestItems();
-        //AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
-
-        //foreach (int item in exclusiveItems)
-        //{
-        //    api.removeAll(item);
-        //}
     }
 
     public void dropAllExclusiveItems()
@@ -860,7 +844,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
     /// <summary>
-    /// 发放完全通关奖励
+    /// 发放通关奖励
     /// </summary>
     /// <param name="player"></param>
     /// <param name="eventLevel"></param>
@@ -871,7 +855,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         int rewardExp;
         var rewardIndex = eventLevel - 1;
 
-        if (!CanGiveReward(player, -eventLevel))
+        if (!CanGiveReward(player, -1))
         {
             return true;
         }
@@ -903,7 +887,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             player.gainExp(rewardExp);
         }
-        SetRewardClaimed(player, -eventLevel);
+        SetRewardClaimed(player, -1);
         return true;
     }
 
@@ -1119,7 +1103,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="thisStage"></param>
     public void giveEventPlayersStageReward(int thisStage)
     {
-        List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
+        var rewardExp = getClearStageExp(thisStage);
+        var rewardMeso = getClearStageMeso(thisStage);
 
         var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
         var players = getPlayerList();
@@ -1128,8 +1113,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             if (CanGiveReward(mc, thisStage))
             {
                 SetRewardClaimed(mc, thisStage);
-                mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
+                mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
+                mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
     }
@@ -1140,15 +1125,16 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="thisStage"></param>
     public void GiveEventClearReward(Player mc, int thisStage)
     {
-        List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
+        var rewardExp = getClearStageExp(thisStage);
+        var rewardMeso = getClearStageMeso(thisStage);
 
         var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
 
         if (CanGiveReward(mc, thisStage))
         {
             SetRewardClaimed(mc, thisStage);
-            mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-            mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
+            mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
+            mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
         }
     }
 

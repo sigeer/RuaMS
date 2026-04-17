@@ -2179,6 +2179,9 @@ public class MapleMap : IMap, INamedInstance
     public long Next { get; set; }
     public TickableStatus Status { get; protected set; }
 
+    public long RespawnInterval { get; set; } = YamlConfig.config.server.RESPAWN_INTERVAL;
+    long RespawnNext;
+
     public void OnTick(long now)
     {
         // 有玩家才更新，可能导致一些对象在玩家进入后才开始清理
@@ -2186,10 +2189,16 @@ public class MapleMap : IMap, INamedInstance
         {
             if (Next <= now)
             {
-                respawn();
                 mobMpRecovery();
 
                 Next = now + Period;
+            }
+
+            if (RespawnNext <= now)
+            {
+                respawn();
+
+                RespawnNext = now + RespawnInterval;
             }
 
             foreach (var item in getMapObjects())

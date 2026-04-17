@@ -21,14 +21,9 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
-using Application.Resources;
-using Application.Shared.Constants.Item;
-using Application.Shared.Items;
 using Application.Templates;
 using Application.Templates.Character;
 using Application.Templates.Exceptions;
@@ -39,16 +34,12 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
 using Application.Templates.StatEffectProps;
-using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
-using client.inventory.manipulator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Quartz.Impl.AdoJobStore.Common;
 using server;
-using tools;
 
 namespace Application.Core.Channel.DataProviders;
 
@@ -889,7 +880,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return eqp;
         }
 
-        else if(abTemplate is PetItemTemplate petTemplate)
+        else if (abTemplate is PetItemTemplate petTemplate)
         {
             return new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
         }

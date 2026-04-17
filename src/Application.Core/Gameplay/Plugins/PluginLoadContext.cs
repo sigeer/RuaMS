@@ -14,13 +14,9 @@ namespace Application.Core.Plugins
 
         public PluginLoadContext(string pluginPath) : base(isCollectible: true)
         {
-            var destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "p_tmp", Path.GetFileName(pluginPath));
-            var dirPath = Path.GetDirectoryName(destPath)!;
-            Directory.CreateDirectory(dirPath);
-            File.Copy(pluginPath, destPath, overwrite: true);
 
-            _pluginPath = destPath;
-            _resolver = new AssemblyDependencyResolver(destPath);
+            _pluginPath = pluginPath;
+            _resolver = new AssemblyDependencyResolver(_pluginPath);
         }
 
         protected override Assembly Load(AssemblyName assemblyName)

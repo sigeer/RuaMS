@@ -1,8 +1,8 @@
 using Application.Core.Channel;
-using Application.Core.Game.Players;
+using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
 using Application.Utility;
-using scripting.npc;
+using Application.Utility.Extensions;
 
 namespace Application.Plugin.Script.Events
 {
@@ -23,6 +23,7 @@ namespace Application.Plugin.Script.Events
             EventTime = 30 * 60;
         }
 
+
         protected override void setEventRewards(AbstractEventInstanceManager eim)
         {
             int evLevel = 1;    //Rewards at clear PQ
@@ -32,6 +33,26 @@ namespace Application.Plugin.Script.Events
 
             List<object> expStages = [100, 200, 400, 800, 1500];    //bonus exp given on CLEAR stage signal
             eim.setEventClearStageExp(expStages);
+        }
+
+        public (string[] Quest, int[] Answer) GetStage1()
+        {
+            string[] stage1Questions = [
+                     "收集与#b战士#n首次转职所需最低等级相同数量的#b通行证#n。",
+                    "收集与#b战士#n首次转职所需最低力量（STR）相同数量的#b通行证#n。",
+                    "收集与#b魔法师#n首次转职所需最低智力（INT）相同数量的#b通行证#n。",
+                    "收集与#b弓箭手#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
+                    "收集与#b飞侠#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
+                    "收集与二次转职所需最低等级相同数量的#b通行证#n。",
+                    "收集与#b魔法师#n首次转职所需最低等级相同数量的#b通行证#n。"
+            ];
+            int[] stage1Answers = [10, 35, 20, 25, 25, 30, 8];
+            return (stage1Questions, stage1Answers);
+        }
+
+        public List<int> GetStage(AbstractEventInstanceManager eim, IMap map)
+        {
+            return eim.Properties.GetOrAdd($"stg{map.Id}Property", () => string.Join(',', Randomizer.Take(3, map.getAreas().Count))).Split(',').Select(int.Parse).OrderBy(x => x).ToList();
         }
     }
 }

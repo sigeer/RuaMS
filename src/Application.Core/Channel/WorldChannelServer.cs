@@ -341,11 +341,7 @@ namespace Application.Core.Channel
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
 
-            var plugin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.Script.dll");
-            if (File.Exists(plugin))
-            {
-                PluginManager.LoadPlugin(plugin);
-            }
+            await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
 
             var channel = configs.StartChannel;
             foreach (var server in effectChannels)

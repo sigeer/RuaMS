@@ -73,7 +73,7 @@ namespace Application.Core.Scripting.Events
         #region Instances
         protected virtual AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            return new EventInstanceManager(this, instanceName);
+            return new EventInstanceManager(ChannelServer, Name, instanceName);
         }
         public AbstractEventInstanceManager? getInstance(string name)
         {

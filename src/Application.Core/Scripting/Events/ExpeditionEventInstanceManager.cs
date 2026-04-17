@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using server.expeditions;
@@ -7,7 +8,7 @@ namespace Application.Core.Scripting.Events
     public class ExpeditionEventInstanceManager : AbstractEventInstanceManager
     {
         private Expedition? expedition = null;
-        public ExpeditionEventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
+        public ExpeditionEventInstanceManager(WorldChannel worldChannel, string emName, string name) : base(worldChannel, emName, name)
         {
             Type = Shared.Events.EventInstanceType.Expedition;
         }

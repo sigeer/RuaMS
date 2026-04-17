@@ -36,6 +36,7 @@ namespace Application.Core.Game.Maps
         public TimeMob? TimeMob { get; set; }
         AbstractEventInstanceManager? EventInstanceManager { get; }
         MapEffect? MapEffect { get; set; }
+        long RespawnInterval { get; set; }
 
 
         #region Info

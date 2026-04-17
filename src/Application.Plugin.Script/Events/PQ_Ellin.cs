@@ -31,7 +31,6 @@ namespace Application.Plugin.Script.Events
 
         public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-
             if (mob.getId() == bossId)
             {
                 eim.showClearEffect(mob.getMap().getId());

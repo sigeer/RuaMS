@@ -13,17 +13,5 @@ namespace Application.Plugin.Script.Events
             MinMap = 103040410;
             MaxMap = 103040410;
         }
-
-        protected override void respawnStages(AbstractEventInstanceManager eim)
-        {
-            var map = eim.getMapInstance(EntryMap);
-            var map2 = eim.getMapInstance(103040420);
-            map.allowSummonState(true);
-            map2.allowSummonState(true);
-            map.instanceMapRespawn();
-            map2.instanceMapRespawn();
-
-            eim.Schedule(respawnStages, 10000);
-        }
     }
 }

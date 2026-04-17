@@ -6,6 +6,7 @@ using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Mob;
 using scripting.npc;
+using server.maps;
 
 namespace Application.Plugin.Script.Events
 {
@@ -31,23 +32,34 @@ namespace Application.Plugin.Script.Events
 
         protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
+            eim.Level = level;
             eim.setProperty("level", level);
             eim.setProperty("stage", "0");
             eim.setIntProperty("bunnyCake", 0);
             eim.setIntProperty("bunnyDamaged", 0);
 
-            eim.getInstanceMap(910010000)?.resetPQ(level);
             eim.getInstanceMap(910010000)?.allowSummonState(false);
+            eim.getInstanceMap(910010000)?.RespawnInterval = 15_000;
 
-            eim.getInstanceMap(910010200)?.resetPQ(level);
+            eim.getInstanceMap(910010200)?.RespawnInterval = 15_000;
         }
 
         protected override void respawnStages(AbstractEventInstanceManager eim)
         {
-            eim.getMapInstance(910010000).instanceMapRespawn();
-            eim.getMapInstance(910010200).instanceMapRespawn();
+            var status = eim.ClearedMaps.GetValueOrDefault(910010000, StageStatus.NotStarted);
+            if (status == StageStatus.NotStarted)
+            {
+                var map = eim.getInstanceMap(910010000)!;
 
-            eim.Schedule(e => respawnStages(e), 15 * 1000);
+                var flowers = map.GetRequiredMapObjects<Reactor>(Shared.MapObjects.MapObjectType.REACTOR,
+                    r => r.getName().StartsWith("moonflower") && r.getState() == 1);
+
+                var rabbitReactor = map.getReactorByName("fullmoon")!;
+                rabbitReactor.forceHitReactor((sbyte)flowers.Count);
+
+                eim.Schedule(respawnStages, 5_000);
+            }
+
         }
 
         protected override void setEventRewards(AbstractEventInstanceManager eim)
