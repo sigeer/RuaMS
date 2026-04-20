@@ -327,6 +327,7 @@ namespace Application.Core.Channel
             await Transport.RegisterServer(effectChannels.Keys.ToList());
         }
 
+        FileSystemWatcher watcher;
         public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
         {
             if (configs.StartChannel <= 0)
@@ -341,7 +342,18 @@ namespace Application.Core.Channel
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
 
-            await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
+            try
+            {
+                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
+                watcher.Changed += OnFileChanged;
+                watcher.EnableRaisingEvents = true;
+                await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                return false;
+            }
 
             var channel = configs.StartChannel;
             foreach (var server in effectChannels)
@@ -399,6 +411,24 @@ namespace Application.Core.Channel
             }
 
             return true;
+        }
+
+        private DateTime _lastLoadTime = DateTime.MinValue;
+
+        private async void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.Name != "Application.Plugin.Script.dll") return;
+
+            // 简单的节流：1秒内只处理一次
+            var now = DateTime.Now;
+            if ((now - _lastLoadTime) < TimeSpan.FromSeconds(1))
+                return;
+
+            _lastLoadTime = now;
+
+            await Task.Delay(200); // 等待文件释放
+            _logger.LogInformation("加载插件...");
+            await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
         }
 
 

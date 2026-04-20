@@ -74,7 +74,7 @@ public class NPCTalkHandler : ChannelHandlerBase
 
             if (npc.SourceTemplate.Script != null)
             {
-                c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+                _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
                 return;
             }
 

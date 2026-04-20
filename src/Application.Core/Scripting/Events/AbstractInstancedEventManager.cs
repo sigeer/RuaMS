@@ -199,11 +199,11 @@ namespace Application.Core.Scripting.Events
                 case CreateInstanceResult.RequiredParty:
                     return "需要组队";
                 case CreateInstanceResult.RequiredLeader:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk));
+                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk));
                 case CreateInstanceResult.Requirement:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_CannotStart_Req));
+                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_Req));
                 case CreateInstanceResult.LobbyLimited:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull));
+                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull));
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
 

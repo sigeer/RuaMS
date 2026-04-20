@@ -25,7 +25,7 @@ namespace Application.Plugin.Script
             {
                 if (haveItem(itemId, 1))
                 {
-                    await SayNext($"嗯？\r\n看不出来你还有些本事哦，连#b#e#v{itemId}##t{itemId}##k#n都能搞到手。\r\n既然如此，那你就先去#b#e#m${enterMap}##k#n调查看看。");
+                    await SayNext($"嗯？\r\n看不出来你还有些本事哦，连#b#e#v{itemId}##t{itemId}##k#n都能搞到手。\r\n既然如此，那你就先去#b#e#m{enterMap}##k#n调查看看。");
                 }
 
                 else
@@ -75,9 +75,9 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var option = await SayOption($"你需要收集 #e#b#v{itemID}##t${itemID}##k#n × #r#e50#k#n \r\n才能证明你有点本事，否则我不放心让你去白给！\r\n", [
-                    $"进入 #b#e#m${enterMap}##k#n 继续调查",
-                    $"离开 #b#e#m${lobbyMap}##k#n 回到 #b#e#m${outMap}"
+                var option = await SayOption($"你需要收集 #e#b#v{itemID}##t{itemID}##k#n × #r#e50#k#n \r\n才能证明你有点本事，否则我不放心让你去白给！\r\n", [
+                    $"进入 #b#e#m{enterMap}##k#n 继续调查",
+                    $"离开 #b#e#m{lobbyMap}##k#n 回到 #b#e#m{outMap}"
                 ]);
                 switch (option)
                 {

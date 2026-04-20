@@ -3,6 +3,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Resources.Messages;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Scripting.Events
@@ -63,7 +64,7 @@ namespace Application.Core.Scripting.Events
             return CreateInstanceResult.Success;
         }
 
-        public MCJoinInstanceResult JoinInstance(Player chr, int lobby)
+        public async Task<MCJoinInstanceResult> JoinInstance(Player chr, int lobby)
         {
             var roomName = lobby.ToString();
             if (!instances.TryGetValue(roomName, out var instance))
@@ -90,7 +91,7 @@ namespace Application.Core.Scripting.Events
 
             eim.Team1 = new TeamRegistry(chr.Party, members, null);
             // send challenge
-            if (ChannelServer.NodeService.PluginManager.StartNpcConversation(
+            if (await ChannelServer.NodeService.PluginManager.StartNpcConversation(
                 eim.getLeader()!.Client,
                 2042001,
                 null,

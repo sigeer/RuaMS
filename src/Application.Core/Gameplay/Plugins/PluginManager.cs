@@ -6,6 +6,7 @@ using OpenTelemetry.Trace;
 using server.maps;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Application.Core.Plugins
 {
@@ -63,7 +64,7 @@ namespace Application.Core.Plugins
         }
 
         #region Services
-        public bool StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
+        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -76,7 +77,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                return container.Instance?.Start(c, npcId, npcObject, scriptName)?.Result ?? false;
+                return await container.Instance.Start(c, npcId, npcObject, scriptName);
             }
             catch (Exception e)
             {

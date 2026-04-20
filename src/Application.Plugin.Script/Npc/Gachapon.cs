@@ -17,11 +17,11 @@ namespace Application.Plugin.Script
 
             var curMapName = GetGachaponMapName();
 
-            var option = await SayOption($"欢迎来到${curMapName}扭蛋机。我可以为您做些什么呢？", [
+            var option = await SayOption($"欢迎来到{curMapName}扭蛋机。我可以为您做些什么呢？", [
                 "什么是扭蛋机？",
-                $"在哪里可以购买#t${ticketId}",
-                $"使用1张#t${ticketId}",
-                $"使用10张#t${ticketId}",
+                $"在哪里可以购买#t{ticketId}#",
+                $"使用1张#t{ticketId}#",
+                $"使用10张#t{ticketId}#",
                 "查看我的#r奖品仓库"
             ]);
 
@@ -29,12 +29,12 @@ namespace Application.Plugin.Script
             {
                 case 0:
                     await SaySpeech([
-                        $"玩转扭蛋机，赢得稀有卷轴、装备、椅子、熟练书和其他酷炫物品！你只需要一张 #i${ticketId}##b#t${ticketId}##k 就有机会成为随机物品的幸运获得者。",
+                        $"玩转扭蛋机，赢得稀有卷轴、装备、椅子、熟练书和其他酷炫物品！你只需要一张 #i{ticketId}##b#t{ticketId}##k 就有机会成为随机物品的幸运获得者。",
                         $"你会在#p{npc}#中找到各种物品，但最有可能找到与" + curMapName + "相关的物品和卷轴。"
                         ]);
                     break;
                 case 1:
-                    await SayNext($"#i${ticketId}##b#t${ticketId}##k 可以在#r现金商店#k使用NX或枫叶点购买。点击屏幕右下角的红色商店图标访问#r现金商店#k。");
+                    await SayNext($"#i{ticketId}##b#t{ticketId}##k 可以在#r现金商店#k使用NX或枫叶点购买。点击屏幕右下角的红色商店图标访问#r现金商店#k。");
                     break;
                 case 2:
                     await DoGachapon(ticketId, 1);
@@ -54,7 +54,7 @@ namespace Application.Plugin.Script
         {
             if (!haveItem(ticketId, count))
             {
-                await SayOK(GetTalkMessage(ScriptTalk.Tip_CheckItemWithId, ticketId, count));
+                await SayOK(GetTalkMessage(nameof(ScriptTalk.Tip_CheckItemWithId), ticketId, count));
                 return;
             }
             if (!CheckGachaponStorage(count))

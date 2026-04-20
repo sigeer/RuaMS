@@ -32,11 +32,11 @@ namespace Application.Plugin.Script
                     var roomStage = room.CurrentStage;
                     if (roomStage == MonsterCarnivalStage.None)
                     {
-                        msg += $"#L${i}# {roomName}{i + 1} （${room.MinCount}x${room.MinCount}）#l\r\n";
+                        msg += $"#L{i}# {roomName}{i + 1} （{room.MinCount}x{room.MinCount}）#l\r\n";
                     }
                     else if (roomStage == MonsterCarnivalStage.Waiting)
                     {
-                        msg += $"#L${i}# {roomName}{i + 1} （{levelName}: ${room.GetAveLevel()} / ${room.GetRoomSize()}x${room.GetRoomSize()}）#l\r\n";
+                        msg += $"#L{i}# {roomName}{i + 1} （{levelName}: {room.GetAveLevel()} / {room.GetRoomSize()}x{room.GetRoomSize()}）#l\r\n";
                     }
                 }
                 if (msg.Length == o)
@@ -60,7 +60,7 @@ namespace Application.Plugin.Script
                         }
                         break;
                     case MonsterCarnivalStage.Waiting:
-                        await SayOK(em.HandleJoinInstanceResult(em.JoinInstance(getPlayer(), option), c));
+                        await SayOK(em.HandleJoinInstanceResult(await em.JoinInstance(getPlayer(), option), c));
                         break;
                     case MonsterCarnivalStage.Matched:
                     case MonsterCarnivalStage.Battle:
@@ -98,7 +98,7 @@ namespace Application.Plugin.Script
             var snd = "";
             for (var i = 0; i < teamMembers.Count; i++)
             {
-                snd += $"#b${GetClientMessage(nameof(ClientMessage.Name))}: ${teamMembers[i].Name} / (${GetClientMessage(nameof(ClientMessage.Level))}: ${teamMembers[i].Level}) / ${GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n";
+                snd += $"#b{GetClientMessage(nameof(ClientMessage.Name))}: {teamMembers[i].Name} / ({GetClientMessage(nameof(ClientMessage.Level))}: {teamMembers[i].Level}) / {GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n";
             }
 
             eim.AcceptChallenge(await SayAcceptDecline(snd + "你想在怪物嘉年华上和这个队伍战斗吗？"));
@@ -167,7 +167,7 @@ namespace Application.Plugin.Script
                         }
                         else if (getLevel() > targetEm.MaxLevel)
                         {
-                            await SayOK($"很抱歉，只有等级在${targetEm.MinLevel}到${targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。");
+                            await SayOK($"很抱歉，只有等级在{targetEm.MinLevel}到{targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。");
                         }
                         else
                         {

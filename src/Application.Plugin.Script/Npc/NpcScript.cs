@@ -621,7 +621,7 @@ namespace Application.Plugin.Script
                 await SayOK("无法与我对话");
                 return;
             }
-            if (await SayYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t${p.Value.TicketItemId}##k吗？"))
+            if (await SayYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
             {
                 if (getMeso() >= p.Value.TicketPrice && canHold(p.Value.TicketItemId))
                 {
@@ -678,7 +678,7 @@ namespace Application.Plugin.Script
                         }
                         else
                         {
-                            await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 ${next}抵达。");
+                            await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 {next}抵达。");
                         }
                         return;
                     }
@@ -689,7 +689,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await SayOK($"飞往${target}的船只已经启程，请耐心等待下一班。下一班将在 ${next}抵达。");
+                    await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 {next}抵达。");
                 }
             }
             else
@@ -5262,7 +5262,7 @@ namespace Application.Plugin.Script
         public async Task outshaolinBoss()
         {
             var mapID_out = 702070400;
-            if (await SayYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m${mapID_out}##k#n 吗？"))
+            if (await SayYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapID_out}##k#n 吗？"))
             {
                 warp(mapID_out);
             }
