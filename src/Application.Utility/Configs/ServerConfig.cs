@@ -229,6 +229,9 @@ public class ServerConfig
 
     //Event Configuration
     public int EVENT_MAX_GUILD_QUEUE;
+    /// <summary>
+    /// 10
+    /// </summary>
     public long EVENT_LOBBY_DELAY;
 
     //Dojo Configuration

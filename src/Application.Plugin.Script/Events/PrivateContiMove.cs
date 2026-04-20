@@ -14,15 +14,21 @@ namespace Application.Plugin.Script.Events
             Stations = stations;
             Transportings = transportings;
             RideTime = rideTime;
+
+            ArrivePortals = [0, 0];
+
+            MaxLobbys = 16;
         }
 
         public int[] Stations { get; }
 
         public int[] Transportings { get; }
 
+        public int[] ArrivePortals { get; init; }
+
         public int RideTime { get; }
 
-        public int GetTransportingTime()
+        protected int GetTransportingTime()
         {
             return ChannelServer.getTransportationTime(RideTime);
         }
@@ -41,11 +47,18 @@ namespace Application.Plugin.Script.Events
                 return;
             }
 
-            var local = GetTransportingTime();
-            var onRide = ChannelServer.getMapFactory().getMap(Transportings[1 - curIdx]);
-
-            chr.changeMap(onRide, onRide.getPortal(0));
+            eim.Properties["Current"] = curIdx.ToString();
+            chr.changeMap(Transportings[curIdx], 0);
             // chr.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
+        }
+
+        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        {
+            if (int.TryParse(eim.Properties.GetValueOrDefault("Current"), out var curIdx))
+            {
+                var map = eim.ChannelServer.getMapFactory().getMap(Transportings[curIdx]);
+                map.warpEveryone(Stations[1 - curIdx], 0);
+            }
         }
 
         public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
@@ -55,7 +68,7 @@ namespace Application.Plugin.Script.Events
                 case CreateInstanceResult.Success:
                     return null;
                 case CreateInstanceResult.LobbyLimited:
-                    return "客运车已经满了。稍后再试一次。";
+                    return "已经满员了。稍后再试一次。";
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
                 default:

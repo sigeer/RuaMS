@@ -7,6 +7,7 @@ using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Shared.Constants.Job;
+using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Exceptions;
@@ -105,7 +106,7 @@ namespace Application.Plugin.Script
             if (!_npcSource.TryGetValue(scriptName, out var methodInfo))
             {
                 // 
-                c.OnlinedCharacter.Pink($"不支持的脚本{scriptName}");
+                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
                 return false;
             }
 
@@ -137,6 +138,12 @@ namespace Application.Plugin.Script
                 await talk.SayOK(talk.GetDefault0());
                 Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
+            }
+            catch (NotImplementedException)
+            {
+                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return false;
             }
             catch (Exception)
             {
@@ -235,7 +242,15 @@ namespace Application.Plugin.Script
                 new PQ_WuGong(channel),
                 new PQ_CPQ1(channel),
                 new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
-                // new PrivateContiMove(channel, "Hak", [200000141, 250000100], [200090300, 200090310], 60),
+                // 天空之城 - 圣地
+                new PrivateContiMove(channel, "ShipOribs", [MapId.ORBIS_STATION, MapId.SKY_FERRY],[200090020, 200090021], 8 * 60),
+                // 魔法密林 - 圣地
+                new PrivateContiMove(channel, "ShipEllin", [MapId.ELLINIA_SKY_FERRY, MapId.SKY_FERRY],[MapId.FROM_ELLINIA_TO_EREVE, MapId.FROM_EREVE_TO_ELLINIA], 2 * 60),
+                // 里恩 - 明珠港
+                new PrivateContiMove(channel, "Whale", [MapId.DANGEROUS_FOREST, MapId.LITH_HARBOUR],[MapId.FROM_RIEN_TO_LITH, MapId.FROM_LITH_TO_RIEN], 60) { ArrivePortals = [0, 3]},
+                // 天空之城 - 武陵
+                new PrivateContiMove(channel, "Crane", [200000141, 250000100],[200090300, 200090310], 60) { ArrivePortals = [0, 3]},
+
                 new S3rdJob(channel, Job.WARRIOR.GetJobNiche().ToString(), 108010300, 105070001, 108010300, 108010301),
                 new S3rdJob(channel, Job.MAGICIAN.GetJobNiche().ToString(), 108010200, 100040106, 108010200, 108010201),
                 new S3rdJob(channel, Job.BOWMAN.GetJobNiche().ToString(), 108010100, 105040305, 108010100, 108010101),

@@ -18,9 +18,9 @@ namespace Application.Plugin.Script.Events
 
             _templates = new()
             {
-                { "0", () => new MonsterCarnivalEventInstanceManager(this, "0", 2, 980000100, 980000101) },
-                { "1", () => new MonsterCarnivalEventInstanceManager(this, "1", 2, 980000200, 980000201) },
-                { "2", () => new MonsterCarnivalEventInstanceManager(this, "2", 3, 980000300, 980000301) }
+                { "0", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "0", 2, 980000100, 980000101) },
+                { "1", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "1", 2, 980000200, 980000201) },
+                { "2", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "2", 3, 980000300, 980000301) }
             };
         }
 

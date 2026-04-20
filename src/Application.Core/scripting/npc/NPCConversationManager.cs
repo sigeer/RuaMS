@@ -114,39 +114,39 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
     public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
-    public void sendNext(string text, byte speaker = 0)
+    public void sendNext(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker, speakerNpc));
     }
 
-    public void sendPrev(string text, byte speaker = 0)
+    public void sendPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker, speakerNpc));
     }
 
-    public void sendNextPrev(string text, byte speaker = 0)
+    public void sendNextPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker, speakerNpc));
     }
 
-    public void sendOk(string text, byte speaker = 0)
+    public void sendOk(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker, speakerNpc));
     }
 
-    public void sendYesNo(string text, byte speaker = 0)
+    public void sendYesNo(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker, speakerNpc));
     }
 
-    public void sendAcceptDecline(string text, byte speaker = 0)
+    public void sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker, speakerNpc));
     }
 
-    public void sendSimple(string text, byte speaker = 0)
+    public void sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker, speakerNpc));
     }
 
     public void sendStyle(string text, int[] styles)
@@ -805,9 +805,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return action.inputText;
     }
 
-    public async Task SayNext(string text, byte speaker = 0)
+    public async Task SayNext(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+        sendNext(text, speaker, speakerNpc);
         await WaitingForAnswer();
     }
 
@@ -941,16 +945,29 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return await SayOption(finalContent, speaker);
     }
 
-    public async Task SayStyle(string text, int[] styles)
+    public async Task<int> SayOption(string mainContent, Dictionary<int, string> options, byte speaker = 0)
+    {
+        var finalContent = mainContent + "\r\n#b";
+        foreach (var item in options)
+        {
+            finalContent += $"#L{item.Key}#{item.Value}#l\r\n";
+        }
+        finalContent += "#k";
+        return await SayOption(finalContent, speaker);
+    }
+
+    public async Task<int> SayStyle(string text, int[] styles)
     {
         if (styles.Length > 0)
         {
             sendStyle(text, styles);
+            return await WaitingForOption();
         }
         else
         {
             // thanks Conrad for noticing empty styles crashing players
             await SayOK("Sorry, there are no options of cosmetics available for you here at the moment.");
+            return -1;
         }
     }
 

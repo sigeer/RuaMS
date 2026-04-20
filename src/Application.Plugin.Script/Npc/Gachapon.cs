@@ -1,4 +1,5 @@
 using Application.Core.Models;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script
 {
@@ -29,7 +30,7 @@ namespace Application.Plugin.Script
                 case 0:
                     await SaySpeech([
                         $"玩转扭蛋机，赢得稀有卷轴、装备、椅子、熟练书和其他酷炫物品！你只需要一张 #i${ticketId}##b#t${ticketId}##k 就有机会成为随机物品的幸运获得者。",
-                        $"你会在" + curMapName + "的扭蛋机中找到各种物品，但最有可能找到与" + curMapName + "相关的物品和卷轴。"
+                        $"你会在#p{npc}#中找到各种物品，但最有可能找到与" + curMapName + "相关的物品和卷轴。"
                         ]);
                     break;
                 case 1:
@@ -53,23 +54,23 @@ namespace Application.Plugin.Script
         {
             if (!haveItem(ticketId, count))
             {
-                await SayOK(GetTalkMessage("Tip_CheckItemWithId", ticketId, count));
+                await SayOK(GetTalkMessage(ScriptTalk.Tip_CheckItemWithId, ticketId, count));
                 return;
             }
             if (!CheckGachaponStorage(count))
             {
-                await SayOK(GetTalkMessage("Storage_CheckGachaponStorage", count));
+                await SayOK(GetTalkMessage(nameof(ScriptTalk.Storage_CheckGachaponStorage), count));
                 return;
             }
 
             gainItem(ticketId, -count);
-            List<GachaponPoolItemDataObject> rewards = [];
+            List<GachaponPoolItemDataObject?> rewards = [];
             for (var i = 0; i < count; i++)
             {
                 rewards.Add(doGachapon());
             }
 
-            await SaySpeech(rewards.Select(itemObj => itemObj == null ? GetTalkMessage("Tip_ThankPatronage") : GetTalkMessage("Tip_ObtainItem", itemObj.ItemId, itemObj.Quantity)).ToArray());
+            await SaySpeech(rewards.Select(itemObj => itemObj == null ? GetTalkMessage(nameof(ScriptTalk.Tip_ThankPatronage)) : GetTalkMessage(nameof(ScriptTalk.Tip_ObtainItem), itemObj.ItemId, itemObj.Quantity)).ToArray());
         }
 
         // Npc: 9100101 

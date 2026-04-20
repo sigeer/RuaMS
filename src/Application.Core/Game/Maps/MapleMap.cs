@@ -2828,59 +2828,8 @@ public class MapleMap : IMap, INamedInstance
             chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
         }
 
-        if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
-        {
-            // To Ereve (SkyFerry)
-            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.TimerManager.schedule(() =>
-            {
-                Send(map =>
-                {
-                    map.getCharacterById(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
-                });
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
-        {
-            // To Victoria Island (SkyFerry)
-            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.TimerManager.schedule(() =>
-            {
-                Send(map =>
-                {
-                    map.getCharacterById(chr.Id)?.changeMap(MapId.ELLINIA_SKY_FERRY, 0);
-                });
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
-        {
-            // To Orbis (SkyFerry)
-            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.TimerManager.schedule(() =>
-            {
-                Send(map =>
-                {
-                    map.getCharacterById(chr.Id)?.changeMap(MapId.ORBIS_STATION, 0);
-                });
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
-        {
-            // To Ereve From Orbis (SkyFerry)
-            int travelTime = ChannelServer.getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            ChannelServer.TimerManager.schedule(() =>
-            {
-                Send(map =>
-                {
-                    map.getCharacterById(chr.Id)?.changeMap(MapId.SKY_FERRY, 0);
-                });
-            }, travelTime);
-        }
-        else if (MiniDungeonInfo.isDungeonMap(mapid))
+
+        if (MiniDungeonInfo.isDungeonMap(mapid))
         {
             var mmd = chr.getClient().getChannelServer().getMiniDungeon(mapid);
             if (mmd != null)

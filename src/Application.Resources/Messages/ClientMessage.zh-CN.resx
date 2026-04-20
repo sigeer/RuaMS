@@ -1428,4 +1428,10 @@
   <data name="Storage_Restriction_GMLevel" xml:space="preserve">
     <value>当前GM等级无法使用仓库服务。</value>
   </data>
+  <data name="SlotFull" xml:space="preserve">
+    <value>{0}栏已满。</value>
+  </data>
+  <data name="MesoNotEnough" xml:space="preserve">
+    <value>你没有足够的金币。</value>
+  </data>
 </root>

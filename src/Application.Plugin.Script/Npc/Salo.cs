@@ -1,16 +1,57 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.Utility;
 
 namespace Application.Plugin.Script
 {
     internal partial class NpcScript
     {
         // Npc: 1012117 
-        public Task hair_royal()
+        public async Task hair_royal()
         {
-            // TODO
-            return Task.CompletedTask;
+            int[] mhair_r = [30010, 30070, 30080, 30090, 30100, 30690, 30760, 33000];
+            int[] fhair_r = [31130, 31530, 31820, 31920, 31940, 34000, 34030];
+
+            int[] mhair_v = [30010, 30070, 30080, 30090, 30100, 30480, 30560, 30690, 30760, 30850, 30890, 30930, 30950];
+            int[] fhair_v = [31020, 31130, 31510, 31530, 31820, 31860, 31890, 31920, 31940, 31950, 34000];
+
+
+            var option = await SayOption("嗨，我是#p1012117#，最迷人、最时尚的造型师。如果你正在寻找最漂亮的发型，那就不用再找了！\r\n#L0##i5150040##t5150040##l\r\n#L1##i5150044##t5150044##l");
+            switch (option)
+            {
+                case 0:
+                    if (await SayYesNo("如果你使用#t5150040#，你的头发可能会变成一个随机的新造型……你还想用 #b#t5150040##k 来做吗？我会帮你做。但别忘了，结果会是随机的！"))
+                    {
+                        var hair = Randomizer.Select((getPlayer().Gender == 0 ? mhair_r : fhair_r).Select(x => x + getPlayer().Hair % 10).ToArray());
+                        if (haveItem(5150040))
+                        {
+                            gainItem(5150040, -1);
+                            setHair(hair);
+                            await SayOK("享受你的新发型吧！");
+                        }
+                        else
+                        {
+                            await SayOK("嗯...看起来你没有#t5150040#...恐怕我不能给你理发。对不起...");
+                        }
+                    }
+                    break;
+                case 1:
+                    var affectHair = (getPlayer().Gender == 0 ? mhair_v : fhair_v).Select(x => x + getPlayer().Hair % 10).ToArray();
+
+                    var hairIdx = await SayStyle("使用#t5150040#，您可以选择发型的造型。挑选最适合您心意的发型", affectHair);
+                    if (haveItem(5150044))
+                    {
+                        gainItem(5150044, -1);
+                        setHair(affectHair[hairIdx]);
+                        await SayOK("享受你的新发型吧！");
+                    }
+                    else
+                    {
+                        await SayOK("嗯...看起来你没有#t5150040#...恐怕我不能给你理发。对不起...");
+                    }
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         // Npc: 1012103 

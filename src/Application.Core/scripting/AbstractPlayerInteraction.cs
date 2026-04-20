@@ -472,6 +472,19 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
+    public bool IsQuestNotStarted(int id)
+    {
+        try
+        {
+            return getQuestStat(id) == QuestStatus.Status.NOT_STARTED;
+        }
+        catch (NullReferenceException e)
+        {
+            Log.Logger.Error(e.ToString());
+            return false;
+        }
+    }
+
     public void setQuestProgress(int id, string progress)
     {
         setQuestProgress(id, 0, progress);
