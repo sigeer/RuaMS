@@ -46,6 +46,9 @@ jobs:
       - name: Build Host
         run: dotnet build "./src/Application.Host/Application.Host.csproj" --no-restore -c Release
 
+      - name: Build Plugin
+        run: dotnet build "./src/Application.Plugin.Script/Application.Plugin.Script.csproj" -c Release -o ./test/ServiceTest/ServiceTest/bin/Debug/net10.0
+
       - name: Test Infrastructure
         run: dotnet test  --filter "FullyQualifiedName~ServiceTest.Infrastructure" --blame-crash --logger "GitHubActions;verbosity=detailed" "./test/ServiceTest/ServiceTest.csproj"
 

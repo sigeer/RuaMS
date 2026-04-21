@@ -90,7 +90,7 @@ namespace Application.Core.Plugins
             }
         }
 
-        public void MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
+        public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -103,7 +103,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                container.Instance?.Action(c, mode, type, selection, inputText);
+                await container.Instance.Action(c, mode, type, selection, inputText);
             }
             catch (Exception e)
             {
@@ -115,7 +115,7 @@ namespace Application.Core.Plugins
             }
         }
 
-        public bool EnterPortal(IChannelClient c, Portal p)
+        public async Task<bool> EnterPortal(IChannelClient c, Portal p)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -128,7 +128,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                return container.Instance?.Enter(c, p)?.Result ?? false;
+                return await container.Instance.Enter(c, p);
             }
             catch (Exception e)
             {
@@ -142,7 +142,7 @@ namespace Application.Core.Plugins
 
 
         }
-        public void ItemScript(IChannelClient c, int npcId, string scriptName)
+        public async Task ItemScript(IChannelClient c, int npcId, string scriptName)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -155,7 +155,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                container.Instance?.ItemScript(c, npcId, scriptName).ConfigureAwait(false).GetAwaiter().GetResult();
+                await container.Instance.ItemScript(c, npcId, scriptName);
             }
             catch (Exception e)
             {
@@ -168,7 +168,7 @@ namespace Application.Core.Plugins
         }
 
 
-        public void MapEnterScript(IChannelClient c, IMap map)
+        public async Task MapEnterScript(IChannelClient c, IMap map)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -181,7 +181,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                container.Instance?.MapEnter(c, map).ConfigureAwait(false).GetAwaiter().GetResult();
+                await container.Instance.MapEnter(c, map);
             }
             catch (Exception e)
             {
@@ -193,7 +193,7 @@ namespace Application.Core.Plugins
             }
         }
 
-        public void MapFirstEnterScript(IChannelClient c, IMap map)
+        public async Task MapFirstEnterScript(IChannelClient c, IMap map)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -206,7 +206,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                container.Instance?.MapFirstEnter(c, map).ConfigureAwait(false).GetAwaiter().GetResult();
+                await container.Instance.MapFirstEnter(c, map);
             }
             catch (Exception e)
             {
@@ -279,7 +279,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                return container.Instance?.RegisterEvents(channel) ?? 0;
+                return container.Instance.RegisterEvents(channel);
             }
             catch (Exception e)
             {

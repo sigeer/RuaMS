@@ -61,7 +61,7 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                     else
                     {
                         // c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, -1);
-                        c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, -1, returnText);
+                        _ = c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, -1, returnText);
                     }
                 }
             }
@@ -99,7 +99,7 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
             else if (c.NPCConversationManager != null)
             {
                 // c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, selection);
-                c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, selection);
+                _ = c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, selection);
             }
         }
     }

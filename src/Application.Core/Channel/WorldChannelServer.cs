@@ -255,6 +255,7 @@ namespace Application.Core.Channel
                 }
                 _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
+                watcher.Dispose();
                 await NodeTickTask.StopAsync();
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
@@ -336,7 +337,6 @@ namespace Application.Core.Channel
                 return false;
             }
 
-            IsRunning = true;
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
             OpcodeConstants.generateOpcodeNames();
@@ -410,7 +410,7 @@ namespace Application.Core.Channel
                 module.RegisterTask(TimerManager);
             }
 
-            return true;
+            return IsRunning = true;
         }
 
         private DateTime _lastLoadTime = DateTime.MinValue;
@@ -427,7 +427,7 @@ namespace Application.Core.Channel
             _lastLoadTime = now;
 
             await Task.Delay(200); // 等待文件释放
-            _logger.LogInformation("加载插件...");
+            _logger.LogInformation("插件更新...");
             await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
         }
 

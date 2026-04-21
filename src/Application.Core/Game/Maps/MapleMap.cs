@@ -2807,7 +2807,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (!chr.hasEntered(Id))
             {
-                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
+                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this).ConfigureAwait(false).GetAwaiter().GetResult();
                 chr.enteredScript(Id);
             }
         }
@@ -2819,7 +2819,7 @@ public class MapleMap : IMap, INamedInstance
                 chr.saveLocation("INTRO");
             }
 
-            chr.getClient().CurrentServer.NodeService.PluginManager.MapEnterScript(chr.getClient(), this);
+            chr.getClient().CurrentServer.NodeService.PluginManager.MapEnterScript(chr.getClient(), this).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
