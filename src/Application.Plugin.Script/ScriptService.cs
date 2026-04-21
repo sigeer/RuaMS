@@ -139,6 +139,12 @@ namespace Application.Plugin.Script
                 Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
+            catch (ConversationDiffMapException)
+            {
+                await talk.SayOK(talk.GetDefault0());
+                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return true;
+            }
             catch (NotImplementedException)
             {
                 c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");

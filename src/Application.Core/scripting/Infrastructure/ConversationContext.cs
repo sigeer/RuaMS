@@ -5,7 +5,7 @@ namespace Application.Core.scripting.Infrastructure
 
     public class ConversationInterruptException() : Exception;
     /// <summary>
-    /// 在A地图与B地图的NPC对话
+    /// 在A地图与B地图的NPC对话（脚本依赖当前所在地图有不同处理）
     /// </summary>
     public class ConversationDiffMapException() : Exception;
     /// <summary>

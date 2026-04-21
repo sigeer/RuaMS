@@ -390,30 +390,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1002004, 1032005 
-        public async Task mTaxi()
-        {
-            await SayNext("你好！这辆出租车只对VIP客户开放。与普通出租车只能带你去不同的城镇不同，我们提供更好的服务，值得VIP级别的待遇。价格有点高，但是……只需10,000金币，我们就会安全地带你去#b蚁穴#k。");
-            var cost = DiscountForNovice(1000);
-            if (await SayYesNo(getJobId() == 0 ? $"我们为新手提供 90% 的特别折扣。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b1,000 金币#k 吗?" : "正常费用适用于所有非初学者。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b10,000 金币#k 吗?"))
-            {
-                if (getMeso() < cost)
-                {
-                    await SayNext("看来你没有足够的金币. 抱歉，没有它你将无法使用它。");
-                }
-                else
-                {
-                    gainMeso(-cost);
-                    warp(105070001);
-                }
-            }
-            else
-            {
-                await SayOK("这个城镇也有很多值得一看的地方。如果你觉得有必要去蚂蚁广场，就来找我们吧。");
-            }
-        }
-
-
         // Npc: 1002006 
         public async Task bookPrize()
         {
@@ -1571,17 +1547,6 @@ namespace Application.Plugin.Script
             {
                 await SayNext("你一定有一些事情要在这里处理。在#m" + returnmap + "#休息一下也不错。看看我，我是如此喜欢这里，结果我最终在这里定居了。哈哈哈，无论如何，当你想回去的时候再来找我说话。");
             }
-        }
-
-
-
-
-
-        // Npc: 1091003 
-        public Task refine_nautillus()
-        {
-            // TODO
-            return Task.CompletedTask;
         }
 
 
