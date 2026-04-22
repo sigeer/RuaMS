@@ -1589,7 +1589,7 @@ namespace Application.Plugin.Script
             if (!isQuestStarted(6410))
             {
                 await SayOK(GetDefault0());
-                dispose();
+                return;
             }
             else
             {
@@ -3917,8 +3917,6 @@ namespace Application.Plugin.Script
                 {
                     warp(261000001, 1);
                 }
-
-                dispose();
             }
         }
 

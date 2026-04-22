@@ -18,6 +18,9 @@ namespace Application.Core.Gameplay.Plugins
         Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null);
         #endregion
 
+        Task<bool> StartQuest(IChannelClient c, server.quest.Quest questObj, int npcId);
+        Task<bool> CompleteQuest(IChannelClient c, server.quest.Quest questObj, int npcId);
+
         Task ItemScript(IChannelClient c, int npcId, string scriptName);
 
         Task MapFirstEnter(IChannelClient c, IMap map);

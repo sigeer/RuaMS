@@ -1678,7 +1678,6 @@ namespace Application.Plugin.Script
                 {
                     mapobj1.resetPQ(1);
                     mapobj2.resetPQ(1);
-                    mapobj2.spawnMonsterOnGroundBelow(9300348, 591, -34);
 
                     playPortalSound();
                     warp(920030000, 2);

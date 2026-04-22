@@ -569,21 +569,21 @@ namespace Application.Plugin.Script
         {
             // TODO
             // 2001002
-            if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
+            var eim = GetEventInstanceTrust();
+            if (eim.getIntProperty("statusStg2") == -1)
             {
                 var rnd = Math.Max(Math.Floor(Random.Shared.NextDouble() * 14), 4);
 
-                GetEventInstanceTrust().setProperty("statusStg2", "" + rnd);
-                GetEventInstanceTrust().setProperty("statusStg2_c", "0");
+                eim.setProperty("statusStg2", "" + rnd);
+                eim.setProperty("statusStg2_c", "0");
             }
 
-            var limit = GetEventInstanceTrust().getIntProperty("statusStg2");
-            var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
+            var limit = eim.getIntProperty("statusStg2");
+            var count = eim.getIntProperty("statusStg2_c");
             if (count >= limit)
             {
                 dropItems();
 
-                var eim = GetEventInstanceTrust();
                 eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
@@ -592,7 +592,7 @@ namespace Application.Plugin.Script
             else
             {
                 count++;
-                GetEventInstanceTrust().setProperty("statusStg2_c", count);
+                eim.setProperty("statusStg2_c", count);
 
                 var nextHashed = (11 * (count)) % 14;
 

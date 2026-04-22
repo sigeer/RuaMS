@@ -52,6 +52,8 @@ public class Quest
     public string Name { get; set; }
     public string? Parent { get; set; }
     public bool IsValid { get; } = true;
+   
+    public int ViewMedalItem { get; }
 
     public Quest(QuestTemplate template)
     {
@@ -63,6 +65,8 @@ public class Quest
         Parent = template.Info.Parent ?? "";
         timeLimit = template.Info.TimeLimit;
         timeLimit2 = template.Info.TimeLimit2;
+
+        ViewMedalItem = template.Info.ViewMedalItem;
         if (template.Info.ViewMedalItem > 0)
             QuestFactory.Instance.AddMedal(id, template.Info.ViewMedalItem);
 
@@ -404,6 +408,17 @@ public class Quest
     public MobRequirement? GetMobRequirement()
     {
         return completeReqs.GetValueOrDefault(QuestRequirementType.MOB) as MobRequirement;
+    }
+
+
+    public string? GetStartScript()
+    {
+        return (startReqs.GetValueOrDefault(QuestRequirementType.SCRIPT) as ScriptRequirement)?.Script;
+    }
+
+    public string? GetEndScript()
+    {
+        return (completeReqs.GetValueOrDefault(QuestRequirementType.SCRIPT) as ScriptRequirement)?.Script;
     }
 
 

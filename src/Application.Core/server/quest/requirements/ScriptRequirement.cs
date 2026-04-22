@@ -26,10 +26,12 @@ namespace server.quest.requirements;
 public class ScriptRequirement : AbstractQuestRequirement
 {
     private bool reqScript;
+    public string? Script { get; }
 
-    public ScriptRequirement(Quest quest, string? data) : base(QuestRequirementType.BUFF)
+    public ScriptRequirement(Quest quest, string? data) : base(QuestRequirementType.SCRIPT)
     {
-        reqScript = true;
+        Script = data;
+        reqScript = !string.IsNullOrEmpty(data);
     }
 
     public override bool check(Player chr, int? npcid)

@@ -90,6 +90,39 @@ namespace Application.Core.Plugins
             }
         }
 
+        public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(PluginManager));
+
+            PluginContainer? container = _currentContainer;
+
+            if (container == null)
+                throw new InvalidOperationException("No plugin loaded");
+
+            using var _ = container.Tracker.EnterRequest();
+            try
+            {
+                if (isStart)
+                {
+                    return await container.Instance.StartQuest(c, questObj, npcId);
+                }
+                else
+                {
+                    return await container.Instance.CompleteQuest(c, questObj, npcId);
+                }
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
+                {
+                    c.OnlinedCharacter.Pink(e.Message);
+                }
+                Log.Logger.Error(e, "Quest script error in: QuestId={QuestId}", questObj.getId());
+                return false;
+            }
+        }
+
         public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
             if (_disposed)

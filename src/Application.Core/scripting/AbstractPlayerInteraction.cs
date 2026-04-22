@@ -328,23 +328,28 @@ public class AbstractPlayerInteraction : IClientMessenger
     {
         int size = Math.Min(itemids.Count, quantity.Count);
 
-        List<ItemInventoryType> addedItems = new();
+        List<ItemQuantity> addedItems = new();
         for (int i = 0; i < size; i++)
         {
-            Item it = new Item(itemids.get(i), 0, (short)quantity.ElementAtOrDefault(i));
-            addedItems.Add(new(it, ItemConstants.getInventoryType(itemids.get(i))));
+            addedItems.Add(new ItemQuantity(itemids.get(i), (short)quantity.ElementAtOrDefault(i)));
         }
 
         return Inventory.checkSpots(c.OnlinedCharacter, addedItems);
     }
 
-    private List<ItemInventoryType> prepareProofInventoryItems(List<ItemQuantity> items)
+    public bool CanHoldAll(IEnumerable<ItemQuantity> items)
     {
-        List<ItemInventoryType> addedItems = new();
+        return Inventory.checkSpots(c.OnlinedCharacter, items);
+    }
+
+
+    private List<TypedItemQuantity> prepareProofInventoryItems(List<ItemQuantity> items)
+    {
+        List<TypedItemQuantity> addedItems = new();
         foreach (var p in items)
         {
             Item it = new Item(p.ItemId, 0, (short)p.Quantity);
-            addedItems.Add(new(it, InventoryType.CANHOLD));
+            addedItems.Add(new((sbyte)InventoryType.CANHOLD, new (p.ItemId, p.Quantity)));
         }
 
         return addedItems;
@@ -394,9 +399,9 @@ public class AbstractPlayerInteraction : IClientMessenger
                         InventoryManipulator.removeById(c, InventoryType.CANHOLD, p.ItemId, p.Quantity, false, false);
                     }
 
-                    List<ItemInventoryType> addItems = prepareProofInventoryItems(toAdd);
+                    List<TypedItemQuantity> addItems = prepareProofInventoryItems(toAdd);
 
-                    bool canHold = Inventory.checkSpots(c.OnlinedCharacter, addItems, true);
+                    bool canHold = Inventory.checkSpots(c.OnlinedCharacter, addItems);
                     if (!canHold)
                     {
                         return false;

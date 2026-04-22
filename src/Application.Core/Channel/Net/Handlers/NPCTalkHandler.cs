@@ -69,7 +69,7 @@ public class NPCTalkHandler : ChannelHandlerBase
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                c.OnlinedCharacter.Pink("Talking to NPC " + npc.getId());
+                c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
             }
 
             if (npc.SourceTemplate.Script != null)

@@ -99,7 +99,6 @@ namespace Application.Plugin.Script
             else
             {
                 await SayOK($"嘿，你好。你已经从其他娜娜那里得到了#t{rewardItem}#了吗？");
-                dispose();
             }
         }
 

@@ -43,18 +43,7 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                 if (c.NPCConversationManager != null)
                 {
                     c.NPCConversationManager.setGetText(returnText);
-                    if (c.NPCConversationManager is QuestActionManager q)
-                    {
-                        if (q.isStart())
-                        {
-                            c.CurrentServer.QuestScriptManager.start(c, action, lastMsg, -1);
-                        }
-                        else
-                        {
-                            c.CurrentServer.QuestScriptManager.end(c, action, lastMsg, -1);
-                        }
-                    }
-                    else if (c.NPCConversationManager is TempConversation temp)
+                    if (c.NPCConversationManager is TempConversation temp)
                     {
                         temp.Handle(action, lastMsg, -1);
                     }
@@ -81,18 +70,8 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
             {
                 selection = p.readByte();
             }
-            if (c.NPCConversationManager is QuestActionManager q)
-            {
-                if (q.isStart())
-                {
-                    c.CurrentServer.QuestScriptManager.start(c, action, lastMsg, selection);
-                }
-                else
-                {
-                    c.CurrentServer.QuestScriptManager.end(c, action, lastMsg, selection);
-                }
-            }
-            else if (c.NPCConversationManager is TempConversation temp)
+
+            if (c.NPCConversationManager is TempConversation temp)
             {
                 temp.Handle(action, lastMsg, selection);
             }

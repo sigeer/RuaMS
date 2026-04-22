@@ -87,7 +87,7 @@ namespace Application.Plugin.Script
                         {
                             if (await SayYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                             {
-                                var quest = Quest.getInstance(questId);
+                                var quest = server.quest.Quest.getInstance(questId);
                                 quest.reset(getPlayer());
                                 warp(enterMap, "h000");
                                 return;

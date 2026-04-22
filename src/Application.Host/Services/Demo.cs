@@ -4,6 +4,7 @@ using Application.Templates.Etc;
 using Application.Templates.Map;
 using Application.Templates.Npc;
 using Application.Templates.Providers;
+using Application.Templates.Quest;
 using Application.Templates.Reactor;
 using Application.Templates.XmlWzReader.Provider;
 using client.inventory;
@@ -284,6 +285,71 @@ namespace Application.Host.Services
                                 }
                             }
                             """);
+        }
+
+        public static void ExportQuest()
+        {
+            var allWzData = ProviderSource.Instance.GetProvider<QuestProvider>()
+                .LoadAll().OfType<QuestTemplate>().Where(x => !string.IsNullOrEmpty(x.Check?.StartDemand?.StartScript) || !string.IsNullOrEmpty(x.Check?.EndDemand?.EndScript))
+                .Select(y => new { QuestId = y.TemplateId, Area = y.Info.Area, Start = y.Check?.StartDemand?.StartScript, End = y.Check?.EndDemand?.EndScript })
+                .GroupBy(x => x.Area).ToDictionary(x => x.Key, x => x.ToList());
+
+            var allExsitedStartScripts = ScriptSource.Instance.GetSubScriptsPath("quest")
+                .ToArray()
+                .ToDictionary(x => Path.GetFileNameWithoutExtension(x), x => GetFunctionBody("start", File.ReadAllText(x), "qm."));
+            var allExsitedEndScripts = ScriptSource.Instance.GetSubScriptsPath("quest")
+                .ToArray()
+                .ToDictionary(x => Path.GetFileNameWithoutExtension(x), x => GetFunctionBody("end", File.ReadAllText(x), "qm."));
+
+            foreach (var area in allWzData)
+            {
+                var sb = new StringBuilder();
+                foreach (var x in area.Value)
+                {
+                    if (!string.IsNullOrEmpty(x.Start))
+                    {
+                        sb.AppendLine($$"""
+                        // Quest: {{x.QuestId}} {{(!IsValidMethodName(x.Start) ? (Environment.NewLine + "[ScriptName(\"" + x.Start + "\")]") : "")}}
+                                public Task {{(!IsValidMethodName(x.Start) ? "s_" + x.Start : x.Start)}}()
+                                {
+                                    // TODO
+                                    {{allExsitedStartScripts?.GetValueOrDefault(x.QuestId.ToString())}}
+                                    return Task.CompletedTask;
+                                }
+                        """);
+                    }
+                    if (!string.IsNullOrEmpty(x.End))
+                    {
+                        sb.AppendLine($$"""
+                        // Quest: {{x.QuestId}} {{(!IsValidMethodName(x.End) ? (Environment.NewLine + "[ScriptName(\"" + x.End + "\")]") : "")}}
+                        public Task {{(!IsValidMethodName(x.End) ? "s_" + x.End : x.End)}}()
+                        {
+                            // TODO
+                            {{allExsitedEndScripts?.GetValueOrDefault(x.QuestId.ToString())}}
+                            return Task.CompletedTask;
+                        }
+                        """);
+                    }
+                }
+
+                File.WriteAllText(
+                            $"A{area.Key}.cs",
+                            $$"""
+                            using Application.Core.Client;
+                            using Application.Core.Game.Maps;
+                            using scripting.map;
+
+                            namespace Application.Plugin.Script.Quest
+                            {
+                                internal partial class QuestScript 
+                                {
+                                    {{sb.ToString()}}
+                                }
+                            }
+                            """);
+            }
+
+
         }
     }
 }

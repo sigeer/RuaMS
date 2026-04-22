@@ -57,6 +57,8 @@ namespace Application.Templates.XmlWzReader.Provider
                                         quest.TimeLimit = questProp.GetIntValue();
                                     else if (propName == "timeLimit2")
                                         quest.TimeLimit2 = questProp.GetIntValue();
+                                    else if (propName == "area")
+                                        quest.Area = questProp.GetIntValue();
                                 }
                                 infoList.Add(quest);
                             }

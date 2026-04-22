@@ -456,6 +456,24 @@ public class Inventory : IEnumerable<Item>
         return free;
     }
 
+    private static bool CheckItemRestricted(IEnumerable<TypedItemQuantity> items)
+    {
+        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+
+        // thanks Shavit for noticing set creation that would be only effective in rare situations
+        foreach (var p in items)
+        {
+            if (ii.isPickupRestricted(p.Item.ItemId) && p.Item.Quantity > 1)
+            {
+                // 固有道具可以叠放？
+                Log.Logger.Debug("ItemId={ItemId} 固有道具、Quantity={Quantity}", p.Item.ItemId, p.Item.Quantity);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static bool checkItemRestricted(List<ItemInventoryType> items)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -487,19 +505,26 @@ public class Inventory : IEnumerable<Item>
     }
 
 
-    public static bool checkSpots(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpots(Player chr, IEnumerable<TypedItemQuantity> items)
     {
         List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
 
-        return checkSpots(chr, items, zeroedList, useProofInv);
+        return checkSpots(chr, items, zeroedList, true);
     }
 
-    static bool checkSpots(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    public static bool checkSpots(Player chr, IEnumerable<ItemQuantity> items)
+    {
+        List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
+
+        return checkSpots(chr, items.Select(x => new TypedItemQuantity((sbyte)ItemConstants.getInventoryType(x.ItemId), x)), zeroedList, false);
+    }
+
+    static bool checkSpots(Player chr, IEnumerable<TypedItemQuantity> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
         // 固有道具检测
-        if (!checkItemRestricted(items))
+        if (!CheckItemRestricted(items))
         {
             return false;
         }
@@ -509,23 +534,22 @@ public class Inventory : IEnumerable<Item>
 
         foreach (var item in items)
         {
-            int itemId = item.Item.getItemId();
 
-            if (rcvItems.TryGetValue(itemId, out var qty))
+            if (rcvItems.TryGetValue(item.Item.ItemId, out var qty))
             {
-                if (!ItemConstants.isEquipment(itemId) && !ItemConstants.isRechargeable(itemId))
+                if (!ItemConstants.isEquipment(item.Item.ItemId) && !ItemConstants.isRechargeable(item.Item.ItemId))
                 {
-                    qty[0] += item.Item.getQuantity();
+                    qty[0] += item.Item.Quantity;
                 }
                 else
                 {
-                    qty.Add(item.Item.getQuantity());
+                    qty.Add(item.Item.Quantity);
                 }
             }
             else
             {
-                rcvItems[itemId] = new List<int>() { item.Item.getQuantity() };
-                rcvTypes[itemId] = item.Type.getType();
+                rcvItems[item.Item.ItemId] = new List<int>() { item.Item.Quantity };
+                rcvTypes[item.Item.ItemId] = item.Type;
             }
         }
 

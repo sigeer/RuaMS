@@ -6,6 +6,7 @@ using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
+using Application.Plugin.Script.Quest;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
@@ -13,6 +14,7 @@ using Application.Utility.Compatible.Atomics;
 using Application.Utility.Exceptions;
 using client.inventory;
 using scripting.Event;
+using scripting.quest;
 using Serilog;
 using server.maps;
 using System.Reflection;
@@ -28,6 +30,7 @@ namespace Application.Plugin.Script
         Dictionary<string, MethodInfo> _mapFirstEnterSource;
         Dictionary<string, MethodInfo> _reactorHitSource;
         Dictionary<string, MethodInfo> _reactorActSource;
+        Dictionary<string, MethodInfo> _questSource;
 
         List<Type> _eventSource;
         public ScriptService()
@@ -41,6 +44,8 @@ namespace Application.Plugin.Script
 
             _reactorHitSource = ExtractMethodsToDictionary(typeof(ReactorHitScript));
             _reactorActSource = ExtractMethodsToDictionary(typeof(ReactorActScript));
+
+            _questSource = ExtractMethodsToDictionary(typeof(QuestScript));
 
             _eventSource = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(x => x.IsAssignableFrom(typeof(EventManager)) && x.IsClass && !x.IsAbstract)
@@ -103,15 +108,21 @@ namespace Application.Plugin.Script
 
         public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
         {
+            if (c.NPCConversationManager != null)
+            {
+                return false;
+            }
+
+            if (c.canClickNPC())
+            {
+                c.OnlinedCharacter.Pink("对话太过频繁");
+                return false;
+            }
+
             if (!_npcSource.TryGetValue(scriptName, out var methodInfo))
             {
                 // 
                 c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
-                return false;
-            }
-
-            if (c.NPCConversationManager != null)
-            {
                 return false;
             }
 
@@ -124,6 +135,7 @@ namespace Application.Plugin.Script
                     throw new ConversationDiffInstanceException();
                 }
 
+                c.setClickedNPC();
                 c.NPCConversationManager = talk;
                 await (Task)methodInfo.Invoke(talk, null)!;
                 return true;
@@ -163,13 +175,95 @@ namespace Application.Plugin.Script
 
         }
 
+        public Task<bool> StartQuest(IChannelClient c, server.quest.Quest questObj, int npcId) => HandleQuestScript(c, questObj, npcId, true);
+        public Task<bool> CompleteQuest(IChannelClient c, server.quest.Quest questObj, int npcId) => HandleQuestScript(c, questObj, npcId, false);
+
+
+        async Task<bool> HandleQuestScript(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStarted)
+        {
+            if (c.NPCConversationManager != null)
+            {
+                return false;
+            }
+
+            if (c.canClickNPC())
+            {
+                c.OnlinedCharacter.Pink("对话太过频繁");
+                return false;
+            }
+
+            var scriptName = isStarted ? questObj.GetStartScript() : questObj.GetEndScript();
+            if (string.IsNullOrEmpty(scriptName))
+            {
+                throw new BusinessResException("客户端wz中包含了startScript/endScript节点，但是服务端没有");
+            }
+
+            if (!_questSource.TryGetValue(scriptName, out var methodInfo))
+            {
+                // 
+                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                return false;
+            }
+
+            if (c.NPCConversationManager != null)
+            {
+                return false;
+            }
+
+
+            var talk = new QuestScript(c, questObj, npcId);
+            try
+            {
+                c.NPCConversationManager = talk;
+                c.setClickedNPC();
+
+                await (Task)methodInfo.Invoke(talk, null)!;
+                return true;
+            }
+            catch (ConversationInterruptException)
+            {
+                // 对话中断
+                return true;
+            }
+            catch (ConversationDiffInstanceException)
+            {
+                await talk.SayOK(talk.GetDefault0());
+                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return true;
+            }
+            catch (ConversationDiffMapException)
+            {
+                await talk.SayOK(talk.GetDefault0());
+                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return true;
+            }
+            catch (NotImplementedException)
+            {
+                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                return false;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                talk.dispose();
+            }
+
+        }
+
         public async Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            if (c.NPCConversationManager is not NpcScript npcTalk)
+            if (c.NPCConversationManager is NpcScript npcTalk)
             {
-                return;
+                await npcTalk.Response(mode, type, selection, inputText);
             }
-            await npcTalk.Response(mode, type, selection, inputText);
+            else if (c.NPCConversationManager is QuestActionManager questTalk)
+            {
+                await questTalk.Response(mode, type, selection, inputText);
+            }
         }
 
         public async Task ItemScript(IChannelClient c, int npcId, string scriptName)

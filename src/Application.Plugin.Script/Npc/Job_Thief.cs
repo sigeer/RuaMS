@@ -13,7 +13,6 @@ namespace Application.Plugin.Script
             {
                 lockUI();
                 warp(1020400, 0);
-                dispose();
             }
             else
             {

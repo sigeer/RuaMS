@@ -18,5 +18,6 @@ namespace Application.Templates.Quest
         public bool AutoPreComplete { get; set; }
         public bool AutoComplete { get; set; }
         public int ViewMedalItem { get; set; }
+        public int Area { get; set; }
     }
 }
