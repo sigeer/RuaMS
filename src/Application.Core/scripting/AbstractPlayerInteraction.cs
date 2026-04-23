@@ -247,6 +247,18 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (em as TEventManager) ?? throw new BusinessException($"Error: {@event} 不是 {typeof(TEventManager).Name}");
     }
 
+    public SoloEventManager GetSoloQuestEventManager(int questId)
+    {
+        var @event = $"q{questId}";
+        var em = getClient().getEventManager(@event);
+        if (em == null)
+        {
+            throw new BusinessNotsupportException($"Event: {@event}");
+        }
+
+        return (em as SoloEventManager) ?? throw new BusinessException($"Error: {@event} 不是 SoloEventManager");
+    }
+
     public AbstractEventInstanceManager? getEventInstance()
     {
         return getPlayer().getEventInstance();
@@ -464,6 +476,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         return isQuestStarted(id);
     }
 
+    /// <summary>
+    /// 进行中
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public bool isQuestStarted(int id)
     {
         try

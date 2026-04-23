@@ -12,6 +12,7 @@ using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
 using Application.Shared.MapObjects;
+using Application.Shared.Quest;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using Google.Protobuf.WellKnownTypes;
@@ -19,6 +20,7 @@ using Humanizer;
 using Microsoft.VisualBasic;
 using scripting.npc;
 using server.life;
+using server.quest;
 using System.Drawing;
 using System.Numerics;
 using tools;
@@ -1220,35 +1222,6 @@ namespace Application.Plugin.Script
         }
 
 
-        /// <summary>
-        /// 异界之门
-        /// </summary>
-        /// <returns></returns>
-        // Npc: 1061009 
-        public async Task crack()
-        {
-            Dictionary<int, int> allowedJob = new()
-            {
-                {1, 105070001 },
-                {2, 100040106 },
-                {3, 105040305 },
-                {4, 107000402 },
-                {5, 105070200 },
-            };
-            var jobStyle = getJob().GetJobNiche();
-            if (isQuestStarted(-jobStyle * 10000 - 3000 - 1) && getMapId() == allowedJob.GetValueOrDefault(jobStyle) && !haveItem(4031059))
-            {
-                // getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.EVENT);
-                var em = GetEventManager<S3rdJob>(nameof(S3rdJob) + jobStyle);
-                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
-            }
-            else
-            {
-                await SayOK(GetDefault0());
-            }
-        }
-
-
         // Npc: 1061010 
         [ScriptName("3jobExit")]
         public async Task s_3jobExit()
@@ -2068,6 +2041,19 @@ namespace Application.Plugin.Script
             }
         }
 
+        // Npc: 1204005 
+        public async Task downTrue()
+        {
+            if (getQuestProgressInt(21733, 9300345) < 1)
+            {
+                await SayOK(GetDefault0());
+                return;
+            }
+
+            await SayNext("啊……那些家伙全都消灭了？哈哈……真不愧是英雄大人！呃，先整理整理再说。");
+            setQuestProgress(21733, 21762, 2);
+            warp(104000004);
+        }
 
         // Npc: 1104002 
         public async Task blackWitch()
@@ -2229,26 +2215,11 @@ namespace Application.Plugin.Script
         {
             await SaySpeech([
                 new SpeechText("我是黑色之翼的人偶师弗朗西斯。你把我安置的好几个人偶都给找出来了……坏了我的好事。虽然我很恼火，不过这次先放你一马。你要是再敢和我作对………我以黑魔法师大人的名义发誓，绝不放过你。", 9),
-                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商里商里。）#k", 3)
+                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商议商议。）#k", 3)
                 ]);
 
             completeQuest(21719);
             warp(105040200, 10);
-        }
-
-        // Npc: 1204005 
-        public async Task downTrue()
-        {
-            if (getQuestProgressInt(21733, 21762) == 2)
-            {
-                await SayOK(GetDefault0());
-                return;
-            }
-
-            setQuestProgress(21733, 21762, 2);
-
-            await SayNext("啊……那些家伙全都消灭了？哈哈……真不愧是英雄大人！呃，先整理整理再说。");
-            warp(104000004);
         }
 
 
@@ -2266,23 +2237,6 @@ namespace Application.Plugin.Script
             mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300348), 12, new Point(npcPos.X + 50, npcPos.Y));
             mapObj.destroyNPC(getNpc());
         }
-
-        // Npc: 1204020 
-        public async Task ShadowWarrier()
-        {
-            await SaySpeech([
-                new SpeechText("我一直在等你……英雄的后裔啊……", 8),
-                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", 2),
-                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", 8),
-                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", 2)
-                ]);
-
-            var mapObj = getMap();
-            var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300351), 12, new Point(npcPos.X + 50, npcPos.Y));
-            mapObj.destroyNPC(getNpc());
-        }
-
 
         // Npc: 1209000 
         public async Task talkHelena()
@@ -2615,6 +2569,78 @@ namespace Application.Plugin.Script
             return SayOK(GetDefault0());
         }
 
+        async Task Job2Enter(Job job, int letter)
+        {
+            var questId = QuestId.Get2ndJobQuest(job);
+            if (haveItem(4031012) || isQuestCompleted(questId))
+            {
+                await SayOK("你真是个英雄！");
+                return;
+            }
+
+            var questProgress = getQuestProgressInt(questId);
+            if (questProgress == 1)
+            {
+                await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。祝你好运。");
+
+                var em = GetSoloQuestEventManager(questId);
+                var r = em.StartInstance(getPlayer());
+                await SayOK(em.HandleCreateInstanceResult(r, c));
+            }
+            else
+            {
+                if (!haveItem(letter))
+                {
+                    await SayOK($"没有#t{4031010}#我是不会让你来冒险的！");
+                    return;
+                }
+
+                await SaySpeech([
+                    $"嗯...这绝对是#b#t{letter}##k...所以你来到这里是为了接受测试，进行{c.CurrentCulture.GetJobName(job)}第二次职业转职。好吧，我来给你解释一下测试。不要太担心，它并不是那么复杂。",
+                    "我会把你送到一个隐藏的地图。你会看到一些平常不会见到的怪物。它们看起来和普通的怪物一样，但态度完全不同。它们既不会提升你的经验等级，也不会给你提供物品。",
+                    "打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。",
+                    ]);
+                if (await SayYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
+                {
+                    var em = GetSoloQuestEventManager(questId);
+                    var r = em.StartInstance(getPlayer());
+                    if (r == CreateInstanceResult.Success)
+                    {
+                        setQuestProgress(questId, 1);
+                        gainItem(letter, -1);
+                    }
+                    else
+                    {
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
+                    }
+                }
+                else
+                {
+                    await SayOK("等你准备好了再来找我，我会带你过去。");
+                }
+            }
+        }
+
+        async Task Job2Exit(Job job)
+        {
+            var questId = QuestId.Get2ndJobQuest(job);
+            var eim = GetEventInstanceTrust();
+            if (haveItem(4031013, 30))
+            {
+                await SayOK("哦哦哦.. 你收集了所有30个#t4031013#！！这应该很困难... 简直不可思议！好吧。你通过了测试，为此，我会奖励你 #b#t4031012##k。拿着它回去吧。");
+                removeAll(4031013);
+                gainItem(4031012);
+
+                eim.clearPQ();
+            }
+            else
+            {
+                await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
+            }
+            eim.exitPlayer(getPlayer());
+            eim.Dispose();
+        }
+
         async Task Job3(int type, string preNpcMap, int preNpc)
         {
             var option = await SayOption("我可以帮你吗？", [
@@ -2624,11 +2650,11 @@ namespace Application.Plugin.Script
             switch (option)
             {
                 case 0:
-                    // 自定义任务、用来记录状态
-                    var questBase = -10000 * type - 3000;
                     var baseJob = JobFactory.GetById(type * 100);
+                    var questId = QuestId.Get3rdJobQuest(baseJob);
                     var baseJobStr = c.CurrentCulture.GetJobName(baseJob);
-                    if (IsQuestNotStarted(questBase - 1))
+
+                    if (IsQuestNotStarted(questId))
                     {
                         if (await SayYesNo($"欢迎。我是#b#p{getNpc()}##k，所有{baseJobStr}的首领。你似乎已经准备好迈出这一步，准备好迎接第三职业转职的挑战。太多的{baseJobStr}来来去去，无法达到第三职业转职的标准。你呢？你准备好接受考验，进行第三职业转职了吗？"))
                         {
@@ -2636,71 +2662,69 @@ namespace Application.Plugin.Script
                                 $"好的。你将在{baseJobStr}的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的力量部分。还记得在{preNpcMap}的#b#p{preNpc}##k吗？去找他，他会告诉你第一部分测试的细节。请完成任务，并从#p{preNpc}#那里得到#b#t4031057##k。",
                                 $"测试智慧的部分只能在你通过了力量测试之后才能开始。#b#t4031057##k 将证明你确实通过了测试。我会提前告诉#b#p{preNpc}##k你要前往那里，所以做好准备。这不会很容易，但我对你有信心。祝你好运。"
                                 ]);
-                            startQuest(questBase - 1);
+                            startQuest(questId);
                         }
                     }
-                    else if (isQuestStarted(questBase - 1))
+                    else if (isQuestStarted(questId))
                     {
-                        if (haveItem(4031057))
+                        var questProgress = getQuestProgressInt(questId);
+                        if (questProgress == 0)
                         {
-                            await SayNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
                             if (haveItem(4031057))
                             {
-                                gainItem(4031057, -1);
-                                completeQuest(questBase - 1);
+                                await SayNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
+                                if (haveItem(4031057))
+                                {
+                                    gainItem(4031057, -1);
+                                    setQuestProgress(questId, 1);
 
-                                await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
-                                startQuest(questBase - 2);
-                                return;
+                                    await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
+                                    return;
+                                }
+                                else
+                                {
+                                    // 原先这里只需要判断进度，并不强制需要物品（力量项链），我这里强制任务道具丢失需要重做
+                                    await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
+                                    return;
+                                }
                             }
                             else
                             {
-                                // 原先这里只需要判断进度，并不强制需要物品（力量项链），我这里强制任务道具丢失需要重做
-                                await SayNext($"东西不见了？找#b#p{preNpc}##k重做");
-                                return;
+                                await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
                             }
-
                         }
-                        else
+                        else if (questProgress == 1)
                         {
-                            await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
-                        }
-                        return;
-                    }
-                    else if (IsQuestNotStarted(questBase - 2))
-                    {
-                        await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
-                        startQuest(questBase - 2);
-                    }
-                    else if (isQuestStarted(questBase - 2))
-                    {
-                        if (haveItem(4031058))
-                        {
-                            await SayNext("做得好，完成了测试的智力部分。你正确地回答了所有问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
                             if (haveItem(4031058))
                             {
-                                gainItem(4031058, -1);
-                                completeQuest(questBase - 2);
+                                await SayNext("做得好，完成了测试的智力部分。你正确地回答了所有问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
+                                if (haveItem(4031058))
+                                {
+                                    gainItem(4031058, -1);
+                                    setQuestProgress(questId, 2);
 
-                                await Apply3rdJobChange();
+                                    await Apply3rdJobChange();
+                                }
+                                else
+                                {
+                                    await SayNext("东西不见了？找#b#p2030006##k重做");
+                                    return;
+                                }
                             }
                             else
                             {
-                                await SayNext("东西不见了？找#b#p2030006##k重做");
-                                return;
+                                await SayNext("去，和#b#p2030006#对话#k，然后给我带来#b#t4031058##。");
                             }
                         }
-                        else
+                        else if (questProgress == 2)
                         {
-                            await SayNext("去，和#b#p2030006#对话#k，然后给我带来#b#t4031058##。");
+                            await Apply3rdJobChange();
                         }
-
                         return;
                     }
-                    else if (isQuestCompleted(questBase - 2))
+                    else
                     {
-                        await Apply3rdJobChange();
-                        return;
+                        await SayOK(GetDefault1());
                     }
                     break;
                 default:
@@ -2725,6 +2749,7 @@ namespace Application.Plugin.Script
             }
 
             changeJobById(nextJob);
+            forceCompleteQuest(QuestId.Get3rdJobQuest(getJob()));
             if (job == Job.CRUSADER)
             {
                 await SaySpeech([
@@ -2735,14 +2760,14 @@ namespace Application.Plugin.Script
             else if (job == Job.WHITEKNIGHT)
             {
                 await SaySpeech([
-                    "你刚刚成为了#b圣骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议白骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使白骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
+                    "你刚刚成为了#b圣骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议圣骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使圣骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
                         "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
                 ]);
             }
             else if (job == Job.DRAGONKNIGHT)
             {
                 await SaySpeech([
-                    $"你刚刚成为了#b龙骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议白骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使白骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
+                    $"你刚刚成为了#b龙骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议龙骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使圣骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
                         "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
                 ]);
             }
@@ -2771,8 +2796,34 @@ namespace Application.Plugin.Script
 
         }
 
+        /// <summary>
+        /// 异界之门
+        /// </summary>
+        /// <returns></returns>
+        // Npc: 1061009 
+        public async Task crack()
+        {
+            Dictionary<int, int> allowedJob = new()
+            {
+                {1, 105070001 },
+                {2, 100040106 },
+                {3, 105040305 },
+                {4, 107000402 },
+                {5, 105070200 },
+            };
+            var jobStyle = getJob().GetJobNiche();
+            var jobId = QuestId.Get3rdJobQuest(getJob());
+            if (isQuestStarted(jobId) && getMapId() == allowedJob.GetValueOrDefault(jobStyle) && !haveItem(4031059))
+            {
 
-
+                var em = GetSoloQuestEventManager(jobId);
+                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+            }
+            else
+            {
+                await SayOK(GetDefault0());
+            }
+        }
 
 
 
@@ -2845,8 +2896,9 @@ namespace Application.Plugin.Script
         ("魔法密林汉斯持有的宝珠是什么颜色?", ["白色", "橙色", "蓝色", "紫色", "绿色"], 2)
     ];
 
-            var questId = -(getJobId() / 100) * 10000 - 3000 - 2;
-            if (isQuestStarted(questId) && !haveItem(4031058))
+            var questId = QuestId.Get3rdJobQuest(getJob());
+            var questProgres = getQuestProgressInt(questId);
+            if (questProgres == 1 && !haveItem(4031058))
             {
                 if (haveItem(4005004, 1))
                 {
@@ -2945,9 +2997,9 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            if (await SayYesNo("你准备好进入玩偶屋地图了吗？"))
+            if (await SayYesNo("你准备好进入玩偶屋了吗？"))
             {
-                var em = GetEventManager<DollHouse>(nameof(DollHouse));
+                var em = GetSoloQuestEventManager(3230);
                 await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
             }
         }
@@ -2973,7 +3025,7 @@ namespace Application.Plugin.Script
 
                 if (await SayYesNo("你准备好进入#b#m922000000##k了吗？"))
                 {
-                    var em = GetEventManager<q3239>(nameof(q3239));
+                    var em = GetSoloQuestEventManager(3239);
                     await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
                 }
             }
@@ -3241,22 +3293,16 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    var em = GetEventManager<SoloEventManager>("3rdJob_mount");
-                    if (em == null)
+                    var em = GetSoloQuestEventManager(6002);
+                    var r = em.StartInstance(getPlayer());
+                    if (r != CreateInstanceResult.Success)
                     {
-                        await SayOK("抱歉，但是三转职业（骑宠）已关闭。");
+                        removeAll(4031507);
+                        removeAll(4031508);
                     }
                     else
                     {
-                        if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
-                        {
-                            removeAll(4031507);
-                            removeAll(4031508);
-                        }
-                        else
-                        {
-                            await SayOK("当前地图上有其他玩家，稍后再来吧。");
-                        }
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                 }
             }
@@ -3596,29 +3642,43 @@ namespace Application.Plugin.Script
         // Npc: 2091009 
         public async Task enterShadow()
         {
-            var inputText = await SayInputText("The entrance of the Sealed Shrine... #b暗号#k!");
-            if (getWarpMap(925040100).countPlayers() > 0)
+            if (isQuestStarted(21747) && getQuestProgressInt(21747, 9300351) == 0)
             {
-                await SayOK("有人已经在前往封印神殿的路上了。");
-                return;
-            }
-            if (getText() == "道可道非常道")
-            {
-                if (isQuestStarted(21747) && getQuestProgressInt(21747, 9300351) == 0)
+                var inputText = await SayInputText("封印神殿的入口... #b暗号#k!");
+                if (inputText == "道可道非常道")
                 {
-                    warp(925040100, 0);
+                    var em = GetSoloQuestEventManager(21747);
+                    var r = em.StartInstance(getPlayer());
+                    if (r != CreateInstanceResult.Success)
+                    {
+                        await SayNext(em.HandleCreateInstanceResult(r, c));
+                    }
                 }
                 else
                 {
-                    Pink("虽然你说的是正确的答案，但一些神秘的力量挡住了进来的路。");
+                    await SayOK("#r错误！");
                 }
-
-                return;
             }
             else
             {
-                await SayOK("#r错误！");
+                await SayOK(GetDefault0());
             }
+        }
+
+        // Npc: 1204020 
+        public async Task ShadowWarrier()
+        {
+            await SaySpeech([
+                new SpeechText("我一直在等你……英雄的后裔啊……", 8),
+                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", 2),
+                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", 8),
+                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", 2)
+                ]);
+
+            var mapObj = getMap();
+            var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
+            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300351), 12, new Point(npcPos.X + 50, npcPos.Y));
+            mapObj.destroyNPC(getNpc());
         }
 
 
@@ -5281,6 +5341,31 @@ namespace Application.Plugin.Script
                 Enumerable.Range(0, 5).Select(i => $"训练中心 {i}")
                 );
             warp(start + option, 0);
+        }
+
+        // Npc: 9270033 
+        public async Task captinsg01()
+        {
+            var eim = getEventInstance();
+            if (!eim.isEventCleared())
+            {
+                if (await SayYesNo("你准备好离开这个地方了吗？"))
+                {
+                    warp(541010110, 0);
+                }
+            }
+            else
+            {
+                if (await SayYesNo("你已经打败了拉塔尼卡船长，干得好！你准备好离开这个地方了吗？"))
+                {
+                    if (!eim.giveEventReward(getPlayer()))
+                    {
+                        await SayOK("请在你的背包中腾出一个空间来接收战利品。");
+                        return;
+                    }
+                    warp(541010110, 0);
+                }
+            }
         }
 
     }

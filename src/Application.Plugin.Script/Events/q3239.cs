@@ -1,8 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Scripting.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script.Events
 {
@@ -10,8 +7,13 @@ namespace Application.Plugin.Script.Events
     {
         public q3239(WorldChannel cserv) : base(cserv, nameof(q3239))
         {
-        }
+            EventTime = 20 * 60;
+            EntryMap = 922000000;
+            ExitMap = 922000009;
 
+            MinMap = 922000000;
+            MaxMap = 922000000;
+        }
 
     }
 }

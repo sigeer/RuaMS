@@ -2,6 +2,7 @@ using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Skill;
@@ -577,8 +578,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("拜托你了，战神...请阻止我。能阻止我的暴走的，只有主人你。我已经再也无法抑制了！请你一定要把暴走的我打倒！"))
             {
-                // TODO
-                var em = GetEventManager<SoloEventManager>("MahaBattle");
+                var em = GetSoloQuestEventManager(21401);
                 var r = em.StartInstance(getPlayer());
 
                 if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
@@ -660,8 +660,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("我们明白，但我们不会丢下我们的小狗离开。这样吧，我们来考验你，看看你是否有资格养一只狼。#r狼的考试#k"))
             {
-                // TODO
-                var em = GetEventManager<SoloEventManager>("Aran_3rdmount");
+                var em = GetSoloQuestEventManager(21613);
                 var r = em.StartInstance(getPlayer());
 
                 if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)

@@ -148,7 +148,7 @@ namespace Application.Core.Plugins
             }
         }
 
-        public async Task<bool> EnterPortal(IChannelClient c, Portal p)
+        public bool EnterPortal(IChannelClient c, Portal p)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -161,7 +161,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                return await container.Instance.Enter(c, p);
+                return container.Instance.Enter(c, p);
             }
             catch (Exception e)
             {

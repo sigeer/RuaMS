@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Shared.Constants.Item;
 using Application.Shared.Models;
 
 namespace Application.Plugin.Script
@@ -21,7 +22,9 @@ namespace Application.Plugin.Script
 
             var category = categories[categoryIdx];
             var selectItemIdx = await SayOption(category.SelectionPrompt,
-                category.Formulas.Select(x => $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"));
+                category.Formulas.Select(x => ItemConstants.isEquipment(x.TargetItemId)
+                ? $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"
+                : $"#t{x.TargetItemId}#"));
 
             if (selectItemIdx < 0 || selectItemIdx >= category.Formulas.Count) return;
 
@@ -563,10 +566,56 @@ namespace Application.Plugin.Script
         }
 
         // Npc: 1091003 
-        public Task refine_nautillus()
+        public async Task refine_nautillus()
         {
-            // TODO
-            return Task.CompletedTask;
+            var categories = new List<RecipeCategory>
+            {
+                new() {
+                    Name = "做一个拳甲",
+                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的拳甲。你想做哪个拳甲？",
+                    AskQuantity = false,
+                    Formulas = [
+                        new(1482001, [new(4000021, 20)], 1000),
+                        new(1482002, [new(4011001, 1), new(4011000, 1), new(4000021, 10), new(4003000, 5)], 2000),
+                        new(1482003, [new(4011000, 2), new(4011001, 1), new(4003000, 10)], 5000),
+                        new(1482004, [new(4011000, 1), new(4011001, 1), new(4000021, 30), new(4003000, 10)], 15000),
+                        new(1482005, [new(4011000, 2), new(4011001, 2), new(4000021, 30), new(4003000, 20)], 30000),
+                        new(1482006, [new(4011000, 1), new(4011001, 1), new(4021000, 2), new(4000021, 50), new(4003000, 20)], 50000),
+                        new(1482007, [new(4000039, 150), new(4011000, 1), new(4011001, 2), new(4000030, 20), new(4000021, 20), new(4003000, 20)], 100000)
+                    ]
+                },
+                new() {
+                    Name = "做一把手铳",
+                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的手铳。你想做哪个手铳？",
+                    AskQuantity = false,
+                    Formulas = [
+                        new(1492001, [new(4011000, 1), new(4003000, 5), new(4003001, 1)], 1000),
+                        new(1492002, [new(4011000, 1), new(4003000, 10), new(4003001, 5), new(4000021, 10)], 2000),
+                        new(1492003, [new(4011000, 2), new(4003000, 10)], 5000),
+                        new(1492004, [new(4011001, 2), new(4000021, 10), new(4003000, 10)], 15000),
+                        new(1492005, [new(4011006, 10), new(4011001, 2), new(4000021, 5), new(4003000, 10)], 30000),
+                        new(1492006, [new(4011004, 1), new(4011001, 2), new(4000021, 10), new(4003000, 20)], 50000),
+                        new(1492007, [new(4011006, 1), new(4011004, 2), new(4011001, 4), new(4000030, 30), new(4003000, 30)], 100000)
+                    ]
+                },
+                new() {
+                    Name = "制作一副手套",
+                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的手套。你想做哪个手套？",
+                    AskQuantity = false,
+                    Formulas = [
+                        new(1082180, [new(4000021, 15), new(4021003, 1)], 1000),
+                        new(1082183, [new(4000021, 35)], 8000),
+                        new(1082186, [new(4011000, 2), new(4000021, 20)], 15000),
+                        new(1082189, [new(4021006, 2), new(4000021, 50), new(4003000, 10)], 25000),
+                        new(1082192, [new(4011000, 3), new(4000021, 60), new(4003000, 15)], 30000),
+                        new(1082195, [new(4000021, 80), new(4011000, 3), new(4011001, 3), new(4003000, 25)], 40000),
+                        new(1082198, [new(4011000, 3), new(4000021, 20), new(4000030, 40), new(4003000, 30)], 50000),
+                        new(1082201, [new(4011007, 1), new(4021008, 1), new(4021007, 1), new(4000030, 50), new(4003000, 50)], 70000)
+                    ]
+                }
+            };
+
+            await PerformRefine("什么？你想自己做武器和手套吗？说真的。。。如果你没有经验，很难自己去做。。。我会帮你的。我当海盗已经20年了，20年来，我为这里的船员制作了各种物品。这对我来说很容易。", categories);
         }
 
         // Npc: 1061000 

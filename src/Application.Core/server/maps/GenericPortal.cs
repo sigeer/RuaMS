@@ -127,7 +127,7 @@ public class GenericPortal : Portal
         {
             try
             {
-                changed = c.CurrentServer.NodeService.PluginManager.EnterPortal(c, this).ConfigureAwait(false).GetAwaiter().GetResult();
+                changed = c.CurrentServer.NodeService.PluginManager.EnterPortal(c, this);
             }
             catch (NullReferenceException npe)
             {

@@ -53,7 +53,7 @@ namespace Application.Plugin.Script
                         await SayNext("这个岛叫做里恩，这就是黑魔法师的诅咒让你沉睡的地方。这是一个被冰雪覆盖的小岛，大部分居民是企鹅。");
                         break;
                     case 2:
-                        await SayNext("我是莉琳，是利恩的氏族成员，我一直在等待你的归来，正如预言所言。我将会是你的向导。");
+                        await SayNext("我是#p1201000#，是里恩一族成员，我一直在等待你的归来，正如预言所言。我将会是你的向导。");
                         break;
                     case 3:
                         await SayNext("我们别浪费时间了，直接去镇上吧。等到了那里我会告诉你详细情况。");

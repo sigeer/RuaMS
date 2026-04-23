@@ -2,6 +2,7 @@ using Application.Resources.Messages;
 using Application.Shared.Languages;
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
+using Application.Templates.Quest;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Humanizer;
@@ -69,6 +70,10 @@ namespace Application.Core.Channel
         public string GetNpcName(int npcId)
         {
             return StringProvider.GetSubProvider(StringCategory.Npc)?.GetRequiredItem<StringNpcTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo;
+        }
+        public string GetQuestName(int npcId)
+        {
+            return StringProvider.GetSubProvider(StringCategory.Quest)?.GetRequiredItem<StringQuestTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo;
         }
 
         /// <summary>

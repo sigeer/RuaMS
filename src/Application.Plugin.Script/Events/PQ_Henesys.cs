@@ -69,7 +69,7 @@ namespace Application.Plugin.Script.Events
         }
 
 
-        public override void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker)
+        public override void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
         {
             if (mob.getId() == MobId.MOON_BUNNY)
             {

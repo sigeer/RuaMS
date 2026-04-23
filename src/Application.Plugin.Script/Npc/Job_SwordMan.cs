@@ -1,5 +1,6 @@
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Skill;
+using Application.Shared.Quest;
 
 namespace Application.Plugin.Script
 {
@@ -60,6 +61,7 @@ namespace Application.Plugin.Script
             }
             else if (getLevel() >= 30 && getJob() == Job.WARRIOR)
             {
+                var questId = QuestId.Get2ndJobQuest(Job.WARRIOR);
                 var jobList = new Job[] { Job.FIGHTER, Job.PAGE, Job.SPEARMAN };
                 if (haveItem(4031012))
                 {
@@ -82,7 +84,7 @@ namespace Application.Plugin.Script
                             if (await SayYesNo($"你确定要转职为{jobStr}吗？一旦选择，就不能再更改了。"))
                             {
                                 gainItem(4031012, -1);
-                                completeQuest(100005);
+                                completeQuest(questId);
                                 changeJobById(job.Id);
 
                                 await SaySpeech([
@@ -100,8 +102,8 @@ namespace Application.Plugin.Script
                 else
                 {
                     await SayNext("现在你可以准备第二次转职测试了。");
-                    if (!isQuestStarted(100003))
-                        startQuest(100003);
+                    if (!isQuestStarted(questId))
+                        startQuest(questId);
 
                     if (await SayYesNo("请把这封信带给#b#p1072000##k，他在#b#m102020300##k附近。"))
                     {
@@ -123,7 +125,8 @@ namespace Application.Plugin.Script
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.WARRIOR))
             {
-                if (isQuestStarted(-13001))
+                var questId = QuestId.Get3rdJobQuest(Job.WARRIOR);
+                if (isQuestStarted(questId))
                 {
                     if (haveItem(4031057))
                     {
@@ -156,57 +159,10 @@ namespace Application.Plugin.Script
 
 
         // Npc: 1072000 
-        public async Task change_swordman()
-        {
-            if (isQuestCompleted(100004))
-            {
-                await SayOK("你真是一个真正的英雄！");
-                return;
-            }
-            else if (isQuestCompleted(100003))
-            {
-                await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你已经通过了测试。祝你好运。");
-                warp(108000300, 0);
-            }
-            else if (isQuestStarted(100003))
-            {
-                await SaySpeech([
-                    "嗯...这绝对是来自#b#t4031008##k的信件...所以你来到这里参加测试，进行战士的第二次转职。好吧，我来给你解释一下测试。不要太担心，它并不那么复杂。",
-                    "我会把你送到一个隐藏的地图。你会看到一些平常不会见到的怪物。它们看起来和普通的怪物一样，但态度完全不同。它们既不会提升你的经验等级，也不会给你提供物品。",
-                    "你将能够在打倒这些怪物时获得一种名为#b#t4031013##k的大理石。这是一种由它们邪恶的心灵制成的特殊大理石。收集30个，然后去找我的一个同事谈谈。这就是你通过考验的方法。",
-                    ], finalNext: true);
-                if (await SayYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验等级会下降...所以你最好做好准备...那么，你现在想去吗？"))
-                {
-                    await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你已经通过了测试。祝你好运。");
-                    warp(108000300, 0);
-                    completeQuest(100003);
-                    startQuest(100004);
-                    gainItem(4031008, -1);
-                }
-            }
-            else
-            {
-                await SayOK("一旦你准备好了，我可以告诉你路线。");
-            }
-        }
+        public Task change_swordman() => Job2Enter(Job.WARRIOR, 4031008);
 
         // Npc: 1072004 
-        public async Task inside_swordman()
-        {
-            if (haveItem(4031013, 30))
-            {
-                await SayOK("哦哦哦.. 你收集了所有30个#t4031013#！！这应该很困难... 简直不可思议！好吧。你通过了测试，为此，我会奖励你 #b#t4031012##k。拿着它回佩里安去吧。");
-                removeAll(4031013);
-                completeQuest(100004);
-                startQuest(100005);
-                gainItem(4031012);
-            }
-            else
-            {
-                await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
-            }
-            warp(102020300, 9);
-        }
+        public Task inside_swordman() => Job2Exit(Job.WARRIOR);
 
         // Npc: 2020008 
         public Task warrior3()

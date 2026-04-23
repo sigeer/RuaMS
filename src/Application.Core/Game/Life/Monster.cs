@@ -486,7 +486,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (getStats().isFriendly())
         {
-            MapModel.EventInstanceManager?.friendlyDamaged(this, from);
+            MapModel.EventInstanceManager?.friendlyDamaged(this, from, trueDamage.Value);
         }
 
         if (from is Player chr)

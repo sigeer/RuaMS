@@ -9,7 +9,7 @@ namespace Application.Core.Gameplay.Plugins
     public interface IScriptService: IAsyncDisposable
     {
         #region Portal
-        Task<bool> Enter(IChannelClient c, Portal p);
+        bool Enter(IChannelClient c, Portal p);
         #endregion
 
 

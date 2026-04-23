@@ -277,9 +277,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         EventManager.OnFriendlyMobKilled(this, mob, killer);
     }
 
-    public virtual void friendlyDamaged(Monster mob, ICombatantObject? attacker)
+    public virtual void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
     {
-        EventManager.OnFriendlyMobDamaged(this, mob, attacker);
+        EventManager.OnFriendlyMobDamaged(this, mob, attacker, damage);
     }
 
     public virtual void friendlyItemDrop(Monster mob)

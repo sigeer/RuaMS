@@ -4,7 +4,7 @@ using scripting.quest;
 namespace Application.Plugin.Script.Quest
 {
     /// <summary>
-    /// 根据 area 拆分 Etc/QuestCategory
+    /// 根据 area 拆分, Etc/QuestCategory
     /// </summary>
     internal partial class QuestScript : QuestActionManager
     {

@@ -57,16 +57,16 @@ namespace Application.Plugin.Script.Quest
             }
         }
         // Quest: 20002 
-        public Task q20002s()
+        public async Task q20002s()
         {
-            // TODO
-
-            return Task.CompletedTask;
+            forceStartQuest();
+            await SayNext("呵呵……做好变强的准备了吗？");
+            await SayNext("骑士团长们也不是一开始就很强的。需要慢慢来。");
+            forceCompleteQuest();
         }
         // Quest: 20008 
         public async Task q20008s()
         {
-            // TODO
             var selection = await SayOption("你准备好执行任务了吗？如果你不能通过这个测试，那么你就不能称自己为真正的骑士。你确定你能做到吗？如果你害怕这样做，告诉我。我不会告诉奈哈特的. \r\n #L0#我稍后再试试这个.#l \r\n #L1#我不怕。我们这样做吧.#l");
             if (selection == 0)
             {
@@ -74,8 +74,9 @@ namespace Application.Plugin.Script.Quest
             }
             else if (selection == 1)
             {
-                await SayOption("我很高兴你没有逃跑，但是。。。你确定你想成为一名训练中的骑士吗？我要问的是，你是否愿意加入一个冒险骑士团，并因此被捆绑在女皇在任何时候？她可能是女皇，但她还是个孩子。你确定你能为她而战吗？我不会让内哈特知道的，所以告诉我你的真实感受。\r\n #L2#如果女皇想要冒险岛世界的和平，那我就不管了.#l \r\n #L3#只要我能成为一名骑士，我会忍受一切 #l");
                 forceStartQuest();
+
+                await SayOption("我很高兴你没有逃跑，但是。。。你确定你想成为一名见习的骑士吗？我要问的是，你是否愿意加入冒险骑士团，因此时刻与女皇紧密相连？她或许是个女皇，但终究还是个孩子。你确定你能为她而战吗？我不会让内哈特知道的，所以告诉我你的真实想法。\r\n #L2#如果女皇想要冒险岛世界的和平，那我什么都愿意。#l \r\n #L3#只要我能成为一名骑士，我会忍受一切 #l");
                 forceCompleteQuest();
             }
         }
@@ -210,26 +211,15 @@ namespace Application.Plugin.Script.Quest
         // Quest: 20015 
         public async Task q20015s()
         {
-            // TODO
             await SayNext("你知道吗？冒险岛世界看起来平和, 但黑暗势力已经渗透了一些地区。 黑魔法师和想复活他的人正在侵略冒险岛世界。");
             await SayNext("当我们的敌人越来越强大时，我们不能只是坐在这里什么都不做。我们自己的恐惧只会回来困扰我们。");
-            if (await SayAcceptDecline("但我不会太担心。 有很多像你一样坚定的人会守护冒险岛世界，如果你有足够的勇气自愿成为骑士团的一员，我知道我可以指望你。 \r\n\r\n#fUI/UIWindow2.img/QuestIcon/4/0# \r\n#i1142065# #t1142065# - 1"))
+            if (await SayAcceptDecline("但我不会太担心。 有很多像你一样坚定的人会守护冒险岛世界，如果你有足够的勇气自愿成为骑士团的一员，我知道我可以指望你。"))
             {
-                if (canHold(1142065, 1))
-                {
-                    gainItem(1142065, 1);
-                    forceCompleteQuest(20015);
-                    forceCompleteQuest(29905);
-
-                    await SaySpeech([
+                forceCompleteQuest(20015);
+                await SaySpeech([
                         "嘻嘻，我就知道你会这么说。但你知道，在你为冒险岛世界奋斗之前，你还有很长的路要走",
-                        "南哈特, 我身边的谋士, 将会帮你成为一名其实. 我期待着你的进步。我指望你了!"
-                        ]);
-                }
-                else
-                {
-                    await SayNext("Please check if your inventory is full or not.");
-                }
+                        "南哈特, 我身边的谋士, 将会帮你成为一名骑士. 我期待着你的进步。我指望你了!"
+                    ]);
             }
         }
         // Quest: 20016 
@@ -318,7 +308,7 @@ namespace Application.Plugin.Script.Quest
         public Task q20104e() => Cygnus1stJob(Job.NIGHTWALKER1);
         // Quest: 20105 
         public Task q20105e() => Cygnus1stJob(Job.THUNDERBREAKER1);
-         async Task Cygnus1stJob(Job nextJob)
+        async Task Cygnus1stJob(Job nextJob)
         {
             Dictionary<Job, ItemQuantity[]> initialItems = new()
             {
@@ -493,48 +483,48 @@ namespace Application.Plugin.Script.Quest
                 await SayOK("#h0#. 为了勇敢地与黑魔法师战斗，从现在起，我将任命你为皇家骑士团的新首席骑士。请明智地运用你的权力和权威来帮助保护冒险岛世界的公民.");
             }
         }
-        // Quest: 20500 
-        public Task q20500s()
-        {
-            // TODO
+        //// Quest: 20500 
+        //public Task q20500s()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 20502 
-        public Task q20502s()
-        {
-            // TODO
+        //    return Task.CompletedTask;
+        //}
+        //// Quest: 20502 
+        //public Task q20502s()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 20502 
-        public Task q20502e()
-        {
-            // TODO
+        //    return Task.CompletedTask;
+        //}
+        //// Quest: 20502 
+        //public Task q20502e()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 20506 
-        public Task q20506e()
-        {
-            // TODO
+        //    return Task.CompletedTask;
+        //}
+        //// Quest: 20506 
+        //public Task q20506e()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 20507 
-        public Task q20507s()
-        {
-            // TODO
+        //    return Task.CompletedTask;
+        //}
+        //// Quest: 20507 
+        //public Task q20507s()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 20509 
-        public Task q20509e()
-        {
-            // TODO
+        //    return Task.CompletedTask;
+        //}
+        //// Quest: 20509 
+        //public Task q20509e()
+        //{
+        //    // TODO
 
-            return Task.CompletedTask;
-        }
+        //    return Task.CompletedTask;
+        //}
         // Quest: 20520 
         public async Task q20520s()
         {

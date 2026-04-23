@@ -11,12 +11,7 @@ namespace Application.Plugin.Script.Quest
             return Task.CompletedTask;
         }
         // Quest: 29505 
-        public Task q29505s()
-        {
-            // TODO
-
-            return Task.CompletedTask;
-        }
+        public Task q29505s() => HandleMedalQuest();
         // Quest: 29505 
         public Task q29505e()
         {
@@ -25,12 +20,7 @@ namespace Application.Plugin.Script.Quest
             return Task.CompletedTask;
         }
         // Quest: 29506 
-        public Task q29506s()
-        {
-            // TODO
-
-            return Task.CompletedTask;
-        }
+        public Task q29506s() => HandleMedalQuest();
         // Quest: 29506 
         public Task q29506e()
         {

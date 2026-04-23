@@ -576,24 +576,20 @@ namespace Application.Plugin.Script
             }
 
             var mapObj = getWarpMap(questMap);
-            if (mapObj.countPlayers() > 0)
+            // 主要mob已击杀
+            if (getQuestProgressInt(21733, 9300345) > 0)
             {
-                warp(104000000);
-                // 如果有人一直在里面挂机？ TODO: 改成单人FB
-                Pink("里面已经有人了");
                 return Task.CompletedTask;
             }
 
+            // 仅对话、未击杀
             if (questProgress == 1)
             {
-                // 清理遗留的mob，npc
-                mapObj.resetPQ(1);
-                mapObj.destroyNPC(1204006);
-
                 mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300345), new Point(125, 0));
                 return Task.CompletedTask;
             }
 
+            // DollMaster
             spawnNpc(1204006, new Point(75, 0), mapObj);
 
             var monsterObj = LifeFactory.Instance.GetMonsterTrust(9300382);
@@ -685,7 +681,6 @@ namespace Application.Plugin.Script
             {
                 return Task.CompletedTask;
             }
-
 
             spawnNpc(1204010, new Point(740, 0), mapObj);
             return Task.CompletedTask;

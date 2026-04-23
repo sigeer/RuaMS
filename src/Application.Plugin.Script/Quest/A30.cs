@@ -1,5 +1,6 @@
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
@@ -423,7 +424,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2245 
         public async Task q2245s()
         {
-            var em = GetEventManager<SoloEventManager>("BalrogQuest");
+            var em = GetSoloQuestEventManager(2245);
             var r = em.StartInstance(getPlayer());
             if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
             {
@@ -463,8 +464,7 @@ namespace Application.Plugin.Script.Quest
 
                 await SayNext("你身上有#b#i4032521##k，很好，让我给你带路。");
 
-                // TODO
-                var em = GetEventManager<PartyQuestEventManager>("RockSpiritVIP");
+                var em = GetSoloQuestEventManager(2291);
                 if (em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
                     await SayOK("嗯...看起来前面的房间现在有点拥挤。请在这儿等一会，好吗？");
@@ -498,7 +498,7 @@ namespace Application.Plugin.Script.Quest
                 case 3:
                     playSound("quest2288/6");
                     await SayOK("你听到了吗?");
-                    break;
+                    break; 
                 case 4:
                     var answer = await SayInputNumber("现在，请告诉我答案。你只有#b一次机会#k，所以请明智地选择。请在聊天窗口输入#b1，2，或者3#k。\r\n", 1, 1, 3);
                     if (answer == 3)

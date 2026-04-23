@@ -1,5 +1,5 @@
 using Application.Shared.Constants.Job;
-using static System.Collections.Specialized.BitVector32;
+using Application.Shared.Quest;
 
 namespace Application.Plugin.Script
 {
@@ -62,6 +62,7 @@ namespace Application.Plugin.Script
             }
             else if (getLevel() >= 30 && getJob() == Job.BOWMAN)
             {
+                var questId = QuestId.Get2ndJobQuest(Job.BOWMAN);
                 if (haveItem(4031012))
                 {
                     await SayNext("哈哈...我知道你会轻松通过那个测试的。我承认，你是一个很棒的弓箭手。我会让你比现在强大得多。不过，在那之前...你需要选择给你的两条路中的一条。这对你来说会是一个艰难的决定，但是...如果有任何问题需要问，请尽管问吧。");
@@ -85,6 +86,7 @@ namespace Application.Plugin.Script
                             if (await SayYesNo("所以你第二次转职想要选择成为" + jobStr + "吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
                             {
                                 gainItem(4031012, -1);
+                                forceCompleteQuest(questId);
                                 if (getJobId() != job)
                                     changeJobById(job);
 
@@ -100,35 +102,36 @@ namespace Application.Plugin.Script
                             break;
                     }
                 }
-                else if (haveItem(4031010))
-                {
-                    await SayOK("去找#b#p1072002##k。");
-                }
                 else
                 {
                     if (await SayYesNo("嗯...自从上次见到你以来，你长大了许多。我再也看不到以前那个软弱的家伙，而是看起来更像一个弓箭手了。那么，你觉得呢？难道你不想变得更加强大吗？通过一个简单的测试，我就可以帮你实现。你想试试吗？"))
                     {
                         await SayNext("做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。拿着我的信先……确保你不要丢了它！");
-                        if (canHold(4031010))
+                        if (!haveItem(4031010))
                         {
-                            if (!haveItem(4031010))
+                            if (canHold(4031010))
+                            {
                                 gainItem(4031010, 1);
-
-                            await SaySpeech([
-                                "做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。拿着我的信先……确保你不要丢了它！",
-                                    "请将这封信交给射手村附近的#b#p1072002##k。她正在代替我担任教练的工作。把信交给她，她会代替我测试你。祝你好运。"],
-                                current: 1);
+                            }
+                            else
+                            {
+                                await SayNext("请在你的背包中腾出一些空间。");
+                                return;
+                            }
                         }
-                        else
+                        if (!isQuestStarted(questId))
                         {
-                            await SayNext("请在你的背包中腾出一些空间。");
+                            startQuest(questId);
                         }
+
+                        await SayNext("请将这封信交给射手村附近的#b#p1072002##k。她正在代替我担任教练的工作。把信交给她，她会代替我测试你。祝你好运。");
                     }
                 }
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.BOWMAN))
             {
-                if (isQuestStarted(-33001))
+                var questId = QuestId.Get3rdJobQuest(Job.BOWMAN);
+                if (isQuestStarted(questId))
                 {
                     if (haveItem(4031057))
                     {
@@ -159,57 +162,10 @@ namespace Application.Plugin.Script
         }
 
         // Npc: 1072002 
-        public async Task change_archer()
-        {
-            if (isQuestCompleted(100001))
-            {
-                await SayOK("你真是一个真正的英雄！");
-                return;
-            }
-            else if (isQuestCompleted(100000))
-            {
-                await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你已经通过了测试。祝你好运。");
-                warp(108000200, 0);
-            }
-            else if (isQuestStarted(100000))
-            {
-                await SaySpeech([
-                    "嗯...这绝对是#b#t4031010##k...所以你来到这里是为了接受测试，进行弓箭手第二次职业转职。好吧，我来给你解释一下测试。不要太担心，它并不是那么复杂。",
-                    "我会把你送到一个隐藏的地图。你会看到一些平常不会见到的怪物。它们看起来和普通的怪物一样，但态度完全不同。它们既不会提升你的经验等级，也不会给你提供物品。",
-                    "你将能够在打倒这些怪物时获得一种名为#b#t4031013##k的大理石。这是一种由它们邪恶的心灵制成的特殊大理石。收集30个，然后去找我的一个同事谈谈。这就是你通过考验的方法。",
-                    ], finalNext: true);
-                if (await SayYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验等级会下降...所以你最好做好准备...那么，你现在想去吗？"))
-                {
-                    await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你已经通过了测试。祝你好运。");
-                    warp(108000100, 0);
-                    completeQuest(100000);
-                    startQuest(100001);
-                    gainItem(4031010, -1);
-                }
-            }
-            else
-            {
-                await SayOK("一旦你准备好了，我可以告诉你路线。");
-            }
-        }
+        public Task change_archer() => Job2Enter(Job.BOWMAN, 4031010);
 
         // Npc: 1072006 
-        public async Task inside_archer()
-        {
-            if (haveItem(4031013, 30))
-            {
-                await SayOK("你是一个真正的英雄！拿着这个，赫丽娜会承认你的。");
-                removeAll(4031013);
-                completeQuest(100001);
-                startQuest(100002);
-                gainItem(4031012);
-            }
-            else
-            {
-                await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
-            }
-            warp(106010000, 9);
-        }
+        public Task inside_archer() => Job2Exit(Job.BOWMAN);
 
         // Npc: 2020010 
         public Task bowman3()

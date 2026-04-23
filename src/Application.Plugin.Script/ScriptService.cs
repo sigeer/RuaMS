@@ -9,11 +9,8 @@ using Application.Plugin.Script.Events;
 using Application.Plugin.Script.Quest;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
-using Application.Shared.Constants.Npc;
-using Application.Utility.Compatible.Atomics;
+using Application.Shared.Quest;
 using Application.Utility.Exceptions;
-using client.inventory;
-using scripting.Event;
 using scripting.quest;
 using Serilog;
 using server.maps;
@@ -94,7 +91,7 @@ namespace Application.Plugin.Script
 
             return dict;
         }
-        public Task<bool> Enter(IChannelClient c, Portal p)
+        public bool Enter(IChannelClient c, Portal p)
         {
             if (!_portalSource.TryGetValue(p.getScriptName()!, out var methodInfo))
             {
@@ -103,7 +100,7 @@ namespace Application.Plugin.Script
             }
 
             var script = new PortalScript(c, p);
-            return (Task<bool>)methodInfo.Invoke(script, null)!;
+            return (bool)methodInfo.Invoke(script, null)!;
         }
 
         public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
@@ -113,7 +110,7 @@ namespace Application.Plugin.Script
                 return false;
             }
 
-            if (c.canClickNPC())
+            if (!c.canClickNPC())
             {
                 c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
@@ -186,7 +183,7 @@ namespace Application.Plugin.Script
                 return false;
             }
 
-            if (c.canClickNPC())
+            if (!c.canClickNPC())
             {
                 c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
@@ -352,14 +349,33 @@ namespace Application.Plugin.Script
                 // 天空之城 - 武陵
                 new PrivateContiMove(channel, "Crane", [200000141, 250000100],[200090300, 200090310], 60),
 
-                new S3rdJob(channel, Job.WARRIOR.GetJobNiche().ToString(), 108010300, 105070001, 108010300, 108010301),
-                new S3rdJob(channel, Job.MAGICIAN.GetJobNiche().ToString(), 108010200, 100040106, 108010200, 108010201),
-                new S3rdJob(channel, Job.BOWMAN.GetJobNiche().ToString(), 108010100, 105040305, 108010100, 108010101),
-                new S3rdJob(channel, Job.THIEF.GetJobNiche().ToString(), 108010400, 107000402, 108010400, 108010401),
-                new S3rdJob(channel, Job.PIRATE.GetJobNiche().ToString(), 108010500, 105070200, 108010500, 108010501),
+                new SoloQuestEventManager(channel, QuestId.Get3rdJobQuest(Job.WARRIOR), 20 * 60, 108010300, 105070001, 108010300, 108010301),
+                new SoloQuestEventManager(channel, QuestId.Get3rdJobQuest(Job.MAGICIAN), 20 * 60, 108010200, 100040106, 108010200, 108010201),
+                new SoloQuestEventManager(channel, QuestId.Get3rdJobQuest(Job.BOWMAN), 20 * 60, 108010100, 105040305, 108010100, 108010101),
+                new SoloQuestEventManager(channel, QuestId.Get3rdJobQuest(Job.THIEF), 20 * 60, 108010400, 107000402, 108010400, 108010401),
+                new SoloQuestEventManager(channel, QuestId.Get3rdJobQuest(Job.PIRATE), 20 * 60, 108010500, 105070200, 108010500, 108010501),
 
-                new DollHouse(channel),
+                new SoloQuestEventManager(channel, QuestId.Get2ndJobQuest(Job.WARRIOR), 20 * 60, 108000300, 102020300, 108000300, 108000300) { MaxLobbys = 3, ExitPortal = 9 },
+                new SoloQuestEventManager(channel, QuestId.Get2ndJobQuest(Job.MAGICIAN), 20 * 60, 108000200, 101020000, 108000200, 108000200) { MaxLobbys = 3, ExitPortal = 9 },
+                new SoloQuestEventManager(channel, QuestId.Get2ndJobQuest(Job.BOWMAN), 20 * 60, 108000100, 106010000, 108000100, 108000100) { MaxLobbys = 3, ExitPortal = 9 },
+                new SoloQuestEventManager(channel, QuestId.Get2ndJobQuest(Job.THIEF), 20 * 60, 108000400, 102040000, 108000400, 108000400) { MaxLobbys = 3, ExitPortal = 9 },
+                new SoloQuestEventManager(channel, 2191, 20 * 60, 108000502, 120000101, 108000502, 108000502) { MaxLobbys = 2 },
+                new SoloQuestEventManager(channel, 2192, 20 * 60, 108000501, 120000101, 108000501, 108000501) { MaxLobbys = 2 },
+                new SoloQuestEventManager(channel, 3230, 10 * 60, 922000010,221024400,922000010,922000010 ),
+                new SoloQuestEventManager(channel, 21301, 10 * 60, 108010700,140020200,108010700,108010700 ){EntryPortal = 1},
+                new q21401(channel),
+                new q21610(channel),
+                new q21613(channel),
+                new q21733(channel),
+                new q21739(channel),
+                new q21747(channel),
+                new q2245(channel),
+                new q2291(channel),
                 new q3239(channel),
+                new q6002(channel),
+                new q6330(channel),
+                new q6370(channel),
+
                 new RockSpirit(channel),
                 new Puppeteer(channel),
                 new MK_PrimeMinister(channel),

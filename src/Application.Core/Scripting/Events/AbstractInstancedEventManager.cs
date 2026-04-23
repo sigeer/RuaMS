@@ -319,7 +319,7 @@ namespace Application.Core.Scripting.Events
 
         public virtual void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
-            chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getReturnMapId() : EntryMap, EntryPortal);
+            chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
         }
 
         public virtual void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
@@ -442,7 +442,7 @@ namespace Application.Core.Scripting.Events
         {
         }
 
-        public virtual void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker)
+        public virtual void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
         {
         }
         public virtual void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
