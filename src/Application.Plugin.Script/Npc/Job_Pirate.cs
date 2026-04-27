@@ -32,19 +32,19 @@ namespace Application.Plugin.Script
         public async Task inside_pirate()
         {
             int currentMapId = getPlayer().getMapId();
-            
+
             if (currentMapId == 108000502 || currentMapId == 108000501)
             {
                 var item = currentMapId == 108000502 ? 4031856 : 4031857;
                 if (!haveItem(item, 15))
                 {
                     var option = await SayOption($"你还没有给我带来15个#b#t{item}##k。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
+                    removeAll(item);
                     warp(120000101, 0);
                 }
                 else
                 {
                     await SayNext($"哇，你给我带来了15个#b#t{item}##k！恭喜你。让我现在把你传送出去。");
-                    removeAll(item);
                     warp(120000101, 0);
                 }
             }
@@ -93,6 +93,7 @@ namespace Application.Plugin.Script
                     await SayOK("再多训练一会儿，直到你达到基本要求，我就可以教你成为一名#r海盗#k的方法。");
                     return;
                 }
+                return;
             }
             else if (getLevel() >= 30 && getJob() == Job.PIRATE)
             {
@@ -167,6 +168,7 @@ namespace Application.Plugin.Script
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                 }
+                return;
 
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.PIRATE))
@@ -209,6 +211,7 @@ namespace Application.Plugin.Script
                     await SayNext("做的不错。我们到外面讨论一下吧！");
                     WarpOut();
                 }
+                return;
             }
 
             await SayOK(GetDefault0());

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<imgdir name="Exclusive.img">
+<imgdir indent="2" media="NONE" name="Exclusive.img">
   <imgdir name="medal">
     <string name="29000" value=""/>
     <string name="29001" value=""/>

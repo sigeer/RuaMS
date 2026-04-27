@@ -22,9 +22,7 @@ namespace Application.Core.Scripting.Events
     {
         protected ConcurrentDictionary<string, AbstractEventInstanceManager> instances = new();
         protected Dictionary<int, bool> openedLobbys = new();
-        public int MaxLobbys { get; set; }
-        public const int DefaultMaxLobbys = 1;
-
+        public int MaxLobbys { get; set; } = 1;
 
         /// <summary>
         /// 预生成的 EventInstanceManager

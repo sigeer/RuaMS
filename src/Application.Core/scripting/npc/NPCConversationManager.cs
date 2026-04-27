@@ -85,7 +85,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
         _talkChannel.Writer.Complete();
         NextLevelContext.Clear();
         c.CurrentServer.NPCScriptManager.dispose(this);
-        getClient().sendPacket(PacketCreator.enableActions());
+        c.sendPacket(PacketCreator.enableActions());
+        c.removeClickedNPC();
     }
 
     public void sendDefault(int checkQuestId = 0)

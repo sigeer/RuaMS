@@ -269,8 +269,8 @@ namespace Application.Core.Channel.Net
         }
         public void closePlayerScriptInteractions()
         {
-            this.removeClickedNPC();
-            NPCConversationManager?.dispose();
+            //this.removeClickedNPC();
+            //NPCConversationManager?.dispose();
         }
 
         private void announceDisableServerMessage()

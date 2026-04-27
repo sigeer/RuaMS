@@ -2591,7 +2591,7 @@ namespace Application.Plugin.Script
             {
                 if (!haveItem(letter))
                 {
-                    await SayOK($"没有#t{4031010}#我是不会让你来冒险的！");
+                    await SayOK($"没有#b#t{letter}##k我是不会让你来冒险的！");
                     return;
                 }
 

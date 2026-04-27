@@ -57,8 +57,8 @@ namespace Application.Plugin.Script
                 else
                 {
                     await SayOK("再多训练一会儿，直到你达到基本要求，我就可以教你成为一名#r弓箭手#k的方法。");
-                    return;
                 }
+                return;
             }
             else if (getLevel() >= 30 && getJob() == Job.BOWMAN)
             {
@@ -127,6 +127,7 @@ namespace Application.Plugin.Script
                         await SayNext("请将这封信交给射手村附近的#b#p1072002##k。她正在代替我担任教练的工作。把信交给她，她会代替我测试你。祝你好运。");
                     }
                 }
+                return;
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.BOWMAN))
             {

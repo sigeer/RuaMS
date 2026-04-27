@@ -93,15 +93,17 @@ namespace Application.Core.Game.Players
 
         public void changeMap(IMap to, Portal? pto)
         {
-            eventChangedMap(to.getId());    // player can be dropped from an event here, hence the new warping target.
+            eventChangedMap(to.getId());
             pto ??= to.getPortal(0)!;
-            changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
+            var warpTo = getWarpMap(to.getId());
+            changeMapInternal(warpTo, pto.getPosition(), PacketCreator.getWarpToMap(warpTo, pto.getId(), this));
         }
 
         public void changeMap(IMap to, Point pos)
         {
             eventChangedMap(to.getId());
-            changeMapInternal(to, pos, PacketCreator.getWarpToMap(to, 0x80, pos, this));
+            var warpTo = getWarpMap(to.getId());
+            changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
         }
 
         private void changeMapInternal(IMap to, Point pos, Packet warpPacket)

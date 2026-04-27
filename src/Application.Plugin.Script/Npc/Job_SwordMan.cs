@@ -58,6 +58,7 @@ namespace Application.Plugin.Script
                     await SayOK("你不满足成为#r战士#k的要求，继续努力吧。");
                     return;
                 }
+                return;
             }
             else if (getLevel() >= 30 && getJob() == Job.WARRIOR)
             {
@@ -122,6 +123,7 @@ namespace Application.Plugin.Script
 
                     }
                 }
+                return;
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.WARRIOR))
             {

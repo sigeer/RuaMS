@@ -62,6 +62,7 @@ namespace Application.Plugin.Script
                     await SayOK("再多训练一会儿，直到你达到基本要求，我就可以教你成为一名#r魔法师#k的方法。");
                     return;
                 }
+                return;
             }
             else if (getLevel() >= 30 && getJob() == Job.THIEF)
             {
@@ -125,6 +126,7 @@ namespace Application.Plugin.Script
 
                     }
                 }
+                return;
             }
             else if (getLevel() >= 70 && getJob().Rank == 2 && getJob().IsSameJobGroup(Job.THIEF))
             {

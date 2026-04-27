@@ -20,7 +20,7 @@ namespace Application.Plugin.Script.Events
             ExitMap = exitMap;
 
             MinMap = minMap;
-            MaxMap = MaxMap;
+            MaxMap = maxMap;
         }
     }
 }

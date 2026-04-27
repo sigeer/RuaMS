@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<imgdir name="PQuest.img">
+<imgdir indent="2" media="NONE" name="PQuest.img">
   <imgdir name="1200">
-    <null name="Moon Bunny&apos;s Rice Cake"/>
+    <null name="Moon Bunny&amp;apos;s Rice Cake"/>
     <string name="mark" value="Map/MapHelper/mark/MoonRabbitParty"/>
     <imgdir name="rank">
       <imgdir name="S">
@@ -36,8 +36,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -47,8 +46,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -58,8 +56,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="40"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -69,8 +66,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -87,8 +83,7 @@
           <int name="CR" value="90"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="A">
         <imgdir name="less">
@@ -99,8 +94,7 @@
           <int name="CR" value="70"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="B">
         <imgdir name="less">
@@ -110,8 +104,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -121,8 +114,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -132,8 +124,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -143,8 +134,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -161,8 +151,7 @@
           <int name="CR" value="90"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="A">
         <imgdir name="less">
@@ -173,8 +162,7 @@
           <int name="CR" value="70"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="B">
         <imgdir name="less">
@@ -184,8 +172,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -195,8 +182,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -206,8 +192,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -217,8 +202,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -258,8 +242,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -269,8 +252,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -280,8 +262,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -291,8 +272,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -301,8 +281,7 @@
     <string name="mark" value="Map/MapHelper/mark/DevijonParty"/>
     <imgdir name="rank">
       <imgdir name="S">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="100"/>
           <int name="CR" value="80"/>
@@ -312,8 +291,7 @@
         </imgdir>
       </imgdir>
       <imgdir name="A">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="50"/>
           <int name="CR" value="70"/>
@@ -323,8 +301,7 @@
         </imgdir>
       </imgdir>
       <imgdir name="B">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
@@ -334,34 +311,28 @@
         </imgdir>
       </imgdir>
       <imgdir name="C">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -378,8 +349,7 @@
           <int name="CR" value="80"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="A">
         <imgdir name="less">
@@ -390,8 +360,7 @@
           <int name="CR" value="70"/>
           <int name="have" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="B">
         <imgdir name="less">
@@ -401,8 +370,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -412,8 +380,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -423,8 +390,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -434,8 +400,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -452,8 +417,7 @@
           <int name="CR" value="80"/>
           <int name="have1" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="A">
         <imgdir name="less">
@@ -464,8 +428,7 @@
           <int name="CR" value="70"/>
           <int name="have0" value="1"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="B">
         <imgdir name="less">
@@ -475,8 +438,7 @@
           <int name="try" value="30"/>
           <int name="CR" value="50"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
         <imgdir name="less">
@@ -486,8 +448,7 @@
           <int name="try" value="10"/>
           <int name="CR" value="30"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
         <imgdir name="less">
@@ -497,8 +458,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
         <imgdir name="less">
@@ -508,8 +468,7 @@
           <int name="try" value="1"/>
           <int name="CR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -518,8 +477,7 @@
     <string name="mark" value="Map/MapHelper/mark/AriantMatch"/>
     <imgdir name="rank">
       <imgdir name="S">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="100"/>
           <int name="VR" value="40"/>
@@ -529,8 +487,7 @@
         </imgdir>
       </imgdir>
       <imgdir name="A">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="70"/>
           <int name="VR" value="30"/>
@@ -540,44 +497,36 @@
         </imgdir>
       </imgdir>
       <imgdir name="B">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="50"/>
           <int name="VR" value="25"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="10"/>
           <int name="VR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="10"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -586,8 +535,7 @@
     <string name="mark" value="Map/MapHelper/mark/Carnival"/>
     <imgdir name="rank">
       <imgdir name="S">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="200"/>
           <int name="VR" value="70"/>
@@ -597,8 +545,7 @@
         </imgdir>
       </imgdir>
       <imgdir name="A">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="100"/>
           <int name="VR" value="60"/>
@@ -608,44 +555,36 @@
         </imgdir>
       </imgdir>
       <imgdir name="B">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="50"/>
           <int name="VR" value="40"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="10"/>
           <int name="VR" value="40"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
@@ -654,8 +593,7 @@
     <string name="mark" value="Map/MapHelper/mark/Carnival"/>
     <imgdir name="rank">
       <imgdir name="S">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="200"/>
           <int name="VR" value="70"/>
@@ -665,8 +603,7 @@
         </imgdir>
       </imgdir>
       <imgdir name="A">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="100"/>
           <int name="VR" value="60"/>
@@ -676,44 +613,36 @@
         </imgdir>
       </imgdir>
       <imgdir name="B">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="50"/>
           <int name="VR" value="40"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="C">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="10"/>
           <int name="VR" value="40"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="D">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="20"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
       <imgdir name="F">
-        <imgdir name="less">
-        </imgdir>
+        <imgdir name="less"/>
         <imgdir name="more">
           <int name="try" value="1"/>
           <int name="VR" value="0"/>
         </imgdir>
-        <imgdir name="equal">
-        </imgdir>
+        <imgdir name="equal"/>
       </imgdir>
     </imgdir>
   </imgdir>
