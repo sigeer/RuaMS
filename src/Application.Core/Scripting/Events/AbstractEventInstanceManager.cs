@@ -20,7 +20,7 @@ namespace Application.Core.Scripting.Events;
 public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
-    private Dictionary<int, Player> chars = new();
+    protected Dictionary<int, Player> chars = new();
     /// <summary>
     /// 每关 已领取奖励的玩家
     /// </summary>
@@ -203,7 +203,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// 退出副本
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void exitPlayer(Player chr)
+    public void exitPlayer(Player chr)
     {
         if (chr == null || !chr.isLoggedin())
         {
@@ -228,12 +228,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     }
 
 
-    public virtual void changedMap(Player chr, int mapId)
+    public void changedMap(Player chr, int mapId)
     {
         EventManager.OnPlayerMapChanging(this, chr, mapId);
     }
 
-    public virtual void afterChangedMap(Player chr, int mapId)
+    public void afterChangedMap(Player chr, int mapId)
     {
         EventManager.OnPlayerMapChanged(this, chr, mapId);
     }
@@ -272,32 +272,32 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public virtual void friendlyKilled(Monster mob, ICombatantObject? killer)
+    public void friendlyKilled(Monster mob, ICombatantObject? killer)
     {
         EventManager.OnFriendlyMobKilled(this, mob, killer);
     }
 
-    public virtual void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
+    public void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
     {
         EventManager.OnFriendlyMobDamaged(this, mob, attacker, damage);
     }
 
-    public virtual void friendlyItemDrop(Monster mob)
+    public void friendlyItemDrop(Monster mob)
     {
         EventManager.OnFriendlyMobDrop(this, mob);
     }
 
-    public virtual void playerKilled(Player chr)
+    public void playerKilled(Player chr)
     {
         EventManager.OnPlayerDied(this, chr);
     }
 
-    public virtual void reviveMonster(Monster mob)
+    public void reviveMonster(Monster mob)
     {
         EventManager.OnMobRevive(this, mob);
     }
 
-    public virtual bool revivePlayer(Player player)
+    public bool revivePlayer(Player player)
     {
         return EventManager.OnPlayerRevive(this, player);
     }
@@ -312,16 +312,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public virtual void monsterKilled(Player chr, Monster mob)
+    public void monsterKilled(Player chr, Monster mob)
     {
         try
         {
             //int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
 
-            //if (inc != 0)
-            //{
-            //    OnMonsterValueChanged(chr, mob, inc);
-            //}
+            OnMonsterValueChanged(chr, mob, 1);
         }
         catch (Exception ex)
         {
@@ -329,22 +326,22 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    protected virtual void OnMonsterValueChanged(Player chr, Monster mob, int val)
+    protected void OnMonsterValueChanged(Player chr, Monster mob, int val)
     {
         killCount[chr] = killCount.GetValueOrDefault(chr) + val;
     }
 
-    public virtual void leftParty(Player chr)
+    public void leftParty(Player chr)
     {
         EventManager.OnPlayerLeftParty(this, chr);
     }
 
-    public virtual void disbandParty()
+    public void disbandParty()
     {
         EventManager.OnPartyDisband(this);
     }
 
-    public virtual void clearPQ()
+    public void clearPQ()
     {
         EventManager.ClearPQ(this);
     }
@@ -353,7 +350,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// playerExit
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void removePlayer(Player chr)
+    public void removePlayer(Player chr)
     {
         EventManager.OnPlayerExit(this, chr);
     }
@@ -533,7 +530,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         //    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.Name);
         //}
         disposed = true;
-
+        stopEventTimer();
 
         foreach (Player chr in chars.Values)
         {

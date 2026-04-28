@@ -139,7 +139,7 @@ namespace Application.Plugin.Script
         // Npc: 9000020 
         public async Task world_trip()
         {
-            string travelAgency = "北伐旅游";
+            string travelAgency = "世界旅游";
             int? fromMapID = null;
             int currentMapID = getPlayer().getMapId();
             int talkIndex = 0;

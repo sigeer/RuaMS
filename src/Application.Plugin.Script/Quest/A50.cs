@@ -1715,7 +1715,7 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            var after = evolvePet((byte)petSlot);
+            var after = evolvePet(petSlot);
             if (after != null)
             {
                 gainItem(5380000, -1);
@@ -1766,7 +1766,7 @@ namespace Application.Plugin.Script.Quest
                 }
                 //unequipPet(getClient());
 
-                var after = evolvePet((byte)petSlot);
+                var after = evolvePet(petSlot);
                 if (after != null)
                 {
                     gainItem(5380000, -1);
@@ -1797,9 +1797,9 @@ namespace Application.Plugin.Script.Quest
                 await SayNext("好的，我们开始吧...！ #rHYAHH!#k");
             }
 
-            var petidx = -1;
+            sbyte petidx = -1;
             var id = -1;
-            for (var i = 0; i < 3; i++)
+            for (sbyte i = 0; i < 3; i++)
             {
                 var pet = getPlayer().getPet(i);
                 if (pet != null)
@@ -1824,7 +1824,7 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            var after = evolvePet((byte)petidx);
+            var after = evolvePet(petidx);
             if (after != null)
             {
                 gainMeso(-10000);

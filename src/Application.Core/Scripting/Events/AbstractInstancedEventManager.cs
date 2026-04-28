@@ -295,6 +295,16 @@ namespace Application.Core.Scripting.Events
             return [];
         }
 
+        public string GetRequirementDescription(IChannelClient client)
+        {
+            var countRange = MinCount == MaxCount ? MinCount.ToString() : MinCount + " ~ " + MaxCount;
+            var levelRange = MinLevel == MaxLevel ? MinLevel.ToString() : MinLevel + " ~ " + MaxLevel;
+            return client.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_Requirement),
+                countRange,
+                levelRange,
+                (EventTime / 60).ToString());
+        }
+
         /// <summary>
         /// 结束FB
         /// </summary>

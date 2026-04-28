@@ -2355,7 +2355,7 @@ namespace Application.Plugin.Script
         {
             // TODO
             // 2516000
-            mapMessage(5, "As Lord Pirate dies, Wu Yang is released!");
+            Pink("老海盗已经被打败, 无恙被释放了！");
             spawnNpc(2094001);
 
             return Task.CompletedTask;
@@ -2363,84 +2363,21 @@ namespace Application.Plugin.Script
 
 
         // Reactor: 2519000 
-        public Task davyScript0()
-        {
-            // TODO
-            // 2519000
-            var denyWidth = 320;
-            var denyHeight = 150;
-            var denyPos = getReactor().getPosition();
-            var denyArea = new Rectangle(denyPos.X - denyWidth / 2, denyPos.Y - denyHeight / 2, denyWidth, denyHeight);
-
-            getReactor().getMap().setAllowSpawnPointInBox(false, denyArea);
-
-            var map = getReactor().getMap();
-            if (map.getReactorByName("sMob2")?.getState() >= 1
-                && map.getReactorByName("sMob3")?.getState() >= 1
-                && map.getReactorByName("sMob4")?.getState() >= 1
-                && map.countMonsters() == 0)
-            {
-                GetEventInstanceTrust().showClearEffect(map.getId());
-            }
-
-            return Task.CompletedTask;
-        }
-
+        public Task davyScript0() => DavyScript();
 
         // Reactor: 2519001 
-        public Task davyScript1()
-        {
-            // TODO
-            // 2519001
-            var denyWidth = 320;
-            var denyHeight = 150;
-            var denyPos = getReactor().getPosition();
-            var denyArea = new Rectangle(denyPos.X - denyWidth / 2, denyPos.Y - denyHeight / 2, denyWidth, denyHeight);
-
-            getReactor().getMap().setAllowSpawnPointInBox(false, denyArea);
-
-            var map = getReactor().getMap();
-            if (map.getReactorByName("sMob1")?.getState() >= 1
-                && map.getReactorByName("sMob3")?.getState() >= 1
-                && map.getReactorByName("sMob4")?.getState() >= 1
-                && map.countMonsters() == 0)
-            {
-                GetEventInstanceTrust().showClearEffect(map.getId());
-            }
-
-            return Task.CompletedTask;
-        }
-
+        public Task davyScript1() => DavyScript();
 
         // Reactor: 2519002 
-        public Task davyScript2()
-        {
-            // TODO
-            // 2519002
-            var denyWidth = 320;
-            var denyHeight = 150;
-            var denyPos = getReactor().getPosition();
-            var denyArea = new Rectangle(denyPos.X - denyWidth / 2, denyPos.Y - denyHeight / 2, denyWidth, denyHeight);
-
-            getReactor().getMap().setAllowSpawnPointInBox(false, denyArea);
-
-            var map = getReactor().getMap();
-            if (map.getReactorByName("sMob1")?.getState() >= 1
-                && map.getReactorByName("sMob2")?.getState() >= 1
-                && map.getReactorByName("sMob4")?.getState() >= 1 && map.countMonsters() == 0)
-            {
-                GetEventInstanceTrust().showClearEffect(map.getId());
-            }
-
-            return Task.CompletedTask;
-        }
+        public Task davyScript2() => DavyScript();
 
 
         // Reactor: 2519003 
-        public Task davyScript3()
+        public Task davyScript3() => DavyScript();
+
+        // Map 925100400
+        Task DavyScript()
         {
-            // TODO
-            // 2519003
             var denyWidth = 320;
             var denyHeight = 150;
             var denyPos = getReactor().getPosition();
@@ -2449,9 +2386,7 @@ namespace Application.Plugin.Script
             var map = getReactor().getMap();
             map.setAllowSpawnPointInBox(false, denyArea);
 
-            if (map.getReactorByName("sMob1")?.getState() >= 1
-                && map.getReactorByName("sMob2")?.getState() >= 1
-                && map.getReactorByName("sMob3")?.getState() >= 1
+            if (map.GetRequiredMapObjects<Reactor>(Shared.MapObjects.MapObjectType.REACTOR, r => r.getName().StartsWith("sMob") && r.getState() < 1).Count == 0
                 && map.countMonsters() == 0)
             {
                 GetEventInstanceTrust().showClearEffect(map.getId());

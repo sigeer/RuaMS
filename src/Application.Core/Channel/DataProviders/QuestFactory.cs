@@ -88,21 +88,6 @@ namespace Application.Core.Channel.DataProviders
             quests.Clear();
         }
 
-        public List<Quest> getMatchedQuests(string search)
-        {
-            List<Quest> ret = new();
-
-            foreach (Quest mq in quests.Values)
-            {
-                if (mq.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || (mq.Parent != null && mq.Parent.Contains(search, StringComparison.OrdinalIgnoreCase)))
-                {
-                    ret.Add(mq);
-                }
-            }
-
-            return ret;
-        }
-
         private HashSet<short> exploitableQuests = new() { 2338, 3637, 3714, 21752 };
         public bool isExploitableQuest(short questid)
         {

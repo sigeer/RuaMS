@@ -71,9 +71,9 @@ namespace Application.Core.Channel
         {
             return StringProvider.GetSubProvider(StringCategory.Npc)?.GetRequiredItem<StringNpcTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo;
         }
-        public string GetQuestName(int npcId)
+        public string GetQuestName(int questId)
         {
-            return StringProvider.GetSubProvider(StringCategory.Quest)?.GetRequiredItem<StringQuestTemplate>(npcId)?.Name ?? StringConstants.WZ_MissingNo;
+            return StringProvider.GetSubProvider(StringCategory.Quest)?.GetRequiredItem<StringQuestTemplate>(questId)?.Name ?? StringConstants.WZ_MissingNo;
         }
 
         /// <summary>

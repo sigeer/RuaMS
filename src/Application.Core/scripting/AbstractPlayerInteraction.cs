@@ -662,7 +662,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public Item? evolvePet(byte slot)
+    public Item? evolvePet(sbyte slot)
     {
         var target = getPlayer().getPet(slot);
         if (target != null)
@@ -1086,12 +1086,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         {
             return -1;
         }
-    }
-
-    public void endExpedition(Expedition exped)
-    {
-        exped.dispose(true);
-        exped.removeChannelExpedition(getPlayer().getClient().getChannelServer());
     }
 
     public Expedition? getExpedition(ExpeditionType type)

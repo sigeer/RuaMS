@@ -49,8 +49,6 @@ public class Quest
     private bool autoStart;
     private bool autoPreComplete, autoComplete;
     private bool repeatable = false;
-    public string Name { get; set; }
-    public string? Parent { get; set; }
     public bool IsValid { get; } = true;
    
     public int ViewMedalItem { get; }
@@ -61,8 +59,7 @@ public class Quest
         autoComplete = template.Info.AutoComplete;
         autoStart = template.Info.AutoStart;
         autoPreComplete = template.Info.AutoPreComplete;
-        Name = template.Info.Name;
-        Parent = template.Info.Parent ?? "";
+
         timeLimit = template.Info.TimeLimit;
         timeLimit2 = template.Info.TimeLimit2;
 

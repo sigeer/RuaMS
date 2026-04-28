@@ -14,6 +14,7 @@ using Application.Shared.GameProps;
 using Application.Shared.MapObjects;
 using Application.Shared.Quest;
 using Application.Utility;
+using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Google.Protobuf.WellKnownTypes;
 using Humanizer;
@@ -2728,6 +2729,23 @@ namespace Application.Plugin.Script
                     }
                     break;
                 default:
+                    if (getPlayer().getLevel() >= 50)
+                    {
+                        await SayOK("长老会授予你#b特许#k，让你成为#r反击扎昆的团队的一部分#k。祝你前程似锦。");
+                        if (!(isQuestStarted(100200) || isQuestCompleted(100200)))
+                        {
+                            startQuest(100200);
+                        }
+
+                        if (!isQuestCompleted(100201))
+                        {
+                            completeQuest(100201);
+                        }
+                    }
+                    else
+                    {
+                        await SayOK("你太弱了，无法成为#rcounteroffensive团队对抗扎昆#k的一部分。至少达到#b50级#k，然后再和我说话。");
+                    }
                     break;
             }
         }

@@ -313,34 +313,39 @@ public class Expedition : IClientMessenger
         return false;
     }
 
-    //public void ban(CharacterIdNamePair chr)
-    //{
-    //    int cid = chr.Id;
-    //    if (!banned.Contains(cid))
-    //    {
-    //        banned.Add(cid);
-    //        members.Remove(cid);
+    public void ban(CharacterIdNamePair chr)
+    {
+        int cid = chr.Id;
+        if (!banned.Contains(cid))
+        {
+            banned.Add(cid);
+            members.Remove(cid);
 
-    //        if (!silent)
-    //        {
-    //            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
-    //        }
+            if (!silent)
+            {
+                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
+            }
 
-    //        var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
-    //        if (player != null && player.isLoggedinWorld())
-    //        {
-    //            player.sendPacket(PacketCreator.removeClock());
-    //            if (!silent)
-    //            {
-    //                player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
-    //            }
-    //            if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
-    //            {
-    //                player.changeMap(MapId.ARPQ_LOBBY);
-    //            }
-    //        }
-    //    }
-    //}
+
+            var player = ChannelServer.getPlayerStorage().getCharacterById(cid);
+            if (player != null && player.isLoggedinWorld())
+            {
+                player.sendPacket(PacketCreator.removeClock());
+                if (!silent)
+                {
+                    player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
+                }
+                if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
+                {
+                    player.changeMap(MapId.ARPQ_LOBBY);
+                }
+            }
+            else
+            {
+                // 等待期间离开频道（下线，前往商城）视作退出
+            }
+        }
+    }
 
     public void monsterKilled(Player chr, Monster mob)
     {

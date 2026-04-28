@@ -338,6 +338,8 @@ namespace Application.Plugin.Script
                 new PQ_Ludi(channel),
                 new PQ_WuGong(channel),
                 new PQ_CPQ1(channel),
+                new PQ_Zakum(channel),
+                new Battle_Zakum(channel),
 
                 new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
                 // 天空之城 - 圣地
@@ -363,6 +365,9 @@ namespace Application.Plugin.Script
                 new SoloQuestEventManager(channel, 2192, 20 * 60, 108000501, 120000101, 108000501, 108000501) { MaxLobbys = 2 },
                 new SoloQuestEventManager(channel, 3230, 10 * 60, 922000010,221024400,922000010,922000010 ),
                 new SoloQuestEventManager(channel, 21301, 10 * 60, 108010700,140020200,108010700,108010700 ){EntryPortal = 1},
+
+                new SoloQuestEventManager(channel, 6108, 30 * 60, 910500000,105090200,910500000,910500000 ){EntryPortal = 1},
+
                 new q21401(channel),
                 new q21610(channel),
                 new q21613(channel),

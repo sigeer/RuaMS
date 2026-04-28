@@ -1,4 +1,7 @@
 using Application.Shared.Events;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Application.Plugin.Script
 {
@@ -78,7 +81,7 @@ namespace Application.Plugin.Script
                         }
                         else
                         {
-                            
+
                             if (playerAdd == 0)
                             {
                                 warp(980010000 + (option + 1) * 100, 0);
@@ -152,93 +155,5 @@ namespace Application.Plugin.Script
             // TODO
             return Task.CompletedTask;
         }
-
-
-        // Npc: 2103000 
-        public Task ariant_oasis()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-        // Npc: 2103001 
-        public Task secret_wall()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103002 
-        public Task ariant_ring()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103003 
-        public Task ariant_house1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103004 
-        public Task ariant_house2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103005 
-        public Task ariant_house3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103006 
-        public Task ariant_house4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103009 
-        public Task ariant_gold1()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103010 
-        public Task ariant_gold2()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103011 
-        public Task ariant_gold3()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 2103012 
-        public Task ariant_gold4()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
     }
 }

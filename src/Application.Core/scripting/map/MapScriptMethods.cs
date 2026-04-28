@@ -135,7 +135,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
         c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender()));
     }
 
-    public void explorerQuest(short questid, string questName)
+    public void explorerQuest(short questid)
     {
         Quest quest = Quest.getInstance(questid);
         if (isQuestCompleted(questid))
@@ -155,6 +155,9 @@ public class MapScriptMethods : AbstractPlayerInteraction
         {
             return;
         }
+
+        var questName = c.CurrentCulture.GetQuestName(questid);
+
         string status = qs.getMedalProgress().ToString();
         string infoex = qs.getInfoEx(0);
 

@@ -213,35 +213,35 @@ namespace Application.Plugin.Script
             // TODO
             if (getPlayer().getMapId() == 110000000 || (getPlayer().getMapId() >= 100000000 && getPlayer().getMapId() < 105040300))
             {
-                explorerQuest(29005, "新手冒险家");//Beginner Explorer
+                explorerQuest(29005);//Beginner Explorer
             }
             else if (getPlayer().getMapId() >= 105040300 && getPlayer().getMapId() <= 105090900)
             {
-                explorerQuest(29014, "林中之城探险家");//Sleepywood Explorer
+                explorerQuest(29014);//Sleepywood Explorer
             }
             else if (getPlayer().getMapId() >= 200000000 && getPlayer().getMapId() <= 211041800)
             {
-                explorerQuest(29006, "冰峰雪域山脉探险家");//El Nath Mts. Explorer
+                explorerQuest(29006);//El Nath Mts. Explorer
             }
             else if (getPlayer().getMapId() >= 220000000 && getPlayer().getMapId() <= 222020000)
             {
-                explorerQuest(29007, "时间静止之湖探险家");//Ludus Lake Explorer
+                explorerQuest(29007);//Ludus Lake Explorer
             }
             else if (getPlayer().getMapId() >= 230000000 && getPlayer().getMapId() <= 230040401)
             {
-                explorerQuest(29008, "海底探险家");//Undersea Explorer
+                explorerQuest(29008);//Undersea Explorer
             }
             else if (getPlayer().getMapId() >= 250000000 && getPlayer().getMapId() <= 251010500)
             {
-                explorerQuest(29009, "武陵探险家");//Mu Lung Explorer
+                explorerQuest(29009);//Mu Lung Explorer
             }
             else if (getPlayer().getMapId() >= 260000000 && getPlayer().getMapId() <= 261030000)
             {
-                explorerQuest(29010, "尼哈沙漠探险家");//Nihal Desert Explorer
+                explorerQuest(29010);//Nihal Desert Explorer
             }
             else if (getPlayer().getMapId() >= 240000000 && getPlayer().getMapId() <= 240050000)
             {
-                explorerQuest(29011, "米纳尔森林探险家");//Minar Forest Explorer
+                explorerQuest(29011);//Minar Forest Explorer
             }
             if (getPlayer().getMapId() == 104000000)
             {

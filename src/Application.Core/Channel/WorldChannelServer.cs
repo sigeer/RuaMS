@@ -453,12 +453,6 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        public void InvokeBroadcastPacket(Packet p)
-        {
-            PushChannelCommand(new InvokeChannelBroadcastCommand([-1], p));
-        }
-
-
         public void SendBroadcastWorldPacket(Packet p, bool onGM = false)
         {
             _ = Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
