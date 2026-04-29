@@ -55,7 +55,6 @@ namespace Application.Plugin.Script
         // Npc: 2003 
         public async Task begin5()
         {
-            // TODO
             switch (await SayOption("现在...问我任何你可能对旅行有的问题！", [
                 "我该怎么移动？",
                 "我怎么打倒怪物？",
@@ -499,12 +498,12 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 1022103 
-        public Task s4strike_statue()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        //// Npc: 1022103 
+        //public Task s4strike_statue()
+        //{
+        //    // TODO
+        //    return Task.CompletedTask;
+        //}
 
 
         // Npc: 1032003 
@@ -1150,7 +1149,7 @@ namespace Application.Plugin.Script
                 case 0:
                     if (isQuestStarted(2286) || isQuestStarted(2287) || isQuestStarted(2288))
                     {
-                        var em = GetEventManager<RockSpirit>("RockSpirit");
+                        var em = GetEventManager<RockSpirit>(nameof(RockSpirit));
                         var r = em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         return;
@@ -1229,57 +1228,30 @@ namespace Application.Plugin.Script
         {
             if (await SayYesNo("你想离开吗？"))
             {
-                var p = getPlayer().GetSavedLocation(Shared.MapObjects.SavedLocationType.EVENT);
-                warpMap(p);
+                var eim = getEventInstance();
+                if (eim != null)
+                {
+                    eim.exitPlayer(getPlayer());
+                }
+                else
+                {
+                    WarpOut();
+                }
             }
         }
 
 
         // Npc: 1061012 
-        public Task s4snipe()
+        public async Task s4snipe()
         {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1061014 
-        public Task balog_accept()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1061016 
-        public Task balog_scroll()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 1061018 
-        public async Task balog_InOut()
-        {
-            if (getEventInstance()?.isEventCleared() ?? false)
+            if (isQuestStarted(6108))
             {
-                await SayOK("哇！你打败了巴尔洛格。");
-                warp(getMapId() == 105100300 ? 105100301 : 105100401, 0);
-            }
-            else if (getPlayer().getMap().getAllPlayers().Count > 1)
-            {
-                if (await SayYesNo("你真的要离开这场战斗，让你的同伴们去死吗？"))
-                {
-                    warp(105100100);
-                }
+                var em = GetSoloQuestEventManager(6108);
+                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
             }
             else
             {
-                if (await SayYesNo("如果你是个懦夫，你会离开。"))
-                {
-                    warp(105100100);
-                }
+                await SayOK("你不被允许以未知的原因进入另一个世界。");
             }
         }
 
@@ -1507,14 +1479,14 @@ namespace Application.Plugin.Script
         // Npc: 1081001 
         public async Task florina1()
         {
-            var returnmap = getPlayer().peekSavedLocation("FLORINA");
+            var returnmap = getPlayer().PeekSavedLocation(SavedLocationType.FLORINA);
             if (returnmap == -1)
             {
                 returnmap = 104000000;
             }
             if (await SayYesNo("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。"))
             {
-                getPlayer().getSavedLocation("FLORINA");
+                getPlayer().clearSavedLocation(SavedLocationType.FLORINA);
                 warp(returnmap);
             }
             else
@@ -2639,7 +2611,6 @@ namespace Application.Plugin.Script
                 await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
             }
             eim.exitPlayer(getPlayer());
-            eim.Dispose();
         }
 
         async Task Job3(int type, string preNpcMap, int preNpc)
@@ -2854,10 +2825,27 @@ namespace Application.Plugin.Script
 
 
         // Npc: 2030000 
-        public Task goDungeon()
+        public async Task goDungeon()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (haveItem(4031450, 1))
+            {
+                warp(921100100, 1);
+                return;
+            }
+
+
+            await SayNext("嘿，你看起来好像想要继续前进，深入这个地方的更深处。不过，在那边，你会发现自己被攻击性强、危险的怪物包围，所以即使你觉得自己已经准备好了，也请小心。很久以前，我们镇上的一些勇敢的人进去想要消灭威胁镇上的任何人，但是从来没有回来过…");
+            if (getLevel() > 49)
+            {
+                if (await SayYesNo("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你看起来相当强壮。好吧，你想进去吗？"))
+                {
+                    warp(211040300, 5);
+                }
+            }
+            else
+            {
+                await SayOK("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你还没到50级，我不能让你进去送死。");
+            }
         }
 
 
@@ -2873,7 +2861,7 @@ namespace Application.Plugin.Script
 
         ("下列怪物中，哪组怪物与打倒他所能得到的战利品是正确的对应关系？", ["仙人掌宝宝 - 刺针", "钢甲猪 - 野猪牙", "红小丑 - 黄小丑的帽子", "松松 - 坚果", "蝙蝠 - 蝙蝠翅膀"], 4),
         ("下列怪物中，哪组怪物与打倒他所能得到的战利品是错误的对应关系", ["大侠 - 大侠勋章", "食人花 - 食人花的叶子", "古木妖 - 苗木", "小海象 - 海象尖牙", "僵尸 - 僵尸丢失的臼齿"], 1),
-        ("In GM Event, how many FRUIT CAKE you can get as reward?", ["20", "200", "5", "25", "100"], 2),
+        // ("In GM Event, how many FRUIT CAKE you can get as reward?", ["20", "200", "5", "25", "100"], 2),
         ("下列药品中，哪组药品与功能是正确的对应关系？", ["活力神水 - 攻击 +5 持续 3 分钟", "纯净水 - 回复 700 MP", "蛋糕 - 回复 150 HP & MP", "沙拉 - 回复 300 MP", "披萨饼 - 回复400 HP"], 4),
         ("下列药品中，哪组药品与功能是错误的对应关系？", ["活力神水 - 回复 300 MP", "补药 - 恢复虚弱状态", "苹果 - 回复 30 HP", "清晨之露 - 回复3000 MP", "拉面 - 回复 1000 HP"], 3),
 
@@ -4205,10 +4193,26 @@ namespace Application.Plugin.Script
 
 
         // Npc: 2112018 
-        public Task rnj_start()
+        public async Task rnj_start()
         {
-            // TODO
-            return Task.CompletedTask;
+            var eim = GetEventInstanceTrust();
+            if (eim.getIntProperty("escortFail") == 1)
+            {
+                await SayNext("多亏了你，我们得以再次团聚。尤莱特现在将因触犯马加提亚法律而被送进监狱。再次感谢你。");
+            }
+            else
+            {
+                await SayNext("谢谢你，因为你，我们得以再次团聚。尤勒特现在将进行康复，因为他的研究对我们镇的发展至关重要，他的所作所为都是出于对权力的贪婪，尽管是为了马加提亚的利益。再次感谢你。");
+            }
+
+            if (eim.giveEventReward(getPlayer()))
+            {
+                warp((eim.getIntProperty("isAlcadno") == 0) ? 261000011 : 261000021);
+            }
+            else
+            {
+                await SayOK("请在领取奖励前为您的物品栏腾出一个空位。");
+            }
         }
 
 
@@ -4643,22 +4647,6 @@ namespace Application.Plugin.Script
         }
 
 
-        // Npc: 9201069 
-        public Task NLC_FaceVip()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
-        // Npc: 9201070 
-        public Task NLC_FaceExp()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
-
-
         // Npc: 9201071 
         public async Task Sunstone()
         {
@@ -4759,34 +4747,59 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9201103 
-        public Task tcg4_6_8241()
+        public async Task tcg4_6_8241()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getLevel() >= 100)
+            {
+                await SayOK("远征活动经常在红木城堡内由像你这样的冒险者举行，许多来自不同队伍的人合作解决谜题，击败强大的敌人，在此过程中能够获得许多奖品。要了解更多信息，请前往城堡内右上方的房间。");
+            }
+            else
+            {
+                await SayOK("在要塞内，可以组建远征队尝试绯红森林要塞组队任务，需要等级达到100级或更高的冒险岛玩家。看起来你还不适合尝试这个任务，如果想要尝试的话，还需要多加练习。");
+            }
         }
 
 
         // Npc: 9201104 
-        public Task Masteria_Sage01()
+        public async Task Masteria_Sage01()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() == 610020000)
+            {
+                await SayOK("哦，勇敢的冒险者。仅仅到达这个地方，你就已经在众多人中脱颖而出，恭喜你。然而，要注意：前方通往强大的#b红木城堡#k的道路上，部署了#r致命的巨石#k，对于那些对前方危险毫无防备的人来说，这些巨石就像陷阱一样。#r一次被击中就足以让你倒下#k，所以要小心。如果你打算到达城堡，一定要小心地跟随前方的小径。");
+            }
+            else if (getMapId() == 610020003)
+            {
+                await SayOK("你现在似乎配得上得到一个关于前方的提示。一旦进入要塞的主房间，请确保记住你所看到的雕像的布局。就是这样。");
+            }
+            else if (getMapId() == 610020004)
+            {
+                await SayOK("你现在似乎配得上得到一个关于接下来的提示。被称为\"封印\"的装置会在某些职业的技能在附近被激活时被检测到而激活，请确保你的团队在时机到来时是完整的。就是这样。");
+            }
+            else
+            {
+                await SayOK("到目前为止，你的进展非常出色，干得好。然而，要想进入要塞，你必须面对并完成这一考验，继续前行。");
+            }
         }
 
 
         // Npc: 9201105 
-        public Task Masteria_Sage02()
+        public async Task Masteria_Sage02()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() == 610020005)
+            {
+                await SayOK("红木城堡就在前方，你今天取得了伟大的成就，向你致敬。穿过这片树林，进入城堡的大门。");
+            }
+            else
+            {
+                await SayOK("到目前为止，你的进展非常出色，干得好。然而，要想进入要塞，你必须面对并完成这一考验，继续前行。");
+            }
         }
 
 
         // Npc: 9201106 
-        public Task TCG5()
+        public async Task TCG5()
         {
-            // TODO
-            return Task.CompletedTask;
+            await SayOK(GetDefault0());
         }
 
 
@@ -5028,11 +5041,7 @@ namespace Application.Plugin.Script
 
 
         // Npc: 9201142 
-        public Task witchMaladyGL()
-        {
-            // TODO
-            return Task.CompletedTask;
-        }
+        public Task witchMaladyGL() => SayOK(GetDefault0());
 
 
         // Npc: 9201143 
@@ -5386,5 +5395,79 @@ namespace Application.Plugin.Script
             }
         }
 
+        public async Task MaybeItsGrendel_end()
+        {
+            await SaySpeech([
+                "一个黑色的阴影人物出现并攻击了你？这怎么可能发生在#b#p1032001##k的家里？这听起来像是一个大阴谋……",
+                "我得在脑子里整理一下这一切。等一会儿再和我说话。"
+                ]);
+        }
+
+        public async Task Dollcave()
+        {
+            var pwd = await SayInputText("一个可疑的声音打破了沉默。 #b暗号#k ！");
+            if (pwd == "芝麻开门")
+            {
+                if (isQuestCompleted(3925))
+                {
+                    warp(260010402, 1);
+                }
+                else
+                {
+                    Pink("尽管你说出了正确的答案，但门依然没有动静！");
+                }
+            }
+            else
+            {
+                await SayOK("#r错误！");
+            }
+        }
+
+        public async Task secretNPC()
+        {
+            var pwd = await SayInputText("门锁住了请输入#b密码#k!");
+            var questPassword = getQuestProgress(3360, 0);
+
+            if (pwd == questPassword)
+            {
+                var progress = getQuestProgress(3360, 1);
+                if (progress !=  "11")
+                {
+                    if (getMapId() == 261020200)
+                    {
+                        if (progress == "10")
+                        {
+                            setQuestProgress(3360, 1, "11");
+                            forceCompleteQuest(3360);
+                            message("已完成任务");
+                        }
+                        else
+                        {
+                            setQuestProgress(3360, 1, "01");
+                        }
+                    }
+                    else if (getMapId() == 261010000)
+                    {
+                        if (progress == "01")
+                        {
+                            setQuestProgress(3360, 1, "11");
+                            forceCompleteQuest(3360);
+                            message("已完成任务");
+                        }
+                        else
+                        {
+                            setQuestProgress(3360, 1, "10");
+                        }
+                    }
+                }
+
+                getPlayer().sendPacket(PacketCreator.playPortalSound());
+                warp(261030000, "sp_" + (getMapId() == 261010000 ? "jenu" : "alca"));
+            }
+            else
+            {
+                sendOk("#r错误的密码！");
+            }
+        }
     }
 }

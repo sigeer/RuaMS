@@ -22,8 +22,14 @@ namespace Application.Templates.Map
         public int VRRight { get; set; }
         [WZPath("info/everlast")]
         public bool Everlast { get; set; }
+        /// <summary>
+        /// 下线传送
+        /// </summary>
         [WZPath("info/forcedReturn")]
         public int ForcedReturn { get; set; } = 999999999;
+        /// <summary>
+        /// 回城/死亡复活
+        /// </summary>
         [WZPath("info/returnMap")]
         public int ReturnMap { get; set; } = 999999999;
 

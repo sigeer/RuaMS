@@ -82,7 +82,7 @@ namespace Application.Plugin.Script
         // Npc: 2042001, 2042006 
         public async Task mc_enter1()
         {
-            var eim = getEventInstance() as MonsterCarnivalEventInstanceManager;
+            var eim = GetEventInstanceTrust() as MonsterCarnivalEventInstanceManager;
             if (eim == null)
             {
                 throw new ConversationDiffInstanceException();

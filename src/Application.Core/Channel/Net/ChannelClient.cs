@@ -261,11 +261,7 @@ namespace Application.Core.Channel.Net
 
         public void OpenNpc(int npcid, string? script = null)
         {
-            if (NPCConversationManager != null)
-                return;
-
-            removeClickedNPC();
-            CurrentServer.NPCScriptManager.start(this, npcid, script, Character);
+            OnlinedCharacter.OpenNpc(npcid, script);
         }
         public void closePlayerScriptInteractions()
         {

@@ -144,19 +144,23 @@ namespace Application.Plugin.Script
             }
             catch (ConversationDiffInstanceException)
             {
-                await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                if (await talk.SayYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                {
+                    talk.WarpOut();
+                }
+
+                Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (ConversationDiffMapException)
             {
                 await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                Log.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (NotImplementedException)
             {
-                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                await talk.SayOK($"NPC {npcObject?.getName() ?? npcId.ToString()} 对话未实现。");
                 Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return false;
             }
@@ -224,19 +228,22 @@ namespace Application.Plugin.Script
             }
             catch (ConversationDiffInstanceException)
             {
-                await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                if (await talk.SayYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                {
+                    talk.WarpOut();
+                }
+                Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (ConversationDiffMapException)
             {
                 await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                Log.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (NotImplementedException)
             {
-                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                await talk.SayOK($"任务 {c.CurrentCulture.GetQuestName(questObj.getId()) ?? questObj.getId().ToString()} 对话未实现。");
                 Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return false;
             }
@@ -340,6 +347,7 @@ namespace Application.Plugin.Script
                 new PQ_CPQ1(channel),
                 new PQ_Zakum(channel),
                 new Battle_Zakum(channel),
+                new Battle_Balrog(channel),
 
                 new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
                 // 天空之城 - 圣地
@@ -367,16 +375,16 @@ namespace Application.Plugin.Script
                 new SoloQuestEventManager(channel, 21301, 10 * 60, 108010700,140020200,108010700,108010700 ){EntryPortal = 1},
 
                 new SoloQuestEventManager(channel, 6108, 30 * 60, 910500000,105090200,910500000,910500000 ){EntryPortal = 1},
-
+                new SoloQuestEventManager(channel, 20718, 10 * 60, 910110000,101000000,910110000,910110000){EntryPortal = 1, ExitPortal = 26},
                 new q21401(channel),
                 new q21610(channel),
                 new q21613(channel),
-                new q21733(channel),
-                new q21739(channel),
+                new SoloQuestEventManager(channel, 21733, 10 * 60, 910400000,104000004,910400000,910400000),
+                new SoloQuestEventManager(channel, 21739, 10 * 60, 920030000,200060000,920030000,920030001) { EntryPortal = 2 },
                 new q21747(channel),
                 new q2245(channel),
-                new q2291(channel),
-                new q3239(channel),
+                new SoloQuestEventManager(channel, 2291, 30 * 60, 103040440,103040400,103040410,103040460),
+                new SoloQuestEventManager(channel, 3239, 20 * 60, 922000000,922000009,922000000,922000000),
                 new q6002(channel),
                 new q6330(channel),
                 new q6370(channel),

@@ -225,6 +225,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         gridRemove(chr);
         dropExclusiveItems(chr);
+
+        if (chars.Count == 0)
+        {
+            Dispose();
+        }
     }
 
 

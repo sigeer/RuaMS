@@ -1992,45 +1992,7 @@ public partial class Player
         return RankMove;
     }
 
-    public void clearSavedLocation(SavedLocationType type)
-    {
-        SavedLocations.AddOrUpdate(type, null);
-    }
 
-    public int peekSavedLocation(string type)
-    {
-        var sl = SavedLocations.GetData(type);
-        if (sl == null)
-        {
-            return -1;
-        }
-        return sl.getMapId();
-    }
-
-    public int PeekSavedLocation(SavedLocationType type)
-    {
-        var sl = SavedLocations.GetData(type);
-        if (sl == null)
-        {
-            return -1;
-        }
-        return sl.getMapId();
-    }
-
-    public int getSavedLocation(string type)
-    {
-        int m = peekSavedLocation(type);
-        clearSavedLocation(SavedLocationTypeUtils.fromString(type));
-
-        return m;
-    }
-    public int GetSavedLocation(SavedLocationType type)
-    {
-        int m = PeekSavedLocation(type);
-        clearSavedLocation(type);
-
-        return m;
-    }
 
     public string? getSearch()
     {
@@ -3091,7 +3053,57 @@ public partial class Player
         this.battleshipHp = 400 * getSkillLevel(SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP)) + (bshipLevel * 200);
     }
 
+    public void clearSavedLocation(SavedLocationType type)
+    {
+        SavedLocations.AddOrUpdate(type, null);
+    }
 
+    int peekSavedLocation(string type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl == null)
+        {
+            return -1;
+        }
+        return sl.getMapId();
+    }
+
+    public int PeekSavedLocation(SavedLocationType type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl == null)
+        {
+            return -1;
+        }
+        return sl.getMapId();
+    }
+
+    public int getSavedLocation(string type)
+    {
+        int m = peekSavedLocation(type);
+        clearSavedLocation(SavedLocationTypeUtils.fromString(type));
+
+        return m;
+    }
+    public int GetSavedLocation(SavedLocationType type)
+    {
+        int m = PeekSavedLocation(type);
+        clearSavedLocation(type);
+
+        return m;
+    }
+
+    public bool TryWarpBackSavedLocation(SavedLocationType type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl != null)
+        {
+            changeMap(sl.getMapId(), sl.getPortal());
+            clearSavedLocation(type);
+            return true;
+        }
+        return false;
+    }
 
     public void saveLocationOnWarp()
     {  // suggestion to remember the map before warp command thanks to Lei

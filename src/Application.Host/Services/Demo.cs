@@ -170,10 +170,10 @@ namespace Application.Host.Services
 
             var content = allWzData.Select(x => $$"""
                     // Map: {{string.Join(", ", x.Select(y => y.MapId))}}
-                    public Task<bool> {{x.Key}}()
+                    public bool {{x.Key}}()
                     {
                         // TODO
-                        return Task.FromResult(true);
+                        return true;
                     }
                     {{Environment.NewLine}}
             """);

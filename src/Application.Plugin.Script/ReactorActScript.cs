@@ -1,5 +1,4 @@
 using Application.Core.Client;
-using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Mob;
 using scripting.reactor;
 using server.life;
@@ -107,8 +106,6 @@ namespace Application.Plugin.Script
         // Reactor: 1012000 
         public Task vFlowerItem0()
         {
-            // TODO
-            // 1012000
             dropItems(true, 2, 20, 40);
 
             return Task.CompletedTask;
@@ -118,8 +115,6 @@ namespace Application.Plugin.Script
         // Reactor: 1020000 
         public Task s4hitmanMap0()
         {
-            // TODO
-            // 1020000
             warp(910200000, "pt00");
 
             return Task.CompletedTask;
@@ -129,8 +124,6 @@ namespace Application.Plugin.Script
         // Reactor: 1020001 
         public Task s4hitmanMap1()
         {
-            // TODO
-            // 1020001
             warp(910200000, "pt01");
 
             return Task.CompletedTask;
@@ -140,8 +133,6 @@ namespace Application.Plugin.Script
         // Reactor: 1020002 
         public Task s4hitmanMap2()
         {
-            // TODO
-            // 1020002
             warp(910200000, "pt02");
 
             return Task.CompletedTask;
@@ -217,8 +208,6 @@ namespace Application.Plugin.Script
         // Reactor: 1021000 
         public Task s4hitmanMob0()
         {
-            // TODO
-            // 1021000
             spawnMonster(9300091);
 
             return Task.CompletedTask;
@@ -228,8 +217,6 @@ namespace Application.Plugin.Script
         // Reactor: 1021001 
         public Task s4hitmanMob1()
         {
-            // TODO
-            // 1021001
             spawnMonster(9300091);
 
             return Task.CompletedTask;
@@ -239,8 +226,6 @@ namespace Application.Plugin.Script
         // Reactor: 1022000 
         public Task s4hitmanItem0()
         {
-            // TODO
-            // 1022000
             dropItems();
 
             return Task.CompletedTask;
@@ -250,8 +235,6 @@ namespace Application.Plugin.Script
         // Reactor: 1022001 
         public Task periItem0()
         {
-            // TODO
-            // 1022001
             dropItems();
 
             return Task.CompletedTask;
@@ -270,8 +253,6 @@ namespace Application.Plugin.Script
         // Reactor: 1029000 
         public Task scaScript0()
         {
-            // TODO
-            // 1029000
             if (isAllReactorState(1029000, 0x04))
             { // 0x04 appears to be the destroyed state
                 killMonster(3230300);
@@ -286,8 +267,6 @@ namespace Application.Plugin.Script
         // Reactor: 1050000 
         public Task s4berserkMap0()
         {
-            // TODO
-            // 1050000
             if (Random.Shared.NextDouble() > 0.7)
             {
                 dropItems();
@@ -304,8 +283,6 @@ namespace Application.Plugin.Script
         // Reactor: 1052000 
         public Task s4berserkItem0()
         {
-            // TODO
-            // 1052000
             dropItems();
 
             return Task.CompletedTask;
@@ -315,12 +292,7 @@ namespace Application.Plugin.Script
         // Reactor: 1052001, 1052002, 1052003 
         public Task balogItem0()
         {
-            // TODO
-            // 1052001
             sprayItems(true, 1, 500, 1000, 15);
-            // 1052002
-            sprayItems(true, 1, 500, 1000, 15);
-            // 1052003
 
 
             return Task.CompletedTask;
@@ -373,8 +345,6 @@ namespace Application.Plugin.Script
         // Reactor: 1072000 
         public Task vFlowerItem1()
         {
-            // TODO
-            // 1072000
             dropItems();
 
             return Task.CompletedTask;
@@ -384,8 +354,6 @@ namespace Application.Plugin.Script
         // Reactor: 1102000 
         public Task coconut0()
         {
-            // TODO
-            // 1102000
             dropItems();
 
             return Task.CompletedTask;
@@ -395,8 +363,6 @@ namespace Application.Plugin.Script
         // Reactor: 1102001 
         public Task coconut1()
         {
-            // TODO
-            // 1102001
             dropItems();
 
             return Task.CompletedTask;
@@ -406,8 +372,6 @@ namespace Application.Plugin.Script
         // Reactor: 1102002 
         public Task coconut2()
         {
-            // TODO
-            // 1102002
             dropItems();
 
             return Task.CompletedTask;
@@ -428,8 +392,6 @@ namespace Application.Plugin.Script
         // Reactor: 1200000 
         public Task ntQuest02()
         {
-            // TODO
-            // 1200000
             // string visibility thanks to ProXAIMeRx & Glvelturall
             message("Failed to find Bart. Returning to the original location.");
             warp(120000102);
@@ -441,8 +403,6 @@ namespace Application.Plugin.Script
         // Reactor: 1202002 
         public Task ntItem03()
         {
-            // TODO
-            // 1202002
             dropItems();
 
             return Task.CompletedTask;
@@ -452,8 +412,6 @@ namespace Application.Plugin.Script
         // Reactor: 1202003 
         public Task EpisodeQuest1()
         {
-            // TODO
-            // 1202003
             dropItems();
 
             return Task.CompletedTask;
@@ -463,8 +421,6 @@ namespace Application.Plugin.Script
         // Reactor: 1209000 
         public Task ntQuest01()
         {
-            // TODO
-            // 1209000
             // string visibility thanks to ProXAIMeRx & Glvelturall
             if (isQuestStarted(6400))
             {
@@ -481,8 +437,6 @@ namespace Application.Plugin.Script
         // Reactor: 1302000 
         public Task erebItem0()
         {
-            // TODO
-            // 1302000
             dropItems(true, 2, 8, 12, 2);
 
             return Task.CompletedTask;
@@ -492,8 +446,6 @@ namespace Application.Plugin.Script
         // Reactor: 1402000 
         public Task rienItem0()
         {
-            // TODO
-            // 1402000
             dropItems(true, 2, 8, 15);
 
             return Task.CompletedTask;
@@ -503,8 +455,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001000 
         public Task fgodMob0()
         {
-            // TODO
-            // 2001000
             if (getMap().getSummonState())
             {
                 var count = GetEventInstanceTrust().getIntProperty("statusStg7_c");
@@ -535,8 +485,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001001 
         public Task fgodMob1()
         {
-            // TODO
-            // 2001001
             if (getMap().getSummonState())
             {
                 var count = GetEventInstanceTrust().getIntProperty("statusStg7_c");
@@ -567,8 +515,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001002 
         public Task fgodMob2()
         {
-            // TODO
-            // 2001002
             var eim = GetEventInstanceTrust();
             if (eim.getIntProperty("statusStg2") == -1)
             {
@@ -607,8 +553,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001003 
         public Task fgodMob3()
         {
-            // TODO
-            // 2001003
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -647,8 +591,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001004 
         public Task fgodMob4()
         {
-            // TODO
-            // 2001004
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -687,8 +629,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001005 
         public Task fgodMob5()
         {
-            // TODO
-            // 2001005
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -727,8 +667,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001006 
         public Task fgodMob6()
         {
-            // TODO
-            // 2001006
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -767,8 +705,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001007 
         public Task fgodMob7()
         {
-            // TODO
-            // 2001007
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -807,8 +743,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001008 
         public Task fgodMob8()
         {
-            // TODO
-            // 2001008
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -847,8 +781,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001009 
         public Task fgodMob9()
         {
-            // TODO
-            // 2001009
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -887,8 +819,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001010 
         public Task fgodMob10()
         {
-            // TODO
-            // 2001010
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -927,8 +857,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001011 
         public Task fgodMob11()
         {
-            // TODO
-            // 2001011
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -967,8 +895,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001012 
         public Task fgodMob12()
         {
-            // TODO
-            // 2001012
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -1007,8 +933,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001013 
         public Task fgodMob13()
         {
-            // TODO
-            // 2001013
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -1047,8 +971,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001014 
         public Task fgodMob14()
         {
-            // TODO
-            // 2001014
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -1087,8 +1009,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001015 
         public Task fgodMob15()
         {
-            // TODO
-            // 2001015
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
                 var rnd = (int)Math.Floor(Random.Shared.NextDouble() * 14);
@@ -1127,8 +1047,6 @@ namespace Application.Plugin.Script
         // Reactor: 2001016 
         public Task fgodBoss()
         {
-            // TODO
-            // 2001016
             getMap().killAllMonsters();
             getMap().allowSummonState(false);
             spawnMonster(9300039, 260, 490);
@@ -1141,8 +1059,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002000 
         public Task oBoxItem0()
         {
-            // TODO
-            // 2002000
             dropItems(true, 2, 60, 80);
 
             return Task.CompletedTask;
@@ -1152,8 +1068,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002001 
         public Task fgodItem0()
         {
-            // TODO
-            // 2002001
             dropItems();
 
             return Task.CompletedTask;
@@ -1174,8 +1088,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002003 
         public Task fgodItem2()
         {
-            // TODO
-            // 2002003
             dropItems();
 
             var eim = GetEventInstanceTrust();
@@ -1188,8 +1100,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002004 
         public Task fgodItem3()
         {
-            // TODO
-            // 2002004
             dropItems();
 
             return Task.CompletedTask;
@@ -1199,8 +1109,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002005 
         public Task fgodItem4()
         {
-            // TODO
-            // 2002005
             dropItems();
 
             return Task.CompletedTask;
@@ -1210,8 +1118,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002006 
         public Task fgodItem5()
         {
-            // TODO
-            // 2002006
             dropItems();
 
             return Task.CompletedTask;
@@ -1221,8 +1127,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002007 
         public Task fgodItem6()
         {
-            // TODO
-            // 2002007
             dropItems();
 
             return Task.CompletedTask;
@@ -1232,8 +1136,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002008 
         public Task fgodItem7()
         {
-            // TODO
-            // 2002008
             dropItems();
 
             return Task.CompletedTask;
@@ -1243,8 +1145,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002009 
         public Task fgodItem8()
         {
-            // TODO
-            // 2002009
             dropItems();
 
             return Task.CompletedTask;
@@ -1254,8 +1154,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002010 
         public Task fgodItem9()
         {
-            // TODO
-            // 2002010
             dropItems();
 
             return Task.CompletedTask;
@@ -1265,8 +1163,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002011 
         public Task fgodItem10()
         {
-            // TODO
-            // 2002011
             dropItems();
 
             return Task.CompletedTask;
@@ -1276,8 +1172,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002012 
         public Task fgodItem11()
         {
-            // TODO
-            // 2002012
             dropItems();
 
             return Task.CompletedTask;
@@ -1287,8 +1181,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002013 
         public Task fgodItem12()
         {
-            // TODO
-            // 2002013
             dropItems();
 
             return Task.CompletedTask;
@@ -1298,8 +1190,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002014 
         public Task fgodItem13()
         {
-            // TODO
-            // 2002014
             dropItems(true, 1, 100, 400, 15);
 
             var eim = GetEventInstanceTrust();
@@ -1338,8 +1228,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002017 
         public Task fgodItem16()
         {
-            // TODO
-            // 2002017
             sprayItems(true, 1, 100, 400, 15);
 
             return Task.CompletedTask;
@@ -1349,8 +1237,6 @@ namespace Application.Plugin.Script
         // Reactor: 2002018 
         public Task fgodItem17()
         {
-            // TODO
-            // 2002018
             sprayItems(true, 1, 100, 400, 15);
 
             return Task.CompletedTask;
@@ -1360,8 +1246,7 @@ namespace Application.Plugin.Script
         // Reactor: 2006000 
         public Task fgodNPC0()
         {
-            // TODO
-            // 2006000
+
             mapMessage(5, "As the light flickers, someone appears out of the light.");
             spawnNpc(2013001);
 
@@ -1372,8 +1257,6 @@ namespace Application.Plugin.Script
         // Reactor: 2006001 
         public Task fgodNPC1()
         {
-            // TODO
-            // 2006001
             spawnNpc(2013002);
             var eim = GetEventInstanceTrust();
             eim.clearPQ();
@@ -1402,8 +1285,6 @@ namespace Application.Plugin.Script
         // Reactor: 2092001 
         public Task snowdrop1()
         {
-            // TODO
-            // 2092001
             dropItems();
 
             return Task.CompletedTask;
@@ -1446,8 +1327,6 @@ namespace Application.Plugin.Script
         // Reactor: 2110000 
         public Task go280010000()
         {
-            // TODO
-            // 2110000
             playerMessage(5, "An unknown force has moved you to the starting point.");
             warp(280010000, 0);
 
@@ -1458,8 +1337,6 @@ namespace Application.Plugin.Script
         // Reactor: 2111000 
         public Task boxMob0()
         {
-            // TODO
-            // 2111000
             playerMessage(5, "Oh noes! Monsters in the chest!");
             spawnMonster(9300004, 3);
 
@@ -1470,7 +1347,6 @@ namespace Application.Plugin.Script
         // Reactor: 2111001 
         public Task boss()
         {
-            // TODO
             var eim = getEventInstance();
             if (eim != null)
             {
@@ -1499,8 +1375,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112004, 2112011 
         public Task boxKey0()
         {
-            // TODO
-            // 2112004
             dropItems();
 
             return Task.CompletedTask;
@@ -1510,8 +1384,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112005, 2112012 
         public Task boxPaper0()
         {
-            // TODO
-            // 2112005
             dropItems();
 
             return Task.CompletedTask;
@@ -1521,8 +1393,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112006 
         public Task money10000()
         {
-            // TODO
-            // 2112006
             dropItems(true, 1, 500, 800);
 
             return Task.CompletedTask;
@@ -1532,8 +1402,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112013 
         public Task money100()
         {
-            // TODO
-            // 2112013
             dropItems(true, 1, 125, 175);
 
             return Task.CompletedTask;
@@ -1543,8 +1411,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112014 
         public Task boxBItem0()
         {
-            // TODO
-            // 2112014
             dropItems();
 
             return Task.CompletedTask;
@@ -1554,8 +1420,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112015 
         public Task s4frameItem0()
         {
-            // TODO
-            // 2112015
             dropItems();
 
             return Task.CompletedTask;
@@ -1565,8 +1429,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112016 
         public Task s4fireHawkItem0()
         {
-            // TODO
-            // 2112016
             dropItems();
 
             return Task.CompletedTask;
@@ -1576,8 +1438,6 @@ namespace Application.Plugin.Script
         // Reactor: 2112017 
         public Task s4iceEagleItem0()
         {
-            // TODO
-            // 2112017
             dropItems();
 
             return Task.CompletedTask;
@@ -1631,8 +1491,6 @@ namespace Application.Plugin.Script
         [ScriptName("snowscaScript0", "snowscaScript1", "snowscaScript2")]
         public Task SnowscaScript()
         {
-            // TODO
-            // 2119006
             weakenAreaBoss(6090001, "The light at the altar appeases the hatred of the Snow Witch. The force of the Witch has weakened.");
 
             return Task.CompletedTask;
@@ -1652,8 +1510,6 @@ namespace Application.Plugin.Script
         // Reactor: 2200001 
         public Task ludiPotal0()
         {
-            // TODO
-            // 2200001
             playerMessage(5, "You have found a secret factory!");
             warp(Random.Shared.NextDouble() < .5 ? 922000020 : 922000021, 0);
 
@@ -1664,8 +1520,6 @@ namespace Application.Plugin.Script
         // Reactor: 2200002 
         public Task go922010201()
         {
-            // TODO
-            // 2200002
             mapMessage(5, "An unknown force has warped you into a trap.");
             warpMap(922010201);
 
@@ -1676,8 +1530,6 @@ namespace Application.Plugin.Script
         // Reactor: 2201000 
         public Task ludiMob0()
         {
-            // TODO
-            // 2201000
             spawnMonster(9300011, 10);
 
             return Task.CompletedTask;
@@ -1687,8 +1539,6 @@ namespace Application.Plugin.Script
         // Reactor: 2201001 
         public Task ludiMob1()
         {
-            // TODO
-            // 2201001
             for (var i = 0; i < 3; i++)
             {
                 spawnMonster(9300007);
@@ -1701,8 +1551,6 @@ namespace Application.Plugin.Script
         // Reactor: 2201002 
         public Task ludiMob2()
         {
-            // TODO
-            // 2201002
             mapMessage(5, "Rombard has been summoned somewhere in the map.");
             spawnMonster(9300010, 1, -211);
 
@@ -1713,8 +1561,6 @@ namespace Application.Plugin.Script
         // Reactor: 2201003 
         public Task ludiBoss0()
         {
-            // TODO
-            // 2201003
             if (getPlayer().getMapId() == 922010900)
             {
                 mapMessage(5, "Alishar has been summoned.");
@@ -1733,8 +1579,6 @@ namespace Application.Plugin.Script
         // Reactor: 2201004 
         public Task boss2()
         {
-            // TODO
-            // 2201004
             mapMessage(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>.");
             changeMusic("Bgm09/TimeAttack");
             spawnMonster(8500000, -410, -400);
@@ -1747,8 +1591,6 @@ namespace Application.Plugin.Script
         // Reactor: 2202000 
         public Task ludiquest0()
         {
-            // TODO
-            // 2202000
             dropItems();
 
             return Task.CompletedTask;
@@ -1758,8 +1600,6 @@ namespace Application.Plugin.Script
         // Reactor: 2202001 
         public Task ludiquest1()
         {
-            // TODO
-            // 2202001
             dropItems();
 
             return Task.CompletedTask;
@@ -1769,8 +1609,6 @@ namespace Application.Plugin.Script
         // Reactor: 2202002 
         public Task ludiquest2()
         {
-            // TODO
-            // 2202002
             if (isQuestActive(3238))
             {
                 warp(922000020, 0);
@@ -1787,8 +1625,6 @@ namespace Application.Plugin.Script
         // Reactor: 2202003 
         public Task ludiquest3()
         {
-            // TODO
-            // 2202003
             dropItems();
 
             return Task.CompletedTask;
@@ -1798,8 +1634,6 @@ namespace Application.Plugin.Script
         // Reactor: 2202004 
         public Task ludiquest4()
         {
-            // TODO
-            // 2202004
             sprayItems(true, 1, 30, 60, 15);
 
             return Task.CompletedTask;
@@ -1809,8 +1643,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212000 
         public Task osquest0()
         {
-            // TODO
-            // 2212000
             dropItems(true, 2, 80, 100);
 
             return Task.CompletedTask;
@@ -1820,8 +1652,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212001 
         public Task osquest1()
         {
-            // TODO
-            // 2212001
             dropItems(true, 2, 80, 100);
 
             return Task.CompletedTask;
@@ -1831,8 +1661,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212002 
         public Task osquest2()
         {
-            // TODO
-            // 2212002
             dropItems(true, 2, 80, 100);
 
             return Task.CompletedTask;
@@ -1842,8 +1670,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212003 
         public Task osquest3()
         {
-            // TODO
-            // 2212003
             dropItems(true, 2, 80, 100);
 
             return Task.CompletedTask;
@@ -1853,8 +1679,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212004 
         public Task osquest4()
         {
-            // TODO
-            // 2212004
             dropItems(true, 2, 80, 100);
 
             return Task.CompletedTask;
@@ -1864,8 +1688,6 @@ namespace Application.Plugin.Script
         // Reactor: 2212005 
         public Task osquest5()
         {
-            // TODO
-            // 2212005
             dropItems();
 
             return Task.CompletedTask;
@@ -1875,8 +1697,6 @@ namespace Application.Plugin.Script
         // Reactor: 2221000 
         public Task fvMob0()
         {
-            // TODO
-            // 2221000
             spawnMonster(7130400);
             mapMessage(5, "Here comes Yellow King Goblin!");
 
@@ -1887,8 +1707,6 @@ namespace Application.Plugin.Script
         // Reactor: 2221001 
         public Task fvMob1()
         {
-            // TODO
-            // 2221001
             spawnMonster(7130401);
             mapMessage(5, "Here comes Blue King Goblin!");
 
@@ -1899,8 +1717,6 @@ namespace Application.Plugin.Script
         // Reactor: 2221002 
         public Task fvMob2()
         {
-            // TODO
-            // 2221002
             spawnMonster(7130402, -340, 100);
             mapMessage(5, "Here comes Green King Goblin!");
 
@@ -1911,8 +1727,6 @@ namespace Application.Plugin.Script
         // Reactor: 2221003 
         public Task fvquest0()
         {
-            // TODO
-            // 2221003
             spawnMonster(9500400);
 
             return Task.CompletedTask;
@@ -1922,8 +1736,6 @@ namespace Application.Plugin.Script
         // Reactor: 2221004 
         public Task fvquest1()
         {
-            // TODO
-            // 2221004
             spawnMonster(9500400);
 
             return Task.CompletedTask;
@@ -1933,8 +1745,6 @@ namespace Application.Plugin.Script
         // Reactor: 2222000 
         public Task fvquest2()
         {
-            // TODO
-            // 2222000
             dropItems(true, 2, 80, 120);
 
             return Task.CompletedTask;
@@ -1966,8 +1776,7 @@ namespace Application.Plugin.Script
         // Reactor: 2229009 
         public Task fvscaScript0()
         {
-            // TODO
-            // 2229009
+
             weakenAreaBoss(6090003, "The grieving Scholar Ghost has been slightly appeased. You may be able to defeat the Scholar Ghost.");
 
             return Task.CompletedTask;
@@ -2054,8 +1863,6 @@ namespace Application.Plugin.Script
         // Reactor: 2302000 
         public Task aquaItem0()
         {
-            // TODO
-            // 2302000
             dropItems(true, 2, 75, 90);
 
             return Task.CompletedTask;
@@ -2065,8 +1872,6 @@ namespace Application.Plugin.Script
         // Reactor: 2302001 
         public Task aquaItem1()
         {
-            // TODO
-            // 2302001
             //dropItems(true, 2, 105, 140);
 
             dropItems();
@@ -2078,8 +1883,6 @@ namespace Application.Plugin.Script
         // Reactor: 2302002 
         public Task aquaItem2()
         {
-            // TODO
-            // 2302002
             dropItems(true, 2, 55, 70);
 
             return Task.CompletedTask;
@@ -2089,8 +1892,6 @@ namespace Application.Plugin.Script
         // Reactor: 2302003 
         public Task s4resurItem0()
         {
-            // TODO
-            // 2302003
             dropItems();
 
             return Task.CompletedTask;
@@ -2100,8 +1901,6 @@ namespace Application.Plugin.Script
         // Reactor: 2302005 
         public Task tameItem0()
         {
-            // TODO
-            // 2302005
             dropItems();
 
             return Task.CompletedTask;
@@ -2111,8 +1910,6 @@ namespace Application.Plugin.Script
         // Reactor: 2401000 
         public Task hontaleBoss()
         {
-            // TODO
-            // 2401000
             changeMusic("Bgm14/HonTale");
             if (getReactor().getMap().getMonsterById(8810026) == null)
             {
@@ -2130,8 +1927,6 @@ namespace Application.Plugin.Script
         // Reactor: 2401001 
         public Task s4fireHawkMob0()
         {
-            // TODO
-            // 2401001
             spawnMonster(9300089);
 
             return Task.CompletedTask;
@@ -2141,8 +1936,6 @@ namespace Application.Plugin.Script
         // Reactor: 2401002 
         public Task s4iceEagleMob0()
         {
-            // TODO
-            // 2401002
             spawnMonster(9300090);
 
             return Task.CompletedTask;
@@ -2152,8 +1945,6 @@ namespace Application.Plugin.Script
         // Reactor: 2402000 
         public Task leafItem0()
         {
-            // TODO
-            // 2402000
             dropItems();
 
             return Task.CompletedTask;
@@ -2163,8 +1954,6 @@ namespace Application.Plugin.Script
         // Reactor: 2402001 
         public Task leafItem1()
         {
-            // TODO
-            // 2402001
             dropItems();
 
             return Task.CompletedTask;
@@ -2218,8 +2007,6 @@ namespace Application.Plugin.Script
         // Reactor: 2402006 
         public Task hontaleItem4()
         {
-            // TODO
-            // 2402006
             dropItems();
 
             return Task.CompletedTask;
@@ -2238,8 +2025,6 @@ namespace Application.Plugin.Script
         // Reactor: 2406000 
         public Task hontaleNPC0()
         {
-            // TODO
-            // 2406000
             spawnNpc(2081008);
             startQuest(100203);
             mapMessage(6, "光芒闪烁间，龙蛋破壳而出，一只璀璨的幼龙降临世间！");
@@ -2251,8 +2036,6 @@ namespace Application.Plugin.Script
         // Reactor: 2502000 
         public Task muruengItem0()
         {
-            // TODO
-            // 2502000
             dropItems();
 
             return Task.CompletedTask;
@@ -2262,8 +2045,6 @@ namespace Application.Plugin.Script
         // Reactor: 2502001 
         public Task muruengItem1()
         {
-            // TODO
-            // 2502001
             dropItems();
 
             return Task.CompletedTask;
@@ -2273,8 +2054,6 @@ namespace Application.Plugin.Script
         // Reactor: 2502002 
         public Task muruengItem2()
         {
-            // TODO
-            // 2502002
             dropItems();
 
             return Task.CompletedTask;
@@ -2284,8 +2063,6 @@ namespace Application.Plugin.Script
         // Reactor: 2511000 
         public Task davyMob0()
         {
-            // TODO
-            // 2511000
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedBoxes");
             var nextNum = now + 1;
@@ -2301,8 +2078,6 @@ namespace Application.Plugin.Script
         // Reactor: 2511001 
         public Task davyMob1()
         {
-            // TODO
-            // 2511001
             for (var i = 0; i < 6; i++)
             {
                 spawnMonster(9300124);
@@ -2316,8 +2091,6 @@ namespace Application.Plugin.Script
         // Reactor: 2512000 
         public Task davyItem0()
         {
-            // TODO
-            // 2512000
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedBoxes");
             var nextNum = now + 1;
@@ -2338,8 +2111,6 @@ namespace Application.Plugin.Script
         // Reactor: 2512001 
         public Task davyItem1()
         {
-            // TODO
-            // 2512001
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedChests");
             var nextNum = now + 1;
@@ -2353,8 +2124,6 @@ namespace Application.Plugin.Script
         // Reactor: 2516000 
         public Task davyNPC0()
         {
-            // TODO
-            // 2516000
             Pink("老海盗已经被打败, 无恙被释放了！");
             spawnNpc(2094001);
 
@@ -2399,8 +2168,6 @@ namespace Application.Plugin.Script
         // Reactor: 2602000 
         public Task ariantItem0()
         {
-            // TODO
-            // 2602000
             dropItems();
 
             return Task.CompletedTask;
@@ -2410,8 +2177,6 @@ namespace Application.Plugin.Script
         // Reactor: 2612000 
         public Task magatiaItem0()
         {
-            // TODO
-            // 2612000
             sprayItems();
 
             return Task.CompletedTask;
@@ -2421,8 +2186,6 @@ namespace Application.Plugin.Script
         // Reactor: 2612001 
         public Task rnjItem0()
         {
-            // TODO
-            // 2612001
             sprayItems();
 
             return Task.CompletedTask;
@@ -2432,8 +2195,6 @@ namespace Application.Plugin.Script
         // Reactor: 2612002 
         public Task rnjItem1()
         {
-            // TODO
-            // 2612002
             sprayItems();
 
             return Task.CompletedTask;
@@ -2443,8 +2204,6 @@ namespace Application.Plugin.Script
         // Reactor: 2612003 
         public Task rnjItem2()
         {
-            // TODO
-            // 2612003
             sprayItems();
 
             return Task.CompletedTask;
@@ -2465,8 +2224,6 @@ namespace Application.Plugin.Script
         // Reactor: 2612005 
         public Task magatiaItem2()
         {
-            // TODO
-            // 2612005
             dropItems();
 
             return Task.CompletedTask;
@@ -2532,8 +2289,6 @@ namespace Application.Plugin.Script
         // Reactor: 2619003 
         public Task magascaScript0()
         {
-            // TODO
-            // 2619003
             weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
             return Task.CompletedTask;
@@ -2543,8 +2298,6 @@ namespace Application.Plugin.Script
         // Reactor: 2619004 
         public Task magascaScript1()
         {
-            // TODO
-            // 2619004
             weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
             return Task.CompletedTask;
@@ -2554,8 +2307,6 @@ namespace Application.Plugin.Script
         // Reactor: 2619005 
         public Task magascaScript2()
         {
-            // TODO
-            // 2619005
             weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
             return Task.CompletedTask;
@@ -2587,8 +2338,6 @@ namespace Application.Plugin.Script
         // Reactor: 3001000 
         public Task pFBoss()
         {
-            // TODO
-            // 3001000
             playerMessage(5, "Poison Golem has been spawned.");
             spawnMonster(9300180, 1);
 
@@ -2599,8 +2348,6 @@ namespace Application.Plugin.Script
         // Reactor: 3002000 
         public Task pFItem0()
         {
-            // TODO
-            // 3002000
             dropItems();
 
             return Task.CompletedTask;
@@ -2610,8 +2357,6 @@ namespace Application.Plugin.Script
         // Reactor: 3002001 
         public Task pFItem1()
         {
-            // TODO
-            // 3002001
             GetEventInstanceTrust().showClearEffect(getMap().getId());
             dropItems();
 
@@ -2622,7 +2367,6 @@ namespace Application.Plugin.Script
         // Reactor: 3008000 
         public Task pFBack0()
         {
-            // TODO
             var eim = getEventInstance();
             if (eim != null)
                 eim.giveEventPlayersExp(52000, getMapId());
@@ -2634,8 +2378,6 @@ namespace Application.Plugin.Script
         // Reactor: 5411000 
         public Task sgboss0()
         {
-            // TODO
-            // 5411000
             changeMusic("Bgm09/TimeAttack");
             spawnMonster(9420513, -146, 225);
             GetEventInstanceTrust().setIntProperty("boss", 1);
@@ -2648,8 +2390,6 @@ namespace Application.Plugin.Script
         // Reactor: 5511000 
         public Task myboss0()
         {
-            // TODO
-            // 5511000
             var targaMobId = 9420542;
             if (getReactor().getMap().getMonsterById(targaMobId) == null)
             {
@@ -2663,8 +2403,6 @@ namespace Application.Plugin.Script
         // Reactor: 5511001 
         public Task myboss1()
         {
-            // TODO
-            // 5511001
             var scarlionMobId = 9420547;
             if (getReactor().getMap().getMonsterById(scarlionMobId) == null)
             {
@@ -2678,8 +2416,6 @@ namespace Application.Plugin.Script
         // Reactor: 6102001 
         public Task glpqitem2()
         {
-            // TODO
-            // 6102001
             dropItems();
 
             return Task.CompletedTask;
@@ -2689,8 +2425,6 @@ namespace Application.Plugin.Script
         // Reactor: 6102002 
         public Task glpqreward1()
         {
-            // TODO
-            // 6102002
             sprayItems(true, 1, 90, 360, 15);
 
             return Task.CompletedTask;
@@ -2700,8 +2434,6 @@ namespace Application.Plugin.Script
         // Reactor: 6102003 
         public Task glpqreward2()
         {
-            // TODO
-            // 6102003
             sprayItems(true, 1, 90, 360, 15);
 
             return Task.CompletedTask;
@@ -2711,8 +2443,6 @@ namespace Application.Plugin.Script
         // Reactor: 6102004 
         public Task glpqreward3()
         {
-            // TODO
-            // 6102004
             sprayItems(true, 1, 90, 360, 15);
 
             return Task.CompletedTask;
@@ -2722,8 +2452,6 @@ namespace Application.Plugin.Script
         // Reactor: 6102005 
         public Task glpqreward4()
         {
-            // TODO
-            // 6102005
             sprayItems(true, 1, 90, 360, 15);
 
             return Task.CompletedTask;
@@ -2733,8 +2461,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109000 
         public Task glpqskill0()
         {
-            // TODO
-            // 6109000
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2774,8 +2500,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109001 
         public Task glpqskill1()
         {
-            // TODO
-            // 6109001
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2816,8 +2540,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109002 
         public Task glpqskill2()
         {
-            // TODO
-            // 6109002
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2857,8 +2579,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109003 
         public Task glpqskill3()
         {
-            // TODO
-            // 6109003
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2898,8 +2618,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109004 
         public Task glpqskill4()
         {
-            // TODO
-            // 6109004
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2939,8 +2657,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109005 
         public Task glpqweapon0()
         {
-            // TODO
-            // 6109005
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2962,8 +2678,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109006 
         public Task glpqweapon1()
         {
-            // TODO
-            // 6109006
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -2985,8 +2699,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109007 
         public Task glpqweapon2()
         {
-            // TODO
-            // 6109007
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3008,8 +2720,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109008 
         public Task glpqweapon3()
         {
-            // TODO
-            // 6109008
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3031,8 +2741,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109009 
         public Task glpqweapon4()
         {
-            // TODO
-            // 6109009
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3098,8 +2806,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109016 
         public Task glpqskill5()
         {
-            // TODO
-            // 6109016
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3121,8 +2827,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109017 
         public Task glpqskill6()
         {
-            // TODO
-            // 6109017
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3144,8 +2848,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109018 
         public Task glpqskill7()
         {
-            // TODO
-            // 6109018
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3167,8 +2869,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109019 
         public Task glpqskill8()
         {
-            // TODO
-            // 6109019
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3190,8 +2890,6 @@ namespace Application.Plugin.Script
         // Reactor: 6109020 
         public Task glpqskill9()
         {
-            // TODO
-            // 6109020
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
@@ -3305,8 +3003,6 @@ namespace Application.Plugin.Script
         // Reactor: 6702000 
         public Task amoriaItem0()
         {
-            // TODO
-            // 6702000
             dropItems();
 
             return Task.CompletedTask;
@@ -3338,8 +3034,6 @@ namespace Application.Plugin.Script
             "amoriaItem9", "amoriaItem10", "amoriaItem11", "amoriaItem12")]
         public Task AmoriaItem()
         {
-            // TODO
-            // 6702012
             var count = Math.Max(1, Random.Shared.Next(4));
             //We'll make it drop a lot of crap :D
             for (var i = 0; i < count; i++)
@@ -3354,8 +3048,6 @@ namespace Application.Plugin.Script
         // Reactor: 6741001 
         public Task guyfawkesmob0()
         {
-            // TODO
-            // 6741001
             spawnMonster(9400589);
 
             return Task.CompletedTask;
@@ -3365,8 +3057,6 @@ namespace Application.Plugin.Script
         // Reactor: 6741015 
         public Task guyfawkesmob1()
         {
-            // TODO
-            // 6741015
             dropItems();
 
             return Task.CompletedTask;
@@ -3387,8 +3077,6 @@ namespace Application.Plugin.Script
         // Reactor: 6742014 
         public Task guyfawkesbox0()
         {
-            // TODO
-            // 6742014
             sprayItems(true, 1, 5, 25, 15);
 
             return Task.CompletedTask;
@@ -3398,8 +3086,6 @@ namespace Application.Plugin.Script
         // Reactor: 6802000 
         public Task weddingItem0()
         {
-            // TODO
-            // 6802000
             sprayItems(true, 1, 100, 400, 15);
 
             return Task.CompletedTask;
@@ -3409,8 +3095,6 @@ namespace Application.Plugin.Script
         // Reactor: 6802001 
         public Task weddingItem1()
         {
-            // TODO
-            // 6802001
             sprayItems(true, 1, 100, 400, 15);
 
             return Task.CompletedTask;
@@ -3431,8 +3115,6 @@ namespace Application.Plugin.Script
         // Reactor: 6829000 
         public Task halloweenbox()
         {
-            // TODO
-            // 6829000
             //wtf is this?
             playerMessage(5, "Enjoy Halloween!");
             spawnMonster(9400202, 10);
@@ -3444,8 +3126,6 @@ namespace Application.Plugin.Script
         // Reactor: 8001000 
         public Task shouwaBoss()
         {
-            // TODO
-            // 8001000
             spawnMonster(9400112, 1, 420, 160);
 
             return Task.CompletedTask;
@@ -3455,8 +3135,6 @@ namespace Application.Plugin.Script
         // Reactor: 8091000 
         public Task JPludiMob0()
         {
-            // TODO
-            // 8091000
             spawnMonster(9400210, 2);
             spawnMonster(9400209, 2);
             mapMessage(5, "Some monsters are summoned.");
@@ -3468,8 +3146,6 @@ namespace Application.Plugin.Script
         // Reactor: 8091001 
         public Task JPludiMob1()
         {
-            // TODO
-            // 8091001
             spawnMonster(9400211, 2);
             spawnMonster(9400212, 2);
             mapMessage(5, "Some monsters are summoned.");
@@ -3481,8 +3157,6 @@ namespace Application.Plugin.Script
         // Reactor: 8091002 
         public Task JPludiMob2()
         {
-            // TODO
-            // 8091002
             spawnMonster(9400213, 2);
             spawnMonster(9400214, 2);
             mapMessage(5, "Some monsters are summoned.");
@@ -3494,8 +3168,6 @@ namespace Application.Plugin.Script
         // Reactor: 8091003 
         public Task JPludiMob3()
         {
-            // TODO
-            // 8091003
             spawnMonster(9400215, 2);
             spawnMonster(9400216, 2);
             mapMessage(5, "Some monsters are summoned.");
@@ -3507,8 +3179,6 @@ namespace Application.Plugin.Script
         // Reactor: 8091004 
         public Task JPludiMob4()
         {
-            // TODO
-            // 8091004
             spawnMonster(9400217, 2);
             spawnMonster(9400218, 2);
             mapMessage(5, "Some monsters are summoned.");
@@ -3641,8 +3311,6 @@ namespace Application.Plugin.Script
         // Reactor: 9102000 
         public Task sBoxItem0()
         {
-            // TODO
-            // 9102000
             dropItems(true, 2, 25, 100);
 
             return Task.CompletedTask;
@@ -3652,74 +3320,14 @@ namespace Application.Plugin.Script
         // Reactor: 9102001 
         public Task sBoxItem1()
         {
-            // TODO
-            // 9102001
             dropItems(true, 2, 25, 100);
 
             return Task.CompletedTask;
         }
 
-
-        // Reactor: 9102002 
-        public Task moonItem0()
+        [ScriptName("moonItem0", "moonItem1", "moonItem2", "moonItem3", "moonItem4", "moonItem5")]
+        public Task MoonItem0()
         {
-            // TODO
-            // 9102002
-            dropItems();
-
-            return Task.CompletedTask;
-        }
-
-
-        // Reactor: 9102003 
-        public Task moonItem1()
-        {
-            // TODO
-            // 9102003
-            dropItems();
-
-            return Task.CompletedTask;
-        }
-
-
-        // Reactor: 9102004 
-        public Task moonItem2()
-        {
-            // TODO
-            // 9102004
-            dropItems();
-
-            return Task.CompletedTask;
-        }
-
-
-        // Reactor: 9102005 
-        public Task moonItem3()
-        {
-            // TODO
-            // 9102005
-            dropItems();
-
-            return Task.CompletedTask;
-        }
-
-
-        // Reactor: 9102006 
-        public Task moonItem4()
-        {
-            // TODO
-            // 9102006
-            dropItems();
-
-            return Task.CompletedTask;
-        }
-
-
-        // Reactor: 9102007 
-        public Task moonItem5()
-        {
-            // TODO
-            // 9102007
             dropItems();
 
             return Task.CompletedTask;
@@ -3740,8 +3348,6 @@ namespace Application.Plugin.Script
         // Reactor: 9201000 
         public Task syarenMob0()
         {
-            // TODO
-            // 9201000
             spawnMonster(9300033, 8, -100, 50);
 
             return Task.CompletedTask;
@@ -3751,8 +3357,6 @@ namespace Application.Plugin.Script
         // Reactor: 9201001 
         public Task syarenNPC0()
         {
-            // TODO
-            // 9201001
             mapMessage(5, "A bright flash of light, then someone familiar appears in front of the blocked gate.");
             spawnNpc(9040003);
 
@@ -3763,8 +3367,6 @@ namespace Application.Plugin.Script
         // Reactor: 9201002 
         public Task syarenMob1()
         {
-            // TODO
-            // 9201002
             changeMusic("Bgm10/Eregos");
             spawnMonster(9300028);
             spawnMonster(9300031, 130, 90);
@@ -3779,8 +3381,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202000 
         public Task syarenItem0()
         {
-            // TODO
-            // 9202000
             dropItems();
 
             return Task.CompletedTask;
@@ -3790,8 +3390,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202001 
         public Task syarenItem1()
         {
-            // TODO
-            // 9202001
             dropItems();
 
             return Task.CompletedTask;
@@ -3801,8 +3399,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202002 
         public Task syarenItem2()
         {
-            // TODO
-            // 9202002
             dropItems();
 
             return Task.CompletedTask;
@@ -3812,8 +3408,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202003 
         public Task syarenItem3()
         {
-            // TODO
-            // 9202003
             dropItems();
 
             return Task.CompletedTask;
@@ -3823,8 +3417,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202004 
         public Task syarenItem4()
         {
-            // TODO
-            // 9202004
             dropItems();
 
             return Task.CompletedTask;
@@ -3834,8 +3426,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202005 
         public Task syarenItem5()
         {
-            // TODO
-            // 9202005
             dropItems();
 
             return Task.CompletedTask;
@@ -3845,8 +3435,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202006 
         public Task syarenItem6()
         {
-            // TODO
-            // 9202006
             dropItems();
 
             return Task.CompletedTask;
@@ -3856,8 +3444,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202007 
         public Task syarenItem7()
         {
-            // TODO
-            // 9202007
             dropItems();
 
             return Task.CompletedTask;
@@ -3867,8 +3453,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202008 
         public Task syarenItem8()
         {
-            // TODO
-            // 9202008
             dropItems();
 
             return Task.CompletedTask;
@@ -3878,8 +3462,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202009 
         public Task syarenItem9()
         {
-            // TODO
-            // 9202009
             dropItems();
 
             return Task.CompletedTask;
@@ -3911,8 +3493,6 @@ namespace Application.Plugin.Script
         // Reactor: 9202012 
         public Task syarenItem12()
         {
-            // TODO
-            // 9202012
             sprayItems(true, 1, 30, 60, 10);
 
             return Task.CompletedTask;
@@ -4007,12 +3587,8 @@ namespace Application.Plugin.Script
         // Reactor: 9980000, 9980001 
         public Task mcGuardian0()
         {
-            // TODO
             dispelAllMonsters(int.Parse(getReactor().getName().Substring(1, 2)), int.Parse(getReactor().getName().Substring(0, 1)));
             return Task.CompletedTask;
         }
-
-
-
     }
 }

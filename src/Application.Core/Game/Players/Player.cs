@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
@@ -11,6 +12,7 @@ using client;
 using client.autoban;
 using server;
 using server.events;
+using server.life;
 using server.maps;
 using System.Security.Cryptography;
 using tools;
@@ -232,6 +234,17 @@ namespace Application.Core.Game.Players
 
                 Next = now + Period;
             }
+        }
+
+        public void OpenNpc(int npcId, string? customeScript = null)
+        {
+            var script = customeScript ?? LifeFactory.Instance.GetNPCTemplate(npcId)?.Script;
+            if (script != null)
+            {
+                var npcObj = MapModel.getNPCById(npcId);
+                _ = Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
+            }
+
         }
     }
 }

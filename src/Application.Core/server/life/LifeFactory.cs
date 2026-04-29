@@ -3,6 +3,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
+using Application.Templates.Npc;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using System.Collections.Concurrent;
@@ -186,5 +187,10 @@ public class LifeFactory
             return new NPC(nid, new NPCStats(ClientCulture.SystemCulture.GetNpcName(nid), npcTemplate));
 
         return null;
+    }
+
+    public NpcTemplate? GetNPCTemplate(int nid)
+    {
+        return _npcProvider.GetItem(nid);
     }
 }

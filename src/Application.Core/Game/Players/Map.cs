@@ -164,10 +164,6 @@ namespace Application.Core.Game.Players
                 if (playerEim != null)
                 {
                     playerEim.exitPlayer(this);
-                    if (playerEim.getPlayerCount() == 0)
-                    {
-                        playerEim.Dispose();
-                    }
                 }
 
                 // thanks Thora for finding an issue with players not being actually warped into the target event map (rather sent to the event starting map)
@@ -286,7 +282,7 @@ namespace Application.Core.Game.Players
         }
         public void ForcedWarpOut()
         {
-            forceChangeMap(MapModel.getForcedReturnMap());
+            changeMap(MapModel.getForcedReturnMap());
         }
     }
 }

@@ -21,8 +21,8 @@ namespace Application.Plugin.Script.Events
             var chr = eim.getLeader();
             if (chr?.isAlive() ?? false)
             {
-                chr.changeMap(912010200);
                 chr.setQuestProgress(6330, 6331, "2");
+                chr.changeMap(912010200);
             }
 
         }
@@ -45,8 +45,8 @@ namespace Application.Plugin.Script.Events
             var chr = eim.getLeader();
             if (chr?.isAlive() ?? false)
             {
-                chr.changeMap(912010200);
                 chr.setQuestProgress(6370, 6371, "2");
+                chr.changeMap(912010200);
             }
         }
     }

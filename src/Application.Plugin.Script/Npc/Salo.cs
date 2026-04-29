@@ -903,6 +903,34 @@ namespace Application.Plugin.Script
             }
         }
 
+        // Npc: 9201069 
+        public async Task NLC_FaceVip()
+        {
+            int[] mface_v = [20000, 20001, 20003, 20004, 20005, 20006, 20008, 20012, 20031];
+            int[] fface_v = [20000, 20001, 20003, 20004, 20005, 20006, 20008, 20012, 20031];
+
+            var option = await SayOption("嗨，你好！欢迎来到新叶城整形外科！你想把你的脸变成全新的样子吗？使用 #b#t5152034##k，你可以让我们来照顾剩下的事情，拥有你一直想要的脸~！\r\n#L2#整形外科：#i5152034##t5152034##l");
+            if (option == 2)
+            {
+                await ProcessStyleFaceChange(5152034, mface_v, fface_v);
+            }
+        }
+
+
+        // Npc: 9201070 
+        public async Task NLC_FaceExp()
+        {
+            int[] mface_r = [20001, 20008, 20011, 20013, 20024, 20029, 20032];
+            int[] fface_r = [21000, 21007, 21011, 21012, 21017, 21020, 21022];
+
+            var option = await SayOption("嗨，我其实不应该这样做，但是有了#b#t5152033##k，我还是会为你做。但别忘了，结果会是随机的！\r\n#L2#整形手术：#i5152033##t5152033##l");
+            if (option == 2)
+            {
+                await ProcessRandomFaceChange(5152033, mface_r, fface_r);
+            }
+        }
+
+
         // Npc: 9201061 
         public async Task NLC_LensExp()
         {

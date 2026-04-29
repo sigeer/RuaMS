@@ -327,13 +327,26 @@ namespace Application.Core.Scripting.Events
 
         public virtual void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
+            chr.SaveLocation(SavedLocationType.EVENT);
             chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
         }
 
         public virtual void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
         {
             eim.unregisterPlayer(player);
-            player.changeMap(ExitMap == MapId.NONE ? player.MapModel.getForcedReturnId() : ExitMap, ExitPortal);
+
+            if (ExitMap == MapId.NONE)
+            {
+                if (!player.TryWarpBackSavedLocation(SavedLocationType.EVENT))
+                {
+                    player.ForcedWarpOut();
+                }
+            }
+            else
+            {
+                player.changeMap(ExitMap, ExitPortal);
+            }
+            player.clearSavedLocation(SavedLocationType.EVENT);
         }
 
         public virtual void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)

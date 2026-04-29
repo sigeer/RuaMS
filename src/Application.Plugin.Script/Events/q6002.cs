@@ -2,10 +2,6 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
-using Application.Shared.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script.Events
 {

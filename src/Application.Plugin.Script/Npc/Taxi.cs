@@ -1,4 +1,5 @@
 using Application.Core.scripting.Infrastructure;
+using Application.Shared.Constants.Map;
 
 namespace Application.Plugin.Script
 {
@@ -140,7 +141,7 @@ namespace Application.Plugin.Script
         public async Task world_trip()
         {
             string travelAgency = "世界旅游";
-            int? fromMapID = null;
+            int fromMapID = -1;
             int currentMapID = getPlayer().getMapId();
             int talkIndex = 0;
             bool dynamicsFee = true;
@@ -177,18 +178,18 @@ namespace Application.Plugin.Script
                 "看看为蘑菇神服务的女巫，我强烈建议尝试日本街头出售的章鱼烧、烤肉和其他美味的食物。"
             }, null);
             
-            fromMapID = getPlayer().peekSavedLocation("WORLDTOUR");
+            fromMapID = getPlayer().PeekSavedLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
             
             if (travelConfig.Any(map => map.MapID == currentMapID))
             {
                 // 当前在旅游地图
-                var option = await SayOption("旅行怎么样？你喜欢吗？\r\n#b\r\n#L0#是的，我已经旅行完了，要回去了。\r\n#L1#不，我想继续探索这个地方。");
+                var option = await SayOption("旅行怎么样？你喜欢吗？\r\n#b\r\n#L0#是的，我要回去。\r\n#L1#不，我想继续探索这个地方。");
                 if (option == 0)
                 {
                     await SayOK($"好的，我将送你回到#b#m{fromMapID}##k");
-                    if (fromMapID != null)
+                    if (fromMapID != -1)
                     {
-                        warp(fromMapID.Value);
+                        warp(fromMapID);
                     }
                     else
                     {

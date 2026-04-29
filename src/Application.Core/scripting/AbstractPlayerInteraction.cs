@@ -29,6 +29,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using client;
@@ -266,7 +267,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public AbstractEventInstanceManager GetEventInstanceTrust()
     {
-        return getPlayer().getEventInstance() ?? throw new BusinessOutOfInstance();
+        return getPlayer().getEventInstance() ?? throw new ConversationDiffInstanceException();
     }
 
     public Inventory getInventory(int type)

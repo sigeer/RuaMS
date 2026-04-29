@@ -7,6 +7,7 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
+using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
 using Application.Utility.Exceptions;
@@ -556,7 +557,6 @@ namespace Application.Plugin.Script
 
         public bool balog_end()
         {
-
             if (!canHold(4001261, 1))
             {
                 playerMessage(5, "请给装备栏腾出至少1个空格子。");
@@ -667,7 +667,7 @@ namespace Application.Plugin.Script
         public bool davy2_hd1()
         {
 
-            var eim = GetEventInstanceTrust() ?? throw new BusinessOutOfInstance();
+            var eim = GetEventInstanceTrust() ;
             var level = eim.getIntProperty("level");
             if (eim.getProperty("stage2b") == "0")
             {
@@ -684,7 +684,7 @@ namespace Application.Plugin.Script
         public bool davy3_hd1()
         {
 
-            var eim = GetEventInstanceTrust() ?? throw new BusinessOutOfInstance();
+            var eim = GetEventInstanceTrust();
             var level = eim.getIntProperty("level");
             if (eim.getProperty("stage3b") == "0")
             {
@@ -701,7 +701,7 @@ namespace Application.Plugin.Script
         public bool davy_next0()
         {
 
-            var eim = GetEventInstanceTrust() ?? throw new BusinessOutOfInstance();
+            var eim = GetEventInstanceTrust();
             if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), eim))
             {
                 playPortalSound();
@@ -754,7 +754,7 @@ namespace Application.Plugin.Script
         public bool davy_next2()
         {
 
-            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust() ?? throw new BusinessOutOfInstance()))
+            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust()))
             {
                 playPortalSound();
                 warp(925100300, 0); //next
@@ -771,7 +771,7 @@ namespace Application.Plugin.Script
         public bool davy_next3()
         {
 
-            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust() ?? throw new BusinessOutOfInstance()))
+            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust()))
             {
                 playPortalSound();
                 warp(925100400, 0); //next
@@ -1431,18 +1431,19 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 105070300
         public bool enterDollcave()
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  // puppeteer defeated, newfound secret path
+            {  
+                // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105040201, 2);
                 return true;
             }
 
-            openNpc(1063011, "PupeteerPassword");
+            openNpc(1063011);
             return false;
         }
 
@@ -1588,7 +1589,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
             {
-                var em = GetEventManager<q21733>(nameof(q21733));
+                var em = GetSoloQuestEventManager(21711);
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {
@@ -1609,23 +1610,7 @@ namespace Application.Plugin.Script
         }
 
 
-        public bool enterMagiclibrar()
-        {
 
-            if (isQuestStarted(20718))
-            {
-                var cml = GetEventManager<SoloEventManager>("Cygnus_Magic_Library");
-                cml.setProperty("player", getPlayer().getName());
-                cml.StartInstance(getPlayer());
-                playPortalSound();
-            }
-            else
-            {
-                playPortalSound();
-                warp(101000003, 8);
-            }
-            return true;
-        }
 
 
         public bool enterMCave()
@@ -5489,7 +5474,6 @@ namespace Application.Plugin.Script
 
         public bool outDarkEreb()
         {
-
             var warpMap = isQuestCompleted(20407) ? 924010200 : 924010100;
 
             playPortalSound();
@@ -5498,9 +5482,25 @@ namespace Application.Plugin.Script
         }
 
 
+        public bool enterMagiclibrar()
+        {
+            if (isQuestStarted(20718))
+            {
+                var cml = GetSoloQuestEventManager(20718);
+                cml.StartInstance(getPlayer());
+                playPortalSound();
+            }
+            else
+            {
+                playPortalSound();
+                warp(101000003, 8);
+            }
+            return true;
+        }
+
+        // Map: 910110000
         public bool outMagiclib()
         {
-
             if (getMap().countMonster(2220100) > 0)
             {
                 getPlayer().message("Cannot leave until all Blue Mushrooms have been defeated.");
@@ -5508,11 +5508,8 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var eim = GetEventInstanceTrust();
-                eim.stopEventTimer();
-                eim.Dispose();
-
                 playPortalSound();
+                // 离开任务副本时会自行关闭副本
                 warp(101000000, 26);
 
                 if (isQuestCompleted(20718))
@@ -6748,7 +6745,7 @@ namespace Application.Plugin.Script
         public bool rienTutor7()
         {
 
-            if (getPlayer().getJob().getId() == 2000 && !isQuestCompleted(21014))
+            if (getJob() == Job.LEGEND && !isQuestCompleted(21014))
             {
                 showInfoText("The town of Rien is to the right. Take the portal on the right and go into town to meet Lilin.");
                 return false;
@@ -6765,7 +6762,7 @@ namespace Application.Plugin.Script
         public bool rienTutor8()
         {
 
-            if (getPlayer().getJob().getId() == 2000)
+            if (getJob() == Job.LEGEND)
             {
                 if (isQuestStarted(21015))
                 {
@@ -6797,7 +6794,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        [ScriptTag(["PQ_Magatia"])]
         public bool rnj1_out()
         {
 
@@ -6899,13 +6896,10 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public bool rnj4_r1()
+        bool Rnj4_R(int reg)
         {
-
             var eim = GetEventInstanceTrust();
             var area = eim.getIntProperty("statusStg5");
-            var reg = 0;
 
             if ((area >> reg) % 2 == 0)
             {
@@ -6923,77 +6917,16 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public bool rnj4_r2()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 1;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                playPortalSound();
-                warp(926100301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                playerMessage(5, "This room is already being explored.");
-                return false;
-            }
-        }
+        public bool rnj4_r1() => Rnj4_R(0);
 
 
-        public bool rnj4_r3()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 2;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                playPortalSound();
-                warp(926100301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                playerMessage(5, "This room is already being explored.");
-                return false;
-            }
-        }
+        public bool rnj4_r2() => Rnj4_R(1);
 
 
-        public bool rnj4_r4()
-        {
+        public bool rnj4_r3() => Rnj4_R(2);
 
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 3;
 
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                playPortalSound();
-                warp(926100301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                playerMessage(5, "This room is already being explored.");
-                return false;
-            }
-        }
+        public bool rnj4_r4() => Rnj4_R(3);
 
 
         public bool rnj5_rp()
@@ -7455,7 +7388,7 @@ namespace Application.Plugin.Script
             }
             else if (isQuestStarted(3360))
             {
-                openNpc(2111024, "MagatiaPassword");
+                openNpc(2111024);
                 return false;
             }
             else
@@ -7839,24 +7772,22 @@ namespace Application.Plugin.Script
                 getPlayer().message("找到了公主！");
                 giveCharacterExp(4400, getPlayer());
 
-                var em = GetEventManager<MK_PrimeMinister>("MK_PrimeMinister");
+                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {
                     playPortalSound();
                     return true;
                 }
-                else if (r == CreateInstanceResult.LobbyLimited)
+                else
                 {
-                    message("有其它团队正在此频道挑战BOSS。");
+                    Pink(em.HandleCreateInstanceResult(r, c) ?? "");
                     return false;
                 }
-
-                return false;
             }
             else if (isQuestStarted(2333) || (isQuestCompleted(2332) && !isQuestStarted(2333)))
             {
-                var em = GetEventManager<MK_PrimeMinister>("MK_PrimeMinister");
+                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
 
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
@@ -7864,21 +7795,17 @@ namespace Application.Plugin.Script
                     playPortalSound();
                     return true;
                 }
-                else if (r == CreateInstanceResult.LobbyLimited)
+                else
                 {
-                    message("有其它团队正在此频道挑战BOSS。");
+                    Pink(em.HandleCreateInstanceResult(r, c) ?? "");
                     return false;
                 }
-
-                return false;
             }
             else
             {
                 getPlayer().message("门似乎已经被锁住了，需要找到开启门的钥匙……");
                 return false;
             }
-
-            return false;
         }
 
 
@@ -7966,13 +7893,13 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 260010401
         public bool thief_in1()
         {
 
             // unexpected warp condition noticed thanks to IxianMace
 
-            openNpc(1063011, "ThiefPassword");
+            openNpc(1063011);
             return false;
         }
 
