@@ -244,6 +244,48 @@ namespace Application.Host.Services
                             """);
         }
 
+        public static void ExportMapFirstEnter()
+        {
+            var allWzData = ProviderSource.Instance.GetProvider<MapProvider>()
+                .LoadAll().OfType<MapTemplate>().Where(x => !string.IsNullOrEmpty(x.OnFirstUserEnter)).Select(y => new { MapId = y.TemplateId, y.OnFirstUserEnter })
+                .GroupBy(x => x.OnFirstUserEnter).ToDictionary(x => x.Key, x => x.ToList());
+
+            var allExsitedScripts = ScriptSource.Instance.GetSubScriptsPath("map\\onFirstUserEnter")
+                .ToArray()
+                .ToDictionary(x => Path.GetFileNameWithoutExtension(x), x => GetFunctionBody("start", File.ReadAllText(x), "ms."));
+
+            var content = allWzData.Select(x => $$"""
+                    // Map: {{string.Join(", ", x.Value.Select(y => y.MapId))}} {{(!IsValidMethodName(x.Key) ? (Environment.NewLine + "[ScriptName(\"" + x.Key + "\")]") : "")}}
+                    public void {{(!IsValidMethodName(x.Key) ? "s_" + x.Key : x.Key)}}()
+                    {
+                        {{(!allExsitedScripts.ContainsKey(x.Key) ? "// TODO" : "")}}
+                        {{allExsitedScripts?.GetValueOrDefault(x.Key)}}
+                    }
+                    {{Environment.NewLine}}
+            """);
+            File.WriteAllText(
+                    "MapFirstEnterScript.cs",
+                    $$"""
+                            using Application.Core.Client;
+                            using Application.Core.Game.Maps;
+                            using scripting.map;
+
+                            namespace Application.Plugin.Script
+                            {
+                                // Extra: {{string.Join(", ", allExsitedScripts.Keys.Except(allWzData.Keys))}}
+                                internal class MapFirstEnterScript : MapScriptMethods
+                                {
+                                    public MapFirstEnterScript(IChannelClient c, IMap m) : base(c, m)
+                                    {
+                                    }
+
+                                    {{string.Join(Environment.NewLine, content)}}
+
+                                }
+                            }
+                            """);
+        }
+
         public static void ExportNpc()
         {
             var allWzData = ProviderSource.Instance.GetProvider<NpcProvider>()

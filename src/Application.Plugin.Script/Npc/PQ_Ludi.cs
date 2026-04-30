@@ -32,7 +32,7 @@ namespace Application.Plugin.Script
         // Npc: 2040035, 2040036, 2040037, 2040038, 2040039, 2040040, 2040041, 2040042, 2040043, 2040044, 2040045 
         public async Task party2_play()
         {
-            var eim = getEventInstance();
+            var eim = GetEventInstanceTrust();
             var stage = (int)Math.Floor((getMapId() - 922010100) / 100.0) + 1; ;
             var currentStatus = eim.ClearedMaps.GetValueOrDefault(getMapId(), StageStatus.NotStarted);
             switch (getNpc())
@@ -202,7 +202,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var eim = getEventInstance();
+                var eim = GetEventInstanceTrust();
                 var outText = eim?.isEventCleared() ?? true
                     ? "你准备好离开这张地图了吗？"
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";

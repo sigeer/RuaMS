@@ -4,6 +4,13 @@ namespace Application.Plugin.Script
 {
     internal partial class NpcScript
     {
+        // Npc: 9201021 
+        public Task weddingParty()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
+
         // Npc: 9201022 
         public async Task Thomas()
         {
@@ -136,5 +143,7 @@ namespace Application.Plugin.Script
         {
             return Proof(2);
         }
+
+
     }
 }

@@ -1452,7 +1452,8 @@ namespace Application.Plugin.Script
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  // puppeteer defeated, newfound secret path
+            {  
+                // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105070300, 3);
                 return true;
@@ -1465,7 +1466,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                message("An ominous power prevents you from passing here.");
+                Pink("一股不祥的力量阻止你通过此处。");
                 return false;
             }
         }
@@ -1584,7 +1585,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 910400000
         public bool enterInfo()
         {
             if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
@@ -2011,23 +2012,17 @@ namespace Application.Plugin.Script
             return true;
         }
 
+        // Map: 910510000
         public bool exit_puppeteer()
         {
-
-            if (getMap().countMonster(9300285) > 0)
+            var eim = GetEventInstanceTrust();
+            if (!eim.isEventCleared())
             {
-                getPlayer().message("Defeat the Puppeteer before leaving.");
+                Pink("Defeat the Puppeteer before leaving.");
                 return false;
             }
             else
             {
-                var eim = GetEventInstanceTrust();
-                if (eim != null)
-                {
-                    eim.stopEventTimer();
-                    eim.Dispose();
-                }
-
                 playPortalSound();
                 warp(105070300, 3);
                 return true;
@@ -7899,7 +7894,7 @@ namespace Application.Plugin.Script
 
             // unexpected warp condition noticed thanks to IxianMace
 
-            openNpc(1063011);
+            openNpc(2103008);
             return false;
         }
 

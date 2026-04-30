@@ -47,7 +47,7 @@ namespace Application.Plugin.Script
             {
                 if (await SayYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
                 {
-                    var eim = getEventInstance();
+                    var eim = GetEventInstanceTrust();
                     if (eim != null && !eim.giveEventReward(getPlayer()))
                     {
                         await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
@@ -60,7 +60,7 @@ namespace Application.Plugin.Script
             {
                 if (await SayYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
                 {
-                    var eim = getEventInstance();
+                    var eim = GetEventInstanceTrust();
                     if (eim != null && !eim.giveEventReward(getPlayer()))
                     {
                         await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
@@ -112,7 +112,7 @@ namespace Application.Plugin.Script
                         {
                             gainItem(4001101, -10);
 
-                            var eim = getEventInstance();
+                            var eim = GetEventInstanceTrust();
                             eim.setProperty(1 + "stageclear", "true");
                             eim.showClearEffect(true);
 

@@ -92,7 +92,7 @@ namespace Application.Plugin.Script
         {
             if (getMapId() == 280030000)
             {
-                if (!getEventInstance().isEventCleared())
+                if (!GetEventInstanceTrust().isEventCleared())
                 {
                     if (await SayYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
                     {
@@ -120,11 +120,11 @@ namespace Application.Plugin.Script
         // Npc: 2030011
         public async Task Zakum04()
         {
+            await SayOK("下次见。");
             warp(211042300);
             removeAll(4001015);
             removeAll(4001016);
             removeAll(4001018);
-            await SayOK("下次见。");
         }
 
 

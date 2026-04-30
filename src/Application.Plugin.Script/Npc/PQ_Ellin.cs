@@ -28,7 +28,7 @@ namespace Application.Plugin.Script
         // Npc: 2133001 
         public async Task party6_elin()
         {
-            var eim = getEventInstance() ?? throw new ConversationDiffInstanceException();
+            var eim = GetEventInstanceTrust();
 
             var curStage = eim.ClearedMaps.GetValueOrDefault(getMapId(), StageStatus.NotStarted);
             if (getMapId() == 930000000)
@@ -117,7 +117,7 @@ namespace Application.Plugin.Script
             else
             {
                 await SayNext("太好了，你有了#t4001163#。我会带你们去通往石头祭坛的路。跟我来吧。");
-                getEventInstance()?.warpEventTeam(930000600);
+                GetEventInstanceTrust().warpEventTeam(930000600);
             }
         }
     }

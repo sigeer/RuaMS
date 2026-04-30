@@ -1,5 +1,8 @@
 using Application.Core.Channel;
+using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
+using server.life;
+using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
@@ -16,8 +19,22 @@ namespace Application.Plugin.Script.Events
 
         protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
-            eim.getInstanceMap(910510000)?.resetFully();
-            eim.getInstanceMap(910510000)?.allowSummonState(false);
+            var mapObj = eim.getMapInstance(EntryMap);
+            var chr = eim.getLeader()!;
+            if (chr.getQuestStatus(20730) == 1 && chr.GetQuestProgressInt(20730, 9300285) == 0)
+            {
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300285), new Point(680, 258));
+            }
+
+            if (chr.getQuestStatus(21731) == 1 && chr.GetQuestProgressInt(21731, 9300344) == 0)
+            {
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300344), new Point(680, 258));
+            }
+        }
+
+        public override void OnMobClear(AbstractEventInstanceManager eim, IMap map)
+        {
+            eim.clearPQ();
         }
     }
 }

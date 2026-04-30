@@ -201,7 +201,7 @@ namespace Application.Core.Plugins
         }
 
 
-        public async Task MapEnterScript(IChannelClient c, IMap map)
+        public void MapEnterScript(IChannelClient c, IMap map)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -214,7 +214,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                await container.Instance.MapEnter(c, map);
+                container.Instance.MapEnter(c, map);
             }
             catch (Exception e)
             {
@@ -226,7 +226,7 @@ namespace Application.Core.Plugins
             }
         }
 
-        public async Task MapFirstEnterScript(IChannelClient c, IMap map)
+        public void MapFirstEnterScript(IChannelClient c, IMap map)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));
@@ -239,7 +239,7 @@ namespace Application.Core.Plugins
             using var _ = container.Tracker.EnterRequest();
             try
             {
-                await container.Instance.MapFirstEnter(c, map);
+                container.Instance.MapFirstEnter(c, map);
             }
             catch (Exception e)
             {

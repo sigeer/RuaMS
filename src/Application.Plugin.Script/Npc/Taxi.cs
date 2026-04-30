@@ -232,8 +232,8 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        getPlayer().saveLocation("WORLDTOUR");
                         gainMeso(-selectedMap.Fee);
+                        getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
                         warp(selectedMap.MapID, selectedMap.Portal);
                     }
                 }
@@ -276,5 +276,13 @@ namespace Application.Plugin.Script
             double fee = baseFee + (distance * distanceFactor);
             return Math.Min((int)Math.Round(fee), maxFee);
         }
+
+
+        // Npc: 9201135 
+        public Task Malay_Warp2()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

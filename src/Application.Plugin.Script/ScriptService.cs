@@ -56,13 +56,11 @@ namespace Application.Plugin.Script
 
             var dict = new Dictionary<string, MethodInfo>();
 
-            // 获取当前类声明的所有方法（包括公有、私有、实例、静态），不包含继承的方法
+            // 获取当前类声明的所有方法（包括公有、实例），不包含继承的方法
             var methods = type.GetMethods(
                 BindingFlags.DeclaredOnly |
                 BindingFlags.Public |
-                BindingFlags.NonPublic |
-                BindingFlags.Instance |
-                BindingFlags.Static
+                BindingFlags.Instance
             );
 
             foreach (var method in methods)
@@ -285,7 +283,7 @@ namespace Application.Plugin.Script
             talk.dispose();
         }
 
-        public async Task MapFirstEnter(IChannelClient c, IMap map)
+        public void MapFirstEnter(IChannelClient c, IMap map)
         {
             if (!_mapFirstEnterSource.TryGetValue(map.SourceTemplate.OnFirstUserEnter, out var methodInfo))
             {
@@ -295,10 +293,10 @@ namespace Application.Plugin.Script
             }
 
             var script = new MapFirstEnterScript(c, map);
-            await (Task)methodInfo.Invoke(script, null)!;
+            methodInfo.Invoke(script, null);
         }
 
-        public async Task MapEnter(IChannelClient c, IMap map)
+        public void MapEnter(IChannelClient c, IMap map)
         {
             if (!_mapEnterSource.TryGetValue(map.SourceTemplate.OnUserEnter, out var methodInfo))
             {
@@ -308,7 +306,7 @@ namespace Application.Plugin.Script
             }
 
             var script = new MapEnterScript(c, map);
-            await (Task)methodInfo.Invoke(script, null)!;
+            methodInfo.Invoke(script, null);
         }
         public async Task ReactorHit(IChannelClient c, Reactor r)
         {

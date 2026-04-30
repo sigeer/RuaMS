@@ -2807,7 +2807,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (!chr.hasEntered(Id))
             {
-                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this).ConfigureAwait(false).GetAwaiter().GetResult();
+                chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
                 chr.enteredScript(Id);
             }
         }
@@ -2816,10 +2816,10 @@ public class MapleMap : IMap, INamedInstance
         {
             if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
             {
-                chr.saveLocation("INTRO");
+                chr.SaveLocation(SavedLocationType.INTRO);
             }
 
-            chr.getClient().CurrentServer.NodeService.PluginManager.MapEnterScript(chr.getClient(), this).ConfigureAwait(false).GetAwaiter().GetResult();
+            chr.getClient().CurrentServer.NodeService.PluginManager.MapEnterScript(chr.getClient(), this);
         }
 
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)

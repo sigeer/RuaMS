@@ -23,8 +23,8 @@ namespace Application.Core.Gameplay.Plugins
 
         Task ItemScript(IChannelClient c, int npcId, string scriptName);
 
-        Task MapFirstEnter(IChannelClient c, IMap map);
-        Task MapEnter(IChannelClient c, IMap map);
+        void MapFirstEnter(IChannelClient c, IMap map);
+        void MapEnter(IChannelClient c, IMap map);
 
         Task ReactorHit(IChannelClient c, Reactor r);
         Task ReactorAct(IChannelClient c, Reactor r);

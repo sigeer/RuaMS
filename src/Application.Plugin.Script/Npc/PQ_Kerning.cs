@@ -34,7 +34,7 @@ namespace Application.Plugin.Script
         // Npc: 9020001 
         public async Task party1_play()
         {
-            var eim = getEventInstance();
+            var eim = GetEventInstanceTrust();
             var em = eim.EventManager as PQ_Kerning;
 
             var curMap = getMapId();
@@ -234,7 +234,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var eim = getEventInstance();
+                var eim = GetEventInstanceTrust();
                 var outText = eim?.isEventCleared() ?? true
                     ? "你准备好离开这张地图了吗？"
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";

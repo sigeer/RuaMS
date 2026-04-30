@@ -1907,5 +1907,12 @@ namespace Application.Plugin.Script
                 await SayOK("非常感谢你的捐赠！这里是你的奖励。");
             }
         }
+
+        // Npc: 2080000 
+        public Task minar_weapon()
+        {
+            return Task.CompletedTask;
+        }
+
     }
 }

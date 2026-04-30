@@ -119,10 +119,10 @@ namespace Application.Plugin.Script
                 await SayNext("希望你在怪物嘉年华玩得开心！");
                 warp(980030000, 0);
             }
-            else if (getEventInstance() != null)
+            else if (GetEventInstanceTrust() != null)
             {
                 // 奖励发放
-                var eim = getEventInstance() as MonsterCarnivalEventInstanceManager;
+                var eim = GetEventInstanceTrust() as MonsterCarnivalEventInstanceManager;
                 if (eim == null)
                 {
                     await SayOK("这就送你离开");
@@ -188,7 +188,7 @@ namespace Application.Plugin.Script
         // Npc: 2042003, 2042004 
         public Task mc_roomout()
         {
-            var eim = getEventInstance();
+            var eim = GetEventInstanceTrust();
             if (eim == null)
             {
                 WarpOut();

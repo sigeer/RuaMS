@@ -535,37 +535,11 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public string getQuestProgress(int id, int infoNumber)
     {
-        QuestStatus qs = getPlayer().getQuest(Quest.getInstance(id));
-
-        if (qs.getInfoNumber() == infoNumber && infoNumber > 0)
-        {
-            qs = getPlayer().getQuest(Quest.getInstance(infoNumber));
-            infoNumber = 0;
-        }
-
-        if (qs != null)
-        {
-            return qs.getProgress(infoNumber);
-        }
-        else
-        {
-            return "";
-        }
+        return getPlayer().GetQuestProgress(id, infoNumber);
     }
 
-    public int getQuestProgressInt(int id)
-    {
-        if (int.TryParse(getQuestProgress(id), out var d))
-            return d;
-        return 0;
-    }
-
-    public int getQuestProgressInt(int id, int infoNumber)
-    {
-        if (int.TryParse(getQuestProgress(id, infoNumber), out var d))
-            return d;
-        return 0;
-    }
+    public int getQuestProgressInt(int id) => getPlayer().GetQuestProgressInt(id);
+    public int getQuestProgressInt(int id, int infoNumber) => getPlayer().GetQuestProgressInt(id, infoNumber);
 
     public void resetAllQuestProgress(int id)
     {

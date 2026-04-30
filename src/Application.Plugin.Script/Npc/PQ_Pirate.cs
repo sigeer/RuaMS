@@ -31,13 +31,14 @@ namespace Application.Plugin.Script
         // Npc: 2094001 
         public async Task davy_clear()
         {
+            var eim = GetEventInstanceTrust();
             switch (getMapId())
             {
                 case 925100500:
                     if (isEventLeader())
                     {
                         await SayOK("多亏了你们的努力，我得救了！谢谢，伙计们！");
-                        getEventInstance()?.clearPQ();
+                        eim.clearPQ();
                     }
                     else
                     {
@@ -133,8 +134,8 @@ namespace Application.Plugin.Script
         // Npc: 2094002 
         public async Task davyJohn_play()
         {
-            var eim = getEventInstance();
-            var status = eim.ClearedMaps.GetValueOrDefault(getMapId(), Core.scripting.Events.Abstraction.StageStatus.NotStarted);
+            var eim = GetEventInstanceTrust();
+            var status = eim.ClearedMaps.GetValueOrDefault(getMapId(), StageStatus.NotStarted);
             switch (getMapId())
             {
                 case 925100000:
@@ -240,7 +241,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await SayNext("打败所有的怪物！甚至是海盗王的手下！");
+                        await SayNext("打败所有的怪物！甚至是老海盗的手下！");
                     }
                     break;
                 default:
