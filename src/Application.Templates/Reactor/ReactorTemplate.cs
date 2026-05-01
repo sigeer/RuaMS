@@ -12,6 +12,8 @@ namespace Application.Templates.Reactor
         public bool ActivateByTouch { get; set; }
 
         public StateInfo[] StateInfoList { get; set; }
+        [WZPath("action")]
+        public string? Action { get; set; }
         public ReactorTemplate(int templateId)
             : base(templateId)
         {

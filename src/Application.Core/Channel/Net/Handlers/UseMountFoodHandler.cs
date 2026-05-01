@@ -48,8 +48,6 @@ public class UseMountFoodHandler : ChannelHandlerBase
         {
             try
             {
-                bool? mountLevelup = null;
-
                 var item = useInv.getItem(pos);
                 if (item != null && item.getItemId() == itemid && mount != null)
                 {
@@ -59,25 +57,9 @@ public class UseMountFoodHandler : ChannelHandlerBase
                     float healedFactor = (float)healedTiredness / 30;
                     mount.setTiredness(curTiredness - healedTiredness);
 
-                    if (healedFactor > 0.0f)
-                    {
-                        mount.setExp(mount.getExp() + (int)Math.Ceiling(healedFactor * (2 * mount.getLevel() + 6)));
-                        int level = mount.getLevel();
-                        bool levelup = mount.getExp() >= ExpTable.getMountExpNeededForLevel(level) && level < 31;
-                        if (levelup)
-                        {
-                            mount.setLevel(level + 1);
-                        }
-
-                        mountLevelup = levelup;
-                    }
+                    mount.AddExp(healedFactor);
 
                     InventoryManipulator.removeById(c, InventoryType.USE, itemid, 1, true, false);
-                }
-
-                if (mountLevelup != null)
-                {
-                    chr.getMap().broadcastMessage(PacketCreator.updateMount(chr.getId(), mount, mountLevelup.Value));
                 }
             }
             finally

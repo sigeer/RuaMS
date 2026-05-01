@@ -189,7 +189,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
             this.dojoTask[slot] = Channel.TimerManager.schedule(() =>
             {
-                Channel.Post(new DojoTimeoutCommand(this, dojoMapId));
+                Channel.Send(c => ProcessTimeout(dojoMapId));
             }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
 
             dojoFinishTime[slot] = this.Channel.Node.getCurrentTime() + clockTime;
@@ -202,27 +202,35 @@ namespace Application.Core.Gameplay.ChannelEvents
 
             int delta = (dojoMapId) % 100;
             int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
-            Team? party = null;
+            int exitMapId = MapId.DOJO_EXIT;
 
+            List<int> targetMapIds = new();
             for (int i = 0; i < 5; i++)
-            { //only 32 stages, but 38 maps
-                if (stage + i > 38)
-                {
-                    break;
-                }
-
-                var dojoExit = this.Channel.getMapFactory().getMap(MapId.DOJO_EXIT);
-                foreach (var chr in this.Channel.getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta).getAllPlayers())
-                {
-                    if (MapId.isDojo(chr.getMap().getId()))
-                    {
-                        chr.changeMap(dojoExit);
-                    }
-                    party = chr.getParty();
-                }
+            {
+                if (stage + i > 38) break; // only 32 stages, but 38 maps
+                targetMapIds.Add(dojoBaseMap + (100 * (stage + i)) + delta);
             }
 
-            FreeDojoSlot(slot, party);
+            var dojoExit = Channel.getMapFactory().getMap(exitMapId);
+            foreach (var mapId in targetMapIds)
+            {
+                var map = this.Channel.getMapFactory().getMap(mapId);
+                map.Send(m =>
+                {
+                    foreach (var p in m.getAllPlayers())
+                    {
+                        if (MapId.isDojo(p.getMap().getId()))
+                        {
+                            p.changeMap(dojoExit);
+                        }
+                    }
+                });
+            }
+
+            Channel.TimerManager.schedule(() =>
+            {
+                Channel.Send(c => FreeDojoSectionIfEmpty(dojoMapId));
+            }, 1000);
         }
 
         public void DismissDojoSchedule(int dojoMapId, Team party)

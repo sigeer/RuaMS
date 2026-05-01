@@ -2,7 +2,7 @@ namespace Application.Templates.Etc
 {
     public class ScriptInfoTemplate : AbstractTemplate
     {
-        public ScriptInfoTemplate() : base(0)
+        public ScriptInfoTemplate(int idx) : base(idx)
         {
             Name = string.Empty;
             Value = string.Empty;

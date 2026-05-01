@@ -226,6 +226,11 @@ public class MapFactory : IStaticService
             map.spawnReactor(newReactor);
         }
 
+        if (mapData.ReactorShuffle)
+        {
+            map.shuffleReactors();
+        }
+
         map.setMapName(loadPlaceName(mapid));
         map.setStreetName(loadStreetName(mapid));
 

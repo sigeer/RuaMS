@@ -21,17 +21,14 @@
 */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using client.inventory;
-using Jint.Native.ShadowRealm;
 using server.life;
 using server.maps;
 using server.partyquest;
-using server.quest;
+using tools;
 
 namespace scripting.reactor;
 
@@ -307,9 +304,15 @@ public class ReactorActionManager : AbstractPlayerInteraction
     public void summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
                                   string summonMessage)
     {
+
         c.CurrentServer.TimerManager.schedule(() =>
         {
-            c.CurrentServer.Post(new ReactorSummonBossCommand(reactor, mobId, x, y, bgm, summonMessage));
+            reactor.getMap().Send(map =>
+            {
+                map.spawnMonsterOnGroundBelow(mobId, x, y);
+                map.broadcastMessage(PacketCreator.musicChange(bgm));
+                map.LightBlue(summonMessage);
+            });
         }, delayMs);
     }
 

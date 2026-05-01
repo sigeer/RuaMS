@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application.Host\Application.Host.csproj" />
+    <ProjectReference Include="..\..\src\Application.Plugin.Script\Application.Plugin.Script.csproj" />
     <ProjectReference Include="..\..\src\Application.Templates.XmlWzReader\Application.Templates.XmlWzReader.csproj" />
   </ItemGroup>
 

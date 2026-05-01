@@ -16,13 +16,19 @@ namespace Application.Core.Channel.Invitation
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
             {
-                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
-                receiver?.message("Could not verify your Maple Messenger accept since the invitation rescinded.");
+                var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
+                receiverActor?.Send(m =>
+                {
+                    m.getCharacterById(data.ReceivePlayerId)?.Pink("Could not verify your Maple Messenger accept since the invitation rescinded.");
+                });
 
                 if (result == InviteResultType.DENIED)
                 {
-                    var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                    sender?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 5, 0));
+                    var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                    senderActor?.Send(m =>
+                    {
+                        m.getCharacterById(data.SenderPlayerId)?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 5, 0));
+                    });
                 }
             }
         }
@@ -32,43 +38,46 @@ namespace Application.Core.Channel.Invitation
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)
             {
-                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
-                if (receiver != null)
+                var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
+                receiverActor?.Send(m =>
                 {
-                    receiver.sendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
+                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
+                });
 
-                }
-
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                senderActor?.Send(m =>
                 {
-                    sender.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 1));
-                }
+                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 1));
+                });
             }
             else
             {
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                senderActor?.Send(m =>
                 {
-                    switch (code)
+                    var sender = m.getCharacterById(data.SenderPlayerId);
+                    if (sender != null)
                     {
-                        case InviteResponseCode.ChatRoom_AlreadInRoom:
-                            sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already using Maple Messenger"));
-                            break;
-                        case InviteResponseCode.MANAGING_INVITE:
-                            sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already managing a Maple Messenger invitation"));
-                            break;
-                        case InviteResponseCode.InviteesNotFound:
-                            sender.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 0));
-                            break;
-                        case InviteResponseCode.ChatRoom_CapacityFull:
-                            sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : You cannot have more than 3 people in the Maple Messenger"));
-                            break;
-                        default:
-                            _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", data.Type, code);
-                            break;
+                        switch (code)
+                        {
+                            case InviteResponseCode.ChatRoom_AlreadInRoom:
+                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already using Maple Messenger"));
+                                break;
+                            case InviteResponseCode.MANAGING_INVITE:
+                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already managing a Maple Messenger invitation"));
+                                break;
+                            case InviteResponseCode.InviteesNotFound:
+                                sender.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 0));
+                                break;
+                            case InviteResponseCode.ChatRoom_CapacityFull:
+                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : You cannot have more than 3 people in the Maple Messenger"));
+                                break;
+                            default:
+                                _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", data.Type, code);
+                                break;
+                        }
                     }
-                }
+                });
             }
         }
     }

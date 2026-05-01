@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Players;
 using Application.Module.Marriage.Channel.Net;
@@ -10,6 +11,7 @@ namespace Application.Module.Marriage.Channel.Commands
 {
     internal class InvokeMarriageBrokenCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeMarriageBrokenCommand);
         BreakMarriageResponse data;
 
         public InvokeMarriageBrokenCommand(BreakMarriageResponse data)
@@ -17,16 +19,16 @@ namespace Application.Module.Marriage.Channel.Commands
             this.data = data;
         }
 
-        public Task Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (data.Code != 0)
             {
-                return Task.CompletedTask;
+                return;
             }
 
 
 
-            var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.Request.MasterId);
+            var chr = ctx.getPlayerStorage().getCharacterById(data.Request.MasterId);
             if (chr != null)
             {
                 RemoveMarriageItems(chr);
@@ -36,7 +38,7 @@ namespace Application.Module.Marriage.Channel.Commands
                 chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
             }
 
-            var partner = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.MasterPartnerId);
+            var partner = ctx.getPlayerStorage().getCharacterById(data.MasterPartnerId);
             if (partner != null)
             {
                 RemoveMarriageItems(partner);
@@ -45,7 +47,6 @@ namespace Application.Module.Marriage.Channel.Commands
                 //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
                 partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
             }
-            return Task.CompletedTask;
         }
 
         void RemoveMarriageItems(Player chr)

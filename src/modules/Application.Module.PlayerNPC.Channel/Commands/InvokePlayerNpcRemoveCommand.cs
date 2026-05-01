@@ -1,20 +1,17 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Shared.MapObjects;
 using AutoMapper;
 using LifeProto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using XmlWzReader;
 
 namespace Application.Module.PlayerNPC.Channel.Commands
 {
     internal class InvokePlayerNpcRemoveCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokePlayerNpcRemoveCommand);
         UpdateMapPlayerNPCResponse data;
 
         public InvokePlayerNpcRemoveCommand(UpdateMapPlayerNPCResponse res)
@@ -22,19 +19,19 @@ namespace Application.Module.PlayerNPC.Channel.Commands
             this.data = res;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var _mapper = ctx.WorldChannel.NodeService.ServiceProvider.GetRequiredService<IMapper>();
+            var _mapper = ctx.NodeService.ServiceProvider.GetRequiredService<IMapper>();
             var updatedList = _mapper.Map<PlayerNpc[]>(data.UpdatedList);
             var newData = _mapper.Map<PlayerNpc>(data.NewData);
 
-            var chr = ctx.WorldChannel.Players.getCharacterById(newData.PlayerId);
+            var chr = ctx.Players.getCharacterById(newData.PlayerId);
             if (chr != null)
             {
                 chr.dropMessage($"PlayerNpc创建成功");
             }
 
-            var mapFactory = ctx.WorldChannel.getMapFactory();
+            var mapFactory = ctx.getMapFactory();
             if (mapFactory.TryGetMap(data.MapId, out var map))
             {
                 var playerNpcs =

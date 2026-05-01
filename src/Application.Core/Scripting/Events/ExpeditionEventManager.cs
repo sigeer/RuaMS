@@ -1,48 +1,36 @@
 using Application.Core.Channel;
-using scripting.Event;
-using server.expeditions;
+using Application.Core.scripting.Events.Abstraction;
+using Application.Resources.Messages;
+using System.Timers;
+using tools;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public class ExpeditionEventManager : AbstractInstancedEventManager
+    public abstract class ExpeditionEventManager : AbstractInstancedEventManager
     {
-        public ExpeditionEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+        public int BossId { get; }
+        public int RegistrationTime { get; init; }
+        public ExpeditionEventManager(WorldChannel cserv, string name, int bossId) : base(cserv, name)
         {
+            BossId = bossId;
+
+            MaxLobbys = 1;
         }
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            return new ExpeditionEventInstanceManager(this, instanceName);
+            return new ExpeditionEventInstanceManager(cserv, Name, Name);
         }
 
-        #region Expedition
-        public bool StartInstance(Player leader)
-        {
-            return StartInstance(-1, leader);
-        }
+        public ExpeditionEventInstanceManager? GetExpeditionEventInstanceManager() => getInstance(Name) as ExpeditionEventInstanceManager;
 
-        public bool StartInstance(int lobbyId, Player leader, int difficult = 1)
-        {
-            return StartInstance(-1, leader);
-        }
 
-        public bool StartExpeditionInstance(Expedition exped)
-        {
-            return StartExpeditionInstance(-1, exped);
-        }
-
-        public bool StartExpeditionInstance(int lobbyId, Expedition exped)
-        {
-            return StartExpeditionInstance(lobbyId, exped, exped.getLeader());
-        }
-
-        //Expedition method: starts an expedition
-        bool StartExpeditionInstance(int lobbyId, Expedition exped, Player leader)
+        public override CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1)
         {
             if (this.isDisposed())
             {
-                return false;
+                return CreateInstanceResult.Disposed;
             }
 
             try
@@ -60,21 +48,21 @@ namespace Application.Core.Scripting.Events
                                 lobbyId = GetAvailableLobbyInstance();
                                 if (lobbyId == -1)
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
                             else
                             {
                                 if (!TryRegisterLobby(lobbyId))
                                 {
-                                    return false;
+                                    return CreateInstanceResult.LobbyLimited;
                                 }
                             }
 
-                            ExpeditionEventInstanceManager eim;
+                            ExpeditionEventInstanceManager? eim = null;
                             try
                             {
-                                eim = createInstance<ExpeditionEventInstanceManager>("setup", leader.getClient().getChannel());
+                                eim = CreateInstance(1, lobbyId) as ExpeditionEventInstanceManager;
                                 registerEventInstance(eim, lobbyId);
                             }
                             catch (EventInstanceInProgressException)
@@ -84,19 +72,17 @@ namespace Application.Core.Scripting.Events
                             }
 
                             eim.setLeader(leader);
-
-                            exped.start();
-                            eim.registerExpedition(exped);
+                            eim.registerPlayer(leader);
 
                             eim.startEvent();
                         }
                         catch (Exception ex)
                         {
                             log.Error(ex, "Event script startInstance");
-                            return false;
+                            return CreateInstanceResult.Unknown;
                         }
 
-                        return true;
+                        return CreateInstanceResult.Success;
                     }
                     finally
                     {
@@ -111,8 +97,90 @@ namespace Application.Core.Scripting.Events
                 playerPermit.Remove(leader.getId());
             }
 
-            return false;
+            return CreateInstanceResult.Unknown;
         }
-        #endregion
+
+        public override AbstractEventInstanceManager Setup(int level, int lobbyId)
+        {
+            var eim = newInstance(_name + lobbyId);
+            eim.setProperty("level", level);
+
+            OnSetup(eim, level, lobbyId);
+
+            respawnStages(eim);
+
+            eim.startEventTimer(RegistrationTime * 1000);
+
+            return eim;
+        }
+
+        public override void AfterSeup(AbstractEventInstanceManager eim)
+        {
+            base.AfterSeup(eim);
+
+            eim.getLeader().getMap().BroadcastAll(e =>
+            {
+                if (e != eim.getLeader())
+                    e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
+            });
+            eim.getLeader()?.LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
+        }
+
+        public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        {
+            var pEim = eim as ExpeditionEventInstanceManager;
+            if (pEim.isRegistering())
+            {
+                chr.sendPacket(PacketCreator.getClock((int)(eim.getTimeLeft() / 1000)));
+            }
+            else
+            {
+                base.OnPlayerEntry(eim, chr);
+            }
+        }
+
+        public override void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
+        {
+            var pEim = eim as ExpeditionEventInstanceManager;
+            if (pEim.isRegistering())
+            {
+                eim.unregisterPlayer(player);
+                player.sendPacket(PacketCreator.removeClock());
+
+                eim.LightBlue(nameof(ClientMessage.Expedition_Left), player.Name);
+                player.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
+            }
+            else
+            {
+                base.OnPlayerExit(eim, player);
+            }
+        }
+
+        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        {
+            var pEim = eim as ExpeditionEventInstanceManager;
+            if (pEim.isRegistering())
+            {
+                eim.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
+            }
+            else
+            {
+                base.OnTimeOut(eim);
+            }
+        }
+
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
+        {
+            switch (r)
+            {
+                case CreateInstanceResult.Success:
+                    return "#r" + c.CurrentCulture.GetMobName(BossId) + " 远征#k 已经创建。\r\n\r\n再次与我交谈，查看当前队伍，或开始战斗！";
+                case CreateInstanceResult.LobbyLimited:
+                    return "抱歉，您已经达到了此次远征的尝试配额！请另选他日再试……";
+                default:
+                    return "在开始远征时发生了意外错误，请稍后重试。";
+            }
+        }
+
     }
 }

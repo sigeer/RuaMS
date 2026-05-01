@@ -2,6 +2,7 @@ namespace Application.Core.Channel.Commands
 {
     internal record InvokeDropMessageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeDropMessageCommand);
         int playerId;
         int type;
         string message;
@@ -15,18 +16,15 @@ namespace Application.Core.Channel.Commands
             this.paramsValue = paramsValue;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var chr = ctx.WorldChannel.getPlayerStorage().getCharacterById(playerId);
-            if (chr != null)
-            {
-                chr.TypedMessage(type, message, paramsValue);
-            }
+            ctx.getPlayerStorage().GetCharacterClientById(playerId)?.TypedMessage(type, message, paramsValue);
         }
     }
 
     internal record InvokeMultiDropMessageCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeMultiDropMessageCommand);
         IEnumerable<int> playerIds;
         int type;
         string message;
@@ -40,11 +38,11 @@ namespace Application.Core.Channel.Commands
             this.paramsValue = paramsValue;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (playerIds.Contains(-1))
             {
-                foreach (var player in ctx.WorldChannel.getPlayerStorage().getAllCharacters())
+                foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
                     player.TypedMessage(type, message, paramsValue);
                 }
@@ -53,7 +51,7 @@ namespace Application.Core.Channel.Commands
             {
                 foreach (var id in playerIds)
                 {
-                    var player = ctx.WorldChannel.getPlayerStorage().getCharacterById(id);
+                    var player = ctx.getPlayerStorage().getCharacterById(id);
                     if (player != null)
                     {
                         player.TypedMessage(type, message, paramsValue);
@@ -66,6 +64,8 @@ namespace Application.Core.Channel.Commands
 
     internal record InvokeMultiDropMessageCommandPlus : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeMultiDropMessageCommandPlus);
+
         IEnumerable<int> playerIds;
         NoticeType type;
         Func<Player, string> _getMessage;
@@ -76,11 +76,11 @@ namespace Application.Core.Channel.Commands
             _getMessage = getMessage;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (playerIds.Contains(-1))
             {
-                foreach (var player in ctx.WorldChannel.getPlayerStorage().getAllCharacters())
+                foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
                     player.TypedMessage((int)type, _getMessage(player));
                 }
@@ -89,7 +89,7 @@ namespace Application.Core.Channel.Commands
             {
                 foreach (var id in playerIds)
                 {
-                    var player = ctx.WorldChannel.getPlayerStorage().getCharacterById(id);
+                    var player = ctx.getPlayerStorage().getCharacterById(id);
                     if (player != null)
                     {
                         player.TypedMessage((int)type, _getMessage(player));

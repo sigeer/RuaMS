@@ -1,16 +1,14 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Module.Marriage.Channel.Net;
 using MarriageProto;
-using Microsoft.AspNetCore.Hosting.Server;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using XmlWzReader;
 
 namespace Application.Module.Marriage.Channel.Commands
 {
     internal class InvokeSpouseChatCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeSpouseChatCommand);
+
         SendSpouseChatResponse data;
 
         public InvokeSpouseChatCommand(SendSpouseChatResponse data)
@@ -18,21 +16,21 @@ namespace Application.Module.Marriage.Channel.Commands
             this.data = data;
         }
 
-        public Task Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var sender = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.Request.SenderId);
+            var sender = ctx.getPlayerStorage().GetCharacterClientById(data.Request.SenderId);
             if (sender != null)
             {
                 if (data.Code == 1)
                 {
-                    sender.dropMessage(5, "You don't have a spouse.");
-                    return Task.CompletedTask;
+                    sender.TypedMessage(5, "You don't have a spouse.");
+                    return;
                 }
 
                 if (data.Code == 2)
                 {
-                    sender.dropMessage(5, "Your spouse is currently offline.");
-                    return Task.CompletedTask;
+                    sender.TypedMessage(5, "Your spouse is currently offline.");
+                    return;
                 }
 
                 sender.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
@@ -40,13 +38,12 @@ namespace Application.Module.Marriage.Channel.Commands
 
             if (data.Code == 0)
             {
-                var receiver = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.SenderPartnerId);
+                var receiver = ctx.getPlayerStorage().GetCharacterClientById(data.SenderPartnerId);
                 if (receiver != null)
                 {
                     receiver.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
                 }
             }
-            return Task.CompletedTask;
         }
     }
 }

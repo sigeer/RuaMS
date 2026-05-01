@@ -3,21 +3,24 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Shared.Events;
-using scripting.Event.scheduler;
+using Application.Utility.Tickables;
 using server;
 using server.life;
 using server.maps;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Scripting.Events;
 
-public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable
+public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
-    private Dictionary<int, Player> chars = new();
+    protected Dictionary<int, Player> chars = new();
     /// <summary>
     /// 每关 已领取奖励的玩家
     /// </summary>
@@ -25,19 +28,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
-    public AbstractInstancedEventManager EventManager { get; }
-    private EventScriptScheduler ess;
+    public AbstractInstancedEventManager EventManager => ChannelServer.getEventSM().getEventManager(EventName) as AbstractInstancedEventManager;
+
     protected MapManager mapManager;
     private string name;
     private Dictionary<string, object> props = new();
-    private Dictionary<string, object> objectProps = new();
+
     private long timeStarted = 0;
     private long eventTime = 0;
 
     public int LobbyId { get; set; } = -1;
 
-    private ScheduledFuture? event_schedule = null;
-    private bool disposed = false;
+
+    protected bool disposed = false;
     protected bool eventCleared = false;
     protected bool eventStarted = false;
 
@@ -58,12 +61,24 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private HashSet<int> exclusiveItems = new();
     public EventInstanceType Type { get; set; }
 
-    public AbstractEventInstanceManager(AbstractInstancedEventManager em, string name)
+    public Dictionary<string, string> Properties { get; set; } = new();
+
+    /// <summary>
+    /// 已通过关卡
+    /// </summary>
+    public Dictionary<int, StageStatus> ClearedMaps { get; set; } = [];
+    public int Level { get; set; } = 1;
+    public string EventName { get; }
+    public WorldChannel ChannelServer { get; }
+    public AbstractEventInstanceManager(WorldChannel worldChannel, string emName, string instanceName)
     {
-        EventManager = em;
-        this.name = name;
-        this.ess = new EventScriptScheduler(EventManager.getChannelServer());
-        this.mapManager = new MapManager(this, EventManager.getChannelServer());
+        ChannelServer = worldChannel;
+        EventName = emName;
+        this.name = instanceName;
+
+        this.mapManager = new MapManager(this, ChannelServer);
+
+        SubTickables = [mapManager];
     }
 
     public void setName(string name)
@@ -71,7 +86,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         this.name = name;
     }
 
-    public EventManager getEm() => EventManager;
+    public AbstractInstancedEventManager getEm() => EventManager;
 
     public int getEventPlayersJobs()
     {
@@ -183,24 +198,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
 
 
-    #region 触发脚本事件
-    public object? invokeScriptFunction(string name, params object[] args)
-    {
-        if (!disposed)
-        {
-            return EventManager.getIv().CallFunction(name, args).ToObject();
-        }
-        else
-        {
-            return null;
-        }
-    }
-
+    #region 触发事件
     /// <summary>
-    /// 离开地图
+    /// 退出副本
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void exitPlayer(Player chr)
+    public void exitPlayer(Player chr)
     {
         if (chr == null || !chr.isLoggedin())
         {
@@ -209,73 +212,45 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         unregisterPlayer(chr);
 
-        try
-        {
-            invokeScriptFunction("playerExit", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", EventManager.getName());
-        }
+        EventManager.OnPlayerExit(this, chr);
     }
 
-    public virtual void unregisterPlayer(Player chr)
+
+    public void unregisterPlayer(Player chr)
     {
-        try
-        {
-            invokeScriptFunction("playerUnregistered", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Event script {ScriptName} does not implement the playerUnregistered function", EventManager.getName());
-        }
+        EventManager.OnPlayerUnregister(this, chr);
 
         chars.Remove(chr.getId());
         chr.setEventInstance(null);
 
         gridRemove(chr);
         dropExclusiveItems(chr);
+
+        if (chars.Count == 0)
+        {
+            Dispose();
+        }
     }
 
-    public virtual void changedMap(Player chr, int mapId)
+
+    public void changedMap(Player chr, int mapId)
     {
-        try
-        {
-            invokeScriptFunction("changedMap", this, chr, mapId);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedMap", EventManager.getName());
-        } // optional
+        EventManager.OnPlayerMapChanging(this, chr, mapId);
     }
 
-    public virtual void afterChangedMap(Player chr, int mapId)
+    public void afterChangedMap(Player chr, int mapId)
     {
-        try
-        {
-            invokeScriptFunction("afterChangedMap", this, chr, mapId);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterChangedMap", EventManager.getName());
-        } // optional
+        EventManager.OnPlayerMapChanged(this, chr, mapId);
     }
 
-    public virtual void changedLeader(Player ldr)
+    public void changedLeader(Player ldr)
     {
-        try
-        {
-            invokeScriptFunction("changedLeader", this, ldr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "changedLeader", EventManager.getName());
-        }
+        EventManager.OnLeaderChanged(this, ldr);
 
         leaderId = ldr.getId();
     }
 
-    public virtual void monsterKilled(Monster mob, bool hasKiller)
+    public void monsterKilled(Monster mob, ICombatantObject? killer)
     {
         int scriptResult = 0;
 
@@ -293,204 +268,103 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         if (scriptResult > 0)
         {
-            try
-            {
-                invokeScriptFunction("monsterKilled", mob, this, hasKiller);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterKilled", EventManager.getName());
-            }
+            EventManager.OnMobKilled(this, mob, killer);
 
             if (scriptResult > 1)
             {
-                try
-                {
-                    invokeScriptFunction("allMonstersDead", this, hasKiller);
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "allMonstersDead", EventManager.getName());
-                }
+                EventManager.OnMobClear(this, mob.getMap());
             }
         }
     }
 
-    public virtual void friendlyKilled(Monster mob, bool hasKiller)
+    public void friendlyKilled(Monster mob, ICombatantObject? killer)
     {
-        try
-        {
-            invokeScriptFunction("friendlyKilled", mob, this, hasKiller);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyKilled", EventManager.getName());
-        } //optional
+        EventManager.OnFriendlyMobKilled(this, mob, killer);
     }
 
-    public virtual void friendlyDamaged(Monster mob)
+    public void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
     {
-        try
-        {
-            invokeScriptFunction("friendlyDamaged", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyDamaged", EventManager.getName());
-        } // optional
+        EventManager.OnFriendlyMobDamaged(this, mob, attacker, damage);
     }
 
-    public virtual void friendlyItemDrop(Monster mob)
+    public void friendlyItemDrop(Monster mob)
     {
-        try
-        {
-            invokeScriptFunction("friendlyItemDrop", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "friendlyItemDrop", EventManager.getName());
-        } // optional
+        EventManager.OnFriendlyMobDrop(this, mob);
     }
 
-    public virtual void playerKilled(Player chr)
+    public void playerKilled(Player chr)
     {
-        try
-        {
-            invokeScriptFunction("playerDead", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDead", EventManager.getName());
-        } // optional
+        EventManager.OnPlayerDied(this, chr);
     }
 
-    public virtual void reviveMonster(Monster mob)
+    public void reviveMonster(Monster mob)
     {
-        try
-        {
-            invokeScriptFunction("monsterRevive", this, mob);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterRevive", EventManager.getName());
-        } // optional
+        EventManager.OnMobRevive(this, mob);
     }
 
-    public virtual bool revivePlayer(Player chr)
+    public bool revivePlayer(Player player)
     {
-        try
-        {
-            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr) ?? true);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerRevive", EventManager.getName());
-        } // optional
-
-        return true;
+        return EventManager.OnPlayerRevive(this, player);
     }
 
-    public virtual void playerDisconnected(Player chr)
+    public void playerDisconnected(Player chr)
     {
-        try
-        {
-            invokeScriptFunction("playerDisconnected", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerDisconnected", EventManager.getName());
-        }
+        EventManager.OnPlayerDisconnected(this, chr);
 
-        if (getEm().AllowReconnect)
+        if (EventManager.AllowReconnect)
         {
             chr.Client.CurrentServer.EventRecallManager?.storeEventInstance(chr.Id, this);
         }
     }
 
-    public virtual void monsterKilled(Player chr, Monster mob)
+    public void monsterKilled(Player chr, Monster mob)
     {
         try
         {
-            int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
+            //int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
 
-            if (inc != 0)
-            {
-                OnMonsterValueChanged(chr, mob, inc);
-            }
+            OnMonsterValueChanged(chr, mob, 1);
         }
         catch (Exception ex)
         {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterValue", EventManager.getName());
+            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "monsterValue", EventManager.Name);
         }
     }
 
-    protected virtual void OnMonsterValueChanged(Player chr, Monster mob, int val)
+    protected void OnMonsterValueChanged(Player chr, Monster mob, int val)
     {
         killCount[chr] = killCount.GetValueOrDefault(chr) + val;
     }
 
-    public virtual void leftParty(Player chr)
+    public void leftParty(Player chr)
     {
-        try
-        {
-            invokeScriptFunction("leftParty", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "leftParty", EventManager.getName());
-        }
+        EventManager.OnPlayerLeftParty(this, chr);
     }
 
-    public virtual void disbandParty()
+    public void disbandParty()
     {
-        try
-        {
-            invokeScriptFunction("disbandParty", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "disbandParty", EventManager.getName());
-        }
+        EventManager.OnPartyDisband(this);
     }
 
-    public virtual void clearPQ()
+    public void clearPQ()
     {
-        try
-        {
-            invokeScriptFunction("clearPQ", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "clearPQ", EventManager.getName());
-        }
+        EventManager.ClearPQ(this);
     }
 
     /// <summary>
     /// playerExit
     /// </summary>
     /// <param name="chr"></param>
-    public virtual void removePlayer(Player chr)
+    public void removePlayer(Player chr)
     {
-        try
-        {
-            invokeScriptFunction("playerExit", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerExit", EventManager.getName());
-        }
+        EventManager.OnPlayerExit(this, chr);
     }
 
     public virtual void startEvent()
     {
-        try
-        {
-            invokeScriptFunction("afterSetup", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "afterSetup", EventManager.getName());
-        }
+        eventStarted = true;
+
+        EventManager.AfterSeup(this);
     }
 
     public virtual void setEventCleared()
@@ -502,7 +376,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
 
-        EventManager.disposeInstance(name);
+        EventManager.DisposeInstance(name);
     }
     #endregion
 
@@ -526,17 +400,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         if (runEntryScript)
         {
-            try
-            {
-                invokeScriptFunction("playerEntry", this, chr);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "playerEntry", EventManager.getName());
-            }
+            EventManager.OnPlayerEntry(this, chr);
         }
     }
-
 
 
     public void dropMessage(int type, string message)
@@ -547,6 +413,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
+    EventInstanceTimperDismissRequest? _dismissRequest;
     public void restartEventTimer(long time)
     {
         stopEventTimer();
@@ -555,32 +422,27 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void startEventTimer(long time)
     {
-        timeStarted = EventManager.getChannelServer().Node.getCurrentTime();
-        eventTime = time;
+        timeStarted = EventManager.ChannelServer.Node.getCurrentTime();
 
-        foreach (Player chr in getPlayers())
+        if (time >= 0)
         {
-            chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
+            eventTime = time;
+
+            foreach (Player chr in getPlayers())
+            {
+                chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
+            }
+
+            _dismissRequest = new EventInstanceTimperDismissRequest(this, timeStarted + time);
+            SubTickables.Add(_dismissRequest);
         }
-
-        event_schedule = EventManager.getChannelServer().TimerManager.schedule(() =>
-        {
-            EventManager.getChannelServer().Post(new EventInstanceDismissTimerCommand(this));
-        }, time);
     }
 
     public void DismissEventTimer()
     {
         dismissEventTimer();
 
-        try
-        {
-            invokeScriptFunction("scheduledTimeout", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Event script {ScriptName} does not implement the scheduledTimeout function", EventManager.getName());
-        }
+        EventManager.OnTimeOut(this);
     }
 
     private void dismissEventTimer()
@@ -590,18 +452,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.sendPacket(PacketCreator.removeClock());
         }
 
-        event_schedule = null;
+
         eventTime = 0;
         timeStarted = 0;
     }
 
     public void stopEventTimer()
     {
-        if (event_schedule != null)
-        {
-            event_schedule.cancel(false);
-            event_schedule = null;
-        }
+        _dismissRequest?.Status = TickableStatus.Remove;
 
         dismissEventTimer();
     }
@@ -613,7 +471,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public long getTimeLeft()
     {
-        return eventTime - (EventManager.getChannelServer().Node.getCurrentTime() - timeStarted);
+        return eventTime - (EventManager.ChannelServer.Node.getCurrentTime() - timeStarted);
     }
 
     public virtual void registerParty(List<Player> eligibleMembers)
@@ -671,18 +529,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             return;
         }
 
-        try
-        {
-            invokeScriptFunction("dispose", this);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.getName());
-        }
+        Status = TickableStatus.Remove;
+        //try
+        //{
+        //    invokeScriptFunction("dispose", this);
+        //}
+        //catch (Exception ex)
+        //{
+        //    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.Name);
+        //}
         disposed = true;
-
-        ess.dispose();
-
+        stopEventTimer();
 
         foreach (Player chr in chars.Values)
         {
@@ -692,24 +549,20 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         mobs.Clear();
         // ess = null;
 
-        if (event_schedule != null)
-        {
-            event_schedule.cancel(false);
-            event_schedule = null;
-        }
-
         killCount.Clear();
         props.Clear();
-        objectProps.Clear();
 
         if (!eventCleared)
         {
-            EventManager.disposeInstance(name);
+            EventManager.DisposeInstance(name);
         }
 
-        EventManager.getChannelServer().TimerManager.schedule(() =>
+        EventManager.ChannelServer.TimerManager.schedule(() =>
         {
-            EventManager.getChannelServer().Post(new MapManagerDisposeCommand(mapManager));
+            EventManager.ChannelServer.Send(w =>
+            {
+                mapManager.Dispose();
+            });
         }, TimeSpan.FromMinutes(1));
 
     }
@@ -719,12 +572,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return mapManager;
     }
 
-    public void schedule(string methodName, long delay)
+    public void Schedule(Action<AbstractEventInstanceManager> nextAction, long delay)
     {
-        if (ess != null)
-        {
-            ess.registerEntry(new EventInstanceCallMethodCommand(this, methodName), delay);
-        }
+        SubTickables.Add(new EventInstanceScheduleRequest(nextAction, this, EventManager.ChannelServer.Node.getCurrentTime() + delay));
     }
 
 
@@ -773,10 +623,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return props.AddOrUpdateReturnOldValue(key, value);
     }
 
-    public void setObjectProperty(string key, object obj)
-    {
-        objectProps.AddOrUpdate(key, obj);
-    }
 
     public string? getProperty(string key)
     {
@@ -789,12 +635,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         var d = props.GetValueOrDefault(key);
         return Convert.ToInt32(d);
-    }
-
-    public object? getObjectProperty(string key)
-    {
-
-        return objectProps.GetValueOrDefault(key);
     }
 
 
@@ -861,17 +701,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        var npc = LifeFactory.Instance.getNPC(npcId);
-        if (npc != null)
-        {
-            npc.setPosition(pos);
-            npc.setCy(pos.Y);
-            npc.setRx0(pos.X + 50);
-            npc.setRx1(pos.X - 50);
-            npc.setFh(map.Footholds.FindBelowFoothold(pos).getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-        }
+        map.SpawnNpc(npcId, pos);
     }
 
     public void dispatchRaiseQuestMobCount(int mobid, int mapid)
@@ -943,24 +773,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return onMapClearMeso.ElementAt(stage - 1);
     }
 
-    List<int> getClearStageBonus(int stage)
-    {
-        List<int> list = new();
-        list.Add(getClearStageExp(stage));
-        list.Add(getClearStageMeso(stage));
-
-        return list;
-    }
-
-    private void dropExclusiveItems(Player chr)
+    public void dropExclusiveItems(Player chr)
     {
         chr.Bag.ClearPartyQuestItems();
-        //AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
-
-        //foreach (int item in exclusiveItems)
-        //{
-        //    api.removeAll(item);
-        //}
     }
 
     public void dropAllExclusiveItems()
@@ -1035,7 +850,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
     /// <summary>
-    /// 发放完全通关奖励
+    /// 发放通关奖励
     /// </summary>
     /// <param name="player"></param>
     /// <param name="eventLevel"></param>
@@ -1046,7 +861,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         int rewardExp;
         var rewardIndex = eventLevel - 1;
 
-        if (!CanGiveReward(player, -eventLevel))
+        if (!CanGiveReward(player, -1))
         {
             return true;
         }
@@ -1078,7 +893,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             player.gainExp(rewardExp);
         }
-        SetRewardClaimed(player, -eventLevel);
+        SetRewardClaimed(player, -1);
         return true;
     }
 
@@ -1282,11 +1097,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void recoverOpenedGate(Player chr, int thisMapId)
     {
-        KeyValuePair<string, int>? gateData = null;
-
-        gateData = openedGates.GetValueOrDefault(thisMapId);
-
-        if (gateData != null)
+        if (openedGates.TryGetValue(thisMapId, out var gateData) && gateData != null)
         {
             chr.sendPacket(PacketCreator.environmentChange(gateData.Value.Key, gateData.Value.Value));
         }
@@ -1298,7 +1109,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="thisStage"></param>
     public void giveEventPlayersStageReward(int thisStage)
     {
-        List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
+        var rewardExp = getClearStageExp(thisStage);
+        var rewardMeso = getClearStageMeso(thisStage);
 
         var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
         var players = getPlayerList();
@@ -1307,8 +1119,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             if (CanGiveReward(mc, thisStage))
             {
                 SetRewardClaimed(mc, thisStage);
-                mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(list[1] * mc.getMesoRate()),  GainItemShow.ShowInChat);
+                mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
+                mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
     }
@@ -1319,15 +1131,16 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="thisStage"></param>
     public void GiveEventClearReward(Player mc, int thisStage)
     {
-        List<int> list = getClearStageBonus(thisStage);     // will give bonus exp & mesos to everyone in the event
+        var rewardExp = getClearStageExp(thisStage);
+        var rewardMeso = getClearStageMeso(thisStage);
 
         var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
 
         if (CanGiveReward(mc, thisStage))
         {
             SetRewardClaimed(mc, thisStage);
-            mc.gainExp((int)(list[0] * mc.getExpRate() * expExtraBonus), true, true);
-            mc.GainMeso((int)(list[1] * mc.getMesoRate()), GainItemShow.ShowInChat);
+            mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
+            mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
         }
     }
 
@@ -1471,6 +1284,44 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             arr.Add(chr.Id);
         else
             rewardedChr[stage] = new HashSet<int>() { chr.Id };
+    }
+
+    public TickableStatus Status { get; set; }
+    public List<ITickable> SubTickables { get; }
+    public virtual void OnTick(long now)
+    {
+        this.ProcessSubTickables(now);
+    }
+
+
+    class EventInstanceScheduleRequest : DelayedTickable
+    {
+        Action<AbstractEventInstanceManager> _action;
+        AbstractEventInstanceManager _eim;
+        public EventInstanceScheduleRequest(Action<AbstractEventInstanceManager> action, AbstractEventInstanceManager eim, long next) : base(next)
+        {
+            _action = action;
+            _eim = eim;
+        }
+
+        protected override void Handle(long now)
+        {
+            _action(_eim);
+        }
+    }
+
+    class EventInstanceTimperDismissRequest : DelayedTickable
+    {
+        AbstractEventInstanceManager _eim;
+        public EventInstanceTimperDismissRequest(AbstractEventInstanceManager eim, long next) : base(next)
+        {
+            _eim = eim;
+        }
+
+        protected override void Handle(long now)
+        {
+            _eim.DismissEventTimer();
+        }
     }
 }
 

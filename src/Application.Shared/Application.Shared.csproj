@@ -19,4 +19,8 @@
 		<PackageReference Include="DotNetty.Transport" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Plugins\" />
+	</ItemGroup>
+
 </Project>

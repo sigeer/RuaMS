@@ -20,8 +20,4 @@
 		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Channel\Commands\Node\" />
-	</ItemGroup>
-
 </Project>

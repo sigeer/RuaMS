@@ -13,7 +13,12 @@ namespace Application.Core.Channel.Tasks
 
         public override void HandleRun()
         {
-            _server.PushChannelCommand(new SyncPlayerShopCommand());
+            _server.Broadcast(w =>
+            {
+                var r = w.PlayerShopManager.CheckExpired();
+
+                w.NodeActor.Send(new InvokeSyncPlayerShopCommand(new DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest>(w.Id, r)));
+            });
         }
     }
 }

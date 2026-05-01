@@ -10,6 +10,13 @@ namespace Application.Shared.Constants
         public int X { get; set; }
 
         public int Y { get; set; }
+        public RandomPoint() { }
+        public RandomPoint(int minX, int maxX, int y)
+        {
+            MinX = minX;
+            MaxX = maxX;
+            Y = y;
+        }
 
         public Point GetPoint()
         {

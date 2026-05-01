@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MonsterPuppetAggroCommand: IWorldChannelCommand
     {
+        public string Name => nameof(MonsterPuppetAggroCommand);
         Monster _mob;
 
         public MonsterPuppetAggroCommand(Monster mob)
@@ -14,7 +15,7 @@ namespace Application.Core.Channel.Commands
             _mob = mob;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _mob.ApplyPuppetAggro();
         }

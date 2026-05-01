@@ -60,6 +60,7 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using tools;
 using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static client.inventory.Equip;
@@ -167,11 +168,6 @@ public partial class Player
     public byte[]? QuickSlotLoaded { get; set; }
     public QuickslotBinding? QuickSlotKeyMapped { get; set; }
 
-
-    private ScheduledFuture? dragonBloodSchedule;
-    private ScheduledFuture? beholderHealingSchedule, beholderBuffSchedule, berserkSchedule;
-
-    private ScheduledFuture? recoveryTask = null;
     private ScheduledFuture? extraRecoveryTask = null;
 
     private ScheduledFuture? pendantOfSpirit = null; //1122017
@@ -543,9 +539,9 @@ public partial class Player
         List<BuffStatValueHolder> mbsvhList = getAllStatups();
         foreach (BuffStatValueHolder mbsvh in mbsvhList)
         {
-            if (mbsvh.effect.isMagicDoor())
+            if (mbsvh.Effect.isMagicDoor())
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
                 break;
             }
         }
@@ -749,7 +745,10 @@ public partial class Player
 
         Client.CurrentServer.TimerManager.schedule(() =>
         {
-            Client.CurrentServer.Post(new MapBroadcastJobChangedCommand(this.getMap(), this.Id));
+            MapModel.Send(m =>
+            {
+                m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+            });
         }, 777);
     }
 
@@ -1135,7 +1134,10 @@ public partial class Player
 
         extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
         {
-            Client.CurrentServer.Post(new PlayerExtralRecoveryCommand(this, healHP, healMP));
+            MapModel.Send(m =>
+            {
+                ApplyExtralRecovery(healHP, healMP);
+            });
         }, healInterval, healInterval);
     }
 
@@ -1172,12 +1174,12 @@ public partial class Player
             List<BuffStatValueHolder> mbsvhList = getAllStatups();
             foreach (BuffStatValueHolder mbsvh in mbsvhList)
             {
-                if (mbsvh.effect.isSkill())
+                if (mbsvh.Effect.isSkill())
                 {
-                    if (mbsvh.effect.getBuffSourceId() != Aran.COMBO_ABILITY)
+                    if (mbsvh.Effect.getBuffSourceId() != Aran.COMBO_ABILITY)
                     {
                         // check discovered thanks to Croosade dev team
-                        cancelEffect(mbsvh.effect, false);
+                        cancelEffect(mbsvh.Effect, false);
                     }
                 }
             }
@@ -1191,14 +1193,14 @@ public partial class Player
         {
             if (skillid == 0)
             {
-                if (mbsvh.effect.isSkill() && (mbsvh.effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.effect.getSourceId())))
+                if (mbsvh.Effect.isSkill() && (mbsvh.Effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.Effect.getSourceId())))
                 {
-                    cancelEffect(mbsvh.effect, false);
+                    cancelEffect(mbsvh.Effect, false);
                 }
             }
-            else if (mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skillid)
+            else if (mbsvh.Effect.isSkill() && mbsvh.Effect.getSourceId() == skillid)
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
             }
         }
     }
@@ -1258,6 +1260,15 @@ public partial class Player
     public void dropMessage(int type, string message)
     {
         sendPacket(PacketCommon.serverNotice(type, message));
+    }
+
+    public void Debug(int type, string message)
+    {
+        if (YamlConfig.config.server.USE_DEBUG)
+        {
+            TypedMessage(type, message);
+            Log.Debug(message);
+        }
     }
 
     public void equipChanged()
@@ -1398,19 +1409,19 @@ public partial class Player
             BuffStatValueHolder? mbsvhi = bpl.Value.GetValueOrDefault(mbs);
             if (mbsvhi != null)
             {
-                if (!mbsvhi.effect.isActive(this))
+                if (!mbsvhi.Effect.isActive(this))
                 {
                     continue;
                 }
 
                 if (mbsvhi.value > max.Key)
                 {
-                    max = new(mbsvhi.value, mbsvhi.effect.getStatups().Count);
+                    max = new(mbsvhi.value, mbsvhi.Effect.getStatups().Count);
                     mbsvh = mbsvhi;
                 }
-                else if (mbsvhi.value == max.Key && mbsvhi.effect.getStatups().Count > max.Value)
+                else if (mbsvhi.value == max.Key && mbsvhi.Effect.getStatups().Count > max.Value)
                 {
-                    max = new(mbsvhi.value, mbsvhi.effect.getStatups().Count);
+                    max = new(mbsvhi.value, mbsvhi.Effect.getStatups().Count);
                     mbsvh = mbsvhi;
                 }
             }
@@ -1982,28 +1993,7 @@ public partial class Player
         return RankMove;
     }
 
-    public void clearSavedLocation(SavedLocationType type)
-    {
-        SavedLocations.AddOrUpdate(type, null);
-    }
 
-    public int peekSavedLocation(string type)
-    {
-        var sl = SavedLocations.GetData(type);
-        if (sl == null)
-        {
-            return -1;
-        }
-        return sl.getMapId();
-    }
-
-    public int getSavedLocation(string type)
-    {
-        int m = peekSavedLocation(type);
-        clearSavedLocation(SavedLocationTypeUtils.fromString(type));
-
-        return m;
-    }
 
     public string? getSearch()
     {
@@ -2026,7 +2016,7 @@ public partial class Player
     public StatEffect? getStatForBuff(BuffStat effect)
     {
         BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(effect);
-        return mbsvh?.effect;
+        return mbsvh?.Effect;
     }
 
     public Storage getStorage()
@@ -2110,9 +2100,12 @@ public partial class Player
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.TimerManager.schedule(() =>
+            Client.CurrentServer.NodeService.TimerManager.schedule(() =>
             {
-                Client.CurrentServer.Post(new PlayerEnergyChargeCommand(chr));
+                MapModel.Send(m =>
+                {
+                    ApplyEnergeCharge();
+                });
             }, ceffect.getDuration());
         }
     }
@@ -2139,15 +2132,6 @@ public partial class Player
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
 
-    public bool hasEntered(string script)
-    {
-        return entered.Values.Any(x => x == script);
-    }
-
-    public bool hasEntered(string script, int mapId)
-    {
-        return entered.GetValueOrDefault(mapId) == script;
-    }
 
     public void hasGivenFame(Player to)
     {
@@ -2162,7 +2146,7 @@ public partial class Player
         {
             return false;
         }
-        return mbsvh.effect.isSkill() && mbsvh.effect.getSourceId() == skill.getId();
+        return mbsvh.Effect.isSkill() && mbsvh.Effect.getSourceId() == skill.getId();
     }
 
     public bool isGmJob()
@@ -2689,9 +2673,9 @@ public partial class Player
 
         foreach (BuffStatValueHolder mbsvh in allBuffs)
         {
-            if (ItemConstants.isRateCoupon(mbsvh.effect.getSourceId()))
+            if (ItemConstants.isRateCoupon(mbsvh.Effect.getSourceId()))
             {
-                cancelEffect(mbsvh.effect, false);
+                cancelEffect(mbsvh.Effect, false);
             }
         }
     }
@@ -2777,6 +2761,10 @@ public partial class Player
 
     public void respawn(int returnMap)
     {
+        if (returnMap == MapId.NONE)
+        {
+            returnMap = MapModel.Id;
+        }
         changeMap(returnMap);
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
@@ -3066,25 +3054,56 @@ public partial class Player
         this.battleshipHp = 400 * getSkillLevel(SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP)) + (bshipLevel * 200);
     }
 
-    public void resetEnteredScript()
+    public void clearSavedLocation(SavedLocationType type)
     {
-        entered.Remove(MapModel.getId());
+        SavedLocations.AddOrUpdate(type, null);
     }
 
-    public void resetEnteredScript(int mapId)
+    int peekSavedLocation(string type)
     {
-        entered.Remove(mapId);
-    }
-
-    public void resetEnteredScript(string script)
-    {
-        foreach (int mapId in entered.Keys)
+        var sl = SavedLocations.GetData(type);
+        if (sl == null)
         {
-            if (entered[mapId].Equals(script))
-            {
-                entered.Remove(mapId);
-            }
+            return -1;
         }
+        return sl.getMapId();
+    }
+
+    public int PeekSavedLocation(SavedLocationType type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl == null)
+        {
+            return -1;
+        }
+        return sl.getMapId();
+    }
+
+    public int getSavedLocation(string type)
+    {
+        int m = peekSavedLocation(type);
+        clearSavedLocation(SavedLocationTypeUtils.fromString(type));
+
+        return m;
+    }
+    public int GetSavedLocation(SavedLocationType type)
+    {
+        int m = PeekSavedLocation(type);
+        clearSavedLocation(type);
+
+        return m;
+    }
+
+    public bool TryWarpBackSavedLocation(SavedLocationType type)
+    {
+        var sl = SavedLocations.GetData(type);
+        if (sl != null)
+        {
+            changeMap(sl.getMapId(), sl.getPortal());
+            clearSavedLocation(type);
+            return true;
+        }
+        return false;
     }
 
     public void saveLocationOnWarp()
@@ -3101,13 +3120,19 @@ public partial class Player
         SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
     }
 
+    public void SaveLocation(SavedLocationType type)
+    {
+        Portal? closest = MapModel.findClosestPortal(getPosition());
+        SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
+    }
+
     public void sendPolice(int greason, string reason, int duration)
     {
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
         this.isbanned = true;
         Client.CurrentServer.TimerManager.schedule(() =>
         {
-            Client.CurrentServer.Post(new InvokePlayerDisconnectCommand(Id));
+            Client.CurrentServer.Send(new InvokePlayerDisconnectCommand(Id));
         }, duration);
     }
 
@@ -3610,6 +3635,10 @@ public partial class Player
         sendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new KeyValuePair<Stat, int>(stat, newval)), itemReaction, this));
     }
 
+    /// <summary>
+    /// thread-safe
+    /// </summary>
+    /// <param name="packet"></param>
     public void sendPacket(Packet packet)
     {
         Client.sendPacket(packet);
@@ -3819,7 +3848,10 @@ public partial class Player
         {
             pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
             {
-                Client.CurrentServer.Post(new PlayerPendantExpRateIncreaseCommand(this));
+                MapModel.Send(m =>
+                {
+                    IncreasePendantExpRate();
+                });
             }, TimeSpan.FromHours(1)); //1 hour
         }
     }
@@ -3898,36 +3930,6 @@ public partial class Player
 
     public void Dispose()
     {
-        if (dragonBloodSchedule != null)
-        {
-            dragonBloodSchedule.cancel(true);
-        }
-        dragonBloodSchedule = null;
-
-        if (beholderHealingSchedule != null)
-        {
-            beholderHealingSchedule.cancel(true);
-        }
-        beholderHealingSchedule = null;
-
-        if (beholderBuffSchedule != null)
-        {
-            beholderBuffSchedule.cancel(true);
-        }
-        beholderBuffSchedule = null;
-
-        if (berserkSchedule != null)
-        {
-            berserkSchedule.cancel(true);
-        }
-        berserkSchedule = null;
-
-        if (recoveryTask != null)
-        {
-            recoveryTask.cancel(true);
-        }
-        recoveryTask = null;
-
         if (extraRecoveryTask != null)
         {
             extraRecoveryTask.cancel(true);
@@ -3948,7 +3950,7 @@ public partial class Player
 
         if (MountModel != null)
         {
-            MountModel.empty();
+            MountModel.Dispose();
             MountModel = null;
         }
 
@@ -3957,14 +3959,16 @@ public partial class Player
         Bag.Dispose();
     }
 
-    public void logOff()
+    public async Task logOff()
     {
         // 切换频道/退出商城的保存不能放在断开连接时处理
-        _ = SyncCharAsync(SyncCharacterTrigger.Logoff)
-            .ContinueWith(t =>
-            {
-                Client.CurrentServer.Post(new PlayerLogoutCommand(Id));
-            });
+        await Client.CurrentServer.Send(async w =>
+        {
+            await SyncCharAsync(SyncCharacterTrigger.Logoff);
+
+            RemoveWorldWatcher();
+            setClient(new OfflineClient());
+        });
     }
 
 

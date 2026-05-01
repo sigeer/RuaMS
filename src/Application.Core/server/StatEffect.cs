@@ -29,6 +29,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.tools.RandomUtils;
+using Application.Shared.Constants.Skill;
 using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
@@ -87,6 +88,7 @@ public class StatEffect
     public int Prob { get; private set; }
     public char? DefenseAtt { get; private set; }
     public Disease? DefenseState { get; private set; }
+    public char DefenseStateChar { get; private set; }
 
 
     public bool isActive(Player applyto)
@@ -333,7 +335,9 @@ public class StatEffect
 
                 if (!string.IsNullOrEmpty(mobCard.DefenseState))
                 {
+                    DefenseStateChar = mobCard.DefenseState[0];
                     DefenseState = Disease.GetDiseaseByAb(mobCard.DefenseState);
+
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
 
@@ -715,6 +719,8 @@ public class StatEffect
                 case Aran.ROLLING_SPIN:
                 case Evan.FIRE_BREATH:
                 case Evan.BLAZE:
+                case Paladin.GUARDIAN:
+                case Hero.GUARDIAN:
                     monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
                     break;
                 case NightLord.TAUNT:
@@ -1262,6 +1268,7 @@ public class StatEffect
         localDuration = alchemistModifyVal(chr, localDuration, false);
         //CancelEffectAction cancelAction = new CancelEffectAction(chr, this, starttime);
         //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + localDuration) - Server.getInstance().getCurrentTime()));
+        var expiredAt = localStartTime + localDuration;
 
         chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
         var summonMovementType = getSummonMovementType();
@@ -1330,7 +1337,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         int localsourceid = sourceid;
         int seconds = localDuration / 1000;
-        IMount? givemount = null;
+        Mount? givemount = null;
         if (isMonsterRiding())
         {
             int ridingMountId = 0;
@@ -1367,7 +1374,6 @@ public class StatEffect
 
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
-            givemount.ChannelServer.MountTirednessManager.registerMountHunger(applyto);
 
             localDuration = sourceid;
             localsourceid = ridingMountId;
@@ -1506,8 +1512,12 @@ public class StatEffect
                 }
             }
             else
-            { // assumption: this is heal
-                float hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
+            { 
+                // assumption: this is heal
+                float hpHeal = hp;
+                if (sourceid == Cleric.HEAL)
+                    hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
+
                 hpchange += (int)hpHeal;
                 if (applyfrom.hasDisease(Disease.ZOMBIFY))
                 {
@@ -2155,4 +2165,6 @@ public class StatEffect
     {
         return monsterStatus;
     }
+
+    public Skill? GetSkill() => skill ? SkillFactory.getSkill(sourceid) : null;
 }

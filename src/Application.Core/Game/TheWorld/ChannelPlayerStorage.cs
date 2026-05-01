@@ -1,3 +1,6 @@
+using Application.Core.Game.Maps;
+using Application.Utility.Pipeline;
+
 namespace Application.Core.Game.TheWorld
 {
     public class ChannelPlayerStorage
@@ -29,16 +32,44 @@ namespace Application.Core.Game.TheWorld
         {
             return nameStorage.GetValueOrDefault(name);
         }
-        public Player? this[int id] => getCharacterById(id);
         public Player? getCharacterById(int id)
         {
             return storage.GetValueOrDefault(id);
+        }
+
+        public IClientPlayer? GetCharacterClientById(int id) => storage.GetValueOrDefault(id);
+
+        public IActorInstance<IMap>? GetCharacterActor(int id)
+        {
+            return storage.GetValueOrDefault(id)?.MapModel;
+        }
+
+        public IActorInstance<IMap>? GetCharacterActor(string name)
+        {
+            return nameStorage.GetValueOrDefault(name)?.MapModel;
         }
 
         public List<Player> getAllCharacters()
         {
             return new List<Player>(storage.Values);
         }
+
+        public void ProcessAllCharacters(Action<Player> action)
+        {
+            var all = getAllCharacters();
+            foreach (var item in all)
+            {
+                item.MapModel.Send(m =>
+                {
+                    var chr = m.getCharacterById(item.Id);
+                    if (chr != null)
+                    {
+                        action(chr);
+                    }
+                });
+            }
+        }
+
         public async Task disconnectAll(bool includeGM)
         {
             List<Player> chrList;

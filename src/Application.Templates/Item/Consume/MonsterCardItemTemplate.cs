@@ -24,8 +24,14 @@ namespace Application.Templates.Item.Consume
         public bool RespectPimmune { get; set; }
         [WZPath("spec/respectMimmune")]
         public bool RespectMimmune { get; set; }
+        /// <summary>
+        /// 元素抗性
+        /// </summary>
         [WZPath("spec/defenseAtt")]
         public string? DefenseAtt { get; set; }
+        /// <summary>
+        /// 负面状态抗性
+        /// </summary>
         [WZPath("spec/defenseState")]
         public string? DefenseState { get; set; }
 

@@ -152,6 +152,10 @@ public class DebugCommand : CommandBase
             case "buff":
                 c.OnlinedCharacter.debugListAllBuffs();
                 break;
+
+            case "disease":
+                c.OnlinedCharacter.DebugListAllDisease();
+                break;
         }
     }
 }

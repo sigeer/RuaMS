@@ -6,6 +6,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeSyncPlayerShopCommand : IChannelCommand
     {
+        public string Name => nameof(InvokeSyncPlayerShopCommand);
         DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest> _data;
 
         public InvokeSyncPlayerShopCommand(DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest> data)
@@ -13,17 +14,17 @@ namespace Application.Core.Channel.Commands
             _data = data;
         }
 
-        public void Execute(ChannelNodeCommandContext ctx)
+        public void Execute(WorldChannelServer ctx)
         {
-            if (ctx.Server.SyncPlayerShopSession == null)
-                ctx.Server.SyncPlayerShopSession = ctx.Server.CreateSyncPlayerShopSession();
+            if (ctx.SyncPlayerShopSession == null)
+                ctx.SyncPlayerShopSession = ctx.CreateSyncPlayerShopSession();
 
-            if (ctx.Server.SyncPlayerShopSession.CompleteChunk(_data))
+            if (ctx.SyncPlayerShopSession.CompleteChunk(_data))
             {
                 var request = new ItemProto.BatchSyncPlayerShopRequest();
-                request.List.AddRange(ctx.Server.SyncPlayerShopSession.Chunks);
-                _ = ctx.Server.Transport.BatchSyncPlayerShop(request);
-                ctx.Server.SyncPlayerSession = null;
+                request.List.AddRange(ctx.SyncPlayerShopSession.Chunks);
+                _ = ctx.Transport.BatchSyncPlayerShop(request);
+                ctx.SyncPlayerSession = null;
             }
 
         }

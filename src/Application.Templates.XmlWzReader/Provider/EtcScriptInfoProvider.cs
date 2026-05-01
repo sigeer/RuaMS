@@ -24,14 +24,16 @@ namespace Application.Templates.XmlWzReader.Provider
                 var xDoc = XDocument.Load(reader).Root!;
 
                 List<ScriptInfoTemplate> list = new();
+                var idx = 0;
                 foreach (var item in xDoc.Elements())
                 {
-                    var template = new ScriptInfoTemplate();
+                    var template = new ScriptInfoTemplate(idx);
                     template.Name = item.GetName() ?? "";
                     template.Value = item.GetStringValue() ?? "";
 
                     InsertItem(template);
                     list.Add(template);
+                    idx++;
                 }
 
                 return list;

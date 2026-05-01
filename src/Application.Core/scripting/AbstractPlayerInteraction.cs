@@ -23,20 +23,18 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.ContiMove;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
-using Application.Shared.KeyMaps;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using client.keybind;
-using constants.game;
-using scripting.Event;
 using server.expeditions;
 using server.life;
 using server.partyquest;
@@ -239,9 +237,37 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getClient().getEventManager(@event);
     }
 
+    public TEventManager GetEventManager<TEventManager>(string @event) where TEventManager : EventManager
+    {
+        var em = getClient().getEventManager(@event);
+        if (em == null)
+        {
+            throw new BusinessNotsupportException($"Event: {@event}");
+        }
+
+        return (em as TEventManager) ?? throw new BusinessException($"Error: {@event} 不是 {typeof(TEventManager).Name}");
+    }
+
+    public SoloEventManager GetSoloQuestEventManager(int questId)
+    {
+        var @event = $"q{questId}";
+        var em = getClient().getEventManager(@event);
+        if (em == null)
+        {
+            throw new BusinessNotsupportException($"Event: {@event}");
+        }
+
+        return (em as SoloEventManager) ?? throw new BusinessException($"Error: {@event} 不是 SoloEventManager");
+    }
+
     public AbstractEventInstanceManager? getEventInstance()
     {
         return getPlayer().getEventInstance();
+    }
+
+    public AbstractEventInstanceManager GetEventInstanceTrust()
+    {
+        return getPlayer().getEventInstance() ?? throw new ConversationDiffInstanceException();
     }
 
     public Inventory getInventory(int type)
@@ -315,23 +341,28 @@ public class AbstractPlayerInteraction : IClientMessenger
     {
         int size = Math.Min(itemids.Count, quantity.Count);
 
-        List<ItemInventoryType> addedItems = new();
+        List<ItemQuantity> addedItems = new();
         for (int i = 0; i < size; i++)
         {
-            Item it = new Item(itemids.get(i), 0, (short)quantity.ElementAtOrDefault(i));
-            addedItems.Add(new(it, ItemConstants.getInventoryType(itemids.get(i))));
+            addedItems.Add(new ItemQuantity(itemids.get(i), (short)quantity.ElementAtOrDefault(i)));
         }
 
         return Inventory.checkSpots(c.OnlinedCharacter, addedItems);
     }
 
-    private List<ItemInventoryType> prepareProofInventoryItems(List<ItemQuantity> items)
+    public bool CanHoldAll(IEnumerable<ItemQuantity> items)
     {
-        List<ItemInventoryType> addedItems = new();
+        return Inventory.checkSpots(c.OnlinedCharacter, items);
+    }
+
+
+    private List<TypedItemQuantity> prepareProofInventoryItems(List<ItemQuantity> items)
+    {
+        List<TypedItemQuantity> addedItems = new();
         foreach (var p in items)
         {
             Item it = new Item(p.ItemId, 0, (short)p.Quantity);
-            addedItems.Add(new(it, InventoryType.CANHOLD));
+            addedItems.Add(new((sbyte)InventoryType.CANHOLD, new (p.ItemId, p.Quantity)));
         }
 
         return addedItems;
@@ -381,9 +412,9 @@ public class AbstractPlayerInteraction : IClientMessenger
                         InventoryManipulator.removeById(c, InventoryType.CANHOLD, p.ItemId, p.Quantity, false, false);
                     }
 
-                    List<ItemInventoryType> addItems = prepareProofInventoryItems(toAdd);
+                    List<TypedItemQuantity> addItems = prepareProofInventoryItems(toAdd);
 
-                    bool canHold = Inventory.checkSpots(c.OnlinedCharacter, addItems, true);
+                    bool canHold = Inventory.checkSpots(c.OnlinedCharacter, addItems);
                     if (!canHold)
                     {
                         return false;
@@ -446,11 +477,29 @@ public class AbstractPlayerInteraction : IClientMessenger
         return isQuestStarted(id);
     }
 
+    /// <summary>
+    /// 进行中
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public bool isQuestStarted(int id)
     {
         try
         {
             return getQuestStat(id) == QuestStatus.Status.STARTED;
+        }
+        catch (NullReferenceException e)
+        {
+            Log.Logger.Error(e.ToString());
+            return false;
+        }
+    }
+
+    public bool IsQuestNotStarted(int id)
+    {
+        try
+        {
+            return getQuestStat(id) == QuestStatus.Status.NOT_STARTED;
         }
         catch (NullReferenceException e)
         {
@@ -486,37 +535,11 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public string getQuestProgress(int id, int infoNumber)
     {
-        QuestStatus qs = getPlayer().getQuest(Quest.getInstance(id));
-
-        if (qs.getInfoNumber() == infoNumber && infoNumber > 0)
-        {
-            qs = getPlayer().getQuest(Quest.getInstance(infoNumber));
-            infoNumber = 0;
-        }
-
-        if (qs != null)
-        {
-            return qs.getProgress(infoNumber);
-        }
-        else
-        {
-            return "";
-        }
+        return getPlayer().GetQuestProgress(id, infoNumber);
     }
 
-    public int getQuestProgressInt(int id)
-    {
-        if (int.TryParse(getQuestProgress(id), out var d))
-            return d;
-        return 0;
-    }
-
-    public int getQuestProgressInt(int id, int infoNumber)
-    {
-        if (int.TryParse(getQuestProgress(id, infoNumber), out var d))
-            return d;
-        return 0;
-    }
+    public int getQuestProgressInt(int id) => getPlayer().GetQuestProgressInt(id);
+    public int getQuestProgressInt(int id, int infoNumber) => getPlayer().GetQuestProgressInt(id, infoNumber);
 
     public void resetAllQuestProgress(int id)
     {
@@ -614,7 +637,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public Item? evolvePet(byte slot)
+    public Item? evolvePet(sbyte slot)
     {
         var target = getPlayer().getPet(slot);
         if (target != null)
@@ -668,7 +691,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats, 
+        return getPlayer().GainItem(id, quantity, randomStats,
             showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires: expires);
     }
 
@@ -694,12 +717,12 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void dropMessage(int type, string message)
     {
-        getPlayer().dropMessage(type, message);
+        getPlayer().TypedMessage(type, message);
     }
 
     public void mapMessage(int type, string message)
     {
-        getPlayer().getMap().dropMessage(type, message);
+        getPlayer().getMap().TypedMessage(type, message);
     }
 
     public void mapEffect(string path)
@@ -888,24 +911,12 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        var npc = LifeFactory.Instance.getNPC(npcId);
-        if (npc != null)
-        {
-            npc.setPosition(pos);
-            npc.setCy(pos.Y);
-            npc.setRx0(pos.X + 50);
-            npc.setRx1(pos.X - 50);
-            npc.setFh(map.Footholds.FindBelowFoothold(pos)!.getId());
-            map.addMapObject(npc);
-            map.broadcastMessage(PacketCreator.spawnNPC(npc));
-        }
+        map.SpawnNpc(npcId, pos);
     }
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.Instance.GetMonsterTrust(id);
-        monster.setPosition(new Point(x, y));
-        getPlayer().getMap().spawnMonster(monster);
+        getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
     }
 
     public Monster? getMonsterLifeFactory(int mid)
@@ -1052,12 +1063,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public void endExpedition(Expedition exped)
-    {
-        exped.dispose(true);
-        exped.removeChannelExpedition(getPlayer().getClient().getChannelServer());
-    }
-
     public Expedition? getExpedition(ExpeditionType type)
     {
         return getPlayer().getClient().getChannelServer().getExpedition(type);
@@ -1163,7 +1168,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
         applySealSkill(monster);
         applyReduceAvoid(monster);
-        map.dropMessage(6, message);
+        map.LightBlue(message);
     }
 
     private void applySealSkill(Monster monster)
@@ -1246,16 +1251,16 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
         string status = qs.getMedalProgress().ToString();
         getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 Completed"));
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage("The One Who's Touched the Sky title in progress."));
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 已完成"));
+        getPlayer().sendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
         if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
         {
-            showInfoText("The One Who's Touched the Sky title has been rewarded. Please see NPC Dalair to receive your Medal.");
+            showInfoText("T站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
             getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else
         {
-            showInfoText("The One Who's Touched the Sky title in progress. " + status + "/5 Completed");
+            showInfoText("站在巅峰的人 勋章挑战正在进行中。 " + status + "/5 已完成");
         }
     }
     #endregion
@@ -1266,4 +1271,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         c.CurrentServer.NodeService.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
+
+    public ContiMoveBase? GetContiMove()
+    {
+        return c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap == c.OnlinedCharacter.MapModel || x.StationBMap == c.OnlinedCharacter.MapModel).FirstOrDefault();
+    }
 }

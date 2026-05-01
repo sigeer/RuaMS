@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class MobSkillApplyCommand : IWorldChannelCommand
     {
+        public string Name => nameof(MobSkillApplyCommand);
         Monster _mob;
         MobSkill _skill;
         Player _target;
@@ -16,7 +17,7 @@ namespace Application.Core.Channel.Commands
             _target = target;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {

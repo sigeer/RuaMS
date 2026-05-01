@@ -1,176 +1,296 @@
 using Application.Core.Channel;
-using Application.Core.Game.Relation;
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Resources.Messages;
+using System.Threading.Tasks;
+using tools;
 
 namespace Application.Core.Scripting.Events
 {
-    public class MonsterCarnivalEventManager : AbstractInstancedEventManager
+    public abstract class MonsterCarnivalEventManager : PartyQuestEventManager
     {
-        public List<MonsterCarnivalPreparationRoom> Rooms { get; private set; }
-        public int MinLevel { get; }
-        public int MaxLevel { get; }
-        public MonsterCarnivalEventManager(WorldChannel cserv, IEngine iv, ScriptFile file) : base(cserv, iv, file)
+        public MonsterCarnivalEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
-            Rooms = [];
-            MinLevel = iv.GetValue("minLevel").ToObject<int>();
-            MaxLevel = iv.GetValue("maxLevel").ToObject<int>();
-        }
-
-        public void InsertRoom(string instanceName, int minCount, int map)
-        {
-            Rooms.Add(new MonsterCarnivalPreparationRoom(instanceName, minCount, map));
+            EventTime = 180;
         }
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            return new MonsterCarnivalEventInstanceManager(this, instanceName);
-        }
-
-        public MonsterCarnivalPreparationRoom? GetRoom(int roomIndex) => Rooms.ElementAtOrDefault(roomIndex);
-
-        protected override bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
-        {
-            if (base.RegisterInstanceInternal(instanceName, eim))
-            {
-                var room = Rooms.FirstOrDefault(x => x.InstanceName == instanceName);
-                if (room == null)
-                    return false;
-
-                if (room.Instance != null)
-                    return false;
-
-                room.Instance = eim as MonsterCarnivalEventInstanceManager;
-                return true;
-            }
-            return true;
-        }
-
-        protected override void DisposeInstanceInternal(string name)
-        {
-            base.DisposeInstanceInternal(name);
-            var room = Rooms.FirstOrDefault(x => x.InstanceName == name);
-            if (room != null)
-            {
-                room.Instance = null;
-            }
-        }
-
-        public List<Player> GetPreparationParty(int roomIndex, Team party)
-        {
-            if (party == null)
-            {
-                return new();
-            }
-            try
-            {
-                var room = Rooms[roomIndex];
-                var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv), room, 0);
-                var eligibleParty = result.ToObject<List<Player>>() ?? [];
-                return eligibleParty;
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Script: {Script}", _name);
-            }
-
-            return new();
+            throw new Exception("CPQ内置模板创建，不再通过这个方法创建");
         }
 
 
-        public bool Check2(MonsterCarnivalEventInstanceManager eim)
+        //public bool Check2(MonsterCarnivalEventInstanceManager eim)
+        //{
+        //    try
+        //    {
+        //        var t0 = iv.CallFunction("getEligibleParty", eim.Team0.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+        //        var t1 = iv.CallFunction("getEligibleParty", eim.Team1.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+
+        //        return t0.Count == t1.Count && t0.Count >= eim.Room.MinCount;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.Error(ex, "Script: {Script}", _name);
+        //        return false;
+        //    }
+        //}
+
+
+        public override CreateInstanceResult StartInstance(Player chr, int level = 1, int lobby = -1)
         {
-            try
-            {
-                var t0 = iv.CallFunction("getEligibleParty", eim.Team0.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
-                var t1 = iv.CallFunction("getEligibleParty", eim.Team1.EligibleMembers, eim.Room, 1).ToObject<List<Player>>() ?? [];
+            var roomName = lobby.ToString();
+            if (!instances.TryGetValue(roomName, out var instance))
+                return CreateInstanceResult.Unknown;
 
-                return t0.Count == t1.Count && t0.Count >= eim.Room.MinCount;
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Script: {Script}", _name);
-                return false;
-            }
-        }
-
-
-        public bool StartInstance(Player chr, List<Player> eligiMembers, int roomIndex)
-        {
-            if (roomIndex < 0 || roomIndex >= Rooms.Count)
-                return false;
+            if (instance is not MonsterCarnivalEventInstanceManager eim)
+                return CreateInstanceResult.Unknown;
 
             if (chr.Party == 0)
-                return false;
+                return CreateInstanceResult.RequiredParty;
+            if (!chr.isLeader())
+                return CreateInstanceResult.RequiredLeader;
 
-            var room = Rooms[roomIndex];
-            if (room.Instance != null)
-                return false;
+            var members = GetEligibleParty(chr);
+            if (members.Count == 0)
+                return CreateInstanceResult.Requirement;
 
-            var eim = createInstance<MonsterCarnivalEventInstanceManager>("setup", roomIndex);
-            eim.Initialize(new TeamRegistry(chr.Party, eligiMembers), room);
+            if (eim.CurrentStage != MonsterCarnivalStage.None)
+                return CreateInstanceResult.LobbyLimited;
 
-            foreach (var item in eligiMembers)
-            {
-                eim.registerPlayer(item);
-            }
-
+            eim.EnterLobby(new TeamRegistry(chr.Party, members, null));
             eim.setLeader(chr);
-
-            eim.startEvent();
-            registerEventInstance(eim, roomIndex);
-            return true;
+            return CreateInstanceResult.Success;
         }
 
-        public int JoinInstance(Player chr, List<Player> eligibleMembers, int roomIndex)
+        public async Task<MCJoinInstanceResult> JoinInstance(Player chr, int lobby)
         {
-            if (roomIndex < 0 || roomIndex >= Rooms.Count)
-                return 1;
+            var roomName = lobby.ToString();
+            if (!instances.TryGetValue(roomName, out var instance))
+                return MCJoinInstanceResult.Unknown;
 
-            var room = Rooms[roomIndex];
-            if (room.Instance == null || room.Instance.getLeader() == null || room.Instance.Team0 == null)
-                return 3;
+            if (instance is not MonsterCarnivalEventInstanceManager eim)
+                return MCJoinInstanceResult.Unknown;
 
-            var chrParty = chr.getParty();
-            if (chrParty == null || eligibleMembers.Count != room.Instance.Team0.EligibleMembers.Count)
-                return 2;
+            if (chr.Party == 0)
+                return MCJoinInstanceResult.RequiredParty;
 
-            if (room.Instance.Team1 != null)
-                return 4;
+            if (!chr.isLeader())
+                return MCJoinInstanceResult.RequiredLeader;
 
-            if (room.Instance.getLeader()!.Client.NPCConversationManager != null)
-                return 4;
+            var members = GetEligibleParty(chr);
+            if (members.Count == 0)
+                return MCJoinInstanceResult.Requirement;
 
-            room.Instance.Team1 = new TeamRegistry(chr.Party, eligibleMembers);
+            if (eim.CurrentStage != MonsterCarnivalStage.Waiting)
+                return MCJoinInstanceResult.NotInWaiting;
+
+            if (eim.Team1 != null)
+                return MCJoinInstanceResult.AnthorRequest;
+
+            eim.Team1 = new TeamRegistry(chr.Party, members, null);
             // send challenge
-            if (getChannelServer().NPCScriptManager.start(
-                room.Instance.getLeader()!.Client,
+            if (await ChannelServer.NodeService.PluginManager.StartNpcConversation(
+                eim.getLeader()!.Client,
                 2042001,
-                "mc_enter1",
-                null))
+                null,
+                "mc_enter1"))
             {
-                return 0;
+                return MCJoinInstanceResult.Success;
             }
-            room.Instance.Team1 = null;
-            return 4;
+            return MCJoinInstanceResult.AnthorRequest;
         }
-    }
 
-    public class MonsterCarnivalPreparationRoom
-    {
-        public MonsterCarnivalPreparationRoom(string instanceName, int minCount, int map)
+        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
-            MinCount = minCount;
-            Map = map;
-            RecruitMap = ProviderSource.Instance.GetProvider<MapProvider>().GetItem(Map)!.ForcedReturn;
-            InstanceName = instanceName;
+            base.OnPlayerUnregister(eim, chr);
+
+            var mcEim = eim as MonsterCarnivalEventInstanceManager;
+            if (chr.Party == mcEim.Team0?.Team)
+            {
+                mcEim.Team0.EligibleMembers.Remove(chr);
+            }
+            if (chr.Party == mcEim.Team1?.Team)
+            {
+                mcEim.Team1.EligibleMembers.Remove(chr);
+            }
+
+            chr.ClearMC();
         }
 
-        public int MinCount { get; set; }
-        public int Map { get; set; }
-        public int RecruitMap { get; set; }
-        public string InstanceName { get; set; }
-        public MonsterCarnivalEventInstanceManager? Instance { get; set; }
+        protected override void respawnStages(AbstractEventInstanceManager eim)
+        {
+            var e = (eim as MonsterCarnivalEventInstanceManager);
+            e.EventMap.instanceMapRespawn();
+            if (e.CurrentStage == MonsterCarnivalStage.Battle)
+            {
+                eim.Schedule(respawnStages, 10 * 1000);
+            }
+        }
+
+        public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        {
+            var e = (eim as MonsterCarnivalEventInstanceManager);
+            chr.changeMap(e.LobbyMap);
+        }
+
+        public override void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+            if (mapid < MinMap || mapid > MaxMap)
+            {
+                if (!eim.isEventCleared())
+                {
+                    if (player.MCTeam != null)
+                        eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+                    End(eim);
+                }
+            }
+        }
+
+        public override void OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+            base.OnPlayerMapChanged(eim, player, mapid);
+
+            if (player.MCTeam != null)
+                player.sendPacket(PacketCreator.startMonsterCarnival(player));
+        }
+
+        public override void OnPlayerDisconnected(AbstractEventInstanceManager eim, Player player)
+        {
+            if (!eim.isEventCleared())
+            {
+                if (player.MCTeam != null)
+                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+                End(eim);
+            }
+        }
+
+        public override void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
+        {
+            if (!eim.isEventCleared())
+            {
+                if (player.MCTeam != null)
+                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
+                End(eim);
+            }
+        }
+
+        public override void OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
+        {
+            base.OnPlayerDied(eim, chr);
+
+            var e = eim as MonsterCarnivalEventInstanceManager;
+            int losing = e.EventMap.DeathCP;
+            if (chr.AvailableCP < losing)
+            {
+                losing = chr.AvailableCP;
+            }
+            chr.gainCP(-losing);
+            e.EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(chr.Name, losing, chr.MCTeam!.TeamFlag));
+        }
+
+        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+            base.OnMobKilled(eim, mob, killer);
+
+            if (mob.getCP() > 0 && killer is Player chr)
+            {
+                chr.gainCP(mob.getCP());
+            }
+        }
+
+        public override void ClearPQ(AbstractEventInstanceManager eim)
+        {
+            eim.setEventCleared();
+        }
+
+        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        {
+            var e = (eim as MonsterCarnivalEventInstanceManager);
+            switch (e.CurrentStage)
+            {
+                case MonsterCarnivalStage.None:
+                    break;
+                case MonsterCarnivalStage.Waiting:
+                    End(eim);
+                    break;
+                case MonsterCarnivalStage.Matched:
+                    // 再次检测
+                    if (true)
+                    {
+                        eim.restartEventTimer(e.EventMap.TimeDefault * 1000 - 10000);
+                        eim.startEvent();
+                        respawnStages(eim);
+                    }
+                    else
+                    {
+                        End(eim);
+                    }
+                    break;
+                case MonsterCarnivalStage.Battle:
+                    if (!e.Complete())
+                    {
+                        e.Pink(nameof(ClientMessage.CPQ_ExtendTime));
+                        e.restartEventTimer(e.EventMap.TimeExpand * 1000);
+                    }
+                    else
+                    {
+                        eim.Schedule(ClearPQ, 10_000);
+                    }
+                    break;
+                case MonsterCarnivalStage.Completed:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
+        {
+            switch (r)
+            {
+                case CreateInstanceResult.Success:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_EntryLobby));
+                case CreateInstanceResult.RequiredParty:
+                    return "在你加入战斗之前，你需要先创建一个队伍！";
+                case CreateInstanceResult.RequiredLeader:
+                    return "如果你想开始战斗，让#b队长#k和我对话。";
+                case CreateInstanceResult.Requirement:
+                    return "队伍不满足条件。";
+                case CreateInstanceResult.LobbyLimited:
+                case CreateInstanceResult.Disposed:
+                case CreateInstanceResult.Unknown:
+                default:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
+            }
+        }
+        public string? HandleJoinInstanceResult(MCJoinInstanceResult r, IChannelClient c)
+        {
+            switch (r)
+            {
+                case MCJoinInstanceResult.Success:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomSent));
+
+                case MCJoinInstanceResult.RequiredParty:
+                    return "在你加入战斗之前，你需要先创建一个队伍！";
+
+                case MCJoinInstanceResult.RequiredLeader:
+                    return "如果你想开始战斗，让#b队长#k和我对话。";
+
+                case MCJoinInstanceResult.Requirement:
+                    return "队伍不满足条件。需要与被挑战的队伍人数一致！";
+
+                case MCJoinInstanceResult.NotInWaiting:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_FindError));
+
+                case MCJoinInstanceResult.AnthorRequest:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomAnswer));
+                case MCJoinInstanceResult.Unknown:
+
+                default:
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
+            }
+        }
     }
 }

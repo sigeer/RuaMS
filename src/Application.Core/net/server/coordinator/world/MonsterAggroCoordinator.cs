@@ -19,10 +19,10 @@
 */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Utility.Tickables;
 
 namespace net.server.coordinator.world;
 
@@ -31,20 +31,26 @@ namespace net.server.coordinator.world;
 /**
  * @author Ronan
  */
-public class MonsterAggroCoordinator
+public class MonsterAggroCoordinator : ILoopTickable
 {
-    private long lastStopTime;
-
-    private ScheduledFuture? aggroMonitor = null;
-
     private Dictionary<Monster, PlayerAggroObject> mobAggroEntries = new();
 
     private HashSet<int> mapPuppetEntries = new();
     MapleMap Map { get; }
+
+    public long Period { get; private set; }
+
+    public long Next { get; private set; }
+
+    public TickableStatus Status { get; private set; }
+
     public MonsterAggroCoordinator(MapleMap map)
     {
         Map = map;
-        lastStopTime = map.ChannelServer.Node.getCurrentTime();
+
+        var now = map.ChannelServer.Node.getCurrentTime(); ;
+        Period = YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL;
+        Next = now + Period;
     }
 
     private class PlayerAggroEntry(int cid)
@@ -64,34 +70,7 @@ public class MonsterAggroCoordinator
 
     public void stopAggroCoordinator()
     {
-        if (aggroMonitor == null)
-        {
-            return;
-        }
-
-        aggroMonitor.cancel(false);
-        aggroMonitor = null;
-
-        lastStopTime = Map.ChannelServer.Node.getCurrentTime();
-    }
-
-    public void startAggroCoordinator()
-    {
-        if (aggroMonitor != null)
-        {
-            return;
-        }
-
-        aggroMonitor = Map.ChannelServer.TimerManager.register(new MapTaskBase(Map, "MonsterAggro", () =>
-        {
-            Map.ChannelServer.Post(new MapMobAggroCommand(Map));
-        }), YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL, YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
-
-        int timeDelta = (int)Math.Ceiling((double)(Map.ChannelServer.Node.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
-        if (timeDelta > 0)
-        {
-            runAggroUpdate(timeDelta);
-        }
+        Status = TickableStatus.InActive;
     }
 
     public void RunAggro()
@@ -288,8 +267,26 @@ public class MonsterAggroCoordinator
 
     public void dispose()
     {
+        Status = TickableStatus.Remove;
         stopAggroCoordinator();
 
         mobAggroEntries.Clear();
+    }
+
+    public void OnTick(long now)
+    {
+        if (!this.IsAvailable())
+        {
+            return;
+        }
+
+        if (Next <= now)
+        {
+            int timeDelta = (int)Math.Ceiling((double)(now - Next) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL) + 1;
+            runAggroUpdate(timeDelta);
+            runSortLeadingCharactersAggro();
+
+            Next = now + Period;
+        }
     }
 }

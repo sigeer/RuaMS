@@ -8,6 +8,7 @@ namespace Application.Core.Login.Commands
 {
     internal class HandleChannelPacketCommand : IMasterCommand
     {
+        public string? Name => nameof(HandleChannelPacketCommand);
         IInternalSessionMasterHandler _handler;
         ByteString _content;
 
@@ -17,7 +18,7 @@ namespace Application.Core.Login.Commands
             _content = content;
         }
 
-        public void Execute(MasterCommandContext ctx)
+        public void Execute(MasterServer ctx)
         {
             _handler.Handle(_content);
         }

@@ -22,16 +22,12 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.model;
-using Application.Shared.Constants.Item;
-using Application.Utility.Performance;
 using client.inventory.manipulator;
 using System.Collections;
 using System.Diagnostics;
 using ZLinq;
-using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace client.inventory;
 
@@ -47,13 +43,13 @@ public class Inventory : IEnumerable<Item>
     protected Dictionary<short, Item> inventory;
     protected InventoryType type;
 
-    protected Player owner;
+    public Player Owner { get; }
     protected byte slotLimit;
     protected bool isChecked = false;
 
     public Inventory(Player mc, InventoryType type, byte slotLimit)
     {
-        this.owner = mc;
+        this.Owner = mc;
         this.inventory = new();
         this.type = type;
         this.slotLimit = slotLimit;
@@ -114,7 +110,7 @@ public class Inventory : IEnumerable<Item>
             var itemName = ClientCulture.SystemCulture.GetItemName(item.getItemId());
             if (itemName == null)
             {
-                owner.Log.Error("[CRITICAL] Item {ItemId} has no name", item.getItemId());
+                Owner.Log.Error("[CRITICAL] Item {ItemId} has no name", item.getItemId());
                 continue;
             }
 
@@ -203,6 +199,12 @@ public class Inventory : IEnumerable<Item>
         return list().Where(x => x.getItemId() == itemId).OrderBy(x => x.getPosition()).ToList();
     }
 
+    private void SetItemPosition(Item item, short pos)
+    {
+        inventory[pos] = item;
+        item.PlayerInventory = this;
+    }
+
     public short addItem(Item item)
     {
         short slotId = addSlot(item);
@@ -257,7 +259,7 @@ public class Inventory : IEnumerable<Item>
         if (target == null)
         {
             source.setPosition(dSlot);
-            inventory.AddOrUpdate(dSlot, source);
+            SetItemPosition(source, dSlot);
             inventory.Remove(sSlot);
         }
         else if (target.getItemId() == source.getItemId() && !ItemConstants.isRechargeable(source.getItemId()) && isSameOwner(source, target))
@@ -291,8 +293,8 @@ public class Inventory : IEnumerable<Item>
         short swapPos = source.getPosition();
         source.setPosition(target.getPosition());
         target.setPosition(swapPos);
-        inventory.AddOrUpdate(source.getPosition(), source);
-        inventory.AddOrUpdate(target.getPosition(), target);
+        SetItemPosition(source, source.getPosition());
+        SetItemPosition(target, target.getPosition());
     }
 
     public Item? getItem(short slot)
@@ -367,13 +369,13 @@ public class Inventory : IEnumerable<Item>
             return -1;
         }
 
-        inventory.AddOrUpdate(slotId, item);
+        SetItemPosition(item, slotId);
 
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
             // deadlocks with coupons rates found thanks to GabrielSin & Masterrulax
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            Owner.updateCouponRates();
         }
 
         return slotId;
@@ -381,13 +383,11 @@ public class Inventory : IEnumerable<Item>
 
     public virtual void addSlotFromDB(short slot, Item item)
     {
-
-        inventory.AddOrUpdate(slot, item);
-
+        SetItemPosition(item, slot);
 
         if (ItemConstants.isRateCoupon(item.getItemId()))
         {
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            Owner.updateCouponRates();
         }
     }
 
@@ -400,7 +400,7 @@ public class Inventory : IEnumerable<Item>
 
         if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
         {
-            owner.Client.CurrentServer.Post(new PlayerCouponRecalcCommand(owner));
+            Owner.updateCouponRates();
         }
     }
 
@@ -456,6 +456,24 @@ public class Inventory : IEnumerable<Item>
         return free;
     }
 
+    private static bool CheckItemRestricted(IEnumerable<TypedItemQuantity> items)
+    {
+        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+
+        // thanks Shavit for noticing set creation that would be only effective in rare situations
+        foreach (var p in items)
+        {
+            if (ii.isPickupRestricted(p.Item.ItemId) && p.Item.Quantity > 1)
+            {
+                // 固有道具可以叠放？
+                Log.Logger.Debug("ItemId={ItemId} 固有道具、Quantity={Quantity}", p.Item.ItemId, p.Item.Quantity);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static bool checkItemRestricted(List<ItemInventoryType> items)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -487,19 +505,26 @@ public class Inventory : IEnumerable<Item>
     }
 
 
-    public static bool checkSpots(Player chr, List<ItemInventoryType> items, bool useProofInv = false)
+    public static bool checkSpots(Player chr, IEnumerable<TypedItemQuantity> items)
     {
         List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
 
-        return checkSpots(chr, items, zeroedList, useProofInv);
+        return checkSpots(chr, items, zeroedList, true);
     }
 
-    static bool checkSpots(Player chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    public static bool checkSpots(Player chr, IEnumerable<ItemQuantity> items)
+    {
+        List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
+
+        return checkSpots(chr, items.Select(x => new TypedItemQuantity((sbyte)ItemConstants.getInventoryType(x.ItemId), x)), zeroedList, false);
+    }
+
+    static bool checkSpots(Player chr, IEnumerable<TypedItemQuantity> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
         // 固有道具检测
-        if (!checkItemRestricted(items))
+        if (!CheckItemRestricted(items))
         {
             return false;
         }
@@ -509,23 +534,22 @@ public class Inventory : IEnumerable<Item>
 
         foreach (var item in items)
         {
-            int itemId = item.Item.getItemId();
 
-            if (rcvItems.TryGetValue(itemId, out var qty))
+            if (rcvItems.TryGetValue(item.Item.ItemId, out var qty))
             {
-                if (!ItemConstants.isEquipment(itemId) && !ItemConstants.isRechargeable(itemId))
+                if (!ItemConstants.isEquipment(item.Item.ItemId) && !ItemConstants.isRechargeable(item.Item.ItemId))
                 {
-                    qty[0] += item.Item.getQuantity();
+                    qty[0] += item.Item.Quantity;
                 }
                 else
                 {
-                    qty.Add(item.Item.getQuantity());
+                    qty.Add(item.Item.Quantity);
                 }
             }
             else
             {
-                rcvItems[itemId] = new List<int>() { item.Item.getQuantity() };
-                rcvTypes[itemId] = item.Type.getType();
+                rcvItems[item.Item.ItemId] = new List<int>() { item.Item.Quantity };
+                rcvTypes[item.Item.ItemId] = item.Type;
             }
         }
 

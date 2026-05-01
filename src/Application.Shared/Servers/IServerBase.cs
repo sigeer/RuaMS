@@ -23,7 +23,7 @@ namespace Application.Shared.Servers
         int getCurrentTimestamp();
         long getCurrentTime();
         DateTimeOffset GetCurrentTimeDateTimeOffset();
-        void UpdateServerTime();
+        void UpdateServerTime(long delta);
         /// <summary>
         /// 主服务器强制更新、频道服务器强制从主服务器获取
         /// </summary>

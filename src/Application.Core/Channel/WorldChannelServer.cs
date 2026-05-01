@@ -1,3 +1,4 @@
+using Application.Core.Channel.Actor;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
@@ -8,10 +9,12 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
+using Application.Core.Plugins;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility.Pipeline;
+using Application.Utility.Tickables;
 using Config;
 using Google.Protobuf;
 using ItemProto;
@@ -25,7 +28,7 @@ using System.Net;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActor<ChannelNodeCommandContext>, IServiceCenter
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActorInstance<WorldChannelServer>, IServiceCenter, ITickable
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
@@ -99,11 +102,7 @@ namespace Application.Core.Channel
         #region Task
         public ServerMessageTask ServerMessageTask { get; }
 
-        public MountTirednessTask MountTirednessTask { get; }
-        public MapObjectTask MapObjectTask { get; }
-        public CharacterDiseaseTask CharacterDiseaseTask { get; }
-        public CharacterHpDecreaseTask CharacterHpDecreaseTask { get; }
-        public PetHungerTask PetHungerTask { get; }
+        public NodeTickTask NodeTickTask { get; }
         public MapOwnershipTask MapOwnershipTask { get; }
         #endregion
 
@@ -138,7 +137,11 @@ namespace Application.Core.Channel
         public BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
 
-        public ChannelNodeCommandLoop CommandLoop { get; }
+        public CommandLoop<WorldChannelServer> CommandLoop { get; }
+
+        public TickableStatus Status => throw new NotImplementedException();
+        public PluginManager PluginManager { get; }
+
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -160,11 +163,7 @@ namespace Application.Core.Channel
 
 
             ServerMessageTask = new ServerMessageTask(this);
-            MountTirednessTask = new MountTirednessTask(this);
-            MapObjectTask = new MapObjectTask(this);
-            CharacterDiseaseTask = new CharacterDiseaseTask(this);
-            CharacterHpDecreaseTask = new CharacterHpDecreaseTask(this);
-            PetHungerTask = new(this);
+            NodeTickTask = new NodeTickTask(this);
             MapOwnershipTask = new(this);
 
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
@@ -193,8 +192,10 @@ namespace Application.Core.Channel
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
 
+            PluginManager = new();
+
             _messageDispatcher = new(() => new(this));
-            CommandLoop = new ChannelNodeCommandLoop(this);
+            CommandLoop = new (this);
         }
 
         #region 时间
@@ -215,9 +216,9 @@ namespace Application.Core.Channel
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(serverCurrentTime);
         }
-        public void UpdateServerTime()
+        public void UpdateServerTime(long v)
         {
-            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+            serverCurrentTime = currentTime.addAndGet(v);
         }
 
         public void ForceUpdateServerTime()
@@ -254,13 +255,10 @@ namespace Application.Core.Channel
                 }
                 _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
-                await CharacterDiseaseTask.StopAsync();
-                await PetHungerTask.StopAsync();
+                watcher.Dispose();
+                await NodeTickTask.StopAsync();
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
-                await CharacterHpDecreaseTask.StopAsync();
-                await MapObjectTask.StopAsync();
-                await MountTirednessTask.StopAsync();
 
                 if (invitationTask != null)
                     await invitationTask.CancelAsync(false);
@@ -308,7 +306,7 @@ namespace Application.Core.Channel
             if (!Directory.Exists(ScriptSource.Instance.BaseDir))
                 throw new DirectoryNotFoundException("没有找到Script目录");
 
-            CommandLoop.Start(InstanceName);
+            CommandLoop.Start();
 
             foreach (var item in ServerConfig.ChannelConfig)
             {
@@ -330,6 +328,7 @@ namespace Application.Core.Channel
             await Transport.RegisterServer(effectChannels.Keys.ToList());
         }
 
+        FileSystemWatcher watcher;
         public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
         {
             if (configs.StartChannel <= 0)
@@ -338,11 +337,23 @@ namespace Application.Core.Channel
                 return false;
             }
 
-            IsRunning = true;
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
+
+            try
+            {
+                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
+                watcher.Changed += OnFileChanged;
+                watcher.EnableRaisingEvents = true;
+                await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                return false;
+            }
 
             var channel = configs.StartChannel;
             foreach (var server in effectChannels)
@@ -360,6 +371,8 @@ namespace Application.Core.Channel
 
             DataService.LoadAllPLife();
             DataService.LoadAllReactorDrops();
+
+           
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -379,20 +392,13 @@ namespace Application.Core.Channel
             }, cancellationToken);
 
 
-            CharacterDiseaseTask.Register(TimerManager);
-            PetHungerTask.Register(TimerManager);
+            NodeTickTask.Register(TimerManager);
             ServerMessageTask.Register(TimerManager);
-            CharacterHpDecreaseTask.Register(TimerManager);
-            MapObjectTask.Register(TimerManager);
-            MountTirednessTask.Register(TimerManager);
             MapOwnershipTask.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
             playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-            if (ServerConfig.SystemConfig.AutoClearMap)
-            {
-                checkMapActiveTask = TimerManager.register(new DisposeCheckTask(this), TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
-            }
+
 #if !DEBUG
             timeoutTask = TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
@@ -404,11 +410,29 @@ namespace Application.Core.Channel
                 module.RegisterTask(TimerManager);
             }
 
-            return true;
+            return IsRunning = true;
+        }
+
+        private DateTime _lastLoadTime = DateTime.MinValue;
+
+        private async void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.Name != "Application.Plugin.Script.dll") return;
+
+            // 简单的节流：1秒内只处理一次
+            var now = DateTime.Now;
+            if ((now - _lastLoadTime) < TimeSpan.FromSeconds(1))
+                return;
+
+            _lastLoadTime = now;
+
+            await Task.Delay(200); // 等待文件释放
+            _logger.LogInformation("插件更新...");
+            await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
         }
 
 
-        public IActor<ChannelCommandContext>? GetChannelActor(int channel)
+        public IActorInstance<WorldChannel>? GetChannelActor(int channel)
         {
             return Servers.GetValueOrDefault(channel);
         }
@@ -428,12 +452,6 @@ namespace Application.Core.Channel
         {
             return Transport.HasCharacteridInTransition(clientSession);
         }
-
-        public void InvokeBroadcastPacket(Packet p)
-        {
-            PushChannelCommand(new InvokeChannelBroadcastCommand([-1], p));
-        }
-
 
         public void SendBroadcastWorldPacket(Packet p, bool onGM = false)
         {
@@ -518,13 +536,24 @@ namespace Application.Core.Channel
         {
             foreach (var item in Servers.Values)
             {
-                item.Post(command);
+                item.Send(command);
             }
         }
 
-        public void Post(ICommand<ChannelNodeCommandContext> command)
+        public void Broadcast(Func<WorldChannel, Task> action)
         {
-            CommandLoop.Register(command);
+            foreach (var item in Servers.Values)
+            {
+                item.Send(action);
+            }
+        }
+
+        public void Broadcast(Action<WorldChannel> action)
+        {
+            foreach (var item in Servers.Values)
+            {
+                item.Send(action);
+            }
         }
 
         internal DistributeSession<int, PlayerSaveDto> CreateSyncPlayerSession()
@@ -535,6 +564,23 @@ namespace Application.Core.Channel
         internal DistributeSession<int, SyncPlayerShopRequest> CreateSyncPlayerShopSession()
         {
             return new DistributeSession<int, SyncPlayerShopRequest>(Servers.Values.Select(x => x.Id));
+        }
+
+        public Task Send(ICommand command) => CommandLoop.Register(command);
+
+        public Task Send(Func<WorldChannelServer, Task> action) => Send(new AsyncNodeDelegateCommand(action));
+
+        public Task Send(Action<WorldChannelServer> action) => Send(new NodeDelegateCommand(action));
+
+        public void OnTick(long now)
+        {
+            foreach (var item in Servers.Values)
+            {
+                item.Send(w =>
+                {
+                    w.OnTick(now);
+                });
+            }
         }
     }
 }

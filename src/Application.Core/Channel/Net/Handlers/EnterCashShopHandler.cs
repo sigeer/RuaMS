@@ -37,6 +37,60 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        c.CurrentServer.Post(new PlayerEnterCashShopPreCommand(c.OnlinedCharacter));
+        c.OnlinedCharacter.MapModel.Send(async m =>
+        {
+            var mc = m.getCharacterById(c.OnlinedCharacter.Id);
+            if (mc == null)
+            {
+                return;
+            }
+
+            if (mc.cannotEnterCashShop())
+            {
+                mc.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (mc.getEventInstance() != null)
+            {
+                mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
+                mc.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
+            {
+                mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
+                mc.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (mc.getCashShop().isOpened())
+            {
+                return;
+            }
+
+            await mc.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.EnterCashShop);
+
+            mc.closePlayerInteractions();
+            mc.closePartySearchInteractions();
+
+            mc.unregisterChairBuff();
+            mc.Client.CurrentServer.NodeService.DataService.SaveBuff(mc);
+
+            mc.Client.CurrentServer.EnterExtralWorld(mc);
+
+            mc.cancelAllBuffs(true);
+            mc.cancelAllDebuffs();
+            mc.forfeitExpirableQuests();
+
+            mc.sendPacket(PacketCreator.openCashShop(mc.Client, false));
+            mc.sendPacket(PacketCreator.showCashInventory(mc.Client));
+            mc.sendPacket(PacketCreator.showGifts(mc.Client.CurrentServer.NodeService.ItemService.LoadPlayerGifts(mc)));
+            mc.sendPacket(PacketCreator.showWishList(mc, false));
+            mc.sendPacket(PacketCreator.showCash(mc));
+
+            mc.getCashShop().open(true);
+        });
     }
 }

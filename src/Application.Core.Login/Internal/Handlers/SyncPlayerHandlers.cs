@@ -23,7 +23,7 @@ namespace Application.Core.Login.Internal.Handlers
                     {
                         if (message.SaveDb)
                         {
-                            _server.Post(new CommitDBCommand());
+                            _server.Send(new CommitDBCommand());
                         }
                     });
             }

@@ -5,10 +5,16 @@ public class ServerConfig
     //Login Configuration
     public int CHANNEL_LOCKS;
 
+    /// <summary>
+    /// 10_000
+    /// </summary>
     public long RESPAWN_INTERVAL;
     public long PURGING_INTERVAL;
     public long RANKING_INTERVAL;
     public long COUPON_INTERVAL;
+    /// <summary>
+    /// 777
+    /// </summary>
     public long UPDATE_INTERVAL;
 
     public bool ENABLE_PIC;
@@ -223,6 +229,9 @@ public class ServerConfig
 
     //Event Configuration
     public int EVENT_MAX_GUILD_QUEUE;
+    /// <summary>
+    /// 10
+    /// </summary>
     public long EVENT_LOBBY_DELAY;
 
     //Dojo Configuration

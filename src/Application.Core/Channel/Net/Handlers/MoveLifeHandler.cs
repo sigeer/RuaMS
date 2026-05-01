@@ -129,7 +129,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             nextSkillLevel = skillToUse.level;
             nextUse = MobSkillFactory.getMobSkill(skillToUse.type, skillToUse.level);
 
-            if (!(nextUse != null && monster.canUseSkill(nextUse, false) && nextUse.getHP() >= (int)(((float)monster.getHp() / monster.getMaxHp()) * 100) && mobMp >= nextUse.getMpCon()))
+            if (nextUse == null || !monster.canUseSkill(nextUse, false))
             {
                 // thanks OishiiKawaiiDesu for noticing mobs trying to cast skills they are not supposed to be able
 

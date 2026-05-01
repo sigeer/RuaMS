@@ -52,11 +52,6 @@ public class QuestActionManager : NPCConversationManager
         return start;
     }
 
-    public override void dispose()
-    {
-        c.CurrentServer.QuestScriptManager.dispose(this, getClient());
-    }
-
     public bool forceStartQuest()
     {
         return forceStartQuest(quest);
@@ -77,6 +72,11 @@ public class QuestActionManager : NPCConversationManager
     public void completeQuest()
     {
         forceCompleteQuest();
+    }
+
+    public void CompleteQuestN(int? selection = null)
+    {
+        Quest.getInstance(quest).complete(c.OnlinedCharacter, npc, selection);
     }
 
     public override void gainExp(int gain)

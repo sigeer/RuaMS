@@ -17,7 +17,10 @@ namespace Application.Core.Channel.Internal.Handlers
         protected override void HandleMessage(WorldConfig res)
         {
             _server.UpdateWorldConfig(res);
-            _server.PushChannelCommand(new InvokeWorldConfigUpdateCommand(res));
+            _server.Broadcast(w =>
+            {
+                w.UpdateWorldConfig(res);
+            });
         }
 
         protected override WorldConfig Parse(ByteString data) => WorldConfig.Parser.ParseFrom(data);

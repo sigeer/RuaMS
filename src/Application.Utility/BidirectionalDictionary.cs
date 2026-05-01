@@ -11,7 +11,7 @@ namespace Application.Utility
             reverse[value] = key;
         }
 
-        public bool TryGetValue(T key, out T value)
+        public bool TryGetValue(T key, out T? value)
         {
             return forward.TryGetValue(key, out value) || reverse.TryGetValue(key, out value);
         }

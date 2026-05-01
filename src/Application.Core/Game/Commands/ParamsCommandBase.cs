@@ -61,6 +61,11 @@ namespace Application.Core.Game.Commands
             return NamedArguments.GetValueOrDefault(name) ?? throw new CommandArgumentException($"缺少 {name}");
         }
 
+        protected string? TryGetParam(string name)
+        {
+            return NamedArguments.GetValueOrDefault(name);
+        }
+
         /// <summary>
         /// 获取命令中 &lt;name&gt;的部分
         /// </summary>
@@ -72,6 +77,14 @@ namespace Application.Core.Game.Commands
             var str = GetParam(name);
             if (!int.TryParse(str, out var d))
                 throw new CommandArgumentException($"{name} 应该是数字");
+            return d;
+        }
+
+        protected int TryGetIntParam(string name, int defaultValue = 0)
+        {
+            var str = TryGetParam(name);
+            if (!int.TryParse(str, out var d))
+                return defaultValue;
             return d;
         }
 

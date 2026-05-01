@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Application.Utility.Extensions
 {
     public static class StringExtensions

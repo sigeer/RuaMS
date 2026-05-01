@@ -1,7 +1,9 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Utility.Tickables;
 using net.server;
 using server;
 using server.maps;
@@ -28,17 +30,14 @@ namespace Application.Core.Game.Players
         /// </para>
         /// </summary>
         private Dictionary<int, Dictionary<BuffStat, BuffStatValueHolder>> buffEffects = new();
-        /// <summary>
-        /// sourceId - expire
-        /// </summary>
-        private Dictionary<int, long> buffExpires = new();
+
 
         public bool hasBuffFromSourceid(int sourceid)
         {
             return buffEffects.ContainsKey(sourceid);
         }
 
-        private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
+        public BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
             return ActiveEffects.GetValueOrDefault(effect);
         }
@@ -62,12 +61,12 @@ namespace Application.Core.Game.Players
 
         public int getBuffSource(BuffStat stat)
         {
-            return GetBuffStatValue(stat)?.effect?.getSourceId() ?? -1;
+            return GetBuffStatValue(stat)?.Effect?.getSourceId() ?? -1;
         }
 
         public StatEffect? getBuffEffect(BuffStat stat)
         {
-            return GetBuffStatValue(stat)?.effect;
+            return GetBuffStatValue(stat)?.Effect;
         }
 
         public bool HasBuff(BuffStat stat)
@@ -75,7 +74,7 @@ namespace Application.Core.Game.Players
             return ActiveEffects.ContainsKey(stat);
         }
 
-        private List<BuffStatValueHolder> getAllStatups()
+        public List<BuffStatValueHolder> getAllStatups()
         {
             return buffEffects.Values.SelectMany(x => x.Values).ToList();
         }
@@ -90,7 +89,7 @@ namespace Application.Core.Game.Players
                 {
                     if (!ret.ContainsKey(bel.Key))
                     {
-                        ret.Add(bel.Key, new PlayerBuffValueHolder(mbsvh.Value.startTime, mbsvh.Value.effect, effectBuffStats));
+                        ret.Add(bel.Key, new PlayerBuffValueHolder(mbsvh.Value.startTime, mbsvh.Value.Effect, effectBuffStats));
                     }
                     effectBuffStats.Add(new BuffStatValue(mbsvh.Key, mbsvh.Value.value));
                 }
@@ -118,30 +117,27 @@ namespace Application.Core.Game.Players
             Log.Debug("-------------------");
             Log.Debug("IN ACTION: {InAction}", string.Join(", ", ActiveEffects
                     .Select(entry => entry.Key.name() + " -> " + 
-                    (entry.Value.effect.isSkill() 
-                    ? Client.CurrentCulture.GetSkillName(entry.Value.effect.getSourceId()) 
-                    : Client.CurrentCulture.GetItemName(entry.Value.effect.getSourceId()))))
+                    (entry.Value.Effect.isSkill() 
+                    ? Client.CurrentCulture.GetSkillName(entry.Value.Effect.getSourceId()) 
+                    : Client.CurrentCulture.GetItemName(entry.Value.Effect.getSourceId()))))
             );
         }
 
-        public void ClearExpiredBuffs(long now)
+        public void ClearExpiredBuffs()
         {
-            HashSet<KeyValuePair<int, long>> es;
             List<BuffStatValueHolder> toCancel = new();
 
-            es = new(buffExpires);
-
-            foreach (var bel in es)
+            foreach (var bel in getAllStatups())
             {
-                if (now >= bel.Value)
+                if (bel.Status == TickableStatus.Remove)
                 {
-                    toCancel.AddRange(buffEffects.GetValueOrDefault(bel.Key)!.Values);    //rofl
+                    toCancel.Add(bel);    //rofl
                 }
             }
 
             foreach (var item in toCancel)
             {
-                cancelEffect(item.effect, false);
+                cancelEffect(item.Effect, false);
             }
         }
 
@@ -169,7 +165,7 @@ namespace Application.Core.Game.Players
                 {
                     foreach (var mbse in bpl.Value)
                     {
-                        mseBuffs.AddOrUpdate(mbse.Value.effect, mbse.Value.startTime);
+                        mseBuffs.AddOrUpdate(mbse.Value.Effect, mbse.Value.startTime);
                     }
                 }
 
@@ -210,33 +206,20 @@ namespace Application.Core.Game.Players
             List<BuffStateValuePair> effectsToCancel = new(stats.Count);
             foreach (var stat in stats)
             {
-                int sourceid = stat.Value.effect.getBuffSourceId();
-
-                if (!buffEffects.ContainsKey(sourceid))
-                {
-                    buffExpires.Remove(sourceid);
-                }
+                int sourceid = stat.Value.Effect.getBuffSourceId();
 
                 BuffStat mbs = stat.Key;
                 effectsToCancel.Add(new(mbs, stat.Value));
 
-                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
-                if (mbsvh != null && mbsvh.effect.getBuffSourceId() == sourceid)
+
+                if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
-                    ActiveEffects.Remove(mbs);
+                    mbsvh.Status = TickableStatus.Remove;
 
-                    if (mbs == BuffStat.RECOVERY)
+                    if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
                     {
-                        if (recoveryTask != null)
-                        {
-                            recoveryTask.cancel(false);
-                            recoveryTask = null;
-                        }
-                    }
-                    else if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
-                    {
-                        int summonId = mbsvh.effect.getSourceId();
+                        int summonId = mbsvh.Effect.getSourceId();
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
@@ -248,25 +231,7 @@ namespace Application.Core.Game.Players
                             {
                                 MapModel.removePlayerPuppet(this);
                             }
-                            else if (summon.getSkill() == DarkKnight.BEHOLDER)
-                            {
-                                if (beholderHealingSchedule != null)
-                                {
-                                    beholderHealingSchedule.cancel(false);
-                                    beholderHealingSchedule = null;
-                                }
-                                if (beholderBuffSchedule != null)
-                                {
-                                    beholderBuffSchedule.cancel(false);
-                                    beholderBuffSchedule = null;
-                                }
-                            }
                         }
-                    }
-                    else if (mbs == BuffStat.DRAGONBLOOD)
-                    {
-                        dragonBloodSchedule?.cancel(false);
-                        dragonBloodSchedule = null;
                     }
                     else if (mbs == BuffStat.HPREC || mbs == BuffStat.MPREC)
                     {
@@ -321,7 +286,7 @@ namespace Application.Core.Game.Players
         {
             try
             {
-                return buffSource.FirstOrDefault().Value?.effect;
+                return buffSource.FirstOrDefault().Value?.Effect;
             }
             catch
             {
@@ -355,7 +320,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mse in ActiveEffects.Values)
             {
-                activeEffects.Add(mse.effect);
+                activeEffects.Add(mse.Effect);
             }
 
             foreach (var buff in buffEffects.Values)
@@ -389,7 +354,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
-                    foreach (var statup in mbsvh.effect.getStatups())
+                    foreach (var statup in mbsvh.Effect.getStatups())
                     {
                         retrievedStats.Add(statup.BuffState);
                     }
@@ -422,7 +387,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(ombs);
                 if (mbsvh != null)
                 {
-                    buffstats = extractCurrentBuffStats(mbsvh.effect);
+                    buffstats = extractCurrentBuffStats(mbsvh.Effect);
                 }
             }
 
@@ -431,15 +396,9 @@ namespace Application.Core.Game.Players
                 buffstats = extractLeastRelevantStatEffectsIfFull(effect);
             }
 
-            if (effect.isMapChair())
-            {
-                stopChairTask();
-            }
-
             List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
-                Client.CurrentServer.MountTirednessManager.unregisterMountHunger(this);
                 this.getMount()?.setActive(false);
             }
 
@@ -457,7 +416,7 @@ namespace Application.Core.Game.Players
 
             if (effect != null)
             {
-                cancelEffect(effect.effect, false);
+                cancelEffect(effect.Effect, false);
             }
         }
 
@@ -499,7 +458,6 @@ namespace Application.Core.Game.Players
                 if (lbe.Count == 0)
                 {
                     buffEffects.Remove(sourceid);
-                    buffExpires.Remove(sourceid);
                 }
 
                 return true;
@@ -517,8 +475,6 @@ namespace Application.Core.Game.Players
                     buffEffectsCount.AddOrUpdate(bei.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(bei.Key) - 1));
                 }
             }
-
-            buffExpires.Remove(sourceid);
         }
 
         private Dictionary<BuffStat, BuffStatValueHolder> extractCurrentBuffStats(StatEffect effect)
@@ -581,13 +537,13 @@ namespace Application.Core.Game.Players
                 {
                     var mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
 
-                    var lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
+                    var lpbe = buffEffects.GetValueOrDefault(mbsvh.Effect.getBuffSourceId());
                     lpbe?.Remove(it.Key);
                     buffEffectsCount.AddOrUpdate(it.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(it.Key) - 1));
 
                     if (lpbe == null || lpbe.Count == 0)
                     {
-                        buffEffects.Remove(mbsvh.effect.getBuffSourceId());
+                        buffEffects.Remove(mbsvh.Effect.getBuffSourceId());
                     }
                     extractedStatBuffs.AddOrUpdate(it.Key, mbsvh);
                 }
@@ -773,7 +729,7 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mbsvh in mbsvhList)
             {
-                StatEffect mse = mbsvh.effect;
+                StatEffect mse = mbsvh.Effect;
                 int buffSourceId = mse.getBuffSourceId();
                 if (isPriorityBuffSourceid(buffSourceId) && !hasActiveBuff(buffSourceId))
                 {
@@ -786,7 +742,7 @@ namespace Application.Core.Game.Players
 
                             // this shouldn't even be null...
                             //if (mbsvh != null) {
-                            yokeStats.AddOrUpdate(mbsvh, mbsvhe.effect);
+                            yokeStats.AddOrUpdate(mbsvh, mbsvhe.Effect);
                             //}
                         }
                     }
@@ -798,7 +754,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder mbsvhPriority = e.Key;
                 StatEffect mseActive = e.Value;
 
-                priorityUpdateEffects.Add(new(mseActive.getBuffSourceId(), new(mbsvhPriority.effect, mbsvhPriority.startTime)));
+                priorityUpdateEffects.Add(new(mseActive.getBuffSourceId(), new(mbsvhPriority.Effect, mbsvhPriority.startTime)));
             }
 
             return priorityUpdateEffects;
@@ -818,7 +774,7 @@ namespace Application.Core.Game.Players
                 BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(mbs);
                 if (mbsvh != null)
                 {
-                    retrievedEffects.AddOrUpdate(mbsvh.effect.getBuffSourceId(), new(mbsvh.effect, mbsvh.startTime));
+                    retrievedEffects.AddOrUpdate(mbsvh.Effect.getBuffSourceId(), new(mbsvh.Effect, mbsvh.startTime));
                 }
 
                 maxBuffValue.AddOrUpdate(mbs, new(int.MinValue, null));
@@ -1025,10 +981,9 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private void addItemEffectHolder(int sourceid, long expirationtime, Dictionary<BuffStat, BuffStatValueHolder> statups)
+        private void addItemEffectHolder(int sourceid, Dictionary<BuffStat, BuffStatValueHolder> statups)
         {
             buffEffects.AddOrUpdate(sourceid, statups);
-            buffExpires.AddOrUpdate(sourceid, expirationtime);
         }
 
         private void addItemEffectHolderCount(BuffStat stat)
@@ -1040,66 +995,9 @@ namespace Application.Core.Game.Players
 
         public void registerEffect(StatEffect effect, IEnumerable<BuffStatValue> purposeStats, long starttime, long expirationtime, bool isSilent)
         {
-            if (effect.isDragonBlood())
+            if (effect.getHpRRate() > 0 || effect.getMpRRate() > 0)
             {
-                prepareDragonBlood(effect);
-            }
-            else if (effect.isBerserk())
-            {
-                checkBerserk(isHidden());
-            }
-            else if (effect.isBeholder())
-            {
-                if (beholderHealingSchedule != null)
-                {
-                    beholderHealingSchedule.cancel(false);
-                }
-                if (beholderBuffSchedule != null)
-                {
-                    beholderBuffSchedule.cancel(false);
-                }
-                Skill bHealing = SkillFactory.GetSkillTrust(DarkKnight.AURA_OF_BEHOLDER);
-                int bHealingLvl = getSkillLevel(bHealing);
-                if (bHealingLvl > 0)
-                {
-                    StatEffect healEffect = bHealing.getEffect(bHealingLvl);
-                    var healInterval = TimeSpan.FromSeconds(healEffect.getX());
-                    beholderHealingSchedule = Client.CurrentServer.TimerManager.register(() =>
-                    {
-                        Client.CurrentServer.Post(new PlayerBeholdHealBuffCommand(Id, healEffect));
-                    }, healInterval, healInterval);
-                }
-                Skill bBuff = SkillFactory.GetSkillTrust(DarkKnight.HEX_OF_BEHOLDER);
-                if (getSkillLevel(bBuff) > 0)
-                {
-                    StatEffect buffEffect = bBuff.getEffect(getSkillLevel(bBuff));
-                    var buffInterval = TimeSpan.FromSeconds(buffEffect.getX());
-                    beholderBuffSchedule = Client.CurrentServer.TimerManager.register(() =>
-                    {
-                        Client.CurrentServer.Post(new PlayerBeholdHexBuffCommand(Id, buffEffect));
-
-                    }, buffInterval, buffInterval);
-                }
-            }
-            else if (effect.isRecovery())
-            {
-                int healInterval = (YamlConfig.config.server.USE_ULTRA_RECOVERY) ? 2000 : 5000;
-                var heal = (sbyte)effect.getX();
-
-                if (recoveryTask != null)
-                {
-                    recoveryTask.cancel(false);
-                }
-
-                recoveryTask = Client.CurrentServer.TimerManager.register(() =>
-                {
-                    Client.CurrentServer.Post(new PlayerBuffHealCommand(this, effect));
-
-                }, healInterval, healInterval);
-
-            }
-            else if (effect.getHpRRate() > 0 || effect.getMpRRate() > 0)
-            {
+                // 不明
                 if (effect.getHpRRate() > 0)
                 {
                     extraHpRec = effect.getHpR();
@@ -1115,12 +1013,6 @@ namespace Application.Core.Game.Players
 
                 stopExtraTask();
                 startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
-
-
-            }
-            else if (effect.isMapChair())
-            {
-                startChairTask();
             }
 
             int sourceid = effect.getBuffSourceId();
@@ -1129,7 +1021,7 @@ namespace Application.Core.Game.Players
 
             foreach (var ps in purposeStats)
             {
-                appliedStatups[ps.BuffState] = new BuffStatValueHolder(effect, starttime, ps.Value);
+                appliedStatups[ps.BuffState] = GetPlayerBuffStatValueHolder(this, effect, starttime, expirationtime, ps.Value);
             }
 
             bool active = effect.isActive(this);
@@ -1145,7 +1037,7 @@ namespace Application.Core.Game.Players
 
                     if (active)
                     {
-                        if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.effect.getStatups().Count <= statMbsvh.effect.getStatups().Count))
+                        if (mbsvh == null || mbsvh.value < statMbsvh.value || (mbsvh.value == statMbsvh.value && mbsvh.Effect.getStatups().Count <= statMbsvh.Effect.getStatups().Count))
                         {
                             toDeploy.AddOrUpdate(statup.Key, statMbsvh);
                         }
@@ -1153,7 +1045,7 @@ namespace Application.Core.Game.Players
                         {
                             if (!isSingletonStatup(statup.Key))
                             {
-                                foreach (var mbs in mbsvh.effect.getStatups())
+                                foreach (var mbs in mbsvh.Effect.getStatups())
                                 {
                                     retrievedStats.Add(mbs.BuffState);
                                 }
@@ -1168,9 +1060,9 @@ namespace Application.Core.Game.Players
                 var updated = appliedStatups.Keys;
                 foreach (BuffStatValueHolder mbsvh in this.getAllStatups())
                 {
-                    if (isPriorityBuffSourceid(mbsvh.effect.getBuffSourceId()))
+                    if (isPriorityBuffSourceid(mbsvh.Effect.getBuffSourceId()))
                     {
-                        foreach (var p in mbsvh.effect.getStatups())
+                        foreach (var p in mbsvh.Effect.getStatups())
                         {
                             if (updated.Contains(p.BuffState))
                             {
@@ -1182,7 +1074,7 @@ namespace Application.Core.Game.Players
 
                 if (!isSilent)
                 {
-                    addItemEffectHolder(sourceid, expirationtime, appliedStatups);
+                    addItemEffectHolder(sourceid, appliedStatups);
                     foreach (var statup in toDeploy)
                     {
                         ActiveEffects.AddOrUpdate(statup.Key, statup.Value);
@@ -1206,7 +1098,7 @@ namespace Application.Core.Game.Players
                 toDeploy = (active ? appliedStatups : new());
             }
 
-            addItemEffectHolder(sourceid, expirationtime, appliedStatups);
+            addItemEffectHolder(sourceid, appliedStatups);
             foreach (var statup in toDeploy)
             {
                 ActiveEffects.AddOrUpdate(statup.Key, statup.Value);
@@ -1216,18 +1108,6 @@ namespace Application.Core.Game.Players
             UpdateLocalStats();
         }
 
-        private void prepareDragonBlood(StatEffect bloodEffect)
-        {
-            if (dragonBloodSchedule != null)
-            {
-                dragonBloodSchedule.cancel(false);
-                dragonBloodSchedule = null;
-            }
-            dragonBloodSchedule = Client.CurrentServer.TimerManager.register(() =>
-            {
-                Client.CurrentServer.Post(new PlayerBuffDragonBloodCommand(Id, bloodEffect));
-            }, 4000, 4000);
-        }
 
         public bool hasActiveBuff(int sourceid)
         {
@@ -1235,115 +1115,12 @@ namespace Application.Core.Game.Players
 
             foreach (BuffStatValueHolder mbsvh in allBuffs)
             {
-                if (mbsvh.effect.getBuffSourceId() == sourceid)
+                if (mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     return true;
                 }
             }
             return false;
-        }
-        /// <summary>
-        /// 灵魂治愈
-        /// </summary>
-        /// <param name="healValue"></param>
-        /// <param name="skillId"></param>
-        public void ApplyBeholderHeal(StatEffect statEffect)
-        {
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(statEffect.getHp());
-            });
-
-            int skillId = DarkKnight.BEHOLDER;
-            sendPacket(PacketCreator.showOwnBuffEffect(skillId, 2));
-            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), skillId, 5), true);
-            MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(skillId, 2), false);
-        }
-
-        public void ApplyBeholderHex(StatEffect buffEffect)
-        {
-            buffEffect.applyTo(this);
-
-            var skillId = DarkKnight.BEHOLDER;
-            sendPacket(PacketCreator.showOwnBuffEffect(skillId, 2));
-            MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), skillId, (int)(Randomizer.nextDouble() * 3) + 6), true);
-            MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), skillId, 2), false);
-        }
-
-        public void ApplyBuffHeal(StatEffect statEffect)
-        {
-            if (getBuffSource(BuffStat.RECOVERY) == -1)
-            {
-                if (recoveryTask != null)
-                {
-                    recoveryTask.cancel(false);
-                    recoveryTask = null;
-                }
-
-                return;
-            }
-
-            var heal = (sbyte)statEffect.getX();
-
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(heal);
-            });
-            sendPacket(PacketCreator.showOwnRecovery(heal));
-            MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, heal), false);
-        }
-
-        public void ApplyDragonBlood(StatEffect bloodEffect)
-        {
-            UpdateStatsChunk(() =>
-            {
-                if (ChangeHP(-bloodEffect.getX()))
-                {
-                    sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-                    MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
-                }
-                else
-                {
-                    dragonBloodSchedule!.cancel(false);
-                    dragonBloodSchedule = null;
-                }
-            });
-        }
-
-        public void checkBerserk(bool isHidden)
-        {
-            berserkSchedule?.cancel(false);
-
-            IPlayerStats chr = this;
-            if (JobModel.Equals(Job.DARKKNIGHT))
-            {
-                Skill BerserkX = SkillFactory.GetSkillTrust(DarkKnight.BERSERK);
-                int skilllevel = getSkillLevel(BerserkX);
-                if (skilllevel > 0)
-                {
-                    var buffEffect = BerserkX.getEffect(skilllevel);
-                    var berserk = (this.HP * 100 / this.ActualMaxHP) < buffEffect.getX();
-                    berserkSchedule = Client.CurrentServer.TimerManager.register(() =>
-                    {
-                        Client.CurrentServer.Post(new PlayerBerserkBuffCommand(isHidden, Id, buffEffect, berserk));
-                    }
-                    , 5000, 3000);
-                }
-            }
-        }
-
-        public void ApplyBerserkBuff(bool isHidden, StatEffect buffEffect, bool berserk)
-        {
-
-            sendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
-            if (!isHidden)
-            {
-                MapModel.broadcastMessage(this, PacketCreator.showBerserk(Id, buffEffect.SkillLevel, berserk), false);
-            }
-            else
-            {
-                MapModel.broadcastGMMessage(this, PacketCreator.showBerserk(Id, buffEffect.SkillLevel, berserk), false);
-            }
         }
 
         public float getCardRate(int itemid)
@@ -1378,6 +1155,33 @@ namespace Application.Core.Game.Players
                 return morphBuff > 0 && morphBuff < 100;
             }
             return false;
+        }
+
+        static BuffStatValueHolder GetPlayerBuffStatValueHolder(Player chr, StatEffect effect, long startTime, long expiredAt, int value)
+        {
+            // 这几个技能都是对自己释放，不会触发“相同取最优”的逻辑
+            if (effect.isDragonBlood())
+            {
+                return new EffectDragonBlood(chr, effect, startTime, expiredAt, value);
+            }
+            else if (effect.isBerserk())
+            {
+                return new EffectBerserk(chr, effect, startTime, expiredAt, value);
+            }
+            else if (effect.isBeholder())
+            {
+                return new EffectBehold(chr, effect, startTime, expiredAt, value);
+            }
+            else if (effect.isRecovery())
+            {
+                return new EffectRecovery(chr, effect, startTime, expiredAt, value);
+            }
+            return new BuffStatValueHolder(chr, effect, startTime, expiredAt, value);
+        }
+
+        public bool IsActiveBuff(BuffStatValueHolder v)
+        {
+            return ActiveEffects.Values.Any(x => x == v);
         }
     }
 }

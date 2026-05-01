@@ -37,7 +37,7 @@ public class AdminChatHandler : ChannelHandlerBase
             case 2:
                 {
                     // /alertm /alertmap, /noticem /noticemap, /slidem /slidemap
-                    c.OnlinedCharacter.getMap().dropMessage(type, message);
+                    c.OnlinedCharacter.getMap().TypedMessage(type, message);
                     // ChatLogger.log(c, "Alert Map", message);
                     break;
                 }

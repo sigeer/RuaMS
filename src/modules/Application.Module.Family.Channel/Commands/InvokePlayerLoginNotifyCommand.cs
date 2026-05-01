@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
@@ -12,6 +13,7 @@ namespace Application.Module.Family.Channel.Commands
 {
     internal class InvokePlayerLoginNotifyCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokePlayerLoginNotifyCommand);
         int _chrId;
 
         public InvokePlayerLoginNotifyCommand(int chrId)
@@ -19,14 +21,14 @@ namespace Application.Module.Family.Channel.Commands
             _chrId = chrId;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
-            var chr = ctx.WorldChannel.Players.getCharacterById(_chrId);
+            var chr = ctx.Players.getCharacterById(_chrId);
             if (chr == null)
             {
                 return;
             }
-            var service = ctx.WorldChannel.NodeService.ServiceProvider.GetRequiredService<FamilyManager>();
+            var service = ctx.NodeService.ServiceProvider.GetRequiredService<FamilyManager>();
             FamilyEntry? familyEntry = null;
 
             if (chr.FamilyId > 0)

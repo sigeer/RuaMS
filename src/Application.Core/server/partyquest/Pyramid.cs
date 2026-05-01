@@ -82,7 +82,10 @@ public class Pyramid : PartyQuest
             count = 0;
             gaugeSchedule = worldChannel.TimerManager.register(() =>
             {
-                worldChannel.Post(new EventPyramidGaugeCommand(this));
+                worldChannel.Send(w =>
+                {
+                    ProcessGauge();
+                });
             }, 1000);
         }
     }
@@ -153,7 +156,10 @@ public class Pyramid : PartyQuest
 
         _timer = worldChannel.TimerManager.schedule(() =>
         {
-            worldChannel.Post(new EventPyramidTimeoutCommand(this));
+            worldChannel.Send(w =>
+            {
+                ProcessTimeout();
+            });
         }, TimeSpan.FromSeconds(value));//, 4000
         broadcastInfo("party", getParticipants().Count > 1 ? 1 : 0);
         broadcastInfo("hit", _kill);
@@ -175,7 +181,10 @@ public class Pyramid : PartyQuest
     {
         foreach (var chr in getParticipants())
         {
-            chr.changeMap(mapid, 0);
+            chr.MapModel.Send(m =>
+            {
+                chr.changeMap(mapid, 0);
+            });
         }
         if (stage > -1)
         {

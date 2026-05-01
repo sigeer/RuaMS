@@ -84,7 +84,6 @@ namespace Application.Core.Game.Players
                 sendPacket(PacketCreator.enableActions());
 
                 commitExcludedItems();
-                Client.CurrentServer.PetHungerManager.registerPetHunger(this, petIndex);
             }
         }
 
@@ -143,7 +142,6 @@ namespace Application.Core.Game.Players
             {
                 chrPet.Summoned = false;
 
-                Client.CurrentServer.PetHungerManager.unregisterPetHunger(this, petIdx);
                 MapModel.broadcastMessage(this, PacketCreator.HidePet(this, pet, hunger), true);
 
                 removePet(pet, shift_left);

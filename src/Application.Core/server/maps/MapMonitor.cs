@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Channel;
 using Application.Core.Game.Maps;
 
 namespace server.maps;
@@ -40,7 +39,10 @@ public class MapMonitor
         this.portal = map.getPortal(portal);
         this.monitorSchedule = map.ChannelServer.TimerManager.register(() =>
         {
-            map.ChannelServer.Post(new MapTempActiveCheckCommand(this));
+            map.Send(m =>
+            {
+                ProcessActive();
+            });
         }, 5000);
     }
 

@@ -29,13 +29,14 @@ public class ClickGuideHandler : ChannelHandlerBase
 {
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
+        var unknown = p.available();
         if (c.OnlinedCharacter.getJob().Equals(Job.NOBLESSE))
         {
-            c.CurrentServer.NPCScriptManager.start(c, NpcId.MIMO, null);
+            c.OnlinedCharacter.OpenNpc(NpcId.MIMO);
         }
         else
         {
-            c.CurrentServer.NPCScriptManager.start(c, NpcId.LILIN, null);
+            c.OnlinedCharacter.OpenNpc(NpcId.LILIN);
         }
     }
 

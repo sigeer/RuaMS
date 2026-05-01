@@ -7,6 +7,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class ReactorRespawnCommand: IWorldChannelCommand
     {
+        public string Name => nameof(ReactorRespawnCommand);
         Reactor _reactor;
         bool _fromDestroyed;
 
@@ -16,7 +17,7 @@ namespace Application.Core.Channel.Commands
             _fromDestroyed = fromDestroyed;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             _reactor.respawn(_fromDestroyed);
         }

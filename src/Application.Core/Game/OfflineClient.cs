@@ -53,7 +53,6 @@ namespace Application.Core.Game
 
 
         NPCConversationManager? IChannelClient.NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        EngineStorage IChannelClient.ScriptEngines { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public int Language { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ClientCulture CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -130,7 +129,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public void Disconnect(bool isShutdown, bool fromCashShop = false)
+        public Task Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             throw new BusinessCharacterOfflineException();
         }

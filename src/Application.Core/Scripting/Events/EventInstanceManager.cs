@@ -21,6 +21,8 @@
  */
 
 
+using Application.Core.Channel;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 
 namespace scripting.Event;
@@ -31,7 +33,7 @@ namespace scripting.Event;
  */
 public class EventInstanceManager : AbstractEventInstanceManager
 {
-    public EventInstanceManager(AbstractInstancedEventManager em, string name) : base(em, name)
+    public EventInstanceManager(WorldChannel worldChannel, string emName, string name) : base(worldChannel, emName, name)
     {
     }
 }

@@ -29,6 +29,11 @@ using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
+/// <summary>
+/// CNpc::ShowQuestList
+/// CUserLocal::TalkToNpc
+/// 
+/// </summary>
 public class NPCTalkHandler : ChannelHandlerBase
 {
     readonly ILogger<NPCTalkHandler> _logger;
@@ -64,50 +69,81 @@ public class NPCTalkHandler : ChannelHandlerBase
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                c.OnlinedCharacter.dropMessage(5, "Talking to NPC " + npc.getId());
+                c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
             }
 
-            if (npc.getId() == NpcId.DUEY)
+            if (npc.SourceTemplate.Script != null)
+            {
+                _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+                return;
+            }
+
+            if (npc.SourceTemplate.Parcel)
             {
                 c.CurrentServer.NodeService.DueyManager.SendTalk(c);
+                return;
             }
-            else
+
+            if (npc.SourceTemplate.TrunkGet != null || npc.SourceTemplate.TrunkPut != null)
             {
-                if (c.NPCConversationManager != null)
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                // Custom handling to reduce the amount of scripts needed.
-                if (npc.getId() >= NpcId.GACHAPON_MIN && npc.getId() <= NpcId.GACHAPON_MAX)
-                {
-                    c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "gachapon", null);
-                }
-                else if (npc.SourceTemplate.MapleTV)
-                {
-                    c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "mapleTV", null);
-                }
-                else
-                {
-                    bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, npc.SourceTemplate.Script, null);
-                    if (!hasNpcScript)
-                    {
-                        if (!npc.hasShop(c))
-                        {
-                            _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
-                            return;
-                        }
-                        else if (c.OnlinedCharacter.getShop() != null)
-                        {
-                            c.sendPacket(PacketCreator.enableActions());
-                            return;
-                        }
-
-                        npc.sendShop(c);
-                    }
-                }
+                c.OnlinedCharacter.Storage.OpenStorage(npc.getId());
+                return;
             }
+
+            if (!npc.hasShop(c))
+            {
+                _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
+                return;
+            }
+            else if (c.OnlinedCharacter.getShop() != null)
+            {
+                c.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            npc.sendShop(c);
+
+            //if (npc.getId() == NpcId.DUEY)
+            //{
+            //    c.CurrentServer.NodeService.DueyManager.SendTalk(c);
+            //}
+            //else
+            //{
+            //    if (c.NPCConversationManager != null)
+            //    {
+            //        c.sendPacket(PacketCreator.enableActions());
+            //        return;
+            //    }
+
+            //    // Custom handling to reduce the amount of scripts needed.
+            //    if (npc.getId() >= NpcId.GACHAPON_MIN && npc.getId() <= NpcId.GACHAPON_MAX)
+            //    {
+            //        c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, "gachapon", null);
+            //    }
+            //    else if (npc.SourceTemplate.MapleTV)
+            //    {
+            //        c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, "mapleTV", null);
+            //    }
+            //    else
+            //    {
+            //        bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, npc.SourceTemplate.Script, null);
+            //        if (!hasNpcScript)
+            //        {
+            //            if (!npc.hasShop(c))
+            //            {
+            //                _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
+            //                return;
+            //            }
+            //            else if (c.OnlinedCharacter.getShop() != null)
+            //            {
+            //                c.sendPacket(PacketCreator.enableActions());
+            //                return;
+            //            }
+
+            //            npc.sendShop(c);
+            //        }
+            //    }
+            //}
         }
         else if (obj is PlayerNpc playerNpc)
         {

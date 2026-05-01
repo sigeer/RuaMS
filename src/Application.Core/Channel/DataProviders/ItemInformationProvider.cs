@@ -21,14 +21,9 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
-using Application.Resources;
-using Application.Shared.Constants.Item;
-using Application.Shared.Items;
 using Application.Templates;
 using Application.Templates.Character;
 using Application.Templates.Exceptions;
@@ -39,16 +34,12 @@ using Application.Templates.Item.Etc;
 using Application.Templates.Item.Pet;
 using Application.Templates.Providers;
 using Application.Templates.StatEffectProps;
-using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
-using client.inventory.manipulator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Quartz.Impl.AdoJobStore.Common;
 using server;
-using tools;
 
 namespace Application.Core.Channel.DataProviders;
 
@@ -889,7 +880,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return eqp;
         }
 
-        else if(abTemplate is PetItemTemplate petTemplate)
+        else if (abTemplate is PetItemTemplate petTemplate)
         {
             return new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
         }
@@ -1311,7 +1302,11 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             equip.wear(false);
             var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
 
-            chr.Client.CurrentServer.NodeActor.Post(new SendWorldBroadcastMessageCommand(-1, "[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true));
+            chr.Client.CurrentServer.NodeActor
+                .Send(s =>
+                {
+                    s.SendDropMessage(-1, "[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true);
+                });
             _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
             _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;

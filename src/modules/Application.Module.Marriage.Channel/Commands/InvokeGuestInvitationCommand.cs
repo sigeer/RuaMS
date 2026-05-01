@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Module.Marriage.Common.ErrorCodes;
 using MarriageProto;
@@ -6,6 +7,7 @@ namespace Application.Module.Marriage.Channel.Commands
 {
     internal class InvokeGuestInvitationCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeGuestInvitationCommand);
         MarriageProto.InviteGuestResponse data;
 
         public InvokeGuestInvitationCommand(InviteGuestResponse data)
@@ -13,12 +15,12 @@ namespace Application.Module.Marriage.Channel.Commands
             this.data = data;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             var code = (InviteErrorCode)data.Code;
             if (code != InviteErrorCode.Success)
             {
-                var masterChr = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.Request.MasterId);
+                var masterChr = ctx.getPlayerStorage().getCharacterById(data.Request.MasterId);
                 if (masterChr != null)
                 {
                     if (code == InviteErrorCode.GuestNotFound)
@@ -50,7 +52,7 @@ namespace Application.Module.Marriage.Channel.Commands
                 return;
             }
 
-            var guestChr = ctx.WorldChannel.getPlayerStorage().getCharacterById(data.GuestId);
+            var guestChr = ctx.getPlayerStorage().getCharacterById(data.GuestId);
             if (guestChr != null && guestChr.isLoggedinWorld())
             {
                 guestChr.dropMessage(6, $"[Wedding] You've been invited to {data.GroomName} and {data.BrideName}'s Wedding!");

@@ -18,7 +18,9 @@ public class WhereaMiCommand : CommandBase
 
         var sb = new StringBuilder();
         sb.Append("我在...\r\n");
+        sb.Append("我的事件：").Append(player.getEventInstance()?.getName()).Append("\r\n");
         sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
+        sb.Append("地图事件：").Append(player.getMap().getEventInstance()?.getName()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
         sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
         var closetPortal = player.getMap().findClosestPortal(player.getPosition());

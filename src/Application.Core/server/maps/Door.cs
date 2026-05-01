@@ -100,11 +100,11 @@ public class Door
             chr.removeVisibleMapObject(townDoor);
         }
 
-        var owner = target.ChannelServer.getPlayerStorage().getCharacterById(ownerId);
-        if (owner != null)
+        var ownerActor = target.ChannelServer.getPlayerStorage().GetCharacterActor(ownerId);
+        ownerActor?.Send(m =>
         {
-            owner.silentPartyUpdate();
-        }
+            m.getCharacterById(ownerId)?.silentPartyUpdate();
+        });
 
 
         //// 坐标传送都是0x80，时空门的第1个portal也是0x80，前面移除了这个portal，这里重新生成？--portalFactory让时空门的portalid从0x80+1开始
@@ -136,12 +136,12 @@ public class Door
             }
             else
             {
-                owner.Client.CurrentServer.Post(new InvokeRemoveDoorCommand(owner.Id));
+                owner.Client.CurrentServer.Send(new InvokeRemoveDoorCommand(owner.Id));
             }
         }
         else
         {
-            owner.Client.CurrentServer.Post(new RequestRemoveDoorCommand(owner.Id));
+            owner.Client.CurrentServer.Send(new RequestRemoveDoorCommand(owner.Id));
         }
     }
 

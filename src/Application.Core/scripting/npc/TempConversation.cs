@@ -67,6 +67,7 @@ namespace Application.Core.scripting.npc
         {
             _type = TempConversationType.Default;
             sendOk(text);
+            dispose();
         }
 
         public void RegisterSelect(string text, Action<int, TempConversation> onSelect)
@@ -142,11 +143,9 @@ namespace Application.Core.scripting.npc
                     return;
                 }
             }
-            else
-            {
-                dispose();
-                return;
-            }
+
+            // dispose();
+            return;
         }
     }
 }

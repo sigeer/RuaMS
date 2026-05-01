@@ -127,7 +127,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.sendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
 
             player.getMap().addPlayer(player);
-            player.visitMap(player.getMap());
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
@@ -143,18 +142,9 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             // player.checkMessenger();
             c.sendPacket(PacketCreator.enableReport());
             player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
-            player.checkBerserk(player.isHidden());
 
             if (newcomer)
             {
-                foreach (var pet in player.getPets())
-                {
-                    if (pet != null)
-                    {
-                        c.CurrentServer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
-                    }
-                }
-
                 var mount = player.getMount();   // thanks Ari for noticing a scenario where Silver Mane quest couldn't be started
                 if (mount != null && mount.getItemId() != 0)
                 {

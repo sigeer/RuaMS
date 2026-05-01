@@ -24,6 +24,7 @@
 
 using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace server.events.gm;
@@ -46,7 +47,10 @@ public class Fitness
         this.chr = chr;
         this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
         {
-            chr.Client.CurrentServer.Post(new EventFitnessTimeoutCommand(this));
+            chr.MapModel.Send(w =>
+            {
+                ProcessTimeout();
+            });
         }, 900_000);
     }
 
@@ -97,7 +101,10 @@ public class Fitness
     {
         this.schedulemsg = chr.Client.CurrentServer.TimerManager.register(() =>
         {
-            chr.Client.CurrentServer.Post(new EventFitnessNoticeCommand(this));
+            chr.MapModel.Send(w =>
+            {
+                CheckMessage();
+            });
         }, 5000, 29500);
     }
 

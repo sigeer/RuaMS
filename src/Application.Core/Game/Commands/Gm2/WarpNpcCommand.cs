@@ -36,6 +36,7 @@ namespace Application.Core.Game.Commands.Gm2
                     TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                     {
                         HandleNpcId(client, searched[i].TemplateId, searched[i].Name, ctx);
+                        ctx.dispose();
                     });
                 }
                 else
@@ -75,6 +76,7 @@ namespace Application.Core.Game.Commands.Gm2
                 TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                 {
                     HandleMapNpc(client, template.Maps[i], npcId);
+                    ctx.dispose();
                 });
             }
             else

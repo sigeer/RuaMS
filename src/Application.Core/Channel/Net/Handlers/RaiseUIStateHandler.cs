@@ -12,32 +12,33 @@ public class RaiseUIStateHandler : ChannelHandlerBase
 {
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int infoNumber = p.readShort();
+        Log.Logger.Information("RaiseUIStateHandler");
+        //int infoNumber = p.readShort();
 
-        if (c.tryacquireClient())
-        {
-            try
-            {
-                var chr = c.OnlinedCharacter;
-                Quest quest = QuestFactory.Instance.GetInstanceFromInfoNumber(infoNumber);
-                QuestStatus mqs = chr.getQuest(quest);
+        //if (c.tryacquireClient())
+        //{
+        //    try
+        //    {
+        //        var chr = c.OnlinedCharacter;
+        //        Quest quest = QuestFactory.Instance.GetInstanceFromInfoNumber(infoNumber);
+        //        QuestStatus mqs = chr.getQuest(quest);
 
-                c.CurrentServer.QuestScriptManager.raiseOpen(c, (short)infoNumber, mqs.getNpc());
+        //        c.CurrentServer.QuestScriptManager.raiseOpen(c, (short)infoNumber, mqs.getNpc());
 
-                if (mqs.getStatus() == QuestStatus.Status.NOT_STARTED)
-                {
-                    quest.forceStart(chr, 22000);
-                    c.getAbstractPlayerInteraction().setQuestProgress(quest.getId(), infoNumber, 0);
-                }
-                else if (mqs.getStatus() == QuestStatus.Status.STARTED)
-                {
-                    chr.announceUpdateQuest(DelayedQuestUpdate.UPDATE, mqs, mqs.getInfoNumber() > 0);
-                }
-            }
-            finally
-            {
-                c.releaseClient();
-            }
-        }
+        //        if (mqs.getStatus() == QuestStatus.Status.NOT_STARTED)
+        //        {
+        //            quest.forceStart(chr, 22000);
+        //            c.getAbstractPlayerInteraction().setQuestProgress(quest.getId(), infoNumber, 0);
+        //        }
+        //        else if (mqs.getStatus() == QuestStatus.Status.STARTED)
+        //        {
+        //            chr.announceUpdateQuest(DelayedQuestUpdate.UPDATE, mqs, mqs.getInfoNumber() > 0);
+        //        }
+        //    }
+        //    finally
+        //    {
+        //        c.releaseClient();
+        //    }
+        //}
     }
 }

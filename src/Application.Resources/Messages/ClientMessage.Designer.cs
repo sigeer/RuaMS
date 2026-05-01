@@ -2708,6 +2708,15 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
+        ///   查找类似 你没有足够的金币。 的本地化字符串。
+        /// </summary>
+        public static string MesoNotEnough {
+            get {
+                return ResourceManager.GetString("MesoNotEnough", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置金币倍率。 的本地化字符串。
         /// </summary>
         public static string MesoRateCommand_Description {
@@ -3388,6 +3397,15 @@ namespace Application.Resources.Messages {
         public static string ShutdownCommand_Syntax {
             get {
                 return ResourceManager.GetString("ShutdownCommand_Syntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0}栏已满。 的本地化字符串。
+        /// </summary>
+        public static string SlotFull {
+            get {
+                return ResourceManager.GetString("SlotFull", resourceCulture);
             }
         }
         

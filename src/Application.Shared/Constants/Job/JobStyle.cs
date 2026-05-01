@@ -2,13 +2,12 @@ namespace Application.Shared.Constants.Job
 {
     public enum JobStyle
     {
+        BEGINNER,
+
         WARRIOR,
         MAGICIAN,
-        CROSSBOWMAN,
         BOWMAN,
         THIEF,
-        BRAWLER,
-        GUNSLINGER,
-        BEGINNER
+        PIRATE,
     }
 }

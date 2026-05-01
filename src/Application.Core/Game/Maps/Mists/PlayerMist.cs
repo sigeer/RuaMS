@@ -1,20 +1,26 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
+using Application.Utility.Tickables;
 using client.status;
-using Google.Protobuf.WellKnownTypes;
 using server;
-using System.Collections.Generic;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists
 {
-    public class PlayerMist : Mist
+    public class PlayerMist : Mist, ILoopTickable, ILifedTickable
     {
         public int OwnerId { get; }
         public StatEffect Source { get; }
 
-        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(owner.getMap(), mistPosition, 8)
+        public long Period { get; }
+
+        public long Next { get; private set; }
+
+        public TickableStatus Status { get; protected set; }
+        public long ExpiredAt { get; }
+
+        public PlayerMist(Rectangle mistPosition, Player owner, StatEffect source) : base(mistPosition, 8)
         {
             this.OwnerId = owner.Id;
             this.Source = source;
@@ -37,6 +43,10 @@ namespace Application.Core.Game.Maps.Mists
                     _isPoisonMist = true;
                     break;
             }
+            Period = 2_000;
+            var now = owner.getChannelServer().Node.getCurrentTime();
+            Next = now + 2_500;
+            ExpiredAt = now + source.getDuration();
         }
 
         public Skill getSourceSkill()
@@ -60,42 +70,59 @@ namespace Application.Core.Game.Maps.Mists
             return Source.makeChanceResult();
         }
 
-        public void ApplyMistEffect()
+        public void OnTick(long now)
         {
-            if (_isPoisonMist)
+            if (!this.IsAvailable())
             {
-                var owner = getMap().getCharacterById(OwnerId);
-                if (owner == null)
-                {
-                    return;
-                }
-
-                List<IMapObject> affectedMonsters = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.MONSTER));
-                foreach (IMapObject mo in affectedMonsters)
-                {
-                    if (makeChanceResult())
-                    {
-                        MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), getSourceSkill());
-                        ((Monster)mo).applyStatus(owner, poisonEffect, true, Source.getDuration());
-                    }
-                }
+                return;
             }
 
-            else if (_isRecoveryMist)
+            if (ExpiredAt <= now)
             {
-                List<IMapObject> players = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.PLAYER));
-                foreach (IMapObject mo in players)
+                Status = TickableStatus.Remove;
+                return;
+            }
+
+            if (Next <= now)
+            {
+                if (_isPoisonMist)
                 {
-                    if (makeChanceResult())
+                    var owner = getMap().getCharacterById(OwnerId);
+                    if (owner == null)
                     {
-                        Player chr = (Player)mo;
-                        if (OwnerId == chr.getId() || (chr.getParty()?.containsMembers(OwnerId) ?? false))
+                        return;
+                    }
+
+                    List<IMapObject> affectedMonsters = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.MONSTER));
+                    foreach (IMapObject mo in affectedMonsters)
+                    {
+                        if (makeChanceResult())
                         {
-                            chr.ChangeMP(Source.getX() * chr.MP / 100);
+                            MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), getSourceSkill());
+                            ((Monster)mo).applyStatus(owner, poisonEffect, true, Source.getDuration());
                         }
                     }
                 }
+
+                else if (_isRecoveryMist)
+                {
+                    List<IMapObject> players = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.PLAYER));
+                    foreach (IMapObject mo in players)
+                    {
+                        if (makeChanceResult())
+                        {
+                            Player chr = (Player)mo;
+                            if (OwnerId == chr.getId() || (chr.getParty()?.containsMembers(OwnerId) ?? false))
+                            {
+                                chr.ChangeMP(Source.getX() * chr.MP / 100);
+                            }
+                        }
+                    }
+                }
+
+                Next = now + Period;
             }
+
         }
     }
 }

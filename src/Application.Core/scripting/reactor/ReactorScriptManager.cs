@@ -44,38 +44,12 @@ public class ReactorScriptManager : AbstractScriptManager
 
     public void onHit(IChannelClient c, Reactor reactor)
     {
-        try
-        {
-            var iv = initializeInvocable(c, reactor);
-            if (iv == null)
-            {
-                return;
-            }
-
-            iv.CallFunction("hit");
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, "Error during onHit script for reactor: {ReactorId}", reactor.getId());
-        }
+        c.CurrentServer.NodeService.PluginManager.ReactorHit(c, reactor);
     }
 
     public void act(IChannelClient c, Reactor reactor)
     {
-        try
-        {
-            var iv = initializeInvocable(c, reactor);
-            if (iv == null)
-            {
-                return;
-            }
-
-            iv.CallFunction("act");
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, "Error during act script for reactor: {ReactorId}", reactor.getId());
-        }
+        c.CurrentServer.NodeService.PluginManager.ReactorAct(c, reactor);
     }
 
     public List<DropEntry> getDrops(int reactorId)
@@ -119,7 +93,7 @@ public class ReactorScriptManager : AbstractScriptManager
 
     private IEngine? initializeInvocable(IChannelClient c, Reactor reactor)
     {
-        var engine = getInvocableScriptEngine(GetReactorScriptPath(reactor.getId().ToString()), c);
+        var engine = getInvocableScriptEngine(GetReactorScriptPath(reactor.getId().ToString()));
         if (engine == null)
         {
             return null;

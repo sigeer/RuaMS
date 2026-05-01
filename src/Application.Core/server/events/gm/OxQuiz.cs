@@ -64,7 +64,10 @@ public class OxQuiz
         map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
         map.ChannelServer.TimerManager.schedule(() =>
         {
-            map.ChannelServer.Post(new EventOxQuizRunningCommand(this));
+            map.Send(w =>
+            {
+                ProcessSendQuestion();
+            });
         }, 30_000); // Time to answer = 30 seconds ( Ox Quiz packet shows a 30 second timer.
     }
 

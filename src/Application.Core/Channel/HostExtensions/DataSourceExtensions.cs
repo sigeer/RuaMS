@@ -40,6 +40,7 @@ namespace Application.Core.Channel.HostExtensions
                 .RegisterProvider<ItemProvider>(o => new ItemProvider(o))
                 .RegisterProvider<MobSkillProvider>(o => { o.UseCache = false; return new MobSkillProvider(o); })
                 .RegisterProvider<EtcNpcLocationProvider>(o => new EtcNpcLocationProvider(o))
+                .RegisterProvider<EtcScriptInfoProvider>(o => new EtcScriptInfoProvider(o))
                 .RegisterProvider<NpcProvider>(o => new NpcProvider(o))
                 .RegisterProvider<MobProvider>(o => new MobProvider(o))
                 .RegisterProvider<SkillProvider>(o => { o.UseCache = false; return new SkillProvider(o); })

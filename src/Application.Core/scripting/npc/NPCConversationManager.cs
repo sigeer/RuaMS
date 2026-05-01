@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using AllianceProto;
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
@@ -36,6 +35,7 @@ using GuildProto;
 using server;
 using server.expeditions;
 using server.partyquest;
+using System.Threading.Channels;
 using tools;
 using static server.partyquest.Pyramid;
 
@@ -53,31 +53,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
     private int npcOid;
     public ScriptMeta ScriptMeta { get; }
     private string? _getText;
-    private bool itemScript;
-    private List<Player> otherParty;
 
     public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
 
 
-
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<Player> otherParty, bool test) : base(c)
-    {
-        this.c = c;
-        this.npc = npc;
-        this.ScriptMeta = scriptName;
-        this.otherParty = otherParty;
-    }
-
-    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName, bool itemScript) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
         this.ScriptMeta = scriptName;
-        this.itemScript = itemScript;
-        this.otherParty = [];
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName)
     {
 
     }
@@ -95,9 +82,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public virtual void dispose()
     {
+        _talkChannel.Writer.Complete();
         NextLevelContext.Clear();
         c.CurrentServer.NPCScriptManager.dispose(this);
-        getClient().sendPacket(PacketCreator.enableActions());
+        c.sendPacket(PacketCreator.enableActions());
+        c.removeClickedNPC();
     }
 
     public void sendDefault(int checkQuestId = 0)
@@ -126,39 +115,39 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
     public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
-    public void sendNext(string text, byte speaker = 0)
+    public void sendNext(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker, speakerNpc));
     }
 
-    public void sendPrev(string text, byte speaker = 0)
+    public void sendPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker, speakerNpc));
     }
 
-    public void sendNextPrev(string text, byte speaker = 0)
+    public void sendNextPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker, speakerNpc));
     }
 
-    public void sendOk(string text, byte speaker = 0)
+    public void sendOk(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker, speakerNpc));
     }
 
-    public void sendYesNo(string text, byte speaker = 0)
+    public void sendYesNo(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker, speakerNpc));
     }
 
-    public void sendAcceptDecline(string text, byte speaker = 0)
+    public void sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 12, text, "", speaker, speakerNpc));
     }
 
-    public void sendSimple(string text, byte speaker = 0)
+    public void sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker, speakerNpc));
     }
 
     public void sendStyle(string text, int[] styles)
@@ -697,11 +686,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public Player? getChrById(int id)
-    {
-        return c.CurrentServer.getPlayerStorage().getCharacterById(id);
-    }
-
     public void mapClock(int time)
     {
         getPlayer().getMap().broadcastMessage(PacketCreator.getClock(time));
@@ -771,6 +755,235 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
+
+
+    #region New Talk
+    Channel<TalkMoreAction> _talkChannel = System.Threading.Channels.Channel.CreateBounded<TalkMoreAction>(1);
+
+    public async Task Response(sbyte mode, sbyte type, int selection, string? inputText = null)
+    {
+        await _talkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
+    }
+
+    async Task<bool> WaitingForAnswer()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode == -1)
+        {
+            throw new ConversationInterruptException();
+        }
+
+        return action.Mode > 0;
+    }
+
+    async Task<int> WaitingForOption()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<int> WaitingForInputNumber()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.selection;
+    }
+
+    async Task<string?> WaitingForInputText()
+    {
+        var action = await _talkChannel.Reader.ReadAsync();
+        if (action.Mode <= 0)
+        {
+            throw new ConversationInterruptException();
+        }
+        return action.inputText;
+    }
+
+    public async Task SayNext(string? text, byte speaker = 0, int speakerNpc = 0)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+        sendNext(text, speaker, speakerNpc);
+        await WaitingForAnswer();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="speaker"></param>
+    /// <param name="finalNext">最后一段显示下一步</param>
+    /// <returns></returns>
+    public async Task SaySpeech(string[] messages, int current = 0, bool finalNext = true)
+    {
+        while (current >= 0 && current < messages.Length)
+        {
+            var text = messages[current];
+            if (current == 0)
+            {
+                sendNext(text, 0);
+                if (await WaitingForAnswer())
+                {
+                    current++;
+                }
+            }
+            else if (current == messages.Length - 1)
+            {
+                if (finalNext)
+                {
+                    sendNextPrev(text, 0);
+                    current += (await WaitingForAnswer()) ? 1 : -1;
+                }
+                else
+                {
+                    sendPrev(text, 0);
+                    if (!await WaitingForAnswer())
+                    {
+                        current--;
+                    }
+                }
+            }
+            else
+            {
+                sendNextPrev(text, 0);
+                current += (await WaitingForAnswer()) ? 1 : -1;
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="speaker"></param>
+    /// <param name="finalNext">最后一段显示下一步</param>
+    /// <returns></returns>
+    public async Task SaySpeech(SpeechText[] messages, int current = 0, bool finalNext = true)
+    {
+        while (current >= 0 && current < messages.Length)
+        {
+            var text = messages[current];
+            if (current == 0)
+            {
+                sendNext(text.Text, text.Speaker, text.SpeakerNpc);
+                if (await WaitingForAnswer())
+                {
+                    current++;
+                }
+            }
+            else if (current == messages.Length - 1)
+            {
+                if (finalNext)
+                {
+                    sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    current += (await WaitingForAnswer()) ? 1 : -1;
+                }
+                else
+                {
+                    sendPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    if (!await WaitingForAnswer())
+                    {
+                        current--;
+                    }
+                }
+            }
+            else
+            {
+                sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                current += (await WaitingForAnswer()) ? 1 : -1;
+            }
+        }
+    }
+
+
+    public async Task SayOK(string? text, byte speaker = 0)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+
+        sendOk(text, speaker);
+        await WaitingForAnswer();
+    }
+
+    public async Task<bool> AskYesNo(string text, byte speaker = 0)
+    {
+        sendYesNo(text, speaker);
+        return await WaitingForAnswer();
+    }
+
+    public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
+    {
+        sendAcceptDecline(text, speaker);
+        return await WaitingForAnswer();
+    }
+
+    public async Task<int> AskMenu(string text, byte speaker = 0)
+    {
+        sendSimple(text, speaker);
+        return await WaitingForOption();
+    }
+
+    public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
+    {
+        var finalContent = mainContent + "\r\n#b";
+        for (int i = 0; i < options.Count(); i++)
+        {
+            finalContent += $"#L{i}#{options.ElementAt(i)}#l\r\n";
+        }
+        finalContent += "#k";
+        return await AskMenu(finalContent, speaker);
+    }
+
+    public async Task<int> AskMenu(string mainContent, Dictionary<int, string> options, byte speaker = 0)
+    {
+        var finalContent = mainContent + "\r\n#b";
+        foreach (var item in options)
+        {
+            finalContent += $"#L{item.Key}#{item.Value}#l\r\n";
+        }
+        finalContent += "#k";
+        return await AskMenu(finalContent, speaker);
+    }
+
+    public async Task<int> AskAvatar(string text, int[] styles)
+    {
+        if (styles.Length > 0)
+        {
+            sendStyle(text, styles);
+            return await WaitingForOption();
+        }
+        else
+        {
+            // thanks Conrad for noticing empty styles crashing players
+            await SayOK("Sorry, there are no options of cosmetics available for you here at the moment.");
+            return -1;
+        }
+    }
+
+    public async Task<int> AskNumber(string text, int def, int min, int max, byte speaker = 0)
+    {
+        sendGetNumber(text, def, min, max, speaker);
+        return await WaitingForInputNumber();
+    }
+
+    public async Task<string?> AskText(string text, byte speaker = 0)
+    {
+        sendGetText(text, speaker);
+        return await WaitingForInputText();
+    }
+    #endregion
 
 
     #region NextLevelTalk

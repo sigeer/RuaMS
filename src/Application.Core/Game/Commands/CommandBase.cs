@@ -58,7 +58,9 @@ namespace Application.Core.Game.Commands
                     return;
                 }
 
-                using var activity = GameMetrics.ActivitySource.StartActivity($"ExecuteCommand:{CurrentCommand}");
+                using var activity = GameMetrics.ActivitySource.StartActivity("ExecuteCommand");
+                activity?.SetTag("Command", CurrentCommand);
+
                 Execute(client, values);
             }
             catch (CommandArgumentException ex)

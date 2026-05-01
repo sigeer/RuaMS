@@ -1428,4 +1428,10 @@
   <data name="Storage_Restriction_GMLevel" xml:space="preserve">
     <value>You cannot use the storage as a GM of this level.</value>
   </data>
+  <data name="SlotFull" xml:space="preserve">
+    <value>You don't have a {0} slot available.</value>
+  </data>
+  <data name="MesoNotEnough" xml:space="preserve">
+    <value>You don't have enough mesos.</value>
+  </data>
 </root>

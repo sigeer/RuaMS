@@ -58,7 +58,7 @@ public class Item : IComparable<Item>
             return _sourceTemplate;
         }
     }
-
+    public Inventory? PlayerInventory { get; set; }
     public Item(int id, short position, short quantity)
     {
         log = LogFactory.GetLogger(LogType.Item);

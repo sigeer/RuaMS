@@ -92,7 +92,7 @@ public abstract class AbstractScriptManager
         });
     }
 
-    private IEngine getInvocableScriptEngine(ScriptMeta? jsContent)
+    protected IEngine getInvocableScriptEngine(ScriptMeta? jsContent)
     {
         if (jsContent == null)
         {
@@ -171,34 +171,9 @@ public abstract class AbstractScriptManager
         }
     }
 
-    protected IEngine? getInvocableScriptEngine(ScriptMeta? meta, IChannelClient c)
-    {
-        if (meta == null)
-            return null;
-
-        var engine = c.ScriptEngines[meta.ScriptFile.CacheKey];
-        if (engine == null)
-        {
-            engine = getInvocableScriptEngine(meta);
-            c.ScriptEngines[meta.ScriptFile.CacheKey] = engine;
-        }
-
-        return engine;
-    }
-
-    protected IEngine? getInvocableScriptEngine(ScriptFile file, IChannelClient c)
-    {
-        return getInvocableScriptEngine(GetScriptMeta(file), c);
-    }
-
     public static void ClearCache()
     {
         JsCache.Clear();
-    }
-
-    protected void resetContext(ScriptFile file, IChannelClient c)
-    {
-        c.ScriptEngines.Remove(file.CacheKey);
     }
 
     protected string GetFullScriptPath(string relativePath)

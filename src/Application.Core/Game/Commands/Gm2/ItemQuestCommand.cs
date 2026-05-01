@@ -41,6 +41,7 @@ namespace Application.Core.Game.Commands.Gm2
                     TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                     {
                         ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
+                        ctx.dispose();
                     });
                 }
                 return;
@@ -52,12 +53,6 @@ namespace Application.Core.Game.Commands.Gm2
         void ApplyQuestData(IChannelClient client, string input, int questId)
         {
             var questInfo = QuestFactory.Instance.GetInstance(questId);
-            if (string.IsNullOrEmpty(questInfo.Name))
-            {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.QuestNotFound), input);
-                return;
-            }
-
             var itemRequirement = questInfo.GetItemRequirement();
             if (itemRequirement != null)
             {

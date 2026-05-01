@@ -8,7 +8,6 @@ using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
-using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
@@ -31,7 +30,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActor<MasterCommandContext>
+    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActorInstance<MasterServer>
     {
         public bool IsRunning { get; private set; }
         public bool IsShuttingdown => isShuttingdown;
@@ -159,7 +158,7 @@ namespace Application.Core.Login
         public ITimerManager TimerManager { get; private set; } = null!;
         Lazy<MessageDispatcherNew> _messageDispatcher;
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
-        public MasterCommandLoop CommandLoop { get; }
+        public CommandLoop<MasterServer> CommandLoop { get; }
         public bool IsDevRoomAvailable { get; set; }
         public MasterServer(IServiceProvider sp)
         {
@@ -222,7 +221,7 @@ namespace Application.Core.Login
             _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());
 
             _messageDispatcher = new(() => new(this));
-            CommandLoop = new (this);
+            CommandLoop = new(this);
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -374,7 +373,7 @@ namespace Application.Core.Login
                 await NettyServer.Start();
                 _logger.LogInformation(SystemMessage.Server_StartSuccess, InstanceName, "成功", Port);
 
-                CommandLoop.Start(InstanceName);
+                CommandLoop.Start();
                 StartupTime = DateTimeOffset.UtcNow;
                 ForceUpdateServerTime();
 
@@ -536,7 +535,7 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
@@ -604,9 +603,9 @@ namespace Application.Core.Login
         {
             return DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime());
         }
-        public void UpdateServerTime()
+        public void UpdateServerTime(long detal)
         {
-            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+            serverCurrentTime = currentTime.addAndGet(detal);
         }
 
         public void ForceUpdateServerTime()
@@ -621,9 +620,10 @@ namespace Application.Core.Login
             return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
         }
 
-        public void Post(ICommand<MasterCommandContext> command)
-        {
-            CommandLoop.Register(command);
-        }
+        public Task Send(ICommand command) => CommandLoop.Register(command);
+
+        public Task Send(Func<MasterServer, Task> action) => CommandLoop.Register(new AsyncMasterDelegateCommand(action));
+
+        public Task Send(Action<MasterServer> action) => CommandLoop.Register(new MasterDelegateCommand(action));
     }
 }

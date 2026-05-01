@@ -3,6 +3,7 @@ using Application.Core.Channel.Internal;
 using Application.Module.PlayerNPC.Channel.Commands;
 using Google.Protobuf;
 using LifeProto;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.PlayerNPC.Channel.Internal
 {
@@ -19,7 +20,10 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             protected override void HandleMessage(UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRemoveCommand(res));
-                _server.Post(new InvokeLoadAllDataCommand());
+                _server.Send(s =>
+                {
+                    s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
+                });
             }
 
             protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
@@ -36,7 +40,10 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             protected override void HandleMessage(RemoveAllPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcClearCommand(res));
-                _server.Post(new InvokeLoadAllDataCommand());
+                _server.Send(s =>
+                {
+                    s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
+                });
             }
 
             protected override RemoveAllPlayerNPCResponse Parse(ByteString data) => RemoveAllPlayerNPCResponse.Parser.ParseFrom(data);
@@ -53,7 +60,10 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             protected override void HandleMessage(UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRefreshCommand(res));
-                _server.Post(new InvokeLoadAllDataCommand());
+                _server.Send(s =>
+                {
+                    s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
+                });
             }
 
             protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);

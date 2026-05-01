@@ -1,6 +1,3 @@
-using Application.Core.Channel.Commands;
-using Application.Core.Game.Maps;
-
 namespace Application.Core.Channel.ServerData;
 
 public class MapOwnershipTask : TaskBase
@@ -16,6 +13,9 @@ public class MapOwnershipTask : TaskBase
     }
     protected override void HandleRun()
     {
-        _server.PushChannelCommand(new InvokeCheckMapOwnershipCommand());
+        _server.Broadcast(w =>
+        {
+            w.MapOwnershipManager.HandleRun();
+        });
     }
 }

@@ -23,14 +23,14 @@ namespace Application.Core.Game.Maps;
 
 public abstract class AbstractMapObject : IMapObject
 {
-    private Point? position = new Point();
+    private Point position;
     private int objectId;
 
     public abstract MapObjectType getType();
 
     public virtual Point getPosition()
     {
-        return position ?? Point.Empty;
+        return position;
     }
 
     public virtual void setPosition(Point position)
@@ -46,11 +46,6 @@ public abstract class AbstractMapObject : IMapObject
     public virtual void setObjectId(int id)
     {
         this.objectId = id;
-    }
-
-    public virtual void nullifyPosition()
-    {
-        this.position = null;
     }
 
     public virtual void sendSpawnData(IChannelClient client) { }

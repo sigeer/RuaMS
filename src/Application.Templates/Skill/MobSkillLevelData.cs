@@ -20,10 +20,10 @@ namespace Application.Templates.Skill
         /// Duration of the (de)buff in seconds.
         /// </summary>
         public int Time { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int X { get; set; } = 1;
+        public int Y { get; set; } = 1;
         [WZPath("level/-/hp")]
-        public int HP { get; set; }
+        public int HP { get; set; } = 100;
         public int Prop { get; set; }
         [WZPath("level/-/-")]
         public int[] SummonIDs { get; set; }

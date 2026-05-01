@@ -231,7 +231,7 @@ namespace Application.Core.Login.Datas
                     {
                         if (saveDB)
                         {
-                            _masterServer.Post(new CommitDBCommand());
+                            _masterServer.Send(new CommitDBCommand());
                         }
                     });
         }
@@ -243,7 +243,7 @@ namespace Application.Core.Login.Datas
                     {
                         if (saveDB)
                         {
-                            _masterServer.Post(new CommitDBCommand());
+                            _masterServer.Send(new CommitDBCommand());
                         }
                     });
         }

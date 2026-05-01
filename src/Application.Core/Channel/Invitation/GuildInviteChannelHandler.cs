@@ -16,11 +16,14 @@ namespace Application.Core.Channel.Invitation
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
             {
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                if (senderActor != null)
                 {
                     var code = result == InviteResultType.DENIED ? GuildResponse.DENIED_INVITE : GuildResponse.NOT_FOUND_INVITE;
-                    sender.sendPacket(code.getPacket(data.ReceivePlayerName));
+                    senderActor.Send(m =>
+                    {
+                        m.getCharacterById(data.SenderPlayerId)?.sendPacket(code.getPacket(data.ReceivePlayerName));
+                    });
                 }
             }
         }
@@ -30,20 +33,20 @@ namespace Application.Core.Channel.Invitation
             var code = (GuildResponse)data.Code;
             if (code == GuildResponse.Success)
             {
-                var receiver = _server.getPlayerStorage().getCharacterById(data.ReceivePlayerId);
-                if (receiver != null)
+                var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
+                receiverActor?.Send(m =>
                 {
-                    receiver.sendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
-                }
+                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
+                });
 
             }
             else
             {
-                var sender = _server.getPlayerStorage().getCharacterById(data.SenderPlayerId);
-                if (sender != null)
+                var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
+                senderActor?.Send(m =>
                 {
-                    sender.sendPacket(code.getPacket(data.ReceivePlayerName));
-                }
+                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(code.getPacket(data.ReceivePlayerName));
+                });
             }
         }
     }

@@ -1,5 +1,7 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.Net.Packets;
 using Application.Shared.Message;
+using Application.Shared.Team;
 using Google.Protobuf;
 using TeamProto;
 
@@ -52,7 +54,25 @@ namespace Application.Core.Channel.Internal.Handlers
 
                 _server.TeamManager.SetTeam(res.TeamDto);
 
-                _server.PushChannelCommand(new InvokeCreateTeamCommand(res));
+                _server.Broadcast(w =>
+                {
+                    w.getPlayerStorage().GetCharacterActor(res.Request.LeaderId)
+                    ?.Send(m =>
+                    {
+                        var player = m.getCharacterById(res.Request.LeaderId);
+                        if (player != null)
+                        {
+                            player.Party = res.TeamDto.Id;
+
+                            player.sendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
+
+                            player.HandleTeamMemberCountChanged(null);
+
+                            player.sendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, player));
+                        }
+                    });
+
+                });
             }
 
             protected override CreateTeamResponse Parse(ByteString data) => CreateTeamResponse.Parser.ParseFrom(data);

@@ -39,6 +39,33 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public string GetQuestProgress(int id, int infoNumber = 0)
+        {
+            QuestStatus qs = getQuest(Quest.getInstance(id));
+
+            if (qs.getInfoNumber() == infoNumber && infoNumber > 0)
+            {
+                qs = getQuest(Quest.getInstance(infoNumber));
+                infoNumber = 0;
+            }
+
+            if (qs != null)
+            {
+                return qs.getProgress(infoNumber);
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public int GetQuestProgressInt(int id, int infoNumber = 0)
+        {
+            if (int.TryParse(GetQuestProgress(id, infoNumber), out var d))
+                return d;
+            return 0;
+        }
+
         public QuestStatus GetOrAddQuest(int quest)
         {
             return getQuest(Quest.getInstance(quest));

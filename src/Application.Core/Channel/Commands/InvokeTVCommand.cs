@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     internal class InvokeTVCommand : IWorldChannelCommand
     {
+        public string Name => nameof(InvokeTVCommand);
         CreateTVMessageBroadcast res;
 
         public InvokeTVCommand(CreateTVMessageBroadcast res)
@@ -12,14 +13,14 @@ namespace Application.Core.Channel.Commands
             this.res = res;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel ctx)
         {
             var noticeMsg = string.Join(" ", res.Request.MessageList);
-            ctx.WorldChannel.broadcastPacket(PacketCreator.enableTV());
-            ctx.WorldChannel.broadcastPacket(PacketCreator.sendTV(res.Master, res.Request.MessageList.ToArray(), res.Request.Type <= 2 ? res.Request.Type : res.Request.Type - 3, res.MasterPartner));
+            ctx.broadcastPacket(PacketCreator.enableTV());
+            ctx.broadcastPacket(PacketCreator.sendTV(res.Master, res.Request.MessageList.ToArray(), res.Request.Type <= 2 ? res.Request.Type : res.Request.Type - 3, res.MasterPartner));
 
             if (res.Request.Type >= 3)
-                ctx.WorldChannel.broadcastPacket(PacketCreator.serverNotice(3, res.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(res.Master) + " : " + noticeMsg, res.Request.ShowEar));
+                ctx.broadcastPacket(PacketCreator.serverNotice(3, res.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(res.Master) + " : " + noticeMsg, res.Request.ShowEar));
 
             return;
         }
@@ -27,10 +28,10 @@ namespace Application.Core.Channel.Commands
 
     internal class InvokeTVFinishCommand : IWorldChannelCommand
     {
-
-        public void Execute(ChannelCommandContext ctx)
+        public string Name => nameof(InvokeTVFinishCommand);
+        public void Execute(WorldChannel ctx)
         {
-            ctx.WorldChannel.broadcastPacket(PacketCreator.removeTV());
+            ctx.broadcastPacket(PacketCreator.removeTV());
 
             return;
         }

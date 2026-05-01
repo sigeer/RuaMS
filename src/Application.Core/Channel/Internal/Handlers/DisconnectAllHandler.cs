@@ -14,7 +14,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
         protected override void HandleMessage(Empty message)
         {
-            _server.PushChannelCommand(new InvokeDisconnectAllCommand(false));
+            _server.Broadcast(async w =>
+            {
+                await w.getPlayerStorage().disconnectAll(false);
+            });
         }
     }
 }

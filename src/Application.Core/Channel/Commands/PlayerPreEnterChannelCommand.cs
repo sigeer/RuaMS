@@ -5,6 +5,7 @@ namespace Application.Core.Channel.Commands
 {
     public class PlayerPreEnterChannelCommand : IWorldChannelCommand
     {
+        public string Name => nameof(PlayerPreEnterChannelCommand);
         int _chrId;
         IPEndPoint _channelSocket;
         bool fromChannel;
@@ -16,11 +17,11 @@ namespace Application.Core.Channel.Commands
             this.fromChannel = fromChannel;
         }
 
-        public void Execute(ChannelCommandContext ctx)
+        public void Execute(WorldChannel w)
         {
             var chr = fromChannel 
-                ? ctx.WorldChannel.getPlayerStorage().getCharacterById(_chrId)
-                : ctx.WorldChannel.PlayersAway.GetValueOrDefault(_chrId);
+                ? w.getPlayerStorage().getCharacterById(_chrId)
+                : w.PlayersAway.GetValueOrDefault(_chrId);
             if (chr != null)
             {
                 if (fromChannel)

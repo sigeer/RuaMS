@@ -33,7 +33,7 @@ public class ReactorStats
     private Point br;
     private Dictionary<sbyte, List<StateData>> stateInfo = new();
     private Dictionary<sbyte, int> timeoutInfo = new();
-
+    public string? Action { get; private set; }
     public void setTL(Point tl)
     {
         this.tl = tl;
@@ -52,6 +52,11 @@ public class ReactorStats
     public Point getBR()
     {
         return br;
+    }
+
+    public void SetAction(string? action)
+    {
+        Action = action;
     }
 
     public void addState(sbyte state, List<StateData> data, int timeOut)
