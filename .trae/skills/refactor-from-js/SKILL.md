@@ -26,12 +26,12 @@ js脚本中，会有2个方法: `start`和`action(mode, type, selection)`
 |--|--|
 |`sendOk`|`await SayOK`|
 |`sendNext`|`await SayNext`|
-|`sendYesNo`|`await SayYesNo`|
+|`sendYesNo`|`await AskYesNo`|
 |`sendAcceptDecline`|`await SayAcceptDecline`|
-|`sendSimple`|`await SayOption`|
-|`sendStyle`|`await SayStyle`|
-|`sendGetNumber`|`await SayInputNumber`|
-|`sendGetText`|`await SayInputText`|
+|`sendSimple`|`await AskMenu`|
+|`sendStyle`|`await AskAvatar`|
+|`sendGetNumber`|`await AskNumber`|
+|`sendGetText`|`await AskText`|
 |`sendNext` + `sendNextPrev`|`await SaySpeech`|
 
 这样用一个方法达到了原先js脚本中2个方法的效果。
