@@ -50,7 +50,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21001 
         public async Task q21001e()
         {
-            if (await SayYesNo("呵呵，平安回来了？孩子呢？孩子也带回来了吗？"))
+            if (await AskYesNo("呵呵，平安回来了？孩子呢？孩子也带回来了吗？"))
             {
                 await SaySpeech([
                     new SpeechText("太好了……真是太好了。", 9),
@@ -136,7 +136,7 @@ namespace Application.Plugin.Script.Quest
                 "……真对不起，太激动了，忍不住嗓门大了些。呜呜～真是令人激动……唉，眼泪都快出来了……#p1201000#这回可开心了。",
                 "等等……英雄大人怎么能没有武器呢？我听说每个英雄都有自己的独特武器……啊，估计是和黑魔法师战斗的时候遗失了。"
                 ]);
-            if (await SayYesNo("虽然寒碜了点，不过#b先拿这把剑用着吧#k。算是送给英雄的礼物。英雄如果没有武器，岂不是会有些奇怪？\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v1302000# #t1302000# 1 个\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 35 exp"))
+            if (await AskYesNo("虽然寒碜了点，不过#b先拿这把剑用着吧#k。算是送给英雄的礼物。英雄如果没有武器，岂不是会有些奇怪？\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v1302000# #t1302000# 1 个\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 35 exp"))
             {
                 if (canHold(1302000))
                 {
@@ -199,7 +199,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21013 
         public async Task q21013s()
         {
-            await SayOption("英、英雄大人………我一直都很想见你。\r\n#b#L2#（做腼腆状。）#l");
+            await AskMenu("英、英雄大人………我一直都很想见你。\r\n#b#L2#（做腼腆状。）#l");
             if (await SayAcceptDecline("我从很久以前就想送英雄大人一件礼物……既然今天遇见了英雄，不知英雄能否赏脸收下我这份薄礼？"))
             {
                 forceStartQuest();
@@ -211,7 +211,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21013 
         public async Task q21013e()
         {
-            if (await SayYesNo("材料都拿来了吗？请稍等。这么混合一样……\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v3010062# #t3010062# 1个\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 95 exp"))
+            if (await AskYesNo("材料都拿来了吗？请稍等。这么混合一样……\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v3010062# #t3010062# 1个\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 95 exp"))
             {
                 forceCompleteQuest();
                 gainExp(95);
@@ -346,14 +346,6 @@ namespace Application.Plugin.Script.Quest
         {
             if (getPlayer().getJob() == Job.LEGEND)
             {
-                if (!canHold(1142129))
-                {
-                    await SayOK("你的#b装备栏#k已满。你需要腾出至少一个空位来完成这个任务。");
-                    return;
-                }
-
-                gainItem(1142129, true);
-
                 changeJobById(JobId.ARAN1);
                 resetStats();
 
@@ -396,7 +388,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("不至于吧？这么吃惊？再怎么失忆，总不能连我都忘了吧？太不够意思了！", 8),
                     new SpeechText("不好意思，真的一点都想不起来。", 2),
                 ]);
-            if (await SayYesNo("说声不好意思就能算了？！几百年来就我一个人孤苦伶仃地，有多寂寞你知道吗？不管怎样，你快点给我想起来！"))
+            if (await AskYesNo("说声不好意思就能算了？！几百年来就我一个人孤苦伶仃地，有多寂寞你知道吗？不管怎样，你快点给我想起来！"))
             {
                 completeQuest();
 
@@ -420,13 +412,6 @@ namespace Application.Plugin.Script.Quest
             {
                 if (!isQuestCompleted(21201))
                 {
-                    if (!canHold(1142130))
-                    {
-                        await SayOK("你的#b装备栏#k已满。需要至少腾出一个空位来完成这个任务。");
-                        return;
-                    }
-
-                    gainItem(1142130, true);
                     changeJobById(JobId.ARAN2);
 
                     if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
@@ -466,7 +451,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("哎呦～#t4032311#都取回来了？你………比我想象的还要厉害一些嘛。不过，对于随时都可能伤到自己的危险武器，你那种毫不畏惧的爽朗豪放的心态实在是……好吧，#p1201001#就给你了。", 1),
                     new SpeechText("#b（过了好一会儿，#p1203000#才郑重地将裏在布里的#p1201001#交给我。）", 1),
                 ]);
-            if (await SayYesNo("这就是专门为你而做的长矛，名叫#p1201002#……以后就拜托了。"))
+            if (await AskYesNo("这就是专门为你而做的长矛，名叫#p1201002#……以后就拜托了。"))
             {
                 completeQuest();
                 removeAll(4032311);
@@ -491,7 +476,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21301 
         public async Task q21301e()
         {
-            if (await SayYesNo("抓到#o9001013#了吗？呵呵呵……真不愧是我的主人！很好，把你找到的#t4032312#给我吧……啊……？怎么不说话？难道……你没找到？"))
+            if (await AskYesNo("抓到#o9001013#了吗？呵呵呵……真不愧是我的主人！很好，把你找到的#t4032312#给我吧……啊……？怎么不说话？难道……你没找到？"))
             {
                 await SaySpeech([
                     new SpeechText("什么？！没找到#t4032312#？怎么会这样？！你忘了吗？啊，怎么……再怎么被黑魔法师诅咒，再怎么被封冻几百年也不能让你变得这么笨啊……", 1 << 3),
@@ -509,23 +494,15 @@ namespace Application.Plugin.Script.Quest
         public async Task q21302e()
         {
             await SayNext("啊！这、这是……你终于想起制作红珠玉的方法了？啊啊……这就是为什么你再笨再健忘，我也依然对你不离不弃……哎呀，现在不是说这些的时候！快把宝石给我！"); //Giant Polearm
-            if (await SayYesNo("好了，红珠玉的力里应该可以恢复了，你的能力也需要再唤醒一些。现在你的等级升高了不少，可以被唤醒的能力也更多了！"))
+            if (await AskYesNo("好了，红珠玉的力里应该可以恢复了，你的能力也需要再唤醒一些。现在你的等级升高了不少，可以被唤醒的能力也更多了！"))
             {
                 if (!isQuestCompleted(21302))
                 {
-                    if (!canHold(1142131))
-                    {
-                        await SayOK("背包中的装备栏至少需要一个空位来完成任务。");
-                        
-                        return;
-                    }
-
                     if (haveItem(4032312, 1))
                     {
                         gainItem(4032312, -1);
                     }
 
-                    gainItem(1142131, true);
                     changeJobById(JobId.ARAN3);
                     if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
                     {
@@ -595,22 +572,16 @@ namespace Application.Plugin.Script.Quest
         public async Task q21401e()
         {
             await SayNext("谢谢你，战神。多亏了你，才阻止了我的暴走。真是万幸……以主人的实力，这点小事当然不在话下了！");
-            if (await SayYesNo("现在来看，你的等级已经很高了。既然能够打倒暴走状态下的我……那么唤醒你过去全部的力量也应该是可以的了。"))
+            if (await AskYesNo("现在来看，你的等级已经很高了。既然能够打倒暴走状态下的我……那么唤醒你过去全部的力量也应该是可以的了。"))
             {
                 if (!isQuestCompleted(21401))
                 {
-                    if (!canHold(1142132))
-                    {
-                        await SayOK("哇，你的#b装备栏#k已满. 请留出多余的空间来获取物品.");
-                        return;
-                    }
                     if (!canHold(2280003, 1))
                     {
                         await SayOK("你的#b物品栏#k已满. 请留出多余的空间来获取物品.");
                         return;
                     }
 
-                    gainItem(1142132, true);
                     gainItem(2280003, 1);
                     changeJobById(JobId.ARAN4);
 
@@ -750,7 +721,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("啊，你打败了所有30个#o9300343#后又回来了。我知道你有这个能力……尽管你没有记忆，能力也很少，但我还是能看出你与众不同！怎么会这样？因为你显然带着长柄武器！", 0),
                     new SpeechText("#b（他在开玩笑吗？）#k", 2),
                 ]);
-            if (await SayYesNo("我没什么可教你的了，因为你的技术已经超越了我。现在就走吧！别回头！老头很高兴能成为你的导师。"))
+            if (await AskYesNo("我没什么可教你的了，因为你的技术已经超越了我。现在就走吧！别回头！老头很高兴能成为你的导师。"))
             {
                 if (isQuestStarted(21703))
                 {
@@ -834,7 +805,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("预言里只说到英雄会苏醒，与黑魔法师战斗。但我还一直半信半疑，这下我才明白黑魔法师是真的存在的。", 8),
                     new SpeechText("是不是很可怕？", 2),
                     ]);
-            if (await SayYesNo("有什么可怕的？管他是什么黑魔法师还是什么别的，你都会将他们一一打倒的，还有什么好担心的呢？我们只会觉得斗志更加高涨。啊，对了，我发现了这个#b技能#k……看一眼吗？"))
+            if (await AskYesNo("有什么可怕的？管他是什么黑魔法师还是什么别的，你都会将他们一一打倒的，还有什么好担心的呢？我们只会觉得斗志更加高涨。啊，对了，我发现了这个#b技能#k……看一眼吗？"))
             {
                 if (getQuestStatus(21720) == 1)
                 {
@@ -861,7 +832,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21733 
         public async Task q21733s()
         {
-            await SayOption("喂，你在哪？有一件急事！\r\n#b#L0#(喂……？#p1002104#以前不是叫我英雄的吗……)#l\r\n#k");
+            await AskMenu("喂，你在哪？有一件急事！\r\n#b#L0#(喂……？#p1002104#以前不是叫我英雄的吗……)#l\r\n#k");
             if (await SayAcceptDecline("我有很重要的情报！赶紧到#b#m104000004##k来！"))
             {
                 forceStartQuest();
@@ -882,7 +853,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("人偶师讨厌的那个文件。如果那个文件是假的，人偶师是不会这么兴师动众，带着一群人跑来折腾的。那个文件充分证明了黑色之翼的目标其实是金银岛封印石。", 1 << 3),
                     new SpeechText("话虽这么说，但我的位置也暴露了。", 1 << 1),
                     ]);
-            if (await SayYesNo("别担心。这次我为了拿利琳寄过来的文件才出去的，没想到中了敌人的招。平时我不会这么不小心的。好歹也是个情报商人，总会为自己准备一条退路的。现在关键的是#b精准矛#k这个技能你知道吗？"))
+            if (await AskYesNo("别担心。这次我为了拿利琳寄过来的文件才出去的，没想到中了敌人的招。平时我不会这么不小心的。好歹也是个情报商人，总会为自己准备一条退路的。现在关键的是#b精准矛#k这个技能你知道吗？"))
             {
                 gainExp(8000);
                 teachSkill(21100000, 0, 20, -1); // polearm mastery
@@ -945,7 +916,7 @@ namespace Application.Plugin.Script.Quest
             if (haveItem(4032323, 1))
             {
                 await SayNext("黑色之翼的动向，我已经从真相叔叔那里听说了。听说前不久还被他们袭击了一次......你还好吧？咦？这个......这就是金银岛封印石吗？没想到真相叔叔果然比那些家伙们早一步找到金银岛封印石。不知道这颗宝石到底有什么用......只知道这个东西肯定和黑魔法师有关。");
-                if (await SayYesNo("不知道这颗宝石到底有什么用……只知道这个东西肯定和黑魔法师有关。既然那些家伙在找这个东西，我们一定要保护好这个东西。看来不论发生什么，你都要不断地变得更强，才行。"))
+                if (await AskYesNo("不知道这颗宝石到底有什么用……只知道这个东西肯定和黑魔法师有关。既然那些家伙在找这个东西，我们一定要保护好这个东西。看来不论发生什么，你都要不断地变得更强，才行。"))
                 {
                     gainItem(4032323, -1);
                     gainExp(6037);

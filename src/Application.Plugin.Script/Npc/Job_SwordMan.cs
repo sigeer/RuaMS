@@ -13,7 +13,7 @@ namespace Application.Plugin.Script
         public async Task infoSwordman()
         {
             await SayNext("战士拥有巨大的力量和持久力来支持它，他们在近战战斗中表现最出色。普通攻击本身就很强大，再加上复杂的技能，这个职业非常适合进行爆发性攻击。");
-            if (await SayYesNo("你想体验一下成为一个战士是什么感觉吗？"))
+            if (await AskYesNo("你想体验一下成为一个战士是什么感觉吗？"))
             {
                 lockUI();
                 warp(1020100, 0);
@@ -66,7 +66,7 @@ namespace Application.Plugin.Script
                 var jobList = new Job[] { Job.FIGHTER, Job.PAGE, Job.SPEARMAN };
                 if (haveItem(4031012))
                 {
-                    var option = await SayOption("很好，那你接下来想", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
+                    var option = await AskMenu("很好，那你接下来想", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
                     switch (option)
                     {
                         case 0:
@@ -79,10 +79,10 @@ namespace Application.Plugin.Script
                             await SayNext("使用#r枪或矛#k的战士。\r\n\r\n枪战士可以提高队伍的生存能力，完成第三次转职后拥有不俗的输出能力。");
                             break;
                         case 3:
-                            var select = await SayOption("请选择你的转职方向", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
+                            var select = await AskMenu("请选择你的转职方向", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
                             var job = jobList[select];
                             var jobStr = c.CurrentCulture.GetJobName(job);
-                            if (await SayYesNo($"你确定要转职为{jobStr}吗？一旦选择，就不能再更改了。"))
+                            if (await AskYesNo($"你确定要转职为{jobStr}吗？一旦选择，就不能再更改了。"))
                             {
                                 gainItem(4031012, -1);
                                 completeQuest(questId);
@@ -106,7 +106,7 @@ namespace Application.Plugin.Script
                     if (!isQuestStarted(questId))
                         startQuest(questId);
 
-                    if (await SayYesNo("请把这封信带给#b#p1072000##k，他在#b#m102020300##k附近。"))
+                    if (await AskYesNo("请把这封信带给#b#p1072000##k，他在#b#m102020300##k附近。"))
                     {
                         if (!haveItem(4031008))
                         {
@@ -191,7 +191,7 @@ namespace Application.Plugin.Script
             }
             else if (getJob().Rank == 3)
             {
-                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
                 {
                     if (canHold(2280003, 1))
                     {
@@ -224,7 +224,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOption("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
+                await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.HERO)
                 {
                     if (getPlayer().getSkillLevel(Hero.ENRAGE) == 0)

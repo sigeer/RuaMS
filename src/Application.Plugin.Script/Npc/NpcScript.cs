@@ -49,7 +49,7 @@ namespace Application.Plugin.Script
         // Npc: 2003 
         public async Task begin5()
         {
-            switch (await SayOption("现在...问我任何你可能对旅行有的问题！", [
+            switch (await AskMenu("现在...问我任何你可能对旅行有的问题！", [
                 "我该怎么移动？",
                 "我怎么打倒怪物？",
                 "我怎么捡起物品？",
@@ -175,7 +175,7 @@ namespace Application.Plugin.Script
         // Npc: 2007 
         public async Task tutorialSkip()
         {
-            if (await SayYesNo("您想要跳过教程，直接前往明珠港吗？"))
+            if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
             {
                 warp(104000000, 0);
             }
@@ -209,7 +209,7 @@ namespace Application.Plugin.Script
         // Npc: 22000 
         public async Task begin7()
         {
-            if (await SayYesNo("要去金银岛吗？只需要支付 #e150 金币#n，我会把你送到 #b明珠港#k。#r但是#k一旦离开这里，你就不能再回来了，要出发吗？"))
+            if (await AskYesNo("要去金银岛吗？只需要支付 #e150 金币#n，我会把你送到 #b明珠港#k。#r但是#k一旦离开这里，你就不能再回来了，要出发吗？"))
             {
                 if (haveItem(4031801))
                 {
@@ -256,7 +256,7 @@ namespace Application.Plugin.Script
         {
 
             await SayNext("你想去其他城镇吗？只要有一点钱，我就可以安排。虽然有点贵，但我给新手提供90%的特别折扣。");
-            switch (await SayOption("如果这是你第一次来到这个地方，可能会对这里感到困惑是可以理解的。如果你对这个地方有任何问题，尽管问吧。",
+            switch (await AskMenu("如果这是你第一次来到这个地方，可能会对这里感到困惑是可以理解的。如果你对这个地方有任何问题，尽管问吧。",
                 [
                 "金银岛上有哪些城镇？",
                 "请带我去别的地方。"
@@ -265,7 +265,7 @@ namespace Application.Plugin.Script
                 case 0:
                     {
                         int[] imaps = [104000000, 102000000, 101000000, 100000000, 103000000, 120000000, 105040300];
-                        switch (await SayOption("金银岛中存在7大主城区域. 你想了解哪一个？", imaps.Select(x => $"#m{x}#")))
+                        switch (await AskMenu("金银岛中存在7大主城区域. 你想了解哪一个？", imaps.Select(x => $"#m{x}#")))
                         {
                             case 0:
                                 await SaySpeech([
@@ -284,10 +284,10 @@ namespace Application.Plugin.Script
                     int[] maps = [102000000, 100000000, 101000000, 103000000, 120000000];
                     int[] cost = [1000, 1000, 800, 1000, 800];
 
-                    var option = await SayOption(selStr, maps.Select(x => $"#m{x}#"));
+                    var option = await AskMenu(selStr, maps.Select(x => $"#m{x}#"));
 
                     var realCost = DiscountForNovice(cost[option]);
-                    if (await SayYesNo("我猜你不需要在这里。你真的想要移动到 #b#m" + maps[option] + "##k 吗？好吧，这将花费你 #b" + realCost + " 金币#k。你觉得怎么样？"))
+                    if (await AskYesNo("我猜你不需要在这里。你真的想要移动到 #b#m" + maps[option] + "##k 吗？好吧，这将花费你 #b" + realCost + " 金币#k。你觉得怎么样？"))
                     {
                         if (getMeso() < realCost)
                         {
@@ -311,7 +311,7 @@ namespace Application.Plugin.Script
         {
             var cost = 1500;
             var ticket = 4031134;
-            var option = await SayOption(
+            var option = await AskMenu(
                 $"你听说过位于立石港附近，能够欣赏到壮观海景的海滩#b黄金海滩#k吗？我可以带你去那里，只需#b{cost}金币#k，或者如果你有#b#t{ticket}##k的话，那就可以免费。",
                 [$"我支付{cost}金币。", $"我有#t{ticket}#。", $"什么是#t{ticket}#？"]);
             switch (option)
@@ -330,7 +330,7 @@ namespace Application.Plugin.Script
                     }
                     break;
                 case 1:
-                    if (await SayYesNo($"所以你有一张#b#t{ticket}##k吗？你可以随时用它前往黄金海滩。好的，但要注意可能会遇到一些怪物。好的，你现在想前往黄金海滩吗？"))
+                    if (await AskYesNo($"所以你有一张#b#t{ticket}##k吗？你可以随时用它前往黄金海滩。好的，但要注意可能会遇到一些怪物。好的，你现在想前往黄金海滩吗？"))
                     {
                         if (!haveItem(ticket))
                         {
@@ -357,9 +357,9 @@ namespace Application.Plugin.Script
         // Npc: 1002003 
         public async Task friend00()
         {
-            if (await SayYesNo("我希望我能赚到像昨天一样多的钱...嗨，你好！你不想扩展你的好友列表吗？你看起来像是有很多朋友的人...那么，你觉得呢？只要有一些钱，我就可以帮你实现。不过要记住，这只适用于一个角色，不会影响你账号上的其他角色。你想扩展你的好友列表吗？"))
+            if (await AskYesNo("我希望我能赚到像昨天一样多的钱...嗨，你好！你不想扩展你的好友列表吗？你看起来像是有很多朋友的人...那么，你觉得呢？只要有一些钱，我就可以帮你实现。不过要记住，这只适用于一个角色，不会影响你账号上的其他角色。你想扩展你的好友列表吗？"))
             {
-                if (await SayYesNo("好的，不错的选择！其实并不是很贵。#b24万金币，我就可以给你的好友列表增加5个名额#k。不，我不会单独出售它们。一旦你购买了，它就会永久地出现在你的好友列表上。所以如果你是那些需要更多空间的人，那么你最好去做。你觉得呢？你会花24万金币吗？"))
+                if (await AskYesNo("好的，不错的选择！其实并不是很贵。#b24万金币，我就可以给你的好友列表增加5个名额#k。不，我不会单独出售它们。一旦你购买了，它就会永久地出现在你的好友列表上。所以如果你是那些需要更多空间的人，那么你最好去做。你觉得呢？你会花24万金币吗？"))
                 {
                     var capacity = getPlayer().getBuddylist().Capacity;
                     if (capacity >= 50 || getMeso() < 240000)
@@ -401,10 +401,10 @@ namespace Application.Plugin.Script
                 await SayNext(GetDefault1());
 
                 (int item, int price, string desc)[] items = [(2000002, 310, "300 HP."), (2022003, 1060, "1000 HP."), (2022000, 1600, "800 MP."), (2001000, 3120, "1000 HP and MP.")];
-                var option = await SayOption("你想购买哪些药水?#b", items.Select(x => "#i" + x.item + "# (价格 : " + x.price + " 金币)"));
-                var inputNumber = await SayInputNumber("你想买 #b#t" + items[option].item + "##k? #t" + items[option].item + "# 允许您恢复 " + items[option].desc + " 你想买多少个?", 1, 1, 100);
+                var option = await AskMenu("你想购买哪些药水?#b", items.Select(x => "#i" + x.item + "# (价格 : " + x.price + " 金币)"));
+                var inputNumber = await AskNumber("你想买 #b#t" + items[option].item + "##k? #t" + items[option].item + "# 允许您恢复 " + items[option].desc + " 你想买多少个?", 1, 1, 100);
                 var totalCost = inputNumber * items[option].price;
-                if (await SayYesNo($"你将购买这些 #r{inputNumber}#k #b#t{items[option].item}#(s)#k 吗？#t{items[option].item}# 一个需要 {items[option].price} 金币，所以总共需要 #r{totalCost}#k 金币。"))
+                if (await AskYesNo($"你将购买这些 #r{inputNumber}#k #b#t{items[option].item}#(s)#k 吗？#t{items[option].item}# 一个需要 {items[option].price} 金币，所以总共需要 #r{totalCost}#k 金币。"))
                 {
                     if (getMeso() < totalCost)
                     {
@@ -484,7 +484,7 @@ namespace Application.Plugin.Script
         // Npc: 1022101 
         public async Task go_xmas()
         {
-            if (await SayYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
+            if (await AskYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
             {
                 getPlayer().SaveLocation(SavedLocationType.HAPPYVILLE);
                 warp(209000000, 0);
@@ -509,7 +509,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo($"嗨，我是#p{npc}#。我可以让你进入忍苦树林，只需要支付一小笔费用。你想用 #b5000#k 金币进入吗？"))
+                if (await AskYesNo($"嗨，我是#p{npc}#。我可以让你进入忍苦树林，只需要支付一小笔费用。你想用 #b5000#k 金币进入吗？"))
                 {
                     if (getMeso() < 5000)
                     {
@@ -547,7 +547,7 @@ namespace Application.Plugin.Script
         // Npc: 1032004 
         public async Task herb_out()
         {
-            if (await SayYesNo("你想回到#m101000000#吗？"))
+            if (await AskYesNo("你想回到#m101000000#吗？"))
             {
                 warp(101000000, 0);
             }
@@ -564,7 +564,7 @@ namespace Application.Plugin.Script
                 // 天空之城
 
                 ContiMoveBase[] list = c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap.Id == getMapId()).ToArray();
-                var option = await SayOption("您好，我是天空之城售票员，我负责销售开往各地船票。你想购买去那里的船票呢？",
+                var option = await AskMenu("您好，我是天空之城售票员，我负责销售开往各地船票。你想购买去那里的船票呢？",
                     list.Select(x => x.GetDestinationMapName(getPlayer())));
 
                 currentContiMove = list[option];
@@ -593,7 +593,7 @@ namespace Application.Plugin.Script
                 await SayOK("无法与我对话");
                 return;
             }
-            if (await SayYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
+            if (await AskYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
             {
                 if (getMeso() >= p.Value.TicketPrice && canHold(p.Value.TicketItemId))
                 {
@@ -642,7 +642,7 @@ namespace Application.Plugin.Script
             {
                 if (currentContiMove.CanEnter)
                 {
-                    if (await SayYesNo($"你想去{target}吗？"))
+                    if (await AskYesNo($"你想去{target}吗？"))
                     {
                         if (currentContiMove.Enter(getPlayer()))
                         {
@@ -674,7 +674,7 @@ namespace Application.Plugin.Script
         // Id 1032009, 2012002, 2012022, 2012024, 2041001, 2082002, 2102001
         public async Task goOutWaitingRoom()
         {
-            if (await SayYesNo("你想离开吗？"))
+            if (await AskYesNo("你想离开吗？"))
             {
                 await SayNext("好的，下次见。保重。");
                 WarpReturn();
@@ -887,7 +887,7 @@ namespace Application.Plugin.Script
             {
                 selStr += "\r\n#L" + i + "#Construction site B" + (i + 1) + " (" + cost + " mesos)#l";
             }
-            var option = await SayOption(selStr);
+            var option = await AskMenu(selStr);
             if (getMeso() < cost)
             {
                 await SayOK(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
@@ -903,7 +903,7 @@ namespace Application.Plugin.Script
         // Npc: 1052007 
         public async Task subway_in()
         {
-            var option = await SayOption("选择你的目的地。\r\n#L0##b废都广场#l\r\n#L1#进入建筑工地#l\r\n#L2#新叶城#l");
+            var option = await AskMenu("选择你的目的地。\r\n#L0##b废都广场#l\r\n#L1#进入建筑工地#l\r\n#L2#新叶城#l");
             switch (option)
             {
                 case 0:
@@ -922,7 +922,7 @@ namespace Application.Plugin.Script
                                 text += "\r\n#b#L" + (i + 1) + "##t" + (4031036 + i) + "#";
                             }
                         }
-                        var selectTicket = await SayOption(text);
+                        var selectTicket = await AskMenu(text);
                         gainItem(4031035 + selectTicket, -1);
                         warp(103000897 + (selectTicket * 3), "st00");  // thanks IxianMace for noticing a few scripts having misplaced warp SP's
                         return;
@@ -996,7 +996,7 @@ namespace Application.Plugin.Script
         public async Task subway_out()
         {
             await SaySpeech(["这个设备连接到外部。", "Are you going to give up and leave this place?"]);
-            if (await SayYesNo("下次进来的时候，你将不得不从头开始..."))
+            if (await AskYesNo("下次进来的时候，你将不得不从头开始..."))
             {
                 warp(103000100, 0);
             }
@@ -1007,7 +1007,7 @@ namespace Application.Plugin.Script
         // Npc: 1052012 
         public async Task go_pc()
         {
-            if (await SayYesNo("那么，你打算使用网吧吗？在那里使用空间是需要付费的，费用是#b5,000金币#k。你要进入网吧吗？"))
+            if (await AskYesNo("那么，你打算使用网吧吗？在那里使用空间是需要付费的，费用是#b5,000金币#k。你要进入网吧吗？"))
             {
                 if (getMeso() < 5000)
                 {
@@ -1139,7 +1139,7 @@ namespace Application.Plugin.Script
         public async Task Depart_topFloorIn()
         {
 
-            var option = await SayOption("等一下！由于装修，该区域的进入受到限制。我只能允许符合特定条件的人进入这里。#b\n\r\n#L0#我现在正在帮助#eBlake#n。#l\r\n#L1#我是这家购物中心的#rVIP#b！#l");
+            var option = await AskMenu("等一下！由于装修，该区域的进入受到限制。我只能允许符合特定条件的人进入这里。#b\n\r\n#L0#我现在正在帮助#eBlake#n。#l\r\n#L1#我是这家购物中心的#rVIP#b！#l");
             switch (option)
             {
                 case 0:
@@ -1202,7 +1202,7 @@ namespace Application.Plugin.Script
             }
             if (zones > 0)
             {
-                var option = await SayOption("它的力量让你能够深入森林深处。", maps.Take(zones).Select(x => $"#m{x}#"));
+                var option = await AskMenu("它的力量让你能够深入森林深处。", maps.Take(zones).Select(x => $"#m{x}#"));
                 warp(maps[option], 0);
             }
         }
@@ -1211,7 +1211,7 @@ namespace Application.Plugin.Script
         // Npc: 1061007 
         public async Task flower_out()
         {
-            if (await SayYesNo("你想离开吗？"))
+            if (await AskYesNo("你想离开吗？"))
             {
                 warp(105040300, 0);
             }
@@ -1242,12 +1242,12 @@ namespace Application.Plugin.Script
             await SayNext("您好。这里是森林宾馆。如果您想恢复体力，就入住我们宾馆吧。");
             var regcost = 499;
             var vipcost = 999;
-            var option = await SayOption("我们提供两种房间供您选择。请选择您喜欢的一种。",
+            var option = await AskMenu("我们提供两种房间供您选择。请选择您喜欢的一种。",
                 [$"普通桑拿房（{regcost}金币）", $"VIP桑拿房（{vipcost}金币）"]);
             switch (option)
             {
                 case 0:
-                    if (await SayYesNo("你选择了普通桑拿房。你的生命值和魔法值将会快速恢复，你甚至可以在那里购买一些物品。你确定要进去吗？"))
+                    if (await AskYesNo("你选择了普通桑拿房。你的生命值和魔法值将会快速恢复，你甚至可以在那里购买一些物品。你确定要进去吗？"))
                     {
                         if (getMeso() >= regcost)
                         {
@@ -1262,7 +1262,7 @@ namespace Application.Plugin.Script
                     }
                     break;
                 case 1:
-                    if (await SayYesNo("你选择了VIP桑拿房。你的HP和MP恢复速度甚至比普通桑拿还要快，而且你甚至可以在那里找到一个特别的物品。你确定要进去吗？"))
+                    if (await AskYesNo("你选择了VIP桑拿房。你的HP和MP恢复速度甚至比普通桑拿还要快，而且你甚至可以在那里找到一个特别的物品。你确定要进去吗？"))
                     {
                         if (getMeso() >= vipcost)
                         {
@@ -1428,7 +1428,7 @@ namespace Application.Plugin.Script
         // Npc: 1063016 
         public async Task DollWayKeeper1()
         {
-            if (await SayYesNo("你要退出这个试炼吗？"))
+            if (await AskYesNo("你要退出这个试炼吗？"))
             {
                 warp(105040201, 2);
             }
@@ -1438,7 +1438,7 @@ namespace Application.Plugin.Script
         // Npc: 1063017 
         public async Task DollWayKeeper2()
         {
-            if (await SayYesNo("欢迎回来，弗朗西斯主人。要进入主人的洞窟吗？"))
+            if (await AskYesNo("欢迎回来，弗朗西斯主人。要进入主人的洞窟吗？"))
             {
                 // 925020010？
                 if (getMap(910510202).getAllPlayers().Count > 0)
@@ -1463,7 +1463,7 @@ namespace Application.Plugin.Script
             {
                 returnmap = 104000000;
             }
-            if (await SayYesNo("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。"))
+            if (await AskYesNo("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。"))
             {
                 getPlayer().clearSavedLocation(SavedLocationType.FLORINA);
                 warp(returnmap);
@@ -1497,7 +1497,7 @@ namespace Application.Plugin.Script
         // Npc: 1092007 
         public async Task nautil_black()
         {
-            if (await SayYesNo("你想要被传送到黑魔法师的弟子那里吗？"))
+            if (await AskYesNo("你想要被传送到黑魔法师的弟子那里吗？"))
             {
                 warp(912000000, 0);
             }
@@ -1518,7 +1518,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("让我们去救 #r#p2095000##k 吧？"))
+                if (await AskYesNo("让我们去救 #r#p2095000##k 吧？"))
                 {
                     warp(925010000, 0);
                 }
@@ -1535,7 +1535,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("嘿，你那张不错的#b藏宝图#k是从哪里得到的？如果你不需要了，我可以替诺特勒斯船员保管吗？"))
+                if (await AskYesNo("嘿，你那张不错的#b藏宝图#k是从哪里得到的？如果你不需要了，我可以替诺特勒斯船员保管吗？"))
                 {
                     gainItem(4220153, -1);
                 }
@@ -1597,7 +1597,7 @@ namespace Application.Plugin.Script
                     await SayNext("好的！我现在就给你第一个问题！你最好准备好，因为这个问题很难。甚至这里的海鸥都觉得这个问题相当棘手。这是一个相当困难的问题。");
                     for (int i = 0; i < seagullQuestion.Length; i++)
                     {
-                        var inputAnswer = await SayInputText(seagullQuestion[i]);
+                        var inputAnswer = await AskText(seagullQuestion[i]);
                         if (inputAnswer == seagullAnswer[i])
                         {
                             continue;
@@ -1734,7 +1734,7 @@ namespace Application.Plugin.Script
         // Npc: 1095000 
         public async Task s4mind_out()
         {
-            if (await SayYesNo("#b#p2095000##k一定有办法爬上这个悬崖，根据我们最新的报告... 或者你是想要 #r离开这里#k 吗？"))
+            if (await AskYesNo("#b#p2095000##k一定有办法爬上这个悬崖，根据我们最新的报告... 或者你是想要 #r离开这里#k 吗？"))
             {
                 warp(120000104);
             }
@@ -1745,7 +1745,7 @@ namespace Application.Plugin.Script
         public async Task contimoveEreEli()
         {
             var contiMove = GetEventManager<PrivateContiMove>("ShipEllin");
-            if (await SayYesNo("嗯，你好...又来了。你想离开圣地去别的地方吗？如果是的话，你来对地方了。我经营着一艘从#b圣地#k到#b金银岛#k的渡船，如果你愿意的话，我可以带你去#b金银岛#k...你需要支付#b1000#k金币的费用。\r\n"))
+            if (await AskYesNo("嗯，你好...又来了。你想离开圣地去别的地方吗？如果是的话，你来对地方了。我经营着一艘从#b圣地#k到#b金银岛#k的渡船，如果你愿意的话，我可以带你去#b金银岛#k...你需要支付#b1000#k金币的费用。\r\n"))
             {
                 if (getMeso() < 1000)
                 {
@@ -1776,7 +1776,7 @@ namespace Application.Plugin.Script
         public async Task contimoveEreOrb()
         {
             var contiMove = GetEventManager<PrivateContiMove>("ShipOribs");
-            if (await SayYesNo("嗯...风势正好。你是不是想离开圣地去别的地方？这艘渡船开往神秘岛的天空之城。你在圣地需要办的事情都处理好了吗？如果你正好要去#b天空之城#k，我可以带你去那里。你怎么样？要去天空之城吗？\r\n"))
+            if (await AskYesNo("嗯...风势正好。你是不是想离开圣地去别的地方？这艘渡船开往神秘岛的天空之城。你在圣地需要办的事情都处理好了吗？如果你正好要去#b天空之城#k，我可以带你去那里。你怎么样？要去天空之城吗？\r\n"))
             {
                 if (getMeso() < 1000)
                 {
@@ -1821,7 +1821,7 @@ namespace Application.Plugin.Script
         public async Task contimoveEliEre()
         {
             var contiMove = GetEventManager<PrivateContiMove>("ShipEllin");
-            if (await SayYesNo("嗯...那么...嗯...你是想离开金银岛去其他地区吗？你可以乘这艘船去#b圣地#k。在那里，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤。那里是神兽和女皇所在的地方。你想去圣地吗？大约需要#b2分钟#k，费用是#b1000#k金币。\r\n"))
+            if (await AskYesNo("嗯...那么...嗯...你是想离开金银岛去其他地区吗？你可以乘这艘船去#b圣地#k。在那里，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤。那里是神兽和女皇所在的地方。你想去圣地吗？大约需要#b2分钟#k，费用是#b1000#k金币。\r\n"))
             {
                 if (getMeso() < 1000)
                 {
@@ -1851,7 +1851,7 @@ namespace Application.Plugin.Script
         public async Task contimoveOrbEre()
         {
             var contiMove = GetEventManager<PrivateContiMove>("ShipOribs");
-            if (await SayYesNo("这艘船将驶向#b圣地#k，那里是一个浮空的岛屿，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤，还有女皇——希纳斯。如果你有兴趣加入皇家骑士团，那么你一定要来这里看看。你有兴趣去圣地吗？这次旅行将花费你#b1000#k金币\r\n"))
+            if (await AskYesNo("这艘船将驶向#b圣地#k，那里是一个浮空的岛屿，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤，还有女皇——希纳斯。如果你有兴趣加入皇家骑士团，那么你一定要来这里看看。你有兴趣去圣地吗？这次旅行将花费你#b1000#k金币\r\n"))
             {
                 if (getMeso() < 1000)
                 {
@@ -1895,7 +1895,7 @@ namespace Application.Plugin.Script
         // Npc: 1101008 
         public async Task helperCygnus()
         {
-            var option = await SayOption("等等！等你达到10级的时候，你会自己搞清楚这些东西的，但如果你绝对想提前准备，你可以查看以下信息。\r\n\r\n 告诉我，你想知道什么？\r\n#b#L0#关于你#l\r\n#L1#小地图#l\r\n#L2#任务窗口#l\r\n#L3#背包#l\r\n#L4#普通攻击狩猎#l\r\n#L5#如何拾取物品#l\r\n#L6#如何装备物品#l\r\n#L7#技能窗口#l\r\n#L8#如何使用快捷栏#l\r\n#L9#如何打开箱子#l\r\n#L10#如何坐在椅子上#l\r\n#L11#世界地图#l\r\n#L12#任务通知#l\r\n#L13#增强属性#l\r\n#L14#谁是皇家骑士？#l");
+            var option = await AskMenu("等等！等你达到10级的时候，你会自己搞清楚这些东西的，但如果你绝对想提前准备，你可以查看以下信息。\r\n\r\n 告诉我，你想知道什么？\r\n#b#L0#关于你#l\r\n#L1#小地图#l\r\n#L2#任务窗口#l\r\n#L3#背包#l\r\n#L4#普通攻击狩猎#l\r\n#L5#如何拾取物品#l\r\n#L6#如何装备物品#l\r\n#L7#技能窗口#l\r\n#L8#如何使用快捷栏#l\r\n#L9#如何打开箱子#l\r\n#L10#如何坐在椅子上#l\r\n#L11#世界地图#l\r\n#L12#任务通知#l\r\n#L13#增强属性#l\r\n#L14#谁是皇家骑士？#l");
             switch (option)
             {
                 case 0:
@@ -1931,7 +1931,7 @@ namespace Application.Plugin.Script
         // Npc: 1102001 
         public async Task outSecondDH()
         {
-            if (await SayYesNo("你想要退出训练大厅吗？"))
+            if (await AskYesNo("你想要退出训练大厅吗？"))
             {
                 warp(130020000, 0);
             }
@@ -2035,7 +2035,7 @@ namespace Application.Plugin.Script
         public async Task enterBlackEreb()
         {
             await SayNext("#b#p1104002##k... The black witch... Trapped me here... There's no time now, she's already on her way to #rattack Ereve#k!");
-            if (await SayYesNo("Fellow Knight, you must reach to #rEreve#k right now, #rthe Empress is in danger#k!! Even in this condition, I can still Magic Warp you there. When you're ready talk to me. #bAre you ready to face Eleanor?#k"))
+            if (await AskYesNo("Fellow Knight, you must reach to #rEreve#k right now, #rthe Empress is in danger#k!! Even in this condition, I can still Magic Warp you there. When you're ready talk to me. #bAre you ready to face Eleanor?#k"))
             {
                 if (getWarpMap(913030000).countPlayers() == 0)
                 {
@@ -2053,9 +2053,9 @@ namespace Application.Plugin.Script
         public async Task contimoveRieRit()
         {
             var contiMove = GetEventManager<PrivateContiMove>("Whale");
-            if (await SayYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
+            if (await AskYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
             {
-                if (haveItem(4031801))
+                if (haveItem(4032338))
                 {
                     await SaySpeech([
                         "搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？",
@@ -2063,13 +2063,7 @@ namespace Application.Plugin.Script
                         ], current: 1);
 
                     var r = contiMove.StartInstance(getPlayer());
-                    if (r == CreateInstanceResult.Success)
-                    {
-                    }
-                    else
-                    {
-                        await SayNext(contiMove.HandleCreateInstanceResult(r, c));
-                    }
+                    await SayNext(contiMove.HandleCreateInstanceResult(r, c));
                 }
                 else
                 {
@@ -2190,19 +2184,6 @@ namespace Application.Plugin.Script
             mapObj.destroyNPC(getNpc());
         }
 
-        // Npc: 1209000 
-        public async Task talkHelena()
-        {
-            await SaySpeech([
-                "醒了？战神？伤口还好吧？……什么？现在的状况？",
-                "避难准备都做好了，所有的人都上了方舟。避难船飞行的时候就只有听天由命了，没啥可担心的。准备得差不多就该向金银岛出发了。",
-                "战神的同伴们？他们……已经去找黑魔法师了。在我们避难的时候，他们打算阻止黑魔法师的进攻……什么？你也要去找黑魔法师？不行！你伤得太重，跟我们一起吧！"
-                ]);
-            setQuestProgress(21000, 21002, 1);
-            showIntro("Effect/Direction1.img/aranTutorial/Trio");
-        }
-
-
         // Npc: 1300012 
         public async Task TD_MC_bossEnter()
         {
@@ -2265,7 +2246,7 @@ namespace Application.Plugin.Script
         // Npc: 2001001 
         public async Task go_tree1()
         {
-            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
                 warp(209000001);
             }
@@ -2275,7 +2256,7 @@ namespace Application.Plugin.Script
         // Npc: 2001002 
         public async Task go_tree2()
         {
-            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
                 warp(209000002);
             }
@@ -2285,7 +2266,7 @@ namespace Application.Plugin.Script
         // Npc: 2001003 
         public async Task go_tree3()
         {
-            if (await SayYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
                 warp(209000003);
             }
@@ -2295,7 +2276,7 @@ namespace Application.Plugin.Script
         // Npc: 2001004 
         public async Task out_tree()
         {
-            if (await SayYesNo("那么，你准备好离开这里了吗？"))
+            if (await AskYesNo("那么，你准备好离开这里了吗？"))
             {
                 warp(209000000);
             }
@@ -2313,7 +2294,7 @@ namespace Application.Plugin.Script
         // Npc: 2002000 
         public async Task go_victoria()
         {
-            if (await SayYesNo("你想离开快乐村吗？"))
+            if (await AskYesNo("你想离开快乐村吗？"))
             {
                 var map = getPlayer().GetSavedLocation(SavedLocationType.HAPPYVILLE);
                 if (map == -1)
@@ -2340,7 +2321,7 @@ namespace Application.Plugin.Script
                 ("阿里安特","精灵"),
                 ("圣地","渡船"),
                 ];
-            var option = await SayOption("天空之城的站台有许多个月台，请按照你的目的地进行选择。你想要前往哪里？", options.Select(x => $"前往{x.map}的{x.transport}站台"));
+            var option = await AskMenu("天空之城的站台有许多个月台，请按照你的目的地进行选择。你想要前往哪里？", options.Select(x => $"前往{x.map}的{x.transport}站台"));
             var targetMap = 200000110 + (option * 10);
             await SayNext($"好的，我会把你送到 #b#m{targetMap}##k 的月台上。");
             warp(targetMap, "west00");
@@ -2552,7 +2533,7 @@ namespace Application.Plugin.Script
                     "我会把你送到一个隐藏的地图。你会看到一些平常不会见到的怪物。它们看起来和普通的怪物一样，但态度完全不同。它们既不会提升你的经验等级，也不会给你提供物品。",
                     "打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。",
                     ]);
-                if (await SayYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
+                if (await AskYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
                 {
                     var em = GetSoloQuestEventManager(questId);
                     var r = em.StartInstance(getPlayer());
@@ -2587,14 +2568,14 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOption("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
+                await AskMenu("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
             }
             eim.exitPlayer(getPlayer());
         }
 
         async Task Job3(int type, string preNpcMap, int preNpc)
         {
-            var option = await SayOption("我可以帮你吗？", [
+            var option = await AskMenu("我可以帮你吗？", [
                 "我想进行第三次职业转职。",
                 "请允许我进行扎昆地牢任务。"
                 ]);
@@ -2607,7 +2588,7 @@ namespace Application.Plugin.Script
 
                     if (IsQuestNotStarted(questId))
                     {
-                        if (await SayYesNo($"欢迎。我是#b#p{getNpc()}##k，所有{baseJobStr}的首领。你似乎已经准备好迈出这一步，准备好迎接第三职业转职的挑战。太多的{baseJobStr}来来去去，无法达到第三职业转职的标准。你呢？你准备好接受考验，进行第三职业转职了吗？"))
+                        if (await AskYesNo($"欢迎。我是#b#p{getNpc()}##k，所有{baseJobStr}的首领。你似乎已经准备好迈出这一步，准备好迎接第三职业转职的挑战。太多的{baseJobStr}来来去去，无法达到第三职业转职的标准。你呢？你准备好接受考验，进行第三职业转职了吗？"))
                         {
                             await SaySpeech([
                                 $"好的。你将在{baseJobStr}的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的力量部分。还记得在{preNpcMap}的#b#p{preNpc}##k吗？去找他，他会告诉你第一部分测试的细节。请完成任务，并从#p{preNpc}#那里得到#b#t4031057##k。",
@@ -2705,7 +2686,7 @@ namespace Application.Plugin.Script
             var nextJob = getJobId() + 1;
             var job = JobFactory.GetById(nextJob);
             var jobStr = c.CurrentCulture.GetJobName(job);
-            if (!await SayYesNo($"好的！现在，我将让你成为{jobStr}。在这之前，请确保你的SP已经被充分使用了，你需要用完70级之前获得的所有SP。哦，还有，由于你已经在第二次转职时选择了职业方向，所以在第三次转职时就不需要再次选择了。你现在要进行转职吗？"))
+            if (!await AskYesNo($"好的！现在，我将让你成为{jobStr}。在这之前，请确保你的SP已经被充分使用了，你需要用完70级之前获得的所有SP。哦，还有，由于你已经在第二次转职时选择了职业方向，所以在第三次转职时就不需要再次选择了。你现在要进行转职吗？"))
             {
                 return;
             }
@@ -2798,7 +2779,7 @@ namespace Application.Plugin.Script
         public async Task s_3jobExit()
         {
             var eim = GetEventInstanceTrust();
-            if (await SayYesNo("你想离开吗？"))
+            if (await AskYesNo("你想离开吗？"))
             {
                 eim.exitPlayer(getPlayer());
             }
@@ -2826,7 +2807,7 @@ namespace Application.Plugin.Script
             await SayNext("嘿，你看起来好像想要继续前进，深入这个地方的更深处。不过，在那边，你会发现自己被攻击性强、危险的怪物包围，所以即使你觉得自己已经准备好了，也请小心。很久以前，我们镇上的一些勇敢的人进去想要消灭威胁镇上的任何人，但是从来没有回来过…");
             if (getLevel() > 49)
             {
-                if (await SayYesNo("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你看起来相当强壮。好吧，你想进去吗？"))
+                if (await AskYesNo("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你看起来相当强壮。好吧，你想进去吗？"))
                 {
                     warp(211040300, 5);
                 }
@@ -2910,7 +2891,7 @@ namespace Application.Plugin.Script
                         for (int i = 0; i < 5; i++)
                         {
                             var q = questions[i];
-                            var inputAnswer = await SayOption(q.quest, q.options);
+                            var inputAnswer = await AskMenu(q.quest, q.options);
                             if (inputAnswer != q.answer)
                             {
                                 await SayNext("答错了");
@@ -2951,9 +2932,9 @@ namespace Application.Plugin.Script
         {
             if (isQuestCompleted(3034))
             {
-                if (await SayYesNo("你对我帮助很大……如果你有任何黑暗水晶矿石，我可以为你精炼，每个只需#b500000金币#k。"))
+                if (await AskYesNo("你对我帮助很大……如果你有任何黑暗水晶矿石，我可以为你精炼，每个只需#b500000金币#k。"))
                 {
-                    var inputNumber = await SayInputNumber("好的，那么你打算做多少个？", 1, 1, 100);
+                    var inputNumber = await AskNumber("好的，那么你打算做多少个？", 1, 1, 100);
                     if (getMeso() < 500_000 * inputNumber)
                     {
                         await SayOK("对不起，但我不会免费做这件事。");
@@ -2992,7 +2973,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            if (await SayYesNo("你准备好进入玩偶屋了吗？"))
+            if (await AskYesNo("你准备好进入玩偶屋了吗？"))
             {
                 var em = GetSoloQuestEventManager(3230);
                 await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
@@ -3005,7 +2986,7 @@ namespace Application.Plugin.Script
         {
             if (getMapId() == 922000000)
             {
-                if (await SayYesNo("你准备好离开这个地方了吗？"))
+                if (await AskYesNo("你准备好离开这个地方了吗？"))
                 {
                     WarpOut();
                 }
@@ -3018,7 +2999,7 @@ namespace Application.Plugin.Script
                     return;
                 }
 
-                if (await SayYesNo("你准备好进入#b#m922000000##k了吗？"))
+                if (await AskYesNo("你准备好进入#b#m922000000##k了吗？"))
                 {
                     var em = GetSoloQuestEventManager(3239);
                     await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
@@ -3033,7 +3014,7 @@ namespace Application.Plugin.Script
         {
             if (haveItem(4001020))
             {
-                if (await SayYesNo("您可以使用#b#t4001020##k来激活#b第一个玩具塔石#k。您要传送到第71层的#b第二个玩具塔石#k吗？"))
+                if (await AskYesNo("您可以使用#b#t4001020##k来激活#b第一个玩具塔石#k。您要传送到第71层的#b第二个玩具塔石#k吗？"))
                 {
                     if (haveItem(4001020))
                     {
@@ -3056,9 +3037,9 @@ namespace Application.Plugin.Script
             if (haveItem(4001020))
             {
                 (string desc, int map)[] options = [("第一个玩具塔石（第100层）", 221024400), ("第三个玩具塔石（第41层）", 221021700)];
-                var option = await SayOption("您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+                var option = await AskMenu("您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
 
-                if (await SayYesNo($"您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                if (await AskYesNo($"您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
                 {
                     if (haveItem(4001020))
                     {
@@ -3080,9 +3061,9 @@ namespace Application.Plugin.Script
             if (haveItem(4001020))
             {
                 (string desc, int map)[] options = [("第二个玩具塔石（第71层）", 221022900), ("第四个玩具塔石（第1层）", 221020000)];
-                var option = await SayOption("您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+                var option = await AskMenu("您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
 
-                if (await SayYesNo($"您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                if (await AskYesNo($"您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
                 {
                     if (haveItem(4001020))
                     {
@@ -3103,7 +3084,7 @@ namespace Application.Plugin.Script
         {
             if (haveItem(4001020))
             {
-                if (await SayYesNo("您可以使用#b#t4001020##k来激活#b第四个玩具塔石#k。您要传送到第41层的#b第三个玩具塔石#k吗？"))
+                if (await AskYesNo("您可以使用#b#t4001020##k来激活#b第四个玩具塔石#k。您要传送到第41层的#b第三个玩具塔石#k吗？"))
                 {
                     if (haveItem(4001020))
                     {
@@ -3136,7 +3117,7 @@ namespace Application.Plugin.Script
                     greeting = "你还没有找到那个钟摆。你想回到玩具塔吗？";
                 }
             }
-            if (await SayYesNo(greeting))
+            if (await AskYesNo(greeting))
             {
                 warp(221024400, 4);
             }
@@ -3182,7 +3163,7 @@ namespace Application.Plugin.Script
         // Npc: 2041025 
         public async Task Populatus01()
         {
-            if (await SayYesNo("滴滴……滴滴……你可以通过我逃到一个更安全的地方。滴滴……滴滴……你想离开这个地方吗？"))
+            if (await AskYesNo("滴滴……滴滴……你可以通过我逃到一个更安全的地方。滴滴……滴滴……你想离开这个地方吗？"))
             {
                 WarpOut();
             }
@@ -3346,7 +3327,7 @@ namespace Application.Plugin.Script
                 dict.Remove(2);
             }
 
-            var option = await SayOption("", dict.ToDictionary(x => x.Key, x => x.Value.Desc));
+            var option = await AskMenu("", dict.ToDictionary(x => x.Key, x => x.Value.Desc));
             switch (option)
             {
                 case 0:
@@ -3405,7 +3386,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            if (await SayYesNo("嘿... 嗯... 你能帮我找到我在树林里丢失的一块#b柔软而闪亮的银色毛皮#k吗？我需要它，我需要它，我非常非常需要它！... 哦，你找到了它！！！你会把它给我吗？"))
+            if (await AskYesNo("嘿... 嗯... 你能帮我找到我在树林里丢失的一块#b柔软而闪亮的银色毛皮#k吗？我需要它，我需要它，我非常非常需要它！... 哦，你找到了它！！！你会把它给我吗？"))
             {
                 await SayNext("嘿嘿嘿~这是你从我这里拿走的报酬，你值得拥有。");
                 gainItem(4031793, -1);
@@ -3421,14 +3402,14 @@ namespace Application.Plugin.Script
         // Npc: 2081000 
         public async Task job4_item()
         {
-            var option = await SayOption("...我可以帮你吗？\r\n#L0##b购买魔法种子#k#l\r\n#L1##b为利夫雷做点什么#k#l");
+            var option = await AskMenu("...我可以帮你吗？\r\n#L0##b购买魔法种子#k#l\r\n#L1##b为利夫雷做点什么#k#l");
             switch (option)
             {
                 case 0:
-                    await SayOption("你好像不是本地人。我能帮你吗？#L0##b我想要一些#t4031346#。#k#l");
-                    var inputNumber = await SayInputNumber("#b#t4031346##k is a precious iteml I cannot give it to you just like that. How about doing me a little favor? Then I'll give it to you. I'll sell the #b#t4031346##k to you for #b30,000 mesos#k each. Are you willing to make the purchase? How many would you like, then?", 1, 1, 99);
+                    await AskMenu("你好像不是本地人。我能帮你吗？#L0##b我想要一些#t4031346#。#k#l");
+                    var inputNumber = await AskNumber("#b#t4031346##k is a precious iteml I cannot give it to you just like that. How about doing me a little favor? Then I'll give it to you. I'll sell the #b#t4031346##k to you for #b30,000 mesos#k each. Are you willing to make the purchase? How many would you like, then?", 1, 1, 99);
                     var cost = inputNumber * 30000;
-                    if (await SayYesNo("购买 #b" + inputNumber + "个 #t4031346##k 将花费你 #b" + cost + " 金币#k。你确定要购买吗？"))
+                    if (await AskYesNo("购买 #b" + inputNumber + "个 #t4031346##k 将花费你 #b" + cost + " 金币#k。你确定要购买吗？"))
                     {
                         if (getMeso() < cost || !canHold(4031346, inputNumber))
                         {
@@ -3461,7 +3442,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(6180) && getQuestProgressInt(6180, 9300096) < 200)
             {
-                if (await SayYesNo("请注意：在你待在训练场内的时候，确保你已经装备了#t1092041#，这非常重要。你准备好去训练场了吗？"))
+                if (await AskYesNo("请注意：在你待在训练场内的时候，确保你已经装备了#t1092041#，这非常重要。你准备好去训练场了吗？"))
                 {
                     if (getPlayer().haveItemEquipped(1092041))
                     {
@@ -3484,7 +3465,7 @@ namespace Application.Plugin.Script
         // Npc: 2081010 
         public async Task s4blocking()
         {
-            if (await SayYesNo("你想要退出这个区域吗？如果你退出，你将需要从头开始这个任务。"))
+            if (await AskYesNo("你想要退出这个区域吗？如果你退出，你将需要从头开始这个任务。"))
             {
                 warp(240010400, "st00");
             }
@@ -3494,7 +3475,7 @@ namespace Application.Plugin.Script
         // Npc: 2082003 
         public async Task flyminidraco()
         {
-            await SayOption("如果你有翅膀，我相信你可以去那里。但是，仅仅这样还不够。如果你想穿越比刀锋还锋利的风，你还需要坚硬的鳞片。我是唯一知道回去的半人半龙……如果你想去那里，我可以变你。无论你是什么，此刻，你将成为一只#b龙#k……\r\n#L0##b我想成为一只龙。#k#l");
+            await AskMenu("如果你有翅膀，我相信你可以去那里。但是，仅仅这样还不够。如果你想穿越比刀锋还锋利的风，你还需要坚硬的鳞片。我是唯一知道回去的半人半龙……如果你想去那里，我可以变你。无论你是什么，此刻，你将成为一只#b龙#k……\r\n#L0##b我想成为一只龙。#k#l");
             useItem(2210016);
             warp(200090500, 0);
         }
@@ -3538,7 +3519,7 @@ namespace Application.Plugin.Script
             PrivateContiMove? contiMove = null;
             if (curMap == MapId.HERB_TOWN)
             {
-                if (await SayYesNo($"你好。旅行进行得怎么样？我一直在像你这样的旅行者运送到#b{c.CurrentCulture.GetMapStreetName(250000100)}#k，而且……你有兴趣吗？这种方式没有船稳定，所以你得紧紧抓住，但我可以比船快得多地到达那里。只要你支付#b金币#k，我就会带你去那里。"))
+                if (await AskYesNo($"你好。旅行进行得怎么样？我一直在像你这样的旅行者运送到#b{c.CurrentCulture.GetMapStreetName(250000100)}#k，而且……你有兴趣吗？这种方式没有船稳定，所以你得紧紧抓住，但我可以比船快得多地到达那里。只要你支付#b金币#k，我就会带你去那里。"))
                 {
                     if (getMeso() > 1500)
                     {
@@ -3560,10 +3541,10 @@ namespace Application.Plugin.Script
             else if (curMap == 200000141)
             {
                 // 天空之城
-                await SayOption("你好。旅行进行得怎么样？我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。", [
+                await AskMenu("你好。旅行进行得怎么样？我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。", [
                     $"#m250000100# (1500 金币)",
                     ]);
-                if (!await SayYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(250000100)}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
+                if (!await AskYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(250000100)}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
                 {
                     await SayNext("改变想法随时跟我搭话吧。");
                     return;
@@ -3574,7 +3555,7 @@ namespace Application.Plugin.Script
             {
                 // 武陵
                 int[] options = [200000141, 251000000];
-                var option = await SayOption("你好。旅行进行得怎么样？我明白，与能翱翔天际的我相比，双腿行走要艰难得多。我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。",
+                var option = await AskMenu("你好。旅行进行得怎么样？我明白，与能翱翔天际的我相比，双腿行走要艰难得多。我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。",
                                     options.Select(x => $"{c.CurrentCulture.GetMapStreetName(x)} (1500 金币)"));
 
                 if (option == 1)
@@ -3592,7 +3573,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    if (!await SayYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(options[option])}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
+                    if (!await AskYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(options[option])}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
                     {
                         await SayNext("改变想法随时跟我搭话吧。");
                         return;
@@ -3626,7 +3607,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(21747) && getQuestProgressInt(21747, 9300351) == 0)
             {
-                var inputText = await SayInputText("封印神殿的入口... #b暗号#k!");
+                var inputText = await AskText("封印神殿的入口... #b暗号#k!");
                 if (inputText == "道可道非常道")
                 {
                     var em = GetSoloQuestEventManager(21747);
@@ -3691,7 +3672,7 @@ namespace Application.Plugin.Script
         public async Task karakasa()
         {
             await SayNext("我不知道你是怎么发现这个的，但你来对地方了！对于那些在尼哈尔沙漠徘徊并开始想家的人，我提供直飞金银岛的航班，不停歇！别担心飞船——它只摔过一两次！你在那艘小飞船上长时间飞行时不觉得幽闭恐惧吗？");
-            if (await SayYesNo("请记住两件事。一，这条线路实际上是用于海外运输，所以 #r我不能保证你会降落在哪个城镇#k。二，由于我要安排你乘坐这个特殊航班，费用会有点高。服务费是 #e#b10,000 枚金币#n#k。有一架航班即将起飞。你对这个直达航班感兴趣吗？"))
+            if (await AskYesNo("请记住两件事。一，这条线路实际上是用于海外运输，所以 #r我不能保证你会降落在哪个城镇#k。二，由于我要安排你乘坐这个特殊航班，费用会有点高。服务费是 #e#b10,000 枚金币#n#k。有一架航班即将起飞。你对这个直达航班感兴趣吗？"))
             {
                 await SayNext("好的，准备起飞~");
                 if (getMeso() >= 10000)
@@ -3725,7 +3706,7 @@ namespace Application.Plugin.Script
             var toMagatia = "Would you like to take the #b骆驼中巴#k to #b玛加提亚#k, the town of Alchemy? The fare is #b1500 mesos#k.";
             var toAriant = "Would you like to take the #b骆驼中巴#k to #b阿里安特#k, the town of Burning Roads? The fare is #b1500 mesos#k.";
 
-            if (await SayYesNo(getPlayer().getMapId() == 260020000 ? toMagatia : toAriant))
+            if (await AskYesNo(getPlayer().getMapId() == 260020000 ? toMagatia : toAriant))
             {
                 if (getMeso() < 1500)
                 {
@@ -3807,7 +3788,7 @@ namespace Application.Plugin.Script
         // Npc: 2111011 
         public async Task absence_wall()
         {
-            if (await SayYesNo("在一片蜘蛛网的拥挤中，有一堵墙后面似乎写着什么东西。也许你应该仔细看看墙？"))
+            if (await AskYesNo("在一片蜘蛛网的拥挤中，有一堵墙后面似乎写着什么东西。也许你应该仔细看看墙？"))
             {
                 setQuestProgress(3311, 5);
                 await SayOK("在一面满是涂鸦的墙上，似乎有一句话格外显眼。#b它是以一种吊坠的形式出现……#k 这是什么意思？");
@@ -3875,7 +3856,7 @@ namespace Application.Plugin.Script
 
                 if (progress == 3)
                 {
-                    var inputText = await SayInputText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
+                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
                         setQuestProgress(23339, 1, 4);
@@ -3918,7 +3899,7 @@ namespace Application.Plugin.Script
 
                 if (progress == 3)
                 {
-                    var inputText = await SayInputText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
+                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
                         setQuestProgress(23339, 1, 4);
@@ -3932,7 +3913,7 @@ namespace Application.Plugin.Script
                 else if (progress == 2)
                 {
                     setQuestProgress(23339, 1, 3);
-                    var inputText = await SayInputText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
+                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
                         setQuestProgress(23339, 1, 4);
@@ -3971,7 +3952,7 @@ namespace Application.Plugin.Script
 
                 if (progress == 3)
                 {
-                    var inputText = await SayInputText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
+                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
                         setQuestProgress(23339, 1, 4);
@@ -4114,7 +4095,7 @@ namespace Application.Plugin.Script
         // Npc: 2112011 
         public async Task yurete2_dead()
         {
-            await SayOption(
+            await AskMenu(
                 "被打败了...这就是犹泰的遗产将如何结束的方式，哦，这是多么的悲哀...希望你们现在很开心，因为我将度过余生在一个黑暗的地窖里。我所做的一切都是为了马加提亚的利益！！（哭泣）",
                 ["嘿，伙计，振作点！这里没有太多无法解决的损害。马加提亚制定了这些严厉的法律，是为了保护它的人民免受像这样的强大力量落入错误的手中所带来的危害。这并不是你的终结，接受社会的康复，一切都会好起来的！"]
                 );
@@ -4305,7 +4286,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("你还没有完成要求。你确定要离开吗？"))
+                if (await AskYesNo("你还没有完成要求。你确定要离开吗？"))
                 {
                     warp(923010100, 0);
                 }
@@ -4360,7 +4341,7 @@ namespace Application.Plugin.Script
         public async Task in_bath()
         {
             var price = 300;
-            if (await SayYesNo("你想进入浴池吗？这将是" + price + "金币。"))
+            if (await AskYesNo("你想进入浴池吗？这将是" + price + "金币。"))
             {
                 if (getMeso() < price)
                 {
@@ -4395,7 +4376,7 @@ namespace Application.Plugin.Script
         [ScriptName("To the Showa manor...")]
         public async Task s_To_the_Showa_manor()
         {
-            var option = await SayOption("你想从我这里得到什么？\r\n#L0##b收集一些有关藏身之处的信息。#l\r\n#L1#带我去藏身之处。#l\r\n#L2#什么都不要。#k");
+            var option = await AskMenu("你想从我这里得到什么？\r\n#L0##b收集一些有关藏身之处的信息。#l\r\n#L1#带我去藏身之处。#l\r\n#L2#什么都不要。#k");
             switch (option)
             {
                 case 0:
@@ -4416,7 +4397,7 @@ namespace Application.Plugin.Script
         // Npc: 9120200 
         public async Task con2()
         {
-            if (await SayYesNo("你就在藏身处前面！什么？你想返回#m801000000#？"))
+            if (await AskYesNo("你就在藏身处前面！什么？你想返回#m801000000#？"))
             {
                 warp(801000000);
             }
@@ -4488,7 +4469,7 @@ namespace Application.Plugin.Script
             var fee = 15000;
             if (getMapId() == 682000000)
             {
-                if (await SayYesNo("你想回到 #b新叶城 市区中心#k 吗？费用是" + fee + "金币。"))
+                if (await AskYesNo("你想回到 #b新叶城 市区中心#k 吗？费用是" + fee + "金币。"))
                 {
                     if (getMeso() >= fee)
                     {
@@ -4503,7 +4484,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("你想乘坐这辆车前往 #b鬼屋入口#k 吗? 这个费用是 " + fee + " 金币."))
+                if (await AskYesNo("你想乘坐这辆车前往 #b鬼屋入口#k 吗? 这个费用是 " + fee + " 金币."))
                 {
                     if (getMeso() >= fee)
                     {
@@ -4539,7 +4520,7 @@ namespace Application.Plugin.Script
                     return;
                 }
 
-                if (await SayYesNo($"每分钟都有前往{target}的地铁出发，票价为#b{p.Value.TicketPrice}金币#k。您确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
+                if (await AskYesNo($"每分钟都有前往{target}的地铁出发，票价为#b{p.Value.TicketPrice}金币#k。您确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
                 {
                     if (!canHold(p.Value.TicketItemId))
                     {
@@ -4559,7 +4540,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("列车启动前你想离开吗？车票将不会退款。"))
+                if (await AskYesNo("列车启动前你想离开吗？车票将不会退款。"))
                 {
                     WarpReturn();
                 }
@@ -4579,7 +4560,7 @@ namespace Application.Plugin.Script
             }
             if (subway.CanEnter)
             {
-                if (await SayYesNo("列车已经进站,请出示你的票，这样我就可以让你进去了。乘坐时间不会很长，你会安全到达目的地的。你觉得怎么样？想要乘坐这趟列车吗？"))
+                if (await AskYesNo("列车已经进站,请出示你的票，这样我就可以让你进去了。乘坐时间不会很长，你会安全到达目的地的。你觉得怎么样？想要乘坐这趟列车吗？"))
                 {
                     if (haveItem(p.Value.TicketItemId))
                     {
@@ -4784,7 +4765,7 @@ namespace Application.Plugin.Script
                 if (getLevel() >= requiredLevel && canGetFirstJob(jobType))
                 {
                     var map = jobMap[job];
-                    if (await SayYesNo("你好 #h0#，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
+                    if (await AskYesNo("你好 #h0#，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
                     {
                         warp(map, 0);
                     }
@@ -4841,7 +4822,7 @@ namespace Application.Plugin.Script
             {
                 if (haveItem(questItem))
                 {
-                    if (await SayYesNo("你想要移动到 #b#m" + mapId + "##k 吗？"))
+                    if (await AskYesNo("你想要移动到 #b#m" + mapId + "##k 吗？"))
                     {
                         foreach (var item in enterConsumeItems)
                         {
@@ -4887,7 +4868,7 @@ namespace Application.Plugin.Script
             {
                 if (getMapId() == 677000011)
                 {
-                    if (await SayYesNo("你想要移动到 #b#m677000012##k 吗？"))
+                    if (await AskYesNo("你想要移动到 #b#m677000012##k 吗？"))
                     {
                         warp(677000012, 0);
                     }
@@ -4895,7 +4876,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    if (await SayYesNo("你想要#b离开这个地方#k吗？"))
+                    if (await AskYesNo("你想要#b离开这个地方#k吗？"))
                     {
                         warp(105050400, 0);
                     }
@@ -4912,7 +4893,7 @@ namespace Application.Plugin.Script
                         return;
                     }
 
-                    if (await SayYesNo("你想要移动到 #b#m677000010##k 吗？"))
+                    if (await AskYesNo("你想要移动到 #b#m677000010##k 吗？"))
                     {
                         warp(677000010, 0);
                     }
@@ -4941,14 +4922,14 @@ namespace Application.Plugin.Script
         {
             if (getChar().getMapId() == 209000000)
             {
-                if (await SayYesNo($"你想前往 #b#m209080000##k 吗？"))
+                if (await AskYesNo($"你想前往 #b#m209080000##k 吗？"))
                 {
                     warp(209080000, 0);
                 }
             }
             else if (getChar().getMapId() == 209080000)
             {
-                if (await SayYesNo($"你想回到 #b#m209000000##k 吗？"))
+                if (await AskYesNo($"你想回到 #b#m209000000##k 吗？"))
                 {
                     warp(209000000, 0);
                 }
@@ -4984,7 +4965,7 @@ namespace Application.Plugin.Script
         // Npc: 9270017 
         public async Task goback_kerning()
         {
-            if (await SayYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
+            if (await AskYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
             {
                 await SayNext("机票不可退，希望再次见到你！");
                 WarpReturn();
@@ -5014,7 +4995,7 @@ namespace Application.Plugin.Script
             }
             else if (airPlane.IsWaiting(getMap()))
             {
-                if (await SayYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
+                if (await AskYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
                 {
                     WarpReturn();
                 }
@@ -5042,11 +5023,11 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var option = await SayOption($"你好，我是来自新加坡机场的#p{getNpc()}#。我可以帮助你迅速到达{target}。你想去{target}吗？\r\n#b#L0#我想买一张去{target}的飞机票\r\n#b#L1#让我进入出发点。");
+            var option = await AskMenu($"你好，我是来自新加坡机场的#p{getNpc()}#。我可以帮助你迅速到达{target}。你想去{target}吗？\r\n#b#L0#我想买一张去{target}的飞机票\r\n#b#L1#让我进入出发点。");
             switch (option)
             {
                 case 0:
-                    if (await SayYesNo($"机票的价格是{t.Value.TicketPrice}金币。你要购买吗？"))
+                    if (await AskYesNo($"机票的价格是{t.Value.TicketPrice}金币。你要购买吗？"))
                     {
                         if (!canHold(t.Value.TicketItemId))
                         {
@@ -5110,7 +5091,7 @@ namespace Application.Plugin.Script
         public async Task goshanghai1()
         {
             var fee = 2000;
-            if (await SayYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b上海#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往美丽的#b#e上海外滩#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
+            if (await AskYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b上海#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往美丽的#b#e上海外滩#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
             {
                 if (getMeso() < fee)
                 {
@@ -5128,7 +5109,7 @@ namespace Application.Plugin.Script
         public async Task goshanghai2()
         {
             var fee = 2000;
-            if (await SayYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b金银岛#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往古朴的#b#e勇士部落#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
+            if (await AskYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b金银岛#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往古朴的#b#e勇士部落#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
             {
                 if (getMeso() < fee)
                 {
@@ -5158,7 +5139,7 @@ namespace Application.Plugin.Script
         public async Task outshaolinBoss()
         {
             var mapID_out = 702070400;
-            if (await SayYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapID_out}##k#n 吗？"))
+            if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapID_out}##k#n 吗？"))
             {
                 warp(mapID_out);
             }
@@ -5207,7 +5188,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var option = await SayOption("你要进入训练中心吗？",
+            var option = await AskMenu("你要进入训练中心吗？",
                 Enumerable.Range(0, 5).Select(i => $"训练中心 {i}")
                 );
             warp(start + option, 0);
@@ -5219,14 +5200,14 @@ namespace Application.Plugin.Script
             var eim = GetEventInstanceTrust();
             if (!eim.isEventCleared())
             {
-                if (await SayYesNo("你准备好离开这个地方了吗？"))
+                if (await AskYesNo("你准备好离开这个地方了吗？"))
                 {
                     warp(541010110, 0);
                 }
             }
             else
             {
-                if (await SayYesNo("你已经打败了拉塔尼卡船长，干得好！你准备好离开这个地方了吗？"))
+                if (await AskYesNo("你已经打败了拉塔尼卡船长，干得好！你准备好离开这个地方了吗？"))
                 {
                     if (!eim.giveEventReward(getPlayer()))
                     {
@@ -5249,7 +5230,7 @@ namespace Application.Plugin.Script
         // Npc: 2103008
         public async Task thief_in2()
         {
-            var pwd = await SayInputText("一个可疑的声音打破了沉默。 #b暗号#k ！");
+            var pwd = await AskText("一个可疑的声音打破了沉默。 #b暗号#k ！");
             if (pwd == "芝麻开门")
             {
                 if (isQuestCompleted(3925))
@@ -5277,7 +5258,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var pwd = await SayInputText("一个可疑的声音打破了沉默。 #b暗号#k ！");
+            var pwd = await AskText("一个可疑的声音打破了沉默。 #b暗号#k ！");
             if (pwd == "弗朗西斯是天才傀儡师！")
             {
                 if (isQuestStarted(20730) && getQuestProgressInt(20730, 9300285) == 0)
@@ -5301,7 +5282,7 @@ namespace Application.Plugin.Script
 
         public async Task secretNPC()
         {
-            var pwd = await SayInputText("门锁住了请输入#b密码#k!");
+            var pwd = await AskText("门锁住了请输入#b密码#k!");
             var questPassword = getQuestProgress(3360, 0);
 
             if (pwd == questPassword)

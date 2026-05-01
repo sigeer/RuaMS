@@ -158,6 +158,15 @@ namespace Application.Core.Game.Players
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="invType"></param>
+        /// <param name="toRemoveCount">须为正数</param>
+        /// <param name="filter"></param>
+        /// <param name="fromDrop"></param>
+        /// <param name="consume"></param>
+        /// <param name="showMessage"></param>
         public void RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             var inv = this[invType];

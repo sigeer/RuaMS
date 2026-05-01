@@ -47,7 +47,7 @@ namespace Application.Plugin.Script.Quest
             {
                 talkStr += "\r\n#L" + i + "# #i" + vecItem[i] + "# #t" + vecItem[i] + "#";
             }
-            var selection = await SayOption(talkStr);
+            var selection = await AskMenu(talkStr);
             var item = vecItem[selection];
             gainItem(item, 1);
             gainItem(4000022, -100);
@@ -361,14 +361,14 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2230 
         public async Task q2230e()
         {
-            await SayOption("你好，旅行者。。。你终于来看我了。你履行职责了吗？\r\n #b#L0#什么职责？你是谁？#l#k");
+            await AskMenu("你好，旅行者。。。你终于来看我了。你履行职责了吗？\r\n #b#L0#什么职责？你是谁？#l#k");
             await SaySpeech([
                 "你在口袋里找到宠物了吗？保护好宠物是你的职责。当你独自一人的时候，生活很艰难。在这样的时刻，没有什么比拥有一个朋友更能时刻陪伴着你。你听说过#b宠物#k吗\r\n人们养宠物是为了减轻负担、悲伤和孤独，因为知道你身边有人或事，真的会带来心灵的平静。但一切都有后果，随之而来的是责任。。。",
                     "养宠物需要承担巨大的责任。记住宠物也是生命的一种形式，你需要悉心喂养它，给它取一个好听的名字，与它分享你的想法，最终形成一种纽带。这就是主人对这些宠物的依恋。",
                     "我想把这个灌输给你，所以我送你一个我珍爱的孩子。你带来的宠物是#b蜗牛#k,通过魔法而生的生物。既然你把宠物带到这里时很小心，宠物很快就会孵化出来。",
                     "蜗牛是拥有许多技能的宠物。它会拾取物品，给你吃药水，还能做很多其他的事情。缺点是，由于蜗牛是从魔法中诞生的，它的寿命很短。一旦变成洋娃娃，就永远无法复活."
                 ]);
-            if (await SayYesNo("现在你明白了吗？每一个行动都会带来后果，宠物也不例外。蜗牛的很快就会孵化."))
+            if (await AskYesNo("现在你明白了吗？每一个行动都会带来后果，宠物也不例外。蜗牛的很快就会孵化."))
             {
                 if (canHold(5000054, 1))
                 {
@@ -484,7 +484,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2293 
         public async Task q2293e()
         {
-            var option = await SayOption("我给你一些样品试听。请选一个。在做你的选择之前请仔细听。\r\n\\t#b#L1#听第一首歌#l \r\n\\t#L2#听第二首歌#l \r\n\\t#L3#听第三首歌#l \r\n\\r\n\\t#e#L4#输入正确的歌曲。#l");
+            var option = await AskMenu("我给你一些样品试听。请选一个。在做你的选择之前请仔细听。\r\n\\t#b#L1#听第一首歌#l \r\n\\t#L2#听第二首歌#l \r\n\\t#L3#听第三首歌#l \r\n\\r\n\\t#e#L4#输入正确的歌曲。#l");
             switch (option)
             {
                 case 1:
@@ -500,7 +500,7 @@ namespace Application.Plugin.Script.Quest
                     await SayOK("你听到了吗?");
                     break; 
                 case 4:
-                    var answer = await SayInputNumber("现在，请告诉我答案。你只有#b一次机会#k，所以请明智地选择。请在聊天窗口输入#b1，2，或者3#k。\r\n", 1, 1, 3);
+                    var answer = await AskNumber("现在，请告诉我答案。你只有#b一次机会#k，所以请明智地选择。请在聊天窗口输入#b1，2，或者3#k。\r\n", 1, 1, 3);
                     if (answer == 3)
                     {
                         forceCompleteQuest();
@@ -525,7 +525,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("故事发生在蘑菇王国，具体的事情我也不太清楚。但是好像很紧急。");
                 await SayNext("我不知道事情的细节，所以想找你帮帮忙，你可能会需要更多的时间帮助蘑菇王国，我送你一封信，请你把它交给#b警卫队长#k。\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v4032375# #t4032375#");
-                if (await SayYesNo("如果你现在想去蘑菇城堡的话，我可以送你去。你确定要去吗？"))
+                if (await AskYesNo("如果你现在想去蘑菇城堡的话，我可以送你去。你确定要去吗？"))
                 {
                     if (canHold(4032375, 1))
                     {
@@ -633,7 +633,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2322 
         public async Task q2322s()
         {
-            if (await SayYesNo("即使穿越了结界，也不能完全放心。我们蘑菇王国的城墙经过特殊设计，绝对无法从外部侵入，想要进去会很困难。嗯……你能先去城墙外部调查一下吗？"))
+            if (await AskYesNo("即使穿越了结界，也不能完全放心。我们蘑菇王国的城墙经过特殊设计，绝对无法从外部侵入，想要进去会很困难。嗯……你能先去城墙外部调查一下吗？"))
             {
                 forceStartQuest();
             }

@@ -52,11 +52,19 @@ namespace Application.Plugin.Script.Events
             // chr.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
         }
 
+        public override void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+            if (!Transportings.Contains(mapid))
+            {
+                End(eim);
+            }
+        }
+
         public override void OnTimeOut(AbstractEventInstanceManager eim)
         {
             if (int.TryParse(eim.Properties.GetValueOrDefault("Current"), out var curIdx))
             {
-                var map = eim.ChannelServer.getMapFactory().getMap(Transportings[curIdx]);
+                var map = eim.getMapInstance(Transportings[curIdx]);
                 map.warpEveryone(Stations[1 - curIdx], 0);
             }
         }

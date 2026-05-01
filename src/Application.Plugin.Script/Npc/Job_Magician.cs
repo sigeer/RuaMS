@@ -10,7 +10,7 @@ namespace Application.Plugin.Script
         public async Task infoMagician()
         {
             await SayNext("法师装备着华丽的基于元素的法术和辅助整个队伍的次要魔法。在二转职业之后，基于元素的魔法将对相克元素的敌人造成大量伤害。");
-            if (await SayYesNo("你想体验一下成为一个魔法师是什么感觉吗？"))
+            if (await AskYesNo("你想体验一下成为一个魔法师是什么感觉吗？"))
             {
                 lockUI();
                 warp(1020300, 0);
@@ -30,7 +30,7 @@ namespace Application.Plugin.Script
                 await SayNext("想成为一个#r魔法师#k吗？有一些标准需要满足，因为我们不能接受每个人... #b你的等级至少应该是8#k，至少有" + getFirstJobStatRequirement(2) + "。让我们看看。");
                 if (getLevel() >= 8 && canGetFirstJob(2))
                 {
-                    if (await SayYesNo("哦...！你看起来就像是我们团队的一员... 你只需要一点邪恶的心思，然后... 是的... 那么，你觉得怎么样？想成为魔法师吗？"))
+                    if (await AskYesNo("哦...！你看起来就像是我们团队的一员... 你只需要一点邪恶的心思，然后... 是的... 那么，你觉得怎么样？想成为魔法师吗？"))
                     {
                         if (canHold(1372043) && canHold(2070000))
                         {
@@ -70,7 +70,7 @@ namespace Application.Plugin.Script
                 {
                     var jobList = new Job[] { Job.FP_WIZARD, Job.IL_WIZARD, Job.CLERIC };
                     await SayNext("哈哈...我知道你会轻松通过那个测试的。我承认，你是一个很棒的魔法师。我会让你比现在强大得多。不过，在那之前...你需要选择给你的两条路中的一条。这对你来说会是一个艰难的决定，但是...如果有任何问题需要问，请尽管问吧。");
-                    var option = await SayOption("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
+                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
                     switch (option)
                     {
                         case 0:
@@ -83,10 +83,10 @@ namespace Application.Plugin.Script
                             await SayNext("掌握#r神圣魔法#k的魔法师。\r\n\r\n#b牧师#k是一个强大的支持职业，必定会被任何队伍接受。这是因为他们有能力#r治疗#k自己和队伍中的其他成员。使用#r祝福#k，#b牧师#k可以增强属性并减少所受的伤害。如果你发现生存困难，这个职业是值得一试的。#b牧师#k对不死怪物尤其有效。");
                             break;
                         case 3:
-                            var select = await SayOption("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
+                            var select = await AskMenu("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
                             var job = jobList[select];
                             var jobStr = c.CurrentCulture.GetJobName(job);
-                            if (await SayYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
+                            if (await AskYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
                             {
                                 if (getJob() == Job.MAGICIAN)
                                 {
@@ -116,7 +116,7 @@ namespace Application.Plugin.Script
                         startQuest(questId);
                     }
 
-                    if (await SayYesNo("请将这封信交给#b#p1072001##k，他在魔法密林附近的#b#m101020000##k。他正在代替我担任教练的工作。把信交给他，他会代替我测试你。祝你好运。"))
+                    if (await AskYesNo("请将这封信交给#b#p1072001##k，他在魔法密林附近的#b#m101020000##k。他正在代替我担任教练的工作。把信交给他，他会代替我测试你。祝你好运。"))
                     {
                         if (!haveItem(4031009))
                         {
@@ -194,7 +194,7 @@ namespace Application.Plugin.Script
             }
             else if (getJob().Rank == 3)
             {
-                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
                 {
                     if (canHold(2280003, 1))
                     {
@@ -227,7 +227,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOption("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
+                await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.FP_ARCHMAGE)
                 {
                     if (getPlayer().getSkillLevel(2121007) == 0)

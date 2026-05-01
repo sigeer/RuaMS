@@ -41,6 +41,7 @@ namespace Application.Core.Game.Commands.Gm2
                     TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
                     {
                         ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
+                        ctx.dispose();
                     });
                 }
                 return;

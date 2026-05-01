@@ -8,7 +8,6 @@ using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
-using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
@@ -24,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using SystemProto;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
 namespace Application.Core.Login
@@ -223,7 +221,7 @@ namespace Application.Core.Login
             _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());
 
             _messageDispatcher = new(() => new(this));
-            CommandLoop = new (this);
+            CommandLoop = new(this);
         }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -622,24 +620,10 @@ namespace Application.Core.Login
             return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
         }
 
-        public void Post(ICommand<MasterServer> command)
-        {
-            CommandLoop.Register(command);
-        }
+        public Task Send(ICommand command) => CommandLoop.Register(command);
 
-        public void Send(ICommand command)
-        {
-            CommandLoop.Register(command);
-        }
+        public Task Send(Func<MasterServer, Task> action) => CommandLoop.Register(new AsyncMasterDelegateCommand(action));
 
-        public void Send(Func<MasterServer, Task> action)
-        {
-            CommandLoop.Register(new AsyncMasterDelegateCommand(action));
-        }
-
-        public void Send(Action<MasterServer> action)
-        {
-            CommandLoop.Register(new MasterDelegateCommand(action));
-        }
+        public Task Send(Action<MasterServer> action) => CommandLoop.Register(new MasterDelegateCommand(action));
     }
 }

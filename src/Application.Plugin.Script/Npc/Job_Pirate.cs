@@ -12,7 +12,7 @@ namespace Application.Plugin.Script
         public async Task infoPirate()
         {
             await SayNext("海盗拥有出色的灵巧和力量，他们利用枪支进行远程攻击，同时在近战战斗中利用自己的力量。枪手使用基于元素的子弹来增加伤害，而搏击者则可以变身为不同的形态以达到最大效果。");
-            if (await SayYesNo("你想体验一下成为一个海盗是什么感觉吗？"))
+            if (await AskYesNo("你想体验一下成为一个海盗是什么感觉吗？"))
             {
                 lockUI();
                 warp(1020500, 0);
@@ -38,7 +38,7 @@ namespace Application.Plugin.Script
                 var item = currentMapId == 108000502 ? 4031856 : 4031857;
                 if (!haveItem(item, 15))
                 {
-                    var option = await SayOption($"你还没有给我带来15个#b#t{item}##k。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
+                    var option = await AskMenu($"你还没有给我带来15个#b#t{item}##k。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
                     removeAll(item);
                     warp(120000101, 0);
                 }
@@ -62,7 +62,7 @@ namespace Application.Plugin.Script
                 await SayNext("想成为一个#r海盗#k吗？有一些标准需要满足，因为我们不能接受每个人... #b你的等级至少应该是10级，具有" + getFirstJobStatRequirement(5) + "。让我们看看。");
                 if (getLevel() >= 10 && canGetFirstJob(5))
                 {
-                    if (await SayYesNo("哦...！你看起来就像是我们团队的一员... 你只需要一点邪恶的心思，然后... 是的... 那么，你觉得怎么样？想成为海盗吗？"))
+                    if (await AskYesNo("哦...！你看起来就像是我们团队的一员... 你只需要一点邪恶的心思，然后... 是的... 那么，你觉得怎么样？想成为海盗吗？"))
                     {
                         if (canHold(2330000) && canHoldAll([1482000, 1492000]))
                         {
@@ -101,7 +101,7 @@ namespace Application.Plugin.Script
                 {
                     await SayNext("我看到你做得很好。我会允许你迈出漫长道路上的下一步。");
                     var jobList = new Job[] { Job.BRAWLER, Job.GUNSLINGER };
-                    var option = await SayOption("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
+                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
                     switch (option)
                     {
                         case 0:
@@ -111,10 +111,10 @@ namespace Application.Plugin.Script
                             await SayNext("掌握#r枪械#k的海盗。\r\n\r\n#b枪手#k更快速且远程攻击者。通过#r翅膀#k技能，枪手可以在空中盘旋，比普通跳跃更长、更持久。#r空白射击#k可以使附近多个目标陷入眩晕状态。");
                             break;
                         case 2:
-                            var select = await SayOption("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
+                            var select = await AskMenu("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
                             var job = jobList[select];
                             var jobStr = c.CurrentCulture.GetJobName(job);
-                            if (await SayYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
+                            if (await AskYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
                             {
                                 var requiredQuest = job == Job.BRAWLER ? 2191 : 2192;
                                 if (!isQuestCompleted(requiredQuest))
@@ -146,7 +146,7 @@ namespace Application.Plugin.Script
                 {
                     await SayNext("你取得的进步令人惊讶。");
                     await SayNext("做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。");
-                    if (await SayYesNo("你现在想要参加测试吗？"))
+                    if (await AskYesNo("你现在想要参加测试吗？"))
                     {
                         var jobQuest = 0;
                         if (isQuestStarted(2191))
@@ -242,7 +242,7 @@ namespace Application.Plugin.Script
             
             if (getJob().Rank == 3)
             {
-                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
                 {
                     if (canHold(2280003, 1))
                     {
@@ -275,7 +275,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var option = await SayOption("如果必要的话，我可以教你你的职业技能。\r\n#b#L0#教我我的职业技能。#l");
+                var option = await AskMenu("如果必要的话，我可以教你你的职业技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (option == 0)
                 {
                     int jobId = getJob().Id;

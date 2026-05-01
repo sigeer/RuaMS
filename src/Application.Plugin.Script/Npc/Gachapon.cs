@@ -17,7 +17,7 @@ namespace Application.Plugin.Script
 
             var curMapName = GetGachaponMapName();
 
-            var option = await SayOption($"欢迎来到{curMapName}扭蛋机。我可以为您做些什么呢？", [
+            var option = await AskMenu($"欢迎来到{curMapName}扭蛋机。我可以为您做些什么呢？", [
                 "什么是扭蛋机？",
                 $"在哪里可以购买#t{ticketId}#",
                 $"使用1张#t{ticketId}#",

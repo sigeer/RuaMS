@@ -10,7 +10,7 @@ namespace Application.Plugin.Script
         public async Task infoRogue()
         {
             await SayNext("飞侠是幸运、灵巧和力量的完美结合，擅长对无助的敌人进行突袭攻击。高水平的闪避能力和速度使得飞侠能够从各个角度攻击敌人。");
-            if (await SayYesNo("想体验一下飞侠是什么感觉嘛？"))
+            if (await AskYesNo("想体验一下飞侠是什么感觉嘛？"))
             {
                 lockUI();
                 warp(1020400, 0);
@@ -29,7 +29,7 @@ namespace Application.Plugin.Script
                 await SayNext("想成为一个#r飞侠#k吗？有一些标准要达到，毕竟我们不是谁都可以接纳的……#b所以你的等级至少10级，至少" + getFirstJobStatRequirement(4) + "。让我们看看。");
                 if (getLevel() >= 10 && canGetFirstJob(4))
                 {
-                    if (await SayYesNo("哦...！你看起来就很鸡贼，确实像是我们团队的一员... 你需要再多一点邪恶的心思，你觉得怎么样？想成为飞侠吗？ "))
+                    if (await AskYesNo("哦...！你看起来就很鸡贼，确实像是我们团队的一员... 你需要再多一点邪恶的心思，你觉得怎么样？想成为飞侠吗？ "))
                     {
                         if (canHold(2070000) && canHoldAll([1472061, 1332063]))
                         {
@@ -70,7 +70,7 @@ namespace Application.Plugin.Script
                 if (haveItem(4031012))
                 {
                     var jobList = new Job[] { Job.ASSASSIN, Job.BANDIT };
-                    var option = await SayOption("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
+                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
                     switch (option)
                     {
                         case 0:
@@ -80,10 +80,10 @@ namespace Application.Plugin.Script
                             await SayNext("擅长使用匕首的侠客。\r\n\r\n#b侠客#k是快速的近战攻击者，在二转职业中非常强大。他们不像刺客那样效率高，也没有远程攻击的优势，但在原始力量方面弥补了这一点。");
                             break;
                         case 2:
-                            var select = await SayOption("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
+                            var select = await AskMenu("现在... 你决定好了吗？请选择你想要在二转时选择的职业。", jobList.Select(j => $"{c.CurrentCulture.GetJobName(j)}"));
                             var job = jobList[select];
                             var jobStr = c.CurrentCulture.GetJobName(job);
-                            if (await SayYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
+                            if (await AskYesNo("所以你第二次转职想要选择成为#b" + jobStr + "#k吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
                             {
                                 if (getJob() == Job.THIEF)
                                 {
@@ -112,7 +112,7 @@ namespace Application.Plugin.Script
                         startQuest(questId);
                     }
 
-                    if (await SayYesNo("请把这封信送到废弃都市附近的#b#p1072003##k。他正在代替我担任教练的工作。把信交给他，他会代替我来测试你。祝你好运。"))
+                    if (await AskYesNo("请把这封信送到废弃都市附近的#b#p1072003##k。他正在代替我担任教练的工作。把信交给他，他会代替我来测试你。祝你好运。"))
                     {
                         if (!haveItem(4031011))
                         {
@@ -189,7 +189,7 @@ namespace Application.Plugin.Script
             }
             else if (getJob().Rank == 3)
             {
-                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
                 {
                     if (canHold(2280003, 1))
                     {
@@ -216,7 +216,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOption("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
+                await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.NIGHTLORD)
                 {
                     if (getPlayer().getSkillLevel(4121008) == 0)

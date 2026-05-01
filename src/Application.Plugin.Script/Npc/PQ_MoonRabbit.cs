@@ -15,7 +15,7 @@ namespace Application.Plugin.Script
             {
                 var em = GetEventManager<PQ_Henesys>(nameof(PQ_Henesys));
 
-                var option = await SayOption($"#e#b<组队任务: 迎月花山丘>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n" +
+                var option = await AskMenu($"#e#b<组队任务: 迎月花山丘>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n" +
                     "#L0#我想参加组队任务。#L1#我想了解更多详情。\r\n#L2#我想兑换一件年糕的帽子。");
                 switch (option)
                 {
@@ -45,7 +45,7 @@ namespace Application.Plugin.Script
             }
             else if (getMapId() == 910010100)
             {
-                if (await SayYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
+                if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
                 {
                     var eim = GetEventInstanceTrust();
                     if (eim != null && !eim.giveEventReward(getPlayer()))
@@ -58,7 +58,7 @@ namespace Application.Plugin.Script
             }
             else if (getMapId() == 910010400)
             {
-                if (await SayYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
+                if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
                 {
                     var eim = GetEventInstanceTrust();
                     if (eim != null && !eim.giveEventReward(getPlayer()))
@@ -86,11 +86,11 @@ namespace Application.Plugin.Script
             int option;
             if (isEventLeader())
             {
-                option = await SayOption(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk0)));
+                option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk0)));
             }
             else
             {
-                option = await SayOption(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk1)));
+                option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk1)));
             }
 
             switch (option)
@@ -130,7 +130,7 @@ namespace Application.Plugin.Script
                     await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_CommitTask_Fail)));
                     break;
                 case 2:
-                    if (await SayYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturning))))
+                    if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturning))))
                     {
                         warp(910010300);
                     }

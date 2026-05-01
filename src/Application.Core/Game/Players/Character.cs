@@ -60,6 +60,7 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using tools;
 using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static client.inventory.Equip;
@@ -3958,10 +3959,10 @@ public partial class Player
         Bag.Dispose();
     }
 
-    public void logOff()
+    public async Task logOff()
     {
         // 切换频道/退出商城的保存不能放在断开连接时处理
-        Client.CurrentServer.Send(async w =>
+        await Client.CurrentServer.Send(async w =>
         {
             await SyncCharAsync(SyncCharacterTrigger.Logoff);
 

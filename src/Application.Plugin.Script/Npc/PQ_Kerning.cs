@@ -13,7 +13,7 @@ namespace Application.Plugin.Script
         public async Task party1_enter()
         {
             var em = GetEventManager<PQ_Kerning>(nameof(PQ_Kerning));
-            var option = await SayOption(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.GetRequirementDescription(getClient())),
+            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.GetRequirementDescription(getClient())),
                 [GetTalkMessage(nameof(ScriptTalk.PartyQuest_Participate)), GetTalkMessage(nameof(ScriptTalk.PartyQuest_Intro))
             ]);
 
@@ -238,7 +238,7 @@ namespace Application.Plugin.Script
                 var outText = eim?.isEventCleared() ?? true
                     ? "你准备好离开这张地图了吗？"
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";
-                if (await SayYesNo(outText))
+                if (await AskYesNo(outText))
                 {
                     WarpOut();
                 }

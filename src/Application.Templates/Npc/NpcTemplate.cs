@@ -5,6 +5,8 @@ namespace Application.Templates.Npc
     [GenerateTag]
     public sealed class NpcTemplate : AbstractTemplate, ILinkTemplate<NpcTemplate>
     {
+        [WZPath("info/link")]
+        public int LinkId { get; set; }
 
         [WZPath("info/MapleTV")]
         public bool MapleTV { get; set; }

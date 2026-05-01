@@ -129,7 +129,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public void Disconnect(bool isShutdown, bool fromCashShop = false)
+        public Task Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             throw new BusinessCharacterOfflineException();
         }

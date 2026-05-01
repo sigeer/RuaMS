@@ -4,9 +4,9 @@ namespace Application.Utility.Pipeline
     public interface IActorInstance<TContext> where TContext: IActorInstance<TContext>
     {
         string InstanceName { get; }
-        void Send(ICommand command);
+        Task Send(ICommand command);
 
-        void Send(Func<TContext, Task> action);
-        void Send(Action<TContext> action);
+        Task Send(Func<TContext, Task> action);
+        Task Send(Action<TContext> action);
     }
 }

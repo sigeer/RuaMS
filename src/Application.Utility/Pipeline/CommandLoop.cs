@@ -2,6 +2,7 @@ using Application.Utility.Performance;
 using Serilog;
 using System.Diagnostics;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Application.Utility.Pipeline
 {
@@ -13,12 +14,12 @@ namespace Application.Utility.Pipeline
     {
         private TContext _context;
         private Task? _runningTask;
-        private Channel<ICommand> _command;
+        private Channel<(ICommand Command, TaskCompletionSource<bool> Tcs)> _command;
 
         public CommandLoop(TContext context)
         {
             _context = context;
-            _command = Channel.CreateBounded<ICommand>(new BoundedChannelOptions(100_000)
+            _command = Channel.CreateBounded<(ICommand Command, TaskCompletionSource<bool> Tcs)>(new BoundedChannelOptions(100_000)
             {
                 SingleReader = true,
                 SingleWriter = false,
@@ -41,25 +42,29 @@ namespace Application.Utility.Pipeline
             await foreach (var item in _command.Reader.ReadAllAsync())
             {
                 Activity? activity = null;
-                if (item is not IIgnoreActivityCommand)
+                if (item.Command is not IIgnoreActivityCommand)
                 {
                     activity = GameMetrics.ActivitySource.StartActivity("ActorActivity");
                     activity?.SetTag("ActorType", typeof(TContext).Name);
                     activity?.SetTag("Instance", _context.InstanceName);
-                    activity?.SetTag("Command", item.Name);
+                    activity?.SetTag("Command", item.Command.Name);
                 }
 
                 try
                 {
                     sw.Restart();
 
-                    if (item is IAsyncCommand<TContext> a)
+                    if (item.Command is IAsyncCommand<TContext> a)
                         await a.Execute(_context);
-                    else if (item is ICommand<TContext> b)
+                    else if (item.Command is ICommand<TContext> b)
                         b.Execute(_context);
+
+                    item.Tcs.SetResult(true);
                 }
                 catch (Exception ex)
                 {
+                    item.Tcs.SetResult(false);
+
                     Log.Logger.Error(ex.ToString());
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     activity?.AddEvent(new ActivityEvent("exception",
@@ -80,12 +85,16 @@ namespace Application.Utility.Pipeline
             }
         }
 
-        public void Register(ICommand tickable)
+        public async Task Register(ICommand tickable)
         {
-            if (!_command.Writer.TryWrite(tickable))
+            var tcs = new TaskCompletionSource<bool>();
+
+            if (!_command.Writer.TryWrite(new (tickable, tcs)))
             {
                 Log.Logger.Fatal("命令写入失败 {Info}，当前命令队列长度 {Length}", tickable.GetType().Name, _command.Reader.Count);
+                return;
             }
+            await tcs.Task;
         }
 
         public async Task StopAsync()

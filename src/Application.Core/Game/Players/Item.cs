@@ -355,7 +355,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                Bag.RemoveFromInventory(invType, quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
+                Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
             }
 
             GainItemShowMessage(itemId, quantity, show);

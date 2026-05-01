@@ -44,7 +44,7 @@ namespace Application.Plugin.Script
                     await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_NoEmptyRoom)));
                     return;
                 }
-                var option = await SayOption(msg);
+                var option = await AskMenu(msg);
                 var selectedRoom = rooms[option];
                 switch (selectedRoom.CurrentStage)
                 {
@@ -155,7 +155,7 @@ namespace Application.Plugin.Script
                     $"#L0# 前往怪物嘉年华地图 1.#l \r\n" +
                     $"#L2# 了解怪物嘉年华.#l";
 
-                var option = await SayOption(talk);
+                var option = await AskMenu(talk);
 
                 switch (option)
                 {

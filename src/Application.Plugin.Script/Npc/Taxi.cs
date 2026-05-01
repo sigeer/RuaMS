@@ -18,9 +18,9 @@ namespace Application.Plugin.Script
                 selStr += "我们对新手有特别九折优惠。";
             }
             selStr += "选择您的目的地，因为费用将因地点而异。#b";
-            var option = await SayOption(selStr, options.Select(x => $"#m{x.map}# ({DiscountForNovice(x.price)} 金币)"));
+            var option = await AskMenu(selStr, options.Select(x => $"#m{x.map}# ({DiscountForNovice(x.price)} 金币)"));
             var cost = DiscountForNovice(options[option].price);
-            if (await SayYesNo($"你在这里没有其他事情要做了，是吗？你真的想去#b#m{options[option].map}##k吗？这将花费你#b{cost}金币#k。"))
+            if (await AskYesNo($"你在这里没有其他事情要做了，是吗？你真的想去#b#m{options[option].map}##k吗？这将花费你#b{cost}金币#k。"))
             {
                 if (getMeso() > cost)
                 {
@@ -79,7 +79,7 @@ namespace Application.Plugin.Script
         {
             await SayNext("你好！这辆出租车只对VIP客户开放。与普通出租车只能带你去不同的城镇不同，我们提供更好的服务，值得VIP级别的待遇。价格有点高，但是……只需10,000金币，我们就会安全地带你去#b蚁穴#k。");
             var cost = DiscountForNovice(1000);
-            if (await SayYesNo(getJobId() == 0 ? $"我们为新手提供 90% 的特别折扣。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b1,000 金币#k 吗?" : "正常费用适用于所有非初学者。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b10,000 金币#k 吗?"))
+            if (await AskYesNo(getJobId() == 0 ? $"我们为新手提供 90% 的特别折扣。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b1,000 金币#k 吗?" : "正常费用适用于所有非初学者。 蚂蚁广场位于维多利亚大陆中心的地穴深处, 那里是24小时移动商店的所在地。 你想去那里并花费 #b10,000 金币#k 吗?"))
             {
                 if (getMeso() < cost)
                 {
@@ -114,7 +114,7 @@ namespace Application.Plugin.Script
             }
             await SayNext($"你好，这辆出租车能带你去神秘岛的危险地带！费用是#b{v.Cost} 枚金币#k。我知道有点贵，但能避开所有危险区域，绝对物有所值！");
 
-            if (await SayYesNo($"你真的想去#b#m{v.ToMap}##k吗？这将花费你#b{v.Cost}金币#k。"))
+            if (await AskYesNo($"你真的想去#b#m{v.ToMap}##k吗？这将花费你#b{v.Cost}金币#k。"))
             {
                 if (getMeso() > v.Cost)
                 {
@@ -183,7 +183,7 @@ namespace Application.Plugin.Script
             if (travelConfig.Any(map => map.MapID == currentMapID))
             {
                 // 当前在旅游地图
-                var option = await SayOption("旅行怎么样？你喜欢吗？\r\n#b\r\n#L0#是的，我要回去。\r\n#L1#不，我想继续探索这个地方。");
+                var option = await AskMenu("旅行怎么样？你喜欢吗？\r\n#b\r\n#L0#是的，我要回去。\r\n#L1#不，我想继续探索这个地方。");
                 if (option == 0)
                 {
                     await SayOK($"好的，我将送你回到#b#m{fromMapID}##k");
@@ -217,7 +217,7 @@ namespace Application.Plugin.Script
                     text += $"#L{i}##b【{areaPadded}】\t\t{namePadded}#k\t\t#fUI/Basic.img/BtCoin/normal/0#{feeFormatted}#l\r\n";
                 }
                 
-                var selectedIndex = await SayOption(text);
+                var selectedIndex = await AskMenu(text);
                 if (selectedIndex >= 0 && selectedIndex < travelConfig.Count)
                 {
                     var selectedMap = travelConfig[selectedIndex];

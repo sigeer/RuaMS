@@ -1590,7 +1590,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
             {
-                var em = GetSoloQuestEventManager(21711);
+                var em = GetSoloQuestEventManager(21733);
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {

@@ -62,7 +62,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    var option = await SayOption(startSnd);
+                    var option = await AskMenu(startSnd);
                     var selectedExped = getExpedition(allAriants[option]);
 
                     if (selectedExped != null)
@@ -101,7 +101,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        var inputNumber = await SayInputNumber("Up to how many partipants can join in this match? (2~5 people)", 2, 2, 5);
+                        var inputNumber = await AskNumber("Up to how many partipants can join in this match? (2~5 people)", 2, 2, 5);
                         var res = createExpedition(exped, true, 0, inputNumber);
                         if (res == 0)
                         {

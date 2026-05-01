@@ -32,6 +32,8 @@ namespace Application.Templates.XmlWzReader.Provider
 
                 var model = new NpcTemplate(npcId);
                 NpcTemplateGenerated.ApplyProperties(model, xDoc);
+                if (model.LinkId > 0)
+                    GetItem(model.LinkId)?.CloneLink(model);
                 InsertItem(model);
                 return [model];
             }

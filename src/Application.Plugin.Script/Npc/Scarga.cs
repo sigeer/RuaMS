@@ -19,7 +19,7 @@ namespace Application.Plugin.Script
             var eim = GetEventInstanceTrust();
             if (!eim.isEventCleared())
             {
-                if (await SayYesNo("如果你现在离开，就无法返回了。你确定要离开吗？"))
+                if (await AskYesNo("如果你现在离开，就无法返回了。你确定要离开吗？"))
                 {
                     warp(551030100, 2);
                 }

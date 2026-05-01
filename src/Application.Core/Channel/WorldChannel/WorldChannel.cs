@@ -761,23 +761,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         }
     }
 
-    public void Send(ICommand command)
-    {
-        CommandLoop.Register(command);
-    }
-
+    public Task Send(ICommand command) => CommandLoop.Register(command);
     public void OnTick(long now)
     {
         this.ProcessSubTickables(now);
     }
 
-    public void Send(Func<WorldChannel, Task> action)
-    {
-        Send(new AsyncChannelDelegateCommand(action)); 
-    }
+    public Task Send(Func<WorldChannel, Task> action) => Send(new AsyncChannelDelegateCommand(action));
 
-    public void Send(Action<WorldChannel> action)
-    {
-        Send(new ChannelDelegateCommand(action));
-    }
+    public Task Send(Action<WorldChannel> action) => Send(new ChannelDelegateCommand(action));
 }

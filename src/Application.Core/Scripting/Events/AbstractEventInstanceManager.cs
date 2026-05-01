@@ -423,15 +423,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     public void startEventTimer(long time)
     {
         timeStarted = EventManager.ChannelServer.Node.getCurrentTime();
-        eventTime = time;
 
-        foreach (Player chr in getPlayers())
+        if (time >= 0)
         {
-            chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
-        }
+            eventTime = time;
 
-        _dismissRequest = new EventInstanceTimperDismissRequest(this, timeStarted + time);
-        SubTickables.Add(_dismissRequest);
+            foreach (Player chr in getPlayers())
+            {
+                chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
+            }
+
+            _dismissRequest = new EventInstanceTimperDismissRequest(this, timeStarted + time);
+            SubTickables.Add(_dismissRequest);
+        }
     }
 
     public void DismissEventTimer()

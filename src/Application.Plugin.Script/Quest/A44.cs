@@ -100,7 +100,7 @@ namespace Application.Plugin.Script.Quest
             var oreArray = getOreArray();
             if (oreArray.Count > 0)
             {
-                var selection = await SayOption("哦，看起来有人准备做交易了。你这么想加入蒙特鸠协会吗？我真的不理解你，但没关系。你会给我什么回报？\r\n" + getOreString(oreArray));
+                var selection = await AskMenu("哦，看起来有人准备做交易了。你这么想加入蒙特鸠协会吗？我真的不理解你，但没关系。你会给我什么回报？\r\n" + getOreString(oreArray));
 
                 if (!haveItem(oreArray[selection], 2))
                 {
@@ -127,7 +127,7 @@ namespace Application.Plugin.Script.Quest
             var oreArray = getOreArray();
             if (oreArray.Count > 0)
             {
-                var selection = await SayOption("“哦，看起来有人准备做交易了。你这么想加入蒙特鸠协会吗？我真的不理解你，但没关系。你会给我什么回报？”\r\n" + getOreString(oreArray));
+                var selection = await AskMenu("“哦，看起来有人准备做交易了。你这么想加入蒙特鸠协会吗？我真的不理解你，但没关系。你会给我什么回报？”\r\n" + getOreString(oreArray));
                 if (!haveItem(oreArray[selection], 2))
                 {
 
@@ -409,10 +409,10 @@ namespace Application.Plugin.Script.Quest
         // Quest: 3953 
         public async Task q3953e()
         {
-            await SayOption("如果你想说大宇是怪物, 我根本不想听, 你快走吧！……嗯？这不是锂吗？从颜色看, 应该是最高级的锂……状态也很好……嗯？你要把它给我？呵呵……锂的话, 我就不客气了. 对了……这是为什么呢？\r\n\r\n#L0##b我想告诉你大宇是怪物. #l \r\n\r\n#L1##b你听说前往沙漠的商团遭到了怪物的袭击吗？");
-            await SayOption("商团？……护卫的人手好像太少了. 火焰之路虽然没有太危险的怪物, 但也不能那样粗心大意……在沙漠里必须时刻保持警惕才行. \r\n\r\n#L0##b消灭了大宇, 就不会发生这种事情了. #l \r\n\r\n#L1##b这都是因为王妃对村子周围的治安疏于管理. #l");
-            await SayOption("没错！都是因为王妃！自从那个女人来了之后……原本很聪明的阿得拉８世全变了, 阿里安特也逐渐变得干旱！绿洲变成了荒漠！这都是因为那个女人！\r\n\r\n#L0##b王妃施行暴政, 不知道沙漠的守护神会怎么做. #l \r\n\r\n#L1##b必须尽快组织军队, 使国家摆脱王妃的压迫！#l");
-            await SayOption("……你说什么？大宇变成了怪物……他可是阿里安特的守护神啊……不过也是……阿里安特已经和过去不同了……\r\n\r\n#L0##b所以说嘛. 阿烈达王妃在吸收沙漠的精气, 大宇也失去了原来的灵性, 变成了怪物……#l");
+            await AskMenu("如果你想说大宇是怪物, 我根本不想听, 你快走吧！……嗯？这不是锂吗？从颜色看, 应该是最高级的锂……状态也很好……嗯？你要把它给我？呵呵……锂的话, 我就不客气了. 对了……这是为什么呢？\r\n\r\n#L0##b我想告诉你大宇是怪物. #l \r\n\r\n#L1##b你听说前往沙漠的商团遭到了怪物的袭击吗？");
+            await AskMenu("商团？……护卫的人手好像太少了. 火焰之路虽然没有太危险的怪物, 但也不能那样粗心大意……在沙漠里必须时刻保持警惕才行. \r\n\r\n#L0##b消灭了大宇, 就不会发生这种事情了. #l \r\n\r\n#L1##b这都是因为王妃对村子周围的治安疏于管理. #l");
+            await AskMenu("没错！都是因为王妃！自从那个女人来了之后……原本很聪明的阿得拉８世全变了, 阿里安特也逐渐变得干旱！绿洲变成了荒漠！这都是因为那个女人！\r\n\r\n#L0##b王妃施行暴政, 不知道沙漠的守护神会怎么做. #l \r\n\r\n#L1##b必须尽快组织军队, 使国家摆脱王妃的压迫！#l");
+            await AskMenu("……你说什么？大宇变成了怪物……他可是阿里安特的守护神啊……不过也是……阿里安特已经和过去不同了……\r\n\r\n#L0##b所以说嘛. 阿烈达王妃在吸收沙漠的精气, 大宇也失去了原来的灵性, 变成了怪物……#l");
 
             forceCompleteQuest();
             gainItem(4011008, -1);

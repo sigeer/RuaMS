@@ -33,7 +33,7 @@ namespace Application.Plugin.Script
                     await SayNext("最近的家畜又突然变得非常暴躁，我们推测是#b#e#o9300188##k#n又又又卷土重来了，麻烦你去处理一下吧。");
                 }
 
-                if (await SayYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
+                if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                 {
                     gainItem(itemId, -1);
                     warp(enterMap);
@@ -64,7 +64,7 @@ namespace Application.Plugin.Script
             if (chrQuestStatus == 0)
             {
                 await SayNext("敬礼！\r\n要做一些检查！\r\n这里是禁区，闲人免进。\r\n没有许可的人是不允许进入的！\r\n什么？已经获得许可了？");
-                if (await SayYesNo("哦...刚刚接到信息。您是特别行动小组的人啊。看来是位了不起的人啊，如果您帮我个小忙的话，我就让您通过。您可以帮我吗？"))
+                if (await AskYesNo("哦...刚刚接到信息。您是特别行动小组的人啊。看来是位了不起的人啊，如果您帮我个小忙的话，我就让您通过。您可以帮我吗？"))
                 {
                     startQuest(questId);
                 }
@@ -75,7 +75,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var option = await SayOption($"你需要收集 #e#b#v{itemID}##t{itemID}##k#n × #r#e50#k#n \r\n才能证明你有点本事，否则我不放心让你去白给！\r\n", [
+                var option = await AskMenu($"你需要收集 #e#b#v{itemID}##t{itemID}##k#n × #r#e50#k#n \r\n才能证明你有点本事，否则我不放心让你去白给！\r\n", [
                     $"进入 #b#e#m{enterMap}##k#n 继续调查",
                     $"离开 #b#e#m{lobbyMap}##k#n 回到 #b#e#m{outMap}"
                 ]);
@@ -85,7 +85,7 @@ namespace Application.Plugin.Script
 
                         if (chrQuestStatus == 2)
                         {
-                            if (await SayYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
+                            if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                             {
                                 var quest = server.quest.Quest.getInstance(questId);
                                 quest.reset(getPlayer());
@@ -100,7 +100,7 @@ namespace Application.Plugin.Script
 
                         break;
                     case 1:
-                        if (await SayYesNo($"你已经决定要离开吗？\r\n当你准备好去#b#e#m{enterMap}##k#n的时候再来找我。"))
+                        if (await AskYesNo($"你已经决定要离开吗？\r\n当你准备好去#b#e#m{enterMap}##k#n的时候再来找我。"))
                         {
                             warp(outMap);
                         }
@@ -116,7 +116,7 @@ namespace Application.Plugin.Script
         public async Task shanghai003()
         {
             var em = GetEventManager<PQ_WuGong>(nameof(PQ_WuGong));
-            var option = await SayOption($"敬礼！\r\n你好，#e#b#h ##k#n，我是#b#e#p{getNpc()}##k#n\r\n\r\n#L0##b秘密任务#l\r\b\r\n#L1#离开#l#k");
+            var option = await AskMenu($"敬礼！\r\n你好，#e#b#h ##k#n，我是#b#e#p{getNpc()}##k#n\r\n\r\n#L0##b秘密任务#l\r\b\r\n#L1#离开#l#k");
             switch (option)
             {
                 case 0:
@@ -156,7 +156,7 @@ namespace Application.Plugin.Script
                     break;
                 case 1:
                     var mapId = 701010320;
-                    if (await SayYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
+                    if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
                     {
                         warp(mapId);
                     }
@@ -171,7 +171,7 @@ namespace Application.Plugin.Script
         public async Task shanghai004()
         {
             var mapId = 701010320;
-            if (await SayYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
+            if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
             {
                 warp(mapId);
             }

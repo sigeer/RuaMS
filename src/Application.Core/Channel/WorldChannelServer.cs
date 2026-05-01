@@ -566,20 +566,11 @@ namespace Application.Core.Channel
             return new DistributeSession<int, SyncPlayerShopRequest>(Servers.Values.Select(x => x.Id));
         }
 
-        public void Send(ICommand command)
-        {
-            CommandLoop.Register(command);
-        }
+        public Task Send(ICommand command) => CommandLoop.Register(command);
 
-        public void Send(Func<WorldChannelServer, Task> action)
-        {
-            CommandLoop.Register(new AsyncNodeDelegateCommand(action));
-        }
+        public Task Send(Func<WorldChannelServer, Task> action) => Send(new AsyncNodeDelegateCommand(action));
 
-        public void Send(Action<WorldChannelServer> action)
-        {
-            CommandLoop.Register(new NodeDelegateCommand(action));
-        }
+        public Task Send(Action<WorldChannelServer> action) => Send(new NodeDelegateCommand(action));
 
         public void OnTick(long now)
         {

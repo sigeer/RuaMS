@@ -34,7 +34,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var selection = await SayOption("#e#b<组队任务：扎昆组队任务>\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n小心，古老的力量并未被遗忘... #b\r\n#L0#进入未知的死亡矿井（第1阶段）#l\r\n#L1#面对熔岩之息（第2阶段）#l\r\n#L2#锻造#t4001017#（第3阶段）#l");
+            var selection = await AskMenu("#e#b<组队任务：扎昆组队任务>\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n小心，古老的力量并未被遗忘... #b\r\n#L0#进入未知的死亡矿井（第1阶段）#l\r\n#L1#面对熔岩之息（第2阶段）#l\r\n#L2#锻造#t4001017#（第3阶段）#l");
 
             if (selection == 0)
             {
@@ -44,7 +44,7 @@ namespace Application.Plugin.Script
             {
                 if (haveItem(4031061) && !haveItem(4031062))
                 {
-                    if (await SayYesNo("你已经成功通过了第一阶段。你还有很长的路才能到达扎昆的祭台。所以，你想好挑战下一个阶段了吗？"))
+                    if (await AskYesNo("你已经成功通过了第一阶段。你还有很长的路才能到达扎昆的祭台。所以，你想好挑战下一个阶段了吗？"))
                     {
                         warp(280020000, 0);
                     }
@@ -94,14 +94,14 @@ namespace Application.Plugin.Script
             {
                 if (!GetEventInstanceTrust().isEventCleared())
                 {
-                    if (await SayYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
+                    if (await AskYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
                     {
                         warp(211042300);
                     }
                 }
                 else
                 {
-                    if (await SayYesNo("你们终于打败了扎昆，真是了不起的壮举！恭喜！你确定现在要离开吗？"))
+                    if (await AskYesNo("你们终于打败了扎昆，真是了不起的壮举！恭喜！你确定现在要离开吗？"))
                     {
                         warp(211042300);
                     }
@@ -109,7 +109,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
+                if (await AskYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
                 {
                     warp(211042300);
                 }
@@ -146,7 +146,7 @@ namespace Application.Plugin.Script
             var expedition = em.GetExpeditionEventInstanceManager();
             if (expedition == null)
             {
-                var selection = await SayOption("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
 
                 if (selection == 1)
                 {
@@ -180,7 +180,7 @@ namespace Application.Plugin.Script
                 else
                 {
                     var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
-                    var selection = await SayOption(list);
+                    var selection = await AskMenu(list);
 
                     if (selection == 1)
                     {
@@ -197,7 +197,7 @@ namespace Application.Plugin.Script
                         {
                             text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
                         }
-                        var kickSelection = await SayOption(text);
+                        var kickSelection = await AskMenu(text);
                         if (kickSelection > 0)
                         {
                             var banned = expedMembers[kickSelection - 1];
@@ -263,7 +263,7 @@ namespace Application.Plugin.Script
 
             if (!eim.isEventCleared())
             {
-                var selection = await SayOption("...#b\r\n#L0#我在这里应该做什么？#l\r\n#L1#我带来了物品！#l\r\n#L2#我想要离开！#l");
+                var selection = await AskMenu("...#b\r\n#L0#我在这里应该做什么？#l\r\n#L1#我带来了物品！#l\r\n#L2#我想要离开！#l");
 
                 if (selection == 0)
                 {
@@ -286,7 +286,7 @@ namespace Application.Plugin.Script
                         var gotAllDocs = haveItem(4001015, 30);
                         if (!gotAllDocs)
                         {
-                            if (await SayYesNo("所以，你带了#b #v4001018##t4001018# #k来了？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心。确保你的整个队伍在继续之前有足够的背包空间。"))
+                            if (await AskYesNo("所以，你带了#b #v4001018##t4001018# #k来了？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心。确保你的整个队伍在继续之前有足够的背包空间。"))
                             {
                                 gainItem(4001018, -1);
                                 eim.giveEventPlayersExp(12000);
@@ -295,7 +295,7 @@ namespace Application.Plugin.Script
                         }
                         else
                         {
-                            if (await SayYesNo("所以，你带来了#b #v4001018##t4001018# #k和#b #v4001015##t4001015# #k吗？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心了。\r\n\r\n另外，既然你带来了#b #v4001015##t4001015# * 30#k，我还可以给你#b#v2030007##t2030007# * 5#k，可以随时带你到矿井入口。在继续之前，请确保你的整个队伍的背包有足够的空间。"))
+                            if (await AskYesNo("所以，你带来了#b #v4001018##t4001018# #k和#b #v4001015##t4001015# #k吗？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心了。\r\n\r\n另外，既然你带来了#b #v4001015##t4001015# * 30#k，我还可以给你#b#v2030007##t2030007# * 5#k，可以随时带你到矿井入口。在继续之前，请确保你的整个队伍的背包有足够的空间。"))
                             {
                                 gainItem(4001018, -1);
                                 gainItem(4001015, -30);
@@ -308,7 +308,7 @@ namespace Application.Plugin.Script
                 }
                 else if (selection == 2)
                 {
-                    if (await SayYesNo("你确定要退出吗？如果你是队伍的队长，你的队伍也将离开矿区。"))
+                    if (await AskYesNo("你确定要退出吗？如果你是队伍的队长，你的队伍也将离开矿区。"))
                     {
                         warp(211042300);
                     }

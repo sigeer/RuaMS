@@ -17,7 +17,7 @@ namespace Application.Plugin.Script.Events
             MaxMap = 910510000;
         }
 
-        protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public override void AfterSeup(AbstractEventInstanceManager eim)
         {
             var mapObj = eim.getMapInstance(EntryMap);
             var chr = eim.getLeader()!;

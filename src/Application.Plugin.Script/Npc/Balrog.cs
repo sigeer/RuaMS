@@ -22,7 +22,7 @@ namespace Application.Plugin.Script
             var expedition = em.GetExpeditionEventInstanceManager();
             if (expedition == null)
             {
-                var selection = await SayOption("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
 
                 if (selection == 1)
                 {
@@ -50,7 +50,7 @@ namespace Application.Plugin.Script
                 else
                 {
                     var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
-                    var selection = await SayOption(list);
+                    var selection = await AskMenu(list);
 
                     if (selection == 1)
                     {
@@ -67,7 +67,7 @@ namespace Application.Plugin.Script
                         {
                             text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
                         }
-                        var kickSelection = await SayOption(text);
+                        var kickSelection = await AskMenu(text);
                         if (kickSelection > 0)
                         {
                             var banned = expedMembers[kickSelection - 1];
@@ -132,8 +132,8 @@ namespace Application.Plugin.Script
         public async Task balog_scroll()
         {
             int[] items = [2040728, 2040729, 2040730, 2040731, 2040732, 2040733, 2040734, 2040735, 2040736, 2040737, 2040738, 2040739];
-            await SayOption("你好，#h0#。我可以交换你的#t4001261#。\r\n\r\n#r#L1#兑换物品#l#k");
-            var option = await SayOption("可兑换物品", items.Select(i => $"#i{i}# #z{i}#"));
+            await AskMenu("你好，#h0#。我可以交换你的#t4001261#。\r\n\r\n#r#L1#兑换物品#l#k");
+            var option = await AskMenu("可兑换物品", items.Select(i => $"#i{i}# #z{i}#"));
             if (!canHold(items[option], 1))
             {
                 await SayOK("请腾出空间");
@@ -163,7 +163,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo(getMap().getAllPlayers().Count > 1 ? "你真的要离开这场战斗，让你的同伴们去死吗？" : "逃跑吧，懦夫。"))
+                if (await AskYesNo(getMap().getAllPlayers().Count > 1 ? "你真的要离开这场战斗，让你的同伴们去死吗？" : "逃跑吧，懦夫。"))
                 {
                     eim.exitPlayer(getPlayer());
                 }

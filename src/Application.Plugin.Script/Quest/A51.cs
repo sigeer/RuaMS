@@ -127,7 +127,7 @@ namespace Application.Plugin.Script.Quest
                 }
                 else
                 {
-                    await SayNext("请给背包留出空位");
+                    await SayNext("背包空间不足或者已经领取过了");
                 }
             }
         }

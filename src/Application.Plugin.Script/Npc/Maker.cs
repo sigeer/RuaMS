@@ -17,11 +17,11 @@ namespace Application.Plugin.Script
 
         private async Task PerformRefine(string greeting, List<RecipeCategory> categories, float discount = 1, int stimulatorId = 0)
         {
-            var categoryIdx = await SayOption(greeting, categories.Select(x => x.Name));
+            var categoryIdx = await AskMenu(greeting, categories.Select(x => x.Name));
             if (categoryIdx < 0 || categoryIdx >= categories.Count) return;
 
             var category = categories[categoryIdx];
-            var selectItemIdx = await SayOption(category.SelectionPrompt,
+            var selectItemIdx = await AskMenu(category.SelectionPrompt,
                 category.Formulas.Select(x => ItemConstants.isEquipment(x.TargetItemId)
                 ? $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"
                 : $"#t{x.TargetItemId}#"));
@@ -32,7 +32,7 @@ namespace Application.Plugin.Script
             int count = 1;
             if (category.AskQuantity)
             {
-                count = await SayInputNumber($"所以，你需要我帮你做一些 #t{selected.TargetItemId}#？那你想要我帮你做多少个呢？", 1, 1, 100);
+                count = await AskNumber($"所以，你需要我帮你做一些 #t{selected.TargetItemId}#？那你想要我帮你做多少个呢？", 1, 1, 100);
             }
 
             var costPromt = string.Join("\r\n", selected.Items.Select(x => $"#i{x.ItemId}# x {x.Quantity * count} #t{x.ItemId}#"));
@@ -47,7 +47,7 @@ namespace Application.Plugin.Script
                 costPromt += $"\r\n#i4031138# {cost * count} 金币";
             }
 
-            if (!await SayYesNo($"你需要我帮你做{count}个#t{selected.TargetItemId}#？ 如果是那样的话，我需要你提供一些特定的物品才能制作。另外，请确保你的背包中有足够的空间！\r\n\r\n{costPromt}"))
+            if (!await AskYesNo($"你需要我帮你做{count}个#t{selected.TargetItemId}#？ 如果是那样的话，我需要你提供一些特定的物品才能制作。另外，请确保你的背包中有足够的空间！\r\n\r\n{costPromt}"))
             {
                 return;
             }
@@ -749,7 +749,7 @@ namespace Application.Plugin.Script
         public async Task carlie()
         {
             await SayNext("嘿，有点时间吗？嗯，我的工作是在这里收集物品然后在其他地方出售，但最近怪物变得更加敌对，所以很难得到好的物品…… 你觉得呢？想和我做点生意吗？");
-            if (!await SayYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
+            if (!await AskYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
             {
                 await SayOK("嗯...这对你来说不应该是个坏交易。在合适的时间来找我，你可能会得到一个更好的物品。无论如何，当你改变主意的时候告诉我。");
                 return;
@@ -788,13 +788,13 @@ namespace Application.Plugin.Script
             eQuestPrizes[23] = [[2000006, 25], [2050004, 50], [2022001, 35], [4020000, 8], [4020001, 8], [4020002, 8], [4020007, 2], [2041023, 1]];
             eQuestPrizes[24] = [[2000006, 35], [4020006, 9], [4010008, 4], [4020007, 4], [2041008, 1]];
 
-            var sel = await SayOption("好的！首先你需要选择你想要用来交易的物品。物品越好，你获得更好回报的机会就越大。\r\n",
+            var sel = await AskMenu("好的！首先你需要选择你想要用来交易的物品。物品越好，你获得更好回报的机会就越大。\r\n",
                 eQuestChoices.Select(id => $"#v{id}#  #t{id}#"));
 
             if (sel < 0 || sel >= eQuestChoices.Length) return;
 
             var requiredItem = eQuestChoices[sel];
-            if (!await SayYesNo($"让我看看，你想用我的东西交换你的#b100#t{requiredItem}##k对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
+            if (!await AskYesNo($"让我看看，你想用我的东西交换你的#b100#t{requiredItem}##k对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
                 return;
 
             if (!haveItem(requiredItem, 100))
@@ -1138,7 +1138,7 @@ namespace Application.Plugin.Script
             string[] mainOptions = ["什么是辅助剂？", "制作战士手套", "制作弓箭手手套", "制作法师手套", "制作飞侠手套",
                 "使用辅助剂制作战士手套", "使用辅助剂制作弓箭手手套", "使用辅助剂制作法师手套", "使用辅助剂制作飞侠手套"];
 
-            var mainSel = await SayOption(greeting, mainOptions);
+            var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
@@ -1251,7 +1251,7 @@ namespace Application.Plugin.Script
             string[] mainOptions = ["什么是辅助剂？", "制作战士鞋子", "制作弓箭手鞋子", "制作法师鞋子", "制作飞侠鞋子",
                 "使用辅助剂制作战士鞋子", "使用辅助剂制作弓箭手鞋子", "使用辅助剂制作法师鞋子", "使用辅助剂制作飞侠鞋子"];
 
-            var mainSel = await SayOption(greeting, mainOptions);
+            var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
@@ -1372,7 +1372,7 @@ namespace Application.Plugin.Script
             string[] mainOptions = ["什么是辅助剂？", "制作战士武器", "制作弓箭手武器", "制作法师武器", "制作飞侠武器",
                 "使用辅助剂制作战士武器", "使用辅助剂制作弓箭手武器", "使用辅助剂制作法师武器", "使用辅助剂制作飞侠武器"];
 
-            var mainSel = await SayOption(greeting, mainOptions);
+            var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
@@ -1479,7 +1479,7 @@ namespace Application.Plugin.Script
 
             var categoriesList = new List<RecipeCategory> { warriorWeaponCat, bowmanWeaponCat, mageWeaponCat, thiefWeaponCat };
             var selectedCategory = categoriesList[categoryIdx];
-            var selectItemIdx = await SayOption(selectedCategory.SelectionPrompt,
+            var selectItemIdx = await AskMenu(selectedCategory.SelectionPrompt,
                 selectedCategory.Formulas.Select(x => $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"));
 
             if (selectItemIdx < 0) return;
@@ -1595,7 +1595,7 @@ namespace Application.Plugin.Script
         public async Task s_Jack_Additional()
         {
             await SayNext("嘿，你知道现在在绯红之核运行的远征吗？这是一个提升自己的绝佳机会，可以在那里快速积累经验和战利品。");
-            if (!await SayYesNo("话虽如此，我认为使用一些强大的实用药水可能会在战线上创造一些差异，我的意思是开始制作 #b#t2022284##k's 来帮助努力。所以，言归正传，我目前正在追求 #r大量#k 的这些物品：#r#t4032010##k, #r#t4032011##k, #r#t4032012##k，以及一些资金来支持这项事业。你想得到一些这些助推器吗？"))
+            if (!await AskYesNo("话虽如此，我认为使用一些强大的实用药水可能会在战线上创造一些差异，我的意思是开始制作 #b#t2022284##k's 来帮助努力。所以，言归正传，我目前正在追求 #r大量#k 的这些物品：#r#t4032010##k, #r#t4032011##k, #r#t4032012##k，以及一些资金来支持这项事业。你想得到一些这些助推器吗？"))
             {
                 await SayOK("好的，再见。");
                 return;
@@ -1625,7 +1625,7 @@ namespace Application.Plugin.Script
             }
 
             await SayNext("嘿，有点时间吗？我的工作是在这里收集物品然后在其他地方出售，但最近怪物变得更加敌对，所以很难得到好的物品... 你觉得呢？想和我做点生意吗？");
-            if (!await SayYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
+            if (!await AskYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
             {
                 await SayOK("嗯...这对你来说不应该是个坏交易。在合适的时间来找我，你可能会得到一个更好的物品。无论如何，如果你改变主意了，就让我知道。");
                 return;
@@ -1642,7 +1642,7 @@ namespace Application.Plugin.Script
             eQuestPrizes[6] = [[0, 3500000]];
             eQuestPrizes[7] = [[0, 3500000]];
 
-            var sel = await SayOption("好的！首先你需要选择你要交易的物品。物品越好，我就越有可能给你一些更好的回报。\r\n",
+            var sel = await AskMenu("好的！首先你需要选择你要交易的物品。物品越好，我就越有可能给你一些更好的回报。\r\n",
                 eQuestChoices.Select((id, i) => $"#v{id}#  #b#t{id}# #kx {(i < 4 ? 50 : 25)}"));
 
             if (sel < 0) return;
@@ -1650,7 +1650,7 @@ namespace Application.Plugin.Script
             int requiredItem = eQuestChoices[sel];
             int qnt = sel < 4 ? 50 : 25;
 
-            if (!await SayYesNo($"让我看看，你想用我的东西交换你的 #b{qnt} #t{requiredItem}##k，对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
+            if (!await AskYesNo($"让我看看，你想用我的东西交换你的 #b{qnt} #t{requiredItem}##k，对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
                 return;
 
             if (!haveItem(requiredItem, qnt))
@@ -1715,7 +1715,7 @@ namespace Application.Plugin.Script
         // Npc: 2100001 
         public async Task make_ariant1()
         {
-            if (!await SayYesNo("你是来这里冶炼矿石母矿或宝石母矿的吧？不论有多少母矿，只有经过我这样的冶炼大师之手，才能让它们重现世间。怎么样，你想要开始冶炼它们吗？"))
+            if (!await AskYesNo("你是来这里冶炼矿石母矿或宝石母矿的吧？不论有多少母矿，只有经过我这样的冶炼大师之手，才能让它们重现世间。怎么样，你想要开始冶炼它们吗？"))
             {
                 await SayNext("如果你现在还不急，就等会儿再来。你也看到了，现在我手上的工作多得要命，可能没法按时交付你给我的任务。");
                 return;
@@ -1784,7 +1784,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var option = await SayOption("我是一个多才多艺的人。让我知道你想做什么。", ["制作药物", "制作卷轴", "捐赠药物成分"]);
+            var option = await AskMenu("我是一个多才多艺的人。让我知道你想做什么。", ["制作药物", "制作卷轴", "捐赠药物成分"]);
             if (option < 0) return;
 
             if (option == 0) // Make a medicine
@@ -1851,7 +1851,7 @@ namespace Application.Plugin.Script
 
                 // Special handling for the scroll reward logic (10% chance for 60% scroll)
                 var category = categories[0];
-                var selectItemIdx = await SayOption(category.SelectionPrompt,
+                var selectItemIdx = await AskMenu(category.SelectionPrompt,
                     ["Scroll for One-Handed Sword for ATT", "Scroll for One-Handed Axe for ATT", "Scroll for One-Handed BW for ATT",
                     "Scroll for Dagger for ATT", "Scroll for Wand for Magic Att.", "Scroll for Staff for Magic Att.",
                     "Scroll for Two-handed Sword for ATT.", "Scroll for Two-handed Axe for ATT", "Scroll for Two-handed BW for ATT",
@@ -1878,13 +1878,13 @@ namespace Application.Plugin.Script
                 int[] items = [4000276, 4000277, 4000278, 4000279, 4000280, 4000291, 4000292, 4000286, 4000287, 4000293, 4000294, 4000298, 4000284, 4000288, 4000285, 4000282, 4000295, 4000289, 4000296, 4000297];
                 int[][] rewdRange = [[7, 7], [7, 7], [7, 8], [10, 10], [11, 11], [8, 8], [7, 8], [7, 9], [7, 8], [9, 9], [10, 10], [10, 11], [11, 11], [11, 12], [13, 13], [13, 13], [14, 14], [15, 15], [15, 16], [17, 17]];
 
-                var sel = await SayOption("那么你想捐赠一些药物成分吗？这是个好消息！捐款将以 #b100#k 为单位接受。捐赠者将获得一颗可以制作卷轴的大理石。您想捐赠其中的哪一个？",
+                var sel = await AskMenu("那么你想捐赠一些药物成分吗？这是个好消息！捐款将以 #b100#k 为单位接受。捐赠者将获得一颗可以制作卷轴的大理石。您想捐赠其中的哪一个？",
                     items.Select(id => $"#v{id}# #t{id}#"));
 
                 if (sel < 0) return;
 
                 int itemToDonate = items[sel];
-                if (!await SayYesNo($"你确定要捐赠 #b100 #t {itemToDonate}##k 吗？"))
+                if (!await AskYesNo($"你确定要捐赠 #b100 #t {itemToDonate}##k 吗？"))
                     return;
 
                 if (!haveItem(itemToDonate, 100))

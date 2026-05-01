@@ -16,7 +16,7 @@ namespace Application.Plugin.Script
         {
             if (getMapId() == MapId.HENESYS)
             {
-                if (await SayYesNo($"我可以带你去#m680000000#。你准备好了吗？"))
+                if (await AskYesNo($"我可以带你去#m680000000#。你准备好了吗？"))
                 {
                     warp(680000000, 0);
                 }
@@ -27,7 +27,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo($"我可以带你回到#m100000000#。你准备好了吗？"))
+                if (await AskYesNo($"我可以带你回到#m100000000#。你准备好了吗？"))
                 {
                     warp(100000000, 5);
                 }

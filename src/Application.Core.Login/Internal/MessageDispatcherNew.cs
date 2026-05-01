@@ -21,7 +21,7 @@ namespace Application.Core.Login.Internal
         {
             if (_handlers.TryGetValue(msgId, out var handler))
             {
-                _server.Post(new HandleChannelPacketCommand(handler, content));
+                _server.Send(new HandleChannelPacketCommand(handler, content));
             }
             else
             {

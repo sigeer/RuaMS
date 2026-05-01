@@ -43,7 +43,7 @@ namespace Application.Core.Login.Client
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            CurrentServer.Post(new HandleMasterPacketCommand(this, msg));
+            CurrentServer.Send(new HandleMasterPacketCommand(this, msg));
         }
 
         public override void ProcessPacket(InPacket packet)

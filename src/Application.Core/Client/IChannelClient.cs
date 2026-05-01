@@ -17,7 +17,7 @@ namespace Application.Core.Client
         ClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
-        void Disconnect(bool isShutdown, bool fromCashShop = false);
+        Task Disconnect(bool isShutdown, bool fromCashShop = false);
 
         void enableCSActions();
         AbstractPlayerInteraction getAbstractPlayerInteraction();

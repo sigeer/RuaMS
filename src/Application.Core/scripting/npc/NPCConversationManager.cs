@@ -142,7 +142,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker, speakerNpc));
+        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 12, text, "", speaker, speakerNpc));
     }
 
     public void sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
@@ -875,7 +875,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             var text = messages[current];
             if (current == 0)
             {
-                sendNext(text.Text, text.Speaker);
+                sendNext(text.Text, text.Speaker, text.SpeakerNpc);
                 if (await WaitingForAnswer())
                 {
                     current++;
@@ -885,12 +885,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
             {
                 if (finalNext)
                 {
-                    sendNextPrev(text.Text, text.Speaker);
+                    sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
                     current += (await WaitingForAnswer()) ? 1 : -1;
                 }
                 else
                 {
-                    sendPrev(text.Text, text.Speaker);
+                    sendPrev(text.Text, text.Speaker, text.SpeakerNpc);
                     if (!await WaitingForAnswer())
                     {
                         current--;
@@ -899,7 +899,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             }
             else
             {
-                sendNextPrev(text.Text, text.Speaker);
+                sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
                 current += (await WaitingForAnswer()) ? 1 : -1;
             }
         }
@@ -917,7 +917,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         await WaitingForAnswer();
     }
 
-    public async Task<bool> SayYesNo(string text, byte speaker = 0)
+    public async Task<bool> AskYesNo(string text, byte speaker = 0)
     {
         sendYesNo(text, speaker);
         return await WaitingForAnswer();
@@ -929,13 +929,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return await WaitingForAnswer();
     }
 
-    public async Task<int> SayOption(string text, byte speaker = 0)
+    public async Task<int> AskMenu(string text, byte speaker = 0)
     {
         sendSimple(text, speaker);
         return await WaitingForOption();
     }
 
-    public async Task<int> SayOption(string mainContent, IEnumerable<string> options, byte speaker = 0)
+    public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
     {
         var finalContent = mainContent + "\r\n#b";
         for (int i = 0; i < options.Count(); i++)
@@ -943,10 +943,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
             finalContent += $"#L{i}#{options.ElementAt(i)}#l\r\n";
         }
         finalContent += "#k";
-        return await SayOption(finalContent, speaker);
+        return await AskMenu(finalContent, speaker);
     }
 
-    public async Task<int> SayOption(string mainContent, Dictionary<int, string> options, byte speaker = 0)
+    public async Task<int> AskMenu(string mainContent, Dictionary<int, string> options, byte speaker = 0)
     {
         var finalContent = mainContent + "\r\n#b";
         foreach (var item in options)
@@ -954,10 +954,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
             finalContent += $"#L{item.Key}#{item.Value}#l\r\n";
         }
         finalContent += "#k";
-        return await SayOption(finalContent, speaker);
+        return await AskMenu(finalContent, speaker);
     }
 
-    public async Task<int> SayStyle(string text, int[] styles)
+    public async Task<int> AskAvatar(string text, int[] styles)
     {
         if (styles.Length > 0)
         {
@@ -972,13 +972,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    public async Task<int> SayInputNumber(string text, int def, int min, int max, byte speaker = 0)
+    public async Task<int> AskNumber(string text, int def, int min, int max, byte speaker = 0)
     {
         sendGetNumber(text, def, min, max, speaker);
         return await WaitingForInputNumber();
     }
 
-    public async Task<string?> SayInputText(string text, byte speaker = 0)
+    public async Task<string?> AskText(string text, byte speaker = 0)
     {
         sendGetText(text, speaker);
         return await WaitingForInputText();

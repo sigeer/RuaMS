@@ -9,7 +9,7 @@ namespace Application.Plugin.Script
         public async Task infoArcher()
         {
             await SayNext("弓箭手具有灵巧和力量的天赋，负责远距离攻击，为战斗前线提供支援。非常擅长利用地形作为武器库的一部分。");
-            if (await SayYesNo("你想体验一下成为一个弓箭手是什么感觉吗？"))
+            if (await AskYesNo("你想体验一下成为一个弓箭手是什么感觉吗？"))
             {
                 lockUI();
                 warp(1020300, 0);
@@ -66,7 +66,7 @@ namespace Application.Plugin.Script
                 if (haveItem(4031012))
                 {
                     await SayNext("哈哈...我知道你会轻松通过那个测试的。我承认，你是一个很棒的弓箭手。我会让你比现在强大得多。不过，在那之前...你需要选择给你的两条路中的一条。这对你来说会是一个艰难的决定，但是...如果有任何问题需要问，请尽管问吧。");
-                    var option = await SayOption("好的，当你做出决定后，点击底部的[我会选择我的职业]。", [
+                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我会选择我的职业]。", [
                         "请介绍一下猎人",
                         "请介绍一下弩弓手",
                         "我要选择我的职业！"
@@ -80,10 +80,10 @@ namespace Application.Plugin.Script
                             await SayNext("精通弓弩的弩弓手。\r\n\r\n与猎人相比，弩弓手的攻击力随等级提高而增加。弩弓手可以使用更强大的攻击技能#r铁箭#k，该技能不会自动追踪敌人，但可以穿墙。");
                             break;
                         case 2:
-                            var select = await SayOption("现在... 你决定好了吗？请选择你想要在二转时选择的职业。#b\r\n#L0#猎人\r\n#L1#弩手");
+                            var select = await AskMenu("现在... 你决定好了吗？请选择你想要在二转时选择的职业。#b\r\n#L0#猎人\r\n#L1#弩手");
                             var job = 300 + select * 10;
                             var jobStr = (job == 310 ? "#b猎人#k" : "#b弩弓手#k");
-                            if (await SayYesNo("所以你第二次转职想要选择成为" + jobStr + "吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
+                            if (await AskYesNo("所以你第二次转职想要选择成为" + jobStr + "吗？你知道一旦在这里做出选择，就无法在改变了，对吧？"))
                             {
                                 gainItem(4031012, -1);
                                 forceCompleteQuest(questId);
@@ -104,7 +104,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    if (await SayYesNo("嗯...自从上次见到你以来，你长大了许多。我再也看不到以前那个软弱的家伙，而是看起来更像一个弓箭手了。那么，你觉得呢？难道你不想变得更加强大吗？通过一个简单的测试，我就可以帮你实现。你想试试吗？"))
+                    if (await AskYesNo("嗯...自从上次见到你以来，你长大了许多。我再也看不到以前那个软弱的家伙，而是看起来更像一个弓箭手了。那么，你觉得呢？难道你不想变得更加强大吗？通过一个简单的测试，我就可以帮你实现。你想试试吗？"))
                     {
                         await SayNext("做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。拿着我的信先……确保你不要丢了它！");
                         if (!haveItem(4031010))
@@ -191,7 +191,7 @@ namespace Application.Plugin.Script
             }
             else if (getJob().Rank == 3)
             {
-                if (await SayYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
+                if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
                 {
                     if (canHold(2280003, 1))
                     {
@@ -218,7 +218,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await SayOption("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
+                await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.BOWMASTER)
                 {
                     if (getPlayer().getSkillLevel(3121008) == 0)

@@ -11,7 +11,7 @@ namespace Application.Plugin.Script
         {
             var em = GetEventManager<PQ_Ludi>(nameof(PQ_Ludi));
 
-            var option = await SayOption($"#e#b<组队任务：时空裂缝>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n由于上方有极其危险的生物，你无法再往上走。你想要和队友合作完成任务吗？如果是，请让你的#b队长#k和我交谈。",
+            var option = await AskMenu($"#e#b<组队任务：时空裂缝>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n由于上方有极其危险的生物，你无法再往上走。你想要和队友合作完成任务吗？如果是，请让你的#b队长#k和我交谈。",
                 ["我想参加组队任务。", "我想了解更多详情。"]
             );
             switch (option)
@@ -170,7 +170,7 @@ namespace Application.Plugin.Script
 
                     break;
                 case 2040045:
-                    if (await SayYesNo("你想离开奖励阶段吗？"))
+                    if (await AskYesNo("你想离开奖励阶段吗？"))
                     {
                         // warp(922011100, "st00");
                         WarpOut();
@@ -206,7 +206,7 @@ namespace Application.Plugin.Script
                 var outText = eim?.isEventCleared() ?? true
                     ? "你准备好离开这张地图了吗？"
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";
-                if (await SayYesNo(outText))
+                if (await AskYesNo(outText))
                 {
                     WarpOut();
                 }

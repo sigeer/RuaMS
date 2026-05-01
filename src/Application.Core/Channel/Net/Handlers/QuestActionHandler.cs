@@ -22,6 +22,7 @@
 
 
 using server.quest;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -149,5 +150,6 @@ public class QuestActionHandler : ChannelHandlerBase
                     break;
                 }
         }
+        player.sendPacket(PacketCreator.enableActions());
     }
 }

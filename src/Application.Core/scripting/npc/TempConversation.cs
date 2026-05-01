@@ -144,7 +144,7 @@ namespace Application.Core.scripting.npc
                 }
             }
 
-            dispose();
+            // dispose();
             return;
         }
     }

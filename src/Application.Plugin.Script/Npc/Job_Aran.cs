@@ -7,6 +7,18 @@ namespace Application.Plugin.Script
 {
     internal partial class NpcScript
     {
+        // Npc: 1209000 
+        public async Task talkHelena()
+        {
+            await SaySpeech([
+                "醒了？战神？伤口还好吧？……什么？现在的状况？",
+                "避难准备都做好了，所有的人都上了方舟。避难船飞行的时候就只有听天由命了，没啥可担心的。准备得差不多就该向金银岛出发了。",
+                "战神的同伴们？他们……已经去找黑魔法师了。在我们避难的时候，他们打算阻止黑魔法师的进攻……什么？你也要去找黑魔法师？不行！你伤得太重，跟我们一起吧！"
+                ]);
+            setQuestProgress(21000, 21002, 1);
+            showIntro("Effect/Direction1.img/aranTutorial/Trio");
+        }
+
         // Npc: 1202000 
         public async Task awake()
         {
@@ -42,8 +54,19 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var option = await SayOption(
-                    "你还有什么疑问吗？如果有的话，我会尽量解释得更清楚。#b#l\r\n#L0#我是谁？#l #l\r\n#L1#我在哪里？#l #l\r\n#L2#你是谁？#l #l\r\n#L3#告诉我我该做什么。#l #l\r\n#L4#告诉我关于我的物品栏。#l #l\r\n#L5#我如何提升我的技能？#l #l\r\n#L6#我想知道如何装备物品。#l #l\r\n#L7#我如何使用快捷栏？#l #l\r\n#L8#我如何打开可破坏的容器？#l #l\r\n#L9#我想坐在椅子上，但我忘了怎么做。#k");
+                var option = await AskMenu(
+                    "你还有什么疑问吗？如果有的话，我会尽量解释得更清楚。", [
+                        "我是谁？",
+                        "我在哪里？",
+                        "你是谁？",
+                        "告诉我我该做什么。",
+                        "告诉我关于我的物品栏。",
+                        "我如何提升我的技能？",
+                        "我想知道如何装备物品。",
+                        "我如何使用快捷栏？",
+                        "我如何打开可破坏的容器？",
+                        "我想坐在椅子上，但我忘了怎么做。"
+                        ]);
                 switch (option)
                 {
                     case 0:

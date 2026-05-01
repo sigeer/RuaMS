@@ -88,7 +88,7 @@ namespace Application.Plugin.Script.Quest
             {
                 talkStr += "\r\n#L" + i + "# #i" + vecItem[i] + "# #t" + vecItem[i] + "#";
             }
-            var selection = await SayOption(talkStr);
+            var selection = await AskMenu(talkStr);
             var item = vecItem[selection];
             gainItem(item, 1);
             gainItem(4031103, -1);
@@ -192,7 +192,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 7103 
         public async Task q7103s()
         {
-            if (await SayYesNo("我们现在唯一要做的事情...就是让#o8500002#永远消失...你准备好了吗？"))
+            if (await AskYesNo("我们现在唯一要做的事情...就是让#o8500002#永远消失...你准备好了吗？"))
             {
                 await SaySpeech([
                     "我会向你解释接下来需要做什么。\r\n要进入发电室，你需要通过#b遗忘之路#k或#b扭曲之路#k。一旦打败守卫通道的怪物，你就可以获得#b#t4031172:##k，这是进入发电室所需的物品。",

@@ -105,6 +105,7 @@ namespace Application.Plugin.Script
         {
             if (c.NPCConversationManager != null)
             {
+                c.OnlinedCharacter.Pink("卡对话了");
                 return false;
             }
 
@@ -142,7 +143,7 @@ namespace Application.Plugin.Script
             }
             catch (ConversationDiffInstanceException)
             {
-                if (await talk.SayYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
                 {
                     talk.WarpOut();
                 }
@@ -182,6 +183,7 @@ namespace Application.Plugin.Script
         {
             if (c.NPCConversationManager != null)
             {
+                c.OnlinedCharacter.Pink("卡对话了");
                 return false;
             }
 
@@ -194,7 +196,7 @@ namespace Application.Plugin.Script
             var scriptName = isStarted ? questObj.GetStartScript() : questObj.GetEndScript();
             if (string.IsNullOrEmpty(scriptName))
             {
-                throw new BusinessResException("客户端wz中包含了startScript/endScript节点，但是服务端没有");
+                throw new BusinessResException($"QuestId={questObj.getId()}客户端wz中包含了startScript/endScript节点，但是服务端没有");
             }
 
             if (!_questSource.TryGetValue(scriptName, out var methodInfo))
@@ -226,7 +228,7 @@ namespace Application.Plugin.Script
             }
             catch (ConversationDiffInstanceException)
             {
-                if (await talk.SayYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
                 {
                     talk.WarpOut();
                 }

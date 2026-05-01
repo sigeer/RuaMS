@@ -3209,6 +3209,8 @@ public class PacketCreator
         p.writeInt(npc);
         p.writeByte(msgType);
         p.writeByte(speaker);
+        //   if ( (a5 & 4) != 0 )
+        //     a3 = CInPacket::Decode4(a4);
         if ((speaker & 4) > 0)
         {
             p.writeInt(speakerNpc);

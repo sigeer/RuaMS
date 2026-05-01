@@ -141,7 +141,7 @@ namespace Application.Core.Login.Models
 
         public int Pqpoints { get; set; }
 
-        public string DataString { get; set; } = null!;
+        public string DataString { get; set; } = "";
 
         public DateTimeOffset LastLogoutTime { get; set; }
 

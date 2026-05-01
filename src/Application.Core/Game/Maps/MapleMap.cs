@@ -3268,18 +3268,9 @@ public class MapleMap : IMap, INamedInstance
         BroadcastAll(e => e.Yellow(text, param));
     }
 
-    public void Send(ICommand command)
-    {
-        CommandLoop.Register(command);
-    }
+    public Task Send(ICommand command) => CommandLoop.Register(command);
 
-    public void Send(Action<IMap> action)
-    {
-        Send(new MapDelegateCommand(action));
-    }
+    public Task Send(Action<IMap> action) => Send(new MapDelegateCommand(action));
 
-    public void Send(Func<IMap, Task> action)
-    {
-        Send(new AsyncMapDelegateCommand(action));
-    }
+    public Task Send(Func<IMap, Task> action) => Send(new AsyncMapDelegateCommand(action));
 }

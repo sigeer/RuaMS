@@ -67,7 +67,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 20008 
         public async Task q20008s()
         {
-            var selection = await SayOption("你准备好执行任务了吗？如果你不能通过这个测试，那么你就不能称自己为真正的骑士。你确定你能做到吗？如果你害怕这样做，告诉我。我不会告诉奈哈特的. \r\n #L0#我稍后再试试这个.#l \r\n #L1#我不怕。我们这样做吧.#l");
+            var selection = await AskMenu("你准备好执行任务了吗？如果你不能通过这个测试，那么你就不能称自己为真正的骑士。你确定你能做到吗？如果你害怕这样做，告诉我。我不会告诉奈哈特的. \r\n #L0#我稍后再试试这个.#l \r\n #L1#我不怕。我们这样做吧.#l");
             if (selection == 0)
             {
                 await SayNext("如果你称自己为骑士，那就不要犹豫。向大家展示你有多大的勇气.");
@@ -76,7 +76,7 @@ namespace Application.Plugin.Script.Quest
             {
                 forceStartQuest();
 
-                await SayOption("我很高兴你没有逃跑，但是。。。你确定你想成为一名见习的骑士吗？我要问的是，你是否愿意加入冒险骑士团，因此时刻与女皇紧密相连？她或许是个女皇，但终究还是个孩子。你确定你能为她而战吗？我不会让内哈特知道的，所以告诉我你的真实想法。\r\n #L2#如果女皇想要冒险岛世界的和平，那我什么都愿意。#l \r\n #L3#只要我能成为一名骑士，我会忍受一切 #l");
+                await AskMenu("我很高兴你没有逃跑，但是。。。你确定你想成为一名见习的骑士吗？我要问的是，你是否愿意加入冒险骑士团，因此时刻与女皇紧密相连？她或许是个女皇，但终究还是个孩子。你确定你能为她而战吗？我不会让内哈特知道的，所以告诉我你的真实想法。\r\n #L2#如果女皇想要冒险岛世界的和平，那我什么都愿意。#l \r\n #L3#只要我能成为一名骑士，我会忍受一切 #l");
                 forceCompleteQuest();
             }
         }
@@ -276,10 +276,10 @@ namespace Application.Plugin.Script.Quest
                 "我看你已经达到10级了，你已经很努力了。我想现在是时候让你脱颖而出，成为一名贵族，正式成为训练中的骑士了。不过，在这之前，我想问你一件事。你决定要成为哪个骑士了吗?",
                 "没有一条路可以成为骑士。事实上，有五个是为你准备的。这取决于你选择你想走哪条路，但这绝对应该是你不会后悔的事情。所以。。。我愿意向你展示你成为骑士后的样子.",
                 ]);
-            var o = await SayOption("你怎么认为？你有兴趣把自己看作骑士团的领袖吗？如果你已经决定了你想成为什么样的骑士，那么你就不必去看它了…\r\n\r\n#b#L0#让我看看我作为骑士领袖的样子.#l ..#b#L1#不，我没事.");
+            var o = await AskMenu("你怎么认为？你有兴趣把自己看作骑士团的领袖吗？如果你已经决定了你想成为什么样的骑士，那么你就不必去看它了…\r\n\r\n#b#L0#让我看看我作为骑士领袖的样子.#l ..#b#L1#不，我没事.");
             if (o == 0)
             {
-                if (await SayYesNo("你想现在亲自看看吗？很快就会有一个短片出来。为你即将见证的事情做好准备."))
+                if (await AskYesNo("你想现在亲自看看吗？很快就会有一个短片出来。为你即将见证的事情做好准备."))
                 {
                     forceStartQuest();
                     forceCompleteQuest();
@@ -319,7 +319,7 @@ namespace Application.Plugin.Script.Quest
                 { Job.THUNDERBREAKER1, [ new (2060000, 1)] },
             };
 
-            if (await SayYesNo($"你决定好了嘛 ? 这会是你最后的决定唷, 所以想清楚你要做什么.你想要成为#b初级骑士 - {c.CurrentCulture.GetJobName(nextJob)}#k吗?"))
+            if (await AskYesNo($"你决定好了嘛 ? 这会是你最后的决定唷, 所以想清楚你要做什么.你想要成为#b初级骑士 - {c.CurrentCulture.GetJobName(nextJob)}#k吗?"))
             {
                 if (getJob() != Job.NOBLESSE)
                 {
@@ -391,7 +391,7 @@ namespace Application.Plugin.Script.Quest
 
         public async Task Cygnus2ndJob(Job nextJob)
         {
-            if (await SayYesNo($"既然你带来了所有的#b考试的证物#k，那我现在相信你有资格成为#b正式骑士 - {c.CurrentCulture.GetJobName(nextJob)}#k，你想成为其中的一员吗？"))
+            if (await AskYesNo($"既然你带来了所有的#b考试的证物#k，那我现在相信你有资格成为#b正式骑士 - {c.CurrentCulture.GetJobName(nextJob)}#k，你想成为其中的一员吗？"))
             {
                 if (getPlayer().getRemainingSp() > ((getPlayer().getLevel() - getJob().MaxLevel) * 3))
                 {
@@ -417,7 +417,7 @@ namespace Application.Plugin.Script.Quest
         public async Task Cygnus3rdJob(Job nextJob)
         {
             await SayNext("你所带回来的宝石是神兽的眼泪，它拥有非常强大的力量。如果被黑魔法师给得手了，那我们全部都可能要倒大楣了...");
-            if (await SayYesNo($"女皇为了报答你的努力，将任命你为皇家骑士团的#b{c.CurrentCulture.GetJobName(nextJob)}#k，你准备好了嘛?"))
+            if (await AskYesNo($"女皇为了报答你的努力，将任命你为皇家骑士团的#b{c.CurrentCulture.GetJobName(nextJob)}#k，你准备好了嘛?"))
             {
                 var nPSP = (getPlayer().getLevel() - getJob().MaxLevel) * 3;
                 if (getPlayer().getRemainingSp() > nPSP)

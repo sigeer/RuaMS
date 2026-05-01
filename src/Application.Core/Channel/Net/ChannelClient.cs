@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using scripting;
 using scripting.npc;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -48,7 +49,7 @@ namespace Application.Core.Channel.Net
         }
 
         bool _isDisconnecting = false;
-        public void Disconnect(bool isShutdown, bool fromCashShop = false)
+        public async Task Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             if (_isDisconnecting)
                 return;
@@ -89,7 +90,7 @@ namespace Application.Core.Channel.Net
                     CurrentServer.RemovePlayerDeep(Character);
 
                     if (!IsServerTransition)
-                        Character.logOff();
+                        await Character.logOff();
                 }
             }
 

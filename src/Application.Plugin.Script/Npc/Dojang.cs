@@ -35,7 +35,7 @@ namespace Application.Plugin.Script
                 {
                     text += "#L2#我想记录我到目前为止的分数#l";
                 }
-                var selection = await SayOption(text);
+                var selection = await AskMenu(text);
                 selectedMenu = selection;
 
                 if (selectedMenu == 0)
@@ -98,14 +98,14 @@ namespace Application.Plugin.Script
                 }
                 else if (selectedMenu == 1)
                 {
-                    if (await SayYesNo("所以，你要放弃了吗？你真的要离开吗？"))
+                    if (await AskYesNo("所以，你要放弃了吗？你真的要离开吗？"))
                     {
                         warp(925020002, "st00");
                     }
                 }
                 else if (selectedMenu == 2)
                 {
-                    if (await SayYesNo("如果你记录下你的分数，下次可以从上次离开的地方开始。这不是很方便吗？你想记录下当前的分数吗？"))
+                    if (await AskYesNo("如果你记录下你的分数，下次可以从上次离开的地方开始。这不是很方便吗？你想记录下当前的分数吗？"))
                     {
                         if (getPlayer().getDojoStage() == getMapId() / 100 % 100)
                         {
@@ -127,14 +127,14 @@ namespace Application.Plugin.Script
             {
                 if (getMapId() == 925020001)
                 {
-                    var selection = await SayOption("我的主人是武陵最强大的人，你想挑战他？好吧，但你以后会后悔的。\r\n\r\n#b#L0#我想独自挑战他。#l\r\n#L1#我想组队挑战他。#l\r\n\r\n#L2#我想获得一条腰带。#l\r\n#L3#我想重置我的训练点数。#l\r\n#L4#我想获得一枚勋章。#l\r\n#L5#什么是武陵道场？#l");
+                    var selection = await AskMenu("我的主人是武陵最强大的人，你想挑战他？好吧，但你以后会后悔的。\r\n\r\n#b#L0#我想独自挑战他。#l\r\n#L1#我想组队挑战他。#l\r\n\r\n#L2#我想获得一条腰带。#l\r\n#L3#我想重置我的训练点数。#l\r\n#L4#我想获得一枚勋章。#l\r\n#L5#什么是武陵道场？#l");
                     selectedMenu = selection;
 
                     if (selectedMenu == 0)
                     {
                         if (!getPlayer().hasEntered(getMapId()) && !getPlayer().FinishedDojoTutorial)
                         {
-                            if (await SayYesNo("嘿！你！这是你第一次来吗？嗯，我的主人不会随便见任何人。他很忙。看你的样子，我觉得他不会理你。哈！但是，今天是你的幸运日……我告诉你吧，如果你能打败我，我就让你见我的主人。你觉得怎么样？"))
+                            if (await AskYesNo("嘿！你！这是你第一次来吗？嗯，我的主人不会随便见任何人。他很忙。看你的样子，我觉得他不会理你。哈！但是，今天是你的幸运日……我告诉你吧，如果你能打败我，我就让你见我的主人。你觉得怎么样？"))
                             {
                                 var avDojo = getClient().getChannelServer().ingressDojo(true, 0);
                                 if (avDojo < 0)
@@ -166,7 +166,7 @@ namespace Application.Plugin.Script
                             getPlayer().setDojoStage(0);
                             var stageWarp = (dojoWarp / 6) * 5;
                             
-                            if (await SayYesNo($"上次你独自挑战时，你一直走到了第#b{stageWarp}#k关。我现在可以带你去那里。你想去那里吗？（选择#rNo#k来删除这个记录。）"))
+                            if (await AskYesNo($"上次你独自挑战时，你一直走到了第#b{stageWarp}#k关。我现在可以带你去那里。你想去那里吗？（选择#rNo#k来删除这个记录。）"))
                             {
                                 var avDojo = getClient().getChannelServer().ingressDojo(false, dojoWarp);
                                 if (avDojo < 0)
@@ -273,7 +273,7 @@ namespace Application.Plugin.Script
                             }
                         }
 
-                        var beltSelection = await SayOption(selStr);
+                        var beltSelection = await AskMenu(selStr);
                         var belt = belts[beltSelection];
                         var level = belt_level[beltSelection];
                         var points = belt_points[beltSelection];
@@ -312,7 +312,7 @@ namespace Application.Plugin.Script
                     }
                     else if (selectedMenu == 3)
                     {
-                        if (await SayYesNo("你知道如果你重置你的训练点数，它会返回到0，对吧？不过，这并不总是件坏事。如果你在重置后能够重新开始赚取训练点数，你就可以再次获得腰带。你现在想要重置你的训练点数吗？"))
+                        if (await AskYesNo("你知道如果你重置你的训练点数，它会返回到0，对吧？不过，这并不总是件坏事。如果你在重置后能够重新开始赚取训练点数，你就可以再次获得腰带。你现在想要重置你的训练点数吗？"))
                         {
                             getPlayer().setDojoPoints(0);
                             await SayNext("好了！你所有的训练点数都已经重置了。把它看作一个新的开始，努力训练吧！");
@@ -326,7 +326,7 @@ namespace Application.Plugin.Script
                     {
                         if (getPlayer().getVanquisherStage() <= 0)
                         {
-                            if (await SayYesNo($"你还没有尝试过勋章吗？如果你在勇士部落道场中打败某种类型的怪物#b100次#k，你就可以获得一个称号，叫做#b#t{1142033 + getPlayer().getVanquisherStage()}##k。看起来你甚至还没有获得#b#t{1142033 + getPlayer().getVanquisherStage()}##k... 你想尝试一下#b#t{1142033 +getPlayer().getVanquisherStage()}##k吗？"))
+                            if (await AskYesNo($"你还没有尝试过勋章吗？如果你在勇士部落道场中打败某种类型的怪物#b100次#k，你就可以获得一个称号，叫做#b#t{1142033 + getPlayer().getVanquisherStage()}##k。看起来你甚至还没有获得#b#t{1142033 + getPlayer().getVanquisherStage()}##k... 你想尝试一下#b#t{1142033 +getPlayer().getVanquisherStage()}##k吗？"))
                             {
                                 if (getPlayer().getDojoStage() > 37)
                                 {
@@ -379,7 +379,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    if (await SayYesNo("什么，你要放弃了吗？你只需要达到下一个级别！你真的想要放弃并离开吗？"))
+                    if (await AskYesNo("什么，你要放弃了吗？你只需要达到下一个级别！你真的想要放弃并离开吗？"))
                     {
                         var dojoMapId = getMapId();
                         warp(925020002, 0);
@@ -412,7 +412,7 @@ namespace Application.Plugin.Script
         // Npc: 2091006
         public async Task dojang_move()
         {
-            var selection = await SayOption("#e< 注意 >#n\r\n如果有人有勇气挑战武陵道场，请来武陵道场。 - 武功 -\r\n\r\n\r\n#b#L0#挑战武陵道场。#l\r\n#L1#更详细地阅读通知。#l");
+            var selection = await AskMenu("#e< 注意 >#n\r\n如果有人有勇气挑战武陵道场，请来武陵道场。 - 武功 -\r\n\r\n\r\n#b#L0#挑战武陵道场。#l\r\n#L1#更详细地阅读通知。#l");
             
             if (selection == 1)
             {
@@ -421,7 +421,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (await SayYesNo("（当我把手放在公告板上时，一股神秘的能量开始包围着我。）\r\n\r\n你想去勇士部落道场吗？"))
+                if (await AskYesNo("（当我把手放在公告板上时，一股神秘的能量开始包围着我。）\r\n\r\n你想去勇士部落道场吗？"))
                 {
                     getPlayer().saveLocation("MIRROR");
                     warp(925020000, 4);
