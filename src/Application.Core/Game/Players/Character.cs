@@ -34,7 +34,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Server;
 using Application.Shared.Events;
 using Application.Shared.KeyMaps;
@@ -2195,12 +2195,6 @@ public partial class Player
         releaseControlledMonsters();
         visibleMapObjects.Clear();
         setChair(-1);
-
-        var arena = this.getAriantColiseum();
-        if (arena != null)
-        {
-            arena.leaveArena(this);
-        }
     }
 
     private int getChangedJobSp(Job newJob)

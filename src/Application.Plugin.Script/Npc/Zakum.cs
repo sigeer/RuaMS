@@ -1,3 +1,4 @@
+using Application.Core.scripting.Events.Instances;
 using Application.Plugin.Script.Events;
 using Application.Shared.Items;
 
@@ -14,9 +15,16 @@ namespace Application.Plugin.Script
                 return;
             }
 
+            var em = GetEventManager<PQ_Zakum>(nameof(PQ_Zakum));
+            if (em == null)
+            {
+                await SayOK("扎昆组队任务遇到了一个错误。");
+                return;
+            }
+
             if (!(isQuestStarted(100200) || isQuestCompleted(100200)))
             {
-                if (getLevel() >= 50)
+                if (getLevel() >= em.MinLevel)
                 {
                     await SayOK("小心，古老的力量并未被遗忘……如果你希望有朝一日击败#r扎昆#k，首先要获得#b长老会#k的批准，然后#b面对考验#k，只有这样你才有资格进行战斗。");
                 }
@@ -24,13 +32,6 @@ namespace Application.Plugin.Script
                 {
                     await SayOK("小心，古老的力量并未被遗忘……");
                 }
-                return;
-            }
-
-            var em = GetEventManager<PQ_Zakum>(nameof(PQ_Zakum));
-            if (em == null)
-            {
-                await SayOK("扎昆组队任务遇到了一个错误。");
                 return;
             }
 
@@ -143,7 +144,7 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var expedition = em.GetExpeditionEventInstanceManager();
+            var expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
             if (expedition == null)
             {
                 var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
@@ -156,7 +157,7 @@ namespace Application.Plugin.Script
                         return;
                     }
 
-                    expedition = em.GetExpeditionEventInstanceManager();
+                    expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
                     if (expedition != null)
                     {
                         await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
@@ -184,7 +185,7 @@ namespace Application.Plugin.Script
 
                     if (selection == 1)
                     {
-                        var expedMembers = expedition.getPlayers();
+                        var expedMembers = expedition.GetPlayerSortList();
                         var size = expedMembers.Count;
                         if (size == 1)
                         {
@@ -192,7 +193,7 @@ namespace Application.Plugin.Script
                             return;
                         }
                         var text = "以下成员组成了你的远征队（点击成员名字可以将其踢出远征队）：\r\n";
-                        text += "\r\n\t\t1." + expedition.getLeader().getName();
+                        text += "\r\n\t\t1." + expedMembers[0].Name;
                         for (var i = 1; i < size; i++)
                         {
                             text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
@@ -234,7 +235,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await SayOK(expedition.JoinMember(getPlayer()));
+                    await SayOK(em.HandleJoinInstanceResult(em.JoinMember(expedition, getPlayer()), c));
                 }
             }
             else if (expedition.isInProgress())

@@ -22,7 +22,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Utility.Performance;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;

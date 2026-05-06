@@ -22,10 +22,13 @@
 
 
 using Application.Core.Game.Maps.Specials;
+using Application.Core.scripting.Events.Instances;
 using Microsoft.Extensions.Logging;
 using server.life;
 using server.partyquest;
+using System.Runtime.ConstrainedExecution;
 using tools;
+using static Quartz.Logging.OperationName;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -50,6 +53,21 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
             {
                 try
                 {
+                    var eim =c.OnlinedCharacter.getEventInstance() as MonsterCarnivalEventInstanceManager;
+                    if (eim == null)
+                    {
+                        c.sendPacket(PacketCreator.enableActions());
+                        throw new BusinessOutOfInstance();
+                    }
+
+                    var playerData = eim.GetPlayerData(c.OnlinedCharacter.Id);
+                    if (playerData == null)
+                    {
+                        eim.exitPlayer(c.OnlinedCharacter);
+                        c.sendPacket(PacketCreator.enableActions());
+                        throw new BusinessOutOfInstance();
+                    }
+
                     int tab = p.ReadSByte();
                     int num = p.ReadSByte();
                     int neededCP = 0;
@@ -58,28 +76,25 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         var map = (c.OnlinedCharacter.getMap() as ICPQMap)!;
 
                         var mobs = map.getMobsToSpawn();
-                        if (num >= mobs.Count || c.OnlinedCharacter.AvailableCP < mobs[num].Value)
+                        if (num >= mobs.Count || playerData.AvailableCP < mobs[num].Value)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        if (c.OnlinedCharacter.MCTeam != null)
+                        if (!eim.CanSummon(c.OnlinedCharacter))
                         {
-                            if (!c.OnlinedCharacter.MCTeam.CanSummon())
-                            {
-                                c.sendPacket(PacketCreator.CPQMessage(2));
-                                c.sendPacket(PacketCreator.enableActions());
-                                return;
-                            }
-
-                            c.OnlinedCharacter.MCTeam.Summon();
-
-                            var spawnPos = map.getRandomSP(c.OnlinedCharacter.MCTeam.TeamFlag);
-                            c.OnlinedCharacter.getMap().addMonsterSpawn(mobs[num].Key, spawnPos, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
+                            c.sendPacket(PacketCreator.CPQMessage(2));
                             c.sendPacket(PacketCreator.enableActions());
+                            return;
                         }
+
+                        eim.Summon(c.OnlinedCharacter);
+
+                        var spawnPos = map.getRandomSP(playerData.TeamFlag);
+                        c.OnlinedCharacter.getMap().addMonsterSpawn(mobs[num].Key, spawnPos, 1, playerData.TeamFlag);
+                        c.sendPacket(PacketCreator.enableActions());
 
                         neededCP = mobs[num].Value;
                     }
@@ -95,20 +110,20 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             return;
                         }
                         var skill = CarnivalFactory.getInstance().getSkill(skillid[num]); //ugh wtf
-                        if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
+                        if (skill == null || playerData.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var dis = skill.getDisease();
-                        var enemies = c.OnlinedCharacter.MCTeam!.Enemy!;
+                        var enemies = eim.GetEnemyMembers(c.OnlinedCharacter);
                         if (skill.targetsAll)
                         {
                             int hitChance = rollHitChance((MobSkillType)skill.MobSkillId);
                             if (hitChance <= 80)
                             {
-                                foreach (var mc in enemies.Team.EligibleMembers)
+                                foreach (var mc in enemies)
                                 {
                                     if (mc.IsOnlined)
                                     {
@@ -126,7 +141,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.GetRandomMemberId());
+                            var chrApp = Randomizer.Select(enemies);
                             if (chrApp != null && chrApp.getMap().isCPQMap())
                             {
                                 if (dis == null)
@@ -146,50 +161,47 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                     {
                         //protectors
                         var skill = CarnivalFactory.getInstance().getGuardian(num);
-                        if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
+                        if (skill == null || playerData.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        if (c.OnlinedCharacter.MCTeam != null)
+                        if (!eim.CanGuardian(c.OnlinedCharacter))
                         {
-                            if (!c.OnlinedCharacter.MCTeam.CanGuardian())
-                            {
-                                c.sendPacket(PacketCreator.CPQMessage(2));
-                                c.sendPacket(PacketCreator.enableActions());
-                                return;
-                            }
+                            c.sendPacket(PacketCreator.CPQMessage(2));
+                            c.sendPacket(PacketCreator.enableActions());
+                            return;
+                        }
 
-                            var map = c.OnlinedCharacter.getMap() as ICPQMap;
-                            int success = map.spawnGuardian(c.OnlinedCharacter.MCTeam.TeamFlag, num);
-                            if (success != 1)
+                        var map = c.OnlinedCharacter.getMap() as ICPQMap;
+                        int success = map.spawnGuardian(playerData.TeamFlag, num);
+                        if (success != 1)
+                        {
+                            switch (success)
                             {
-                                switch (success)
-                                {
-                                    case -1:
-                                        c.sendPacket(PacketCreator.CPQMessage(3));
-                                        break;
+                                case -1:
+                                    c.sendPacket(PacketCreator.CPQMessage(3));
+                                    break;
 
-                                    case 0:
-                                        c.sendPacket(PacketCreator.CPQMessage(4));
-                                        break;
+                                case 0:
+                                    c.sendPacket(PacketCreator.CPQMessage(4));
+                                    break;
 
-                                    default:
-                                        c.sendPacket(PacketCreator.CPQMessage(3));
-                                        break;
-                                }
-                                c.sendPacket(PacketCreator.enableActions());
-                                return;
+                                default:
+                                    c.sendPacket(PacketCreator.CPQMessage(3));
+                                    break;
                             }
-                            else
-                            {
-                                neededCP = skill.cpLoss;
-                            }
+                            c.sendPacket(PacketCreator.enableActions());
+                            return;
+                        }
+                        else
+                        {
+                            neededCP = skill.cpLoss;
                         }
                     }
-                    c.OnlinedCharacter.gainCP(-neededCP);
+                    eim.GainCP(c.OnlinedCharacter, -neededCP);
                     c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.CPQ_PlayerSummoned(c.OnlinedCharacter.getName(), tab, num));
                 }
                 catch (Exception e)

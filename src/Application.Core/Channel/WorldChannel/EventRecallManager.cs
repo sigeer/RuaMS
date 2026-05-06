@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using scripting.Event;
 using System.Collections.Concurrent;
 

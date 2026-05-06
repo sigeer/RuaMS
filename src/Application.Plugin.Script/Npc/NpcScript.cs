@@ -4161,7 +4161,7 @@ namespace Application.Plugin.Script
                 await SayNext("谢谢你，因为你，我们得以再次团聚。尤勒特现在将进行康复，因为他的研究对我们镇的发展至关重要，他的所作所为都是出于对权力的贪婪，尽管是为了马加提亚的利益。再次感谢你。");
             }
 
-            if (eim.giveEventReward(getPlayer()))
+            if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
             {
                 warp((eim.getIntProperty("isAlcadno") == 0) ? 261000011 : 261000021);
             }
@@ -5209,12 +5209,15 @@ namespace Application.Plugin.Script
             {
                 if (await AskYesNo("你已经打败了拉塔尼卡船长，干得好！你准备好离开这个地方了吗？"))
                 {
-                    if (!eim.giveEventReward(getPlayer()))
+                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    {
+                        warp(541010110, 0);
+                    }
+                    else
                     {
                         await SayOK("请在你的背包中腾出一个空间来接收战利品。");
-                        return;
                     }
-                    warp(541010110, 0);
+                    return;
                 }
             }
         }
@@ -5228,6 +5231,10 @@ namespace Application.Plugin.Script
         }
 
         // Npc: 2103008
+        /// <summary>
+        /// <see cref="PortalScript.thief_in1"/>
+        /// </summary>
+        /// <returns></returns>
         public async Task thief_in2()
         {
             var pwd = await AskText("一个可疑的声音打破了沉默。 #b暗号#k ！");
@@ -5249,6 +5256,10 @@ namespace Application.Plugin.Script
         }
 
         // Npc: 1063011 
+        /// <summary>
+        /// <see cref="PortalScript.enterDollcave"/>
+        /// </summary>
+        /// <returns></returns>
         public async Task Dollcave()
         {
             if (isQuestStarted(21728))
@@ -5271,7 +5282,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    playerMessage(5, "尽管你说出了正确的答案，但一些神秘的力量正在阻挡进入的道路。");
+                    Pink("尽管你说出了正确的答案，但一些神秘的力量正在阻挡进入的道路。");
                 }
             }
             else

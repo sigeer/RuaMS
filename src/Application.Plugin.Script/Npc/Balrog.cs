@@ -1,5 +1,5 @@
+using Application.Core.scripting.Events.Instances;
 using Application.Plugin.Script.Events;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Application.Plugin.Script
 {
@@ -19,14 +19,14 @@ namespace Application.Plugin.Script
                 return;
             }
 
-            var expedition = em.GetExpeditionEventInstanceManager();
+            var expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
             if (expedition == null)
             {
                 var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
 
                 if (selection == 1)
                 {
-                    expedition = em.GetExpeditionEventInstanceManager();
+                    expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
                     if (expedition != null)
                     {
                         await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
@@ -104,7 +104,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await SayOK(expedition.JoinMember(getPlayer()));
+                    await SayOK(em.HandleJoinInstanceResult(em.JoinMember(expedition, getPlayer()), c));
                 }
             }
             else if (expedition.isInProgress())
@@ -159,7 +159,7 @@ namespace Application.Plugin.Script
             {
                 await SayOK("哇！你打败了蝙蝠怪。");
 
-                warp(eim.EventManager.ClearMap, 0);
+                warp(eim.EventManager.ExitMap, 0);
             }
             else
             {

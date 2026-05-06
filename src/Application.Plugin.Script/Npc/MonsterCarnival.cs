@@ -1,5 +1,6 @@
+using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.MapObjects;
@@ -15,60 +16,73 @@ namespace Application.Plugin.Script
         // Npc: 2042000 
         public async Task mc_enter()
         {
-            var em = GetEventManager<PQ_CPQ1>("PQ_CPQ1");
-
             var talkMap = getMapId();
-            if (talkMap == em.RecruitMap)
+            if (talkMap == 980000000)
             {
                 var msg = GetClientMessage(nameof(ClientMessage.CPQ_PickRoom)) + "#b";
                 var o = msg.Length;
                 var roomName = GetClientMessage(nameof(ClientMessage.CPQ_Room));
                 var levelName = GetClientMessage(nameof(ClientMessage.Level));
 
-                var rooms = em.getInstances().OfType<MonsterCarnivalEventInstanceManager>().ToList();
-                for (var i = 0; i < rooms.Count; i++)
+                var allCPQ1 = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<PQ_CPQ1>(nameof(PQ_CPQ1) + (x + 1).ToString()));
+                var allCPQ1Keys = allCPQ1.Keys.ToArray();
+                foreach (var k in allCPQ1Keys)
                 {
-                    var room = rooms[i];
-                    var roomStage = room.CurrentStage;
-                    if (roomStage == MonsterCarnivalStage.None)
+                    var dEim = allCPQ1[k].GetOnlyEventInstanceManager<MonsterCarnivalEventInstanceManager>();
+                    if (dEim != null && dEim.InstanceStatus != InstanceStatus.Recruitment)
                     {
-                        msg += $"#L{i}# {roomName}{i + 1} （{room.MinCount}x{room.MinCount}）#l\r\n";
-                    }
-                    else if (roomStage == MonsterCarnivalStage.Waiting)
-                    {
-                        msg += $"#L{i}# {roomName}{i + 1} （{levelName}: {room.GetAveLevel()} / {room.GetRoomSize()}x{room.GetRoomSize()}）#l\r\n";
+                        allCPQ1.Remove(k);
                     }
                 }
+
+                if (allCPQ1.Count == 0)
+                {
+                    await SayOK("所有的战斗竞技场都已经被占用。我建议你稍后再回来，或者换个频道。");
+                    return;
+                }
+
+                foreach (var item in allCPQ1)
+                {
+                    var tEm = item.Value;
+                    var tEim = item.Value.GetOnlyEventInstanceManager<MonsterCarnivalEventInstanceManager>();
+                    if (tEim == null)
+                    {
+                        msg += $"#L{item.Key}# {roomName}{item.Key + 1} （{tEm.MinCount}x{tEm.MinCount}）#l\r\n";
+                    }
+                    else if (tEim.InstanceStatus == InstanceStatus.Recruitment)
+                    {
+                        msg += $"#L{item.Key}# {roomName}{item.Key + 1} （{levelName}: {tEim.GetAveLevel()} / {tEim.GetRoomSize()}x{tEim.GetRoomSize()}）#l\r\n";
+                    }
+                }
+
                 if (msg.Length == o)
                 {
                     await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_NoEmptyRoom)));
                     return;
                 }
+
                 var option = await AskMenu(msg);
-                var selectedRoom = rooms[option];
-                switch (selectedRoom.CurrentStage)
+                var em = allCPQ1[option];
+                var eim = em.GetOnlyEventInstanceManager<MonsterCarnivalEventInstanceManager>();
+                if (eim == null)
                 {
-                    case MonsterCarnivalStage.None:
-                        var r = em.StartInstance(getPlayer(), lobby: option);
-                        if (r != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-                        {
-                            await SayOK(em.HandleCreateInstanceResult(r, c));
-                        }
-                        else
-                        {
-                            Pink(em.HandleCreateInstanceResult(r, c) ?? "");
-                        }
-                        break;
-                    case MonsterCarnivalStage.Waiting:
-                        await SayOK(em.HandleJoinInstanceResult(await em.JoinInstance(getPlayer(), option), c));
-                        break;
-                    case MonsterCarnivalStage.Matched:
-                    case MonsterCarnivalStage.Battle:
-                    case MonsterCarnivalStage.Completed:
-                        await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_Error)));
-                        break;
-                    default:
-                        break;
+                    var r = em.StartInstance(getPlayer());
+                    if (r != CreateInstanceResult.Success)
+                    {
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
+                    }
+                    else
+                    {
+                        Pink(em.HandleCreateInstanceResult(r, c) ?? "");
+                    }
+                }
+                else if (eim.InstanceStatus == InstanceStatus.Recruitment)
+                {
+                    await SayOK(em.HandleJoinRequestResult(await em.SendJoinRequest(getPlayer()), c));
+                }
+                else
+                {
+                    await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_Error)));
                 }
             }
             else
@@ -82,19 +96,14 @@ namespace Application.Plugin.Script
         // Npc: 2042001, 2042006 
         public async Task mc_enter1()
         {
-            var eim = GetEventInstanceTrust() as MonsterCarnivalEventInstanceManager;
-            if (eim == null)
-            {
-                throw new ConversationDiffInstanceException();
-            }
-
-            if (eim.Team1 == null)
+            var eim = GetEventInstanceTrust<MonsterCarnivalEventInstanceManager>();
+            if (eim.RequestTeam == null)
             {
                 Pink(GetClientMessage(nameof(ClientMessage.CPQ_EntryLobby)));
                 return;
             }
 
-            var teamMembers = eim.Team1.EligibleMembers;
+            var teamMembers = eim.RequestTeam.EligibleMembers;
             var snd = "";
             for (var i = 0; i < teamMembers.Count; i++)
             {
@@ -122,15 +131,9 @@ namespace Application.Plugin.Script
             else if (GetEventInstanceTrust() != null)
             {
                 // 奖励发放
-                var eim = GetEventInstanceTrust() as MonsterCarnivalEventInstanceManager;
-                if (eim == null)
-                {
-                    await SayOK("这就送你离开");
-                    WarpOut();
-                    return;
-                }
+                var eim = GetEventInstanceTrust<MonsterCarnivalEventInstanceManager>();
 
-                var idx = Array.FindIndex([300, 100, 50, 0], x => getPlayer().TotalCP >= x) + (eim.IsWinner(getPlayer()) ? 0 : 4);
+                var idx = Array.FindIndex([300, 100, 50, 0], x => eim.GetPlayerData(getPlayer().Id)?.TotalCP >= x) + (eim.IsWinner(getPlayer()) ? 0 : 4);
                 List<string> messageList = [
                     "恭喜你的胜利！表现太棒了！对方队伍毫无还手之力！希望下次也能有同样出色的表现！\r\n\r\n#b你的成绩：#rA#k",
                     "恭喜你的胜利！太棒了！你对抗对方团队做得很好！再坚持一会儿，下次你肯定能拿到A！\r\n\r\n#b你的成绩：#rB#k",
@@ -145,9 +148,8 @@ namespace Application.Plugin.Script
 
                 await SayNext(messageList[idx]);
 
-                eim.GiveEventClearReward(getPlayer(), idx);
-                eim.unregisterPlayer(getPlayer());
-                warp(eim.CurrentEventManager.RecruitMap);
+                eim.GiveClearReward(getPlayer(), idx);
+                warp(980000000);
             }
             else
             {

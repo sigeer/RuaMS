@@ -28,6 +28,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.tools.RandomUtils;
 using Application.Shared.Constants.Skill;
 using Application.Templates.Item.Cash;
@@ -40,6 +41,7 @@ using client.status;
 using server.life;
 using server.maps;
 using server.partyquest;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace server;
@@ -1025,9 +1027,13 @@ public class StatEffect
 
         if (EffectTemplate is IItemStatEffectMC mc)
         {
+            if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
+            {
+                return false;
+            }
             if (mc.CP != 0)
             {
-                applyto.gainCP(mc.CP);
+                eim.GainCP(applyto, mc.CP);
             }
 
             if (mc.CPSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
@@ -1037,10 +1043,10 @@ public class StatEffect
                 if (skill != null)
                 {
                     var dis = skill.getDisease();
-                    var opposition = applyfrom.MCTeam!.Enemy!;
+                    var enemies = eim.GetEnemyMembers(applyto);
                     if (skill.targetsAll)
                     {
-                        foreach (var chrApp in opposition.Team.EligibleMembers)
+                        foreach (var chrApp in enemies)
                         {
                             if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
                             {
@@ -1058,7 +1064,7 @@ public class StatEffect
                     }
                     else
                     {
-                        var chrApp = applyfrom.getMap().getCharacterById(opposition.GetRandomMemberId());
+                        var chrApp = Randomizer.Select(enemies);
                         if (chrApp != null && chrApp.getMap().isCPQMap())
                         {
                             if (dis == null)

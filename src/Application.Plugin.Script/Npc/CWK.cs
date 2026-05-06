@@ -152,7 +152,7 @@ namespace Application.Plugin.Script
                     eim.setIntProperty("glpq6", 3);
 
                     eim.showClearEffect(true);
-                    eim.giveEventPlayersStageReward(6);
+                    eim.GiveStageClearRewardAll(6);
 
                     eim.clearPQ();
                 }

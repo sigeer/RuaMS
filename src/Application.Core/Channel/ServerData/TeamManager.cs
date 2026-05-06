@@ -1,5 +1,6 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Relation;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
@@ -38,7 +39,8 @@ namespace Application.Core.Channel.ServerData
                 leader.sendPacket(TeamPacketCreator.BeginnerCannotCreateTeam());
                 return;
             }
-            if (leader.getAriantColiseum() != null)
+
+            if (leader.getEventInstance() is AriantEventInstanceManager)
             {
                 leader.dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
                 return;

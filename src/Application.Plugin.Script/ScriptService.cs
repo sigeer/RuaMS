@@ -344,9 +344,18 @@ namespace Application.Plugin.Script
                 new PQ_Ellin(channel),
                 new PQ_Ludi(channel),
                 new PQ_WuGong(channel),
-                new PQ_CPQ1(channel),
+
+                new PQ_CPQ1(channel, nameof(PQ_CPQ1) + "1", 980000100),
+                new PQ_CPQ1(channel, nameof(PQ_CPQ1) + "2", 980000200),
+                new PQ_CPQ1(channel, nameof(PQ_CPQ1) + "3", 980000300),
+
+                new PQ_Ariant(channel, nameof(PQ_Ariant) + "1", 980010100),
+                new PQ_Ariant(channel, nameof(PQ_Ariant) + "2", 980010200),
+                new PQ_Ariant(channel, nameof(PQ_Ariant) + "3", 980010300),
+
                 new PQ_Zakum(channel),
                 new Battle_Zakum(channel),
+
                 new Battle_Balrog(channel),
 
                 new PrivateContiMove(channel, "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),

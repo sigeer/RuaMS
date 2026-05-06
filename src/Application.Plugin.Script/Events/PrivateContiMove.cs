@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events

@@ -167,7 +167,7 @@ namespace Application.Core.Game.Players
                 }
 
                 // thanks Thora for finding an issue with players not being actually warped into the target event map (rather sent to the event starting map)
-                mapEim.registerPlayer(this, false);
+                mapEim.registerPlayer(this);
             }
 
             IMap to = target; // warps directly to the target intead of the target's map id, this allows GMs to patrol players inside instances.

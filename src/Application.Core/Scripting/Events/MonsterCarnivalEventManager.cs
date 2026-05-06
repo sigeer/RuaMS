@@ -2,22 +2,35 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Resources.Messages;
-using System.Threading.Tasks;
+using Application.Templates.Map;
+using server.maps;
 using tools;
 
 namespace Application.Core.Scripting.Events
 {
     public abstract class MonsterCarnivalEventManager : PartyQuestEventManager
     {
+        public int RegistrationTime { get; init; }
+        public int PrepareTime { get; init; }
+        public MapMonsterCarnivalTemplate MapMonsterCarnivalTemplate { get; }
+
         public MonsterCarnivalEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
-            EventTime = 180;
+            // 对整个FB而言，团队是后组建的，但是发起时仍要完整队伍
+            PartyLeaderRequired = true;
+
+            RegistrationTime = 180;
+
+            MapMonsterCarnivalTemplate = MapFactory.Instance.GetMapTemplate(EntryMap).MonsterCarnival!;
+
+            EventTime = MapMonsterCarnivalTemplate.TimeDefault - 10;
         }
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            throw new Exception("CPQ内置模板创建，不再通过这个方法创建");
+            return new MonsterCarnivalEventInstanceManager(ChannelServer, Name, instanceName);
         }
 
 
@@ -36,41 +49,42 @@ namespace Application.Core.Scripting.Events
         //        return false;
         //    }
         //}
-
-
-        public override CreateInstanceResult StartInstance(Player chr, int level = 1, int lobby = -1)
+        public override bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
         {
-            var roomName = lobby.ToString();
-            if (!instances.TryGetValue(roomName, out var instance))
-                return CreateInstanceResult.Unknown;
-
-            if (instance is not MonsterCarnivalEventInstanceManager eim)
-                return CreateInstanceResult.Unknown;
-
-            if (chr.Party == 0)
-                return CreateInstanceResult.RequiredParty;
-            if (!chr.isLeader())
-                return CreateInstanceResult.RequiredLeader;
-
-            var members = GetEligibleParty(chr);
-            if (members.Count == 0)
-                return CreateInstanceResult.Requirement;
-
-            if (eim.CurrentStage != MonsterCarnivalStage.None)
-                return CreateInstanceResult.LobbyLimited;
-
-            eim.EnterLobby(new TeamRegistry(chr.Party, members, null));
-            eim.setLeader(chr);
-            return CreateInstanceResult.Success;
+            return true;
         }
 
-        public async Task<MCJoinInstanceResult> JoinInstance(Player chr, int lobby)
+        public override List<Player> GetEligibleParty(Player leader)
         {
-            var roomName = lobby.ToString();
-            if (!instances.TryGetValue(roomName, out var instance))
-                return MCJoinInstanceResult.Unknown;
+            var party = leader.getParty();
+            if (party == null)
+            {
+                return [];
+            }
 
-            if (instance is not MonsterCarnivalEventInstanceManager eim)
+            var members = party.GetChannelMembers(ChannelServer)
+                .Where(x => x.MapModel == leader.MapModel && x.MapModel.Id == RecruitMap).ToList();
+
+            if (members.Count >= MinCount
+                && members.Count <= MaxCount
+                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
+            {
+                return members;
+            }
+            return [];
+        }
+
+        public override void SetupInstance(AbstractEventInstanceManager eim, Player leader, List<Player> members)
+        {
+            var pEim = (eim as MonsterCarnivalEventInstanceManager)!;
+            pEim.RegisterParty(members);
+            base.SetupInstance(eim, leader, members);
+        }
+
+        public async Task<MCJoinInstanceResult> SendJoinRequest(Player chr)
+        {
+            var eim = getInstance(Name) as MonsterCarnivalEventInstanceManager;
+            if (eim == null)
                 return MCJoinInstanceResult.Unknown;
 
             if (chr.Party == 0)
@@ -83,13 +97,13 @@ namespace Application.Core.Scripting.Events
             if (members.Count == 0)
                 return MCJoinInstanceResult.Requirement;
 
-            if (eim.CurrentStage != MonsterCarnivalStage.Waiting)
+            if (eim.InstanceStatus != InstanceStatus.Recruitment)
                 return MCJoinInstanceResult.NotInWaiting;
 
-            if (eim.Team1 != null)
+            if (eim.RequestTeam != null)
                 return MCJoinInstanceResult.AnthorRequest;
 
-            eim.Team1 = new TeamRegistry(chr.Party, members, null);
+            eim.RequestTeam = new TeamRegistry(members);
             // send challenge
             if (await ChannelServer.NodeService.PluginManager.StartNpcConversation(
                 eim.getLeader()!.Client,
@@ -102,77 +116,27 @@ namespace Application.Core.Scripting.Events
             return MCJoinInstanceResult.AnthorRequest;
         }
 
+
         public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
             base.OnPlayerUnregister(eim, chr);
 
-            var mcEim = eim as MonsterCarnivalEventInstanceManager;
-            if (chr.Party == mcEim.Team0?.Team)
+            chr.setTeam(-1);
+
+            switch (eim.InstanceStatus)
             {
-                mcEim.Team0.EligibleMembers.Remove(chr);
-            }
-            if (chr.Party == mcEim.Team1?.Team)
-            {
-                mcEim.Team1.EligibleMembers.Remove(chr);
-            }
-
-            chr.ClearMC();
-        }
-
-        protected override void respawnStages(AbstractEventInstanceManager eim)
-        {
-            var e = (eim as MonsterCarnivalEventInstanceManager);
-            e.EventMap.instanceMapRespawn();
-            if (e.CurrentStage == MonsterCarnivalStage.Battle)
-            {
-                eim.Schedule(respawnStages, 10 * 1000);
-            }
-        }
-
-        public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
-        {
-            var e = (eim as MonsterCarnivalEventInstanceManager);
-            chr.changeMap(e.LobbyMap);
-        }
-
-        public override void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
-        {
-            if (mapid < MinMap || mapid > MaxMap)
-            {
-                if (!eim.isEventCleared())
-                {
-                    if (player.MCTeam != null)
-                        eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-                    End(eim);
-                }
-            }
-        }
-
-        public override void OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
-        {
-            base.OnPlayerMapChanged(eim, player, mapid);
-
-            if (player.MCTeam != null)
-                player.sendPacket(PacketCreator.startMonsterCarnival(player));
-        }
-
-        public override void OnPlayerDisconnected(AbstractEventInstanceManager eim, Player player)
-        {
-            if (!eim.isEventCleared())
-            {
-                if (player.MCTeam != null)
-                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-                End(eim);
-            }
-        }
-
-        public override void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
-        {
-            if (!eim.isEventCleared())
-            {
-                if (player.MCTeam != null)
-                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), player.MCTeam.TeamFlag == 0 ? "TeamRed" : "TeamBlue");
-                End(eim);
+                case InstanceStatus.Recruitment:
+                case InstanceStatus.Prepare:
+                case InstanceStatus.InProgress:
+                    var pEim = eim as MonsterCarnivalEventInstanceManager;
+                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
+                    if (eim.InstanceStatus != InstanceStatus.InProgress)
+                    {
+                        eim.Dispose();
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -180,14 +144,14 @@ namespace Application.Core.Scripting.Events
         {
             base.OnPlayerDied(eim, chr);
 
-            var e = eim as MonsterCarnivalEventInstanceManager;
-            int losing = e.EventMap.DeathCP;
-            if (chr.AvailableCP < losing)
+            var pEim = eim as MonsterCarnivalEventInstanceManager;
+            var playerData = pEim.GetPlayerData(chr.Id)!;
+            var losing = Math.Min(playerData.AvailableCP, MapMonsterCarnivalTemplate.DeathCP);
+            pEim.GainCP(chr, -losing);
+            foreach (var item in eim.getPlayers())
             {
-                losing = chr.AvailableCP;
+                item.sendPacket(PacketCreator.CPQ_PlayerDied(chr.Name, losing, playerData.TeamFlag));
             }
-            chr.gainCP(-losing);
-            e.EventMap.broadcastMessage(PacketCreator.CPQ_PlayerDied(chr.Name, losing, chr.MCTeam!.TeamFlag));
         }
 
         public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
@@ -196,50 +160,104 @@ namespace Application.Core.Scripting.Events
 
             if (mob.getCP() > 0 && killer is Player chr)
             {
-                chr.gainCP(mob.getCP());
+                var pEim = eim as MonsterCarnivalEventInstanceManager;
+                pEim.GainCP(chr, mob.getCP());
             }
         }
 
         public override void ClearPQ(AbstractEventInstanceManager eim)
         {
-            eim.setEventCleared();
+            base.ClearPQ(eim);
+
+            var pEim = eim as MonsterCarnivalEventInstanceManager;
+
+            foreach (var chr in eim.getPlayers())
+            {
+                var rewardMap = eim.getInstanceMap(pEim.IsWinner(chr) ? MapMonsterCarnivalTemplate.RewardMapWin : MapMonsterCarnivalTemplate.RewardMapLose);
+                if (rewardMap != null)
+                {
+                    chr.changeMap(rewardMap);
+                    chr.setTeam(-1);
+                    chr.dispelDebuffs();
+                }
+            }
+        }
+
+        public virtual void OnBattlePrepare(AbstractEventInstanceManager eim) { }
+        public virtual void OnBattleStarted(AbstractEventInstanceManager eim)
+        {
+            var pEim = (eim as MonsterCarnivalEventInstanceManager)!;
+
+            pEim.EventMap.allowSummonState(true);
+            foreach (var mc in eim.getPlayers())
+            {
+                var playerData = pEim.GetPlayerData(mc.Id)!;
+
+                mc.setTeam(playerData.TeamFlag);
+                mc.changeMap(pEim.EventMap, pEim.EventMap.GetInitPortal(playerData.TeamFlag));
+                mc.sendPacket(PacketCreator.startMonsterCarnival(playerData, pEim.GetPlayerTeamData(mc.Id)!, pEim.GetPlayerEnemyTeamData(mc.Id)!));
+                mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
+            }
+
+
         }
 
         public override void OnTimeOut(AbstractEventInstanceManager eim)
         {
-            var e = (eim as MonsterCarnivalEventInstanceManager);
-            switch (e.CurrentStage)
+            var e = (eim as MonsterCarnivalEventInstanceManager)!;
+            switch (eim.InstanceStatus)
             {
-                case MonsterCarnivalStage.None:
+                case InstanceStatus.Recruitment:
+                    eim.Dispose();
                     break;
-                case MonsterCarnivalStage.Waiting:
-                    End(eim);
+                case InstanceStatus.Prepare:
+                    e.StartBattle();
                     break;
-                case MonsterCarnivalStage.Matched:
-                    // 再次检测
-                    if (true)
+                case InstanceStatus.InProgress:
+                    var team0 = e.Teams[0];
+                    var team1 = e.Teams[1];
+
+                    if (team0 == null || team1 == null)
                     {
-                        eim.restartEventTimer(e.EventMap.TimeDefault * 1000 - 10000);
-                        eim.startEvent();
-                        respawnStages(eim);
+                        // 数据不正常
+                        eim.Dispose();
+                        return;
+                    }
+
+                    if (team0.TotalCP != team1.TotalCP)
+                    {
+                        var map = eim.getInstanceMap(EntryMap);
+                        map?.killAllMonsters();
+                        map?.allowSummonState(false);
+
+                        bool redWin = team0.TotalCP > team1.TotalCP;
+                        e.WinnerTeamIndex = (sbyte)(team0.TotalCP > team1.TotalCP ? 0 : 1);
+
+
+                        foreach (var chr in eim.getPlayers())
+                        {
+                            var effect = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.EffectWin : MapMonsterCarnivalTemplate.EffectLose;
+                            if (!string.IsNullOrEmpty(effect))
+                            {
+                                chr.sendPacket(PacketCreator.showEffect(effect));
+                            }
+
+                            var sound = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.SoundWin : MapMonsterCarnivalTemplate.SoundLose;
+                            if (!string.IsNullOrEmpty(sound))
+                            {
+                                chr.sendPacket(PacketCreator.playSound(sound));
+                            }
+
+                            chr.dispelDebuffs();
+                        }
+
+                        eim.Schedule(ClearPQ, MapMonsterCarnivalTemplate.TimeFinish * 1000);
                     }
                     else
                     {
-                        End(eim);
+                        eim.Pink(nameof(ClientMessage.CPQ_ExtendTime));
+                        eim.restartEventTimer(MapMonsterCarnivalTemplate.TimeExpand * 1000);
                     }
-                    break;
-                case MonsterCarnivalStage.Battle:
-                    if (!e.Complete())
-                    {
-                        e.Pink(nameof(ClientMessage.CPQ_ExtendTime));
-                        e.restartEventTimer(e.EventMap.TimeExpand * 1000);
-                    }
-                    else
-                    {
-                        eim.Schedule(ClearPQ, 10_000);
-                    }
-                    break;
-                case MonsterCarnivalStage.Completed:
                     break;
                 default:
                     break;
@@ -265,7 +283,7 @@ namespace Application.Core.Scripting.Events
                     return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
             }
         }
-        public string? HandleJoinInstanceResult(MCJoinInstanceResult r, IChannelClient c)
+        public string? HandleJoinRequestResult(MCJoinInstanceResult r, IChannelClient c)
         {
             switch (r)
             {

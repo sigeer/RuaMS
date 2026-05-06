@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Resources.Messages;
 using scripting.npc;
 using tools.exceptions;
@@ -8,11 +9,12 @@ namespace Application.Core.Scripting.Events
 {
     public abstract class PartyQuestEventManager : AbstractInstancedEventManager
     {
-
+        public bool PartyLeaderRequired { get; init; }
         public int RecruitMap { get; init; }
 
         public PartyQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
+            PartyLeaderRequired = true;
         }
 
         public override List<Player> GetEligibleParty(Player leader)
@@ -37,6 +39,7 @@ namespace Application.Core.Scripting.Events
 
 
         #region StartInstance
+        public virtual void SetupInstance(AbstractEventInstanceManager eim, Player leader, List<Player> members) { }
         public override CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1)
         {
             if (this.isDisposed())
@@ -44,14 +47,17 @@ namespace Application.Core.Scripting.Events
                 return CreateInstanceResult.Disposed;
             }
 
-            if (leader.getParty() == null)
+            if (PartyLeaderRequired)
             {
-                return CreateInstanceResult.RequiredParty;
-            }
+                if (leader.getParty() == null)
+                {
+                    return CreateInstanceResult.RequiredParty;
+                }
 
-            if (!leader.isLeader())
-            {
-                return CreateInstanceResult.RequiredLeader;
+                if (!leader.isLeader())
+                {
+                    return CreateInstanceResult.RequiredLeader;
+                }
             }
 
             var members = GetEligibleParty(leader);
@@ -107,13 +113,13 @@ namespace Application.Core.Scripting.Events
                             }
 
                             eim.startEvent();
+                            SetupInstance(eim, leader, members);
                         }
                         catch (Exception ex)
                         {
                             log.Error(ex, "Event script startInstance");
                             return CreateInstanceResult.Unknown;
                         }
-
                         return CreateInstanceResult.Success;
                     }
                     finally

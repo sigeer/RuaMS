@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using server.life;
 using System.Drawing;

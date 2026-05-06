@@ -31,7 +31,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
@@ -2164,17 +2164,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void mobMpRecovery()
-    {
-        ProcessMonster(mob =>
-        {
-            if (mob.isAlive())
-            {
-                mob.heal(0, mob.getLevel());
-            }
-        });
-    }
-
     public long Period { get; } = YamlConfig.config.server.RESPAWN_INTERVAL;
     public long Next { get; set; }
     public TickableStatus Status { get; protected set; }
@@ -2184,16 +2173,8 @@ public class MapleMap : IMap, INamedInstance
 
     public void OnTick(long now)
     {
-        // 有玩家才更新，可能导致一些对象在玩家进入后才开始清理
-        if (characters.Count > 0 && this.IsAvailable())
+        if (this.IsAvailable())
         {
-            if (Next <= now)
-            {
-                mobMpRecovery();
-
-                Next = now + Period;
-            }
-
             if (RespawnNext <= now)
             {
                 respawn();

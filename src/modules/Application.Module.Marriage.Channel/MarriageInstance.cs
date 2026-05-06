@@ -1,8 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using client.inventory;
-using scripting.Event;
 
 namespace Application.Module.Marriage.Channel
 {

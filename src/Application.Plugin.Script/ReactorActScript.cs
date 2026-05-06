@@ -1501,7 +1501,7 @@ namespace Application.Plugin.Script
         public Task go221024400()
         {
             playerMessage(5, "差一点就成功了！下次再挑战吧！");
-            warp(221024400);
+            warp(221024400, 1);
 
             return Task.CompletedTask;
         }
@@ -2475,7 +2475,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "2pt", 2);
-                        eim.giveEventPlayersStageReward(2);
+                        eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
@@ -2488,7 +2488,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "3pt", 2);
-                        eim.giveEventPlayersStageReward(3);
+                        eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
@@ -2514,7 +2514,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "2pt", 2);
-                        eim.giveEventPlayersStageReward(2);
+                        eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
@@ -2528,7 +2528,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "3pt", 2);
-                        eim.giveEventPlayersStageReward(3);
+                        eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
@@ -2554,7 +2554,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "2pt", 2);
-                        eim.giveEventPlayersStageReward(2);
+                        eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
@@ -2567,7 +2567,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "3pt", 2);
-                        eim.giveEventPlayersStageReward(3);
+                        eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
@@ -2593,7 +2593,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "2pt", 2);
-                        eim.giveEventPlayersStageReward(2);
+                        eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
@@ -2606,7 +2606,7 @@ namespace Application.Plugin.Script
                         mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "3pt", 2);
-                        eim.giveEventPlayersStageReward(3);
+                        eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
@@ -2632,7 +2632,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "2pt", 2);
-                        eim.giveEventPlayersStageReward(2);
+                        eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
@@ -2645,7 +2645,7 @@ namespace Application.Plugin.Script
                         eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                         eim.showClearEffect(mapId, "3pt", 2);
-                        eim.giveEventPlayersStageReward(3);
+                        eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
@@ -2667,7 +2667,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030500, "5pt", 2);
-                    eim.giveEventPlayersStageReward(5);
+                    eim.GiveStageClearRewardAll(5);
                 }
             }
 
@@ -2688,7 +2688,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030500, "5pt", 2);
-                    eim.giveEventPlayersStageReward(5);
+                    eim.GiveStageClearRewardAll(5);
                 }
             }
 
@@ -2709,7 +2709,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030500, "5pt", 2);
-                    eim.giveEventPlayersStageReward(5);
+                    eim.GiveStageClearRewardAll(5);
                 }
             }
 
@@ -2730,7 +2730,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030500, "5pt", 2);
-                    eim.giveEventPlayersStageReward(5);
+                    eim.GiveStageClearRewardAll(5);
                 }
             }
 
@@ -2751,7 +2751,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030500, "5pt", 2);
-                    eim.giveEventPlayersStageReward(5);
+                    eim.GiveStageClearRewardAll(5);
                 }
             }
 
@@ -2816,7 +2816,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030400, "4pt", 2);
-                    eim.giveEventPlayersStageReward(4);
+                    eim.GiveStageClearRewardAll(4);
                 }
             }
 
@@ -2837,7 +2837,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030400, "4pt", 2);
-                    eim.giveEventPlayersStageReward(4);
+                    eim.GiveStageClearRewardAll(4);
                 }
             }
 
@@ -2858,7 +2858,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030400, "4pt", 2);
-                    eim.giveEventPlayersStageReward(4);
+                    eim.GiveStageClearRewardAll(4);
                 }
             }
 
@@ -2879,7 +2879,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030400, "4pt", 2);
-                    eim.giveEventPlayersStageReward(4);
+                    eim.GiveStageClearRewardAll(4);
                 }
             }
 
@@ -2900,7 +2900,7 @@ namespace Application.Plugin.Script
                     eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                     eim.showClearEffect(610030400, "4pt", 2);
-                    eim.giveEventPlayersStageReward(4);
+                    eim.GiveStageClearRewardAll(4);
                 }
             }
 

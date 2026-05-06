@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Mob;
@@ -28,6 +29,11 @@ namespace Application.Plugin.Script.Events
             MaxMap = 910010400;
 
             EventTime = 10 * 60;
+
+            StageClearRewards = new()
+            {
+                { 910010000, new(1600, 0) },
+            };
         }
 
         protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
@@ -38,18 +44,18 @@ namespace Application.Plugin.Script.Events
             eim.setIntProperty("bunnyCake", 0);
             eim.setIntProperty("bunnyDamaged", 0);
 
-            eim.getInstanceMap(910010000)?.allowSummonState(false);
-            eim.getInstanceMap(910010000)?.RespawnInterval = 15_000;
+            eim.getInstanceMap(EntryMap)?.allowSummonState(false);
+            eim.getInstanceMap(EntryMap)?.RespawnInterval = 15_000;
 
             eim.getInstanceMap(910010200)?.RespawnInterval = 15_000;
         }
 
         protected override void respawnStages(AbstractEventInstanceManager eim)
         {
-            var status = eim.ClearedMaps.GetValueOrDefault(910010000, StageStatus.NotStarted);
+            var status = eim.ClearedMaps.GetValueOrDefault(EntryMap, StageStatus.NotStarted);
             if (status == StageStatus.NotStarted)
             {
-                var map = eim.getInstanceMap(910010000)!;
+                var map = eim.getInstanceMap(EntryMap)!;
 
                 var flowers = map.GetRequiredMapObjects<Reactor>(Shared.MapObjects.MapObjectType.REACTOR,
                     r => r.getName().StartsWith("moonflower") && r.getState() == 1);
@@ -60,12 +66,6 @@ namespace Application.Plugin.Script.Events
                 eim.Schedule(respawnStages, 5_000);
             }
 
-        }
-
-        protected override void setEventRewards(AbstractEventInstanceManager eim)
-        {
-            List<object> expStages = [1600];    //bonus exp given on CLEAR stage signal
-            eim.setEventClearStageExp(expStages);
         }
 
 

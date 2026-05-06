@@ -48,12 +48,15 @@ namespace Application.Plugin.Script
                 if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
                 {
                     var eim = GetEventInstanceTrust();
-                    if (eim != null && !eim.giveEventReward(getPlayer()))
+                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    {
+                        warp(100000200);
+                    }
+                    else
                     {
                         await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
-                        return;
                     }
-                    warp(100000200);
+                    return;
                 }
             }
             else if (getMapId() == 910010400)
@@ -61,12 +64,15 @@ namespace Application.Plugin.Script
                 if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
                 {
                     var eim = GetEventInstanceTrust();
-                    if (eim != null && !eim.giveEventReward(getPlayer()))
+                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    {
+                        warp(100000200);
+                    }
+                    else
                     {
                         await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
-                        return;
                     }
-                    warp(100000200);
+                    return;
                 }
             }
         }
@@ -110,13 +116,11 @@ namespace Application.Plugin.Script
 
                         if (haveItem(4001101, 10))
                         {
-                            gainItem(4001101, -10);
+                            gainItem(4001101, int.MinValue);
 
                             var eim = GetEventInstanceTrust();
                             eim.setProperty(1 + "stageclear", "true");
-                            eim.showClearEffect(true);
-
-                            eim.giveEventPlayersStageReward(1);
+                            ClearLudiPQStage(eim, getMapId());
 
                             var map = eim.getMapInstance(getPlayer().getMapId());
                             map.killAllMonstersNotFriendly();

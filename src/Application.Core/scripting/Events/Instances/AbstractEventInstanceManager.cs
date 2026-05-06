@@ -1,12 +1,10 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.model;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using Application.Utility.Tickables;
 using server;
@@ -15,7 +13,7 @@ using server.maps;
 using tools;
 using ZLinq;
 
-namespace Application.Core.Scripting.Events;
+namespace Application.Core.scripting.Events.Instances;
 
 public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable, ITickableTree
 {
@@ -28,7 +26,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
-    public AbstractInstancedEventManager EventManager => ChannelServer.getEventSM().getEventManager(EventName) as AbstractInstancedEventManager;
+    public virtual AbstractInstancedEventManager EventManager => ChannelServer.getEventSM().getEventManager(EventName) as AbstractInstancedEventManager;
 
     protected MapManager mapManager;
     private string name;
@@ -38,27 +36,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private long eventTime = 0;
 
     public int LobbyId { get; set; } = -1;
+    public InstanceStatus InstanceStatus { get; set; }
 
 
-    protected bool disposed = false;
-    protected bool eventCleared = false;
-    protected bool eventStarted = false;
-
-    // multi-leveled PQ rewards!
-    Dictionary<int, EventRewardsPair> eventRewards = new Dictionary<int, EventRewardsPair>(YamlConfig.config.server.MAX_EVENT_LEVELS);
-
-    // Exp/Meso rewards by CLEAR on a stage
-    private List<int> onMapClearExp = new();
-    private List<int> onMapClearMeso = new();
+    // forces deletion of items not supposed to be held outside of the event, dealt on a player's leaving moment.
+    protected HashSet<int> exclusiveItems = new();
 
     // registers player status on an event (null on this Map structure equals to 0)
-    private Dictionary<int, int> playerGrid = new();
+    public Dictionary<int, int> PlayerGrid { get; } = new();
 
     // registers all opened gates on the event. Will help late characters to encounter next stages gates already opened
     private Dictionary<int, KeyValuePair<string, int>?> openedGates = new();
 
-    // forces deletion of items not supposed to be held outside of the event, dealt on a player's leaving moment.
-    private HashSet<int> exclusiveItems = new();
+
     public EventInstanceType Type { get; set; }
 
     public Dictionary<string, string> Properties { get; set; } = new();
@@ -205,26 +195,22 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="chr"></param>
     public void exitPlayer(Player chr)
     {
-        if (chr == null || !chr.isLoggedin())
-        {
-            return;
-        }
-
-        unregisterPlayer(chr);
-
         EventManager.OnPlayerExit(this, chr);
     }
 
 
     public void unregisterPlayer(Player chr)
     {
-        EventManager.OnPlayerUnregister(this, chr);
-
         chars.Remove(chr.getId());
-        chr.setEventInstance(null);
-
         gridRemove(chr);
-        dropExclusiveItems(chr);
+
+        if (chr.isLoggedin())
+        {
+            EventManager.OnPlayerUnregister(this, chr);
+
+            chr.setEventInstance(null);
+            dropExclusiveItems(chr);
+        }
 
         if (chars.Count == 0)
         {
@@ -256,7 +242,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         mobs.Remove(mob);
 
-        if (eventStarted)
+        if (InstanceStatus == InstanceStatus.InProgress)
         {
             scriptResult = 1;
 
@@ -351,25 +337,16 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         EventManager.ClearPQ(this);
     }
 
-    /// <summary>
-    /// playerExit
-    /// </summary>
-    /// <param name="chr"></param>
-    public void removePlayer(Player chr)
-    {
-        EventManager.OnPlayerExit(this, chr);
-    }
-
     public virtual void startEvent()
     {
-        eventStarted = true;
+        InstanceStatus = InstanceStatus.InProgress;
 
         EventManager.AfterSeup(this);
     }
 
-    public virtual void setEventCleared()
+    public void setEventCleared()
     {
-        eventCleared = true;
+        InstanceStatus = InstanceStatus.Cleared;
 
         foreach (Player chr in getPlayers())
         {
@@ -381,29 +358,24 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     #endregion
 
 
-    public void registerPlayer(Player chr, bool runEntryScript = true)
+    public bool registerPlayer(Player chr)
     {
 
-        if (chr == null || !chr.isLoggedinWorld() || disposed)
+        if (chr == null || !chr.isLoggedinWorld() || InstanceStatus == InstanceStatus.Disposed)
         {
-            return;
+            return false;
         }
 
-
-        if (chars.ContainsKey(chr.getId()))
+        if (chars.TryAdd(chr.Id, chr))
         {
-            return;
+            chr.setEventInstance(this);
+
+            EventManager.OnPlayerRegister(this, chr);
+            return true;
         }
 
-        chars.AddOrUpdate(chr.getId(), chr);
-        chr.setEventInstance(this);
-
-        if (runEntryScript)
-        {
-            EventManager.OnPlayerEntry(this, chr);
-        }
+        return false;
     }
-
 
     public void dropMessage(int type, string message)
     {
@@ -500,6 +472,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return new(chars.Values);
     }
 
+    public List<Player> GetPlayerSortList()
+    {
+        return chars.Values.OrderBy(x => x.Id == leaderId ? 0 : 1).ToList();
+    }
+
     private List<Player> getPlayerList()
     {
         return chars.Values.ToList();
@@ -524,7 +501,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     public virtual void Dispose()
     {
         // should not trigger any event script method after disposed
-        if (disposed)
+        if (InstanceStatus == InstanceStatus.Disposed)
         {
             return;
         }
@@ -538,12 +515,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         //{
         //    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.Name);
         //}
-        disposed = true;
+        InstanceStatus = InstanceStatus.Disposed;
         stopEventTimer();
 
-        foreach (Player chr in chars.Values)
+        foreach (Player chr in getPlayers())
         {
-            chr.setEventInstance(null);
+            exitPlayer(chr);
         }
         chars.Clear();
         mobs.Clear();
@@ -552,10 +529,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         killCount.Clear();
         props.Clear();
 
-        if (!eventCleared)
-        {
-            EventManager.DisposeInstance(name);
-        }
+        EventManager.DisposeInstance(name);
 
         EventManager.ChannelServer.TimerManager.schedule(() =>
         {
@@ -583,14 +557,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return name;
     }
     /// <summary>
-    /// 和 getMapInstance 有什么区别？
+    /// 和 <see cref="getMapInstance"/> 有什么区别？
     /// 没有打乱箱子？
     /// </summary>
     /// <param name="mapid"></param>
     /// <returns></returns>
     public IMap? getInstanceMap(int mapid)
     {
-        if (disposed)
+        if (InstanceStatus.Disposed == InstanceStatus)
         {
             return null;
         }
@@ -652,7 +626,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public bool disposeIfPlayerBelow(byte size, int towarp)
     {
-        if (disposed)
+        if (InstanceStatus == InstanceStatus.Disposed)
         {
             return true;
         }
@@ -728,54 +702,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return (LifeFactory.Instance.GetMonsterTrust(mid));
     }
 
-    private List<int> convertToIntegerList(List<object> objects)
-    {
-        return objects.Select(x => Convert.ToInt32(x)).ToList();
-    }
-    /// <summary>
-    /// 设置关卡经验奖励
-    /// </summary>
-    /// <param name="gain"></param>
-    [ScriptCall]
-    public void setEventClearStageExp(List<object> gain)
-    {
-        onMapClearExp.Clear();
-        onMapClearExp.AddRange(convertToIntegerList(gain));
-    }
-    /// <summary>
-    /// 设置关卡金币奖励
-    /// </summary>
-    /// <param name="gain"></param>
-    [ScriptCall]
-    public void setEventClearStageMeso(List<object> gain)
-    {
-        onMapClearMeso.Clear();
-        onMapClearMeso.AddRange(convertToIntegerList(gain));
-    }
-
-    int getClearStageExp(int stage)
-    {
-        //stage counts from ONE.
-        if (stage > onMapClearExp.Count)
-        {
-            return 0;
-        }
-        return onMapClearExp.ElementAt(stage - 1);
-    }
-
-    int getClearStageMeso(int stage)
-    {
-        //stage counts from ONE.
-        if (stage > onMapClearMeso.Count)
-        {
-            return 0;
-        }
-        return onMapClearMeso.ElementAt(stage - 1);
-    }
-
     public void dropExclusiveItems(Player chr)
     {
         chr.Bag.ClearPartyQuestItems();
+
+        foreach (var item in exclusiveItems)
+        {
+            chr.GainItem(item, short.MinValue);
+        }
     }
 
     public void dropAllExclusiveItems()
@@ -783,55 +717,27 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         getPlayers().ForEach(dropExclusiveItems);
     }
 
-    public void setExclusiveItems(List<object> items)
-    {
-        List<int> exclusive = convertToIntegerList(items);
-
-
-        exclusiveItems.UnionWith(exclusive);
-    }
-
-    public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven = 0)
-    {
-        setEventRewards(1, rwds, qtys, expGiven);
-    }
-
-    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys, int expGiven = 0)
-    {
-        // fixed EXP will be rewarded at the same time the random item is given
-
-        if (eventLevel <= 0 || eventLevel > YamlConfig.config.server.MAX_EVENT_LEVELS)
-        {
-            return;
-        }
-        eventLevel--;    //event level starts from 1
-
-        List<int> rewardIds = convertToIntegerList(rwds);
-        List<int> rewardQtys = convertToIntegerList(qtys);
-
-        //rewardsSet and rewardsQty hold temporary values
-        eventRewards.AddOrUpdate(eventLevel, new EventRewardsPair(rewardIds, rewardQtys, expGiven));
-    }
 
     private byte getRewardListRequirements(int level)
     {
-        if (level >= eventRewards.Count)
+        var rewards = EventManager.AllClearRewards;
+        if (level >= rewards.Count)
         {
             return 0;
         }
 
         byte rewardTypes = 0;
-        var list = eventRewards.GetValueOrDefault(level)!;
+        var list = rewards.GetValueOrDefault(level)!;
 
-        foreach (int itemId in list.ItemRewards)
+        foreach (var item in list.ItemPool)
         {
-            rewardTypes |= (byte)(1 << (int)ItemConstants.getInventoryType(itemId));
+            rewardTypes |= (byte)(1 << (int)ItemConstants.getInventoryType(item.ItemId));
         }
 
         return rewardTypes;
     }
 
-    private bool hasRewardSlot(Player player, int eventLevel)
+    public bool hasRewardSlot(Player player, int eventLevel)
     {
         byte listReq = getRewardListRequirements(eventLevel);   //gets all types of items present in the event reward list
 
@@ -847,65 +753,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return true;
     }
 
-
-    //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
-    /// <summary>
-    /// 发放通关奖励
-    /// </summary>
-    /// <param name="player"></param>
-    /// <param name="eventLevel"></param>
-    /// <returns></returns>
-    public bool giveEventReward(Player player, int eventLevel = 1)
+    public bool IsEventInProgress()
     {
-        List<int>? rewardsSet, rewardsQty;
-        int rewardExp;
-        var rewardIndex = eventLevel - 1;
-
-        if (!CanGiveReward(player, -1))
-        {
-            return true;
-        }
-
-
-        if (rewardIndex >= eventRewards.Count)
-        {
-            return true;
-        }
-
-        var item = eventRewards.GetValueOrDefault(rewardIndex)!;
-        rewardsSet = item.ItemRewards;
-        rewardsQty = item.Quantity;
-
-        rewardExp = item.Exp;
-
-        if (rewardsSet.Count > 0)
-        {
-            if (!hasRewardSlot(player, rewardIndex))
-            {
-                return false;
-            }
-
-            int rnd = (int)Math.Floor(Randomizer.nextDouble() * rewardsSet.Count);
-
-            player.GainItem(rewardsSet.get(rnd), (short)rewardsQty.ElementAtOrDefault(rnd), show: GainItemShow.ShowInChat);
-        }
-        if (rewardExp > 0)
-        {
-            player.gainExp(rewardExp);
-        }
-        SetRewardClaimed(player, -1);
-        return true;
+        return InstanceStatus == InstanceStatus.InProgress;
     }
-
 
     public bool isEventCleared()
     {
-        return eventCleared;
+        return InstanceStatus == InstanceStatus.Cleared;
     }
 
     public bool isEventDisposed()
     {
-        return disposed;
+        return InstanceStatus == InstanceStatus.Disposed;
     }
 
     private bool isEventTeamLeaderOn()
@@ -915,53 +775,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public bool checkEventTeamLacking(bool leavingEventMap, int minPlayers)
     {
-        if (eventCleared && getPlayerCount() > 1)
+        if (InstanceStatus == InstanceStatus.Cleared && getPlayerCount() > 1)
         {
             return false;
         }
 
-        if (!eventCleared && leavingEventMap && !isEventTeamLeaderOn())
+        if (InstanceStatus != InstanceStatus.Cleared && leavingEventMap && !isEventTeamLeaderOn())
         {
             return true;
         }
         return getPlayerCount() < minPlayers;
     }
 
-    public bool isExpeditionTeamLackingNow(bool leavingEventMap, int minPlayers, Player quitter)
-    {
-        if (eventCleared)
-        {
-            return leavingEventMap && getPlayerCount() <= 1;
-        }
-        else
-        {
-            // thanks Conrad for noticing expeditions don't need to have neither the leader nor meet the minimum requirement inside the event
-            return getPlayerCount() <= 1;
-        }
-    }
-
-    /// <summary>
-    /// 有成员退出时（离开队伍，离线，死亡等），判断队伍是否仍然可以继续任务
-    /// </summary>
-    /// <param name="leavingEventMap">正在离开任务地图</param>
-    /// <param name="minPlayers">任务要求的最少人数</param>
-    /// <param name="quitter">离开者</param>
-    /// <returns>true：不能继续任务</returns>
-    public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, Player quitter)
-    {
-        if (eventCleared)
-        {
-            return leavingEventMap && getPlayerCount() <= 1;
-        }
-        else
-        {
-            if (leavingEventMap && getLeaderId() == quitter.getId())
-            {
-                return true;
-            }
-            return getPlayerCount() <= minPlayers;
-        }
-    }
 
     public bool isEventTeamTogether()
     {
@@ -1103,91 +928,76 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    /// <summary>
-    /// 对所有玩家发放关卡奖励
-    /// </summary>
-    /// <param name="thisStage"></param>
-    public void giveEventPlayersStageReward(int thisStage)
+    ///// <summary>
+    ///// 对单个玩家发放关卡奖励
+    ///// </summary>
+    ///// <param name="mc"></param>
+    ///// <param name="thisStage"></param>
+    //public void GiveStageClearReward(Player mc, int thisStage)
+    //{
+    //    var rewardExp = getClearStageExp(thisStage);
+    //    var rewardMeso = getClearStageMeso(thisStage);
+
+    //    var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
+
+    //    if (CanGiveReward(mc, thisStage))
+    //    {
+    //        SetRewardClaimed(mc, thisStage);
+    //        mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
+    //        mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
+    //    }
+    //}
+
+    public ClaimRewardResult GiveClearReward(Player player, int point = 1)
     {
-        var rewardExp = getClearStageExp(thisStage);
-        var rewardMeso = getClearStageMeso(thisStage);
-
-        var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
-        var players = getPlayerList();
-        foreach (Player mc in players)
-        {
-            if (CanGiveReward(mc, thisStage))
-            {
-                SetRewardClaimed(mc, thisStage);
-                mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
-                mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
-            }
-        }
-    }
-    /// <summary>
-    /// 对单个玩家发放关卡奖励
-    /// </summary>
-    /// <param name="mc"></param>
-    /// <param name="thisStage"></param>
-    public void GiveEventClearReward(Player mc, int thisStage)
-    {
-        var rewardExp = getClearStageExp(thisStage);
-        var rewardMeso = getClearStageMeso(thisStage);
-
-        var expExtraBonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
-
-        if (CanGiveReward(mc, thisStage))
-        {
-            SetRewardClaimed(mc, thisStage);
-            mc.gainExp((int)(rewardExp * mc.getExpRate() * expExtraBonus), true, true);
-            mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
-        }
+        return EventManager.GiveClearReward(this, player, point);
     }
 
-    public void linkToNextStage(int thisStage, string eventFamily, int thisMapId)
+    public ClaimRewardResult GiveStageClearReward(Player player, int stageMap)
     {
-        giveEventPlayersStageReward(thisStage);
-        thisStage--;    //stages counts from ONE, scripts from ZERO
-        IMap nextStage = getMapInstance(thisMapId);
-        var portal = nextStage.getPortal("next00");
-        portal?.setScriptName(eventFamily + thisStage);
+        return EventManager.GiveStageClearReward(this, player, stageMap);
     }
 
-    public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
+    public void GiveStageClearRewardAll(int stageMap)
     {
-        giveEventPlayersStageReward(thisStage);
-        // thisStage--;    //stages counts from ONE, scripts from ZERO
-        IMap nextStage = getMapInstance(thisMapId);
-        var portal = nextStage.getPortal(portalName);
-        portal?.setScriptName(scriptName);
+        EventManager.GiveStageClearRewardAll(this, stageMap);
     }
+
+    //public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
+    //{
+    //    giveEventPlayersStageReward(thisStage);
+    //    // thisStage--;    //stages counts from ONE, scripts from ZERO
+    //    IMap nextStage = getMapInstance(thisMapId);
+    //    var portal = nextStage.getPortal(portalName);
+    //    portal?.setScriptName(scriptName);
+    //}
 
     // registers a player status in an event
     public void gridInsert(Player chr, int newStatus)
     {
-        playerGrid.AddOrUpdate(chr.getId(), newStatus);
+        PlayerGrid.AddOrUpdate(chr.getId(), newStatus);
     }
 
     // unregisters a player status in an event
     public void gridRemove(Player chr)
     {
-        playerGrid.Remove(chr.getId());
+        PlayerGrid.Remove(chr.getId());
     }
 
     // checks a player status
     public int gridCheck(Player chr)
     {
-        return playerGrid.GetValueOrDefault(chr.getId(), -1);
+        return PlayerGrid.GetValueOrDefault(chr.getId(), -1);
     }
 
     public int gridSize()
     {
-        return playerGrid.Count;
+        return PlayerGrid.Count;
     }
 
     public void gridClear()
     {
-        playerGrid.Clear();
+        PlayerGrid.Clear();
     }
 
     public bool activatedAllReactorsOnMap(int mapId, int minReactorId, int maxReactorId)
@@ -1273,12 +1083,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    bool CanGiveReward(Player chr, int stage = 1)
+    public bool CanGiveReward(Player chr, int stage = 1)
     {
         return chars.ContainsKey(chr.Id) && !rewardedChr.GetValueOrDefault(stage, []).Contains(chr.Id);
     }
 
-    void SetRewardClaimed(Player chr, int stage = 1)
+    public void SetRewardClaimed(Player chr, int stage = 1)
     {
         if (rewardedChr.TryGetValue(stage, out var arr))
             arr.Add(chr.Id);

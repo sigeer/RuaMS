@@ -5,7 +5,6 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private int FestivalPoints;
         private bool challenged = false;
         public bool isChallenged()
         {
@@ -16,56 +15,6 @@ namespace Application.Core.Game.Players
         {
             this.challenged = challenged;
         }
-
-        public void gainFestivalPoints(int gain)
-        {
-            this.FestivalPoints += gain;
-        }
-
-        public int getFestivalPoints()
-        {
-            return this.FestivalPoints;
-        }
-
-        public void setFestivalPoints(int pontos)
-        {
-            this.FestivalPoints = pontos;
-        }
-
-        public void addCP(int ammount)
-        {
-            TotalCP += ammount;
-            AvailableCP += ammount;
-        }
-
-        public void useCP(int ammount)
-        {
-            AvailableCP -= ammount;
-        }
-
-        public void gainCP(int gain)
-        {
-            if (MCTeam != null)
-            {
-                if (gain > 0)
-                    MCTeam.AddCP(this, gain);
-                else
-                    MCTeam.UseCP(this, -gain);
-
-                sendPacket(PacketCreator.CPUpdate(false, AvailableCP, TotalCP, MCTeam.TeamFlag));
-                if (MCTeam.TeamFlag != TeamGroupEnum.None)
-                {
-                    this.MapModel.broadcastMessage(PacketCreator.CPUpdate(true, MCTeam.AvailableCP, MCTeam.TotalCP, MCTeam.TeamFlag));
-                }
-            }
-        }
-
-        public void resetCP()
-        {
-            this.AvailableCP = 0;
-            this.TotalCP = 0;
-        }
-
 
         public string getPartyQuestItems()
         {

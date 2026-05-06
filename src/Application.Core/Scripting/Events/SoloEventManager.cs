@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Shared.Events;
 using tools.exceptions;
 
@@ -10,7 +11,6 @@ namespace Application.Core.Scripting.Events
         public SoloEventManager(WorldChannel cserv, string name) : base(cserv, name)
         {
         }
-
 
         #region Start Instance
         public override CreateInstanceResult StartInstance(Player chr, int difficulty = 1, int lobbyId = -1)
@@ -103,6 +103,11 @@ namespace Application.Core.Scripting.Events
                 return members;
             }
             return [];
+        }
+
+        public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
+        {
+            return leavingEventMap && eim.getLeaderId() == quitter.getId();
         }
     }
 }
