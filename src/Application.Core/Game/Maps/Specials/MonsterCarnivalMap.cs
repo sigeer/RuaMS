@@ -1,6 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Shared.Events;
 using Application.Templates.Map;
 using scripting.Event;

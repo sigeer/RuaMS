@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,13 +29,13 @@ namespace Application.Plugin.Script
             {
                 await SayNext("你们打败了斯卡利昂和塔加！太棒了！把这个纪念品当作你们勇敢的奖励。");
 
-                if (!eim.giveEventReward(getPlayer()))
+                if (eim.GiveClearReward(getPlayer()) == Core.scripting.Events.Abstraction.ClaimRewardResult.Success)
                 {
-                    await SayNext("请先在你的背包里腾出空间！");
+                    warp(551030100, 2);
                 }
                 else
                 {
-                    warp(551030100, 2);
+                    await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
                 }
             }
         }

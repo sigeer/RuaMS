@@ -1,6 +1,6 @@
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
@@ -51,13 +51,13 @@ namespace Application.Plugin.Script
                 {
                     await SayNext("太棒了！你通过了所有的关卡来到了这一点。这是为了你出色的表现而给予的小奖品。在接受之前，请确保你的使用和其他物品栏有空位可用。");
 
-                    if (!eim.giveEventReward(getPlayer()))
+                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        await SayNext("背包已满，或者你已经领取了奖励！");
+                        warp(103000805, "st00");
                     }
                     else
                     {
-                        warp(103000805, "st00");
+                        await SayNext("背包已满，或者你已经领取了奖励！");
                     }
                 }
                 return;
@@ -219,8 +219,7 @@ namespace Application.Plugin.Script
             eim.ClearedMaps[curMap] = StageStatus.Completed;
             eim.showClearEffect(true);
 
-            var stage = curMap - 103000800 + 1;
-            eim.linkToNextStage(stage, "kpq", curMap);  //opens the portal to the next map
+            eim.GiveStageClearRewardAll(curMap);
         }
 
 
@@ -234,7 +233,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var eim = GetEventInstanceTrust();
+                var eim = getEventInstance();
                 var outText = eim?.isEventCleared() ?? true
                     ? "你准备好离开这张地图了吗？"
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";

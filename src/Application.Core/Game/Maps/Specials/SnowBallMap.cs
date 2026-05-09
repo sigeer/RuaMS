@@ -1,5 +1,5 @@
 using Application.Core.Channel;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Templates.Map;
 using scripting.Event;
 using server.events.gm;

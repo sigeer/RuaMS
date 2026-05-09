@@ -4,6 +4,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
@@ -1691,7 +1692,7 @@ namespace Application.Plugin.Script
                 var r = em.StartInstance(getPlayer());
                 if (r != CreateInstanceResult.Success)
                 {
-                    message("The portal is blocked from the other side. I wonder if someone is already fighting the Thief Crow?");
+                    message("门从另一边被堵住了。有人已经和小偷乌鸦打起来了？");
                     return false;
                 }
 
@@ -2302,7 +2303,7 @@ namespace Application.Plugin.Script
                             mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
                             eim.showClearEffect(610030300, "3pt", 2);
-                            eim.giveEventPlayersStageReward(3);
+                            eim.GiveStageClearRewardAll(3);
                         }
                         else
                         {
@@ -2449,7 +2450,7 @@ namespace Application.Plugin.Script
                 warp(610030100, 0);
 
                 eim.showClearEffect();
-                eim.giveEventPlayersStageReward(1);
+                eim.GiveStageClearRewardAll(1);
                 return true;
             }
 
@@ -3327,7 +3328,7 @@ namespace Application.Plugin.Script
                     if (eim.getIntProperty("statusStg6") == 0)
                     {
                         eim.setIntProperty("statusStg6", 1);
-                        eim.giveEventPlayersStageReward(6);
+                        eim.GiveStageClearRewardAll(6);
                     }
 
                     playPortalSound();
@@ -6525,7 +6526,7 @@ namespace Application.Plugin.Script
                 return false;
             }
 
-            if (eim.giveEventReward(getPlayer(), evLevel))
+            if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
             {
                 playPortalSound();
                 warp(970030000);
@@ -6533,7 +6534,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                message("Make a room available on all EQUIP, USE, SET-UP and ETC inventory to claim an instance prize.");
+                message(c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.Redeem_InventoryFull)));
                 return false;
             }
         }
@@ -6951,7 +6952,7 @@ namespace Application.Plugin.Script
                     if (eim.getIntProperty("statusStg6") == 0)
                     {
                         eim.setIntProperty("statusStg6", 1);
-                        eim.giveEventPlayersStageReward(6);
+                        eim.GiveStageClearRewardAll(6);
                     }
 
                     playPortalSound();

@@ -1,8 +1,12 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Shared.Constants.Mob;
+using Application.Shared.Quest;
+using System.Numerics;
 
 namespace Application.Plugin.Script.Events
 {
@@ -16,6 +20,7 @@ namespace Application.Plugin.Script.Events
             MinLevel = 50;
             MaxLevel = 255;
 
+            RecruitMap = 211042400;
             EntryMap = 280030000;
             ExitMap = 211042400;
             ClearMap = 211042400;
@@ -40,6 +45,16 @@ namespace Application.Plugin.Script.Events
                     s.SendDropMessage(6,
                         "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
                 });
+            }
+        }
+
+        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
+        {
+            base.OnPlayerUnregister(eim, chr);
+
+            if (eim.isEventCleared())
+            {
+                completeQuest(chr, QuestId.ZakumBattle, 2030010);
             }
         }
     }

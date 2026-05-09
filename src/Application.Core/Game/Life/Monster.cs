@@ -140,6 +140,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         base.setMap(map);
 
         DispatchMonsterSpawned();
+        _recoverMPNext = map.ChannelServer.Node.getCurrentTime() + _recoverMPPeriod;
     }
 
     public void setSpawnEffect(int effect)
@@ -2466,6 +2467,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     long _friendlyDropNext;
     long _friendlyDropPeriod;
+
+    long _recoverMPNext;
+    long _recoverMPPeriod = YamlConfig.config.server.RESPAWN_INTERVAL;
     public void OnTick(long now)
     {
         if (!this.IsAvailable())
@@ -2489,6 +2493,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         if (_autoRemoveAction > 0 && Next <= now)
         {
             MapModel.RemoveMob(this, null, true, _autoRemoveAction);
+        }
+
+        if (_recoverMPNext <= now)
+        {
+            heal(0, getLevel());
+            _recoverMPNext = now + _recoverMPPeriod;
         }
     }
 }

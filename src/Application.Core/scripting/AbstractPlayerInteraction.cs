@@ -29,6 +29,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
@@ -270,6 +271,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getPlayer().getEventInstance() ?? throw new ConversationDiffInstanceException();
     }
 
+    public TEim GetEventInstanceTrust<TEim>() where TEim : AbstractEventInstanceManager
+    {
+        return (getPlayer().getEventInstance() as TEim) ?? throw new ConversationDiffInstanceException();
+    }
+
     public Inventory getInventory(int type)
     {
         return getPlayer().getInventory(InventoryTypeUtils.getByType((sbyte)type));
@@ -362,7 +368,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         foreach (var p in items)
         {
             Item it = new Item(p.ItemId, 0, (short)p.Quantity);
-            addedItems.Add(new((sbyte)InventoryType.CANHOLD, new (p.ItemId, p.Quantity)));
+            addedItems.Add(new((sbyte)InventoryType.CANHOLD, new(p.ItemId, p.Quantity)));
         }
 
         return addedItems;

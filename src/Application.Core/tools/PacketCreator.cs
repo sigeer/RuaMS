@@ -22,6 +22,7 @@
 
 using Acornima.Ast;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -6699,16 +6700,16 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet startMonsterCarnival(Player chr)
+    public static Packet startMonsterCarnival(MonsterCarnivalData data, MonsterCarnivalTeamData team, MonsterCarnivalTeamData enemyTeam)
     {
         OutPacket p = OutPacket.create(SendOpcode.MONSTER_CARNIVAL_START);
-        p.writeByte(chr.MCTeam!.TeamFlag); // team
-        p.writeShort(chr.AvailableCP); // Obtained CP - Used CP
-        p.writeShort(chr.TotalCP); // Total Obtained CP
-        p.writeShort(chr.MCTeam!.AvailableCP); // Obtained CP - Used CP of the team
-        p.writeShort(chr.MCTeam!.TotalCP); // Total Obtained CP of the team
-        p.writeShort(chr.MCTeam!.Enemy!.AvailableCP); // Obtained CP - Used CP of the team
-        p.writeShort(chr.MCTeam!.Enemy.TotalCP); // Total Obtained CP of the team
+        p.writeByte(data.TeamFlag); // team
+        p.writeShort(data.AvailableCP); // Obtained CP - Used CP
+        p.writeShort(data.TotalCP); // Total Obtained CP
+        p.writeShort(team.AvailableCP); // Obtained CP - Used CP of the team
+        p.writeShort(team.TotalCP); // Total Obtained CP of the team
+        p.writeShort(enemyTeam.AvailableCP); // Obtained CP - Used CP of the team
+        p.writeShort(enemyTeam.TotalCP); // Total Obtained CP of the team
         p.writeShort(0); // Probably useless nexon shit
         p.writeLong(0); // Probably useless nexon shit
         return p;

@@ -26,7 +26,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Resources;
 using Application.Shared.MapObjects;
 using Application.Shared.Objects;
@@ -123,6 +123,8 @@ public class MapFactory : IStaticService
 
         }
     }
+
+    public MapTemplate GetMapTemplate(int mapId) => mapSource.GetItem(mapId) ?? throw new BusinessResException($"Map {mapId} not existed");
 
     public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, AbstractEventInstanceManager? evt)
     {

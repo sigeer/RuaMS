@@ -1,5 +1,5 @@
 using Application.Core.scripting.Events.Abstraction;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Plugin.Script.Events;
 
 namespace Application.Plugin.Script
@@ -39,13 +39,13 @@ namespace Application.Plugin.Script
             {
                 case 2040035:
                     await SayNext("恭喜你成功封印了次元裂缝！为了表彰你的辛勤工作，我有一份礼物送给你！拿去吧，这是你的奖品。");
-                    if (!eim.giveEventReward(getPlayer()))
+                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        await SayNext("看起来你的#r装备#k、#r消耗#k或#r其他#k背包中都没有空位。请腾出一些空间，然后再试一次。");
+                        WarpOut();
                     }
                     else
                     {
-                        WarpOut();
+                        await SayNext("看起来你的#r装备#k、#r消耗#k或#r其他#k背包中都没有空位。请腾出一些空间，然后再试一次。");
                     }
                     break;
                 case 2040036:
@@ -157,9 +157,7 @@ namespace Application.Plugin.Script
                     {
                         gainItem(4001023, -1);
 
-                        eim.giveEventPlayersStageReward(stage);
-                        eim.ClearedMaps[getMapId()] = StageStatus.Completed;
-                        eim.showClearEffect(true);
+                        ClearLudiPQStage(eim, getMapId());
 
                         eim.clearPQ();
                     }
@@ -188,8 +186,7 @@ namespace Application.Plugin.Script
             eim.ClearedMaps[curMap] = StageStatus.Completed;
             eim.showClearEffect(true);
 
-            var stage = (int)Math.Floor((curMap - 922010100) / 100.0) + 1; ;
-            eim.linkToNextStage(stage, "lpq", curMap);  //opens the portal to the next map
+            eim.GiveStageClearRewardAll(curMap);
         }
 
         // Npc: 2040047 

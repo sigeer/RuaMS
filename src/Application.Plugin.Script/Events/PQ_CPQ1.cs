@@ -1,50 +1,34 @@
 using Application.Core.Channel;
+using Application.Core.Game.Players;
+using Application.Core.model;
 using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events
 {
     internal sealed class PQ_CPQ1 : MonsterCarnivalEventManager
     {
-        public PQ_CPQ1(WorldChannel cserv) : base(cserv, nameof(PQ_CPQ1))
+        public PQ_CPQ1(WorldChannel cserv, string name, int recruitMap) : base(cserv, name)
         {
-            RecruitMap = 980000000;
+            RecruitMap = recruitMap;
+            EntryMap = recruitMap + 1;
+
             ExitMap = 980000010;
 
-            MinMap = 980000100;
-            MaxMap = 980000604;
+            MinMap = recruitMap;
+            MaxMap = recruitMap + 99;
 
             MinLevel = 30;
             MaxLevel = 50;
 
-            _templates = new()
+            AllClearRewards = new()
             {
-                { "0", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "0", 2, 980000100, 980000101) },
-                { "1", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "1", 2, 980000200, 980000201) },
-                { "2", () => new MonsterCarnivalEventInstanceManager(ChannelServer, Name, "2", 3, 980000300, 980000301) }
+                { 1, new([new (4001129, 1),new (4001129, 2)],[],[50000, 25500, 21000, 19505, 17500, 12000, 5000, 2500] ) }
             };
         }
 
-        Dictionary<string, Func<MonsterCarnivalEventInstanceManager>> _templates;
-
-        public override void Initialize()
+        public override RewardOptions GetAllClearRewardOptions(Player chr, int point = 1)
         {
-            foreach (var item in _templates)
-            {
-                registerEventInstance(item.Value(), -1);
-            }
-        }
-
-        protected override void setEventRewards(AbstractEventInstanceManager eim)
-        {
-            List<object> expStages = [50000, 25500, 21000, 19505, 17500, 12000, 5000, 2500];    //bonus exp given on CLEAR stage signal
-            eim.setEventClearStageExp(expStages);
-        }
-
-        protected override void DisposeInstanceInternal(string name)
-        {
-            base.DisposeInstanceInternal(name);
-
-            registerEventInstance(_templates[name](), -1);
+            return new RewardOptions(ExpPoolIndex: point);
         }
     }
 }

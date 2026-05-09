@@ -3,7 +3,7 @@ using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Utility.Pipeline;
@@ -251,7 +251,6 @@ namespace Application.Core.Game.Maps
 
 
         void makeMonsterReal(Monster monster);
-        void mobMpRecovery();
         void moveEnvironment(string ms, int type);
 
         bool removeMapObject(int num);
@@ -263,7 +262,6 @@ namespace Application.Core.Game.Maps
         void reportMonsterSpawnPoints(Player chr);
         void resetFully();
         void resetMapObjects();
-        void resetMapObjects(int difficulty, bool isPq);
         void resetPQ(int difficulty = 1);
 
         void respawn();
@@ -315,7 +313,6 @@ namespace Application.Core.Game.Maps
         #endregion
 
         #region Drop
-        bool makeDisappearItemFromMap(MapItem? mapitem);
         void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos);
         void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos);
         void dropFromFriendlyMonster(Player chr, Monster mob);

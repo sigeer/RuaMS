@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Instances;
 using Application.Utility;
 using Application.Utility.Extensions;
 
@@ -8,7 +9,8 @@ namespace Application.Plugin.Script.Events
 {
     internal class PQ_Kerning : PartyQuestEventManager
     {
-        public PQ_Kerning(WorldChannel cserv) : base(cserv, nameof(PQ_Kerning))
+        public PQ_Kerning(WorldChannel cserv)
+            : base(cserv, nameof(PQ_Kerning))
         {
             MinCount = 3;
             MaxCount = 6;
@@ -21,30 +23,82 @@ namespace Application.Plugin.Script.Events
             MinMap = 103000800;
             MaxMap = 103000805;
             EventTime = 30 * 60;
-        }
 
-
-        protected override void setEventRewards(AbstractEventInstanceManager eim)
-        {
-            int evLevel = 1;    //Rewards at clear PQ
-            List<object> itemSet = [2040505, 2040514, 2040502, 2040002, 2040602, 2040402, 2040802, 1032009, 1032004, 1032005, 1032006, 1032007, 1032010, 1032002, 1002026, 1002089, 1002090, 2000003, 2000001, 2000002, 2000006, 2022003, 2022000, 2000004, 4003000, 4010000, 4010001, 4010002, 4010003, 4010004, 4010005, 4010006, 4010007, 4020000, 4020001, 4020002, 4020003, 4020004, 4020005, 4020006, 4020007, 4020008];
-            List<object> itemQty = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 80, 80, 80, 50, 5, 15, 15, 30, 15, 15, 15, 15, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 3, 3];
-            eim.setEventRewards(evLevel, itemSet, itemQty);
-
-            List<object> expStages = [100, 200, 400, 800, 1500];    //bonus exp given on CLEAR stage signal
-            eim.setEventClearStageExp(expStages);
+            AllClearRewards = new()
+            {
+                {
+                    1,
+                    new Core.model.RewardPools(
+                        [
+                            new(2040505, 1),
+                            new(2040514, 1),
+                            new(2040502, 1),
+                            new(2040002, 1),
+                            new(2040602, 1),
+                            new(2040402, 1),
+                            new(2040802, 1),
+                            new(1032009, 1),
+                            new(1032004, 1),
+                            new(1032005, 1),
+                            new(1032006, 1),
+                            new(1032007, 1),
+                            new(1032010, 1),
+                            new(1032002, 1),
+                            new(1002026, 1),
+                            new(1002089, 1),
+                            new(1002090, 1),
+                            new(2000003, 80),
+                            new(2000001, 80),
+                            new(2000002, 80),
+                            new(2000006, 50),
+                            new(2022003, 5),
+                            new(2022000, 15),
+                            new(2000004, 15),
+                            new(4003000, 30),
+                            new(4010000, 15),
+                            new(4010001, 15),
+                            new(4010002, 15),
+                            new(4010003, 15),
+                            new(4010004, 8),
+                            new(4010005, 8),
+                            new(4010006, 8),
+                            new(4010007, 8),
+                            new(4020000, 8),
+                            new(4020001, 8),
+                            new(4020002, 8),
+                            new(4020003, 8),
+                            new(4020004, 8),
+                            new(4020005, 8),
+                            new(4020006, 8),
+                            new(4020007, 3),
+                            new(4020008, 3),
+                        ],
+                        [],
+                        []
+                    )
+                },
+            };
+            StageClearRewards = new()
+            {
+                { 103000800, new(100, 0) },
+                { 103000801, new(200, 0) },
+                { 103000802, new(400, 0) },
+                { 103000803, new(800, 0) },
+                { 103000804, new(1500, 0) },
+            };
         }
 
         public (string[] Quest, int[] Answer) GetStage1()
         {
-            string[] stage1Questions = [
-                     "收集与#b战士#n首次转职所需最低等级相同数量的#b通行证#n。",
-                    "收集与#b战士#n首次转职所需最低力量（STR）相同数量的#b通行证#n。",
-                    "收集与#b魔法师#n首次转职所需最低智力（INT）相同数量的#b通行证#n。",
-                    "收集与#b弓箭手#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
-                    "收集与#b飞侠#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
-                    "收集与二次转职所需最低等级相同数量的#b通行证#n。",
-                    "收集与#b魔法师#n首次转职所需最低等级相同数量的#b通行证#n。"
+            string[] stage1Questions =
+            [
+                "收集与#b战士#n首次转职所需最低等级相同数量的#b通行证#n。",
+                "收集与#b战士#n首次转职所需最低力量（STR）相同数量的#b通行证#n。",
+                "收集与#b魔法师#n首次转职所需最低智力（INT）相同数量的#b通行证#n。",
+                "收集与#b弓箭手#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
+                "收集与#b飞侠#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
+                "收集与二次转职所需最低等级相同数量的#b通行证#n。",
+                "收集与#b魔法师#n首次转职所需最低等级相同数量的#b通行证#n。",
             ];
             int[] stage1Answers = [10, 35, 20, 25, 25, 30, 8];
             return (stage1Questions, stage1Answers);
@@ -52,7 +106,15 @@ namespace Application.Plugin.Script.Events
 
         public List<int> GetStage(AbstractEventInstanceManager eim, IMap map)
         {
-            return eim.Properties.GetOrAdd($"stg{map.Id}Property", () => string.Join(',', Randomizer.Take(3, map.getAreas().Count))).Split(',').Select(int.Parse).OrderBy(x => x).ToList();
+            return eim
+                .Properties.GetOrAdd(
+                    $"stg{map.Id}Property",
+                    () => string.Join(',', Randomizer.Take(3, map.getAreas().Count))
+                )
+                .Split(',')
+                .Select(int.Parse)
+                .OrderBy(x => x)
+                .ToList();
         }
     }
 }

@@ -692,71 +692,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    private bool setupAriantBattle(Expedition exped, int mapid)
-    {
-        var arenaMap = this.getMap().getChannelServer().getMapFactory().getMap(mapid + 1);
-        if (arenaMap.getAllPlayers().Count > 0)
-        {
-            return false;
-        }
-
-        new AriantColiseum(arenaMap, exped);
-        return true;
-    }
-
-    public string startAriantBattle(ExpeditionType expedType, int mapid)
-    {
-        if (!GameConstants.isAriantColiseumLobby(mapid))
-        {
-            return "You cannot start an Ariant tournament from outside the Battle Arena Entrance.";
-        }
-
-        var exped = this.getMap().getChannelServer().getExpedition(expedType);
-        if (exped == null)
-        {
-            return "Please register on an expedition before attempting to start an Ariant tournament.";
-        }
-
-        var players = exped.getActiveMembers();
-
-        int playersSize = players.Count;
-        if (!(playersSize >= exped.getMinSize() && playersSize <= exped.getMaxSize()))
-        {
-            return "Make sure there are between #r" + exped.getMinSize() + " ~ " + exped.getMaxSize() + " players#k in this room to start the battle.";
-        }
-
-        var leaderMap = this.getMap();
-        foreach (var mc in players)
-        {
-            if (mc.getMap() != leaderMap)
-            {
-                return "All competing players should be on this area to start the battle.";
-            }
-
-            if (mc.Party > 0)
-            {
-                return "All competing players must not be on a party to start the battle.";
-            }
-
-            int level = mc.getLevel();
-            if (!(level >= expedType.getMinLevel() && level <= expedType.getMaxLevel()))
-            {
-                return "There are competing players outside of the acceptable level range in this room. All players must be on #blevel between 20~30#k to start the battle.";
-            }
-        }
-
-        if (setupAriantBattle(exped, mapid))
-        {
-            return "";
-        }
-        else
-        {
-            return "Other players are already competing on the Ariant tournament in this room. Please wait a while until the arena becomes available again.";
-        }
-    }
-
-
-
     #region New Talk
     Channel<TalkMoreAction> _talkChannel = System.Threading.Channels.Channel.CreateBounded<TalkMoreAction>(1);
 
@@ -937,6 +872,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
     {
+        if (options.Count() == 0)
+        {
+            await SayOK(mainContent);
+            throw new ConversationInterruptException();
+        }
+
         var finalContent = mainContent + "\r\n#b";
         for (int i = 0; i < options.Count(); i++)
         {
@@ -948,6 +889,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public async Task<int> AskMenu(string mainContent, Dictionary<int, string> options, byte speaker = 0)
     {
+        if (options.Count() == 0)
+        {
+            await SayOK(mainContent);
+            throw new ConversationInterruptException();
+        }
+
         var finalContent = mainContent + "\r\n#b";
         foreach (var item in options)
         {
