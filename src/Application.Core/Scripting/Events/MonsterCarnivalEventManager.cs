@@ -28,6 +28,7 @@ namespace Application.Core.Scripting.Events
             EventTime = MapMonsterCarnivalTemplate.TimeDefault - 10;
         }
 
+        public TEim? GetOnlyEventInstanceManager<TEim>() where TEim : MonsterCarnivalEventInstanceManager => getInstance(Name) as TEim;
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
             return new MonsterCarnivalEventInstanceManager(ChannelServer, Name, instanceName);
