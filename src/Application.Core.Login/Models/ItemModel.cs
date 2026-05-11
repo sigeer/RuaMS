@@ -33,7 +33,7 @@ namespace Application.Core.Login.Models
         {
             return new ItemModel
             {
-                Type = (int)ItemType.Inventory,
+                Type = (int)ItemCategory.Inventory,
                 InventoryType = (int)Application.Shared.Constants.Inventory.InventoryType.ETC,
                 Itemid = itemId,
                 Quantity = quantity,

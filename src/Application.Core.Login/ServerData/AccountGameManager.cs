@@ -78,12 +78,12 @@ namespace Application.Core.Login.ServerData
                 return null;
 
             var allAccountItems = _server.InventoryManager.LoadItems(dbContext, true, accountId,
-                ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
+                ItemCategory.Storage, ItemCategory.CashAran, ItemCategory.CashCygnus, ItemCategory.CashExplorer, ItemCategory.CashOverall);
 
             var storage = _mapper.Map<StorageModel>(
                     dbContext.Storages.FirstOrDefault(x => x.OwnerId == accountId && x.Type == (int)StorageType.AccountStorage)
                     ) ?? new StorageModel(accountId, (int)StorageType.AccountStorage);
-            storage.Items = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray();
+            storage.Items = allAccountItems.Where(x => x.Type == (int)ItemCategory.Storage).ToArray();
 
             data = new AccountGame
             {
@@ -92,10 +92,10 @@ namespace Application.Core.Login.ServerData
                 MaplePoint = accountData.MaplePoint ?? 0,
                 NxPrepaid = accountData.NxPrepaid ?? 0,
 
-                CashOverallItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashOverall).ToArray(),
-                CashAranItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashAran).ToArray(),
-                CashCygnusItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashCygnus).ToArray(),
-                CashExplorerItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashExplorer).ToArray(),
+                CashOverallItems = allAccountItems.Where(x => x.Type == (int)ItemCategory.CashOverall).ToArray(),
+                CashAranItems = allAccountItems.Where(x => x.Type == (int)ItemCategory.CashAran).ToArray(),
+                CashCygnusItems = allAccountItems.Where(x => x.Type == (int)ItemCategory.CashCygnus).ToArray(),
+                CashExplorerItems = allAccountItems.Where(x => x.Type == (int)ItemCategory.CashExplorer).ToArray(),
                 QuickSlot = _mapper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
                 Storage = storage
             };

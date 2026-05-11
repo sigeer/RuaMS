@@ -12,14 +12,6 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DotNetty.Buffers" />
-		<PackageReference Include="DotNetty.Codecs" />
-		<PackageReference Include="DotNetty.Common" />
-		<PackageReference Include="DotNetty.Handlers" />
-		<PackageReference Include="DotNetty.Transport" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Folder Include="Plugins\" />
 	</ItemGroup>
 

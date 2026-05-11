@@ -10,33 +10,33 @@ namespace Application.Shared.Items
         /// <summary>
         /// 背包（已装备）
         /// </summary>
-        public static readonly ItemFactory INVENTORY = new ItemFactory(ItemType.Inventory, false);
+        public static readonly ItemFactory INVENTORY = new ItemFactory(ItemCategory.Inventory, false);
         /// <summary>
         /// 仓库
         /// </summary>
-        public static readonly ItemFactory STORAGE = new ItemFactory(ItemType.Storage, true);
+        public static readonly ItemFactory STORAGE = new ItemFactory(ItemCategory.Storage, true);
         /// <summary>
         /// 现金道具仓库？
         /// </summary>
-        public static readonly ItemFactory CASH_EXPLORER = new ItemFactory(ItemType.CashExplorer, true);
-        public static readonly ItemFactory CASH_CYGNUS = new ItemFactory(ItemType.CashCygnus, true);
-        public static readonly ItemFactory CASH_ARAN = new ItemFactory(ItemType.CashAran, true);
+        public static readonly ItemFactory CASH_EXPLORER = new ItemFactory(ItemCategory.CashExplorer, true);
+        public static readonly ItemFactory CASH_CYGNUS = new ItemFactory(ItemCategory.CashCygnus, true);
+        public static readonly ItemFactory CASH_ARAN = new ItemFactory(ItemCategory.CashAran, true);
         /// <summary>
         /// 雇佣商人
         /// </summary>
-        public static readonly ItemFactory MERCHANT = new ItemFactory(ItemType.Merchant, false);
-        public static readonly ItemFactory CASH_OVERALL = new ItemFactory(ItemType.CashOverall, true);
-        public static readonly ItemFactory MARRIAGE_GIFTS = new ItemFactory(ItemType.MarriageGift, false);
+        public static readonly ItemFactory MERCHANT = new ItemFactory(ItemCategory.Merchant, false);
+        public static readonly ItemFactory CASH_OVERALL = new ItemFactory(ItemCategory.CashOverall, true);
+        public static readonly ItemFactory MARRIAGE_GIFTS = new ItemFactory(ItemCategory.MarriageGift, false);
         /// <summary>
         /// 快递
         /// </summary>
-        public static readonly ItemFactory DUEY = new(ItemType.Duey, false);
+        public static readonly ItemFactory DUEY = new(ItemCategory.Duey, false);
         /// <summary>
         /// MTS
         /// </summary>
-        public static readonly ItemFactory MTS = new(ItemType.MTS, false);
-        public static readonly ItemFactory ExtraStorage_Gachapon = new ItemFactory(ItemType.ExtraStorage_Gachapon, false);
-        private ItemType value;
+        public static readonly ItemFactory MTS = new(ItemCategory.MTS, false);
+        public static readonly ItemFactory ExtraStorage_Gachapon = new ItemFactory(ItemCategory.ExtraStorage_Gachapon, false);
+        private ItemCategory value;
         public bool IsAccount { get; }
 
         private static int lockCount = 400;
@@ -50,7 +50,7 @@ namespace Application.Shared.Items
             }
         }
 
-        ItemFactory(ItemType value, bool account)
+        ItemFactory(ItemCategory value, bool account)
         {
             this.value = value;
             this.IsAccount = account;

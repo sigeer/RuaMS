@@ -30,12 +30,12 @@ namespace Application.Core.Login.Datas
         /// <param name="targetId"></param>
         /// <param name="itemFactories"></param>
         /// <returns></returns>
-        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int targetId, params ItemType[] itemFactories)
+        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int targetId, params ItemCategory[] itemFactories)
         {
             return LoadItems(dbContext, isAccount, [targetId], itemFactories);
         }
 
-        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int[] targetId, params ItemType[] itemFactories)
+        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int[] targetId, params ItemCategory[] itemFactories)
         {
             var itemType = itemFactories.Select(x => (int)x).ToArray();
             var dataList = (from a in dbContext.Inventoryitems.AsNoTracking()

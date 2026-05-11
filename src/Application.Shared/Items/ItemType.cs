@@ -1,18 +1,12 @@
-namespace Application.Shared.Items
-{
-    public enum ItemType
-    {
-        Inventory = 1,
-        Storage,
-        CashExplorer,
-        CashCygnus,
-        CashAran,
-        Merchant,
-        CashOverall,
-        MarriageGift,
-        Duey,
-        MTS,
 
-        ExtraStorage_Gachapon
-    }
+namespace Application.Shared.Items;
+
+public enum ItemType
+{
+    Equip = 1,
+    /// <summary>
+    /// Use?
+    /// </summary>
+    Item = 2,
+    Pet = 3,
 }

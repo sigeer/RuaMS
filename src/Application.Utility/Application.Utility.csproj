@@ -13,7 +13,15 @@
 		<PackageReference Include="AutoMapper" />
 		<PackageReference Include="AutoMapper.Extensions.ExpressionMapping" />
 	</ItemGroup>
-
+	
+	<ItemGroup>
+		<PackageReference Include="DotNetty.Buffers" />
+		<PackageReference Include="DotNetty.Codecs" />
+		<PackageReference Include="DotNetty.Common" />
+		<PackageReference Include="DotNetty.Handlers" />
+		<PackageReference Include="DotNetty.Transport" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="Serilog.Sinks.Console" />
 		<PackageReference Include="Serilog.Sinks.Map" />

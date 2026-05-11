@@ -55,7 +55,7 @@ namespace Application.Core.Login.ServerData
 
             foreach (var item in dataFromDB)
             {
-                item.Items = _server.InventoryManager.LoadItems(dbContext, ItemFactory.MERCHANT.IsAccount, item.Id, ItemType.Merchant).ToArray();
+                item.Items = _server.InventoryManager.LoadItems(dbContext, ItemFactory.MERCHANT.IsAccount, item.Id, ItemCategory.Merchant).ToArray();
             }
 
             return QueryWithDirty(dataFromDB, expression.Compile());

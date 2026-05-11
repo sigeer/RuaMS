@@ -1,6 +1,7 @@
 namespace Application.Shared.Items
 {
-    public enum ItemFlag
+    [Flags]
+    public enum ItemFlag : short
     {
         LOCK = 0x01,
         SPIKES = 0x02,

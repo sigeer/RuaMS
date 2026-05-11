@@ -75,13 +75,13 @@ namespace Application.Core.Channel.Services
             List<Item> cashItems;
             switch (player.CashShopModel.Factory)
             {
-                case Shared.Items.ItemType.CashExplorer:
+                case Shared.Items.ItemCategory.CashExplorer:
                     cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashExplorerItems);
                     break;
-                case Shared.Items.ItemType.CashCygnus:
+                case Shared.Items.ItemCategory.CashCygnus:
                     cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashCygnusItems);
                     break;
-                case Shared.Items.ItemType.CashAran:
+                case Shared.Items.ItemCategory.CashAran:
                     cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashAranItems);
                     break;
                 default:
@@ -379,22 +379,22 @@ namespace Application.Core.Channel.Services
                 opt.Items["Type"] = ItemFactory.ExtraStorage_Gachapon.getValue();
             }));
             var cashFactoryType = player.CashShopModel.Factory;
-            if (cashFactoryType == ItemType.CashOverall)
+            if (cashFactoryType == ItemCategory.CashOverall)
                 data.AccountGame.CashOverallItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
                     opt.Items["Type"] = ItemFactory.CASH_OVERALL.getValue();
                 }));
-            if (cashFactoryType == ItemType.CashAran)
+            if (cashFactoryType == ItemCategory.CashAran)
                 data.AccountGame.CashAranItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
                     opt.Items["Type"] = ItemFactory.CASH_ARAN.getValue();
                 }));
-            if (cashFactoryType == ItemType.CashExplorer)
+            if (cashFactoryType == ItemCategory.CashExplorer)
                 data.AccountGame.CashExplorerItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
                     opt.Items["Type"] = ItemFactory.CASH_EXPLORER.getValue();
                 }));
-            if (cashFactoryType == ItemType.CashCygnus)
+            if (cashFactoryType == ItemCategory.CashCygnus)
                 data.AccountGame.CashCygnusItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
                     opt.Items["Type"] = ItemFactory.CASH_CYGNUS.getValue();

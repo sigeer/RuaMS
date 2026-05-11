@@ -333,11 +333,11 @@ namespace Application.Core.Login.Datas
                               let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                               select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-            var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
+            var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemCategory.Inventory).ToArray();
 
             var gachponStore = _mapper.Map<StorageModel>(dbContext.Storages.FirstOrDefault(x => x.OwnerId == characterId && x.Type == (int)StorageType.GachaponRewardStorage))
                 ?? new StorageModel(characterId.Value, (int)StorageType.GachaponRewardStorage);
-            gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.ExtraStorage_Gachapon).ToArray();
+            gachponStore.Items = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemCategory.ExtraStorage_Gachapon).ToArray();
 
             var buddyData = (from a in dbContext.Buddies
                              where a.CharacterId == characterId

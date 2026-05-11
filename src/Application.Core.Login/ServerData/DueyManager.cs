@@ -46,7 +46,7 @@ namespace Application.Core.Login.ServerData
             var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
             var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).ToList();
 
-            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemType.Duey);
+            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemCategory.Duey);
 
             List<DueyPackageModel> dataFromDB = [];
             foreach (var item in dbList)
@@ -163,7 +163,7 @@ namespace Application.Core.Login.ServerData
                     TimeStamp = time,
                     Item = _mapper.Map<ItemModel>(request.Item, ctx =>
                     {
-                        ctx.Items["Type"] = (int)ItemType.Duey;
+                        ctx.Items["Type"] = (int)ItemCategory.Duey;
                     })
                 };
 
