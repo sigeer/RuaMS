@@ -4,7 +4,7 @@ using Application.Core.Game.Relation;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {
-    public class DojoInstance : IAsyncDisposable
+    public class DojoInstance : IDisposable
     {
         WorldChannel Channel { get; }
         private int usedDojo = 0;
@@ -29,13 +29,13 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             for (int i = 0; i < StageCount; i++)
             {
                 if (dojoTask[i] != null)
                 {
-                    await dojoTask[i]!.CancelAsync(false);
+                    dojoTask[i]!.cancel();
                     dojoTask[i] = null;
                 }
                 dojoStage[i] = 0;
@@ -185,12 +185,12 @@ namespace Application.Core.Gameplay.ChannelEvents
 
             if (this.dojoTask[slot] != null)
             {
-                this.dojoTask[slot]!.cancel(false);
+                this.dojoTask[slot]!.cancel();
             }
-            this.dojoTask[slot] = Channel.TimerManager.schedule(() =>
+            this.dojoTask[slot] = Channel.Schedule((c) =>
             {
-                Channel.Send(c => ProcessTimeout(dojoMapId));
-            }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
+                ProcessTimeout(dojoMapId);
+            }, TimeSpan.FromMilliseconds(clockTime + 3000));   // let the TIMES UP display for 3 seconds, then warp
 
             dojoFinishTime[slot] = this.Channel.Node.getCurrentTime() + clockTime;
         }
@@ -227,10 +227,10 @@ namespace Application.Core.Gameplay.ChannelEvents
                 });
             }
 
-            Channel.TimerManager.schedule(() =>
+            Channel.Schedule((c) =>
             {
-                Channel.Send(c => FreeDojoSectionIfEmpty(dojoMapId));
-            }, 1000);
+                FreeDojoSectionIfEmpty(dojoMapId);
+            }, TimeSpan.FromSeconds(1));
         }
 
         public void DismissDojoSchedule(int dojoMapId, Team party)
@@ -244,7 +244,7 @@ namespace Application.Core.Gameplay.ChannelEvents
 
             if (this.dojoTask[slot] != null)
             {
-                this.dojoTask[slot]!.cancel(false);
+                this.dojoTask[slot]!.cancel();
                 this.dojoTask[slot] = null;
             }
 

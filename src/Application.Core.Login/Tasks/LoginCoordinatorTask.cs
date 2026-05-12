@@ -4,16 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Login.Tasks
 {
-    public class LoginCoordinatorTask : AbstractRunnable
+    public class LoginCoordinatorTask : ActorTask<MasterServer>
     {
         readonly SessionCoordinator _sessionCoordinator;
 
-        public LoginCoordinatorTask(MasterServer server) : base(nameof(LoginCoordinatorTask))
+        public LoginCoordinatorTask(MasterServer server) : base(server, nameof(LoginCoordinatorTask), TimeSpan.FromHours(1))
         {
             _sessionCoordinator = server.ServiceProvider.GetRequiredService<SessionCoordinator>();
         }
 
-        public override void HandleRun()
+        protected override void HandleRun()
         {
             _sessionCoordinator.clearExpiredHwidHistory();
         }

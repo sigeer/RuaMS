@@ -19,7 +19,6 @@
 */
 
 using Application.Core.scripting.Events.Instances;
-using scripting.Event;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Channel;
@@ -27,13 +26,13 @@ namespace Application.Core.Channel;
 /**
  * @author Ronan
  */
-public class EventRecallManager : TaskBase
+public class EventRecallManager : ActorTask<WorldChannel>
 {
 
     private ConcurrentDictionary<int, AbstractEventInstanceManager> eventHistory = new();
 
     public EventRecallManager(WorldChannel worldChannel)
-        : base(nameof(EventRecallManager), TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+        : base(worldChannel, nameof(EventRecallManager), TimeSpan.FromHours(1))
     {
     }
 

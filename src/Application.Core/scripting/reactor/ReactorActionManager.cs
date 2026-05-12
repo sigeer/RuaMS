@@ -304,16 +304,12 @@ public class ReactorActionManager : AbstractPlayerInteraction
     public void summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
                                   string summonMessage)
     {
-
-        c.CurrentServer.TimerManager.schedule(() =>
+        reactor.getMap().Schedule((map) =>
         {
-            reactor.getMap().Send(map =>
-            {
-                map.spawnMonsterOnGroundBelow(mobId, x, y);
-                map.broadcastMessage(PacketCreator.musicChange(bgm));
-                map.LightBlue(summonMessage);
-            });
-        }, delayMs);
+            map.spawnMonsterOnGroundBelow(mobId, x, y);
+            map.broadcastMessage(PacketCreator.musicChange(bgm));
+            map.LightBlue(summonMessage);
+        }, TimeSpan.FromMilliseconds(delayMs));
     }
 
     public void dispelAllMonsters(int num, int team)

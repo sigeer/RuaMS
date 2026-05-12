@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Application.Core.Login.Datas
 {
-    public class ServerManager : TaskBase
+    public class ServerManager : ActorTask<MasterServer>
     {
         readonly ILogger<ServerManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
@@ -19,7 +19,7 @@ namespace Application.Core.Login.Datas
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
-            : base(nameof(ServerManager), TimeSpan.FromHours(1), TimeSpan.FromHours(1))
+            : base(masterServer, nameof(ServerManager), TimeSpan.FromHours(1))
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
@@ -130,6 +130,12 @@ namespace Application.Core.Login.Datas
         public bool CommitAll()
         {
             return packetChannel.Writer.TryWrite(true);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            packetChannel.Writer.Complete();
         }
 
         public async Task CommitAllImmediately()

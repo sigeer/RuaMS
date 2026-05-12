@@ -27,11 +27,12 @@ namespace Application.Core.Game.TheWorld
             return mc;
 
         }
-        public Player? this[string name] => getCharacterByName(name);
+
         public Player? getCharacterByName(string name)
         {
             return nameStorage.GetValueOrDefault(name);
         }
+
         public Player? getCharacterById(int id)
         {
             return storage.GetValueOrDefault(id);

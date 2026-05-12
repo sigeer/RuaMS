@@ -75,10 +75,7 @@ public class Snowball
             }
         }
         hittable = true;
-        map.ChannelServer.TimerManager.schedule(() =>
-        {
-            map.Send(m => ProcessTimeout());
-        }, 600_000);
+        map.Schedule(m => ProcessTimeout(), TimeSpan.FromMinutes(10));
 
     }
 
@@ -154,10 +151,7 @@ public class Snowball
                 {
                     this.snowmanhp = 0;
 
-                    map.ChannelServer.TimerManager.schedule(() =>
-                    {
-                        map.Send(m => SnowmanRespawn());
-                    }, 10_000);
+                    map.Schedule(m => SnowmanRespawn(), TimeSpan.FromSeconds(10));
                 }
                 else
                 {
@@ -209,10 +203,7 @@ public class Snowball
 
     public void warpOut()
     {
-        map.ChannelServer.TimerManager.schedule(() =>
-        {
-            map.Send(m => ProcessWarpOut());
-        }, 10000);
+        map.Schedule(m => ProcessWarpOut(), TimeSpan.FromSeconds(10));
     }
 
     public void ProcessWarpOut()

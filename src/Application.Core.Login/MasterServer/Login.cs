@@ -126,7 +126,7 @@ namespace Application.Core.Login
             }
         }
 
-        private async Task DisconnectIdlesOnLoginState()
+        public async Task DisconnectIdlesOnLoginState()
         {
             List<ILoginClient> toDisconnect = new();
 

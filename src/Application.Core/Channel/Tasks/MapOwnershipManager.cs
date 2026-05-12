@@ -1,12 +1,11 @@
 namespace Application.Core.Channel.ServerData;
 
-public class MapOwnershipTask : TaskBase
+public class MapOwnershipTask : ActorTask<WorldChannelServer>
 {
     readonly WorldChannelServer _server;
 
     public MapOwnershipTask(WorldChannelServer server)
-        : base(nameof(MapOwnershipManager),
-              TimeSpan.FromSeconds(20),
+        : base(server, nameof(MapOwnershipManager),
               TimeSpan.FromSeconds(20))
     {
         _server = server;

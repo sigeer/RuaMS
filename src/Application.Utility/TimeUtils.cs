@@ -4,20 +4,17 @@ namespace Application.Utility
     {
         public static TimeSpan GetTimeLeftForNextHour()
         {
-            var nextHour = DateTimeOffset.UtcNow.Date.AddHours(DateTimeOffset.UtcNow.Hour + 1);
-            return (nextHour - DateTimeOffset.UtcNow);
-        }
-
-        public static TimeSpan GetTimeLeftForNextHour(long now)
-        {
-            var nowTime = DateTimeOffset.FromUnixTimeMilliseconds(now);
-            var nextHour = nowTime.Date.AddHours(nowTime.Hour + 1);
-            return (nextHour - nowTime);
+            var now = DateTime.UtcNow;
+            var nextHour = now.Date.AddHours(now.Hour + 1);
+            var remaining = nextHour - now;
+            return remaining >= TimeSpan.Zero ? remaining : TimeSpan.Zero;
         }
 
         public static TimeSpan GetTimeLeftForNextDay()
         {
-            return (DateTimeOffset.UtcNow.AddDays(1).Date - DateTimeOffset.UtcNow);
+            var now = DateTime.UtcNow;
+            var nextMidnight = now.AddDays(1).Date;
+            return nextMidnight - now;
         }
 
         public static string GetTimeString(long then)

@@ -246,7 +246,7 @@ namespace Application.Core.Game.Players
 
                         if (extraRecoveryTask != null)
                         {
-                            extraRecoveryTask.cancel(false);
+                            extraRecoveryTask.cancel();
                             extraRecoveryTask = null;
                         }
 

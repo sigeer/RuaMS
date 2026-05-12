@@ -30,7 +30,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActorInstance<MasterServer>
+    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer, IActorInstance<MasterServer>, IActorTimerManager<MasterServer>
     {
         public bool IsRunning { get; private set; }
         public bool IsShuttingdown => isShuttingdown;
@@ -155,7 +155,7 @@ namespace Application.Core.Login
         public InvitationManager InvitationManager => _invitationManager.Value;
 
         public List<AbstractMasterModule> Modules { get; private set; }
-        public ITimerManager TimerManager { get; private set; } = null!;
+        public ITimerManager TimerManager { get; }
         Lazy<MessageDispatcherNew> _messageDispatcher;
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
         public CommandLoop<MasterServer> CommandLoop { get; }
@@ -221,6 +221,7 @@ namespace Application.Core.Login
             _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());
 
             _messageDispatcher = new(() => new(this));
+            TimerManager = new TimerManager();
             CommandLoop = new(this);
         }
 
@@ -339,14 +340,12 @@ namespace Application.Core.Login
                 await module.UninstallAsync();
             }
 
-            await InvitationManager.DisposeAsync();
-
-            await TimerManager.Stop();
-            await CommandLoop.DisposeAsync();
-
             _logger.LogInformation(SystemMessage.Server_SaveUserDataStart, InstanceName);
             await ServerManager.CommitAllImmediately();
             _logger.LogInformation(SystemMessage.Server_SaveUserDataComplete, InstanceName);
+
+            await TimerManager.DisposeAsync();
+            await CommandLoop.DisposeAsync();
 
             IsRunning = false;
             isShuttingdown.Set(false);
@@ -533,26 +532,23 @@ namespace Application.Core.Login
         {
             _logger.LogInformation("[{ServerName}] 定时任务加载中...", InstanceName);
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+            new ServerTimeUpdateTask(this).Register(TimerManager, TimeSpan.Zero);
+            new ServerTimeForceUpdateTask(this).Register(TimerManager, TimeSpan.Zero);
+            new DisconnectIdlesOnLoginStateTask(this).Register(TimerManager, TimeSpan.Zero);
 
-            await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            new LoginCoordinatorTask(this).Register(TimerManager, timeLeft);
+            new LoginStorageTask(this).Register(TimerManager, TimeSpan.FromMinutes(2));
 
-            TimerManager.register(new LoginCoordinatorTask(this), TimeSpan.FromHours(1), timeLeft);
-            TimerManager.register(new LoginStorageTask(this), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-            TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
-            TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            await TimerManager.RegisterAsync(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            InvitationManager.Register(TimerManager);
-            ServerManager.Register(TimerManager);
+            ServiceProvider.GetRequiredService<DueyFredrickTask>().Register(TimerManager, timeLeft);
+            ServiceProvider.GetRequiredService<RankingLoginTask>().Register(TimerManager, timeLeft);
+            ServiceProvider.GetRequiredService<RankingCommandTask>().Register(TimerManager, TimeSpan.FromMinutes(5));
+            ServiceProvider.GetRequiredService<CouponTask>().Register(TimerManager, timeLeft);
 
-            TimerManager.register(new NamedRunnable("NewYearCardNotify", async () =>
-            {
-                await NewYearCardManager.NotifyNewYearCard();
-            }), TimeSpan.FromHours(1), timeLeft);
+            InvitationManager.Register(TimerManager, TimeSpan.FromSeconds(30));
+            ServerManager.Register(TimerManager, TimeSpan.FromHours(1));
+
+            new NewYearCardNotifyTask(this).Register(TimerManager, timeLeft);
             foreach (var module in Modules)
             {
                 module.RegisterTask(TimerManager);
@@ -625,5 +621,34 @@ namespace Application.Core.Login
         public Task Send(Func<MasterServer, Task> action) => CommandLoop.Register(new AsyncMasterDelegateCommand(action));
 
         public Task Send(Action<MasterServer> action) => CommandLoop.Register(new MasterDelegateCommand(action));
+
+        public ScheduledFuture Schedule(string name, Action<MasterServer> r, TimeSpan delay)
+        {
+            return TimerManager.Schedule(InstanceName, name, () => { Send(r); }, delay);
+        }
+
+        public ScheduledFuture Schedule(Action<MasterServer> r, TimeSpan delay)
+        {
+            return Schedule(Guid.NewGuid().ToString(), r, delay);
+        }
+        public ScheduledFuture Schedule(string name, Func<MasterServer, Task> r, TimeSpan delay)
+        {
+            return TimerManager.Schedule(InstanceName, name, () => { Send(r); }, delay);
+        }
+
+        public ScheduledFuture Schedule(Func<MasterServer, Task> r, TimeSpan delay)
+        {
+            return Schedule(Guid.NewGuid().ToString(), r, delay);
+        }
+
+        public ScheduledFuture Register(string name, Action<MasterServer> r, TimeSpan period, TimeSpan delay)
+        {
+            return TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+        }
+
+        public ScheduledFuture Register(string name, Func<MasterServer, Task> r, TimeSpan period, TimeSpan delay)
+        {
+            return TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+        }
     }
 }

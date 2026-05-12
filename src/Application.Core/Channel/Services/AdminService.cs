@@ -278,7 +278,7 @@ namespace Application.Core.Channel.Services
 
         public List<string> GetChannelServerTasks()
         {
-            return _server.TimerManager.TaskScheduler.Keys.OrderBy(x => x).ToList();
+            return _server.TimerManager.GetAllJobs();
         }
 
         public void JailPlayer(int operatorId, string targetName, int minutes)

@@ -743,13 +743,14 @@ public partial class Player
             }
         }
 
-        Client.CurrentServer.TimerManager.schedule(() =>
-        {
-            MapModel.Send(m =>
-            {
-                m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
-            });
-        }, 777);
+        MapModel.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+        //MapModel.TimerManager.Schedule(InstanceName, "JobChanged", () =>
+        //{
+        //    MapModel.Send(m =>
+        //    {
+        //        m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+        //    });
+        //}, TimeSpan.FromMilliseconds(777));
     }
 
     public void changeJob(Job? newJob)
@@ -1118,7 +1119,7 @@ public partial class Player
     {
         if (extraRecoveryTask != null)
         {
-            extraRecoveryTask.cancel(false);
+            extraRecoveryTask.cancel();
             extraRecoveryTask = null;
         }
     }
@@ -1132,13 +1133,10 @@ public partial class Player
     {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
+        extraRecoveryTask = Register("ExtraRecovery", (m) =>
         {
-            MapModel.Send(m =>
-            {
-                ApplyExtralRecovery(healHP, healMP);
-            });
-        }, healInterval, healInterval);
+            ApplyExtralRecovery(healHP, healMP);
+        }, TimeSpan.FromMilliseconds(healInterval), TimeSpan.FromMilliseconds(healInterval));
     }
 
     public void ApplyExtralRecovery(sbyte healHP, sbyte healMP)
@@ -2100,13 +2098,10 @@ public partial class Player
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.NodeService.TimerManager.schedule(() =>
+            Schedule((m) =>
             {
-                MapModel.Send(m =>
-                {
-                    ApplyEnergeCharge();
-                });
-            }, ceffect.getDuration());
+                ApplyEnergeCharge();
+            }, TimeSpan.FromMilliseconds(ceffect.getDuration()));
         }
     }
 
@@ -3124,10 +3119,11 @@ public partial class Player
     {
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
         this.isbanned = true;
-        Client.CurrentServer.TimerManager.schedule(() =>
+        // TODO: 跨服务器岂不是会躲避？
+        Schedule("Disconnect", (m) =>
         {
-            Client.CurrentServer.Send(new InvokePlayerDisconnectCommand(Id));
-        }, duration);
+            m.ChannelServer.Send(new InvokePlayerDisconnectCommand(Id));
+        }, TimeSpan.FromMilliseconds(duration));
     }
 
     public async Task sendPolice(string text)
@@ -3144,7 +3140,7 @@ public partial class Player
         //    Client.Disconnect(false, false);
         //}
         Client.CurrentServer.NodeService.SendDropMessage(-1, message, true);
-        Client.Disconnect(false);
+        await Client.Disconnect(false);
         Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
@@ -3838,15 +3834,16 @@ public partial class Player
 
     private void equipPendantOfSpirit()
     {
+        // TODO: 重做在线时长时一同完善
         if (pendantOfSpirit == null)
         {
-            pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
-            {
-                MapModel.Send(m =>
-                {
-                    IncreasePendantExpRate();
-                });
-            }, TimeSpan.FromHours(1)); //1 hour
+            //pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
+            //{
+            //    MapModel.Send(m =>
+            //    {
+            //        IncreasePendantExpRate();
+            //    });
+            //}, TimeSpan.FromHours(1)); //1 hour
         }
     }
 
@@ -3859,7 +3856,7 @@ public partial class Player
         }
         else
         {
-            pendantOfSpirit?.cancel(false);
+            pendantOfSpirit?.cancel();
         }
     }
 
@@ -3867,7 +3864,7 @@ public partial class Player
     {
         if (pendantOfSpirit != null)
         {
-            pendantOfSpirit.cancel(false);
+            pendantOfSpirit.cancel();
             pendantOfSpirit = null;
         }
         pendantExp = 0;
@@ -3924,29 +3921,22 @@ public partial class Player
 
     public void Dispose()
     {
-        if (extraRecoveryTask != null)
-        {
-            extraRecoveryTask.cancel(true);
-        }
+        extraRecoveryTask?.cancel();
         extraRecoveryTask = null;
 
         // already done on unregisterChairBuff
         /* if (chairRecoveryTask != null) { chairRecoveryTask.cancel(true); }
         chairRecoveryTask = null; */
 
-        if (pendantOfSpirit != null)
-        {
-            pendantOfSpirit.cancel(true);
-        }
+        pendantOfSpirit?.cancel();
         pendantOfSpirit = null;
+
+        Client.CurrentServer.TimerManager.StopGroup(InstanceName);
 
         _pickerProcessor.Clear();
 
-        if (MountModel != null)
-        {
-            MountModel.Dispose();
-            MountModel = null;
-        }
+        MountModel?.Dispose();
+        MountModel = null;
 
         partyQuest = null;
 

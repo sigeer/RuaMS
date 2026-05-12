@@ -45,13 +45,10 @@ public class Fitness
     public Fitness(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
+        this.schedule = chr.MapModel.Schedule(w =>
         {
-            chr.MapModel.Send(w =>
-            {
-                ProcessTimeout();
-            });
-        }, 900_000);
+            ProcessTimeout();
+        }, TimeSpan.FromMinutes(15));
     }
 
     public void ProcessTimeout()
@@ -88,8 +85,8 @@ public class Fitness
     {
         this.time = 0;
         this.timeStarted = 0;
-        schedule?.cancel(false);
-        schedulemsg?.cancel(false);
+        schedule?.cancel();
+        schedulemsg?.cancel();
     }
 
     public long getTimeLeft()
@@ -99,13 +96,10 @@ public class Fitness
 
     public void checkAndMessage()
     {
-        this.schedulemsg = chr.Client.CurrentServer.TimerManager.register(() =>
+        this.schedulemsg = chr.Client.CurrentServer.Register("Fitness", (c) =>
         {
-            chr.MapModel.Send(w =>
-            {
-                CheckMessage();
-            });
-        }, 5000, 29500);
+            CheckMessage();
+        }, TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(29500));
     }
 
     public void CheckMessage()

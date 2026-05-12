@@ -16,7 +16,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
+    public interface IMap : IDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>, IActorTimerManager<IMap>
     {
         int Id { get; }
         bool IsPirateDocked { get; }

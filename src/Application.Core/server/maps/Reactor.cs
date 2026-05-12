@@ -197,7 +197,7 @@ public class Reactor : AbstractMapObject
     {
         if (timeoutTask != null)
         {
-            timeoutTask.cancel(false);
+            timeoutTask.cancel();
             timeoutTask = null;
         }
     }
@@ -209,27 +209,21 @@ public class Reactor : AbstractMapObject
         {
             sbyte nextState = stats.getTimeoutState(state);
 
-            timeoutTask = MapModel.ChannelServer.TimerManager.schedule(() =>
+            timeoutTask = MapModel.Schedule((m) =>
             {
                 timeoutTask = null;
 
-                MapModel.Send(map =>
-                {
-                    tryForceHitReactor(nextState);
-                });
-            }, timeOut);
+                tryForceHitReactor(nextState);
+            }, TimeSpan.FromMilliseconds(timeOut));
         }
     }
 
     public void delayedHitReactor(IChannelClient c, long delay)
     {
-        c.CurrentServer.TimerManager.schedule(() =>
+        c.OnlinedCharacter.Schedule((m) =>
         {
-            MapModel.Send(map =>
-            {
-                hitReactor(c);
-            });
-        }, delay);
+            hitReactor(c);
+        }, TimeSpan.FromMilliseconds(delay));
     }
 
     public void hitReactor(IChannelClient c)

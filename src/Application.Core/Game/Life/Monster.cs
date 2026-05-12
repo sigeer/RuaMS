@@ -969,13 +969,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
 
-            MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
+            MapModel.Schedule($"MobId:{getId()},{GetHashCode()}_Revive",(m) =>
             {
-                MapModel.Send(map =>
-                {
-                    Revive(killer, lastController);
-                });
-            }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
+                Revive(killer, lastController);
+            }, TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
         else
         {

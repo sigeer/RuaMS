@@ -2,18 +2,15 @@ using Application.Core.Channel.Commands;
 
 namespace Application.Core.Channel.Tasks
 {
-    public class PlayerShopTask : AbstractRunnable
+    public class PlayerShopTask : ActorTask<WorldChannelServer>
     {
-        readonly WorldChannelServer _server;
-
-        public PlayerShopTask(WorldChannelServer server) : base(nameof(PlayerShopTask))
+        public PlayerShopTask(WorldChannelServer server) : base(server, nameof(PlayerShopTask), TimeSpan.FromMinutes(1))
         {
-            _server = server;
         }
 
-        public override void HandleRun()
+        protected override void HandleRun()
         {
-            _server.Broadcast(w =>
+            _actor.Broadcast(w =>
             {
                 var r = w.PlayerShopManager.CheckExpired();
 

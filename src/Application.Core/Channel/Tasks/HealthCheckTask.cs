@@ -1,17 +1,17 @@
 namespace Application.Core.Channel.Tasks
 {
-    public class HealthCheckTask : AsyncAbstractRunnable
+    public class HealthCheckTask : ActorAsyncTask<WorldChannelServer>
     {
         readonly WorldChannelServer _server;
         readonly NetworkMonitor networkMonitor;
-        public HealthCheckTask(WorldChannelServer server) : base(
-            $"{server.InstanceName}_{nameof(HealthCheckTask)}")
+        public HealthCheckTask(WorldChannelServer server, TimeSpan period) : base(server,
+            nameof(HealthCheckTask), period)
         {
             _server = server;
             networkMonitor = new NetworkMonitor();
         }
 
-        public override async Task RunAsync()
+        protected override async Task HandleRun()
         {
             var networkData = await networkMonitor.GetTrafficRateAsync();
             var model =  new ServerProto.MonitorData

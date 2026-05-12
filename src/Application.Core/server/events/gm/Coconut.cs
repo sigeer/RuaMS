@@ -69,12 +69,9 @@ public class Coconut
     {
         Map.broadcastMessage(PacketCreator.getClock(time));
 
-        Map.ChannelServer.TimerManager.schedule(() =>
+        Map.Schedule(m =>
         {
-            Map.Send(m =>
-            {
-                Check();
-            });
+            Check();
         }, TimeSpan.FromSeconds(time));
     }
 
@@ -114,12 +111,9 @@ public class Coconut
     public void warpOut()
     {
         setCoconutsHittable(false);
-        Map.ChannelServer.TimerManager.schedule(() =>
+        Map.Schedule(m =>
         {
-            Map.Send(m =>
-            {
-                ProcessWarpOut();
-            });
+            ProcessWarpOut();
         }, TimeSpan.FromSeconds(Map.TimeFinish));
     }
 

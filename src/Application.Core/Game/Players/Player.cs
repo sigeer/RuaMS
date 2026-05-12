@@ -1,4 +1,3 @@
-using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
@@ -7,23 +6,33 @@ using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.scripting.npc;
 using Application.Shared.Objects;
+using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client;
 using client.autoban;
 using server;
 using server.events;
 using server.life;
-using server.maps;
-using System.Security.Cryptography;
 using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientPlayer, ICombatantObject, ILoopTickable
+    public partial class Player
+        : AbstractAnimatedMapObject,
+            IAnimatedMapObject,
+            IMapObject,
+            IPlayerStats,
+            IMapPlayer,
+            ILife,
+            IClientPlayer,
+            ICombatantObject,
+            ILoopTickable,
+            IActorTimerManager<IMap>
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
         public IChannelClient Client { get; private set; }
+
         /// <summary>
         /// offlineclient or channelclient.player disposed
         /// </summary>
@@ -32,11 +41,21 @@ namespace Application.Core.Game.Players
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
-
         public PlayerKeyMap KeyMap { get; set; }
         public List<FameLogObject> FameLogs { get; set; }
 
-        public Player(int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
+        public Player(
+            int accountId,
+            int hp,
+            int mp,
+            int str,
+            int dex,
+            int @int,
+            int luk,
+            Job job,
+            int level
+        )
+            : this()
         {
             AccountId = accountId;
             HP = hp;
@@ -90,10 +109,8 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public Player() : this(new OfflineClient())
-        {
-
-        }
+        public Player()
+            : this(new OfflineClient()) { }
 
         public void Reload()
         {
@@ -131,6 +148,7 @@ namespace Application.Core.Game.Players
             }
             sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
         }
+
         public void Notice(string key, params string[] param)
         {
             TypedMessage(0, key, param);
@@ -175,13 +193,17 @@ namespace Application.Core.Game.Players
 
         public long Next { get; private set; }
 
-        public long MapDamagePeriod { get; } = YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
+        public long MapDamagePeriod { get; } =
+            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL
+            * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
         public long MapDamageNext { get; set; }
 
         long _diseaseAnnounceNext;
         long _diseaseAnnouncePeriod = YamlConfig.config.server.UPDATE_INTERVAL;
 
         public TickableStatus Status { get; private set; }
+
+        public string InstanceName => $"{MapModel.InstanceName}.{Name}";
 
         public void OnTick(long now)
         {
@@ -242,9 +264,71 @@ namespace Application.Core.Game.Players
             if (script != null)
             {
                 var npcObj = MapModel.getNPCById(npcId);
-                _ = Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
+                _ = Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(
+                    Client,
+                    npcId,
+                    MapModel.getNPCById(npcId),
+                    script
+                );
             }
+        }
 
+        public ScheduledFuture Schedule(string name, Action<IMap> r, TimeSpan delay)
+        {
+            return Client.CurrentServer.TimerManager.Schedule(InstanceName, name, () => {
+
+                var mapActor = Client.CurrentServer.getPlayerStorage().GetCharacterActor(Id);
+                if (mapActor != null)
+                {
+                    mapActor.Send(r);
+                }
+            }, delay);
+        }
+
+        public ScheduledFuture Schedule(Action<IMap> r, TimeSpan delay)
+        {
+            return Schedule(Guid.NewGuid().ToString(), r, delay);
+        }
+
+        public ScheduledFuture Register(string name, Action<IMap> r, TimeSpan period, TimeSpan delay)
+        {
+            return Client.CurrentServer.TimerManager.Register(InstanceName, name, () => {
+
+                var mapActor = Client.CurrentServer.getPlayerStorage().GetCharacterActor(Id);
+                if (mapActor != null)
+                {
+                    mapActor.Send(r);
+                }
+            }, period, delay);
+        }
+
+        public ScheduledFuture Schedule(string name, Func<IMap, Task> r, TimeSpan delay)
+        {
+            return Client.CurrentServer.TimerManager.Schedule(InstanceName, name, () => {
+
+                var mapActor = Client.CurrentServer.getPlayerStorage().GetCharacterActor(Id);
+                if (mapActor != null)
+                {
+                    mapActor.Send(r);
+                }
+            }, delay);
+        }
+
+        public ScheduledFuture Schedule(Func<IMap, Task> r, TimeSpan delay)
+        {
+            return Schedule(Guid.NewGuid().ToString(), r, delay);
+        }
+
+        public ScheduledFuture Register(string name, Func<IMap, Task> r, TimeSpan period, TimeSpan delay)
+        {
+            return Client.CurrentServer.TimerManager.Register(InstanceName, name, () => {
+
+                var mapActor = Client.CurrentServer.getPlayerStorage().GetCharacterActor(Id);
+                if (mapActor != null)
+                {
+                    mapActor.Send(r);
+                }
+            }, period, delay);
         }
     }
 }

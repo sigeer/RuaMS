@@ -42,13 +42,10 @@ public class Ola
     public Ola(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
+        this.schedule = chr.Client.CurrentServer.Schedule(m =>
         {
-            chr.MapModel.Send(m =>
-            {
-                ProcessTimeout();
-            });
-        }, 360_000);
+            ProcessTimeout();
+        }, TimeSpan.FromMinutes(6));
     }
 
     public void ProcessTimeout()
@@ -85,7 +82,7 @@ public class Ola
     {
         this.time = 0;
         this.timeStarted = 0;
-        schedule?.cancel(false);
+        schedule?.cancel();
     }
 
     public long getTimeLeft()

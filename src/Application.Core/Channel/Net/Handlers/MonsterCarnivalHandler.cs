@@ -24,11 +24,8 @@
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Instances;
 using Microsoft.Extensions.Logging;
-using server.life;
 using server.partyquest;
-using System.Runtime.ConstrainedExecution;
 using tools;
-using static Quartz.Logging.OperationName;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -53,7 +50,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
             {
                 try
                 {
-                    var eim =c.OnlinedCharacter.getEventInstance() as MonsterCarnivalEventInstanceManager;
+                    var eim = c.OnlinedCharacter.getEventInstance() as MonsterCarnivalEventInstanceManager;
                     if (eim == null)
                     {
                         c.sendPacket(PacketCreator.enableActions());

@@ -1,8 +1,6 @@
-using Quartz;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using YamlDotNet.Core.Tokens;
 
 namespace Application.Utility.Extensions
 {
@@ -61,7 +59,7 @@ namespace Application.Utility.Extensions
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> valueFuc) where TKey : notnull
         {
             ref TValue? v = ref CollectionsMarshal.GetValueRefOrAddDefault(dictionary, key, out var exisits);
-            if (exisits )
+            if (exisits)
                 return v!;
             v = valueFuc();
             return v;

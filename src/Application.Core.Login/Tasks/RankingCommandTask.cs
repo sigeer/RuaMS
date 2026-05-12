@@ -26,15 +26,15 @@ namespace Application.Core.Login.Tasks;
 /**
  * @author Ronan
  */
-public class RankingCommandTask : AbstractRunnable
+public class RankingCommandTask : ActorTask<MasterServer>
 {
     readonly RankService _rankService;
-    public RankingCommandTask(MasterServer server, RankService rankService) : base(nameof(RankService))
+    public RankingCommandTask(MasterServer server, RankService rankService) : base(server, nameof(RankService), TimeSpan.FromMinutes(5))
     {
         _rankService = rankService;
     }
 
-    public override void HandleRun()
+    protected override void HandleRun()
     {
         _rankService.LoadPlayerRanking(ignoreCache: true);
     }

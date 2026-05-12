@@ -22,7 +22,9 @@
 
 
 using Application.Core.Login.Models;
+using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using Serilog;
 
 namespace Application.Core.Login.Tasks;
 
@@ -36,11 +38,11 @@ namespace Application.Core.Login.Tasks;
 /// @author Quit
 /// @author Ronan
 /// </summary>
-public class RankingLoginTask : AbstractRunnable
+public class RankingLoginTask : ActorTask<MasterServer>
 {
     readonly MasterServer _server;
 
-    public RankingLoginTask(MasterServer server) : base(nameof(RankingLoginTask))
+    public RankingLoginTask(MasterServer server) : base(server, nameof(RankingLoginTask), TimeSpan.FromMilliseconds(YamlConfig.config.server.RANKING_INTERVAL))
     {
         _server = server;
     }
@@ -85,7 +87,7 @@ public class RankingLoginTask : AbstractRunnable
         }
     }
 
-    public override void HandleRun()
+    protected override void HandleRun()
     {
         try
         {
@@ -99,7 +101,7 @@ public class RankingLoginTask : AbstractRunnable
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Logger.Error(e.ToString());
         }
     }
 }

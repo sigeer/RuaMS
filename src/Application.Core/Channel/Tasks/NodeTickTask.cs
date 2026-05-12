@@ -1,11 +1,10 @@
 namespace Application.Core.Channel.Tasks
 {
-    public class NodeTickTask : TaskBase
+    public class NodeTickTask : ActorTask<WorldChannelServer>
     {
         readonly WorldChannelServer _server;
 
-        public NodeTickTask(WorldChannelServer server) : base(nameof(NodeTickTask),
-            TimeSpan.FromMilliseconds(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC),
+        public NodeTickTask(WorldChannelServer server) : base(server, nameof(NodeTickTask),
             TimeSpan.FromMilliseconds(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC))
         {
             this._server = server;
@@ -14,11 +13,7 @@ namespace Application.Core.Channel.Tasks
         protected override void HandleRun()
         {
             _server.UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            _server.Send(n =>
-            {
-                n.OnTick(_server.getCurrentTime());
-            });
-
+            _server.OnTick(_server.getCurrentTime());
         }
 
     }

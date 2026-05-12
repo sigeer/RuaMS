@@ -135,10 +135,7 @@ public class Expedition : IClientMessenger
         Expedition exped = this;
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMinutes(type.getRegistrationMinutes());
 
-        schedule = ChannelServer.TimerManager.schedule(() =>
-        {
-            ChannelServer.Send((c) => ProcessRegistrationTimeout());
-        }, TimeSpan.FromMinutes(type.getRegistrationMinutes()));
+        schedule = ChannelServer.Schedule((c) => ProcessRegistrationTimeout(), TimeSpan.FromMinutes(type.getRegistrationMinutes()));
     }
 
     public void ProcessRegistrationTimeout()
@@ -167,7 +164,7 @@ public class Expedition : IClientMessenger
 
         if (schedule != null)
         {
-            schedule.cancel(false);
+            schedule.cancel();
         }
         if (needLog && !registering)
         {

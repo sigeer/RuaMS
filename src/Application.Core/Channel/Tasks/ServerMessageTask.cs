@@ -2,11 +2,11 @@ using Application.Core.Channel.Commands;
 
 namespace Application.Core.Channel.ServerData
 {
-    public class ServerMessageTask : TaskBase
+    public class ServerMessageTask : ActorTask<WorldChannelServer>
     {
         readonly WorldChannelServer _server;
 
-        public ServerMessageTask(WorldChannelServer server) : base(nameof(ServerMessageManager), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+        public ServerMessageTask(WorldChannelServer server) : base(server, nameof(ServerMessageManager), TimeSpan.FromSeconds(10))
         {
             this._server = server;
         }

@@ -11,7 +11,7 @@ namespace Application.Module.Family.Master
     {
         readonly FamilyManager _familyManager;
 
-        ScheduledFuture? _task;
+        FamilyDailyResetTask? _task;
         public MasterFamilyModule(
             MasterServer server,
             FamilyManager familyManager,
@@ -41,15 +41,16 @@ namespace Application.Module.Family.Master
         {
             base.RegisterTask(timerManager);
             var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task = timerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+            _task = new FamilyDailyResetTask(_server, _familyManager);
+            _task.Register(timerManager, timeLeft);
         }
 
 
         public override async Task UninstallAsync()
         {
             await base.UninstallAsync();
-            if (_task != null)
-                await _task.CancelAsync(false);
+            
+            _task?.Dispose();
         }
     }
 }

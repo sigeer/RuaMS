@@ -3,15 +3,15 @@ using Application.Utility.Tasks;
 
 namespace Application.Core.Login.Tasks
 {
-    public class DueyFredrickTask : AbstractRunnable
+    public class DueyFredrickTask : ActorTask<MasterServer>
     {
         readonly MasterServer _server;
-        public DueyFredrickTask(MasterServer server) : base(nameof(DueyFredrickTask))
+        public DueyFredrickTask(MasterServer server) : base(server, nameof(DueyFredrickTask), TimeSpan.FromHours(1))
         {
             _server = server;
         }
 
-        public override void HandleRun()
+        protected override void HandleRun()
         {
             _server.PlayerShopManager.RunFredrickSchedule();
             _server.DueyManager.RunDueyExpireSchedule();

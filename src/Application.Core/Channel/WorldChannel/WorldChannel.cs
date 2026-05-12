@@ -1,13 +1,10 @@
 using Application.Core.Channel.Actor;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
-using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.ContiMove;
-using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.ServerTransports;
@@ -20,22 +17,17 @@ using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
-using scripting.map;
 using scripting.npc;
-using scripting.portal;
-using scripting.quest;
 using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
-using System.Diagnostics;
 using System.Net;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer
+public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer, IActorTimerManager<WorldChannel>
 {
     public int Id => channel;
     public string InstanceName { get; }
@@ -72,17 +64,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
 
     // public IWorld WorldModel { get; set; }
-    public event Action? OnWorldMobRateChanged;
-    float _worldMobRate;
-    public float WorldMobRate
-    {
-        get => _worldMobRate;
-        private set
-        {
-            _worldMobRate = value;
-            OnWorldMobRateChanged?.Invoke();
-        }
-    }
+    public float WorldMobRate { get; private set; }
 
     public event Action? OnWorldMesoRateChanged;
     private float worldMesoRate;
@@ -119,7 +101,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public OverallService OverallService { get; }
     #endregion
     public CommandLoop<WorldChannel> CommandLoop { get; }
-    public EventRecallManager? EventRecallManager { get; private set; }
+    public EventRecallManager EventRecallManager { get; private set; }
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
@@ -127,7 +109,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public IActorInstance<WorldChannelServer> NodeActor { get; }
     public IServiceCenter NodeService { get; }
     public IMapper Mapper { get; }
-    public ITimerManager TimerManager { get; private set; } = null!;
+    public ITimerManager TimerManager => NodeService.TimerManager;
 
     public MapOwnershipManager MapOwnershipManager { get; }
     public ServerMessageManager ServerMessageManager { get; }
@@ -184,6 +166,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
+        EventRecallManager = new(this);
 
         CommandLoop = new CommandLoop<WorldChannel>(this);
         InviteChannelHandlerRegistry = new();
@@ -277,10 +260,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         // var loadedEventsCount = EventScriptManager.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
-        TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
-
-        EventRecallManager = new EventRecallManager(this);
-        EventRecallManager.Register(TimerManager);
+        EventRecallManager.Register(TimerManager, TimeSpan.FromHours(1));
 
         var inviteHandlerLogger = LifeScope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<InviteChannelHandler>>();
         InviteChannelHandlerRegistry.Register(new PartyInviteChannelHandler(this, inviteHandlerLogger));
@@ -310,7 +290,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
 
         CommandLoop.Start();
-        
+
         return Task.CompletedTask;
     }
 
@@ -337,13 +317,15 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             await Players.disconnectAll(true);
             await PlayerShopManager.DisposeAsync();
 
+            // EventRecallManager.Dispose();
+            NodeService.TimerManager.StopGroup(InstanceName);
+
             EventScriptManager.Dispose();
 
             mapManager.Dispose();
 
             await closeChannelSchedules();
 
-            await TimerManager.Stop();
 
             await CommandLoop.DisposeAsync();
             LifeScope.Dispose();
@@ -371,7 +353,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     private async Task closeChannelSchedules()
     {
-        await DojoInstance.DisposeAsync();
+        DojoInstance.Dispose();
 
         closeChannelServices();
     }
@@ -770,4 +752,34 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public Task Send(Func<WorldChannel, Task> action) => Send(new AsyncChannelDelegateCommand(action));
 
     public Task Send(Action<WorldChannel> action) => Send(new ChannelDelegateCommand(action));
+
+    public ScheduledFuture Schedule(string name, Action<WorldChannel> r, TimeSpan delay)
+    {
+        return TimerManager.Schedule(InstanceName, name, () => Send(r), delay);
+    }
+
+    public ScheduledFuture Schedule(Action<WorldChannel> r, TimeSpan delay)
+    {
+        return Schedule(Guid.NewGuid().ToString(), r, delay);
+    }
+
+    public ScheduledFuture Register(string name, Action<WorldChannel> r, TimeSpan period, TimeSpan delay)
+    {
+        return TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+    }
+
+    public ScheduledFuture Schedule(string name, Func<WorldChannel, Task> r, TimeSpan delay)
+    {
+        return TimerManager.Schedule(InstanceName, name, () => { Send(r); }, delay);
+    }
+
+    public ScheduledFuture Schedule(Func<WorldChannel, Task> r, TimeSpan delay)
+    {
+        return Schedule(Guid.NewGuid().ToString(), r, delay);
+    }
+
+    public ScheduledFuture Register(string name, Func<WorldChannel, Task> r, TimeSpan period, TimeSpan delay)
+    {
+        return TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+    }
 }

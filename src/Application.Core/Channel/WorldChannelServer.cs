@@ -22,6 +22,7 @@ using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using net.server.task;
 using SyncProto;
 using System.Diagnostics;
 using System.Net;
@@ -47,7 +48,7 @@ namespace Application.Core.Channel
         readonly ILogger<WorldChannelServer> _logger;
 
         public DateTimeOffset StartupTime { get; private set; }
-        public ITimerManager TimerManager { get; private set; } = null!;
+        public ITimerManager TimerManager { get; }
 
         #region Data
         readonly Lazy<GuildManager> _guildManager;
@@ -129,10 +130,10 @@ namespace Application.Core.Channel
         public MessageDispatcherNew MessageDispatcherV => _messageDispatcher.Value;
 
 
-        ScheduledFuture? invitationTask;
-        ScheduledFuture? playerShopTask;
-        ScheduledFuture? timeoutTask;
-        ScheduledFuture? checkMapActiveTask;
+        TaskBase invitationTask;
+        TaskBase playerShopTask;
+        TaskBase timeoutTask;
+
 
         public BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
@@ -162,9 +163,7 @@ namespace Application.Core.Channel
             CashItemProvider = cashItemProvider;
 
 
-            ServerMessageTask = new ServerMessageTask(this);
-            NodeTickTask = new NodeTickTask(this);
-            MapOwnershipTask = new(this);
+
 
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
 
@@ -195,7 +194,16 @@ namespace Application.Core.Channel
             PluginManager = new();
 
             _messageDispatcher = new(() => new(this));
-            CommandLoop = new (this);
+            TimerManager = new TimerManager();
+
+            ServerMessageTask = new ServerMessageTask(this);
+            NodeTickTask = new NodeTickTask(this);
+            MapOwnershipTask = new(this);
+            invitationTask = new InvitationTask(this);
+            playerShopTask = new PlayerShopTask(this);
+            timeoutTask = new TimeoutTask(this);
+
+            CommandLoop = new(this);
         }
 
         #region 时间
@@ -256,18 +264,16 @@ namespace Application.Core.Channel
                 _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
 
                 watcher.Dispose();
-                await NodeTickTask.StopAsync();
-                await MapOwnershipTask.StopAsync();
-                await ServerMessageTask.StopAsync();
 
-                if (invitationTask != null)
-                    await invitationTask.CancelAsync(false);
-                if (playerShopTask != null)
-                    await playerShopTask.CancelAsync(false);
-                if (timeoutTask != null)
-                    await timeoutTask.CancelAsync(false);
-                if (checkMapActiveTask != null)
-                    await checkMapActiveTask.CancelAsync(false);
+                //NodeTickTask.Dispose();
+                //MapOwnershipTask.Dispose();
+                //ServerMessageTask.Dispose();
+
+                //invitationTask.Dispose();
+                //playerShopTask.Dispose();
+
+                //timeoutTask.Dispose();
+                
 
                 foreach (var module in Modules)
                 {
@@ -278,8 +284,9 @@ namespace Application.Core.Channel
                 {
                     await server.Shutdown(delaySeconds);
                 }
+                TimerManager.StopGroup(InstanceName);
 
-                await TimerManager.Stop();
+                await TimerManager.DisposeAsync();
                 await CommandLoop.DisposeAsync();
 
                 _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
@@ -337,8 +344,6 @@ namespace Application.Core.Channel
                 return false;
             }
 
-            TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
-
             OpcodeConstants.generateOpcodeNames();
             ForceUpdateServerTime();
 
@@ -372,7 +377,7 @@ namespace Application.Core.Channel
             DataService.LoadAllPLife();
             DataService.LoadAllReactorDrops();
 
-           
+
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -392,15 +397,15 @@ namespace Application.Core.Channel
             }, cancellationToken);
 
 
-            NodeTickTask.Register(TimerManager);
-            ServerMessageTask.Register(TimerManager);
-            MapOwnershipTask.Register(TimerManager);
+            NodeTickTask.Register(TimerManager, TimeSpan.FromMilliseconds(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC));
+            ServerMessageTask.Register(TimerManager, TimeSpan.FromSeconds(10));
+            MapOwnershipTask.Register(TimerManager, TimeSpan.FromSeconds(20));
 
-            invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-            playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            invitationTask.Register(TimerManager, TimeSpan.FromSeconds(30));
+            playerShopTask.Register(TimerManager, TimeSpan.FromMinutes(1));
 
 #if !DEBUG
-            timeoutTask = TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+            timeoutTask.Register(TimerManager, TimeSpan.FromSeconds(10));
 #endif
 
 

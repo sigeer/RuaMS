@@ -2,26 +2,18 @@ using DotNetty.Common.Utilities;
 
 namespace Application.Utility.Tasks
 {
-    public class TimerTask : ITimerTask
+    public class DelegatingTimerTask : ITimerTask
     {
-        readonly object data;
+        readonly Action data;
 
-        public TimerTask(object data)
+        public DelegatingTimerTask(Action data)
         {
             this.data = data;
         }
 
         public void Run(ITimeout timeout)
         {
-            if (data is Action a)
-            {
-                a();
-            }
-            else if (data is Func<Task> f)
-            {
-                _ = f();
-            }
-            throw new NotImplementedException();
+            data();
         }
     }
 }

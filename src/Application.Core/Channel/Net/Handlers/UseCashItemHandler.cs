@@ -491,8 +491,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            c.CurrentServer.TimerManager.schedule(
-                () => c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
+            c.CurrentServer.Schedule((channel) =>
+                channel.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
                 TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
@@ -612,8 +612,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             player.forceUpdateItem(equip);
         }
         else if (itemType == 561)
-        { 
-            //VEGA'S SPELL
+        {
+            // 卷轴成功提升
             if (p.readInt() != 1)
             {
                 return;
@@ -659,9 +659,10 @@ public class UseCashItemHandler : ChannelHandlerBase
             remove(c, position, itemId);
 
             IChannelClient client = c;
-            c.CurrentServer.TimerManager.schedule(() =>
+            // 
+            c.CurrentServer.Schedule((channel) =>
             {
-                var mapActor = c.CurrentServer.getPlayerStorage().GetCharacterActor(player.Id);
+                var mapActor = channel.getPlayerStorage().GetCharacterActor(player.Id);
                 mapActor?.Send(map =>
                 {
                     var chr = map.getCharacterById(player.Id);

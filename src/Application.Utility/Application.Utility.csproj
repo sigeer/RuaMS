@@ -7,7 +7,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Polly" />
-		<PackageReference Include="Quartz" />
 		<PackageReference Include="System.Management" />
 		<PackageReference Include="YamlDotNet" />
 		<PackageReference Include="AutoMapper" />

@@ -1,58 +1,77 @@
+using Application.Utility.Pipeline;
+
 namespace Application.Utility.Tasks
 {
-    public abstract class TaskBase : IAsyncDisposable
+    public abstract class TaskBase : IDisposable
     {
         protected ScheduledFuture? _scheduler;
 
         protected TimeSpan _repeatDuration;
-        protected TimeSpan _repeatDelay;
 
-        protected TaskBase(TimeSpan repeatDuration, TimeSpan repeatDelay)
+        protected TaskBase(TimeSpan repeatDuration)
         {
             _repeatDuration = repeatDuration;
-            _repeatDelay = repeatDelay;
         }
 
-        public virtual async ValueTask DisposeAsync()
+        public virtual void Dispose()
         {
-            await StopAsync();
+            _scheduler?.Dispose();
         }
 
-        public abstract void Register(TimerManager timerManager);
-        public virtual async Task StopAsync()
-        {
-            if (_scheduler != null)
-                await _scheduler.CancelAsync();
-        }
-
+        public abstract void Register(ITimerManager timerManager, TimeSpan repeatDelay);
         protected abstract void HandleRun();
     }
 
-    public abstract class AsyncTaskBase : IAsyncDisposable
+    public abstract class AsyncTaskBase : IDisposable
     {
         protected ScheduledFuture? _scheduler;
 
         protected TimeSpan _repeatDuration;
-        protected TimeSpan _repeatDelay;
 
-        protected AsyncTaskBase(TimeSpan repeatDuration, TimeSpan repeatDelay)
+        protected AsyncTaskBase(TimeSpan repeatDuration)
         {
             _repeatDuration = repeatDuration;
-            _repeatDelay = repeatDelay;
         }
 
-        public virtual async ValueTask DisposeAsync()
+        public virtual void Dispose()
         {
-            await StopAsync();
+            _scheduler?.Dispose();
         }
 
-        public abstract void Register(TimerManager timerManager);
-        public virtual async Task StopAsync()
-        {
-            if (_scheduler != null)
-                await _scheduler.CancelAsync();
-        }
+        public abstract void Register(ITimerManager timerManager, TimeSpan repeatDelay);
 
         protected abstract Task HandleRun();
+    }
+
+    public abstract class ActorTask<TActorContext> : TaskBase where TActorContext : IActorInstance<TActorContext>
+    {
+        protected readonly TActorContext _actor;
+        readonly string _name;
+        protected ActorTask(TActorContext actor, string name, TimeSpan repeatDuration) : base(repeatDuration)
+        {
+            _actor = actor;
+            _name = name;
+        }
+
+        public override void Register(ITimerManager timerManager, TimeSpan repeatDelay)
+        {
+            _scheduler = timerManager.Register(_actor.InstanceName, _name, () => { _actor.Send(i => HandleRun()); }, _repeatDuration, repeatDelay);
+        }
+    }
+
+    public abstract class ActorAsyncTask<TActorContext> : AsyncTaskBase where TActorContext : IActorInstance<TActorContext>
+    {
+        protected readonly TActorContext _actor;
+        readonly string _name;
+        protected ActorAsyncTask(TActorContext actor, string name, TimeSpan repeatDuration) : base(repeatDuration)
+        {
+            _actor = actor;
+            _name = name;
+        }
+
+        public override void Register(ITimerManager timerManager, TimeSpan repeatDelay)
+        {
+            _scheduler = timerManager.Register(_actor.InstanceName, _name, async () => { await _actor.Send(async i => await HandleRun()); }, _repeatDuration, repeatDelay);
+        }
     }
 }

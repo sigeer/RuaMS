@@ -1,31 +1,25 @@
 using DotNetty.Common.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Utility.Tasks
 {
     public class TimerTaskScheduledFuture : ScheduledFuture
     {
-        public string Group { get; }
-        public string Name { get; }
         readonly ITimeout _job;
 
-        public TimerTaskScheduledFuture(string group, string name, ITimeout job)
+        public TimerTaskScheduledFuture(JobKey jobKey, ITimeout job)
         {
-            Group = group;
-            Name = name;
+            JobId = jobKey;
             _job = job;
         }
 
-        public string JobId => _job.ToString();
+        public JobKey JobId { get; }
 
-        public bool cancel(bool immediately)
+        public void cancel()
         {
-            return _job.Cancel();
+            _job.Cancel();
         }
 
-        public Task<bool> CancelAsync(bool immediately)
+        public void Dispose()
         {
             _job.Cancel();
         }
@@ -33,27 +27,54 @@ namespace Application.Utility.Tasks
 
     public class TimerScheduledFuture : ScheduledFuture
     {
-        public string Group { get; }
-        public string Name { get; }
-        readonly Timer _job;
 
-        public TimerScheduledFuture(string group, string name, Timer job)
+        private CancellationTokenSource _syncCts;
+        private bool disposedValue;
+
+        public CancellationToken Token => _syncCts.Token;
+
+        public TimerScheduledFuture(JobKey jobKey)
         {
-            Group = group;
-            Name = name;
-            _job = job;
+            JobId = jobKey;
+            _syncCts = new();
         }
 
-        public string JobId => _job.ToString();
+        public JobKey JobId { get; }
 
-        public bool cancel(bool immediately)
+        public void cancel()
         {
-            _job.Dispose();
+            _syncCts.Cancel();
         }
 
-        public Task<bool> CancelAsync(bool immediately)
+        void Dispose(bool disposing)
         {
-            _job.Cancel();
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    cancel();
+                    _syncCts.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~TimerScheduledFuture()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

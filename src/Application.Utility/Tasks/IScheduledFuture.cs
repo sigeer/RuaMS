@@ -1,9 +1,8 @@
 namespace Application.Utility.Tasks
 {
-    public interface ScheduledFuture
+    public interface ScheduledFuture: IDisposable
     {
-        string JobId { get; }
-        Task<bool> CancelAsync(bool immediately);
-        bool cancel(bool immediately);
+        JobKey JobId { get; }
+        void cancel();
     }
 }

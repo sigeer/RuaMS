@@ -37,13 +37,7 @@ public class MapMonitor
     {
         this.map = map;
         this.portal = map.getPortal(portal);
-        this.monitorSchedule = map.ChannelServer.TimerManager.register(() =>
-        {
-            map.Send(m =>
-            {
-                ProcessActive();
-            });
-        }, 5000);
+        this.monitorSchedule = map.Register("Monitor",m => ProcessActive(), TimeSpan.FromSeconds(5), TimeSpan.Zero);
     }
 
     public void ProcessActive()
@@ -58,7 +52,7 @@ public class MapMonitor
     {
         if (monitorSchedule != null)
         {  // thanks Thora for pointing a NPE occurring here
-            monitorSchedule.cancel(false);
+            monitorSchedule.cancel();
             monitorSchedule = null;
         }
 

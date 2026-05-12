@@ -119,7 +119,7 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x12: // Send
                 victim = p.readString();
                 int mapId = p.readInt();
-                c.getChannelServer().getPlayerStorage().getCharacterByName(victim)?.changeMap(c.getChannelServer().getMapFactory().getMap(mapId));
+                c.getChannelServer().getPlayerStorage().getCharacterByName(victim)?.changeMap(mapId);
                 break;
             case 0x15: // Kill
                 int mobToKill = p.readInt();

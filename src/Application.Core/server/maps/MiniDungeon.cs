@@ -43,13 +43,7 @@ public class MiniDungeon
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
-        timeoutTask = worldChannel.TimerManager.schedule(() =>
-        {
-            worldChannel.Send(w =>
-            {
-                ProcessTimeout();
-            });
-        }, expireTime);
+        timeoutTask = worldChannel.Schedule(v => ProcessTimeout(), TimeSpan.FromMilliseconds(expireTime));
         expireTime += worldChannel.Node.getCurrentTime();
     }
 
@@ -115,7 +109,7 @@ public class MiniDungeon
 
         if (timeoutTask != null)
         {
-            timeoutTask.cancel(false);
+            timeoutTask.cancel();
             timeoutTask = null;
         }
     }

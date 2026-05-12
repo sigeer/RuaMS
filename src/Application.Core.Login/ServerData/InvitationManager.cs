@@ -16,7 +16,7 @@ namespace Application.Core.Login.ServerData
     /// <summary>
     /// 邀请过期检查
     /// </summary>
-    public class InvitationManager : TaskBase
+    public class InvitationManager : ActorTask<MasterServer>
     {
         const long Expired = 3 * 60 * 1000;
 
@@ -25,7 +25,7 @@ namespace Application.Core.Login.ServerData
         ConcurrentDictionary<string, ConcurrentDictionary<int, InviteRequest>> _allRequests = new();
         readonly InviteMasterHandlerRegistry _inviteMasterHandlerRegistry;
         public InvitationManager(MasterServer server, ILogger<InvitationManager> logger, InviteMasterHandlerRegistry inviteMasterHandlerRegistry)
-            : base(nameof(InvitationManager), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30))
+            : base(server, nameof(InvitationManager), TimeSpan.FromSeconds(30))
         {
             _server = server;
             _logger = logger;
@@ -57,9 +57,9 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public override async ValueTask DisposeAsync()
+        public override void Dispose()
         {
-            await base.DisposeAsync();
+            base.Dispose();
             foreach (var item in _allRequests.Values)
             {
                 _allRequests.Clear();

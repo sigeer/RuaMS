@@ -150,6 +150,9 @@ public class ServerConfig
     public int MAP_DAMAGE_OVERTIME_COUNT;
 
     //Channel Mob Disease Monitor Configuration
+    /// <summary>
+    /// 200
+    /// </summary>
     public int MOB_STATUS_MONITOR_PROC;
     public int MOB_STATUS_MONITOR_LIFE;
     public int MOB_STATUS_AGGRO_PERSISTENCE;

@@ -91,7 +91,7 @@ namespace Application.Core.Login.Services
             {
                 delay = 60;
             }
-            _ = _server.TimerManager.ScheduleAsync("TV", BroadcastTVFinish, TimeSpan.FromSeconds(delay));
+            _server.Schedule("TV", async s => await BroadcastTVFinish(), TimeSpan.FromSeconds(delay));
             return new CreateTVMessageResponse();
         }
 

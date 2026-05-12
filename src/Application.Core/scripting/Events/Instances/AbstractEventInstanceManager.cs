@@ -531,13 +531,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         EventManager.DisposeInstance(name);
 
-        EventManager.ChannelServer.TimerManager.schedule(() =>
-        {
-            EventManager.ChannelServer.Send(w =>
-            {
-                mapManager.Dispose();
-            });
-        }, TimeSpan.FromMinutes(1));
+        EventManager.ChannelServer.Schedule(c => mapManager.Dispose(), TimeSpan.FromMinutes(1));
 
     }
 

@@ -18,7 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using Serilog;
 
 namespace Application.Core.Login.Tasks;
 
@@ -29,16 +31,16 @@ namespace Application.Core.Login.Tasks;
 ///  @info Thread responsible for maintaining coupons EXP & DROP effects active
 ///  整点开始，每小时执行
 /// </summary>
-public class CouponTask : AsyncAbstractRunnable
+public class CouponTask : ActorAsyncTask<MasterServer>
 {
     readonly MasterServer _server;
 
-    public CouponTask(MasterServer server): base(nameof(CouponTask))
+    public CouponTask(MasterServer server): base(server, nameof(CouponTask), TimeSpan.FromMilliseconds(YamlConfig.config.server.COUPON_INTERVAL))
     {
         _server = server;
     }
 
-    public override async Task RunAsync()
+    protected override async Task HandleRun()
     {
         try
         {
@@ -48,7 +50,7 @@ public class CouponTask : AsyncAbstractRunnable
         }
         catch (Exception sqle)
         {
-            log.Error(sqle, "Error updating coupon effects");
+            Log.Logger.Error(sqle, "Error updating coupon effects");
         }
     }
 }

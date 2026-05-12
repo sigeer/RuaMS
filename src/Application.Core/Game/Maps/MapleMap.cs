@@ -48,6 +48,7 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
+using System.Xml.Linq;
 using tools;
 using ZLinq;
 
@@ -87,8 +88,7 @@ public class MapleMap : IMap, INamedInstance
     public MapEffect? MapEffect { get; set; }
 
     private bool dropsOn = true;
-    private string onFirstUserEnter;
-    private string onUserEnter;
+
     private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
 
     public TimeMob? TimeMob { get; set; }
@@ -102,17 +102,9 @@ public class MapleMap : IMap, INamedInstance
 
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
-    float _monsterRate;
-    public float MonsterRate
-    {
-        get => _monsterRate;
-        set
-        {
-            _monsterRate = value;
-            UpdateMapActualMobRate();
-        }
-    }
-    public float ActualMonsterRate { get; private set; }
+
+    public float MonsterRate { get; set; }
+    public float ActualMonsterRate => MonsterRate * ChannelServer.WorldMobRate;
     public int Id { get; }
     public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
@@ -127,8 +119,7 @@ public class MapleMap : IMap, INamedInstance
         ChannelServer = worldChannel;
         this.MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator(this);
-        onFirstUserEnter = string.IsNullOrEmpty(mapTemplate.OnFirstUserEnter) ? Id.ToString() : mapTemplate.OnFirstUserEnter;
-        onUserEnter = string.IsNullOrEmpty(mapTemplate.OnUserEnter) ? Id.ToString() : mapTemplate.OnUserEnter;
+
         mapName = "";
         streetName = "";
         EventInstanceManager = eim;
@@ -174,7 +165,6 @@ public class MapleMap : IMap, INamedInstance
                 mapTemplate.TimeMob.EndHour);
         }
 
-        ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
 
         droppedItems = new(YamlConfig.config.server.ITEM_LIMIT_ON_MAP);
         droppedItems.OnOverWrite += (s, o) => makeDisappearItemFromMap(o);
@@ -182,12 +172,6 @@ public class MapleMap : IMap, INamedInstance
         CommandLoop = new CommandLoop<IMap>(this);
         CommandLoop.Start();
     }
-
-    void UpdateMapActualMobRate()
-    {
-        ActualMonsterRate = MonsterRate * ChannelServer.WorldMobRate;
-    }
-
 
     public AbstractEventInstanceManager? getEventInstance()
     {
@@ -2672,11 +2656,10 @@ public class MapleMap : IMap, INamedInstance
 
         clearMapObjects();
 
-        ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;
-
         EventInstanceManager = null;
         portals.Clear();
         MapEffect = null;
+        ChannelServer.TimerManager.StopGroup(InstanceName);
 
         monsterSpawn.Clear();
         _bossSp.Clear();
@@ -2795,7 +2778,7 @@ public class MapleMap : IMap, INamedInstance
 
         if (!string.IsNullOrEmpty(SourceTemplate.OnUserEnter))
         {
-            if (onUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
+            if (SourceTemplate.OnUserEnter.Equals("cygnusTest") && !MapId.isCygnusIntro(mapid))
             {
                 chr.SaveLocation(SavedLocationType.INTRO);
             }
@@ -3254,4 +3237,34 @@ public class MapleMap : IMap, INamedInstance
     public Task Send(Action<IMap> action) => Send(new MapDelegateCommand(action));
 
     public Task Send(Func<IMap, Task> action) => Send(new AsyncMapDelegateCommand(action));
+
+    public ScheduledFuture Schedule(string name, Action<IMap> r, TimeSpan delay)
+    {
+        return ChannelServer.TimerManager.Schedule(InstanceName, name, () => { Send(r); }, delay);
+    }
+
+    public ScheduledFuture Schedule(Action<IMap> r, TimeSpan delay)
+    {
+        return Schedule(Guid.NewGuid().ToString(), r, delay);
+    }
+
+    public ScheduledFuture Register(string name, Action<IMap> r, TimeSpan period, TimeSpan delay)
+    {
+        return ChannelServer.TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+    }
+
+    public ScheduledFuture Schedule(string name, Func<IMap, Task> r, TimeSpan delay)
+    {
+        return ChannelServer.TimerManager.Schedule(InstanceName, name, () => { Send(r); }, delay);
+    }
+
+    public ScheduledFuture Schedule(Func<IMap, Task> r, TimeSpan delay)
+    {
+        return Schedule(Guid.NewGuid().ToString(), r, delay);
+    }
+
+    public ScheduledFuture Register(string name, Func<IMap, Task> r, TimeSpan period, TimeSpan delay)
+    {
+        return ChannelServer.TimerManager.Register(InstanceName, name, () => Send(r), period, delay);
+    }
 }

@@ -6,18 +6,15 @@ namespace net.server.task;
 /**
  * @author Shavit
  */
-public class TimeoutTask : AbstractRunnable
+public class TimeoutTask : ActorTask<WorldChannelServer>
 {
-    readonly WorldChannelServer _server;
-
-    public TimeoutTask(WorldChannelServer server)
+    public TimeoutTask(WorldChannelServer server): base(server, nameof(TimeoutTask), TimeSpan.FromSeconds(10))
     {
-        _server = server;
     }
 
-    public override void HandleRun()
+    protected override void HandleRun()
     {
-        _server.Broadcast(w =>
+        _actor.Broadcast(w =>
         {
             var chars = w.getPlayerStorage().getAllCharacters();
             foreach (var chr in chars)
