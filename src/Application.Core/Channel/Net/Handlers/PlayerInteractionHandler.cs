@@ -879,7 +879,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
     {
         try
         {
-            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
+            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, [MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER]))
             {
                 if (mmo is Player mc)
                 {
