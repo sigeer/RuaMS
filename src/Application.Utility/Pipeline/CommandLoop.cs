@@ -97,20 +97,16 @@ namespace Application.Utility.Pipeline
             await tcs.Task;
         }
 
-        public async Task StopAsync()
+        public async ValueTask DisposeAsync()
         {
             _command.Writer.TryComplete();
 
             if (_runningTask != null)
             {
                 await _runningTask;
+                _runningTask.Dispose();
             }
             _runningTask = null;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await StopAsync();
         }
     }
 }

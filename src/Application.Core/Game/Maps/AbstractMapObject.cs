@@ -23,8 +23,18 @@ namespace Application.Core.Game.Maps;
 
 public abstract class AbstractMapObject : IMapObject
 {
+    /// <summary>
+    /// 相同MapId，不同频道的Map也不一样
+    /// </summary>
+    public IMap MapModel { get; }
     private Point position;
     private int objectId;
+
+    protected AbstractMapObject(IMap mapModel, Point position)
+    {
+        MapModel = mapModel;
+        this.position = position;
+    }
 
     public abstract MapObjectType getType();
 
@@ -33,7 +43,7 @@ public abstract class AbstractMapObject : IMapObject
         return position;
     }
 
-    public virtual void setPosition(Point position)
+    public void setPosition(Point position)
     {
         this.position = position;
     }
@@ -51,18 +61,10 @@ public abstract class AbstractMapObject : IMapObject
     public virtual void sendSpawnData(IChannelClient client) { }
     public virtual void sendDestroyData(IChannelClient client) { }
 
-    /// <summary>
-    /// 相同MapId，不同频道的Map也不一样
-    /// </summary>
-    public IMap MapModel { get; private set; } = null!;
+
     public virtual IMap getMap()
     {
         return MapModel;
-    }
-
-    public virtual void setMap(IMap map)
-    {
-        this.MapModel = map;
     }
 
     public virtual string GetName()
@@ -85,4 +87,13 @@ public abstract class AbstractMapObject : IMapObject
         getMap().BroadcastAll(chr => sendDestroyData(chr.Client));
     }
 
+    public virtual void OnMounted(IMap map)
+    {
+
+    }
+
+    public virtual void OnUnmounted()
+    {
+
+    }
 }

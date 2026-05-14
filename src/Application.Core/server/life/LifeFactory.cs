@@ -7,6 +7,7 @@ using Application.Templates.Npc;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 namespace server.life;
 
@@ -26,22 +27,6 @@ public class LifeFactory
         _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
     }
 
-    public AbstractLifeObject? getLife(int id, string type)
-    {
-        if (type.Equals(LifeType.NPC, StringComparison.OrdinalIgnoreCase))
-        {
-            return getNPC(id);
-        }
-        else if (type.Equals(LifeType.Monster, StringComparison.OrdinalIgnoreCase))
-        {
-            return getMonster(id);
-        }
-        else
-        {
-            Log.Logger.Warning("Unknown Life type: {LifeType}", type);
-            return null;
-        }
-    }
 
     public MonsterCore? getMonsterStats(int mid)
     {
@@ -115,20 +100,14 @@ public class LifeFactory
         }
         decodeElementalString(stats, mobTemplate.ElementStr ?? "");
 
-        MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
         if (mobTemplate.Skill.Length > 0)
         {
-            HashSet<MobSkillId> skills = new();
             foreach (var skill in mobTemplate.Skill)
             {
-                MobSkillType type = MobSkillTypeUtils.from(skill.Skill);
-                skills.Add(new MobSkillId(type, skill.Level));
+                var skillId = new MobSkillId(MobSkillTypeUtils.from(skill.Skill), skill.Level);
 
-                // Note: animation time handling might need adjustment
-                MobSkill mobSkill = MobSkillFactory.getMobSkillOrThrow(type, skill.Level);
-                mi.setMobSkillAnimationTime(mobSkill, skill.EffectAfter);
+                stats.MobSkillAnimation[skillId] = skill.EffectAfter;
             }
-            stats.setSkills(skills);
         }
 
         if (mobTemplate.Ban != null)
@@ -145,22 +124,17 @@ public class LifeFactory
             }
         }
 
-        monsterStats[mid] = data = new(stats, mobTemplate.AttackInfos);
+        monsterStats[mid] = data = new(mid, stats, mobTemplate.AttackInfos);
         return data;
 
     }
 
-    public Monster? getMonster(int mid)
+    public MonsterCore? getMonster(int mid)
     {
-        var s = getMonsterStats(mid);
-        if (s == null)
-        {
-            return null;
-        }
-        return new Monster(mid, s.Stats, s.AttackInfo);
+        return getMonsterStats(mid);
     }
 
-    public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
+    public MonsterCore GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"MobId = {mid}");
 
     public int getMonsterLevel(int mid)
     {
@@ -180,17 +154,10 @@ public class LifeFactory
         }
     }
 
-    public NPC? getNPC(int nid)
-    {
-        var npcTemplate = _npcProvider.GetItem(nid);
-        if (npcTemplate != null)
-            return new NPC(nid, new NPCStats(ClientCulture.SystemCulture.GetNpcName(nid), npcTemplate));
+    public NpcTemplate? getNPC(int nid) => _npcProvider.GetItem(nid);
 
-        return null;
-    }
-
-    public NpcTemplate? GetNPCTemplate(int nid)
+    public NpcTemplate GetNPCTemplateTrust(int nid)
     {
-        return _npcProvider.GetItem(nid);
+        return getNPC(nid) ?? throw new BusinessResException($"NpcId = {nid}");
     }
 }

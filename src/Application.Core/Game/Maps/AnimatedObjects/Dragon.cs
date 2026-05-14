@@ -34,11 +34,9 @@ public class Dragon : AbstractAnimatedMapObject
 {
     private Player owner;
 
-    public Dragon(Player chr) : base()
+    public Dragon(Player chr) : base(chr.MapModel, chr.getPosition(), chr.getStance())
     {
         this.owner = chr;
-        this.setPosition(chr.getPosition());
-        this.setStance(chr.getStance());
         this.sendSpawnData(chr.getClient());
     }
 

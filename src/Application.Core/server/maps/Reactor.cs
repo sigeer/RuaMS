@@ -56,7 +56,7 @@ public class Reactor : AbstractMapObject
     private GuardianSpawnPoint? guardian = null;
     private sbyte facingDirection = 0;
 
-    public Reactor(ReactorStats stats, int rid)
+    public Reactor(IMap map, Point pos, ReactorStats stats, int rid) : base(map, pos)
     {
         this.evstate = 0;
         this.stats = stats;

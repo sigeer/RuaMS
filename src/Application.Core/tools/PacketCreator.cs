@@ -1065,9 +1065,9 @@ public class PacketCreator
      * @param effect   The spawn effect.
      * @return The spawn monster packet.
      */
-    public static Packet spawnMonster(Monster life, bool newSpawn, int effect = 0)
+    public static Packet spawnMonster(Monster life, bool newSpawn)
     {
-        return spawnMonsterInternal(life, false, newSpawn, false, effect, false);
+        return spawnMonsterInternal(life, false, newSpawn, false, life.getSpawnEffect(), false);
     }
 
     /**

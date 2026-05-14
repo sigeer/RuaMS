@@ -395,21 +395,18 @@ public class MobSkill : ISkill
 
                 foreach (int mobId in summons.Take(summonLimit))
                 {
-                    var toSpawn = LifeFactory.Instance.getMonster(mobId);
-                    if (toSpawn != null)
+                    var toSpawnData =  LifeFactory.Instance.getMonster(mobId);
+                    if (toSpawnData != null)
                     {
-                        if (bossRushMap)
-                        {
-                            toSpawn.disableDrops();  // no littering on BRPQ pls
-                        }
-                        toSpawn.setPosition(monster.getPosition());
                         int ypos, xpos;
                         xpos = monster.getPosition().X;
                         ypos = monster.getPosition().Y;
+
+                        int setFh = -1;
                         switch (mobId)
                         {
                             case MobId.HIGH_DARKSTAR: // Pap bomb high
-                                toSpawn.setFh((int)Math.Ceiling(Randomizer.nextDouble() * 19.0));
+                                setFh = (int)Math.Ceiling(Randomizer.nextDouble() * 19.0);
                                 ypos = -590;
                                 break;
                             case MobId.LOW_DARKSTAR: // Pap bomb
@@ -454,14 +451,23 @@ public class MobSkill : ISkill
                                 }
                                 break;
                         }
-                        toSpawn.setPosition(new Point(xpos, ypos));
+                        var toSpawn = map.CreateMonster(toSpawnData, new Point(xpos, ypos));
+                        if (bossRushMap)
+                        {
+                            toSpawn.disableDrops();  // no littering on BRPQ pls
+                        }
+                        toSpawn.setSpawnEffect(spawnEffect);
+                        if (setFh > -1)
+                        {
+                            toSpawn.setFh(setFh);
+                        }
                         if (toSpawn.getId() == MobId.LOW_DARKSTAR)
                         {
                             map.spawnFakeMonster(toSpawn);
                         }
                         else
                         {
-                            map.spawnMonsterWithEffect(toSpawn, spawnEffect, toSpawn.getPosition());
+                            map.spawnMonster(toSpawn);
                         }
                         monster.addSummonedMob(toSpawn);
                     }

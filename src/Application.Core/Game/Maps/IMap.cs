@@ -1,11 +1,13 @@
 using Application.Core.Channel;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Templates.Npc;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.inventory;
@@ -81,8 +83,8 @@ namespace Application.Core.Game.Maps
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
-        List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
-        List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
+        List<IMapObject> getMapObjectsInBox(Rectangle box, HashSet<MapObjectType> types);
+        List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, HashSet<MapObjectType> types);
         List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject;
         void clearMapObjects();
         #endregion
@@ -116,7 +118,7 @@ namespace Application.Core.Game.Maps
         Monster? getMonsterByOid(int oid);
         void moveMonster(Monster monster, Point reportedPos);
         void spawnFakeMonster(Monster monster);
-        void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
+        void spawnFakeMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null);
         void spawnHorntailOnGroundBelow(Point targetPoint);
         /// <summary>
         /// 召唤扎昆（复合型Mob）
@@ -125,11 +127,12 @@ namespace Application.Core.Game.Maps
         void SpawnZakumOnGroundBelow(Point targetPoint);
         void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
-        void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
-        void spawnMonsterWithEffect(Monster monster, int effect, Point pos);
+        Monster CreateMonster(MonsterCore mobData, Point pos);
+        void spawnMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null);
+        void spawnDojoMonster(MonsterCore monster);
         void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
-        void spawnDojoMonster(Monster monster);
+
         #endregion
 
 
@@ -183,6 +186,7 @@ namespace Application.Core.Game.Maps
 
 
         #region Npc
+        NPC CreateNPC(NpcTemplate template, Point pos);
         void SpawnNpc(int npcId, Point pos);
         NPC? getNPCById(int id);
         bool containsNPC(int npcid);
@@ -290,6 +294,7 @@ namespace Application.Core.Game.Maps
         void warpOutByTeam(int team, int mapid);
 
         void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
+        void Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Action<Player> effectPlayer);
         void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
 
         #region Reactors

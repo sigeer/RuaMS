@@ -1,7 +1,5 @@
 using Application.Shared.Login;
-using Application.Shared.Models;
-using Application.Shared.Net;
-using Application.Utility.Tasks;
+using Application.Utility;
 
 namespace Application.Shared.Servers
 {

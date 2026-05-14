@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
@@ -801,7 +802,7 @@ namespace Application.Plugin.Script
                 {
                     var level = int.Parse(eim.getProperty("level"));
                     var chests = int.Parse(eim.getProperty("openedChests"));
-                    Monster boss;
+                    MonsterCore boss;
                     if (chests == 0)
                     {
                         boss = LifeFactory.Instance.GetMonsterTrust(9300119);
@@ -815,8 +816,10 @@ namespace Application.Plugin.Script
                         boss = LifeFactory.Instance.GetMonsterTrust(9300106);
                     }                   //enraged lord pirate
 
-                    boss.changeDifficulty(level, true);
-                    getMap(925100500).spawnMonsterOnGroundBelow(boss, new Point(777, 140));
+                    getMap(925100500).spawnMonsterOnGroundBelow(boss, new Point(777, 140), mob =>
+                    {
+                        mob.changeDifficulty(level, true);
+                    });
                     eim.setProperty("spawnedBoss", "true");
                 }
 

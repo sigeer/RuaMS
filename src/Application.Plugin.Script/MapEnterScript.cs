@@ -569,8 +569,10 @@ namespace Application.Plugin.Script
             spawnNpc(1204006, new Point(75, 0), mapObj);
 
             var monsterObj = LifeFactory.Instance.GetMonsterTrust(9300382);
-            monsterObj.setStance(4);
-            mapObj.spawnFakeMonsterOnGroundBelow(monsterObj, new Point(225, 0));
+            mapObj.spawnFakeMonsterOnGroundBelow(monsterObj, new Point(225, 0), mob =>
+            {
+                mob.setStance(4);
+            });
 
             Pink("情报商店被人偶师占领了！确认情况后，击退人偶师！");
 

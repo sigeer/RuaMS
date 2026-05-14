@@ -40,10 +40,8 @@ public class DoorObject : AbstractMapObject
     /// 对应主城的门
     /// </summary>
     public DoorObject LinkDoor { get; }
-    public DoorObject(Player owner, Point currentPosition, IMap toMap, IMap fromMap, MysticDoorPortal townPortal) : base()
+    public DoorObject(Player owner, Point currentPosition, IMap toMap, IMap fromMap, MysticDoorPortal townPortal) : base(fromMap, currentPosition)
     {
-        setPosition(currentPosition);
-
         OwnerId = owner.Id;
         from = fromMap;
         to = toMap;
@@ -51,7 +49,7 @@ public class DoorObject : AbstractMapObject
         LinkDoor = new DoorObject(this, townPortal);
     }
 
-    public DoorObject(DoorObject areaDoor, MysticDoorPortal townPortal) : base()
+    public DoorObject(DoorObject areaDoor, MysticDoorPortal townPortal) : base(areaDoor.to, townPortal.getPosition())
     {
         OwnerId = areaDoor.OwnerId;
         from = areaDoor.to;
@@ -59,7 +57,6 @@ public class DoorObject : AbstractMapObject
 
         LinkDoor = areaDoor;
         TownPortal = townPortal;
-        setPosition(TownPortal.getPosition());
         TownPortal.Door = this;
     }
 

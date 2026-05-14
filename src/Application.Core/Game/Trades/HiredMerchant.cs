@@ -41,9 +41,8 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public HiredMerchant(Player owner, string desc, Item item)
+    public HiredMerchant(Player owner, string desc, Item item) : base(owner.MapModel, owner.getPosition())
     {
-        setPosition(owner.getPosition());
         StartTime = owner.Client.CurrentServer.Node.getCurrentTime();
         ExpirationTime = item.getExpiration();
         Owner = owner;

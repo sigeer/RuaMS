@@ -212,7 +212,7 @@ namespace Application.Core.Game.Players
                 effectsToCancel.Add(new(mbs, stat.Value));
 
 
-                if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
+                if (ActiveEffects.TryGetValue(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
                     mbsvh.Status = TickableStatus.Remove;

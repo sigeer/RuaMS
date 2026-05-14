@@ -1979,7 +1979,10 @@ namespace Application.Plugin.Script
                 }
 
                 var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-                mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300345), 12, new Point(npcPos.X + 50, npcPos.Y));
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300345), new Point(npcPos.X + 50, npcPos.Y), mob =>
+                {
+                    mob.setSpawnEffect(12);
+                });
                 mapObj.destroyNPC(getNpc());
             }
             else
@@ -2180,7 +2183,10 @@ namespace Application.Plugin.Script
 
             var mapObj = getMap();
             var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300348), 12, new Point(npcPos.X + 50, npcPos.Y));
+            mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300348), new Point(npcPos.X + 50, npcPos.Y), mob =>
+            {
+                mob.setSpawnEffect(12);
+            });
             mapObj.destroyNPC(getNpc());
         }
 
@@ -3640,7 +3646,10 @@ namespace Application.Plugin.Script
 
             var mapObj = getMap();
             var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-            mapObj.spawnMonsterWithEffect(LifeFactory.Instance.GetMonsterTrust(9300351), 12, new Point(npcPos.X + 50, npcPos.Y));
+            mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300351), new Point(npcPos.X + 50, npcPos.Y), mob =>
+            {
+                mob.setSpawnEffect(12);
+            });
             mapObj.destroyNPC(getNpc());
         }
 

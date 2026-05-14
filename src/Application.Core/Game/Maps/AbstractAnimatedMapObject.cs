@@ -29,6 +29,11 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
 
     private int stance;
 
+    protected AbstractAnimatedMapObject(IMap mapModel, Point position, int stance) : base(mapModel, position)
+    {
+        this.stance = stance;
+    }
+
     public int getStance()
     {
         return stance;

@@ -8,5 +8,5 @@ namespace Application.Core.Game.Life.Monsters
     /// </summary>
     /// <param name="Stats"></param>
     /// <param name="AttackInfo"></param>
-    public record MonsterCore(MonsterStats Stats, MobAttackTemplate[] AttackInfo);
+    public record MonsterCore(int MobId, MonsterStats Stats, MobAttackTemplate[] AttackInfo);
 }

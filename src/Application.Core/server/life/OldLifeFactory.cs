@@ -66,36 +66,6 @@ public class OldLifeFactory
         return ret;
     }
 
-    public AbstractLifeObject? getLife(int id, string type)
-    {
-        if (type.Equals(LifeType.NPC, StringComparison.OrdinalIgnoreCase))
-        {
-            return getNPC(id);
-        }
-        else if (type.Equals(LifeType.Monster, StringComparison.OrdinalIgnoreCase))
-        {
-            return getMonster(id);
-        }
-        else
-        {
-            log.Warning("Unknown Life type: {LifeType}", type);
-            return null;
-        }
-    }
-
-    private void setMonsterAttackInfo(int mid, List<MobAttackInfoHolder> attackInfos)
-    {
-        if (attackInfos.Count > 0)
-        {
-            MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-
-            foreach (MobAttackInfoHolder attackInfo in attackInfos)
-            {
-                mi.setMobAttackInfo(mid, attackInfo.attackPos, attackInfo.mpCon, attackInfo.coolTime);
-                mi.setMobAttackAnimationTime(mid, attackInfo.attackPos, attackInfo.animationTime);
-            }
-        }
-    }
 
     public MonsterCore? getMonsterStats(int mid)
     {
@@ -233,12 +203,10 @@ public class OldLifeFactory
                     }
 
                     MobSkill skill = MobSkillFactory.getMobSkillOrThrow(type, skillLv);
-                    mi.setMobSkillAnimationTime(skill, animationTime);
                 }
 
                 localI++;
             }
-            stats.setSkills(skills);
         }
 
         int i = 0;
@@ -276,26 +244,14 @@ public class OldLifeFactory
             }
         }
 
-        return new(stats, []);
+        return new(mid, stats, []);
     }
 
-    public Monster? getMonster(int mid)
+    public MonsterCore? getMonster(int mid)
     {
         try
         {
-            var stats = monsterStats.GetValueOrDefault(mid);
-            if (stats == null)
-            {
-                var mobStats = getMonsterStats(mid);
-                if (mobStats == null)
-                    return null;
-
-                stats = mobStats.Stats;
-                setMonsterAttackInfo(mid, []);
-
-                monsterStats.AddOrUpdate(mid, stats);
-            }
-            return new Monster(mid, stats, []);
+            return getMonsterStats(mid);
         }
         catch (NullReferenceException npe)
         {
@@ -305,7 +261,7 @@ public class OldLifeFactory
     }
 
 
-    public Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
+    public MonsterCore GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
 
     public int getMonsterLevel(int mid)
     {
@@ -341,14 +297,5 @@ public class OldLifeFactory
         {
             stats.setEffectiveness(Element.getFromChar(elemAttr.ElementAt(i)), ElementalEffectivenessUtils.getByNumber(int.Parse(elemAttr.ElementAt(i + 1).ToString())));
         }
-    }
-
-    public NPC? getNPC(int nid)
-    {
-        var npcTemplate = _npcProvider.GetItem(nid);
-        if (npcTemplate != null)
-            return new NPC(nid, new NPCStats(ClientCulture.SystemCulture.GetNpcName(nid), npcTemplate));
-
-        return null;
     }
 }

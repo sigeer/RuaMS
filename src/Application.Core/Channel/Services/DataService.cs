@@ -67,7 +67,14 @@ namespace Application.Core.Channel.Services
             if (o == null)
                 return null;
 
-            var player = new Player(c);
+            var mapManager = c.CurrentServer.getMapFactory();
+            var mapModel = mapManager.getMap(o.Character.Map) ?? mapManager.getMap(MapId.HENESYS);
+
+            var portal = mapModel.getPortal(o.Character.Spawnpoint);
+            if (portal == null)
+                portal = mapModel.getPortal(0)!;
+            var player = new Player(c, mapModel, portal);
+
             _mapper.Map(o.Character, player);
 
             player.Monsterbook.LoadData(o.MonsterBooks);
@@ -145,17 +152,7 @@ namespace Application.Core.Channel.Services
             c.SetAccount(_mapper.Map<AccountCtrl>(o.Account));
             c.SetPlayer(player);
 
-            var mapManager = c.CurrentServer.getMapFactory();
-            player.setMap(mapManager.getMap(o.Character.Map) ?? mapManager.getMap(MapId.HENESYS));
 
-            player.InitialSpawnPoint = o.Character.Spawnpoint;
-            var portal = player.MapModel.getPortal(player.InitialSpawnPoint);
-            if (portal == null)
-            {
-                portal = player.MapModel.getPortal(0)!;
-                player.InitialSpawnPoint = 0;
-            }
-            player.setPosition(portal.getPosition());
 
             foreach (var item in o.PetIgnores)
             {
@@ -525,7 +522,7 @@ namespace Application.Core.Channel.Services
             if (lifeType == LifeType.Monster)
             {
                 var mob = LifeFactory.Instance.getMonster(lifeId);
-                if (mob == null || string.IsNullOrEmpty(mob.getName()) || mob.getName().Equals("MISSINGNO"))
+                if (mob == null)
                 {
                     chr.dropMessage("You have entered an invalid mob id.");
                     return;
@@ -535,7 +532,7 @@ namespace Application.Core.Channel.Services
             if (lifeType == LifeType.NPC)
             {
                 var npc = LifeFactory.Instance.getNPC(lifeId);
-                if (npc == null || string.IsNullOrEmpty(npc.getName()) || npc.getName().Equals("MISSINGNO"))
+                if (npc == null)
                 {
                     chr.dropMessage("You have entered an invalid npc id.");
                     return;

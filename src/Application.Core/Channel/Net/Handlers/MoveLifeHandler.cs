@@ -87,13 +87,12 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             useSkillId = skillId;
             useSkillLevel = skillLv;
 
-            if (monster.hasSkill(useSkillId, useSkillLevel))
+            if (monster.getStats().MobSkillAnimation.TryGetValue(new MobSkillId((MobSkillType)useSkillId, useSkillLevel), out var animationTime))
             {
                 var toUse = MobSkillFactory.GetMobSkill(useSkillId, useSkillLevel);
 
                 if (toUse != null && monster.canUseSkill(toUse, true))
                 {
-                    int animationTime = MonsterInformationProvider.getInstance().getMobSkillAnimationTime(toUse);
                     if (animationTime > 0 && toUse.getType() != MobSkillType.BANISH)
                     {
                         toUse.applyDelayedEffect(player, monster, true, animationTime);

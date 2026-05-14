@@ -31,9 +31,8 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
     public TickableStatus Status { get; protected set; }
 
-    public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
+    public MapItem(IMap map, Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop): base(map, position)
     {
-        setPosition(position);
         this.Item = item;
         this.dropper = dropper;
         this.character_ownerid = owner.getId();
@@ -54,15 +53,14 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
     /// <param name="type">0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA</param>
     /// <param name="playerDrop"></param>
     /// <param name="questid"></param>
-    public MapItem(Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop, int questid)
-        : this(item, position, dropper, owner, type, playerDrop)
+    public MapItem(IMap map, Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop, int questid)
+        : this(map, item, position, dropper, owner, type, playerDrop)
     {
         this.questid = questid;
     }
 
-    public MapItem(int meso, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop)
+    public MapItem(IMap map, int meso, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop) : base(map, position)
     {
-        setPosition(position);
         this.Item = null;
         this.dropper = dropper;
         this.character_ownerid = owner.getId();
@@ -233,9 +231,9 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), DropLeaveFieldType.None, 0));
     }
 
-    public override void setMap(IMap map)
+    public override void OnMounted(IMap map)
     {
-        base.setMap(map);
+        base.OnMounted(map);
 
         dropTime = map.ChannelServer.Node.getCurrentTime();
         ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;

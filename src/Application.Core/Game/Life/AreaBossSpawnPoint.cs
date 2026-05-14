@@ -23,10 +23,8 @@ public class AreaBossSpawnPoint : SpawnPoint
         _spawnMessage = spawnMessage;
     }
 
-    protected override void SetMonsterPosition(Monster mob)
-    {
-        mob.setPosition(Randomizer.Select(_points).GetPoint());
-    }
+
+    protected override Point GetPosition() => Randomizer.Select(_points).GetPoint();
 
     protected override void SubscribeMonster(Monster mob)
     {

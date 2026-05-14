@@ -42,9 +42,8 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public PlayerShop(Player owner, string description, Item item)
+    public PlayerShop(Player owner, string description, Item item) : base(owner.MapModel, owner.getPosition())
     {
-        setPosition(owner.getPosition());
         Owner = owner;
         ChannelServer = owner.getChannelServer();
         StartTime = ChannelServer.Node.getCurrentTime();

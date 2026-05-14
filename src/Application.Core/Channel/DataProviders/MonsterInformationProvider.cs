@@ -84,11 +84,6 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
     private ConcurrentDictionary<int, List<DropEntry>> continentdrops = new();
     private ConcurrentDictionary<int, List<DropEntry>> extraMultiEquipDrops = new();
 
-    private ConcurrentDictionary<KeyValuePair<int, int>, int> mobAttackAnimationTime = new();
-    private ConcurrentDictionary<MobSkill, int> mobSkillAnimationTime = new();
-
-    private ConcurrentDictionary<int, KeyValuePair<int, int>> mobAttackInfo = new();
-
     private Dictionary<int, List<DropEntry>> drops = new();
     private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private Dictionary<int, bool> mobBossCache = new();
@@ -234,47 +229,13 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => client.CurrentCulture.GetMobName(x.Key)).Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
     }
 
-    public void setMobAttackAnimationTime(int monsterId, int attackPos, int animationTime)
-    {
-        mobAttackAnimationTime.AddOrUpdate(new(monsterId, attackPos), animationTime);
-    }
-
-    public int getMobAttackAnimationTime(int monsterId, int attackPos)
-    {
-        return mobAttackAnimationTime.GetValueOrDefault(new(monsterId, attackPos));
-    }
-
-    public void setMobSkillAnimationTime(MobSkill skill, int animationTime)
-    {
-        mobSkillAnimationTime.AddOrUpdate(skill, animationTime);
-    }
-
-    public int getMobSkillAnimationTime(MobSkill skill)
-    {
-        return mobSkillAnimationTime.GetValueOrDefault(skill);
-    }
-
-    public void setMobAttackInfo(int monsterId, int attackPos, int mpCon, int coolTime)
-    {
-        mobAttackInfo.AddOrUpdate((monsterId << 3) + attackPos, new(mpCon, coolTime));
-    }
-
-    public KeyValuePair<int, int>? getMobAttackInfo(int monsterId, int attackPos)
-    {
-        if (attackPos < 0 || attackPos > 7)
-        {
-            return null;
-        }
-        return mobAttackInfo.GetValueOrDefault((monsterId << 3) + attackPos);
-    }
-
     public bool isBoss(int id)
     {
         if (!mobBossCache.TryGetValue(id, out var boss))
         {
             try
             {
-                boss = LifeFactory.Instance.getMonster(id)?.isBoss() ?? false;
+                boss = LifeFactory.Instance.getMonster(id)?.Stats?.isBoss() ?? false;
             }
             catch (Exception e)
             {
@@ -288,11 +249,6 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         }
 
         return boss;
-    }
-
-    public string getMobNameFromId(int id)
-    {
-        return ClientCulture.SystemCulture.GetMobName(id);
     }
 
     public void clearDrops()
