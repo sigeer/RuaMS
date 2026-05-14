@@ -1,9 +1,5 @@
-using Application.Core.Channel.Commands;
-using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Items;
 using Application.Utility.Tickables;
 using client.inventory;
-using server.maps;
 using tools;
 
 
@@ -31,7 +27,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
     public TickableStatus Status { get; protected set; }
 
-    public MapItem(IMap map, Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop): base(map, position)
+    public MapItem(IMap map, Item item, Point position, IMapObject dropper, Player owner, DropType type, bool playerDrop) : base(map, position)
     {
         this.Item = item;
         this.dropper = dropper;
@@ -241,6 +237,14 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
         willHitReactor = map.CanHitReactor(this);
     }
+
+    public override void OnUnmounted()
+    {
+        setPickedUp(true);
+
+        base.OnUnmounted();
+    }
+
 
     bool willHitReactor;
     public void OnTick(long now)

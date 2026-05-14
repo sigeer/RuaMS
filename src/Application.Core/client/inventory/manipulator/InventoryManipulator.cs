@@ -735,7 +735,7 @@ public class InventoryManipulator
 
             if (isDisappearingItemDrop(target))
             {
-                map.disappearingItemDrop(chr, chr, target, dropPos);
+                map.DropItemDestroy(target.getItemId(), dropPos);
             }
             else
             {
@@ -775,7 +775,7 @@ public class InventoryManipulator
 
             if (isDisappearingItemDrop(source))
             {
-                map.disappearingItemDrop(chr, chr, source, dropPos);
+                map.DropItemDestroy(source.getItemId(), dropPos);
             }
             else
             {

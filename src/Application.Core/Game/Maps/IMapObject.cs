@@ -15,7 +15,14 @@ namespace Application.Core.Game.Maps
         void sendSpawnData(IChannelClient client);
         void sendDestroyData(IChannelClient client);
 
+        /// <summary>
+        /// 添加到地图时
+        /// </summary>
+        /// <param name="map"></param>
         void OnMounted(IMap map);
+        /// <summary>
+        /// 从地图移除时
+        /// </summary>
         void OnUnmounted();
     }
 }

@@ -15,6 +15,8 @@ namespace Application.Core.Game.Maps
             MapObjectType.MINI_GAME
         ];
 
+        public static HashSet<MapObjectType> GetRangedMapObjectTypes() => YamlConfig.config.server.USE_MAXRANGE ? [] : rangedMapobjectTypes;
+
         // rangedMapobjectTypes 和 NonRangedType都包含了NPC
         public static bool isNonRangedType(MapObjectType type)
         {
@@ -37,7 +39,9 @@ namespace Application.Core.Game.Maps
 
         public static double getRangedDistance()
         {
-            return YamlConfig.config.server.USE_MAXRANGE ? double.PositiveInfinity : 722500;
+            return YamlConfig.config.server.USE_MAXRANGE ? double.PositiveInfinity : RangedDistance;
         }
+
+        public const double RangedDistance = 722500;
     }
 }

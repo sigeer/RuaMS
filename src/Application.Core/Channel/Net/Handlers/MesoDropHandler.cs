@@ -85,7 +85,7 @@ public class MesoDropHandler : ChannelHandlerBase
 
         if (_fishingService.AttemptCatchFish(player, meso))
         {
-            player.getMap().disappearingMesoDrop(meso, player, player, player.getPosition());
+            player.getMap().DropItemDestroy(0, player.getPosition());
         }
         else
         {

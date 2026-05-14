@@ -61,7 +61,7 @@ public abstract class AbstractMapObject : IMapObject
     public virtual void sendSpawnData(IChannelClient client) { }
     public virtual void sendDestroyData(IChannelClient client) { }
 
-
+    
     public virtual IMap getMap()
     {
         return MapModel;
@@ -81,11 +81,6 @@ public abstract class AbstractMapObject : IMapObject
         return getObjectId();
     }
 
-    public virtual void MapRemove()
-    {
-        getMap().removeMapObject(this);
-        getMap().BroadcastAll(chr => sendDestroyData(chr.Client));
-    }
 
     public virtual void OnMounted(IMap map)
     {

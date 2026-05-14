@@ -273,6 +273,12 @@ public class MapleMap : IMap, INamedInstance
 
         this.mapobjects.AddOrUpdate(mapobject.getObjectId(), mapobject);
         mapobject.OnMounted(this);
+
+
+        if (mapobject is MapItem mapItem)
+        {
+            droppedItems.Add(mapItem);
+        }
     }
 
     private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery)
@@ -292,11 +298,6 @@ public class MapleMap : IMap, INamedInstance
                 chr.addVisibleMapObject(mapobject);
                 packetbakery?.Invoke(chr.Client);
             }
-        }
-
-        if (mapItem != null)
-        {
-            droppedItems.Add(mapItem);
         }
     }
 
@@ -1222,7 +1223,7 @@ public class MapleMap : IMap, INamedInstance
         if (FieldLimit.DROP_LIMIT.check(this.getFieldLimit()))
         {
             // thanks Conrad for noticing some maps shouldn't have loots available
-            this.disappearingItemDrop(dropper, owner, item, pos);
+            DropItemDestroy(item.getItemId(), dropper.getPosition());
             return;
         }
 
@@ -1503,21 +1504,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos)
-    {
-        Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(this, item, droppos, dropper, owner, DropType.OwnerWithTeam, false);
-
-        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, (int)DropEnterFieldType.Destroy, rangedFrom: mdrop.getPosition());
-    }
-
-    public void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos)
-    {
-        Point droppos = calcDropPos(pos, dropper.getPosition());
-        MapItem mdrop = new MapItem(this, meso, droppos, dropper, owner, DropType.OwnerWithTeam, false);
-
-        broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, (int)DropEnterFieldType.Destroy, rangedFrom: mdrop.getPosition());
-    }
     private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, Point? rangedFrom = null, short dropDelay = 0)
     {
         Broadcast(-1, rangedFrom == null ? double.PositiveInfinity : MapGlobalData.getRangedDistance(), rangedFrom, chr =>
@@ -1525,15 +1511,16 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay));
         });
     }
+
+    public void DropItemDestroy(int itemId, Point dropperPos)
+    {
+        Broadcast(-1, MapGlobalData.RangedDistance, dropperPos, chr =>
+        {
+            chr.sendPacket(PacketCreator.DropItemDestroy(itemId, dropperPos));
+        });
+    }
     #endregion
 
-
-
-    private void registerMapSchedule(IWorldChannelCommand r, long delay)
-    {
-        OverallService service = this.getChannelServer().OverallService;
-        service.registerOverallAction(mapid, r, delay);
-    }
 
     public void startMapEffect(string msg, int itemId, long time = 30000)
     {

@@ -318,8 +318,7 @@ namespace Application.Core.Game.Maps
         #endregion
 
         #region Drop
-        void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos);
-        void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos);
+        void DropItemDestroy(int itemId, Point dropperPos);
         void dropFromFriendlyMonster(Player chr, Monster mob);
         void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
         void DropItemFromMonsterBySteal(List<DropEntry> list, Player chr, Monster mob, short delay);
