@@ -596,6 +596,6 @@ public class MobSkill : ISkill
 
     private List<IMapObject> getObjectsInRange(Monster monster, MapObjectType objectType)
     {
-        return monster.getMap().getMapObjectsInBox(calculateBoundingBox(monster.getPosition()), Collections.singletonList(objectType));
+        return monster.getMap().getMapObjectsInBox(calculateBoundingBox(monster.getPosition()), [objectType]);
     }
 }

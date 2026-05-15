@@ -93,7 +93,7 @@ namespace Application.Core.Game.Maps.Mists
                         return;
                     }
 
-                    List<IMapObject> affectedMonsters = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.MONSTER));
+                    List<IMapObject> affectedMonsters = getMap().getMapObjectsInBox(getBox(), [MapObjectType.MONSTER]);
                     foreach (IMapObject mo in affectedMonsters)
                     {
                         if (makeChanceResult())
@@ -106,7 +106,7 @@ namespace Application.Core.Game.Maps.Mists
 
                 else if (_isRecoveryMist)
                 {
-                    List<IMapObject> players = getMap().getMapObjectsInBox(getBox(), Collections.singletonList(MapObjectType.PLAYER));
+                    List<IMapObject> players = getMap().getMapObjectsInBox(getBox(), [MapObjectType.PLAYER]);
                     foreach (IMapObject mo in players)
                     {
                         if (makeChanceResult())

@@ -22,9 +22,12 @@ namespace Application.Core.Game.Maps
         {
             switch (type)
             {
-                // case MapObjectType.NPC:
+                // rangedMapobjectTypes包含了NPC
+                case MapObjectType.NPC:
                 case MapObjectType.PLAYER:
+                // rangedMapobjectTypes包含了PLAYER_SHOP，性质应该和HIRED_MERCHANT一样？
                 case MapObjectType.HIRED_MERCHANT:
+                // PlayerNPC应该同NPC？
                 case MapObjectType.PLAYER_NPC:
                 case MapObjectType.DRAGON:
                 case MapObjectType.MIST:
