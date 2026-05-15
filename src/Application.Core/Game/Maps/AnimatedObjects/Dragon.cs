@@ -64,4 +64,9 @@ public class Dragon : AbstractAnimatedMapObject
     {
         return owner;
     }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return getOwner() == chr || base.IsVisibleForPlayer(chr);
+    }
 }

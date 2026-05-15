@@ -68,8 +68,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
 
         chr.getMap().broadcastMessage(chr,
             PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
-            false,
-            true);
+            false);
         int numFinisherOrbs = 0;
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))

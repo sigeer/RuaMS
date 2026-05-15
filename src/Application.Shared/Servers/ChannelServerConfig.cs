@@ -26,9 +26,7 @@ namespace Application.Shared.Servers
 
     public class ChannelServerSystemConfig
     {
-        /// <summary>
-        /// 自动清理不活跃地图
-        /// </summary>
-        public bool AutoClearMap { get; set; }
+        public double RangeOfVisibility { get; set; } = 722500;
+        public double RangeOfConversation { get; set; } = 1000000;
     }
 }

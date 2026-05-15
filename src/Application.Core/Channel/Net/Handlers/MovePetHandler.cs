@@ -57,7 +57,13 @@ public class MovePetHandler : AbstractMovementPacketHandler
         {
             return;
         }
-        player.getPet(slot)?.updatePosition(res);
+        var pet = player.getPet(slot);
+        if (pet == null)
+        {
+            return;
+        }
+
+        pet.updatePosition(res);
         player.getMap().broadcastMessage(player, PacketCreator.movePet(player.getId(), slot, pos, res), false);
     }
 }

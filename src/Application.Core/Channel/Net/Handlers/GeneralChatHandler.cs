@@ -79,16 +79,7 @@ public class GeneralChatHandler : ChannelHandlerBase
                 return;
             }
 
-            if (!chr.isHidden())
-            {
-                chr.getMap().broadcastMessage(PacketCreator.getChatText(chr.getId(), s, chr.getWhiteChat(), show));
-                // ChatLogger.log(c, "General", s);
-            }
-            else
-            {
-                chr.getMap().broadcastGMMessage(PacketCreator.getChatText(chr.getId(), s, chr.getWhiteChat(), show));
-                // ChatLogger.log(c, "GM General", s);
-            }
+            chr.MapModel.BroadcastMapObjectMessage(chr, PacketCreator.getChatText(chr.getId(), s, chr.getWhiteChat(), show));
 
             chr.getAutobanManager().spam(7);
         }

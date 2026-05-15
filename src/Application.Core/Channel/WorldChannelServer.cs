@@ -39,7 +39,8 @@ namespace Application.Core.Channel
 
         public bool IsRunning { get; private set; }
 
-        public ChannelServerConfig ServerConfig { get; set; }
+        public ChannelServerConfig ServerConfig { get; }
+
         public string InstanceName => ServerConfig.ServerName;
         Lazy<SkillbookInformationProvider> _skillbookInformationProvider;
         public SkillbookInformationProvider SkillbookInformationProvider => _skillbookInformationProvider.Value;

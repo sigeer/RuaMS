@@ -252,7 +252,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                         var bouncedamage = (int)Math.Min(damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200.0 : 100.0)), attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
                         attacker.DamageBy(chr, bouncedamage, 0);
-                        map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), false, true);
+                        map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), false);
                         attacker.aggroMonsterDamage(chr, bouncedamage);
                     }
                     var bPressure = chr.getBuffEffect(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
@@ -384,14 +384,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
         }
 
-        if (!chr.isHidden())
-        {
-            map.broadcastMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), false);
-        }
-        else
-        {
-            map.broadcastGMMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), false);
-        }
+        map.BroadcastMapObjectMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
         if (MapId.isDojo(map.getId()))
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_DMG);

@@ -24,5 +24,10 @@ namespace Application.Core.Game.Maps
         /// 从地图移除时
         /// </summary>
         void OnUnmounted();
+        /// <summary>
+        /// 可以对 <paramref name="chr"/> 显示
+        /// </summary>
+        /// <param name="chr"></param>
+        bool IsVisibleForPlayer(Player chr);
     }
 }

@@ -1449,7 +1449,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         setPosition(newPoint);
         MapModel.broadcastMessage(
             PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
-        MapModel.moveMonster(this, this.getPosition());
+        MapModel.MoveMapObject(this);
 
         aggroUpdateController();
     }

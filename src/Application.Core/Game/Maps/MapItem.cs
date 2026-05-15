@@ -245,6 +245,11 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         base.OnUnmounted();
     }
 
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return base.IsVisibleForPlayer(chr) && chr.needQuestItem(getQuest(), getItemId());
+    }
+
 
     bool willHitReactor;
     public void OnTick(long now)

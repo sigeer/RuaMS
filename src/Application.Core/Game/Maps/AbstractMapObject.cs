@@ -91,4 +91,13 @@ public abstract class AbstractMapObject : IMapObject
     {
 
     }
+
+    public virtual bool IsVisibleForPlayer(Player chr)
+    {
+        if (MapGlobalData.rangedMapobjectTypes.Contains(getType()))
+        {
+            return MapModel == chr.MapModel && MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.GetRangedDistance());
+        }
+        return MapModel == chr.MapModel;
+    }
 }
