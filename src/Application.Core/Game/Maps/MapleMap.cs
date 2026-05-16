@@ -198,22 +198,6 @@ public class MapleMap : IMap, INamedInstance
         return mapArea;
     }
 
-    public void BroadcastMapObjectMessage(IMapObject mapObject, Packet packet, int excepted = -1)
-    {
-        foreach (var mapChr in getAllPlayers())
-        {
-            if (mapChr.Id == excepted)
-            {
-                continue;
-            }
-
-            if (mapObject.IsVisibleForPlayer(mapChr))
-            {
-                mapChr.sendPacket(packet);
-            }
-        }
-    }
-
 
     public void toggleDrops()
     {
@@ -283,8 +267,19 @@ public class MapleMap : IMap, INamedInstance
     {
         addMapObject(mapobject, allocateMabObjectId);
 
+        int exceptPlayerId = -1;
+        if (mapobject is Player p)
+        {
+            exceptPlayerId = p.Id;
+        }
+
         foreach (Player chr in getAllPlayers())
         {
+            if (chr.Id == exceptPlayerId)
+            {
+                continue;
+            }
+
             if (mapobject.IsVisibleForPlayer(chr))
             {
                 chr.addVisibleMapObject(mapobject);
@@ -478,14 +473,6 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
-    public void broadcastZakumVictory()
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6,
-                "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
-        });
-    }
 
     public void broadcastPinkBeanVictory(int channel)
     {
@@ -575,7 +562,7 @@ public class MapleMap : IMap, INamedInstance
             {
                 // thanks resinate for pointing out a memory leak possibly from an exception thrown
                 monster.dispatchMonsterKilled(killer);
-                broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), animation), monster.getPosition());
+                monster.BroadcastMap(PacketCreator.killMonster(monster.getObjectId(), animation));
             }
         }
     }
@@ -1241,7 +1228,7 @@ public class MapleMap : IMap, INamedInstance
         MapItem mapItem = new MapItem(this, meso, validPos, dropper, owner, droptype, playerDrop);
         AddMapObject(mapItem, c =>
         {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.SpawnMapItem, dropDelay));
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.UpdateMapItem, dropDelay));
         });
     }
 
@@ -1590,16 +1577,6 @@ public class MapleMap : IMap, INamedInstance
         broadcastMessage(repeatToSource ? null : source, packet, ranged ?  GetRangedDistance() : double.PositiveInfinity, source.getPosition());
     }
 
-    /**
-     * Always ranged from Point.
-     *
-     * @param packet
-     * @param rangedFrom
-     */
-    public void broadcastMessage(Packet packet, Point rangedFrom)
-    {
-        broadcastMessage(null, packet, GetRangedDistance(), rangedFrom);
-    }
 
     /**
      * Always ranged from point. Does not repeat to source.
@@ -2229,16 +2206,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void broadcastNONGMMessage(Player source, Packet packet, bool repeatToSource)
-    {
-        foreach (Player chr in getAllPlayers())
-        {
-            if (chr != source && !chr.isGM())
-            {
-                chr.sendPacket(packet);
-            }
-        }
-    }
 
     public void setOxQuiz(bool b)
     {
@@ -2933,7 +2900,7 @@ public class MapleMap : IMap, INamedInstance
         }
 
         removeMapObject(chr.getObjectId());
-        BroadcastMapObjectMessage(chr, PacketCreator.removePlayerFromMap(chr.getId()), chr.Id);
+        chr.BroadcastMap(PacketCreator.removePlayerFromMap(chr.getId()), chr.Id);
 
         chr.leaveMap();
 
@@ -2953,7 +2920,7 @@ public class MapleMap : IMap, INamedInstance
         if (dragon != null)
         {
             removeMapObject(dragon);
-            BroadcastMapObjectMessage(dragon, PacketCreator.removeDragon(chr.getId()), chr.Id);
+            dragon.BroadcastMap(PacketCreator.removeDragon(chr.getId()), chr.Id);
         }
     }
 
@@ -3012,8 +2979,7 @@ public class MapleMap : IMap, INamedInstance
     public void pickItemDrop(Packet pickupPacket, MapItem mdrop)
     {
         // mdrop must be already locked and not-pickedup checked at this point
-        broadcastMessage(pickupPacket, mdrop.getPosition());
-
+        mdrop.BroadcastMap(pickupPacket);
         mdrop.setPickedUp(true);
 
         removeMapObject(mdrop);

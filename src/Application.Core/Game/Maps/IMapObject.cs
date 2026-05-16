@@ -29,5 +29,6 @@ namespace Application.Core.Game.Maps
         /// </summary>
         /// <param name="chr"></param>
         bool IsVisibleForPlayer(Player chr);
+        void BroadcastMap(Packet packet, int exceptCId = -1);
     }
 }

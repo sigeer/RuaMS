@@ -175,7 +175,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                         useSkillLevel, nextMovementCouldBeSkill, mobMp);
             }
 
-            map.broadcastMessage(player, PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
+            monster.BroadcastMovement(PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
             //updatePosition(res, monster, -2); //does this need to be done after the packet is broadcast?
             map.MoveMapObject(monster);
         }

@@ -245,9 +245,10 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         base.OnUnmounted();
     }
 
-    public override bool IsVisibleForPlayer(Player chr)
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
     {
-        return base.IsVisibleForPlayer(chr) && chr.needQuestItem(getQuest(), getItemId());
+        return base.IsVisibleForPlayerWithoutRange(chr) && chr.needQuestItem(getQuest(), getItemId());
     }
 
 

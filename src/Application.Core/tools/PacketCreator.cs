@@ -2058,11 +2058,11 @@ public class PacketCreator
         }
     }
 
-    public static Packet movePlayer(int chrId, InPacket movementPacket, int movementDataLength)
+    public static Packet movePlayer(int chrId, Point startPos, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
         p.writeInt(chrId);
-        p.writeInt(0);
+        p.writePos(startPos);
         PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }

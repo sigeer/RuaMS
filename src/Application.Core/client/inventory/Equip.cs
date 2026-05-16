@@ -698,7 +698,8 @@ public class Equip : Item
         c.OnlinedCharacter.dropMessage(6, lvupStr);
 
         c.sendPacket(PacketCreator.showEquipmentLevelUp());
-        c.OnlinedCharacter.getMap().BroadcastMapObjectMessage(c.OnlinedCharacter, PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15), c.OnlinedCharacter.Id);
+        c.OnlinedCharacter.BroadcastMap(PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15), c.OnlinedCharacter.Id);
+
         c.OnlinedCharacter.forceUpdateItem(this);
     }
 

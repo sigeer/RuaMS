@@ -42,16 +42,17 @@ namespace Application.Core.Game.Maps
 
         public static ConcurrentDictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(-1, 100);
 
-        public static double getRangedDistance()
-        {
-            return YamlConfig.config.server.USE_MAXRANGE ? double.PositiveInfinity : RangedDistance;
-        }
 
         public const double RangedDistance = 722500;
 
         public static bool IsObjectInRange(IMapObject obj, Point source, double rangeSq)
         {
-            return source.distanceSq(obj.getPosition()) <= rangeSq;
+            return IsObjectInRange(obj.getPosition(), source, rangeSq);
+        }
+
+        public static bool IsObjectInRange(Point pos, Point source, double rangeSq)
+        {
+            return source.distanceSq(pos) <= rangeSq;
         }
 
     }

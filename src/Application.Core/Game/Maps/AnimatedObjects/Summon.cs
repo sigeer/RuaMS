@@ -39,6 +39,8 @@ public class Summon : AbstractAnimatedMapObject
     private int hp;
     private SummonMovementType movementType;
 
+    public override Player? Controller => owner;
+
     public Summon(Player owner, int skill, Point pos, SummonMovementType movementType): base(owner.MapModel, pos, 0)
     {
         this.owner = owner;

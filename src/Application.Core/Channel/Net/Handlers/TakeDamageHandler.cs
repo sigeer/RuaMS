@@ -384,7 +384,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
         }
 
-        map.BroadcastMapObjectMessage(chr, PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
+        chr.BroadcastMap(PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
         if (MapId.isDojo(map.getId()))
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_DMG);

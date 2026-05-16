@@ -60,6 +60,7 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using System.Threading.Tasks;
 using tools;
 using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
@@ -533,12 +534,12 @@ public partial class Player
                     else
                     {
                         mapChr.sendPacket(PacketCreator.spawnPlayerMapObject(mapChr.Client, this, false));
+                        foreach (Summon ms in this.getSummonsValues())
+                        {
+                            mapChr.sendPacket(PacketCreator.spawnSummon(ms, false));
+                        }
+                        
                     }
-                }
-
-                foreach (Summon ms in this.getSummonsValues())
-                {
-                    MapModel.broadcastNONGMMessage(this, PacketCreator.spawnSummon(ms, false), false);
                 }
 
                 this.MapModel.ProcessMonster(m =>
@@ -1321,6 +1322,7 @@ public partial class Player
 
     public void equipChanged()
     {
+        BroadcastMap(PacketCreator.updateCharLook(Client, this));
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
         UpdateLocalStats();
@@ -2132,8 +2134,8 @@ public partial class Player
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
             sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
-            MapModel.BroadcastMapObjectMessage(this, PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
-            MapModel.BroadcastMapObjectMessage(this, PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
+            BroadcastMap(PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
+            BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
                     ceffect.getDuration(), stat), Id);
         }
         if (energybar >= 10000 && energybar < 11000)
@@ -4114,8 +4116,11 @@ public partial class Player
         return false;
     }
 
-    public override bool IsVisibleForPlayer(Player chr)
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
     {
-        return chr != this && (!isHidden() || chr.isGM());
+        return base.IsVisibleForPlayerWithoutRange(chr) && (!isHidden() || chr.isGM());
     }
+
+    public override Player? Controller => this;
 }

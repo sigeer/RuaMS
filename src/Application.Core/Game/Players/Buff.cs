@@ -223,8 +223,8 @@ namespace Application.Core.Game.Players
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
-                            MapModel.broadcastMessage(PacketCreator.removeSummon(summon, true), summon.getPosition());
                             MapModel.removeMapObject(summon);
+                            summon.BroadcastMap(PacketCreator.removeSummon(summon, true));
                             removeVisibleMapObject(summon);
 
                             if (summon.isPuppet())

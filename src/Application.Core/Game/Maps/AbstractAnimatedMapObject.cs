@@ -26,7 +26,7 @@ namespace Application.Core.Game.Maps;
 
 public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMapObject
 {
-
+    public abstract Player? Controller { get; }
     private int stance;
 
     protected AbstractAnimatedMapObject(IMap mapModel, Point position, int stance) : base(mapModel, position)
@@ -66,6 +66,26 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
             (byte)(stance & 0xFF),
             0, 0
         };
+    }
 
+    /// <summary>
+    /// 仅用于广播移动数据包
+    /// </summary>
+    /// <param name="packet"></param>
+    /// <param name="exceptCId"></param>
+    public void BroadcastMovement(Packet packet, Point pos)
+    {
+        foreach (var mapChr in MapModel.getAllPlayers())
+        {
+            if (mapChr == Controller)
+            {
+                continue;
+            }
+
+            if ((!MapGlobalData.rangedMapobjectTypes.Contains(getType()) || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.GetRangedDistance())) && IsVisibleForPlayerWithoutRange(mapChr))
+            {
+                mapChr.sendPacket(packet);
+            }
+        }
     }
 }

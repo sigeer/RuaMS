@@ -41,12 +41,13 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
         {
             try
             {
+                var startPost = dragon.getPosition();
                 int movementDataStart = p.getPosition();
                 updatePosition(p, dragon, 0);
                 int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
-                chr.MapModel.BroadcastMapObjectMessage(dragon, PacketCreator.moveDragon(dragon, startPos, p, movementDataLength), chr.Id);
+                dragon.BroadcastMovement(PacketCreator.moveDragon(dragon, startPos, p, movementDataLength), startPost);
                 chr.getMap().MoveMapObject(dragon);
                 
             }

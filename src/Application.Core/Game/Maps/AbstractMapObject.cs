@@ -26,7 +26,7 @@ public abstract class AbstractMapObject : IMapObject
     /// <summary>
     /// 相同MapId，不同频道的Map也不一样
     /// </summary>
-    public IMap MapModel { get; }
+    public IMap MapModel { get; private set; }
     private Point position;
     private int objectId;
 
@@ -84,7 +84,7 @@ public abstract class AbstractMapObject : IMapObject
 
     public virtual void OnMounted(IMap map)
     {
-
+        MapModel = map;
     }
 
     public virtual void OnUnmounted()
@@ -92,12 +92,35 @@ public abstract class AbstractMapObject : IMapObject
 
     }
 
+    /// <summary>
+    /// 不考虑距离的情况下，对玩家是否可视
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    protected virtual bool IsVisibleForPlayerWithoutRange(Player chr) => MapModel == chr.MapModel;
     public virtual bool IsVisibleForPlayer(Player chr)
     {
         if (MapGlobalData.rangedMapobjectTypes.Contains(getType()))
         {
-            return MapModel == chr.MapModel && MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.GetRangedDistance());
+            return IsVisibleForPlayerWithoutRange(chr) && MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.GetRangedDistance());
         }
-        return MapModel == chr.MapModel;
+        return IsVisibleForPlayerWithoutRange(chr);
+    }
+
+
+    public void BroadcastMap(Packet packet, int exceptCId = -1)
+    {
+        foreach (var mapChr in MapModel.getAllPlayers())
+        {
+            if (mapChr.Id == exceptCId)
+            {
+                continue;
+            }
+
+            if (IsVisibleForPlayer(mapChr))
+            {
+                mapChr.sendPacket(packet);
+            }
+        }
     }
 }

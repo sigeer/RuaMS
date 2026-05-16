@@ -1027,17 +1027,23 @@ public class StatEffect
 
         if (EffectTemplate is IItemStatEffectMC mc)
         {
-            if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
-            {
-                return false;
-            }
             if (mc.CP != 0)
             {
+                if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
+                {
+                    return false;
+                }
+
                 eim.GainCP(applyto, mc.CP);
             }
 
             if (mc.CPSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
             {
+                if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
+                {
+                    return false;
+                }
+
                 // added by Drago (Dragohe4rt)
                 var skill = CarnivalFactory.getInstance().getSkill(mc.CPSkill);
                 if (skill != null)

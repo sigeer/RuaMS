@@ -147,23 +147,14 @@ namespace Application.Core.Game.Maps
         void broadcastMessage(Packet packet);
         void broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false);
         void broadcastMessage(Player? source, Packet packet, Point rangedFrom);
-        void broadcastMessage(Packet packet, Point rangedFrom);
-        void broadcastNightEffect();
-        void broadcastNONGMMessage(Player source, Packet packet, bool repeatToSource);
 
-        /// <summary>
-        /// mapobject相关的数据包广播。
-        /// </summary>
-        /// <param name="mapObject"></param>
-        /// <param name="packet"></param>
-        /// <param name="excepted"></param>
-        void BroadcastMapObjectMessage(IMapObject mapObject, Packet packet, int excepted = -1);
+        void broadcastNightEffect();
+
         void broadcastHorntailVictory();
         void broadcastPinkBeanVictory(int channel);
         void broadcastShip(bool state);
 
         void broadcastUpdateCharLookMessage(Player source, Player player);
-        void broadcastZakumVictory();
 
         bool canDeployDoor(Point pos);
         void checkMapOwnerActivity();

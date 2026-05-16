@@ -45,7 +45,7 @@ public class DamageSummonHandler : ChannelHandlerBase
             {
                 player.cancelEffectFromBuffStat(BuffStat.PUPPET);
             }
-            player.getMap().broadcastMessage(player, PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), summon.getPosition());
+            summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), player.Id);
         }
     }
 }

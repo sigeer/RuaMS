@@ -45,14 +45,14 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
         {
             try
             {
-                var originalPos = summon.getPosition();
+                var serverStartPos = summon.getPosition();
                 int movementDataStart = p.getPosition();
                 updatePosition(p, summon, 0);
                 int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
                 player.getMap().MoveMapObject(summon);
-                player.getMap().broadcastMessage(player, PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), originalPos);
+                summon.BroadcastMovement(PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), serverStartPos);
             }
             catch (EmptyMovementException e)
             {

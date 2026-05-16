@@ -32,6 +32,8 @@ public class NPC : AbstractLifeObject
 {
     public NpcTemplate SourceTemplate { get; }
 
+    public override Player? Controller => throw new NotImplementedException();
+
     public NPC(NpcTemplate npcTempate, IMap map, Point pos) : base(npcTempate.TemplateId, map, pos, 0)
     {
         SourceTemplate = npcTempate;

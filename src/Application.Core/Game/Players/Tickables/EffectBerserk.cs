@@ -25,7 +25,7 @@ namespace Application.Core.Game.Players.Tickables
                     var berserk = (_chr.HP * 100 / _chr.ActualMaxHP) < buffEffect.getX();
 
                     _chr.sendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
-                    _chr.MapModel.BroadcastMapObjectMessage(_chr, PacketCreator.showBerserk(_chr.Id, buffEffect.SkillLevel, berserk), _chr.Id);
+                    _chr.BroadcastMap(PacketCreator.showBerserk(_chr.Id, buffEffect.SkillLevel, berserk), _chr.Id);
                 }
             }
         }

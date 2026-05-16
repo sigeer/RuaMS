@@ -1157,7 +1157,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.killMonster(getObjectId(), false));
-        client.sendPacket(PacketCreator.killMonster(getObjectId(), true));
     }
 
     public override MapObjectType getType()
@@ -1211,7 +1210,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public void broadcastMonsterStatusMessage(Packet packet)
     {
-        MapModel.broadcastMessage(packet, getPosition());
+        BroadcastMap(packet);
 
         var chrController = getActiveController();
         if (chrController != null && !chrController.isMapObjectVisible(this))
@@ -1971,7 +1970,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         return new(chrController, hadAggro);
     }
-
+    public override Player? Controller => getController();
     /**
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
