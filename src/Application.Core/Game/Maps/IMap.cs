@@ -75,10 +75,12 @@ namespace Application.Core.Game.Maps
 
         void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
+
+        double GetRangedDistance();
         #endregion
 
         #region MapObjects
-        void addMapObject(IMapObject mapobject, bool allocateObjectId = true);
+        void AddMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, bool allocateMabObjectId = true);
         void ProcessMapObject(Func<IMapObject, bool> codition, Action<IMapObject> action);
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
@@ -100,10 +102,9 @@ namespace Application.Core.Game.Maps
         int getNumPlayersInRect(Rectangle rect);
         List<Player> getPlayersInRange(Rectangle box);
         void movePlayer(Player player, Point newPosition);
+        void MoveMapObject(AbstractAnimatedMapObject mapObject);
         void removePlayer(Player chr);
         void addPlayer(Player chr);
-        void broadcastGMSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField);
-        void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField);
         #endregion
 
         #region Monster
@@ -116,7 +117,7 @@ namespace Application.Core.Game.Maps
 
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
-        void moveMonster(Monster monster, Point reportedPos);
+
         void spawnFakeMonster(Monster monster);
         void spawnFakeMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null);
         void spawnHorntailOnGroundBelow(Point targetPoint);
@@ -142,18 +143,22 @@ namespace Application.Core.Game.Maps
         void broadcastBalrogVictory(string leaderName);
         void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
         void broadcastEnemyShip(bool state);
-        void broadcastGMMessage(Player source, Packet packet, bool repeatToSource);
-        void broadcastGMMessage(Packet packet);
-        void broadcastGMPacket(Player source, Packet packet);
 
-        void broadcastHorntailVictory();
+        void broadcastMessage(Packet packet);
         void broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false);
         void broadcastMessage(Player? source, Packet packet, Point rangedFrom);
-        void broadcastMessage(Packet packet);
         void broadcastMessage(Packet packet, Point rangedFrom);
         void broadcastNightEffect();
         void broadcastNONGMMessage(Player source, Packet packet, bool repeatToSource);
-        void broadcastPacket(Player source, Packet packet);
+
+        /// <summary>
+        /// mapobject相关的数据包广播。
+        /// </summary>
+        /// <param name="mapObject"></param>
+        /// <param name="packet"></param>
+        /// <param name="excepted"></param>
+        void BroadcastMapObjectMessage(IMapObject mapObject, Packet packet, int excepted = -1);
+        void broadcastHorntailVictory();
         void broadcastPinkBeanVictory(int channel);
         void broadcastShip(bool state);
 
@@ -293,6 +298,11 @@ namespace Application.Core.Game.Maps
         void warpEveryone(int to, int pto);
         void warpOutByTeam(int team, int mapid);
 
+        /// <summary>
+        /// 广播，无距离筛选
+        /// </summary>
+        /// <param name="effectPlayer"></param>
+        /// <param name="exceptId"></param>
         void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
         void Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Action<Player> effectPlayer);
         void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);

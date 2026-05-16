@@ -44,14 +44,7 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
             p.seek(movementDataStart);
 
             c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());
-            if (c.OnlinedCharacter.isHidden())
-            {
-                c.OnlinedCharacter.getMap().broadcastGMMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
-            }
-            else
-            {
-                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
-            }
+            c.OnlinedCharacter.MapModel.BroadcastMapObjectMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), c.OnlinedCharacter.Id);
         }
         catch (EmptyMovementException e)
         {

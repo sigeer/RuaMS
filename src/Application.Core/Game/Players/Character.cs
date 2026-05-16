@@ -158,7 +158,7 @@ public partial class Player
 
     private ConcurrentDictionary<Monster, int> controlled = new();
 
-    private ConcurrentDictionary<IMapObject, int> visibleMapObjects = new ConcurrentDictionary<IMapObject, int>();
+    private HashSet<IMapObject> visibleMapObjects = new ();
 
     private Dictionary<int, CouponBuffEntry> activeCoupons = new();
 
@@ -314,7 +314,25 @@ public partial class Player
 
     public void addVisibleMapObject(IMapObject mo)
     {
-        visibleMapObjects.TryAdd(mo, 0);
+        if (!MapGlobalData.rangedMapobjectTypes.Contains(mo.getType()))
+            return;
+
+        visibleMapObjects.Add(mo);
+    }
+
+    public void removeVisibleMapObject(IMapObject mo)
+    {
+        visibleMapObjects.Remove(mo);
+    }
+
+    public IMapObject[] getVisibleMapObjects()
+    {
+        return visibleMapObjects.ToArray();
+    }
+
+    public bool isMapObjectVisible(IMapObject mo)
+    {
+        return visibleMapObjects.Contains(mo);
     }
 
     public int calculateMaxBaseDamage(int watk, WeaponType weapon)
@@ -492,7 +510,7 @@ public partial class Player
         return "<" + medalItemName + "> ";
     }
 
-    public void Hide(bool hide, bool login = false)
+    public void Hide(bool hide, bool fromLogin = false)
     {
         if (isGM() && hide != this.hidden)
         {
@@ -501,8 +519,22 @@ public partial class Player
                 this.hidden = false;
                 sendPacket(PacketCreator.getGMEffect(0x10, 0));
                 List<BuffStat> dsstat = Collections.singletonList(BuffStat.DARKSIGHT);
-                MapModel.broadcastGMMessage(this, PacketCreator.cancelForeignBuff(Id, dsstat), false);
-                MapModel.broadcastSpawnPlayerMapObjectMessage(this, this, false);
+                foreach (var mapChr in MapModel.getAllPlayers())
+                {
+                    if (mapChr == this)
+                    {
+                        continue;
+                    }
+
+                    if (mapChr.isGM())
+                    {
+                        mapChr.sendPacket(PacketCreator.cancelForeignBuff(Id, dsstat));
+                    }
+                    else
+                    {
+                        mapChr.sendPacket(PacketCreator.spawnPlayerMapObject(mapChr.Client, this, false));
+                    }
+                }
 
                 foreach (Summon ms in this.getSummonsValues())
                 {
@@ -517,13 +549,29 @@ public partial class Player
             else
             {
                 this.hidden = true;
-                sendPacket(PacketCreator.getGMEffect(0x10, 1));
-                if (!login)
+
+                if (!fromLogin)
                 {
-                    MapModel.broadcastNONGMMessage(this, PacketCreator.removePlayerFromMap(getId()), false);
+                    sendPacket(PacketCreator.getGMEffect(0x10, 1));
+                    foreach (var mapChr in MapModel.getAllPlayers())
+                    {
+                        if (mapChr == this)
+                        {
+                            continue;
+                        }
+
+                        if (mapChr.isGM())
+                        {
+                            mapChr.sendPacket(PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                        }
+                        else
+                        {
+                            mapChr.sendPacket(PacketCreator.removePlayerFromMap(getId()));
+                        }
+                    }
+                    this.releaseControlledMonsters();
                 }
-                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
-                this.releaseControlledMonsters();
+
             }
             sendPacket(PacketCreator.enableActions());
         }
@@ -2039,11 +2087,6 @@ public partial class Player
         return summons.GetValueOrDefault(Id);
     }
 
-    public bool isSummonsEmpty()
-    {
-        return summons.Count == 0;
-    }
-
     public bool containsSummon(Summon summon)
     {
         return summons.ContainsValue(summon);
@@ -2064,10 +2107,7 @@ public partial class Player
         return VanquisherStage;
     }
 
-    public IMapObject[] getVisibleMapObjects()
-    {
-        return visibleMapObjects.Keys.ToArray();
-    }
+
 
     public int gmLevel()
     {
@@ -2092,9 +2132,9 @@ public partial class Player
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
             sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
-            MapModel.broadcastPacket(this, PacketCreator.showBuffEffect(Id, energycharge.getId(), 2));
-            MapModel.broadcastPacket(this, PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
-                    ceffect.getDuration(), stat));
+            MapModel.BroadcastMapObjectMessage(this, PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
+            MapModel.BroadcastMapObjectMessage(this, PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
+                    ceffect.getDuration(), stat), Id);
         }
         if (energybar >= 10000 && energybar < 11000)
         {
@@ -2179,10 +2219,7 @@ public partial class Player
         return hidden;
     }
 
-    public bool isMapObjectVisible(IMapObject mo)
-    {
-        return visibleMapObjects.ContainsKey(mo);
-    }
+
 
     public bool isGuildLeader()
     {
@@ -2976,10 +3013,7 @@ public partial class Player
 
 
 
-    public void removeVisibleMapObject(IMapObject mo)
-    {
-        visibleMapObjects.Remove(mo);
-    }
+
 
     public void resetStats()
     {
@@ -3665,13 +3699,11 @@ public partial class Player
             }
         }
 
-        if (this.isHidden())
+        if (this.isHidden() && Client.OnlinedCharacter.isGM())
         {
-            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
+            Client.sendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
         }
     }
-
-    public override void setObjectId(int Id) { }
 
     public override string ToString()
     {
@@ -4080,5 +4112,10 @@ public partial class Player
     public bool isRecvPartySearchInviteEnabled()
     {
         return false;
+    }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return chr != this && (!isHidden() || chr.isGM());
     }
 }

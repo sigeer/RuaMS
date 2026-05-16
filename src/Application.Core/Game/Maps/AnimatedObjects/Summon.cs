@@ -110,4 +110,9 @@ public class Summon : AbstractAnimatedMapObject
         }
         return false;
     }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return getOwner() == chr || base.IsVisibleForPlayer(chr);
+    }
 }

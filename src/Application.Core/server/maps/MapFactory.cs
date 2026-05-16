@@ -149,7 +149,8 @@ public class MapFactory : IStaticService
             var mapObj = loadLife(map, id, type, cy, f, fh, rx0, rx1, x, y, hide);
             if (mapObj != null)
             {
-                map.addMapObject(mapObj);
+                // 初始化时无玩家
+                map.AddMapObject(mapObj, null);
             }
         }
     }

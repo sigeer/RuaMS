@@ -1,4 +1,6 @@
+using Application.Core.Game.Maps;
 using Application.Core.scripting.npc;
+using Microsoft.Extensions.Primitives;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -15,7 +17,7 @@ public class WhereaMiCommand : CommandBase
         var player = c.OnlinedCharacter;
 
         var allMapObjects = player.getMap().getMapObjects().GroupBy(x => x.getType());
-
+        var allVisibleMapObjects = player.getVisibleMapObjects();
         var sb = new StringBuilder();
         sb.Append("我在...\r\n");
         sb.Append("我的事件：").Append(player.getEventInstance()?.getName()).Append("\r\n");
@@ -32,16 +34,25 @@ public class WhereaMiCommand : CommandBase
                 .Append("Type: ").Append(closetPortal.getType()).Append("\r\n")
                 .Append("Script: ").Append(closetPortal.getScriptName()).Append("\r\n");
         }
+        sb.Append("=========MapObject=========\r\n");
         sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)
         {
             sb.Append(group.Key).Append("===>\r\n");
 
+            var isRanged = MapGlobalData.rangedMapobjectTypes.Contains(group.Key);
             foreach (var obj in group)
             {
-                sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId()).Append("\r\n");
+                sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId());
+
+                if (isRanged && !allVisibleMapObjects.Contains(obj))
+                {
+                    sb.Append("（超出视野）");
+                }
+                sb.Append("\r\n");
             }
         }
+
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

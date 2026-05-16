@@ -12,20 +12,25 @@ namespace Application.Core.Game.Maps
             MapObjectType.DOOR,
             MapObjectType.SUMMON,
             MapObjectType.REACTOR,
-            MapObjectType.MINI_GAME
-        ];
 
-        public static HashSet<MapObjectType> GetRangedMapObjectTypes() => YamlConfig.config.server.USE_MAXRANGE ? [] : rangedMapobjectTypes;
+            MapObjectType.MINI_GAME,
+            MapObjectType.PLAYER_NPC,
+            MapObjectType.HIRED_MERCHANT
+        ];
 
         // rangedMapobjectTypes 和 NonRangedType都包含了NPC
         public static bool isNonRangedType(MapObjectType type)
         {
             switch (type)
             {
-                // case MapObjectType.NPC:
-                case MapObjectType.PLAYER:
+                // rangedMapobjectTypes包含了NPC
+                case MapObjectType.NPC:
+                // rangedMapobjectTypes包含了PLAYER_SHOP，性质应该和HIRED_MERCHANT一样？
                 case MapObjectType.HIRED_MERCHANT:
+                // PlayerNPC应该同NPC？
                 case MapObjectType.PLAYER_NPC:
+
+                case MapObjectType.PLAYER:
                 case MapObjectType.DRAGON:
                 case MapObjectType.MIST:
                 case MapObjectType.KITE:
@@ -43,5 +48,11 @@ namespace Application.Core.Game.Maps
         }
 
         public const double RangedDistance = 722500;
+
+        public static bool IsObjectInRange(IMapObject obj, Point source, double rangeSq)
+        {
+            return source.distanceSq(obj.getPosition()) <= rangeSq;
+        }
+
     }
 }

@@ -3,6 +3,7 @@ using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Plugins;
+using Application.Shared.Servers;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -15,6 +16,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public interface IServiceCenter
     {
+        ChannelServerConfig ServerConfig { get; }
         PluginManager PluginManager { get; }
         ITimerManager TimerManager { get; }
         IServiceProvider ServiceProvider { get; }

@@ -36,8 +36,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                 npc.setRx1(data.Data.Rx1);
                                 npc.setFh(data.Data.Fh);
 
-                                map.addMapObject(npc);
-                                map.broadcastMessage(PacketCreator.spawnNPC(npc));
+                                map.AddMapObject(npc, c => c.sendPacket(PacketCreator.spawnNPC(npc)));
 
                             }
                         }
