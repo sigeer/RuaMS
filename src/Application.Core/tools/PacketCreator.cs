@@ -1510,7 +1510,7 @@ public class PacketCreator
     /// <param name="mod">
     /// <para>0. ?</para>
     /// <para>1. spawn</para>
-    /// <para>2. spawnWithOutEffect?</para>
+    /// <para>2. spawnWithoutEffect?</para>
     /// <para>3. remove?</para>
     /// </param>
     /// <param name="delay"></param>

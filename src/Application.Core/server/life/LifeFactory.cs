@@ -131,6 +131,12 @@ public class LifeFactory
 
     public MonsterCore? getMonster(int mid)
     {
+        var stringData = ClientCulture.SystemCulture.GetMobName(mid);
+        if (StringConstants.WZ_MissingNo == stringData)
+        {
+            return null;
+        }
+
         return getMonsterStats(mid);
     }
 

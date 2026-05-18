@@ -1213,7 +1213,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         BroadcastMap(packet);
 
         var chrController = getActiveController();
-        if (chrController != null && !chrController.isMapObjectVisible(this))
+        if (chrController != null && !IsVisibleForPlayer(chrController))
         {
             chrController.sendPacket(packet);
         }
@@ -1970,7 +1970,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         return new(chrController, hadAggro);
     }
-    public override Player? Controller => getController();
+    public override Player? Controller => getActiveController();
     /**
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
@@ -2498,5 +2498,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             heal(0, getLevel());
             _recoverMPNext = now + _recoverMPPeriod;
         }
+    }
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
+    }
+
+    public override void OnUnmounted()
+    {
+        disposeMapObject();
     }
 }

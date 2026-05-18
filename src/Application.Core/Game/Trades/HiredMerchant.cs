@@ -292,8 +292,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public void Close()
     {
-        MapModel.removeMapObject(this);
-        MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(OwnerId));
+        MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
         ProcessVisitingOwner();
 

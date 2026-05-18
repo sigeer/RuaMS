@@ -20,7 +20,7 @@ namespace Application.Core.Game.Players.Tickables
                 if (_chr.ChangeHP(-Effect.getX()))
                 {
                     _chr.sendPacket(PacketCreator.showOwnBuffEffect(Effect.getSourceId(), 5));
-                    _chr.MapModel.broadcastMessage(_chr, PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), false);
+                    _chr.BroadcastMap(PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), _chr.Id);
                 }
                 else
                 {

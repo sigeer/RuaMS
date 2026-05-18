@@ -326,7 +326,7 @@ public class Quest
         chr.updateQuestStatus(newStatus);
 
         chr.sendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
-        chr.getMap().broadcastMessage(chr, PacketCreator.showForeignEffect(chr.getId(), 9), false); //use 9 instead of 12 for both
+        chr.BroadcastMap(PacketCreator.showForeignEffect(chr.getId(), 9), chr.Id); //use 9 instead of 12 for both
         return true;
     }
 

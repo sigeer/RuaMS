@@ -351,8 +351,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     {
         clearChatLog();
 
-        MapModel.removeMapObject(this);
-        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
+        MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
         removeVisitors();
 
@@ -360,13 +359,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Owner.VisitingShop = null;
     }
 
-
-    public void closeShop()
-    {
-        clearChatLog();
-        removeVisitors();
-        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
-    }
 
     public void sendShop(IChannelClient c)
     {

@@ -70,7 +70,7 @@ public class MonsterBook
 
     public void addCard(int cardid)
     {
-        Owner.getMap().broadcastMessage(Owner, PacketCreator.showForeignCardEffect(Owner.Id), false);
+        Owner.BroadcastMap(PacketCreator.showForeignCardEffect(Owner.Id), Owner.Id);
 
         int qty;
 

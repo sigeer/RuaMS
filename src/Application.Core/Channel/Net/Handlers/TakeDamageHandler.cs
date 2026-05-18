@@ -127,7 +127,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                                     }
                                 }
                             }
-                            map.removeMapObject(attacker);
+                            // 应该没有必要 有loseItem也有selfDestruction
+                            map.RemoveMapObject(attacker, null);
                         }
                     }
                 }
@@ -184,10 +185,10 @@ public class TakeDamageHandler : ChannelHandlerBase
                     {
                         int bouncedamage = (int)Math.Min((damage * manaReflection.Effect.getX() / 100.0), attacker.getMaxHp() / 5);
                         attacker.DamageBy(chr, bouncedamage, 0);
-                        map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), true);
+                        attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
 
                         chr.sendPacket(PacketCreator.showOwnBuffEffect(manaReflection.Effect.getSourceId(), 5));
-                        map.broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), false);
+                        chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), chr.Id);
                     }
                 }
 
@@ -252,7 +253,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                         var bouncedamage = (int)Math.Min(damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200.0 : 100.0)), attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
                         attacker.DamageBy(chr, bouncedamage, 0);
-                        map.broadcastMessage(chr, PacketCreator.damageMonster(oid, bouncedamage), false);
+                        attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage), chr.Id);
                         attacker.aggroMonsterDamage(chr, bouncedamage);
                     }
                     var bPressure = chr.getBuffEffect(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise

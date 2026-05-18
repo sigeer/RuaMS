@@ -223,9 +223,7 @@ namespace Application.Core.Game.Players
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
-                            MapModel.removeMapObject(summon);
-                            summon.BroadcastMap(PacketCreator.removeSummon(summon, true));
-                            removeVisibleMapObject(summon);
+                            MapModel.RemoveMapObject(summon, chr => chr.sendPacket(PacketCreator.removeSummon(summon, true)));
 
                             if (summon.isPuppet())
                             {
@@ -566,7 +564,7 @@ namespace Application.Core.Game.Players
             if (inactiveStats.Count > 0)
             {
                 sendPacket(PacketCreator.cancelBuff(inactiveStats));
-                MapModel.broadcastMessage(this, PacketCreator.cancelForeignBuff(getId(), inactiveStats), false);
+                BroadcastMap(PacketCreator.cancelForeignBuff(getId(), inactiveStats), Id);
             }
         }
 

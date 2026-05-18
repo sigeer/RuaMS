@@ -249,6 +249,11 @@ public class OldLifeFactory
 
     public MonsterCore? getMonster(int mid)
     {
+        var stringData = ClientCulture.SystemCulture.GetMobName(mid);
+        if (StringConstants.WZ_MissingNo == stringData)
+        {
+            return null;
+        }
         try
         {
             return getMonsterStats(mid);

@@ -73,16 +73,17 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
     /// </summary>
     /// <param name="packet"></param>
     /// <param name="exceptCId"></param>
-    public void BroadcastMovement(Packet packet, Point pos)
+    public virtual void BroadcastMovement(Packet packet, Point pos)
     {
         foreach (var mapChr in MapModel.getAllPlayers())
         {
+            // 移动数据包由controller 发给服务端，再由服务端广播给其他人，所以controller不需要再发一次
             if (mapChr == Controller)
             {
                 continue;
             }
 
-            if ((!MapGlobalData.rangedMapobjectTypes.Contains(getType()) || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.GetRangedDistance())) && IsVisibleForPlayerWithoutRange(mapChr))
+            if ((!MapModel.IsLargeMap || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance())) && IsVisibleForPlayerWithoutRange(mapChr))
             {
                 mapChr.sendPacket(packet);
             }

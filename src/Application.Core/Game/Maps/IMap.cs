@@ -40,7 +40,10 @@ namespace Application.Core.Game.Maps
         MapEffect? MapEffect { get; set; }
         long RespawnInterval { get; set; }
 
-
+        /// <summary>
+        /// 地图大小超过视距*2（使用视野裁剪）
+        /// </summary>
+        public bool IsLargeMap { get; }
         #region Info
         void addSelfDestructive(Monster mob);
         void allowSummonState(bool b);
@@ -75,12 +78,10 @@ namespace Application.Core.Game.Maps
 
         void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
-
-        double GetRangedDistance();
         #endregion
 
         #region MapObjects
-        void AddMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, bool allocateMabObjectId = true);
+        bool AddMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, bool allocateMabObjectId = true);
         void ProcessMapObject(Func<IMapObject, bool> codition, Action<IMapObject> action);
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
@@ -102,6 +103,10 @@ namespace Application.Core.Game.Maps
         int getNumPlayersInRect(Rectangle rect);
         List<Player> getPlayersInRange(Rectangle box);
         void movePlayer(Player player, Point newPosition);
+        /// <summary>
+        /// 非玩家的可移动对象移动时
+        /// </summary>
+        /// <param name="mapObject"></param>
         void MoveMapObject(AbstractAnimatedMapObject mapObject);
         void removePlayer(Player chr);
         void addPlayer(Player chr);
@@ -137,7 +142,6 @@ namespace Application.Core.Game.Maps
         #endregion
 
 
-        void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(Player player);
 
         void broadcastBalrogVictory(string leaderName);
@@ -153,8 +157,6 @@ namespace Application.Core.Game.Maps
         void broadcastHorntailVictory();
         void broadcastPinkBeanVictory(int channel);
         void broadcastShip(bool state);
-
-        void broadcastUpdateCharLookMessage(Player source, Player player);
 
         bool canDeployDoor(Point pos);
         void checkMapOwnerActivity();
@@ -253,8 +255,7 @@ namespace Application.Core.Game.Maps
         void makeMonsterReal(Monster monster);
         void moveEnvironment(string ms, int type);
 
-        bool removeMapObject(int num);
-        bool removeMapObject(IMapObject obj);
+        bool RemoveMapObject(IMapObject obj, Action<Player>? removePacketAction);
         void removeMonsterSpawn(int mobId, int x, int y);
 
         void removePlayerPuppet(Player player);

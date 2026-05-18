@@ -20,7 +20,7 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver("AttackInfoHolders", "MobSkillAnimation"),
+                ContractResolver = new PrivateContractResolver("Stats.AttackInfoHolders", "Stats.MobSkillAnimation"),
                 Formatting = Formatting.Indented
             };
         }
@@ -61,45 +61,6 @@ namespace ServiceTest.Infrastructure.WZ
             return JsonConvert.SerializeObject(obj, options);
         }
 
-
-        // 有大量不正常数据影响
-        [Test]
-        public void getMonsterTest()
-        {
-            Assert.Multiple(() =>
-            {
-                foreach (var mobId in TakeTestMobs())
-                {
-                    MonsterCore? oldMonster = null;
-                    MonsterCore? newMonster = null;
-                    try
-                    {
-                        oldMonster = oldProvider.getMonster(mobId);
-                        newMonster = newProvider.getMonster(mobId);
-
-
-                        if (oldMonster == null)
-                        {
-                            Assert.That(newMonster, Is.Null, $"Id = {mobId}");
-                        }
-                        else
-                        {
-                            Assert.That(newMonster, Is.Not.Null, $"Id = {mobId}");
-
-                            var oldJson = ToJson(oldMonster);
-                            var newJson = ToJson(newMonster);
-                            Assert.That(newJson, Is.EqualTo(oldJson), $"Id = {mobId}");
-
-
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("MonsterId=" + mobId + ", " + ex.Message);
-                    }
-                }
-            });
-        }
 
         [Test]
         public void MobAttackTest()

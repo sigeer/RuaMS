@@ -831,7 +831,7 @@ public class StatEffect
                             });
 
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
-                            applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
+                            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), applyto.Id);
                         }
                     }
                     break;
@@ -1208,7 +1208,7 @@ public class StatEffect
             {
                 applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
                 affected.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
-                affected.getMap().broadcastMessage(affected, PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), false);
+                affected.BroadcastMap(PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), affected.Id);
             }
         }
 
@@ -1401,7 +1401,7 @@ public class StatEffect
         if (primary)
         {
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
-            applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), false);
+            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), applyto.Id);
         }
 
         if (localStatupList.Count > 0)
@@ -1494,7 +1494,7 @@ public class StatEffect
             applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
             if (mbuff != null)
             {
-                applyto.getMap().broadcastMessage(applyto, mbuff, false);
+                applyto.BroadcastMap(mbuff, applyto.Id);
             }
             if (sourceid == Corsair.BATTLE_SHIP)
             {

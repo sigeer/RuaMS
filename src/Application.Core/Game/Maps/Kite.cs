@@ -73,4 +73,9 @@ public class Kite : AbstractMapObject, ILifedTickable
             return;
         }
     }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr);
+    }
 }

@@ -100,11 +100,8 @@ public abstract class AbstractMapObject : IMapObject
     protected virtual bool IsVisibleForPlayerWithoutRange(Player chr) => MapModel == chr.MapModel;
     public virtual bool IsVisibleForPlayer(Player chr)
     {
-        if (MapGlobalData.rangedMapobjectTypes.Contains(getType()))
-        {
-            return IsVisibleForPlayerWithoutRange(chr) && MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.GetRangedDistance());
-        }
-        return IsVisibleForPlayerWithoutRange(chr);
+        return IsVisibleForPlayerWithoutRange(chr) && (!MapModel.IsLargeMap 
+            || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance()));
     }
 
 

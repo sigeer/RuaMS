@@ -72,4 +72,8 @@ public abstract class Mist : AbstractMapObject
         return skillDelay;
     }
 
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr);
+    }
 }

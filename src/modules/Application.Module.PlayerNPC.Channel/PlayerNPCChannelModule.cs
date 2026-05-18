@@ -44,7 +44,7 @@ namespace Application.Module.PlayerNPC.Channel
             var list = _manager.GetMapPlayerNPCList(map.Id);
             foreach (var o in list)
             {
-                map.addPlayerNPCMapObject(o);
+                map.AddMapObject(o, null, false);
             }
         }
 
