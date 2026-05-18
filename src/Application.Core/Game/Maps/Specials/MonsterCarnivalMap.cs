@@ -185,9 +185,8 @@ namespace Application.Core.Game.Maps.Specials
                     return -1;
                 }
                 int reactorID = team == TeamGroupEnum.Red ? ReactorRed : ReactorBlue;
-                Reactor reactor = new Reactor(ReactorFactory.getReactorS(reactorID), reactorID);
+                Reactor reactor = new Reactor(this, pt.getPosition(), ReactorFactory.getReactorS(reactorID), reactorID);
                 pt.setTaken(true);
-                reactor.setPosition(pt.getPosition());
                 reactor.setName(team + "" + num); //lol
                 reactor.resetReactorActions(0);
                 this.spawnReactor(reactor);

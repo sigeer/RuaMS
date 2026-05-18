@@ -69,7 +69,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
             {
                 chr.ChangeHP(healHP);
             });
-            chr.getMap().broadcastMessage(chr, PacketCreator.showHpHealed(chr.getId(), healHP), false);
+            chr.BroadcastMap(PacketCreator.showHpHealed(chr.getId(), healHP), chr.Id);
             abm.spam(0, timestamp);
         }
         short healMP = p.readShort();

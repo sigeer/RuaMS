@@ -60,14 +60,10 @@ namespace ServiceTest.Games.Gameplay
         public void NPC_Test()
         {
             var npcId = 2000;
-            var npc = LifeFactory.Instance.getNPC(npcId);
-            Assert.Pass();
-
-            Assert.That(npc.getMap() is null);
 
             var map = LoadMap(20000);
             var mapNPC = map.getNPCById(npcId);
-            Assert.That(npc.getMap() is not null);
+            Assert.That(mapNPC?.getMap() is not null);
         }
 
         [Test]

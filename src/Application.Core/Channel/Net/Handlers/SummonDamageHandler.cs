@@ -70,7 +70,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             int damage = p.readInt();
             allDamage.Add(new SummonAttackEntry(monsterOid, damage, delay));
         }
-        player.getMap().broadcastMessage(player, PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), summon.getPosition());
+        summon.BroadcastMap(PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), player.Id);
 
         if (player.getMap().isOwnershipRestricted(player))
         {

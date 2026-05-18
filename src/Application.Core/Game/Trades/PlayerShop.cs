@@ -42,9 +42,8 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public PlayerShopType Type { get; }
 
-    public PlayerShop(Player owner, string description, Item item)
+    public PlayerShop(Player owner, string description, Item item) : base(owner.MapModel, owner.getPosition())
     {
-        setPosition(owner.getPosition());
         Owner = owner;
         ChannelServer = owner.getChannelServer();
         StartTime = ChannelServer.Node.getCurrentTime();
@@ -352,8 +351,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     {
         clearChatLog();
 
-        MapModel.removeMapObject(this);
-        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
+        MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
         removeVisitors();
 
@@ -361,13 +359,6 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Owner.VisitingShop = null;
     }
 
-
-    public void closeShop()
-    {
-        clearChatLog();
-        removeVisitors();
-        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
-    }
 
     public void sendShop(IChannelClient c)
     {

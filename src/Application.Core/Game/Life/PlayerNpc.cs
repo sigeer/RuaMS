@@ -48,7 +48,7 @@ namespace Application.Core.Game.Life
         public bool IsHonor { get; set; }
         public List<PlayerNpcEquipObject> Equips { get; set; } = [];
 
-        public PlayerNpc()
+        public PlayerNpc(IMap map, Point pos) : base(map, pos)
         {
 
         }

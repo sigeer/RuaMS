@@ -67,7 +67,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 
         var packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
 
-        chr.getMap().broadcastMessage(chr, packet, false, true);
+        chr.BroadcastMap(packet, chr.Id);
         var effect = attack.getAttackEffect(chr, null);
         var skill = SkillFactory.GetSkillTrust(attack.skill);
         var effect_ = skill.getEffect(chr.getSkillLevel(skill));

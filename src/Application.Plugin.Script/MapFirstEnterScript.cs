@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using scripting.map;
 using server.life;
 using System.Drawing;
+using System.Security.Cryptography;
 
 namespace Application.Plugin.Script
 {
@@ -99,7 +100,7 @@ namespace Application.Plugin.Script
             var pos = new Point(842, 0);
             var mobId = 9400633;
 
-            var mobobj = LifeFactory.Instance.getMonster(mobId);
+            var mobobj = LifeFactory.Instance.GetMonsterTrust(mobId);
             var mobName = c.CurrentCulture.GetMobName(mobId);
             getMap().spawnMonsterOnGroundBelow(mobobj, pos);
             Pink(mobName + " 已现身！");
@@ -180,11 +181,10 @@ namespace Application.Plugin.Script
                 callBoss = getClient().getChannelServer().setDojoProgress(getMapId());
 
                 var realstage = stage - ((stage / 6) | 0);
-                var mob = getMonsterLifeFactory(9300183 + realstage);
-                if (callBoss && mob != null && getPlayer().getMap().getMonsterById(9300216) == null)
+                var mobData = LifeFactory.Instance.GetMonsterTrust(9300183 + realstage);
+                if (callBoss && getPlayer().getMap().getMonsterById(9300216) == null)
                 {
-                    mob.setBoss(false);
-                    getPlayer().getMap().spawnDojoMonster(mob);
+                    getPlayer().getMap().spawnDojoMonster(mobData);
                 }
             }
         }

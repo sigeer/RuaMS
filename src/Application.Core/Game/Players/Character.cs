@@ -60,6 +60,8 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Numerics;
+using System.Runtime.ConstrainedExecution;
 using System.Threading.Tasks;
 using tools;
 using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
@@ -158,7 +160,6 @@ public partial class Player
 
     private ConcurrentDictionary<Monster, int> controlled = new();
 
-    private ConcurrentDictionary<IMapObject, int> visibleMapObjects = new ConcurrentDictionary<IMapObject, int>();
 
     private Dictionary<int, CouponBuffEntry> activeCoupons = new();
 
@@ -312,10 +313,6 @@ public partial class Player
         }
     }
 
-    public void addVisibleMapObject(IMapObject mo)
-    {
-        visibleMapObjects.TryAdd(mo, 0);
-    }
 
     public int calculateMaxBaseDamage(int watk, WeaponType weapon)
     {
@@ -492,7 +489,7 @@ public partial class Player
         return "<" + medalItemName + "> ";
     }
 
-    public void Hide(bool hide, bool login = false)
+    public void Hide(bool hide, bool fromLogin = false)
     {
         if (isGM() && hide != this.hidden)
         {
@@ -501,12 +498,26 @@ public partial class Player
                 this.hidden = false;
                 sendPacket(PacketCreator.getGMEffect(0x10, 0));
                 List<BuffStat> dsstat = Collections.singletonList(BuffStat.DARKSIGHT);
-                MapModel.broadcastGMMessage(this, PacketCreator.cancelForeignBuff(Id, dsstat), false);
-                MapModel.broadcastSpawnPlayerMapObjectMessage(this, this, false);
-
-                foreach (Summon ms in this.getSummonsValues())
+                foreach (var mapChr in MapModel.getAllPlayers())
                 {
-                    MapModel.broadcastNONGMMessage(this, PacketCreator.spawnSummon(ms, false), false);
+                    if (mapChr == this)
+                    {
+                        continue;
+                    }
+
+                    if (mapChr.isGM())
+                    {
+                        mapChr.sendPacket(PacketCreator.cancelForeignBuff(Id, dsstat));
+                    }
+                    else
+                    {
+                        mapChr.sendPacket(PacketCreator.spawnPlayerMapObject(mapChr.Client, this, false));
+                        foreach (Summon ms in this.getSummonsValues())
+                        {
+                            mapChr.sendPacket(PacketCreator.spawnSummon(ms, false));
+                        }
+                        
+                    }
                 }
 
                 this.MapModel.ProcessMonster(m =>
@@ -517,13 +528,29 @@ public partial class Player
             else
             {
                 this.hidden = true;
-                sendPacket(PacketCreator.getGMEffect(0x10, 1));
-                if (!login)
+
+                if (!fromLogin)
                 {
-                    MapModel.broadcastNONGMMessage(this, PacketCreator.removePlayerFromMap(getId()), false);
+                    sendPacket(PacketCreator.getGMEffect(0x10, 1));
+                    foreach (var mapChr in MapModel.getAllPlayers())
+                    {
+                        if (mapChr == this)
+                        {
+                            continue;
+                        }
+
+                        if (mapChr.isGM())
+                        {
+                            mapChr.sendPacket(PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                        }
+                        else
+                        {
+                            mapChr.sendPacket(PacketCreator.removePlayerFromMap(getId()));
+                        }
+                    }
+                    this.releaseControlledMonsters();
                 }
-                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
-                this.releaseControlledMonsters();
+
             }
             sendPacket(PacketCreator.enableActions());
         }
@@ -555,7 +582,7 @@ public partial class Player
             sendPacket(PacketCreator.cancelBuff(buffstats));
             if (buffstats.Count > 0)
             {
-                MapModel.broadcastMessage(this, PacketCreator.cancelForeignBuff(getId(), buffstats), false);
+                BroadcastMap(PacketCreator.cancelForeignBuff(getId(), buffstats), Id);
             }
         }
     }
@@ -735,7 +762,7 @@ public partial class Player
         {
             var chrC = chr.Client;
 
-            // 转职需要在地图上重新生成角色吗？
+            // 转职需要在地图上重新生成角色？ 没有单独的更新职业的数据包，部分职业转职时造型/特效发生变化
             if (chrC != null)
             {     // propagate new job 3rd-person effects (FJ, Aran 1st strike, etc)
                 this.sendDestroyData(chrC);
@@ -944,7 +971,7 @@ public partial class Player
 
     public void broadcastStance()
     {
-        MapModel.broadcastMessage(this, PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), false);
+        BroadcastMap(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), Id);
     }
 
     private bool buffMapProtection()
@@ -1154,7 +1181,7 @@ public partial class Player
             if (healHP > 0)
             {
                 sendPacket(PacketCreator.showOwnRecovery(healHP));
-                MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, healHP), false);
+                BroadcastMap(PacketCreator.showRecovery(Id, healHP), Id);
             }
         }
 
@@ -1236,7 +1263,7 @@ public partial class Player
         if (timeNow - lastExpression > 1500)
         {
             lastExpression = timeNow;
-            MapModel.broadcastMessage(this, PacketCreator.facialExpression(this, emote), false);
+            BroadcastMap(PacketCreator.facialExpression(this, emote), Id);
         }
     }
 
@@ -1273,7 +1300,7 @@ public partial class Player
 
     public void equipChanged()
     {
-        MapModel.broadcastUpdateCharLookMessage(this, this);
+        BroadcastMap(PacketCreator.updateCharLook(Client, this), Id);
         equipchanged = true;
         UpdateLocalStats();
     }
@@ -2039,11 +2066,6 @@ public partial class Player
         return summons.GetValueOrDefault(Id);
     }
 
-    public bool isSummonsEmpty()
-    {
-        return summons.Count == 0;
-    }
-
     public bool containsSummon(Summon summon)
     {
         return summons.ContainsValue(summon);
@@ -2064,10 +2086,7 @@ public partial class Player
         return VanquisherStage;
     }
 
-    public IMapObject[] getVisibleMapObjects()
-    {
-        return visibleMapObjects.Keys.ToArray();
-    }
+
 
     public int gmLevel()
     {
@@ -2092,9 +2111,9 @@ public partial class Player
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
             sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
-            MapModel.broadcastPacket(this, PacketCreator.showBuffEffect(Id, energycharge.getId(), 2));
-            MapModel.broadcastPacket(this, PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
-                    ceffect.getDuration(), stat));
+            BroadcastMap(PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
+            BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
+                    ceffect.getDuration(), stat), Id);
         }
         if (energybar >= 10000 && energybar < 11000)
         {
@@ -2129,7 +2148,7 @@ public partial class Player
             skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServer.Node.getCurrentTime()),
             stat));
-        MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
+        BroadcastMap(PacketCreator.giveForeignBuff(getId(), stat), Id);
     }
 
 
@@ -2179,10 +2198,7 @@ public partial class Player
         return hidden;
     }
 
-    public bool isMapObjectVisible(IMapObject mo)
-    {
-        return visibleMapObjects.ContainsKey(mo);
-    }
+
 
     public bool isGuildLeader()
     {
@@ -2190,12 +2206,6 @@ public partial class Player
         return GuildId > 0 && GuildRank < 3;
     }
 
-    public void leaveMap()
-    {
-        releaseControlledMonsters();
-        visibleMapObjects.Clear();
-        setChair(-1);
-    }
 
     private int getChangedJobSp(Job newJob)
     {
@@ -2428,7 +2438,7 @@ public partial class Player
 
         saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
 
-        MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
+        BroadcastMap(PacketCreator.showForeignEffect(getId(), 0), Id);
         // setMPC(new PartyCharacter(this));
 
         if (Level % 20 == 0)
@@ -2976,10 +2986,7 @@ public partial class Player
 
 
 
-    public void removeVisibleMapObject(IMapObject mo)
-    {
-        visibleMapObjects.Remove(mo);
-    }
+
 
     public void resetStats()
     {
@@ -3665,13 +3672,11 @@ public partial class Player
             }
         }
 
-        if (this.isHidden())
+        if (this.isHidden() && Client.OnlinedCharacter.isGM())
         {
-            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
+            Client.sendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
         }
     }
-
-    public override void setObjectId(int Id) { }
 
     public override string ToString()
     {
@@ -4080,5 +4085,55 @@ public partial class Player
     public bool isRecvPartySearchInviteEnabled()
     {
         return false;
+    }
+
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr) && (!isHidden() || chr.isGM());
+    }
+
+    public override Player? Controller => this;
+
+    public override void BroadcastMovement(Packet packet, Point pos)
+    {
+        foreach (var mapChr in MapModel.getAllPlayers())
+        {
+            if (mapChr == Controller)
+            {
+                continue;
+            }
+
+            if (IsVisibleForPlayerWithoutRange(mapChr))
+            {
+                mapChr.sendPacket(packet);
+            }
+        }
+    }
+
+    public override void OnUnmounted()
+    {
+        unregisterChairBuff();
+
+        releaseControlledMonsters();
+        setChair(-1);
+
+        foreach (Summon summon in getSummonsValues())
+        {
+            if (summon.isStationary())
+            {
+                cancelEffectFromBuffStat(BuffStat.PUPPET);
+            }
+            else
+            {
+                MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
+            }
+        }
+
+        var dragon = getDragon();
+        if (dragon != null)
+        {
+            MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
+        }
     }
 }

@@ -9,7 +9,7 @@ public abstract class Mist : AbstractMapObject
     protected bool _isMobMist, _isPoisonMist, _isRecoveryMist;
     protected int skillDelay;
 
-    public Mist(Rectangle mistPosition, int skillDelay)
+    public Mist(IMap map, Point pos, Rectangle mistPosition, int skillDelay): base(map, pos)
     {
         this.mistPosition = mistPosition;
         this.skillDelay = skillDelay;
@@ -48,10 +48,6 @@ public abstract class Mist : AbstractMapObject
         return mistPosition;
     }
 
-    public override void setPosition(Point position)
-    {
-        throw new NotImplementedException();
-    }
 
     public Packet makeDestroyData()
     {
@@ -76,4 +72,8 @@ public abstract class Mist : AbstractMapObject
         return skillDelay;
     }
 
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr);
+    }
 }

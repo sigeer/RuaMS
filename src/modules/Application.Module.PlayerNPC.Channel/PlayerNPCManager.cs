@@ -256,9 +256,11 @@ namespace Application.Module.PlayerNPC.Channel
 
         public void SpawnPlayerNPC(IMap map, PlayerNpc pn)
         {
-            map.addPlayerNPCMapObject(pn);
-            map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-            map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+            map.AddMapObject(pn, mapChr =>
+            {
+                mapChr.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+                mapChr.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+            });
         }
     }
 }

@@ -6,7 +6,6 @@ namespace Application.Core.Game.Maps
         string GetName();
         string GetReadableName(IChannelClient c);
         int GetSourceId();
-        void setMap(IMap map);
         IMap getMap();
         Point getPosition();
         int getObjectId();
@@ -15,5 +14,21 @@ namespace Application.Core.Game.Maps
         void setPosition(Point position);
         void sendSpawnData(IChannelClient client);
         void sendDestroyData(IChannelClient client);
+
+        /// <summary>
+        /// 添加到地图时
+        /// </summary>
+        /// <param name="map"></param>
+        void OnMounted(IMap map);
+        /// <summary>
+        /// 从地图移除时
+        /// </summary>
+        void OnUnmounted();
+        /// <summary>
+        /// 可以对 <paramref name="chr"/> 显示
+        /// </summary>
+        /// <param name="chr"></param>
+        bool IsVisibleForPlayer(Player chr);
+        void BroadcastMap(Packet packet, int exceptCId = -1);
     }
 }

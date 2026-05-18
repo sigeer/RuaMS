@@ -17,7 +17,7 @@ public class Kite : AbstractMapObject, ILifedTickable
     private int ft;
     private int itemid;
 
-    public Kite(Player owner, string text, int itemId)
+    public Kite(Player owner, string text, int itemId): base(owner.MapModel, owner.getPosition())
     {
         OwnerId = owner.Id;
         OwnerName = owner.Name;
@@ -72,5 +72,10 @@ public class Kite : AbstractMapObject, ILifedTickable
             Status = TickableStatus.Remove;
             return;
         }
+    }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr);
     }
 }

@@ -109,9 +109,9 @@ public class SpawnPoint
         return mobTime >= 0 && spawnedMonsters.get() < GetMaxMobCount();
     }
 
-    protected virtual void SetMonsterPosition(Monster mob)
+    protected virtual Point GetPosition()
     {
-        mob.setPosition(pos);
+        return pos;
     }
 
     protected virtual void SubscribeMonster(Monster mob)
@@ -122,8 +122,8 @@ public class SpawnPoint
     public Monster GenrateMonster()
     {
         // Check. 原代码中，只在初始化(loadLife)的Monster中传入了fh, f, rx...等属性，这里额外加上不知道有没有问题
-        var mob = LifeFactory.Instance.GetMonsterTrust(monster);
-        SetMonsterPosition(mob);
+        var mob = _map.CreateMonster( LifeFactory.Instance.GetMonsterTrust(monster), GetPosition());
+
         mob.setTeam(team);
         mob.setFh(fh);
         mob.setF(f);

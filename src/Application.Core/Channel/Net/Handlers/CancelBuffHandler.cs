@@ -44,7 +44,7 @@ public class CancelBuffHandler : ChannelHandlerBase
             case WindArcher.HURRICANE:
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
-                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.skillCancel(c.OnlinedCharacter, sourceid), false);
+                c.OnlinedCharacter.BroadcastMap(PacketCreator.skillCancel(c.OnlinedCharacter, sourceid), c.OnlinedCharacter.Id);
                 break;
 
             default:

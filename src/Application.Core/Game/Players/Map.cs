@@ -9,13 +9,11 @@ namespace Application.Core.Game.Players
     public partial class Player : IMapPlayer
     {
 
-
-        public override void setMap(IMap map)
+        public override void OnMounted(IMap map)
         {
+            base.OnMounted(map);
             this.Map = map.getId();
-            base.setMap(map);
         }
-
         public int getMapId()
         {
             if (base.MapModel != null)

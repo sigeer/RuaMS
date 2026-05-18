@@ -39,7 +39,9 @@ public class Summon : AbstractAnimatedMapObject
     private int hp;
     private SummonMovementType movementType;
 
-    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType)
+    public override Player? Controller => owner;
+
+    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType): base(owner.MapModel, pos, 0)
     {
         this.owner = owner;
         this.skill = skill;
@@ -47,7 +49,6 @@ public class Summon : AbstractAnimatedMapObject
         if (skillLevel == 0) throw new Exception();
 
         this.movementType = movementType;
-        setPosition(pos);
     }
 
     public override void sendSpawnData(IChannelClient client)
@@ -110,5 +111,10 @@ public class Summon : AbstractAnimatedMapObject
                 return true;
         }
         return false;
+    }
+
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return getOwner() == chr || base.IsVisibleForPlayer(chr);
     }
 }

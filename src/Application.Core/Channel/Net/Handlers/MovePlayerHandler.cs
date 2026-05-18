@@ -35,23 +35,19 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        p.skip(9);
+        p.skip(5);
         try
-        {   // thanks Sa for noticing empty movement sequences crashing players
+        {
+            var clientStartPos = p.readPos();
+            var serverStartPos = c.OnlinedCharacter.getPosition();
+            // thanks Sa for noticing empty movement sequences crashing players
             int movementDataStart = p.getPosition();
             updatePosition(p, c.OnlinedCharacter, 0);
             int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
             c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());
-            if (c.OnlinedCharacter.isHidden())
-            {
-                c.OnlinedCharacter.getMap().broadcastGMMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
-            }
-            else
-            {
-                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
-            }
+            c.OnlinedCharacter.BroadcastMovement(PacketCreator.movePlayer(c.OnlinedCharacter.getId(), clientStartPos, p, movementDataLength), serverStartPos);
         }
         catch (EmptyMovementException e)
         {

@@ -134,7 +134,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         if (gain <= 0)
             return;
 
-        var bonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
+        var bonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PQ_BONUS_EXP_RATE : 1;
         List<Player> players = getPlayerList();
 
         if (mapId == -1)
@@ -695,11 +695,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
                 }
             }
         }
-    }
-
-    public Monster getMonster(int mid)
-    {
-        return (LifeFactory.Instance.GetMonsterTrust(mid));
     }
 
     public void dropExclusiveItems(Player chr)

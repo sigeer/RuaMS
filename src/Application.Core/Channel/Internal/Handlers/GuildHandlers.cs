@@ -99,8 +99,8 @@ namespace Application.Core.Channel.Internal.Handlers
                                 }
                                 chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
 
-                                chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name));
-                                chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor));
+                                chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
+                                chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
                             }
                         });
                     }
@@ -375,7 +375,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                 {
                                     chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
                                 }
-                                chr.MapModel.broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor));
+                                chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor), chr.Id);
                             }
                         });
 
@@ -510,8 +510,8 @@ namespace Application.Core.Channel.Internal.Handlers
                                     {
                                         chr.GuildRank = newMember.GuildRank;
                                         chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
-                                        chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name));
-                                        chr.getMap().broadcastPacket(chr, GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor));
+                                        chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
+                                        chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
                                     }
                                     else if (chr.GuildId == res.Request.GuildId)
                                     {
@@ -576,7 +576,7 @@ namespace Application.Core.Channel.Internal.Handlers
                             {
                                 masterChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                                 masterChr.sendPacket(GuildPackets.ShowGuildInfo(null));
-                                masterChr.getMap().broadcastPacket(masterChr, GuildPackets.guildNameChanged(masterChr.Id, ""));
+                                masterChr.BroadcastMap(GuildPackets.guildNameChanged(masterChr.Id, ""), masterChr.Id);
                             }
                         });
 
@@ -647,7 +647,7 @@ namespace Application.Core.Channel.Internal.Handlers
                             targetChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                             targetChr.sendPacket(GuildPackets.ShowGuildInfo(null));
 
-                            targetChr.getMap().broadcastPacket(targetChr, GuildPackets.guildNameChanged(targetChr.Id, ""));
+                            targetChr.BroadcastMap(GuildPackets.guildNameChanged(targetChr.Id, ""), targetChr.Id);
                         }
                     });
 
@@ -714,7 +714,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                     chr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
                                     chr.sendPacket(GuildPackets.ShowGuildInfo(null));
 
-                                    chr.getMap().broadcastPacket(chr, GuildPackets.guildNameChanged(chr.Id, ""));
+                                    chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, ""), chr.Id);
                                 }
                                 else
                                 {

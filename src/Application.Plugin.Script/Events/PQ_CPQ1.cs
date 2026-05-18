@@ -7,7 +7,7 @@ namespace Application.Plugin.Script.Events
 {
     internal sealed class PQ_CPQ1 : MonsterCarnivalEventManager
     {
-        public PQ_CPQ1(WorldChannel cserv, string name, int recruitMap) : base(cserv, name)
+        public PQ_CPQ1(WorldChannel cserv, string name, int recruitMap) : base(cserv, name, recruitMap + 1)
         {
             RecruitMap = recruitMap;
             EntryMap = recruitMap + 1;

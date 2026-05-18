@@ -1065,9 +1065,9 @@ public class PacketCreator
      * @param effect   The spawn effect.
      * @return The spawn monster packet.
      */
-    public static Packet spawnMonster(Monster life, bool newSpawn, int effect = 0)
+    public static Packet spawnMonster(Monster life, bool newSpawn)
     {
-        return spawnMonsterInternal(life, false, newSpawn, false, effect, false);
+        return spawnMonsterInternal(life, false, newSpawn, false, life.getSpawnEffect(), false);
     }
 
     /**
@@ -1510,7 +1510,7 @@ public class PacketCreator
     /// <param name="mod">
     /// <para>0. ?</para>
     /// <para>1. spawn</para>
-    /// <para>2. update</para>
+    /// <para>2. spawnWithoutEffect?</para>
     /// <para>3. remove?</para>
     /// </param>
     /// <param name="delay"></param>
@@ -1531,7 +1531,7 @@ public class PacketCreator
         p.writeInt(drop.getClientsideOwnerId()); // owner charid/partyid :)
         p.writeByte(dropType); // 0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA
         p.writePos(dropto);
-        p.writeInt(drop.getDropper().getObjectId()); // dropper oid, found thanks to Li Jixue
+        p.writeInt(drop.getDropper().getObjectId()); // mob oid
 
         if (mod != 2)
         {
@@ -1543,6 +1543,22 @@ public class PacketCreator
             addExpirationTime(p, drop.Item.getExpiration());
         }
         p.writeByte(drop.isPlayerDrop() ? 0 : 1); //pet EQP pickup
+        return p;
+    }
+
+    public static Packet DropItemDestroy(int itemId, Point dropfrom)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.DROP_ITEM_FROM_MAPOBJECT);
+        p.writeByte(3);
+        p.writeInt(0);
+        p.writeBool(itemId == 0); // 1 mesos, 0 item, 2 and above all item meso bag,
+        p.writeInt(itemId); // drop object ID
+        p.writeInt(0); // owner charid/partyid :)
+        p.writeByte(0); // 0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA
+        p.writePos(Point.Empty);
+        p.writeInt(0); // dropper oid, found thanks to Li Jixue
+        p.writePos(dropfrom);
+        p.writeShort(0);//Fh?
         return p;
     }
 
@@ -2042,11 +2058,11 @@ public class PacketCreator
         }
     }
 
-    public static Packet movePlayer(int chrId, InPacket movementPacket, int movementDataLength)
+    public static Packet movePlayer(int chrId, Point startPos, InPacket movementPacket, int movementDataLength)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
         p.writeInt(chrId);
-        p.writeInt(0);
+        p.writePos(startPos);
         PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
         return p;
     }

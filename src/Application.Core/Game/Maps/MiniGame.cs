@@ -57,7 +57,7 @@ public class MiniGame : AbstractMapObject
         WIN, LOSS, TIE
     }
 
-    public MiniGame(Player owner, string description, string password, byte gameType, int pieceType)
+    public MiniGame(Player owner, string description, string password, byte gameType, int pieceType): base(owner.MapModel, owner.getPosition())
     {
         this.owner = owner;
         this.description = description;

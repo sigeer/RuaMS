@@ -92,7 +92,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
             {
                 int mobOid = p.readInt();
                 byte success = p.readByte();
-                chr.getMap().broadcastMessage(chr, PacketCreator.catchMonster(mobOid, success), false);
+                chr.BroadcastMap(PacketCreator.catchMonster(mobOid, success), chr.Id);
                 var monster = chr.getMap().getMonsterByOid(mobOid);
                 if (monster != null)
                 {
@@ -108,7 +108,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                 }
             }
             byte direction = p.readByte();   // thanks MedicOP for pointing some 3rd-party related issues with Magnet
-            chr.getMap().broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), false);
+            chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), chr.Id);
             c.sendPacket(PacketCreator.enableActions());
         }
         else if (skillid == Brawler.MP_RECOVERY)
@@ -126,7 +126,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {
             p.skip(11);
-            chr.getMap().broadcastMessage(chr, PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid)), false);
+            chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid)), chr.Id);
         }
         else if (skillid % 10000000 == 1004)
         {

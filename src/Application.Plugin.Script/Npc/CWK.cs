@@ -1,3 +1,4 @@
+using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script
@@ -100,13 +101,13 @@ namespace Application.Plugin.Script
                 mapMessage(6, "Engarde! Master Guardians approach!");
                 for (var i = 0; i < 10; i++)
                 {
-                    var mob = eim.getMonster(9400594);
+                    var mob = LifeFactory.Instance.GetMonsterTrust(9400594);
                     var xPos = -1337 + Random.Shared.Next(1337);
                     getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
                 }
                 for (var i = 0; i < 20; i++)
                 {
-                    var mob = eim.getMonster(9400582);
+                    var mob = LifeFactory.Instance.GetMonsterTrust(9400582);
                     var xPos = -1337 + Random.Shared.Next(1337);
                     getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
                 }
@@ -121,19 +122,19 @@ namespace Application.Plugin.Script
                     mapMessage(6, "Twisted Masters approach!");
 
                     //Margana
-                    var mob = eim.getMonster(9400590);
+                    var mob = LifeFactory.Instance.GetMonsterTrust(9400590);
                     getMap().spawnMonsterOnGroundBelow(mob, new Point(-22, 1));
 
                     //Red Nirg
-                    var mob2 = eim.getMonster(9400591);
+                    var mob2 = LifeFactory.Instance.GetMonsterTrust(9400591);
                     getMap().spawnMonsterOnGroundBelow(mob2, new Point(-22, 276));
 
                     //Hsalf
-                    var mob4 = eim.getMonster(9400593);
+                    var mob4 = LifeFactory.Instance.GetMonsterTrust(9400593);
                     getMap().spawnMonsterOnGroundBelow(mob4, new Point(496, 276));
 
                     //Rellik
-                    var mob3 = eim.getMonster(9400592);
+                    var mob3 = LifeFactory.Instance.GetMonsterTrust(9400592);
                     getMap().spawnMonsterOnGroundBelow(mob3, new Point(-496, 276));
 
                     eim.setIntProperty("glpq6", 2);

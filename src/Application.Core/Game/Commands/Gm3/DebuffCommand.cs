@@ -35,7 +35,7 @@ public class DebuffCommand : CommandBase
             return;
         }
 
-        foreach (var mmo in player.getMap().getMapObjectsInRange(player.getPosition(), 777777.7, Arrays.asList(MapObjectType.PLAYER)))
+        foreach (var mmo in player.getMap().getMapObjectsInRange(player.getPosition(), 777777.7, [MapObjectType.PLAYER]))
         {
             Player chr = (Player)mmo;
 

@@ -33,9 +33,11 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 
                     foreach (var pn in playerNpcs)
                     {
-                        map.removeMapObject(pn);
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                        map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                        map.RemoveMapObject(pn, mapChr =>
+                        {
+                            mapChr.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                            mapChr.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                        });
                     }
                 }
             }

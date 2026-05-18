@@ -1,4 +1,4 @@
-namespace Application.Shared
+namespace Application.Utility
 {
     public interface INamedInstance
     {

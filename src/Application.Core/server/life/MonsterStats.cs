@@ -39,13 +39,14 @@ public class MonsterStats
     public Dictionary<Element, ElementalEffectiveness> resistance = new();
     public int[] revives = new int[0];
     public byte tagColor, tagBgColor;
-    public HashSet<MobSkillId> skills = new();
+
     public KeyValuePair<int, int>? cool = null;
     public BanishInfo? banish = null;
     public List<LoseItem>? _loseItem = null;
     public SelfDestruction? _selfDestruction = null;
     public int fixedStance = 0;
     public bool friendly;
+    public Dictionary<MobSkillId, int> MobSkillAnimation { get; set; } = new();
     public void setChange(bool change)
     {
         this.changeable = change;
@@ -211,24 +212,19 @@ public class MonsterStats
         this.tagBgColor = (byte)tagBgColor;
     }
 
-    public void setSkills(HashSet<MobSkillId> skills)
-    {
-        this.skills = skills;
-    }
-
     public HashSet<MobSkillId> getSkills()
     {
-        return this.skills.ToHashSet();
+        return this.MobSkillAnimation.Keys.ToHashSet();
     }
 
     public int getNoSkills()
     {
-        return this.skills.Count;
+        return this.MobSkillAnimation.Count;
     }
 
     public bool hasSkill(int skillId, int level)
     {
-        return skills.Any(x => x.type.getId() == skillId && x.level == level);
+        return MobSkillAnimation.Keys.Any(x => x.type.getId() == skillId && x.level == level);
     }
 
     public void setFirstAttack(bool firstAttack)
