@@ -45,7 +45,7 @@ public class WhereaMiCommand : CommandBase
             {
                 sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId());
 
-                if (!obj.IsVisibleForPlayer(player))
+                if (!player.MapModel.IsMapObjectVisibleForPlayerCached(player, obj))
                 {
                     sb.Append("（超出视野）");
                 }

@@ -448,7 +448,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             var selfDestr = getStats().selfDestruction();
             if (selfDestr != null && selfDestr.Hp > -1)
             {
-                // should work ;p
+                // 似乎由客户端触发？
                 if (getHp() <= selfDestr.Hp)
                 {
                     MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
@@ -530,7 +530,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (hp > 0)
         {
-            getMap().broadcastMessage(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
+            BroadcastMap(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
         }
 
         maxHpPlusHeal.addAndGet(hpHealed.Value);
@@ -1213,7 +1213,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         BroadcastMap(packet);
 
         var chrController = getActiveController();
-        if (chrController != null && !IsVisibleForPlayer(chrController))
+        if (chrController != null && !MapModel.IsMapObjectVisibleForPlayerCached(chrController, this))
         {
             chrController.sendPacket(packet);
         }
@@ -1446,7 +1446,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         aggroRemoveController();
 
         setPosition(newPoint);
-        MapModel.broadcastMessage(
+        BroadcastMap(
             PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
         MapModel.MoveMapObject(this);
 

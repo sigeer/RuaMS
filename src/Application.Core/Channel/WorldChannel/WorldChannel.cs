@@ -3,6 +3,7 @@ using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
+using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
@@ -46,7 +47,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public EventScriptManager EventScriptManager { get; }
     public ReactorScriptManager ReactorScriptManager { get; }
     public NPCScriptManager NPCScriptManager { get; }
-    public DevtestScriptManager DevtestScriptManager { get; }
 
 
     private Dictionary<int, int> storedVars = new();
@@ -171,7 +171,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
         NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
-        DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
         Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();
 
         MapOwnershipManager = new MapOwnershipManager(this);
@@ -756,7 +755,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public Task Send(ICommand command) => CommandLoop.Register(command);
     public void OnTick(long now)
     {
-        this.ProcessSubTickables(now);
+        Send(new ChannelTickCommand(c =>
+        {
+            this.ProcessSubTickables(now);
+        }));
+
     }
 
     public Task Send(Func<WorldChannel, Task> action) => Send(new AsyncChannelDelegateCommand(action));

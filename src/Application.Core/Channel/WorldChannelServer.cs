@@ -352,7 +352,7 @@ namespace Application.Core.Channel
             }
             catch (Exception ex)
             {
-                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                _logger.LogError("注册服务器失败, {Message}", ex.Message);
                 return false;
             }
 
@@ -575,13 +575,14 @@ namespace Application.Core.Channel
 
         public void OnTick(long now)
         {
-            foreach (var item in Servers.Values)
+            Send(new NodeTickCommand(w =>
             {
-                item.Send(w =>
+                foreach (var item in w.Servers.Values)
                 {
-                    w.OnTick(now);
-                });
-            }
+                    item.OnTick(now);
+                }
+            }));
+
         }
     }
 }

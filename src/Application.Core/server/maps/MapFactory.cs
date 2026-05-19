@@ -264,8 +264,6 @@ public class MapFactory : IStaticService
             map.shuffleReactors();
         }
 
-        map.setMapName(loadPlaceName(mapid));
-        map.setStreetName(loadStreetName(mapid));
 
         map.generateMapDropRangeCache();
 

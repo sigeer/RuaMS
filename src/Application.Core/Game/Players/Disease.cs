@@ -42,11 +42,11 @@ namespace Application.Core.Game.Players
 
                 if (di.Disease != Disease.SLOW)
                 {
-                    MapModel.broadcastMessage(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
+                    BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
                 }
                 else
                 {
-                    MapModel.broadcastMessage(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
+                    BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
                 }
             }
         }

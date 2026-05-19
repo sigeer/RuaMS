@@ -576,7 +576,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     {
                         if (attack.skill == Aran.BODY_PRESSURE)
                         {
-                            map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
+                            monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
                         }
 
                         monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);

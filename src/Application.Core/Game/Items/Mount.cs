@@ -103,7 +103,7 @@ public class Mount : ILoopTickable, IDisposable
             {
                 Level++;
 
-                owner.MapModel.broadcastMessage(PacketCreator.updateMount(owner.Id, this, true));
+                owner.BroadcastMap(PacketCreator.updateMount(owner.Id, this, true));
             }
         }
     }
@@ -148,7 +148,7 @@ public class Mount : ILoopTickable, IDisposable
             {
                 int tiredness = incrementAndGetTiredness();
 
-                this.owner.MapModel.broadcastMessage(PacketCreator.updateMount(this.getId(), this, false));
+                this.owner.BroadcastMap(PacketCreator.updateMount(this.getId(), this, false));
                 if (tiredness > 99)
                 {
                     setTiredness(99);

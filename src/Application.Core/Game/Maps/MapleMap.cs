@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Actor;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -79,10 +80,6 @@ public class MapleMap : IMap, INamedInstance
     private bool docked = false;
     public bool IsPirateDocked { get; private set; }
     public AbstractEventInstanceManager? EventInstanceManager { get; private set; }
-
-
-    private string mapName;
-    private string streetName;
     public MapEffect? MapEffect { get; set; }
 
     private bool dropsOn = true;
@@ -117,7 +114,7 @@ public class MapleMap : IMap, INamedInstance
     public MapTemplate SourceTemplate { get; }
     public CommandLoop<IMap> CommandLoop { get; }
     public bool IsLargeMap { get; }
-
+    public bool UseRangedView => IsLargeMap;
     public MapleMap(MapTemplate mapTemplate, WorldChannel worldChannel, AbstractEventInstanceManager? eim)
     {
         SourceTemplate = mapTemplate;
@@ -127,8 +124,6 @@ public class MapleMap : IMap, INamedInstance
         this.MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator(this);
 
-        mapName = "";
-        streetName = "";
         EventInstanceManager = eim;
         var range = new RangeNumberGenerator(Id, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
@@ -177,7 +172,7 @@ public class MapleMap : IMap, INamedInstance
         droppedItems = new(YamlConfig.config.server.ITEM_LIMIT_ON_MAP);
         droppedItems.OnOverWrite += (s, o) => makeDisappearItemFromMap(o);
 
-        IsLargeMap = mapArea.Width >= ChannelServer.NodeService.ServerConfig.SystemConfig.ClientWidth * 2 
+        IsLargeMap = mapArea.Width >= ChannelServer.NodeService.ServerConfig.SystemConfig.ClientWidth * 2
             || mapArea.Height >= ChannelServer.NodeService.ServerConfig.SystemConfig.ClientHeight * 2;
 
         CommandLoop = new CommandLoop<IMap>(this);
@@ -301,7 +296,7 @@ public class MapleMap : IMap, INamedInstance
             return true;
         }
 
-        log.Error("MapleMap.AddMapObject {Type}, {ObjectId}", mapobject.getType(), mapobject.getObjectId());
+        log.Error("MapleMap.AddMapObject Duplicated: {Type}, {ObjectId}", mapobject.getType(), mapobject.getObjectId());
         return false;
 
     }
@@ -336,6 +331,7 @@ public class MapleMap : IMap, INamedInstance
             if (mapObj is Player player)
             {
                 characters.Remove(player.Id);
+                _chrVisibleMapObjects.Remove(player);
             }
 
             if (mapObj is Monster mob)
@@ -354,16 +350,11 @@ public class MapleMap : IMap, INamedInstance
         {
             foreach (var chr in getAllPlayers())
             {
-                SetPlayerInvisibleObject(chr, obj, false);
-
-                if (removePacketAction != null)
+                if (IsMapObjectVisibleForPlayerCached(chr, obj))
                 {
-                    if (obj.IsVisibleForPlayer(chr))
-                    {
-                        removePacketAction(chr);
-                    }
+                    removePacketAction?.Invoke(chr);
                 }
-
+                SetPlayerInvisibleObject(chr, obj, false);
             }
             return true;
         }
@@ -505,14 +496,6 @@ public class MapleMap : IMap, INamedInstance
     public int countBosses()
     {
         return GetRequiredMapObjects<Monster>(MapObjectType.MONSTER, x => x.isBoss()).Count;
-    }
-
-    public void broadcastBalrogVictory(string leaderName)
-    {
-        ChannelServer.NodeActor.Send(s =>
-        {
-            s.SendDropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.", false);
-        });
     }
 
     public void broadcastHorntailVictory()
@@ -657,12 +640,6 @@ public class MapleMap : IMap, INamedInstance
         });
     }
 
-
-
-    private Dictionary<int, IMapObject> getCopyMapObjects()
-    {
-        return new(mapobjects);
-    }
 
     #region NPC
     public NPC CreateNPC(NpcTemplate template, Point pos)
@@ -903,7 +880,7 @@ public class MapleMap : IMap, INamedInstance
 
             r.resetReactorActions(0);
             r.setAlive(true);
-            broadcastMessage(PacketCreator.triggerReactor(r, 0));
+            r.BroadcastMap(PacketCreator.triggerReactor(r, 0));
         }
     }
 
@@ -969,7 +946,7 @@ public class MapleMap : IMap, INamedInstance
                 if (mr.getState() < 1)
                 {
                     mr.resetReactorActions(1);
-                    broadcastMessage(PacketCreator.triggerReactor((Reactor)o, 1));
+                    mr.BroadcastMap(PacketCreator.triggerReactor((Reactor)o, 1));
                 }
             }
         }
@@ -1066,7 +1043,7 @@ public class MapleMap : IMap, INamedInstance
         if (!monster.isFake())
             return;
         monster.setFake(false);
-        broadcastMessage(PacketCreator.makeMonsterReal(monster));
+        monster.BroadcastMap(PacketCreator.makeMonsterReal(monster));
         monster.aggroUpdateController();
         updateBossSpawn(monster);
     }
@@ -1197,7 +1174,7 @@ public class MapleMap : IMap, INamedInstance
         Portal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
         if (doorPortal == null)
         {
-            log.Warning("[Door] {MapName} ({MapId}) does not contain door portalid {DoorId}", mapName, mapid, doorid);
+            log.Warning("[Door] {MapName} ({MapId}) does not contain door portalid {DoorId}", getMapName(), mapid, doorid);
             return portals.GetValueOrDefault(0x80);
         }
 
@@ -1663,13 +1640,6 @@ public class MapleMap : IMap, INamedInstance
     }
 
 
-    public void dropMessage(int type, string message)
-    {
-        broadcastMessage(PacketCreator.serverNotice(type, message));
-    }
-
-
-
 
     public List<IMapObject> getMapObjects()
     {
@@ -1822,7 +1792,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void MoveMapObject(AbstractAnimatedMapObject mapObject)
     {
-        if (!IsLargeMap)
+        if (!UseRangedView)
         {
             return;
         }
@@ -1871,17 +1841,12 @@ public class MapleMap : IMap, INamedInstance
 
     public string getMapName()
     {
-        return mapName;
-    }
-
-    public void setMapName(string mapName)
-    {
-        this.mapName = mapName;
+        return ClientCulture.SystemCulture.GetMapName(mapid);
     }
 
     public string getStreetName()
     {
-        return streetName;
+        return ClientCulture.SystemCulture.GetMapStreetName(mapid);
     }
 
 
@@ -1895,11 +1860,6 @@ public class MapleMap : IMap, INamedInstance
     public void setMuted(bool mute)
     {
         _isMuted = mute;
-    }
-
-    public void setStreetName(string streetName)
-    {
-        this.streetName = streetName;
     }
 
     public bool getEverlast() => SourceTemplate.Everlast;
@@ -2141,47 +2101,49 @@ public class MapleMap : IMap, INamedInstance
     {
         if (this.IsAvailable())
         {
-            if (RespawnNext <= now)
+            Send(new MapTickCommand(m =>
             {
-                respawn();
-
-                RespawnNext = now + RespawnInterval;
-            }
-
-            foreach (var item in getMapObjects())
-            {
-                if (item is ITickable tickable)
+                if (RespawnNext <= now)
                 {
-                    tickable.OnTick(now);
+                    respawn();
 
-                    if (tickable.Status == TickableStatus.Remove)
+                    RespawnNext = now + RespawnInterval;
+                }
+
+                foreach (var item in getMapObjects())
+                {
+                    if (item is ITickable tickable)
                     {
-                        if (item is Kite || item is Mist)
-                        {
-                            RemoveMapObject(item, chr => item.sendDestroyData(chr.Client));
-                        }
+                        tickable.OnTick(now);
 
-                        else if (item is MapItem mapItem)
+                        if (tickable.Status == TickableStatus.Remove)
                         {
-                            makeDisappearItemFromMap(mapItem);
+                            if (item is Kite || item is Mist)
+                            {
+                                RemoveMapObject(item, chr => item.sendDestroyData(chr.Client));
+                            }
+
+                            else if (item is MapItem mapItem)
+                            {
+                                makeDisappearItemFromMap(mapItem);
+                            }
                         }
                     }
                 }
-            }
 
-            if (MapEffect != null)
-            {
-                MapEffect.OnTick(now);
-
-                if (MapEffect.Status == TickableStatus.Remove)
+                if (MapEffect != null)
                 {
-                    BroadcastAll(chr => MapEffect.makeDestroyData());
-                    MapEffect = null;
+                    MapEffect.OnTick(now);
+
+                    if (MapEffect.Status == TickableStatus.Remove)
+                    {
+                        BroadcastAll(chr => MapEffect.makeDestroyData());
+                        MapEffect = null;
+                    }
                 }
-            }
 
-            aggroMonitor.OnTick(now);
-
+                aggroMonitor.OnTick(now);
+            }));
         }
     }
 
@@ -2202,30 +2164,6 @@ public class MapleMap : IMap, INamedInstance
 
 
     public int getSeats() => SourceTemplate.SeatCount;
-
-
-
-    private void broadcastGMMessage(Player? source, Packet packet, double rangeSq, Point? rangedFrom)
-    {
-        foreach (Player chr in getAllPlayers())
-        {
-            if (chr != source && chr.isGM())
-            {
-                if (rangeSq < double.PositiveInfinity)
-                {
-                    if (rangedFrom != null && MapGlobalData.IsObjectInRange(chr, rangedFrom.Value, rangeSq))
-                    {
-                        chr.sendPacket(packet);
-                    }
-                }
-                else
-                {
-                    chr.sendPacket(packet);
-                }
-            }
-        }
-    }
-
 
     public void setOxQuiz(bool b)
     {
@@ -2627,7 +2565,7 @@ public class MapleMap : IMap, INamedInstance
     {
         player.setPosition(newPosition);
 
-        if (!IsLargeMap)
+        if (!UseRangedView)
             return;
 
         foreach (var mo in getMapObjects())
@@ -2885,9 +2823,13 @@ public class MapleMap : IMap, INamedInstance
     }
 
 
-    
+
     Dictionary<Player, HashSet<IMapObject>> _chrVisibleMapObjects = new();
-    void SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true)
+    public bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj)
+    {
+        return _chrVisibleMapObjects.GetValueOrDefault(player)?.Contains(mapObj) ?? false;
+    }
+    public void SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true)
     {
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
@@ -2905,7 +2847,7 @@ public class MapleMap : IMap, INamedInstance
         }
 
     }
-    void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true)
+    public void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true)
     {
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
@@ -2938,7 +2880,6 @@ public class MapleMap : IMap, INamedInstance
             mapChr.sendPacket(PacketCreator.removePlayerFromMap(chr.getId()));
         });
         GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
-        _chrVisibleMapObjects.Remove(chr);
     }
 
     public Dictionary<int, Player> getMapPlayers()

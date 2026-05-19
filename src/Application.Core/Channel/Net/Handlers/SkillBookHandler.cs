@@ -110,7 +110,7 @@ public class SkillBookHandler : ChannelHandlerBase
             }
 
             // thanks Vcoc for noting skill book result not showing for all in area
-            player.getMap().broadcastMessage(PacketCreator.skillBookResult(player, skill, maxlevel, canuse, success));
+            player.BroadcastMap(PacketCreator.skillBookResult(player, skill, maxlevel, canuse, success));
         }
     }
 }

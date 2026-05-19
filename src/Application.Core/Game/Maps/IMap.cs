@@ -44,6 +44,7 @@ namespace Application.Core.Game.Maps
         /// 地图大小超过视距*2（使用视野裁剪）
         /// </summary>
         public bool IsLargeMap { get; }
+        bool UseRangedView { get; }
         #region Info
         void addSelfDestructive(Monster mob);
         void allowSummonState(bool b);
@@ -70,12 +71,9 @@ namespace Application.Core.Game.Maps
         bool hasClock();
         void setDocked(bool isDocked);
         void setEventStarted(bool @event);
-        void setMapName(string mapName);
         void setMuted(bool mute);
         void setOxQuiz(bool b);
         void setReactorState();
-        void setStreetName(string streetName);
-
         void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         #endregion
@@ -108,6 +106,9 @@ namespace Application.Core.Game.Maps
         /// </summary>
         /// <param name="mapObject"></param>
         void MoveMapObject(AbstractAnimatedMapObject mapObject);
+        bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj);
+        void SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true);
+        void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true);
         void removePlayer(Player chr);
         void addPlayer(Player chr);
         #endregion
@@ -144,7 +145,6 @@ namespace Application.Core.Game.Maps
 
         void addPlayerPuppet(Player player);
 
-        void broadcastBalrogVictory(string leaderName);
         void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
         void broadcastEnemyShip(bool state);
 
@@ -164,7 +164,6 @@ namespace Application.Core.Game.Maps
 
 
         void closeMapSpawnPoints();
-        void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);
         Portal? findClosestPortal(Point from);

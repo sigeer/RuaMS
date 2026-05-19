@@ -511,13 +511,10 @@ public partial class Player
                     }
                     else
                     {
-                        mapChr.sendPacket(PacketCreator.spawnPlayerMapObject(mapChr.Client, this, false));
-                        foreach (Summon ms in this.getSummonsValues())
-                        {
-                            mapChr.sendPacket(PacketCreator.spawnSummon(ms, false));
-                        }
-                        
+                        MapModel.SetPlayerVisibleObject(mapChr, this);
                     }
+
+
                 }
 
                 this.MapModel.ProcessMonster(m =>
@@ -545,7 +542,7 @@ public partial class Player
                         }
                         else
                         {
-                            mapChr.sendPacket(PacketCreator.removePlayerFromMap(getId()));
+                            MapModel.SetPlayerInvisibleObject(mapChr, this);
                         }
                     }
                     this.releaseControlledMonsters();
@@ -909,7 +906,7 @@ public partial class Player
 
         if (dragon != null)
         {
-            MapModel.broadcastMessage(PacketCreator.removeDragon(dragon.getObjectId()));
+            BroadcastMap(PacketCreator.removeDragon(dragon.getObjectId()));
             dragon = null;
         }
 
@@ -3660,21 +3657,26 @@ public partial class Player
         Client.sendPacket(PacketCreator.removePlayerFromMap(this.getObjectId()));
     }
 
-    public override void sendSpawnData(IChannelClient Client)
+    public override void sendSpawnData(IChannelClient mapChrClient)
     {
-        if (!this.isHidden() || Client.AccountEntity!.IsGmAccount())
+        if (!this.isHidden() || mapChrClient.AccountEntity!.IsGmAccount())
         {
-            Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
+            mapChrClient.sendPacket(PacketCreator.spawnPlayerMapObject(mapChrClient, this, false));
 
             if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
             { // mustn't effLock, chrLock sendSpawnData
-                Client.sendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
+                mapChrClient.sendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
+            }
+
+            foreach (Summon ms in this.getSummonsValues())
+            {
+                mapChrClient.sendPacket(PacketCreator.spawnSummon(ms, false));
             }
         }
 
-        if (this.isHidden() && Client.OnlinedCharacter.isGM())
+        if (this.isHidden() && mapChrClient.OnlinedCharacter.isGM())
         {
-            Client.sendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+            mapChrClient.sendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
         }
     }
 
@@ -4136,4 +4138,6 @@ public partial class Player
             MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
         }
     }
+
+    public bool FilterSummon { get; set; }
 }
