@@ -388,6 +388,7 @@ public class MonsterStats
 
     public MonsterStats copy()
     {
+        return this.DeepCopyByReflection();
         MonsterStats copy = new MonsterStats();
         try
         {

@@ -946,7 +946,7 @@ public class MapleMap : IMap, INamedInstance
                 if (mr.getState() < 1)
                 {
                     mr.resetReactorActions(1);
-                    mr.BroadcastMap(PacketCreator.triggerReactor((Reactor)o, 1));
+                    mr.BroadcastMap(PacketCreator.triggerReactor(mr, 1));
                 }
             }
         }

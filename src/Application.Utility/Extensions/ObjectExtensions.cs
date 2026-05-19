@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 
 namespace Application.Utility.Extensions
@@ -56,6 +57,35 @@ namespace Application.Utility.Extensions
                     destArray.SetValue(DeepCopyByReflection(sourceArray.GetValue(i)), i);
                 }
                 return (T)(object)destArray;
+            }
+
+            // 处理 IDictionary<,> (以及非泛型 IDictionary)
+            if (obj is IDictionary dictionary)
+            {
+                var dictType = type;
+                Type keyType = null, valueType = null;
+
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                {
+                    var genericArgs = type.GetGenericArguments();
+                    keyType = genericArgs[0];
+                    valueType = genericArgs[1];
+                    dictType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
+                }
+                else if (type.GetInterface("IDictionary") != null && !type.IsGenericType)
+                {
+                    // 非泛型 Hashtable 等可简单处理
+                    dictType = typeof(Hashtable);
+                }
+
+                var resultDict = (IDictionary)Activator.CreateInstance(dictType);
+                foreach (DictionaryEntry entry in dictionary)
+                {
+                    var keyCopy = DeepCopyByReflection(entry.Key);
+                    var valueCopy = DeepCopyByReflection(entry.Value);
+                    resultDict.Add(keyCopy, valueCopy);
+                }
+                return (T)resultDict;
             }
 
             // 处理集合（ICollection<T>、IList 等可简化，这里以 List<T> 为例）

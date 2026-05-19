@@ -20,7 +20,6 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver("Stats.AttackInfoHolders", "Stats.MobSkillAnimation"),
                 Formatting = Formatting.Indented
             };
         }
@@ -104,6 +103,27 @@ namespace ServiceTest.Infrastructure.WZ
         {
             Assert.That(_providerSource.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).OrderBy(x => x).ToHashSet(),
                 Is.EqualTo(OldLifeFactory.getHpBarBosses().OrderBy(x => x).ToHashSet()));
+        }
+
+        [Test]
+        public void MonsterStatsCopyTest()
+        {
+            foreach (var mobId in TakeTestMobs())
+            {
+                MonsterCore newDataSrc;
+                try
+                {
+                    newDataSrc = newProvider.getMonsterStats(mobId) ?? throw new NullReferenceException();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"数据不正常MobId={mobId}, {ex.Message}");
+                    continue;
+                }
+                var copied = newDataSrc.Stats.copy();
+
+                Assert.That(ToJson(copied), Is.EqualTo(ToJson(newDataSrc)));
+            }
         }
 
         // [Test]
