@@ -528,12 +528,6 @@ public class InventoryManipulator
                     chr.getMount()!.setItemId(source.getItemId());
                 }
                 break;
-            case EquipSlot.Pet0NameTag:
-            case EquipSlot.Pet1NameTag:
-            case EquipSlot.Pet2NameTag:
-                var index = EquipSlot.PetsNameTag.IndexOf(dst);
-                chr.getPet(index)?.BroadcastNameChanged();
-                break;
         }
 
         //1112413, 1112414, 1112405 (Lilin's Ring)
@@ -574,6 +568,12 @@ public class InventoryManipulator
         if (chr.getBuffedValue(BuffStat.BOOSTER) != null && ItemConstants.isWeapon(source.getItemId()))
         {
             chr.cancelBuffStats(BuffStat.BOOSTER);
+        }
+
+        var petIndex = EquipSlot.PetsNameTag.IndexOf(dst);
+        if (petIndex != -1)
+        {
+            chr.getPet(petIndex)?.BroadcastNameChanged();
         }
 
         mods.Add(new ModifyInventory(2, source, src));

@@ -247,9 +247,6 @@ public class MapleMap : IMap, INamedInstance
 
         if (this.mapobjects.TryAdd(mapobject.getObjectId(), mapobject))
         {
-            mapobject.OnMounted(this);
-
-
             if (mapobject is MapItem mapItem)
             {
                 droppedItems.Add(mapItem);
@@ -264,6 +261,8 @@ public class MapleMap : IMap, INamedInstance
             {
                 spawnedMonstersOnMap.incrementAndGet();
             }
+
+            mapobject.OnMounted(this);
 
             return true;
         }

@@ -82,7 +82,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             p.writeLong(PetItem.getUniqueId());
             p.writePos(getPosition());
             p.writeByte(getStance());
-            p.writeShort(MapModel.Footholds.FindBelowFoothold(getPosition())!.getId());
+            p.writeShort(0);
             p.writeBool(HasNameTag); // nameTag
             p.writeBool(HasChatBalloon); // chatBalloon
             return p;

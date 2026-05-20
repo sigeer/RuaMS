@@ -4120,7 +4120,7 @@ public class PacketCreator
         p.writeLong(pet.getUniqueId());
         p.writePos(pet.getPosition());
         p.writeByte(pet.getStance());
-        p.writeShort(pet.MapModel.Footholds.FindBelowFoothold(pet.getPosition())!.getId());
+        p.writeShort(0);
         p.writeBool(pet.HasNameTag); // nameTag
         p.writeBool(pet.HasChatBalloon); // chatBalloon
     }

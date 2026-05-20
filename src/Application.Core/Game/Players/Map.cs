@@ -19,8 +19,8 @@ namespace Application.Core.Game.Players
             {
                 if (pet != null)
                 {
-                    // spawnPlayerMapObject 中已附带
-                    MapModel.AddMapObject(pet, null);
+                    pet.setPosition(getPosition());
+                    MapModel.AddMapObject(pet, c => pet.sendSpawnData(c));
                 }
                 else
                 {
