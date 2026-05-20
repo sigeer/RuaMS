@@ -101,8 +101,7 @@ namespace Application.Utility.Extensions
                 return (T)list;
             }
 
-            // 普通对象：创建实例并复制所有字段（public + nonpublic instance）
-            object result = Activator.CreateInstance(type);
+            object result = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
             FieldInfo[] fields = type.GetFields(flags);
             foreach (var field in fields)

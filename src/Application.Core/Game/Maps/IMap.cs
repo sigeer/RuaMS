@@ -7,6 +7,7 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Templates.Mob;
 using Application.Templates.Npc;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
@@ -125,7 +126,7 @@ namespace Application.Core.Game.Maps
         Monster? getMonsterByOid(int oid);
 
         void spawnFakeMonster(Monster monster);
-        void spawnFakeMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null);
+        void spawnFakeMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
         void spawnHorntailOnGroundBelow(Point targetPoint);
         /// <summary>
         /// 召唤扎昆（复合型Mob）
@@ -134,9 +135,9 @@ namespace Application.Core.Game.Maps
         void SpawnZakumOnGroundBelow(Point targetPoint);
         void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
-        Monster CreateMonster(MonsterCore mobData, Point pos);
-        void spawnMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null);
-        void spawnDojoMonster(MonsterCore monster);
+        Monster CreateMonster(MobTemplate mobData, Point pos);
+        void spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
+        void spawnDojoMonster(MobTemplate monster);
         void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
 

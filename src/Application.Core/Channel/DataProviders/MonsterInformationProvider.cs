@@ -235,7 +235,7 @@ public class MonsterInformationProvider : DataBootstrap, IStaticService
         {
             try
             {
-                boss = LifeFactory.Instance.getMonster(id)?.Stats?.isBoss() ?? false;
+                boss = LifeFactory.Instance.getMonster(id)?.Boss ?? false;
             }
             catch (Exception e)
             {

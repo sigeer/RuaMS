@@ -30,6 +30,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
+using Application.Templates.Mob;
 using Application.Utility.Tickables;
 using client.status;
 using net.server.coordinator.world;
@@ -119,9 +120,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public TickableStatus Status { get; private set; }
 
-    public Monster(IMap map, Point pos, int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id, map, pos, 5)
+    public MobTemplate SourceTemplate { get; }
+
+    public Monster(IMap map, Point pos, MobTemplate mobTemplate) : base(mobTemplate.TemplateId, map, pos, 5)
     {
-        this.stats = stats.copy();
+        SourceTemplate = mobTemplate;
+        this.stats = LifeFactory.Instance.GetMonsterStats(mobTemplate);
         hp.set(stats.getHp());
         mp = stats.getMp();
 
@@ -130,7 +134,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         log = LogFactory.GetLogger(LogType.Monster);
 
         RevivingMonsters = new();
-        AttackInfoHolders = attackInfo.ToDictionary(x => x.Index);
+        AttackInfoHolders = mobTemplate.AttackInfos.ToDictionary(x => x.Index);
     }
 
     public override void OnMounted(IMap map)

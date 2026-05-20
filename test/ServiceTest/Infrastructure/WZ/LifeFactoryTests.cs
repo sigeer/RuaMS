@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life.Monsters;
+using Application.Templates.Mob;
 using Application.Templates.Npc;
 using Application.Templates.Providers;
 using Application.Templates.String;
@@ -66,10 +67,10 @@ namespace ServiceTest.Infrastructure.WZ
         {
             foreach (var mobId in TakeTestMobs())
             {
-                MonsterCore? newDataSrc = null;
+                MobTemplate? newDataSrc = null;
                 try
                 {
-                    newDataSrc = newProvider.getMonsterStats(mobId);
+                    newDataSrc = newProvider.GetMonsterTrust(mobId);
                 }
                 catch (Exception ex)
                 {
@@ -79,7 +80,7 @@ namespace ServiceTest.Infrastructure.WZ
                 for (int i = 0; i < 9; i++)
                 {
                     var oldData = MobAttackInfoFactory.getMobAttackInfo(mobId, i);
-                    var newData = newDataSrc?.AttackInfo?.FirstOrDefault(x => x.Index == i);
+                    var newData = newDataSrc?.AttackInfos.FirstOrDefault(x => x.Index == i);
 
                     if (oldData == null)
                     {
@@ -105,26 +106,6 @@ namespace ServiceTest.Infrastructure.WZ
                 Is.EqualTo(OldLifeFactory.getHpBarBosses().OrderBy(x => x).ToHashSet()));
         }
 
-        [Test]
-        public void MonsterStatsCopyTest()
-        {
-            foreach (var mobId in TakeTestMobs())
-            {
-                MonsterCore newDataSrc;
-                try
-                {
-                    newDataSrc = newProvider.getMonsterStats(mobId) ?? throw new NullReferenceException();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"数据不正常MobId={mobId}, {ex.Message}");
-                    continue;
-                }
-                var copied = newDataSrc.Stats.copy();
-
-                Assert.That(ToJson(copied), Is.EqualTo(ToJson(newDataSrc)));
-            }
-        }
 
         // [Test]
         public void FindAllScriptedNpc()

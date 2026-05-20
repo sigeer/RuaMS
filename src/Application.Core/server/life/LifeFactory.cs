@@ -1,13 +1,9 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
+using Application.Templates.Mob;
 using Application.Templates.Npc;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
-using System.Collections.Concurrent;
-using System.Security.Cryptography;
 
 namespace server.life;
 
@@ -18,7 +14,6 @@ public class LifeFactory
 
     MobProvider _mobProvider;
     NpcProvider _npcProvider;
-    ConcurrentDictionary<int, MonsterCore> monsterStats = new();
     private HashSet<int> hpbarBosses;
     public LifeFactory()
     {
@@ -27,21 +22,8 @@ public class LifeFactory
         _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
     }
 
-
-    public MonsterCore? getMonsterStats(int mid)
+    public MonsterStats GetMonsterStats(MobTemplate mobTemplate)
     {
-        if (monsterStats.TryGetValue(mid, out var data))
-        {
-            return data;
-        }
-
-        var mobTemplate = _mobProvider.GetItem(mid);
-        if (mobTemplate == null)
-        {
-            return null;
-        }
-
-
         MonsterStats stats = new MonsterStats();
 
         stats.setHp(mobTemplate.MaxHP);
@@ -124,12 +106,10 @@ public class LifeFactory
             }
         }
 
-        monsterStats[mid] = data = new(mid, stats, mobTemplate.AttackInfos);
-        return data;
-
+        return stats;
     }
 
-    public MonsterCore? getMonster(int mid)
+    public MobTemplate? getMonster(int mid)
     {
         var stringData = ClientCulture.SystemCulture.GetMobName(mid);
         if (StringConstants.WZ_MissingNo == stringData)
@@ -137,19 +117,19 @@ public class LifeFactory
             return null;
         }
 
-        return getMonsterStats(mid);
+        return _mobProvider.GetItem(mid);
     }
 
-    public MonsterCore GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"MobId = {mid}");
+    public MobTemplate GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"MobId = {mid}");
 
     public int getMonsterLevel(int mid)
     {
-        var s = getMonsterStats(mid);
+        var s = getMonster(mid);
         if (s == null)
         {
             return -1;
         }
-        return s.Stats.getLevel();
+        return s.Level;
     }
 
     private static void decodeElementalString(MonsterStats stats, string elemAttr)

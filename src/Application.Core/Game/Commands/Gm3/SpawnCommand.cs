@@ -73,7 +73,7 @@ public class SpawnCommand : CommandBase
 
         for (int i = 0; i < monsterCount; i++)
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), player.getPosition());
         }
     }
 }

@@ -701,15 +701,15 @@ namespace Application.Plugin.Script
             var mobId = 2220100;
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(117, 183));
+                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(117, 183));
             }
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(4, 183));
+                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(4, 183));
             }
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(-109, 183));
+                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(-109, 183));
             }
 
             completeQuest(20718, 1103003);
@@ -2023,7 +2023,7 @@ namespace Application.Plugin.Script
             {
                 Pink("Eleanor: Oh, lost the Empress and still challenging us? Now you've done it! Prepare yourself!!!");
 
-                getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9001010), new Point(850, 0));
+                getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9001010), new Point(850, 0));
                 getMap().destroyNPC(1104002);
 
             }

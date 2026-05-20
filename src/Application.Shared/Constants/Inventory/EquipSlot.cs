@@ -19,6 +19,10 @@ public class EquipSlot : EnumClass
     public const int Weapon = -11;
     public const int Mount = -18;
 
+    public const int Pet0Equip = -114;
+    public const int Pet1Equip = -122;
+    public const int Pet2Equip = -138;
+
     public static readonly EquipSlot Hair = new EquipSlot("Hr", 0);
     public static readonly EquipSlot Face = new EquipSlot("Fc", 0);
 
@@ -44,6 +48,7 @@ public class EquipSlot : EnumClass
     public static readonly EquipSlot SADDLE = new EquipSlot("Sd", -19);
     public static readonly EquipSlot MEDAL = new EquipSlot("Me", Medal);
     public static readonly EquipSlot BELT = new EquipSlot("Be", -50);
+
     public static readonly EquipSlot PET_EQUIP = new EquipSlot();
 
     private string? text;
@@ -98,4 +103,6 @@ public class EquipSlot : EnumClass
         }
         return PET_EQUIP;
     }
+
+    public static short[] PetsEquip { get; } = [Pet0Equip, Pet1Equip, Pet2Equip];
 }

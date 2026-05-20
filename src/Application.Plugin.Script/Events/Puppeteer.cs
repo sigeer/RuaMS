@@ -24,12 +24,12 @@ namespace Application.Plugin.Script.Events
             var chr = eim.getLeader()!;
             if (chr.getQuestStatus(20730) == 1 && chr.GetQuestProgressInt(20730, 9300285) == 0)
             {
-                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300285), new Point(680, 258));
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300285), new Point(680, 258));
             }
 
             if (chr.getQuestStatus(21731) == 1 && chr.GetQuestProgressInt(21731, 9300344) == 0)
             {
-                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(9300344), new Point(680, 258));
+                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300344), new Point(680, 258));
             }
         }
 

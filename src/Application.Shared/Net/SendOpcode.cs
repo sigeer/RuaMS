@@ -201,7 +201,7 @@ public enum SendOpcode
 
     SPAWN_PET = 0xA8,
     MOVE_PET = 0xAA,
-    PET_CHAT = 0xAB,
+    PET_ACTION = 0xAB,
     PET_NAMECHANGE = 0xAC,
     PET_EXCEPTION_LIST = 0xAD,
     PET_COMMAND = 0xAE,

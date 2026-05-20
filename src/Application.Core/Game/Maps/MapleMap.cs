@@ -36,6 +36,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Templates.Mob;
 using Application.Templates.Npc;
 using Application.Utility.Performance;
 using Application.Utility.Pipeline;
@@ -1022,7 +1023,7 @@ public class MapleMap : IMap, INamedInstance
         IMapObject? mmo = getMapObject(oid);
         return mmo as Monster;
     }
-    public void spawnFakeMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null)
+    public void spawnFakeMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null)
     {
         Point spos = getGroundBelow(pos);
         var mob = CreateMonster(mobData, spos);
@@ -1053,12 +1054,12 @@ public class MapleMap : IMap, INamedInstance
         spawnMonsterOnGroundBelow(mob, new Point(x, y));
     }
 
-    public Monster CreateMonster(MonsterCore mobData, Point pos)
+    public Monster CreateMonster(MobTemplate mobData, Point pos)
     {
-        return new Monster(this, pos, mobData.MobId, mobData.Stats, mobData.AttackInfo);
+        return new Monster(this, pos, mobData);
     }
 
-    public void spawnMonsterOnGroundBelow(MonsterCore mobData, Point pos, Action<Monster>? handleMob = null)
+    public void spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null)
     {
         Point spos = new Point(pos.X, pos.Y - 1);
         var calcedPos = calcPointBelow(spos);
@@ -1121,7 +1122,7 @@ public class MapleMap : IMap, INamedInstance
         addSelfDestructive(monster);
     }
 
-    public void spawnDojoMonster(MonsterCore monster)
+    public void spawnDojoMonster(MobTemplate monster)
     {
         Point[] pts = { new Point(140, 0), new Point(190, 7), new Point(187, 7) };
         spawnMonsterOnGroundBelow(monster, Randomizer.Select(pts), mob =>
@@ -1142,7 +1143,7 @@ public class MapleMap : IMap, INamedInstance
     public void spawnHorntailOnGroundBelow(Point targetPoint)
     {
         // ayy lmao
-        var htIntro = LifeFactory.Instance.getMonster(MobId.SUMMON_HORNTAIL)!;
+        var htIntro = LifeFactory.Instance.GetMonsterTrust(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
     }
 
@@ -2625,13 +2626,6 @@ public class MapleMap : IMap, INamedInstance
 
     public void addPlayer(Player chr)
     {
-
-        if (!characters.TryAdd(chr.Id, chr))
-        {
-            log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
-            return;
-        }
-
         var isChrHidden = chr.isHidden();
         if (!AddMapObject(chr, c =>
         {

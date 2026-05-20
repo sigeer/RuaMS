@@ -2573,27 +2573,27 @@ public class PacketCreator
         p.writeInt(chr.getId());
         p.writeByte(chr.getLevel());
         p.writeShort(chr.getJob().getId());
-        p.writeShort(chr.getFame());
+        p.writeShort(chr.getFame());    
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
         p.writeString(chr.GetGuild()?.Name ?? "");
         p.writeString(chr.GetAlliance()?.Name ?? "");  // does not seem to work
         p.writeByte(0); // pMedalInfo, thanks to Arnah (Vertisy)
 
         var pets = chr.getPets();
-        var inv = chr.getInventory(InventoryType.EQUIPPED).getItem(-114);
+
         for (int i = 0; i < 3; i++)
         {
             var petObj = pets[i];
             if (petObj != null)
             {
-                p.writeByte(i + 1); // petObj.getUniqueId() petid肯定不止256个，是没有影响么？
+                p.writeByte(i + 1); // 
                 p.writeInt(petObj.getItemId()); // petid
                 p.writeString(petObj.Name);
                 p.writeByte(petObj.Level); // pet level
                 p.writeShort(petObj.Tameness); // pet tameness
                 p.writeByte(petObj.Fullness); // pet fullness
-                p.writeShort(0);
-                p.writeInt(inv != null ? inv.getItemId() : 0);
+                p.writeShort(0); // skill?
+                p.writeInt(chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.PetsEquip[i])?.getItemId() ?? 0);
             }
         }
         p.writeByte(0); //end of pets
@@ -4120,7 +4120,9 @@ public class PacketCreator
         p.writeLong(pet.getUniqueId());
         p.writePos(pet.getPos());
         p.writeByte(pet.getStance());
-        p.writeInt(pet.getFh());
+        p.writeShort(pet.getFh());
+        p.writeBool(false); // nameTag
+        p.writeBool(false); // chatBalloon
     }
 
     /// <summary>
@@ -4161,13 +4163,13 @@ public class PacketCreator
 
     public static Packet petChat(int cid, sbyte index, int act, string text)
     {
-        OutPacket p = OutPacket.create(SendOpcode.PET_CHAT);
+        OutPacket p = OutPacket.create(SendOpcode.PET_ACTION);
         p.writeInt(cid);
         p.writeSByte(index);
         p.writeByte(0);
         p.writeByte(act);
         p.writeString(text);
-        p.writeByte(0);
+        p.writeBool(false); // chatBalloon
         return p;
     }
 
@@ -4179,13 +4181,6 @@ public class PacketCreator
         p.writeByte(1);
         p.writeBool(success);
         p.writeBool(balloonType);
-        return p;
-    }
-
-    public static Packet onNotifyHPDecByField(int change)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ON_NOTIFY_HP_DEC_BY_FIELD);
-        p.writeInt(change);
         return p;
     }
 
@@ -4226,6 +4221,9 @@ public class PacketCreator
         p.writeInt(chr.getId());
         p.writeByte(0);
         p.writeString(newname);
+
+        //   if ( CInPacket::Decode1(v3) )
+        //     nNameTag = this->m_pTemplate->nNameTag;
         p.writeByte(0);
         return p;
     }
@@ -4269,6 +4267,12 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet onNotifyHPDecByField(int change)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ON_NOTIFY_HP_DEC_BY_FIELD);
+        p.writeInt(change);
+        return p;
+    }
     public static Packet showForcedEquip(int team)
     {
         OutPacket p = OutPacket.create(SendOpcode.FORCED_MAP_EQUIP);

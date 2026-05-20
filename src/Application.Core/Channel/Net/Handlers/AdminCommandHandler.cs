@@ -63,7 +63,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 {
                     if (Randomizer.nextInt(100) < toSpawnChild.Prob)
                     {
-                        c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
+                        c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
                     }
                 }
                 c.sendPacket(PacketCreator.enableActions());
@@ -142,7 +142,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 int quantity = p.readInt();
                 for (int i = 0; i < quantity; i++)
                 {
-                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), c.OnlinedCharacter.getPosition());
+                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), c.OnlinedCharacter.getPosition());
                 }
                 break;
             case 0x18: // Maple & Mobhp

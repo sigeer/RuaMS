@@ -12,7 +12,7 @@ public class CakeCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var monster = LifeFactory.Instance.getMonster(MobId.GIANT_CAKE)!;
+        var monster = LifeFactory.Instance.GetMonsterTrust(MobId.GIANT_CAKE)!;
         int newHp = 0;
         if (paramsValue.Length == 1 && double.TryParse(paramsValue[0], out var mobHp))
         {

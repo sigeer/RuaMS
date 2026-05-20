@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
+using Application.Templates.Mob;
 
 namespace server.life;
 
@@ -43,7 +44,7 @@ public class SpawnPoint
     private int mobInterval = 5000;
     private AtomicInteger spawnedMonsters = new AtomicInteger(0);
     private bool denySpawn = false;
-    readonly MonsterCore _monsterMeta;
+    readonly MobTemplate _monsterMeta;
     protected readonly IMap _map;
 
     SpawnPointTrigger act;
@@ -58,7 +59,7 @@ public class SpawnPoint
         SpawnPointTrigger act = SpawnPointTrigger.Killed)
     {
         _map = map;
-        _monsterMeta = LifeFactory.Instance.getMonsterStats(mobId)!;
+        _monsterMeta = LifeFactory.Instance.GetMonsterTrust(mobId)!;
 
         this.monster = mobId;
         this.pos = pos;
@@ -210,7 +211,7 @@ public class SpawnPoint
     private int GetMaxMobCount()
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Boss)
             rate = 1;
 
         // 比如2.5倍，那么就算已有2只也算作满怪
@@ -220,7 +221,7 @@ public class SpawnPoint
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Boss)
             rate = 1;
 
         while (rate > Randomizer.NextFloat())

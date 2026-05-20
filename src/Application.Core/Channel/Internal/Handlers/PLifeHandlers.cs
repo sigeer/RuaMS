@@ -42,8 +42,8 @@ namespace Application.Core.Channel.Internal.Handlers
                         }
                         else if (data.Data.Type == LifeType.Monster)
                         {
-                            var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
-                            if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
+                            var mob = LifeFactory.Instance.getMonster(data.Data.LifeId);
+                            if (mob != null)
                             {
                                 map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
                                     data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);

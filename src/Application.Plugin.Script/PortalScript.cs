@@ -12,6 +12,7 @@ using Application.Resources.Messages;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
+using Application.Templates.Mob;
 using Application.Utility.Exceptions;
 using scripting.portal;
 using server.life;
@@ -802,7 +803,7 @@ namespace Application.Plugin.Script
                 {
                     var level = int.Parse(eim.getProperty("level"));
                     var chests = int.Parse(eim.getProperty("openedChests"));
-                    MonsterCore boss;
+                    MobTemplate boss;
                     if (chests == 0)
                     {
                         boss = LifeFactory.Instance.GetMonsterTrust(9300119);
