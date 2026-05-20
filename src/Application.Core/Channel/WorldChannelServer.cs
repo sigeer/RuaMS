@@ -39,7 +39,8 @@ namespace Application.Core.Channel
 
         public bool IsRunning { get; private set; }
 
-        public ChannelServerConfig ServerConfig { get; set; }
+        public ChannelServerConfig ServerConfig { get; }
+
         public string InstanceName => ServerConfig.ServerName;
         Lazy<SkillbookInformationProvider> _skillbookInformationProvider;
         public SkillbookInformationProvider SkillbookInformationProvider => _skillbookInformationProvider.Value;
@@ -351,7 +352,7 @@ namespace Application.Core.Channel
             }
             catch (Exception ex)
             {
-                _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                _logger.LogError("注册服务器失败, {Message}", ex.Message);
                 return false;
             }
 
@@ -574,13 +575,14 @@ namespace Application.Core.Channel
 
         public void OnTick(long now)
         {
-            foreach (var item in Servers.Values)
+            Send(new NodeTickCommand(w =>
             {
-                item.Send(w =>
+                foreach (var item in w.Servers.Values)
                 {
-                    w.OnTick(now);
-                });
-            }
+                    item.OnTick(now);
+                }
+            }));
+
         }
     }
 }

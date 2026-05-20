@@ -22,10 +22,10 @@ namespace Application.Core.Game.Players
                 setChair(-1);
                 if (unregisterChairBuff())
                 {
-                    MapModel.broadcastMessage(this, PacketCreator.cancelForeignChairSkillEffect(this.getId()), false);
+                    BroadcastMap(PacketCreator.cancelForeignChairSkillEffect(this.getId()), Id);
                 }
 
-                MapModel.broadcastMessage(this, PacketCreator.showChair(this.getId(), 0), false);
+                BroadcastMap(PacketCreator.showChair(this.getId(), 0), Id);
             }
 
             sendPacket(PacketCreator.cancelChair(-1));
@@ -40,7 +40,7 @@ namespace Application.Core.Game.Players
                     if (chair.get() < 0)
                     {
                         setChair(itemId);
-                        MapModel.broadcastMessage(this, PacketCreator.showChair(this.getId(), itemId), false);
+                        BroadcastMap(PacketCreator.showChair(this.getId(), itemId), Id);
                     }
                     sendPacket(PacketCreator.enableActions());
                 }
@@ -51,7 +51,7 @@ namespace Application.Core.Game.Players
                         setChair(itemId);
                         if (registerChairBuff())
                         {
-                            MapModel.broadcastMessage(this, PacketCreator.giveForeignChairSkillEffect(this.getId()), false);
+                            BroadcastMap(PacketCreator.giveForeignChairSkillEffect(this.getId()), Id);
                         }
                         sendPacket(PacketCreator.cancelChair(itemId));
                     }
@@ -183,7 +183,7 @@ namespace Application.Core.Game.Players
                 var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
                 sendPacket(PacketCreator.showOwnRecovery(recHP));
-                MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
+                BroadcastMap(PacketCreator.showRecovery(Id, recHP), Id);
             }
 
 

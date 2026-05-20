@@ -1,41 +1,25 @@
-using Application.Core.Channel;
-using Microsoft.Extensions.Logging;
-using scripting;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace Application.Core.Game.Commands.Gm6;
 
-public class DevtestCommand : CommandBase
+public class DevtestCommand : ParamsCommandBase
 {
-    public DevtestCommand() : base(6, "devtest")
+    public DevtestCommand() : base(["[script]"], 6, "devtest")
     {
-        Description = "Runs devtest.js. Developer utility - test stuff without restarting the server.";
+        Description = "直接执行代码";
     }
 
     public override void Execute(IChannelClient client, string[] paramsValue)
     {
-        var scriptEngine = client.CurrentServer.DevtestScriptManager.GetScriptEngine("devtest");
         try
         {
-            scriptEngine?.CallFunction("run", client.Character);
+            _ = CSharpScript.EvaluateAsync<int>(GetParamByIndex(0), globals: client.OnlinedCharacter);
         }
-        catch (Exception e)
+        catch (CompilationErrorException)
         {
-            log.Information(e, "devtest.js run() threw an exception");
+            client.OnlinedCharacter.Pink("代码错误");
         }
         return;
     }
-}
-
-public class DevtestScriptManager : AbstractScriptManager
-{
-    public DevtestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
-        : base(logger, commandExecutor, worldChannel, addtionalRegistries)
-    {
-    }
-
-    public IEngine? GetScriptEngine(string path)
-    {
-        return base.getInvocableScriptEngine(new ScriptFile("", path, ScriptType.Js));
-    }
-
 }

@@ -1,4 +1,6 @@
+using Application.Core.Game.Maps;
 using Application.Core.scripting.npc;
+using Microsoft.Extensions.Primitives;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -20,6 +22,7 @@ public class WhereaMiCommand : CommandBase
         sb.Append("我在...\r\n");
         sb.Append("我的事件：").Append(player.getEventInstance()?.getName()).Append("\r\n");
         sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
+        sb.Append("IsLargeMap：").Append(player.getMap().IsLargeMap).Append("\r\n");
         sb.Append("地图事件：").Append(player.getMap().getEventInstance()?.getName()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
         sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
@@ -32,6 +35,7 @@ public class WhereaMiCommand : CommandBase
                 .Append("Type: ").Append(closetPortal.getType()).Append("\r\n")
                 .Append("Script: ").Append(closetPortal.getScriptName()).Append("\r\n");
         }
+        sb.Append("=========MapObject=========\r\n");
         sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)
         {
@@ -39,9 +43,16 @@ public class WhereaMiCommand : CommandBase
 
             foreach (var obj in group)
             {
-                sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId()).Append("\r\n");
+                sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId());
+
+                if (!player.MapModel.IsMapObjectVisibleForPlayerCached(player, obj))
+                {
+                    sb.Append("（超出视野）");
+                }
+                sb.Append("\r\n");
             }
         }
+
         TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

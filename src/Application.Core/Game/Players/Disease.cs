@@ -42,11 +42,11 @@ namespace Application.Core.Game.Players
 
                 if (di.Disease != Disease.SLOW)
                 {
-                    MapModel.broadcastMessage(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
+                    BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
                 }
                 else
                 {
-                    MapModel.broadcastMessage(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
+                    BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
                 }
             }
         }
@@ -101,11 +101,11 @@ namespace Application.Core.Game.Players
 
                 if (disease != Disease.SLOW)
                 {
-                    MapModel.broadcastMessage(this, PacketCreator.giveForeignDebuff(Id, debuff, skill), false);
+                    BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, skill), Id);
                 }
                 else
                 {
-                    MapModel.broadcastMessage(this, PacketCreator.giveForeignSlowDebuff(Id, debuff, skill), false);
+                    BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill), Id);
                 }
             }
         }
@@ -119,11 +119,11 @@ namespace Application.Core.Game.Players
 
                 if (debuff != Disease.SLOW)
                 {
-                    MapModel.broadcastMessage(this, PacketCreator.cancelForeignDebuff(Id, mask), false);
+                    BroadcastMap(PacketCreator.cancelForeignDebuff(Id, mask), Id);
                 }
                 else
                 {
-                    MapModel.broadcastMessage(this, PacketCreator.cancelForeignSlowDebuff(Id), false);
+                    BroadcastMap(PacketCreator.cancelForeignSlowDebuff(Id), Id);
                 }
 
                 Diseases.Remove(debuff);

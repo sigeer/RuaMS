@@ -12,14 +12,19 @@ public class CakeCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var monster = LifeFactory.Instance.getMonster(MobId.GIANT_CAKE)!;
+        var monster = LifeFactory.Instance.GetMonsterTrust(MobId.GIANT_CAKE)!;
+        int newHp = 0;
         if (paramsValue.Length == 1 && double.TryParse(paramsValue[0], out var mobHp))
         {
-            int newHp = (mobHp <= 0) ? int.MaxValue : ((mobHp > int.MaxValue) ? int.MaxValue : (int)mobHp);
-
-            monster.setStartingHp(newHp);
+            newHp = (mobHp <= 0) ? int.MaxValue : ((mobHp > int.MaxValue) ? int.MaxValue : (int)mobHp);
         }
 
-        player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
+        player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition(), mob =>
+        {
+            if (newHp != 0)
+            {
+                mob.setStartingHp(newHp);
+            }
+        });
     }
 }

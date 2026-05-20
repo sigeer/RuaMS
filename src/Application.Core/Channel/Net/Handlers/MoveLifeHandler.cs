@@ -87,13 +87,12 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             useSkillId = skillId;
             useSkillLevel = skillLv;
 
-            if (monster.hasSkill(useSkillId, useSkillLevel))
+            if (monster.getStats().MobSkillAnimation.TryGetValue(new MobSkillId((MobSkillType)useSkillId, useSkillLevel), out var animationTime))
             {
                 var toUse = MobSkillFactory.GetMobSkill(useSkillId, useSkillLevel);
 
                 if (toUse != null && monster.canUseSkill(toUse, true))
                 {
-                    int animationTime = MonsterInformationProvider.getInstance().getMobSkillAnimationTime(toUse);
                     if (animationTime > 0 && toUse.getType() != MobSkillType.BANISH)
                     {
                         toUse.applyDelayedEffect(player, monster, true, animationTime);
@@ -176,9 +175,9 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                         useSkillLevel, nextMovementCouldBeSkill, mobMp);
             }
 
-            map.broadcastMessage(player, PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
+            monster.BroadcastMovement(PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
             //updatePosition(res, monster, -2); //does this need to be done after the packet is broadcast?
-            map.moveMonster(monster, monster.getPosition());
+            map.MoveMapObject(monster);
         }
         catch (EmptyMovementException e)
         {

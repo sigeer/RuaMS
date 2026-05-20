@@ -576,7 +576,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     {
                         if (attack.skill == Aran.BODY_PRESSURE)
                         {
-                            map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
+                            monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
                         }
 
                         monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
@@ -592,7 +592,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     player.DamageBy(monster, toUse.getX(), attack.attackDelay);
                                 });
-                                map.broadcastMessage(player, PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()), true);
+                                player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
                             }
                         }
                     }
@@ -607,7 +607,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     player.DamageBy(monster, toUse.getY(), attack.attackDelay);
                                 });
-                                map.broadcastMessage(player, PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()), true);
+                                player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
                             }
                         }
                     }
@@ -628,8 +628,8 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         {
             map.Send(m =>
             {
-                m.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), damage), monster.getPosition());
                 monster.DamageBy(attacker, damage, 0);
+                monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), damage));
             });
         };
         if (animationTime > 0)

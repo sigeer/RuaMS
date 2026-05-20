@@ -49,7 +49,7 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
         int damage = Randomizer.nextInt(((monster.getMaxHp() / 13 + monster.getPADamage() * 10)) * 2 + 500) / 10; // Formula planned by Beng.
 
         monster.DamageBy(attackerMob, damage, 0);
-        map.broadcastMessage(PacketCreator.MobDamageMobFriendly(monster, damage, monster.getHp()), monster.getPosition());
+        monster.BroadcastMap(PacketCreator.MobDamageMobFriendly(monster, damage, monster.getHp()));
 
         c.sendPacket(PacketCreator.enableActions());
     }

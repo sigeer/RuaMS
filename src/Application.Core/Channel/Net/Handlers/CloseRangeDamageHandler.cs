@@ -66,10 +66,9 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        chr.getMap().broadcastMessage(chr,
+        chr.BroadcastMap(
             PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
-            false,
-            true);
+            chr.Id);
         int numFinisherOrbs = 0;
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))
@@ -135,8 +134,9 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                         var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
                         chr.setBuffedValue(BuffStat.COMBO, neworbcount);
                         duration -= (int)(c.CurrentServer.Node.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
+
                         c.sendPacket(PacketCreator.giveBuff(oid, duration, stat));
-                        chr.getMap().broadcastMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), stat), false);
+                        chr.BroadcastMap(PacketCreator.giveForeignBuff(chr.getId(), stat), chr.Id);
                     }
                 }
             }

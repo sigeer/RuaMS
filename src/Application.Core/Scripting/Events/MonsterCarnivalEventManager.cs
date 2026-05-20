@@ -16,14 +16,14 @@ namespace Application.Core.Scripting.Events
         public int PrepareTime { get; init; }
         public MapMonsterCarnivalTemplate MapMonsterCarnivalTemplate { get; }
 
-        public MonsterCarnivalEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public MonsterCarnivalEventManager(WorldChannel cserv, string name, int eventMap) : base(cserv, name)
         {
             // 对整个FB而言，团队是后组建的，但是发起时仍要完整队伍
             PartyLeaderRequired = true;
 
             RegistrationTime = 180;
 
-            MapMonsterCarnivalTemplate = MapFactory.Instance.GetMapTemplate(EntryMap).MonsterCarnival!;
+            MapMonsterCarnivalTemplate = MapFactory.Instance.GetMapTemplate(eventMap).MonsterCarnival!;
 
             EventTime = MapMonsterCarnivalTemplate.TimeDefault - 10;
         }

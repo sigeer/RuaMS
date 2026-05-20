@@ -30,7 +30,6 @@ using Application.Resources.Messages;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -141,8 +140,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                     MiniGame game = new MiniGame(chr, desc, pw, createType, type);
                     chr.setMiniGame(game);
-                    chr.getMap().addMapObject(game);
-                    chr.getMap().broadcastMessage(PacketCreator.AddMiniGameBox(chr, 1, 0));
+                    chr.MapModel.AddMapObject(game, c => c.sendPacket(PacketCreator.AddMiniGameBox(chr, 1, 0)));
                     game.SendGameInfo(c);
                 }
                 else if (createType == 4 || createType == 5)
@@ -333,7 +331,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     p.readShort();
                     int birthday = p.readInt();
                     if (!c.CheckBirthday(birthday))
-                    { 
+                    {
                         // birthday check here found thanks to lucasziron
                         chr.Popup(nameof(ClientMessage.BirthDay_Invalid));
                         return;
@@ -359,8 +357,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     }
                 }
                 chr.VisitingShop.SetOpen();
-                chr.MapModel.addMapObject(chr.VisitingShop);
-                chr.MapModel.broadcastMessage(chr.VisitingShop.MakeSpawnPacket());
+                chr.MapModel.AddMapObject(chr.VisitingShop, c => c.sendPacket(chr.VisitingShop.MakeSpawnPacket()));
                 c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())
@@ -609,10 +606,10 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                         }
                         catch (Exception e)
                         {
-                            _logger.LogWarning(e, "Chr {CharacterName} tried to add {ItemName}x {ItemQuantity} in trade (slot {ItemSlot}), then exception occurred", 
+                            _logger.LogWarning(e, "Chr {CharacterName} tried to add {ItemName}x {ItemQuantity} in trade (slot {ItemSlot}), then exception occurred",
                                 chr,
-                                ClientCulture.SystemCulture.GetItemName(item.getItemId()), 
-                                item.getQuantity(), 
+                                ClientCulture.SystemCulture.GetItemName(item.getItemId()),
+                                item.getQuantity(),
                                 targetSlot);
                         }
 
@@ -879,7 +876,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
     {
         try
         {
-            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
+            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, [MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER]))
             {
                 if (mmo is Player mc)
                 {

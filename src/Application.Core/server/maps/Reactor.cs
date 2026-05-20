@@ -56,7 +56,7 @@ public class Reactor : AbstractMapObject
     private GuardianSpawnPoint? guardian = null;
     private sbyte facingDirection = 0;
 
-    public Reactor(ReactorStats stats, int rid)
+    public Reactor(IMap map, Point pos, ReactorStats stats, int rid) : base(map, pos)
     {
         this.evstate = 0;
         this.stats = stats;
@@ -183,14 +183,14 @@ public class Reactor : AbstractMapObject
     public void forceHitReactor(sbyte newState)
     {
         this.resetReactorActions(newState);
-        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
+        BroadcastMap(PacketCreator.triggerReactor(this, 0));
     }
 
     public void tryForceHitReactor(sbyte newState)
     {  // weak hit state signal, if already changed reactor state before timeout then drop this
 
         this.resetReactorActions(newState);
-        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
+        BroadcastMap(PacketCreator.triggerReactor(this, 0));
     }
 
     public void cancelReactorTimeout()
@@ -288,13 +288,13 @@ public class Reactor : AbstractMapObject
                                 else
                                 {
                                     //trigger as normal
-                                    MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                                    BroadcastMap(PacketCreator.triggerReactor(this, stance));
                                 }
                             }
                             else
                             {
                                 //item-triggered on step
-                                MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                                BroadcastMap(PacketCreator.triggerReactor(this, stance));
                             }
 
                             c.CurrentServer.ReactorScriptManager.act(c, this);
@@ -302,7 +302,7 @@ public class Reactor : AbstractMapObject
                         else
                         {
                             //reactor not broken yet
-                            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                            BroadcastMap(PacketCreator.triggerReactor(this, stance));
                             if (state == stats.getNextState(state, b))
                             {
                                 //current state = next state, looping reactor
@@ -319,7 +319,7 @@ public class Reactor : AbstractMapObject
             else
             {
                 state++;
-                MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                BroadcastMap(PacketCreator.triggerReactor(this, stance));
                 if (this.getId() != 9980000 && this.getId() != 9980001)
                 {
                     c.CurrentServer.ReactorScriptManager.act(c, this);
@@ -362,7 +362,7 @@ public class Reactor : AbstractMapObject
         }
 
 
-        MapModel.broadcastMessage(PacketCreator.destroyReactor(this));
+        BroadcastMap(PacketCreator.destroyReactor(this));
         return false;
     }
 
@@ -373,11 +373,11 @@ public class Reactor : AbstractMapObject
 
         if (fromDestroyed)
         {
-            MapModel.broadcastMessage(this.makeSpawnData());
+            BroadcastMap(this.makeSpawnData());
         }
         else
         {
-            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
+            BroadcastMap(PacketCreator.triggerReactor(this, 0));
         }
 
     }
@@ -502,5 +502,11 @@ public class Reactor : AbstractMapObject
 
             }
         }
+    }
+
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
     }
 }

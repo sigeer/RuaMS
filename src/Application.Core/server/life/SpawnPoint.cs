@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
+using Application.Templates.Mob;
 
 namespace server.life;
 
@@ -43,7 +44,7 @@ public class SpawnPoint
     private int mobInterval = 5000;
     private AtomicInteger spawnedMonsters = new AtomicInteger(0);
     private bool denySpawn = false;
-    readonly MonsterCore _monsterMeta;
+    readonly MobTemplate _monsterMeta;
     protected readonly IMap _map;
 
     SpawnPointTrigger act;
@@ -58,7 +59,7 @@ public class SpawnPoint
         SpawnPointTrigger act = SpawnPointTrigger.Killed)
     {
         _map = map;
-        _monsterMeta = LifeFactory.Instance.getMonsterStats(mobId)!;
+        _monsterMeta = LifeFactory.Instance.GetMonsterTrust(mobId)!;
 
         this.monster = mobId;
         this.pos = pos;
@@ -109,9 +110,9 @@ public class SpawnPoint
         return mobTime >= 0 && spawnedMonsters.get() < GetMaxMobCount();
     }
 
-    protected virtual void SetMonsterPosition(Monster mob)
+    protected virtual Point GetPosition()
     {
-        mob.setPosition(pos);
+        return pos;
     }
 
     protected virtual void SubscribeMonster(Monster mob)
@@ -122,8 +123,8 @@ public class SpawnPoint
     public Monster GenrateMonster()
     {
         // Check. 原代码中，只在初始化(loadLife)的Monster中传入了fh, f, rx...等属性，这里额外加上不知道有没有问题
-        var mob = LifeFactory.Instance.GetMonsterTrust(monster);
-        SetMonsterPosition(mob);
+        var mob = _map.CreateMonster( LifeFactory.Instance.GetMonsterTrust(monster), GetPosition());
+
         mob.setTeam(team);
         mob.setFh(fh);
         mob.setF(f);
@@ -210,7 +211,7 @@ public class SpawnPoint
     private int GetMaxMobCount()
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Boss)
             rate = 1;
 
         // 比如2.5倍，那么就算已有2只也算作满怪
@@ -220,7 +221,7 @@ public class SpawnPoint
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
         var rate = _map.ActualMonsterRate;
-        if (_map.getEventInstance() != null || _monsterMeta.Stats.isBoss())
+        if (_map.getEventInstance() != null || _monsterMeta.Boss)
             rate = 1;
 
         while (rate > Randomizer.NextFloat())

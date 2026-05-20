@@ -1,17 +1,12 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
-using Application.Scripting;
-using Application.Templates.Etc;
 using Application.Templates.Mob;
 using Application.Templates.Npc;
 using Application.Templates.Providers;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
-using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json;
 using server.life;
-using ServiceTest.TestUtilities;
 using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
@@ -26,7 +21,6 @@ namespace ServiceTest.Infrastructure.WZ
         {
             options = new JsonSerializerSettings
             {
-                ContractResolver = new PrivateContractResolver("AttackInfoHolders"),
                 Formatting = Formatting.Indented
             };
         }
@@ -68,61 +62,15 @@ namespace ServiceTest.Infrastructure.WZ
         }
 
 
-        // 有大量不正常数据影响
-        [Test]
-        public void getMonsterTest()
-        {
-            Assert.Multiple(() =>
-            {
-                foreach (var mobId in TakeTestMobs())
-                {
-                    Monster? oldMonster = null;
-                    Monster? newMonster = null;
-                    try
-                    {
-                        oldMonster = oldProvider.getMonster(mobId);
-                        newMonster = newProvider.getMonster(mobId);
-
-
-                        if (oldMonster == null)
-                        {
-                            Assert.That(newMonster, Is.Null, $"Id = {mobId}");
-                        }
-                        else
-                        {
-                            Assert.That(newMonster, Is.Not.Null, $"Id = {mobId}");
-
-                            if (oldMonster.getSkills().Count < newMonster.getSkills().Count)
-                            {
-                                Assert.Pass("wz里的skill不是连续的，旧的写法没有获取到");
-                            }
-                            else
-                            {
-                                var oldJson = ToJson(oldMonster);
-                                var newJson = ToJson(newMonster);
-                                Assert.That(newJson, Is.EqualTo(oldJson), $"Id = {mobId}");
-                            }
-
-
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("MonsterId=" + mobId + ", " + ex.Message);
-                    }
-                }
-            });
-        }
-
         [Test]
         public void MobAttackTest()
         {
             foreach (var mobId in TakeTestMobs())
             {
-                MonsterCore? newDataSrc = null;
+                MobTemplate? newDataSrc = null;
                 try
                 {
-                    newDataSrc = newProvider.getMonsterStats(mobId);
+                    newDataSrc = newProvider.GetMonsterTrust(mobId);
                 }
                 catch (Exception ex)
                 {
@@ -132,7 +80,7 @@ namespace ServiceTest.Infrastructure.WZ
                 for (int i = 0; i < 9; i++)
                 {
                     var oldData = MobAttackInfoFactory.getMobAttackInfo(mobId, i);
-                    var newData = newDataSrc?.AttackInfo?.FirstOrDefault(x => x.Index == i);
+                    var newData = newDataSrc?.AttackInfos.FirstOrDefault(x => x.Index == i);
 
                     if (oldData == null)
                     {
@@ -158,6 +106,7 @@ namespace ServiceTest.Infrastructure.WZ
                 Is.EqualTo(OldLifeFactory.getHpBarBosses().OrderBy(x => x).ToHashSet()));
         }
 
+
         // [Test]
         public void FindAllScriptedNpc()
         {
@@ -175,7 +124,7 @@ namespace ServiceTest.Infrastructure.WZ
             foreach (var item in allNpcStr)
             {
                 Console.WriteLine(
-                    $"NpcId  {item.TemplateId:D7}, Name: {item.Name, -20}\t, Func: {item.Func, -20}\t, 有脚本属性: {hasScript.Any(x => x.TemplateId == item.TemplateId)}, 有脚本：{exsitedNpcScripts.Contains(item.TemplateId.ToString())}");
+                    $"NpcId  {item.TemplateId:D7}, Name: {item.Name,-20}\t, Func: {item.Func,-20}\t, 有脚本属性: {hasScript.Any(x => x.TemplateId == item.TemplateId)}, 有脚本：{exsitedNpcScripts.Contains(item.TemplateId.ToString())}");
             }
 
             //    NpcId  1012118, Name: 炎海                  	, Func: 弓手修炼场助手             	, 有脚本属性: False, 有脚本：True

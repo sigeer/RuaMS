@@ -34,11 +34,9 @@ public class Dragon : AbstractAnimatedMapObject
 {
     private Player owner;
 
-    public Dragon(Player chr) : base()
+    public Dragon(Player chr) : base(chr.MapModel, chr.getPosition(), chr.getStance())
     {
         this.owner = chr;
-        this.setPosition(chr.getPosition());
-        this.setStance(chr.getStance());
         this.sendSpawnData(chr.getClient());
     }
 
@@ -65,5 +63,10 @@ public class Dragon : AbstractAnimatedMapObject
     public Player getOwner()
     {
         return owner;
+    }
+    public override Player? Controller => owner;
+    public override bool IsVisibleForPlayer(Player chr)
+    {
+        return getOwner() == chr || base.IsVisibleForPlayer(chr);
     }
 }

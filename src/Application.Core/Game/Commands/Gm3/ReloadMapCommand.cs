@@ -11,7 +11,7 @@ public class ReloadMapCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var newMap = c.getChannelServer().getMapFactory().resetMap(player.getMapId(), out var oldMap);
+        var newMap = c.getChannelServer().getMapFactory().resetMap(player.getMapId());
         int callerid = c.OnlinedCharacter.getId();
 
         var characters = player.getMap().getAllPlayers();
@@ -26,6 +26,5 @@ public class ReloadMapCommand : CommandBase
             }
         }
         newMap.respawn();
-        oldMap?.Dispose();
     }
 }

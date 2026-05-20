@@ -1,3 +1,4 @@
+using Application.Core.Game.Life;
 using Application.Shared.Message;
 using Google.Protobuf;
 using LifeProto;
@@ -26,7 +27,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         var map = w.getMapFactory().getMap(data.Data.MapId);
                         if (data.Data.Type == LifeType.NPC)
                         {
-                            var npc = LifeFactory.Instance.getNPC(data.Data.LifeId);
+                            var npc = new NPC(LifeFactory.Instance.GetNPCTemplateTrust(data.Data.LifeId), map, new Point(data.Data.X, data.Data.Y));
                             if (npc != null && npc.getName() == "MISSINGNO")
                             {
                                 npc.setPosition(new Point(data.Data.X, data.Data.Y));
@@ -35,15 +36,14 @@ namespace Application.Core.Channel.Internal.Handlers
                                 npc.setRx1(data.Data.Rx1);
                                 npc.setFh(data.Data.Fh);
 
-                                map.addMapObject(npc);
-                                map.broadcastMessage(PacketCreator.spawnNPC(npc));
+                                map.AddMapObject(npc, c => c.sendPacket(PacketCreator.spawnNPC(npc)));
 
                             }
                         }
                         else if (data.Data.Type == LifeType.Monster)
                         {
-                            var mob = LifeFactory.Instance.getMonsterStats(data.Data.LifeId);
-                            if (mob != null && !mob.Stats.getName().Equals("MISSINGNO"))
+                            var mob = LifeFactory.Instance.getMonster(data.Data.LifeId);
+                            if (mob != null)
                             {
                                 map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
                                     data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);

@@ -36,22 +36,8 @@ namespace Application.Core.Game.Players
         public PlayerKeyMap KeyMap { get; set; }
         public List<FameLogObject> FameLogs { get; set; }
 
-        public Player(int accountId, int hp, int mp, int str, int dex, int @int, int luk, Job job, int level) : this()
-        {
-            AccountId = accountId;
-            HP = hp;
-            MaxHP = hp;
-            MP = mp;
-            MaxMP = mp;
-            Str = str;
-            Dex = dex;
-            Int = @int;
-            Luk = luk;
-            JobModel = job;
-            Level = level;
-        }
 
-        public Player(IChannelClient client)
+        public Player(IChannelClient client, IMap map, Portal portal) :base(map, portal.getPosition(), 0)
         {
             Client = client;
 
@@ -78,9 +64,6 @@ namespace Application.Core.Game.Players
 
             FameLogs = new();
 
-            setStance(0);
-
-            setPosition(new Point(0, 0));
 
             if (Client is not OfflineClient)
             {
@@ -88,11 +71,6 @@ namespace Application.Core.Game.Players
 
                 UpdateActualRate();
             }
-        }
-
-        public Player() : this(new OfflineClient())
-        {
-
         }
 
         public void Reload()
@@ -238,7 +216,7 @@ namespace Application.Core.Game.Players
 
         public void OpenNpc(int npcId, string? customeScript = null)
         {
-            var script = customeScript ?? LifeFactory.Instance.GetNPCTemplate(npcId)?.Script;
+            var script = customeScript ?? LifeFactory.Instance.GetNPCTemplateTrust(npcId)?.Script;
             if (script != null)
             {
                 var npcObj = MapModel.getNPCById(npcId);

@@ -21,20 +21,22 @@
 */
 
 
+using Application.Core.Channel;
+using Application.Core.Game.Maps;
 using Application.Templates.Npc;
-using server.life;
 using tools;
 
 namespace Application.Core.Game.Life;
 
 public class NPC : AbstractLifeObject
 {
-    private NPCStats stats;
-    public NpcTemplate SourceTemplate => stats.SourceTemplate;
+    public NpcTemplate SourceTemplate { get; }
 
-    public NPC(int id, NPCStats stats) : base(id)
+    public override Player? Controller => throw new NotImplementedException();
+
+    public NPC(NpcTemplate npcTempate, IMap map, Point pos) : base(npcTempate.TemplateId, map, pos, 0)
     {
-        this.stats = stats;
+        SourceTemplate = npcTempate;
     }
 
     public bool hasShop(IChannelClient c)
@@ -66,7 +68,7 @@ public class NPC : AbstractLifeObject
 
     public string getName()
     {
-        return stats.getName();
+        return ClientCulture.SystemCulture.GetNpcName(getId());
     }
 
     public override string GetName()

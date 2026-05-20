@@ -30,12 +30,12 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
+using Application.Templates.Mob;
 using Application.Utility.Tickables;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server.life;
-using System.Threading;
 using tools;
 using ZLinq;
 using static Application.Templates.Mob.MobTemplate;
@@ -106,8 +106,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// <summary>
     /// 死亡时生成
     /// </summary>
-    public List<Monster> RevivingMonsters => _revivingMonsters.Value;
-    Lazy<List<Monster>> _revivingMonsters;
+    public List<Monster> RevivingMonsters { get; }
+
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
 
     public long Period { get; private set; } = -1;
@@ -120,10 +120,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public TickableStatus Status { get; private set; }
 
-    public Monster(int id, MonsterStats stats, MobAttackTemplate[] attackInfo) : base(id)
+    public MobTemplate SourceTemplate { get; }
+
+    public Monster(IMap map, Point pos, MobTemplate mobTemplate) : base(mobTemplate.TemplateId, map, pos, 5)
     {
-        setStance(5);
-        this.stats = stats.copy();
+        SourceTemplate = mobTemplate;
+        this.stats = LifeFactory.Instance.GetMonsterStats(mobTemplate);
         hp.set(stats.getHp());
         mp = stats.getMp();
 
@@ -131,13 +133,13 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         log = LogFactory.GetLogger(LogType.Monster);
 
-        _revivingMonsters = new Lazy<List<Monster>>(() => stats.getRevives().Select(x => LifeFactory.Instance.getMonster(x)).Where(x => x != null).Select(x => x!).ToList());
-        AttackInfoHolders = attackInfo.ToDictionary(x => x.Index);
+        RevivingMonsters = new();
+        AttackInfoHolders = mobTemplate.AttackInfos.ToDictionary(x => x.Index);
     }
 
-    public override void setMap(IMap map)
+    public override void OnMounted(IMap map)
     {
-        base.setMap(map);
+        base.OnMounted(map);
 
         DispatchMonsterSpawned();
         _recoverMPNext = map.ChannelServer.Node.getCurrentTime() + _recoverMPPeriod;
@@ -450,7 +452,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             var selfDestr = getStats().selfDestruction();
             if (selfDestr != null && selfDestr.Hp > -1)
             {
-                // should work ;p
+                // 似乎由客户端触发？
                 if (getHp() <= selfDestr.Hp)
                 {
                     MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
@@ -532,7 +534,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (hp > 0)
         {
-            getMap().broadcastMessage(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
+            BroadcastMap(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
         }
 
         maxHpPlusHeal.addAndGet(hpHealed.Value);
@@ -961,9 +963,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         var lastController = aggroRemoveController();
 
-        if (RevivingMonsters.Count > 0)
+        if (stats.getRevives().Length > 0)
         {
-            if (RevivingMonsters.Any(x => x.getId() == (MobId.TRANSPARENT_ITEM)) && getId() > 925000000 && getId() < 926000000)
+            if (stats.getRevives().Contains(MobId.TRANSPARENT_ITEM) && MapModel.getId() > 925000000 && MapModel.getId() < 926000000)
             {
                 MapModel.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
                 MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
@@ -1159,7 +1161,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.killMonster(getObjectId(), false));
-        client.sendPacket(PacketCreator.killMonster(getObjectId(), true));
     }
 
     public override MapObjectType getType()
@@ -1213,10 +1214,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public void broadcastMonsterStatusMessage(Packet packet)
     {
-        MapModel.broadcastMessage(packet, getPosition());
+        BroadcastMap(packet);
 
         var chrController = getActiveController();
-        if (chrController != null && !chrController.isMapObjectVisible(this))
+        if (chrController != null && !MapModel.IsMapObjectVisibleForPlayerCached(chrController, this))
         {
             chrController.sendPacket(packet);
         }
@@ -1449,9 +1450,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         aggroRemoveController();
 
         setPosition(newPoint);
-        MapModel.broadcastMessage(
+        BroadcastMap(
             PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
-        MapModel.moveMonster(this, this.getPosition());
+        MapModel.MoveMapObject(this);
 
         aggroUpdateController();
     }
@@ -1973,7 +1974,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         return new(chrController, hadAggro);
     }
-
+    public override Player? Controller => getActiveController();
     /**
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
@@ -2438,9 +2439,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         var controller = lastController.Controller;
         bool aggro = lastController.HasAggro;
 
-        foreach (var mob in RevivingMonsters)
+        foreach (var mobId in stats.getRevives())
         {
-            mob.setPosition(curMob.getPosition());
+            var mobData = LifeFactory.Instance.GetMonsterTrust(mobId);
+            var mob = reviveMap.CreateMonster(mobData, curMob.getPosition());
             mob.setFh(curMob.getFh());
             mob.setParentMobOid(curMob.getObjectId());
             mob.ChaindMobOId = ChaindMobOId;
@@ -2500,5 +2502,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             heal(0, getLevel());
             _recoverMPNext = now + _recoverMPPeriod;
         }
+    }
+
+    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    {
+        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
+    }
+
+    public override void OnUnmounted()
+    {
+        disposeMapObject();
     }
 }

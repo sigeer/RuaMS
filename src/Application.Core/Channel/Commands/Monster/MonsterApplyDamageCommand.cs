@@ -52,13 +52,13 @@ namespace Application.Core.Channel.Commands
 
                 if (type == 1)
                 {
-                    map.broadcastMessage(PacketCreator.damageMonster(_monster.getObjectId(), damage), _monster.getPosition());
+                    _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
                 }
                 else if (type == 2)
                 {
                     if (damage < dealDamage)
                     {    // ninja ambush (type 2) is already displaying DOT to the caster
-                        map.broadcastMessage(PacketCreator.damageMonster(_monster.getObjectId(), damage), _monster.getPosition());
+                        _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
                     }
                 }
             }

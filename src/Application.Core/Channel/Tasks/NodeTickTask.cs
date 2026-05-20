@@ -1,3 +1,8 @@
+using Application.Core.Channel.Actor;
+using Application.Core.Game.Maps;
+using Application.Utility.Pipeline;
+using static Application.Core.Channel.Tasks.NodeTickTask;
+
 namespace Application.Core.Channel.Tasks
 {
     public class NodeTickTask : TaskBase
@@ -14,12 +19,26 @@ namespace Application.Core.Channel.Tasks
         protected override void HandleRun()
         {
             _server.UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            _server.Send(n =>
-            {
-                n.OnTick(_server.getCurrentTime());
-            });
-
+            _server.OnTick(_server.getCurrentTime());
         }
+    }
 
+    public class MapTickCommand : MapDelegateCommand, IIgnoreActivityCommand
+    {
+        public MapTickCommand(Action<IMap> func) : base(func)
+        {
+        }
+    }
+    public class ChannelTickCommand : ChannelDelegateCommand, IIgnoreActivityCommand
+    {
+        public ChannelTickCommand(Action<WorldChannel> func) : base(func)
+        {
+        }
+    }
+    public class NodeTickCommand : NodeDelegateCommand, IIgnoreActivityCommand
+    {
+        public NodeTickCommand(Action<WorldChannelServer> func) : base(func)
+        {
+        }
     }
 }

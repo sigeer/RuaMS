@@ -925,10 +925,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
     }
 
-    public Monster? getMonsterLifeFactory(int mid)
-    {
-        return LifeFactory.Instance.getMonster(mid);
-    }
 
     public void spawnGuide()
     {

@@ -58,8 +58,10 @@ public class UseSummonBagHandler : ChannelHandlerBase
             {
                 return;
             }
+
+            c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Mob), c.OnlinedCharacter.getPosition());
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-            c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(item.Mob), c.OnlinedCharacter.getPosition());
+
         }
         c.sendPacket(PacketCreator.enableActions());
     }

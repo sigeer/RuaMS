@@ -212,7 +212,7 @@ namespace Application.Core.Game.Players
                 effectsToCancel.Add(new(mbs, stat.Value));
 
 
-                if (ActiveEffects.Remove(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
+                if (ActiveEffects.TryGetValue(mbs, out var mbsvh) && mbsvh != null && mbsvh.Effect.getBuffSourceId() == sourceid)
                 {
                     mbsvh.bestApplied = true;
                     mbsvh.Status = TickableStatus.Remove;
@@ -223,9 +223,7 @@ namespace Application.Core.Game.Players
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
-                            MapModel.broadcastMessage(PacketCreator.removeSummon(summon, true), summon.getPosition());
-                            MapModel.removeMapObject(summon);
-                            removeVisibleMapObject(summon);
+                            MapModel.RemoveMapObject(summon, chr => chr.sendPacket(PacketCreator.removeSummon(summon, true)));
 
                             if (summon.isPuppet())
                             {
@@ -566,7 +564,7 @@ namespace Application.Core.Game.Players
             if (inactiveStats.Count > 0)
             {
                 sendPacket(PacketCreator.cancelBuff(inactiveStats));
-                MapModel.broadcastMessage(this, PacketCreator.cancelForeignBuff(getId(), inactiveStats), false);
+                BroadcastMap(PacketCreator.cancelForeignBuff(getId(), inactiveStats), Id);
             }
         }
 

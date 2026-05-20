@@ -183,7 +183,7 @@ public class ScrollHandler : ChannelHandlerBase
                     mods.Add(new ModifyInventory(0, scrolled));
                 }
                 c.sendPacket(PacketCreator.modifyInventory(true, mods));
-                chr.getMap().broadcastMessage(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
+                chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
                 if (equipSlot < 0 && (scrollSuccess == Equip.ScrollResult.SUCCESS || scrollSuccess == Equip.ScrollResult.CURSE))
                 {
                     chr.equipChanged();

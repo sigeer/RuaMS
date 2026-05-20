@@ -40,20 +40,26 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 
                 foreach (var pn in playerNpcs)
                 {
-                    map.removeMapObject(pn);
-                    map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                    map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                    map.RemoveMapObject(pn, mapChr =>
+                    {
+                        mapChr.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                        mapChr.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                    });
                 }
 
                 foreach (var pn in updatedList)
                 {
-                    map.addPlayerNPCMapObject(pn);
-                    map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-                    map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+                    map.AddMapObject(pn, c =>
+                    {
+                        c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+                        c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+                    }, false);
                 }
-                map.addPlayerNPCMapObject(newData);
-                map.broadcastMessage(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
-                map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(newData));
+                map.AddMapObject(newData, c =>
+                {
+                    c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
+                    c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));
+                }, false);
             }
         }
     }

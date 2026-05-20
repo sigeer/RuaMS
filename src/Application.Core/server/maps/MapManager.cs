@@ -48,9 +48,9 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         InstanceName = $"{worldChannel.InstanceName}:{nameof(MapManager)}:{(evt == null ? "None" : evt.getName())}";
     }
 
-    public IMap resetMap(int mapid, out IMap? oldMap)
+    public IMap resetMap(int mapid)
     {
-        RemoveMap(mapid, out oldMap);
+        RemoveMap(mapid);
         return getMap(mapid);
     }
 
@@ -102,14 +102,11 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         {
             if (item is ITickable tickable)
             {
-                item.Send(m =>
-                {
-                    m.OnTick(now);
-                });
+                item.OnTick(now);
 
                 if (tickable.Status == TickableStatus.Remove)
                 {
-                    RemoveMap(item.Id, out _);
+                    RemoveMap(item.Id);
                 }
             }
         }
@@ -121,9 +118,9 @@ public class MapManager : IDisposable, INamedInstance, ITickable
             new KeyValuePair<string, object?>("Name", InstanceName));
     }
 
-    void RemoveMap(int mapId, out IMap? oldMap)
+    void RemoveMap(int mapId)
     {
-        if (maps.TryRemove(mapId, out oldMap))
+        if (maps.TryRemove(mapId, out var oldMap))
         {
             GameMetrics.ActiveMapCount.Add(-1
                 , new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName)
@@ -141,7 +138,7 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         Status = TickableStatus.Remove;
         foreach (var kv in getMaps())
         {
-            RemoveMap(kv.Key, out _);
+            RemoveMap(kv.Key);
         }
 
         this.evt = null;

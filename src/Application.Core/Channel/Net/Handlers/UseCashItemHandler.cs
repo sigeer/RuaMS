@@ -678,7 +678,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     chr.sendPacket(PacketCreator.modifyInventory(true, mods));
 
                     var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
-                    map.broadcastMessage(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
+                    chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
                     // 取背包装备栏而不是已装备栏，理论上不会出现eSlot < 0的情况？
                     //if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
                     //{

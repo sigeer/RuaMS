@@ -67,16 +67,43 @@ public class MapFactory : IStaticService
         mapSource = ProviderSource.Instance.GetProvider<MapProvider>();
     }
 
-    private AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
+    private AbstractLifeObject? loadLife(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
     {
-        AbstractLifeObject myLife = LifeFactory.Instance.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
-        myLife.setCy(cy);
-        myLife.setF(f);
-        myLife.setFh(fh);
-        myLife.setRx0(rx0);
-        myLife.setRx1(rx1);
-        myLife.setPosition(new Point(x, y));
-        myLife.setHide(hide);
+        AbstractLifeObject? myLife = null;
+        if (type.Equals(LifeType.NPC, StringComparison.OrdinalIgnoreCase))
+        {
+            var npcData = LifeFactory.Instance.getNPC(id);
+            if (npcData != null)
+            {
+                myLife = map.CreateNPC(npcData, new Point(x, y));
+            }
+        }
+        else if (type.Equals(LifeType.Monster, StringComparison.OrdinalIgnoreCase))
+        {
+            var mobData = LifeFactory.Instance.getMonster(id);
+            if (mobData != null)
+            {
+                myLife = map.CreateMonster(mobData, new Point(x, y));
+            }
+ 
+        }
+        else
+        {
+            Log.Logger.Warning("Unknown Life type: {LifeType}", type);
+            return null;
+        }
+
+        if (myLife != null)
+        {
+            myLife.setCy(cy);
+            myLife.setF(f);
+            myLife.setFh(fh);
+            myLife.setRx0(rx0);
+            myLife.setRx1(rx1);
+            myLife.setPosition(new Point(x, y));
+            myLife.setHide(hide);
+        }
+
         return myLife;
     }
 
@@ -119,8 +146,12 @@ public class MapFactory : IStaticService
         }
         else
         {
-            map.addMapObject(loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide));
-
+            var mapObj = loadLife(map, id, type, cy, f, fh, rx0, rx1, x, y, hide);
+            if (mapObj != null)
+            {
+                // 初始化时无玩家
+                map.AddMapObject(mapObj, null);
+            }
         }
     }
 
@@ -224,7 +255,7 @@ public class MapFactory : IStaticService
 
         foreach (var item in mapData.Reactors)
         {
-            Reactor newReactor = loadReactor(item);
+            Reactor newReactor = loadReactor(map, item);
             map.spawnReactor(newReactor);
         }
 
@@ -233,33 +264,16 @@ public class MapFactory : IStaticService
             map.shuffleReactors();
         }
 
-        map.setMapName(loadPlaceName(mapid));
-        map.setStreetName(loadStreetName(mapid));
 
         map.generateMapDropRangeCache();
 
         return map;
     }
 
-    private Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)
+    private Reactor loadReactor(IMap map, MapReactorTemplate mapReactor)
     {
-        var reactorId = int.Parse(id);
-        Reactor myReactor = new Reactor(ReactorFactory.getReactor(reactorId), reactorId);
-        int x = DataTool.getInt(mapReactor.getChildByPath("x"));
-        int y = DataTool.getInt(mapReactor.getChildByPath("y"));
-        myReactor.setFacingDirection(FacingDirection);
-        myReactor.setPosition(new Point(x, y));
-        myReactor.setDelay((DataTool.getInt(mapReactor.getChildByPath("reactorTime"))) * 1000);
-        myReactor.setName(DataTool.getString(mapReactor.getChildByPath("name")) ?? "");
-        myReactor.resetReactorActions(0);
-        return myReactor;
-    }
-
-    private Reactor loadReactor(MapReactorTemplate mapReactor)
-    {
-        Reactor myReactor = new Reactor(ReactorFactory.getReactor(mapReactor.Id), mapReactor.Id);
+        Reactor myReactor = new Reactor(map, new Point(mapReactor.X, mapReactor.Y), ReactorFactory.getReactor(mapReactor.Id), mapReactor.Id);
         myReactor.setFacingDirection((sbyte)mapReactor.F);
-        myReactor.setPosition(new Point(mapReactor.X, mapReactor.Y));
         myReactor.setDelay(mapReactor.ReactorTime * 1000);
         myReactor.setName(mapReactor.Name ?? "");
         myReactor.resetReactorActions(0);

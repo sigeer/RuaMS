@@ -598,7 +598,7 @@ namespace Application.Core.Scripting.Events
         {
             if (StageClearRewards.TryGetValue(stageMap, out var data))
             {
-                var expExtraBonus = eim.Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PARTY_BONUS_EXP_RATE : 1;
+                var expExtraBonus = eim.Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PQ_BONUS_EXP_RATE : 1;
                 var option = GetStageClearRewardOptions(player, stageMap);
                 if (eim.CanGiveReward(player, stageMap))
                 {

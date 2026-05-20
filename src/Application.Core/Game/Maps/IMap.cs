@@ -1,11 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
+using Application.Templates.Mob;
+using Application.Templates.Npc;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.inventory;
@@ -38,7 +41,11 @@ namespace Application.Core.Game.Maps
         MapEffect? MapEffect { get; set; }
         long RespawnInterval { get; set; }
 
-
+        /// <summary>
+        /// 地图大小超过视距*2（使用视野裁剪）
+        /// </summary>
+        public bool IsLargeMap { get; }
+        bool UseRangedView { get; }
         #region Info
         void addSelfDestructive(Monster mob);
         void allowSummonState(bool b);
@@ -65,24 +72,21 @@ namespace Application.Core.Game.Maps
         bool hasClock();
         void setDocked(bool isDocked);
         void setEventStarted(bool @event);
-        void setMapName(string mapName);
         void setMuted(bool mute);
         void setOxQuiz(bool b);
         void setReactorState();
-        void setStreetName(string streetName);
-
         void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
         #endregion
 
         #region MapObjects
-        void addMapObject(IMapObject mapobject, bool allocateObjectId = true);
+        bool AddMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, bool allocateMabObjectId = true);
         void ProcessMapObject(Func<IMapObject, bool> codition, Action<IMapObject> action);
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
-        List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
-        List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
+        List<IMapObject> getMapObjectsInBox(Rectangle box, HashSet<MapObjectType> types);
+        List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, HashSet<MapObjectType> types);
         List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject;
         void clearMapObjects();
         #endregion
@@ -98,10 +102,16 @@ namespace Application.Core.Game.Maps
         int getNumPlayersInRect(Rectangle rect);
         List<Player> getPlayersInRange(Rectangle box);
         void movePlayer(Player player, Point newPosition);
+        /// <summary>
+        /// 非玩家的可移动对象移动时
+        /// </summary>
+        /// <param name="mapObject"></param>
+        void MoveMapObject(AbstractAnimatedMapObject mapObject);
+        bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj);
+        void SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true);
+        void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true);
         void removePlayer(Player chr);
         void addPlayer(Player chr);
-        void broadcastGMSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField);
-        void broadcastSpawnPlayerMapObjectMessage(Player source, Player player, bool enteringField);
         #endregion
 
         #region Monster
@@ -114,9 +124,9 @@ namespace Application.Core.Game.Maps
 
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
-        void moveMonster(Monster monster, Point reportedPos);
+
         void spawnFakeMonster(Monster monster);
-        void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
+        void spawnFakeMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
         void spawnHorntailOnGroundBelow(Point targetPoint);
         /// <summary>
         /// 召唤扎昆（复合型Mob）
@@ -125,37 +135,29 @@ namespace Application.Core.Game.Maps
         void SpawnZakumOnGroundBelow(Point targetPoint);
         void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
-        void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
-        void spawnMonsterWithEffect(Monster monster, int effect, Point pos);
+        Monster CreateMonster(MobTemplate mobData, Point pos);
+        void spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
+        void spawnDojoMonster(MobTemplate monster);
         void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
-        void spawnDojoMonster(Monster monster);
+
         #endregion
 
 
-        void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(Player player);
 
-        void broadcastBalrogVictory(string leaderName);
         void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
         void broadcastEnemyShip(bool state);
-        void broadcastGMMessage(Player source, Packet packet, bool repeatToSource);
-        void broadcastGMMessage(Packet packet);
-        void broadcastGMPacket(Player source, Packet packet);
 
-        void broadcastHorntailVictory();
+        void broadcastMessage(Packet packet);
         void broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false);
         void broadcastMessage(Player? source, Packet packet, Point rangedFrom);
-        void broadcastMessage(Packet packet);
-        void broadcastMessage(Packet packet, Point rangedFrom);
+
         void broadcastNightEffect();
-        void broadcastNONGMMessage(Player source, Packet packet, bool repeatToSource);
-        void broadcastPacket(Player source, Packet packet);
+
+        void broadcastHorntailVictory();
         void broadcastPinkBeanVictory(int channel);
         void broadcastShip(bool state);
-
-        void broadcastUpdateCharLookMessage(Player source, Player player);
-        void broadcastZakumVictory();
 
         bool canDeployDoor(Point pos);
         void checkMapOwnerActivity();
@@ -163,7 +165,6 @@ namespace Application.Core.Game.Maps
 
 
         void closeMapSpawnPoints();
-        void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);
         Portal? findClosestPortal(Point from);
@@ -183,6 +184,7 @@ namespace Application.Core.Game.Maps
 
 
         #region Npc
+        NPC CreateNPC(NpcTemplate template, Point pos);
         void SpawnNpc(int npcId, Point pos);
         NPC? getNPCById(int id);
         bool containsNPC(int npcid);
@@ -253,8 +255,7 @@ namespace Application.Core.Game.Maps
         void makeMonsterReal(Monster monster);
         void moveEnvironment(string ms, int type);
 
-        bool removeMapObject(int num);
-        bool removeMapObject(IMapObject obj);
+        bool RemoveMapObject(IMapObject obj, Action<Player>? removePacketAction);
         void removeMonsterSpawn(int mobId, int x, int y);
 
         void removePlayerPuppet(Player player);
@@ -289,7 +290,13 @@ namespace Application.Core.Game.Maps
         void warpEveryone(int to, int pto);
         void warpOutByTeam(int team, int mapid);
 
+        /// <summary>
+        /// 广播，无距离筛选
+        /// </summary>
+        /// <param name="effectPlayer"></param>
+        /// <param name="exceptId"></param>
         void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
+        void Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Action<Player> effectPlayer);
         void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
 
         #region Reactors
@@ -313,8 +320,7 @@ namespace Application.Core.Game.Maps
         #endregion
 
         #region Drop
-        void disappearingItemDrop(IMapObject dropper, Player owner, Item item, Point pos);
-        void disappearingMesoDrop(int meso, IMapObject dropper, Player owner, Point pos);
+        void DropItemDestroy(int itemId, Point dropperPos);
         void dropFromFriendlyMonster(Player chr, Monster mob);
         void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
         void DropItemFromMonsterBySteal(List<DropEntry> list, Player chr, Monster mob, short delay);

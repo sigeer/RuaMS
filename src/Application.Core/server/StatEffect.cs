@@ -831,7 +831,7 @@ public class StatEffect
                             });
 
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
-                            applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
+                            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), applyto.Id);
                         }
                     }
                     break;
@@ -1027,17 +1027,23 @@ public class StatEffect
 
         if (EffectTemplate is IItemStatEffectMC mc)
         {
-            if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
-            {
-                return false;
-            }
             if (mc.CP != 0)
             {
+                if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
+                {
+                    return false;
+                }
+
                 eim.GainCP(applyto, mc.CP);
             }
 
             if (mc.CPSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
             {
+                if (applyto.getEventInstance() is not MonsterCarnivalEventInstanceManager eim)
+                {
+                    return false;
+                }
+
                 // added by Drago (Dragohe4rt)
                 var skill = CarnivalFactory.getInstance().getSkill(mc.CPSkill);
                 if (skill != null)
@@ -1183,7 +1189,7 @@ public class StatEffect
                 ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft())
                 : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
 
-            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.PLAYER));
+            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInBox(bounds, [MapObjectType.PLAYER]);
             List<Player> affectedp = new(affecteds.Count);
             foreach (var affectedmo in affecteds)
             {
@@ -1202,7 +1208,7 @@ public class StatEffect
             {
                 applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
                 affected.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
-                affected.getMap().broadcastMessage(affected, PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), false);
+                affected.BroadcastMap(PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), affected.Id);
             }
         }
 
@@ -1212,7 +1218,7 @@ public class StatEffect
     private void applyMonsterBuff(Player applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
-        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.MONSTER));
+        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, [MapObjectType.MONSTER]);
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
         int i = 0;
         foreach (var mo in affected)
@@ -1395,7 +1401,7 @@ public class StatEffect
         if (primary)
         {
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
-            applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), false);
+            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), applyto.Id);
         }
 
         if (localStatupList.Count > 0)
@@ -1488,7 +1494,7 @@ public class StatEffect
             applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
             if (mbuff != null)
             {
-                applyto.getMap().broadcastMessage(applyto, mbuff, false);
+                applyto.BroadcastMap(mbuff, applyto.Id);
             }
             if (sourceid == Corsair.BATTLE_SHIP)
             {

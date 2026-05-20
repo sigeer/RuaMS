@@ -36,12 +36,12 @@ public abstract class AbstractLifeObject : AbstractAnimatedMapObject
     private int rx0;
     private int rx1;
 
-    public AbstractLifeObject(int id)
+    public AbstractLifeObject(int id, IMap map, Point pos, int stance):base(map, pos, stance)
     {
         this.id = id;
     }
 
-    public AbstractLifeObject(AbstractLifeObject life) : this(life.getId())
+    public AbstractLifeObject(AbstractLifeObject life) : this(life.getId(), life.MapModel, life.getPosition(), life.getStance())
     {
         this.f = life.f;
         this.hide = life.hide;

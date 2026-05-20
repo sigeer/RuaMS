@@ -24,24 +24,5 @@ namespace Application.Core.Game.Players
             mount.setActive(true);
             return mount;
         }
-
-        public bool runTirednessSchedule()
-        {
-            if (MountModel != null)
-            {
-                int tiredness = MountModel.incrementAndGetTiredness();
-
-                this.MapModel.broadcastMessage(PacketCreator.updateMount(this.getId(), MountModel, false));
-                if (tiredness > 99)
-                {
-                    MountModel.setTiredness(99);
-                    this.dispelSkill(this.getJobType() * 10000000 + 1004);
-                    this.dropMessage(6, "Your mount grew tired! Treat it some revitalizer before riding it again!");
-                    return false;
-                }
-            }
-
-            return true;
-        }
     }
 }
