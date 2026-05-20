@@ -37,9 +37,8 @@ public class PetLootHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
 
-        var petIndex = chr.getPetIndex(p.readLong());
-        var pet = chr.getPet(petIndex);
-        if (pet == null || !pet.Summoned)
+        var pet = chr.GetPetById(p.readLong());
+        if (pet == null)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
@@ -50,7 +49,7 @@ public class PetLootHandler : ChannelHandlerBase
         var ob = chr.getMap().getMapObject(oid)!;
         try
         {
-            chr.pickupItem(ob, petIndex);
+            chr.pickupItem(ob, pet.Index);
         }
         catch (Exception)
         {

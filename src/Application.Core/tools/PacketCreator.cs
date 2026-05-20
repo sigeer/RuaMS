@@ -1729,7 +1729,7 @@ public class PacketCreator
 
         p.writeShort(0);    // chr.getFh()
         p.writeByte(0);     // admin？
-        Pet?[] pet = chr.getPets();
+        var pet = chr.getPets();
         for (int i = 0; i < 3; i++)
         {
             if (pet[i] != null)
@@ -4107,7 +4107,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addPetInfo(OutPacket p, Pet pet, bool showpet)
+    private static void addPetInfo(OutPacket p, MapPet pet, bool showpet)
     {
         p.writeByte(1);
         if (showpet)
@@ -4116,40 +4116,15 @@ public class PacketCreator
         }
 
         p.writeInt(pet.getItemId());
-        p.writeString(pet.getName());
+        p.writeString(pet.Name);
         p.writeLong(pet.getUniqueId());
-        p.writePos(pet.getPos());
+        p.writePos(pet.getPosition());
         p.writeByte(pet.getStance());
-        p.writeShort(pet.getFh());
-        p.writeBool(false); // nameTag
-        p.writeBool(false); // chatBalloon
+        p.writeShort(pet.MapModel.Footholds.FindBelowFoothold(pet.getPosition())!.getId());
+        p.writeBool(pet.HasNameTag); // nameTag
+        p.writeBool(pet.HasChatBalloon); // chatBalloon
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="chr"></param>
-    /// <param name="pet"></param>
-    /// <param name="fromHunger">因为饥饿自动收回</param>
-    /// <returns></returns>
-    public static Packet HidePet(Player chr, Pet pet, bool fromHunger)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
-        p.writeInt(chr.getId());
-        p.writeByte(chr.getPetIndex(pet));
-        p.writeByte(0);
-        p.writeBool(fromHunger);
-        return p;
-    }
-
-    public static Packet ShowPet(Player chr, Pet pet)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
-        p.writeInt(chr.getId());
-        p.writeByte(chr.getPetIndex(pet));
-        addPetInfo(p, pet, true);
-        return p;
-    }
 
     public static Packet movePet(int cid, sbyte slot, Point pos, List<LifeMovementFragment> moves)
     {
@@ -4161,40 +4136,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet petChat(int cid, sbyte index, int act, string text)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PET_ACTION);
-        p.writeInt(cid);
-        p.writeSByte(index);
-        p.writeByte(0);
-        p.writeByte(act);
-        p.writeString(text);
-        p.writeBool(false); // chatBalloon
-        return p;
-    }
 
-    public static Packet petFoodResponse(int cid, sbyte index, bool success, bool balloonType)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
-        p.writeInt(cid);
-        p.writeSByte(index);
-        p.writeByte(1);
-        p.writeBool(success);
-        p.writeBool(balloonType);
-        return p;
-    }
-
-    public static Packet commandResponse(int cid, sbyte index, bool talk, int animation, bool balloonType)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
-        p.writeInt(cid);
-        p.writeSByte(index);
-        p.writeByte(0);
-        p.writeByte(animation);
-        p.writeBool(!talk);
-        p.writeBool(balloonType);
-        return p;
-    }
 
     public static Packet showOwnPetLevelUp(sbyte index)
     {
@@ -4212,19 +4154,6 @@ public class PacketCreator
         p.writeByte(4);
         p.writeByte(0);
         p.writeSByte(index);
-        return p;
-    }
-
-    public static Packet changePetName(Player chr, string newname, int slot)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
-        p.writeInt(chr.getId());
-        p.writeByte(0);
-        p.writeString(newname);
-
-        //   if ( CInPacket::Decode1(v3) )
-        //     nNameTag = this->m_pTemplate->nNameTag;
-        p.writeByte(0);
         return p;
     }
 

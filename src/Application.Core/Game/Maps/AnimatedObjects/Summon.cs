@@ -66,6 +66,12 @@ public class Summon : AbstractAnimatedMapObject
         return owner;
     }
 
+    public override string GetReadableName(IChannelClient c)
+    {
+        return base.GetReadableName(c) + $"Owner {owner.GetReadableName(c)}";
+    }
+
+
     public int getSkill()
     {
         return skill;

@@ -47,7 +47,7 @@ public class PetSpeedAction : AbstractQuestAction
         c.lockClient();
         try
         {
-            pet.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
+            pet.PetItem.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
         }
         finally
         {

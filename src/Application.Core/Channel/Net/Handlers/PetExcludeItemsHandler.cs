@@ -44,13 +44,7 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
         var petId = p.readLong();
 
         var chr = c.OnlinedCharacter;
-        sbyte petIndex = chr.getPetIndex(petId);
-        if (petIndex < 0)
-        {
-            return;
-        }
-
-        var pet = chr.getPet(petIndex);
+        var pet = chr.GetPetById(petId);
         if (pet == null)
         {
             return;

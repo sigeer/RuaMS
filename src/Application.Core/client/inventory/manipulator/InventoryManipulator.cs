@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Models;
 using Application.Resources.Messages;
 using Application.Templates.Item.Pet;
@@ -85,9 +86,9 @@ public class InventoryManipulator
 
                     short oldQ = eItem.getQuantity();
                     // 相同属性才能叠加
-                    if (oldQ < slotMax 
-                        && item.getFlag() == eItem.getFlag() 
-                        && item.getOwner().Equals(eItem.getOwner()) 
+                    if (oldQ < slotMax
+                        && item.getFlag() == eItem.getFlag()
+                        && item.getOwner().Equals(eItem.getOwner())
                         && item.getExpiration() == eItem.getExpiration())
                     {
                         short newQ = (short)Math.Min(oldQ + quantity, slotMax);
@@ -318,37 +319,16 @@ public class InventoryManipulator
         if (type == InventoryType.EQUIPPED)
         {
             chr.unequippedItem((Equip)item);
-            inv.removeItem(slot, quantity, allowZero);
-
-            AnnounceModifyInventory(c, item, fromDrop, allowZero);
         }
-        else
+        else if (item is Pet petObj)
         {
-            if (item is Pet petObj)
-            {
-                // thanks Vcoc for finding a d/c issue with equipped pets and pets remaining on DB here
-                int petIdx = chr.getPetIndex(petObj.PetId);
-                if (petIdx > -1)
-                {
-                    chr.unequipPet(petObj, true);
-                }
+            petObj.MapPet?.Recall();
+        }
 
-                inv.removeItem(slot, quantity, allowZero);
-                if (type != InventoryType.CANHOLD)
-                {
-                    AnnounceModifyInventory(c, item, fromDrop, allowZero);
-                }
-
-                // thanks Robin Schulz for noticing pet issues when moving pets out of inventory
-            }
-            else
-            {
-                inv.removeItem(slot, quantity, allowZero);
-                if (type != InventoryType.CANHOLD)
-                {
-                    AnnounceModifyInventory(c, item, fromDrop, allowZero);
-                }
-            }
+        inv.removeItem(slot, quantity, allowZero);
+        if (type != InventoryType.CANHOLD)
+        {
+            AnnounceModifyInventory(c, item, fromDrop, allowZero);
         }
     }
 
@@ -548,6 +528,12 @@ public class InventoryManipulator
                     chr.getMount()!.setItemId(source.getItemId());
                 }
                 break;
+            case EquipSlot.Pet0NameTag:
+            case EquipSlot.Pet1NameTag:
+            case EquipSlot.Pet2NameTag:
+                var index = EquipSlot.PetsNameTag.IndexOf(dst);
+                chr.getPet(index)?.BroadcastNameChanged();
+                break;
         }
 
         //1112413, 1112414, 1112405 (Lilin's Ring)
@@ -635,6 +621,13 @@ public class InventoryManipulator
             target.setPosition(src);
             eqpdInv.addItemFromDB(target);
         }
+
+        var petIndex = EquipSlot.PetsNameTag.IndexOf(src);
+        if (petIndex != -1)
+        {
+            chr.getPet(petIndex)?.BroadcastNameChanged();
+        }
+
         c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(2, source, src))));
         chr.equipChanged();
     }
@@ -702,13 +695,7 @@ public class InventoryManipulator
 
         if (source is Pet petObj)
         {
-            int petIdx = chr.getPetIndex(petObj.PetId);
-            if (petIdx > -1)
-            {
-                var pet = chr.getPet(petIdx);
-                if (pet != null)
-                    chr.unequipPet(pet, true);
-            }
+            petObj.MapPet?.Recall();
         }
 
         Point dropPos = chr.getPosition();

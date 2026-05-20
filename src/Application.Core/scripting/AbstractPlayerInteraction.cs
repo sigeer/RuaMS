@@ -648,10 +648,10 @@ public class AbstractPlayerInteraction : IClientMessenger
         var target = getPlayer().getPet(slot);
         if (target != null)
         {
-            var pet = target.EvolvePet(getPlayer());
+            var pet = target.PetItem.EvolvePet(getPlayer());
             if (pet != null)
             {
-                InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.getPosition(), 1, false);
+                InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.PetItem.getPosition(), 1, false);
 
                 InventoryManipulator.addFromDrop(getClient(), pet, false);
                 getPlayer().SummonPet(pet);

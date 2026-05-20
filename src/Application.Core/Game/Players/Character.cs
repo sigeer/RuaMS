@@ -4113,31 +4113,8 @@ public partial class Player
         }
     }
 
-    public override void OnUnmounted()
-    {
-        unregisterChairBuff();
 
-        releaseControlledMonsters();
-        setChair(-1);
 
-        foreach (Summon summon in getSummonsValues())
-        {
-            if (summon.isStationary())
-            {
-                cancelEffectFromBuffStat(BuffStat.PUPPET);
-            }
-            else
-            {
-                MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
-            }
-        }
-
-        var dragon = getDragon();
-        if (dragon != null)
-        {
-            MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
-        }
-    }
-
-    public bool FilterSummon { get; set; }
+    public bool HideSummon { get; set; }
+    public bool HidePet { get; set; }
 }

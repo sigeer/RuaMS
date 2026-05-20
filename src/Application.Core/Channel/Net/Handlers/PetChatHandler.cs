@@ -43,9 +43,9 @@ public class PetChatHandler : ChannelHandlerBase
     {
         var petId = p.readLong();
         p.readByte();
-        int act = p.ReadSByte();
-        sbyte pet = c.OnlinedCharacter.getPetIndex(petId);
-        if ((pet < 0 || pet > 3) || (act < 0 || act > 9))
+        var act = p.ReadSByte();
+        var pet = c.OnlinedCharacter.GetPetById(petId);
+        if (pet == null || (act < 0 || act > 9))
         {
             return;
         }
@@ -53,11 +53,10 @@ public class PetChatHandler : ChannelHandlerBase
         if (text.Length > sbyte.MaxValue)
         {
             _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
-            _logger.LogWarning("Chr {CharacterName} tried to send text with length of {text.Length}", c.OnlinedCharacter.getName(), text.Length);
+            _logger.LogWarning("Chr {CharacterName} tried to send text with length of {TextLength}", c.OnlinedCharacter.getName(), text.Length);
             c.Disconnect(true, false);
             return;
         }
-        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.petChat(c.OnlinedCharacter.getId(), pet, act, text), true);
-        // ChatLogger.log(c, "Pet", text);
+        pet.ActionRemote(act, text);
     }
 }

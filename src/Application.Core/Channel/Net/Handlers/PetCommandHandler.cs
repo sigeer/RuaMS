@@ -20,11 +20,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-using Application.Core.Game.Items;
-using client.inventory;
-using tools;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 public class PetCommandHandler : ChannelHandlerBase
@@ -34,35 +29,13 @@ public class PetCommandHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         var petId = p.readLong();
-        sbyte petIndex = chr.getPetIndex(petId);
-        Pet? pet;
-        if (petIndex == -1)
-        {
-            return;
-        }
-        else
-        {
-            pet = chr.getPet(petIndex);
-        }
+        var pet = chr.GetPetById(petId);
         if (pet == null)
             return;
 
         p.readByte();
         byte command = p.readByte();
-        var petCommand = pet.SourceTemplate.InterActsDict.GetValueOrDefault(command);
-        if (petCommand == null)
-        {
-            return;
-        }
 
-        if (Randomizer.nextInt(100) < petCommand.Prob)
-        {
-            pet.gainTamenessFullness(chr, petCommand.Inc, 0, command);
-            chr.getMap().broadcastMessage(PacketCreator.commandResponse(chr.getId(), petIndex, false, command, false));
-        }
-        else
-        {
-            chr.getMap().broadcastMessage(PacketCreator.commandResponse(chr.getId(), petIndex, true, command, false));
-        }
+        pet.HandleCommand(command);
     }
 }

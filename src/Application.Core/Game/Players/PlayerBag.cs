@@ -86,18 +86,9 @@ namespace Application.Core.Game.Players
             {
                 Owner.unequippedItem((Equip)invItem);
             }
-            else
+            else if (invItem is Pet petItem)
             {
-                var petid = invItem.PetId;
-                if (petid > -1)
-                {
-                    int petIdx = Owner.getPetIndex(petid);
-                    if (petIdx > -1)
-                    {
-                        var pet = Owner.getPet(petIdx)!;
-                        Owner.unequipPet(pet, true);
-                    }
-                }
+                petItem.MapPet?.Recall();
             }
         }
 
@@ -256,7 +247,7 @@ namespace Application.Core.Game.Players
                             {
                                 if (item is Pet pet)
                                 {
-                                    Owner.unequipPet(pet, true);
+                                    pet.MapPet?.Recall();
 
                                     if (ItemConstants.isExpirablePet(item.getItemId()))
                                     {

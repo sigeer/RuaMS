@@ -194,7 +194,7 @@ namespace Application.Plugin.Script
                 {
                     await SayOK("你不符合要求。你需要 #i5380000##t5380000#，以及 #d#i5000029##t5000029##k, #g#i5000030##t5000030##k, #r#i5000031##t5000031##k, #b#i5000032##t5000032##k, 或者 #e#i5000033##t5000033##n 中的任意一个装备在槽位1上。请在符合条件后再来。");
                 }
-                else if (getPlayer().getPet(0).getLevel() < 15)
+                else if (getPlayer().getPet(0).Level < 15)
                 {
                     await SayOK("你的宠物必须达到15级或以上才能进化。");
                 }

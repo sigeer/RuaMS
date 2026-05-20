@@ -36,5 +36,6 @@ public enum MapObjectType : byte
     HIRED_MERCHANT,
     PLAYER_NPC,
     DRAGON,
-    KITE
+    KITE,
+    PET
 }

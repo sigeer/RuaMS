@@ -317,7 +317,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    else if (item is Pet pet && c.OnlinedCharacter.getPetIndex(pet.PetId) > -1)
+                    else if (item is Pet pet && pet.Summoned)
                     {
                         chr.Popup(nameof(ClientMessage.Cash_PutPetIntoCashInventory));
                         c.enableCSActions();
