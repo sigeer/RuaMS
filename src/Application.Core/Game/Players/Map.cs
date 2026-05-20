@@ -118,15 +118,15 @@ namespace Application.Core.Game.Players
                 getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
                 this.closePlayerInteractions();
 
-                sendPacket(warpPacket);
-
                 m.removePlayer(this);
                 if (isLoggedinWorld())
                 {
                     setPosition(pos);
                     to.Send(t =>
                     {
+                        sendPacket(warpPacket);
                         t.addPlayer(this);
+
                         Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = t.getId() });
                     });
                 }
