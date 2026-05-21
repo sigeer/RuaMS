@@ -284,7 +284,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    if (chr.getInventory(item.getInventoryType()).addItem(item) != -1)
+                    if (chr.getInventory(item.getInventoryType()).AddItem(item))
                     {
                         cs.removeFromInventory(item);
                         c.sendPacket(PacketCreator.takeFromCashInventory(item));

@@ -902,18 +902,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
     }
 
-    public void gainAndEquip(int itemid, short slot)
-    {
-        var old = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
-        if (old != null)
-        {
-            InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, old.getQuantity(), false, false);
-        }
-        Item newItem = ItemInformationProvider.getInstance().getEquipById(itemid);
-        newItem.setPosition(slot);
-        c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).addItemFromDB(newItem);
-        c.sendPacket(PacketCreator.modifyInventory(false, Collections.singletonList(new ModifyInventory(0, newItem))));
-    }
 
     public void spawnNpc(int npcId, Point pos, IMap map)
     {

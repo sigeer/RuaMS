@@ -76,7 +76,7 @@ public class InventorySortHandler : ChannelHandlerBase
 
             foreach (Item item in itemarray)
             {
-                inventory.addItem(item);
+                inventory.AddItem(item);
                 mods.Add(new ModifyInventory(0, item.copy()));//to prevent crashes
             }
             itemarray.Clear();

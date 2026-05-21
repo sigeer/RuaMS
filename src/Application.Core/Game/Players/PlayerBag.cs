@@ -80,31 +80,20 @@ namespace Application.Core.Game.Players
             Dispose(disposing: true);
         }
 
-        void UnEquip(Inventory inv, Item invItem)
-        {
-            if (inv.getType() == InventoryType.EQUIPPED)
-            {
-                Owner.unequippedItem((Equip)invItem);
-            }
-            else if (invItem is Pet petItem)
-            {
-                petItem.MapPet?.Recall();
-            }
-        }
-
         void RemoveItemInternal(Inventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
-            UnEquip(inv, invItem);
-
             bool allowZero = consume && ItemConstants.isRechargeable(invItem.getItemId());
             var removedCount = inv.removeItem(invItem.getPosition(), quantity, allowZero);
-            if (inv.getType() != InventoryType.CANHOLD)
+            if (removedCount > 0)
             {
-                InventoryManipulator.AnnounceModifyInventory(Owner.Client, invItem, fromDrop, allowZero);
-            }
+                if (inv.getType() != InventoryType.CANHOLD)
+                {
+                    InventoryManipulator.AnnounceModifyInventory(Owner.Client, invItem, fromDrop, allowZero);
+                }
 
-            if (showMessage)
-                Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-removedCount, true));
+                if (showMessage)
+                    Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-removedCount, true));
+            }
         }
 
         /// <summary>
@@ -167,19 +156,18 @@ namespace Application.Core.Game.Players
             List<ItemRemovedRecord> modifiedItems = [];
             for (short i = 0; i <= slotLimit; i++)
             {
+                if (toRemoveCount <= 0)
+                    break;
+
                 var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                if (item != null)
+                if (item != null && (filter == null || filter(item)))
                 {
-                    if ((filter == null || filter(item)) && toRemoveCount > 0)
-                    {
-                        UnEquip(inv, item);
 
-                        bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                        var removedCount = inv.removeItem(i, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
-                        toRemoveCount -= removedCount;
+                    bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
+                    var removedCount = inv.removeItem(i, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
+                    toRemoveCount -= removedCount;
 
-                        modifiedItems.Add(new ItemRemovedRecord(item, allowZero, removedCount));
-                    }
+                    modifiedItems.Add(new ItemRemovedRecord(item, allowZero, removedCount));
                 }
             }
 

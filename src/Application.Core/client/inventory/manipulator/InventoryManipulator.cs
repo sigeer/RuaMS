@@ -94,7 +94,6 @@ public class InventoryManipulator
                         short newQ = (short)Math.Min(oldQ + quantity, slotMax);
                         quantity -= (short)(newQ - oldQ);
                         eItem.setQuantity(newQ);
-                        item.setPosition(eItem.getPosition());
                         c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(1, eItem))));
                     }
                 }
@@ -108,12 +107,12 @@ public class InventoryManipulator
                 nItem.setExpiration(item.getExpiration());
                 nItem.setOwner(item.getOwner());
                 nItem.setFlag(item.getFlag());
-                short newSlot = inv.addItem(nItem);
-                if (newSlot == -1)
+
+                if (!inv.AddItem(nItem))
                 {
                     c.sendPacket(PacketCreator.getInventoryFull());
                     c.sendPacket(PacketCreator.getShowInventoryFull());
-                    // Q.没有修改过item的数量，这里操作失败后为什么要修改？--一部分数量已经被获取，这里的修改成剩余的数量
+                    // 剩余空间不足、回滚
                     item.setQuantity((short)(quantity + newQ));
                     return false;
                 }
@@ -135,8 +134,7 @@ public class InventoryManipulator
                 return false;
             }
 
-            short newSlot = inv.addItem(item);
-            if (newSlot == -1)
+            if (!inv.AddItem(item))
             {
                 c.sendPacket(PacketCreator.getInventoryFull());
                 c.sendPacket(PacketCreator.getShowInventoryFull());
@@ -315,16 +313,6 @@ public class InventoryManipulator
         var item = inv.getItem(slot)!;
 
         bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-
-        if (type == InventoryType.EQUIPPED)
-        {
-            chr.unequippedItem((Equip)item);
-        }
-        else if (item is Pet petObj)
-        {
-            petObj.MapPet?.Recall();
-        }
-
         inv.removeItem(slot, quantity, allowZero);
         if (type != InventoryType.CANHOLD)
         {
@@ -456,17 +444,20 @@ public class InventoryManipulator
         }
         else if ((ItemId.isExplorerMount(source.getItemId()) && chr.isCygnus()) ||
                 ((ItemId.isCygnusMount(source.getItemId())) && !chr.isCygnus()))
-        {// Adventurer taming equipment
+        {
+            // Adventurer taming equipment
             return;
         }
-        bool itemChanged = false;
+
+        List<ModifyInventory> mods = new();
         if (source.SourceTemplate.EquipTradeBlock)
         {
             short flag = source.getFlag();      // thanks BHB for noticing flags missing after equipping these
             flag |= ItemConstants.UNTRADEABLE;
             source.setFlag(flag);
 
-            itemChanged = true;
+            mods.Add(new ModifyInventory(3, source));
+            mods.Add(new ModifyInventory(0, source.copy()));//to prevent crashes
         }
         switch (dst)
         {
@@ -531,49 +522,20 @@ public class InventoryManipulator
         }
 
         //1112413, 1112414, 1112405 (Lilin's Ring)
-        source = (Equip?)eqpInv.getItem(src);
+        // source = (Equip?)eqpInv.getItem(src); // 这里为什么又获取一遍？
         eqpInv.removeSlot(src);
+        var originalEqp = eqpdInv.removeSlot(dst);
 
-        Equip? target;
+        eqpdInv.InsertItem(dst, source);
 
-        target = (Equip?)eqpdInv.getItem(dst);
-        if (target != null)
+        if (originalEqp != null)
         {
-            chr.unequippedItem(target);
-            eqpdInv.removeSlot(dst);
+            eqpInv.InsertItem(src, originalEqp);
         }
 
-        List<ModifyInventory> mods = new();
-        if (itemChanged)
-        {
-            mods.Add(new ModifyInventory(3, source));
-            mods.Add(new ModifyInventory(0, source.copy()));//to prevent crashes
-        }
-
-        source.setPosition(dst);
-
-
-        if (source.getRingId() > -1)
-        {
-            chr.getRingById(source.getRingId()).equip();
-        }
-        chr.equippedItem(source);
-        eqpdInv.addItemFromDB(source);
-
-        if (target != null)
-        {
-            target.setPosition(src);
-            eqpInv.addItemFromDB(target);
-        }
         if (chr.getBuffedValue(BuffStat.BOOSTER) != null && ItemConstants.isWeapon(source.getItemId()))
         {
             chr.cancelBuffStats(BuffStat.BOOSTER);
-        }
-
-        var petIndex = EquipSlot.PetsNameTag.IndexOf(dst);
-        if (petIndex != -1)
-        {
-            chr.getPet(petIndex)?.BroadcastNameChanged();
         }
 
         mods.Add(new ModifyInventory(2, source, src));
@@ -596,6 +558,7 @@ public class InventoryManipulator
         {
             return;
         }
+
         var target = (Equip?)eqpInv.getItem(dst);
         if (target != null && src <= 0)
         {
@@ -603,30 +566,8 @@ public class InventoryManipulator
             return;
         }
 
-        if (source.getRingId() > -1)
-        {
-            chr.getRingById(source.getRingId()).unequip();
-        }
-        chr.unequippedItem(source);
         eqpdInv.removeSlot(src);
-
-        if (target != null)
-        {
-            eqpInv.removeSlot(dst);
-        }
-        source.setPosition(dst);
-        eqpInv.addItemFromDB(source);
-        if (target != null)
-        {
-            target.setPosition(src);
-            eqpdInv.addItemFromDB(target);
-        }
-
-        var petIndex = EquipSlot.PetsNameTag.IndexOf(src);
-        if (petIndex != -1)
-        {
-            chr.getPet(petIndex)?.BroadcastNameChanged();
-        }
+        eqpInv.InsertItem(dst, source);
 
         c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(2, source, src))));
         chr.equipChanged();
@@ -731,15 +672,7 @@ public class InventoryManipulator
         }
         else
         {
-            if (type == InventoryType.EQUIPPED)
-            {
-                chr.unequippedItem((Equip)source);
-                inv.removeSlot(srcItemId);
-            }
-            else
-            {
-                inv.removeSlot(srcItemId);
-            }
+            inv.removeSlot(srcItemId);
 
             c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(3, source))));
             if (srcItemId < 0)

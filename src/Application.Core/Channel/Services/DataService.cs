@@ -111,31 +111,18 @@ namespace Application.Core.Channel.Services
                 sandboxCheck |= item.Flag;
 
                 var itemObj = _mapper.Map<Item>(item);
-
-                InventoryType mit = item.InventoryType.GetByType();
                 if (itemObj is Equip equipObj)
                 {
-                    player.Bag[mit.ordinal()].addItemFromDB(equipObj);
-
-                    if (equipObj.Ring != null && mit.Equals(InventoryType.EQUIPPED))
-                    {
-                        equipObj.Ring.equip();
-                    }
-
                     player.addPlayerRing(equipObj.Ring);
                 }
-                else
+                else if (itemObj is Pet petObj)
                 {
-                    player.Bag[item.InventoryType].addItemFromDB(itemObj);
-
-                    if (itemObj is Pet petObj)
+                    if (item.PetInfo.Summoned)
                     {
-                        if (item.PetInfo.Summoned)
-                        {
-                            player.addPet(petObj);
-                        }
+                        player.addPet(petObj);
                     }
                 }
+                player.Bag[item.InventoryType].InsertItem((short)item.Position, itemObj);
             }
 
             if ((sandboxCheck & ItemConstants.SANDBOX) == ItemConstants.SANDBOX)

@@ -2322,6 +2322,7 @@ public class PacketCreator
                         p.writeShort(mod.getPosition());
                         if (mod.getPosition() < 0 || mod.getOldPosition() < 0)
                         {
+                            // unequip: 1, equip: 2
                             addMovement = mod.getOldPosition() < 0 ? 1 : 2;
                         }
                         break;

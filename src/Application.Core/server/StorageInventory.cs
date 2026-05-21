@@ -65,8 +65,7 @@ public class StorageInventory
         {
             return -1;
         }
-        addSlot(slotId, item);
-        item.setPosition(slotId);
+        SetSlot(slotId, item);
         return slotId;
     }
 
@@ -91,8 +90,7 @@ public class StorageInventory
         var target = inventory.GetValueOrDefault(dSlot);
         if (target == null)
         {
-            source.setPosition(dSlot);
-            inventory.AddOrUpdate(dSlot, source);
+            SetSlot(dSlot, source);
             inventory.Remove(sSlot);
         }
         else if (target.getItemId() == source.getItemId()
@@ -144,13 +142,9 @@ public class StorageInventory
 
     private void swap(Item source, Item target)
     {
-        inventory.Remove(source.getPosition());
-        inventory.Remove(target.getPosition());
         short swapPos = source.getPosition();
-        source.setPosition(target.getPosition());
-        target.setPosition(swapPos);
-        inventory.AddOrUpdate(source.getPosition(), source);
-        inventory.AddOrUpdate(target.getPosition(), target);
+        SetSlot(target.getPosition(), source);
+        SetSlot(swapPos, target);
     }
 
     private Item? getItem(short slot)
@@ -158,8 +152,9 @@ public class StorageInventory
         return inventory.GetValueOrDefault(slot);
     }
 
-    private void addSlot(short slot, Item item)
+    private void SetSlot(short slot, Item item)
     {
+        item.setPosition(slot);
         inventory.AddOrUpdate(slot, item);
     }
 

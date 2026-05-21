@@ -46,6 +46,7 @@ using client.inventory.manipulator;
 using client.keybind;
 using constants.game;
 using net.server.guild;
+using OpenTelemetry.Resources;
 using scripting;
 using server;
 using server.events;
@@ -56,6 +57,8 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography;
 using tools;
 using static client.inventory.Equip;
 
@@ -3792,10 +3795,16 @@ public partial class Player
             equippedPetItemIgnore = true;
         }
 
+        getRingById(equip.getRingId())?.equip();
         //if (equip.getPosition() == EquipSlot.Medal)
         //{
         //    saveCharToDB(SyncCharacterTrigger.Unknown);
         //}
+        var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+        if (petIndex != -1)
+        {
+            getPet(petIndex)?.BroadcastNameChanged();
+        }
     }
 
     public void unequippedItem(Equip equip)
@@ -3817,6 +3826,14 @@ public partial class Player
         else if (itemid == ItemId.ITEM_IGNORE)
         {
             equippedPetItemIgnore = false;
+        }
+
+        getRingById(equip.getRingId())?.unequip();
+
+        var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+        if (petIndex != -1)
+        {
+            getPet(petIndex)?.BroadcastNameChanged();
         }
     }
 

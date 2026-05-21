@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Items;
 using Application.Core.model;
 using client.inventory.manipulator;
 using System.Collections;
@@ -38,7 +39,7 @@ namespace client.inventory;
 public class Inventory : IEnumerable<Item>
 {
     /// <summary>
-    /// Slot - Item
+    /// Slot（从1开始） - Item
     /// </summary>
     protected Dictionary<short, Item> inventory;
     protected InventoryType type;
@@ -199,20 +200,20 @@ public class Inventory : IEnumerable<Item>
         return list().Where(x => x.getItemId() == itemId).OrderBy(x => x.getPosition()).ToList();
     }
 
-    private void SetItemPosition(Item item, short pos)
+    void SetItemPosition(Item item, short pos)
     {
+        item.setPosition(pos);
         inventory[pos] = item;
         item.PlayerInventory = this;
     }
 
-    public short addItem(Item item)
+    public bool AddItem(Item item)
     {
-        short slotId = addSlot(item);
-        if (slotId == -1)
+        var position = getNextFreeSlot();
+        if (position == -1)
         {
-            return -1;
+            return false;
         }
-        item.setPosition(slotId);
 
         Activity.Current?.AddEvent(
         new ActivityEvent(
@@ -220,27 +221,28 @@ public class Inventory : IEnumerable<Item>
             tags: new ActivityTagsCollection
             {
                 ["Inventory"] = getType(),
-                ["Slot"] = slotId,
+                ["Slot"] = position,
                 ["Item.Id"] = item.getItemId(),
                 ["Item.Quantity"] = item.getQuantity()
             }));
-        return slotId;
+
+        SetSlot(position, item);
+        return true;
     }
-
-    public void addItemFromDB(Item item)
+    public bool InsertItem(short position, Item item)
     {
-        if (item.getPosition() < 0 && !type.Equals(InventoryType.EQUIPPED))
+        if (position < 0 && !type.Equals(InventoryType.EQUIPPED))
         {
-            return;
+            return false;
         }
 
-        if (item.getPosition() == 0)
+        if (position == 0)
         {
-            addItem(item);
-            return;
+            return AddItem(item);
         }
 
-        addSlotFromDB(item.getPosition(), item);
+        SetSlot(position, item);
+        return true;
     }
 
     private static bool isSameOwner(Item source, Item target)
@@ -258,7 +260,6 @@ public class Inventory : IEnumerable<Item>
         }
         if (target == null)
         {
-            source.setPosition(dSlot);
             SetItemPosition(source, dSlot);
             inventory.Remove(sSlot);
         }
@@ -288,13 +289,9 @@ public class Inventory : IEnumerable<Item>
 
     private void swap(Item source, Item target)
     {
-        inventory.Remove(source.getPosition());
-        inventory.Remove(target.getPosition());
         short swapPos = source.getPosition();
-        source.setPosition(target.getPosition());
-        target.setPosition(swapPos);
-        SetItemPosition(source, source.getPosition());
-        SetItemPosition(target, target.getPosition());
+        SetItemPosition(source, target.getPosition());
+        SetItemPosition(target, swapPos);
     }
 
     public Item? getItem(short slot)
@@ -354,34 +351,7 @@ public class Inventory : IEnumerable<Item>
 
     }
 
-    public virtual short addSlot(Item item)
-    {
-        if (item == null)
-        {
-            return -1;
-        }
-
-        short slotId;
-
-        slotId = getNextFreeSlot();
-        if (slotId < 0)
-        {
-            return -1;
-        }
-
-        SetItemPosition(item, slotId);
-
-
-        if (ItemConstants.isRateCoupon(item.getItemId()))
-        {
-            // deadlocks with coupons rates found thanks to GabrielSin & Masterrulax
-            Owner.updateCouponRates();
-        }
-
-        return slotId;
-    }
-
-    public virtual void addSlotFromDB(short slot, Item item)
+    protected virtual void SetSlot(short slot, Item item)
     {
         SetItemPosition(item, slot);
 
@@ -389,19 +359,34 @@ public class Inventory : IEnumerable<Item>
         {
             Owner.updateCouponRates();
         }
+
+        if (type == InventoryType.EQUIPPED && item is Equip eqp)
+        {
+            Owner.equippedItem(eqp);
+        }
     }
 
-    public virtual void removeSlot(short slot)
+    public virtual Item? removeSlot(short slot)
     {
-        Item? item;
-
-        inventory.Remove(slot, out item);
-
-
-        if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
+        if (inventory.Remove(slot, out var item))
         {
-            Owner.updateCouponRates();
+            if (item != null && ItemConstants.isRateCoupon(item.getItemId()))
+            {
+                Owner.updateCouponRates();
+            }
+
+            if (type == InventoryType.EQUIPPED && item is Equip eqp)
+            {
+                Owner.unequippedItem(eqp);
+            }
+            else if (item is Pet pet)
+            {
+                pet.MapPet?.Recall();
+            }
+
+            return item;
         }
+        return null;
     }
 
     public bool isFull()

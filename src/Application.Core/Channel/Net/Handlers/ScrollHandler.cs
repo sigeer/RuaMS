@@ -158,7 +158,6 @@ public class ScrollHandler : ChannelHandlerBase
                         {
                             Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
 
-                            chr.unequippedItem(toScroll);
                             inv.removeItem(toScroll.getPosition());
                         }
                         else

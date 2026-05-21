@@ -48,29 +48,16 @@ public class InventoryProof : Inventory
         inventory.Clear();
     }
 
-    public override short addSlot(Item item)
-    {
-        if (item == null)
-        {
-            return -1;
-        }
-        short slotId = getNextFreeSlot();
-        if (slotId < 0)
-        {
-            return -1;
-        }
-        inventory.AddOrUpdate(slotId, item);
 
-        return slotId;
+    protected override void SetSlot(short slot, Item item)
+    {
+        item.setPosition(slot);
+        inventory[slot] = item;
     }
 
-    public override void addSlotFromDB(short slot, Item item)
+    public override Item? removeSlot(short slot)
     {
-        inventory.AddOrUpdate(slot, item);
-    }
-
-    public override void removeSlot(short slot)
-    {
-        inventory.Remove(slot);
+        inventory.Remove(slot, out var item);
+        return item;
     }
 }
