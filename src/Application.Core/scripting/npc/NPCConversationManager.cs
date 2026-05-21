@@ -371,7 +371,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             if (pet != null)
             {
-                pet.gainTamenessFullness(getPlayer(), tameness, 0, 0);
+                pet.gainTamenessFullness(tameness, 0, 0);
             }
         }
     }

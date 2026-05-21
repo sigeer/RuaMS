@@ -408,15 +408,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 return;
             }
             string newName = p.readString();
-            pet.setName(newName);
-
-            var item = player.getInventory(InventoryType.CASH).getItem(pet.getPosition());
-            if (item != null)
-            {
-                player.forceUpdateItem(item);
-            }
-
-            player.getMap().broadcastMessage(player, PacketCreator.changePetName(player, newName, 1), true);
+            pet.UpdateName(newName);
             c.sendPacket(PacketCreator.enableActions());
             remove(c, position, itemId);
         }
@@ -447,7 +439,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 {
                     if (template.Pet.Contains(pet.getItemId()))
                     {
-                        pet.gainTamenessFullness(player, template.PetfoodInc, 100, 1, true);
+                        pet.gainTamenessFullness(template.PetfoodInc, 100, 1, true);
                         remove(c, position, itemId);
                         break;
                     }

@@ -93,34 +93,26 @@ namespace ServiceTest.Games.Gameplay
             }
         }
 
-        //[Test]
-        //public void ChangeMap_Test()
-        //{
-        //    var curMapId = 103000201;
-        //    var nextMapId = 103000202;
+        [Test]
+        public async Task ChangeMap_Test()
+        {
+            var curMapId = 200082300;
+            var nextMapId = 230010000;
 
-        //    var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
-        //    var curMap = mapManager.getMap(curMapId);
-        //    var nextMap = mapManager.getMap(nextMapId);
-        //    Stopwatch sw = new();
+            var chr = GameTestGlobal.TestServer.GetPlayer();
+            var mapManager = chr.getChannelServer().getMapFactory();
 
-        //    sw.Start();
-        //    MockClient.OnlinedCharacter.changeMap(curMap, curMap.getPortal(0));
-        //    sw.Stop();
-        //    Console.WriteLine($"changeMap1. {sw.Elapsed.TotalSeconds}");
+            var curMap = mapManager.getMap(curMapId);
+            var nextMap = mapManager.getMap(nextMapId);
 
-        //    sw.Restart();
-        //    MockClient.OnlinedCharacter.changeMap(nextMap, nextMap.getPortal(0));
-        //    sw.Stop();
-        //    Console.WriteLine($"changeMap2. {sw.Elapsed.TotalSeconds}");
+            chr.changeMap(curMap);
 
-        //    sw.Restart();
-        //    MockClient.OnlinedCharacter.changeMap(curMap, curMap.getPortal(0));
-        //    sw.Stop();
-        //    Console.WriteLine($"changeMap3. {sw.Elapsed.TotalSeconds}");
+            await Task.Delay(1000);
+            chr.changeMap(nextMap);
+            await Task.Delay(1000);
 
-        //    Assert.Pass();
-        //}
+            Assert.Pass();
+        }
 
         [Test]
         public async Task MapItemInfo()

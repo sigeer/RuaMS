@@ -46,9 +46,9 @@ public class MinTamenessRequirement : AbstractQuestRequirement
                 continue;
             }
 
-            if (pet.getTameness() > curTameness)
+            if (pet.Tameness > curTameness)
             {
-                curTameness = pet.getTameness();
+                curTameness = pet.Tameness;
             }
         }
 

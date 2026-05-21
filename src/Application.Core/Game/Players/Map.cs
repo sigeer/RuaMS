@@ -1,4 +1,5 @@
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Trades;
 using Application.Shared.WzEntity;
 using server.maps;
@@ -8,11 +9,60 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : IMapPlayer
     {
-
         public override void OnMounted(IMap map)
         {
             base.OnMounted(map);
             this.Map = map.getId();
+
+            var pets = getPets();
+            foreach (var pet in pets)
+            {
+                if (pet != null)
+                {
+                    pet.setPosition(getPosition());
+                    MapModel.AddMapObject(pet, c => pet.sendSpawnData(c));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        public override void OnUnmounted()
+        {
+            unregisterChairBuff();
+
+            releaseControlledMonsters();
+            setChair(-1);
+
+            foreach (Summon summon in getSummonsValues())
+            {
+                if (summon.isStationary())
+                {
+                    cancelEffectFromBuffStat(BuffStat.PUPPET);
+                }
+                else
+                {
+                    MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
+                }
+            }
+
+            var dragon = getDragon();
+            if (dragon != null)
+            {
+                MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
+            }
+
+            foreach (var pet in getPets())
+            {
+                if (pet != null)
+                {
+                    // 似乎不需要另外再销毁
+                    MapModel.RemoveMapObject(pet, null);
+                }
+
+            }
         }
         public int getMapId()
         {

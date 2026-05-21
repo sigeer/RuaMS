@@ -84,7 +84,7 @@ public class PetFoodHandler : ChannelHandlerBase
                         return;
                     }
 
-                    pet.gainTamenessFullness(chr, (pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
+                    pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
                     InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
             }
             finally

@@ -37,18 +37,14 @@ using Application.Core.Managers;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server;
 using Application.Shared.Events;
-using Application.Shared.KeyMaps;
 using Application.Shared.Login;
-using Application.Shared.Team;
 using Application.Templates.Item.Consume;
 using client;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
-using client.processor.action;
 using constants.game;
-using net.server;
 using net.server.guild;
 using scripting;
 using server;
@@ -60,11 +56,7 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Numerics;
-using System.Runtime.ConstrainedExecution;
-using System.Threading.Tasks;
 using tools;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 using static client.inventory.Equip;
 
 namespace Application.Core.Game.Players;
@@ -1977,7 +1969,7 @@ public partial class Player
     public bool needQuestItem(int questid, int itemid)
     {
         if (questid <= 0)
-        { 
+        {
             //For non quest items :3
             return true;
         }
@@ -4113,31 +4105,8 @@ public partial class Player
         }
     }
 
-    public override void OnUnmounted()
-    {
-        unregisterChairBuff();
 
-        releaseControlledMonsters();
-        setChair(-1);
 
-        foreach (Summon summon in getSummonsValues())
-        {
-            if (summon.isStationary())
-            {
-                cancelEffectFromBuffStat(BuffStat.PUPPET);
-            }
-            else
-            {
-                MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
-            }
-        }
-
-        var dragon = getDragon();
-        if (dragon != null)
-        {
-            MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
-        }
-    }
-
-    public bool FilterSummon { get; set; }
+    public bool HideSummon { get; set; }
+    public bool HidePet { get; set; }
 }

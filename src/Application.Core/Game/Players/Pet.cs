@@ -1,18 +1,19 @@
 using Application.Core.Game.Items;
-using client.inventory;
+using Application.Core.Game.Maps.AnimatedObjects;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private Pet?[] pets = new Pet?[3];
-        public Pet?[] getPets()
+        private MapPet?[] pets = new MapPet?[3];
+        public MapPet?[] getPets()
         {
             return Arrays.copyOf(pets, pets.Length);
         }
 
-        public Pet? getPet(int index)
+        public MapPet? getPet(int index)
         {
             if (index < 0)
             {
@@ -37,6 +38,11 @@ namespace Application.Core.Game.Players
             return -1;
         }
 
+        public MapPet? GetPetById(long petId)
+        {
+            return pets.AsValueEnumerable().FirstOrDefault(x => x?.getUniqueId() == petId);
+        }
+
         public sbyte getPetIndexByItemId(int itemId)
         {
             for (sbyte i = 0; i < 3; i++)
@@ -49,37 +55,25 @@ namespace Application.Core.Game.Players
             return -1;
         }
 
-        public sbyte getPetIndex(Pet pet)
-        {
-            return getPetIndex(pet.PetId);
-        }
-        public sbyte addPet(Pet pet)
+        public MapPet? addPet(Pet pet)
         {
             for (sbyte i = 0; i < 3; i++)
             {
                 if (pets[i] == null)
                 {
-                    pets[i] = pet;
-                    return i;
+                    return pets[i] = new MapPet(pet);
                 }
             }
-            return -1;
+            return null;
         }
 
         public void SummonPet(Pet pet)
         {
-            var petIndex = addPet(pet);
-            if (petIndex != -1)
+            var mapPet = addPet(pet);
+            if (mapPet != null)
             {
-                pet.Summoned = true;
+                MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
 
-                Point pos = getPosition();
-                pos.Y -= 12;
-                pet.setPos(pos);
-                pet.setFh(getMap().Footholds.FindBelowFoothold(pet.getPos()).getId());
-                pet.setStance(0);
-
-                getMap().broadcastMessage(this, PacketCreator.ShowPet(this, pet), true);
                 sendPacket(PacketCreator.petStatUpdate(this));
                 sendPacket(PacketCreator.enableActions());
 
@@ -87,14 +81,14 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void removePet(Pet pet, bool shift_left)
+        public void removePet(long petId, bool shift_left)
         {
             int slot = -1;
             for (int i = 0; i < 3; i++)
             {
                 if (pets[i] != null)
                 {
-                    if (pets[i]!.getUniqueId() == pet.getUniqueId())
+                    if (pets[i]!.getUniqueId() == petId)
                     {
                         pets[i] = null;
                         slot = i;
@@ -121,64 +115,17 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void unequipAllPets()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                var pet = getPet(i);
-                if (pet != null)
-                {
-                    unequipPet(pet, true);
-                }
-            }
-        }
-
-        public void unequipPet(Pet pet, bool shift_left, bool hunger = false)
-        {
-            sbyte petIdx = this.getPetIndex(pet);
-            Pet? chrPet = this.getPet(petIdx);
-
-            if (chrPet != null)
-            {
-                chrPet.Summoned = false;
-
-                MapModel.broadcastMessage(this, PacketCreator.HidePet(this, pet, hunger), true);
-
-                removePet(pet, shift_left);
-                commitExcludedItems();
-
-                sendPacket(PacketCreator.petStatUpdate(this));
-                sendPacket(PacketCreator.enableActions());
-            }
-
-
-        }
-
-        public void runFullnessSchedule(int petSlot)
-        {
-            Pet? pet = getPet(petSlot);
-            if (pet == null)
-            {
-                return;
-            }
-
-            int newFullness = pet.Fullness - pet.SourceTemplate.Hungry;
-            if (newFullness <= 5)
-            {
-                pet.Fullness = 15;
-                unequipPet(pet, true, true);
-                dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
-            }
-            else
-            {
-                pet.Fullness = newFullness;
-                Item? petz = getInventory(InventoryType.CASH).getItem(pet.getPosition());
-                if (petz != null)
-                {
-                    forceUpdateItem(petz);
-                }
-            }
-        }
+        //public void unequipAllPets()
+        //{
+        //    for (int i = 0; i < 3; i++)
+        //    {
+        //        var pet = getPet(i);
+        //        if (pet != null)
+        //        {
+        //            unequipPet(pet, true);
+        //        }
+        //    }
+        //}
 
         public int getNoPets()
         {

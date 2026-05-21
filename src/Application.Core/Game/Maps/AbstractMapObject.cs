@@ -114,7 +114,12 @@ public abstract class AbstractMapObject : IMapObject
                 continue;
             }
 
-            if (getType() == MapObjectType.SUMMON && mapChr.FilterSummon)
+            if (getType() == MapObjectType.SUMMON && mapChr.HideSummon)
+            {
+                continue;
+            }
+
+            if (getType() == MapObjectType.PET && mapChr.HidePet)
             {
                 continue;
             }

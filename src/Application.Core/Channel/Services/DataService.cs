@@ -130,7 +130,7 @@ namespace Application.Core.Channel.Services
 
                     if (itemObj is Pet petObj)
                     {
-                        if (petObj.Summoned)
+                        if (item.PetInfo.Summoned)
                         {
                             player.addPet(petObj);
                         }

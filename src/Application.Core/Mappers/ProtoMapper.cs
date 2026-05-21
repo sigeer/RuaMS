@@ -77,7 +77,6 @@ namespace Application.Core.Mappers
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
                 .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
-                .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
                 .AfterMap((rs, dest) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -86,7 +85,7 @@ namespace Application.Core.Mappers
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
 
-                    dest.setName(rs.PetInfo!.Name ?? "");
+                    dest.Name = rs.PetInfo!.Name;
                 })
                 .ReverseMap()
                 .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new Dto.PetDto
@@ -95,7 +94,7 @@ namespace Application.Core.Mappers
                     Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
                     Level = Math.Min(Limits.MaxPetLevel, (int)x.Level),
                     Flag = x.PetAttribute,
-                    Name = x.getName(),
+                    Name = x.Name,
                     Summoned = x.Summoned,
                     Petid = x.getUniqueId()
                 }));

@@ -40,30 +40,28 @@ public class MovePetHandler : AbstractMovementPacketHandler
     {
         var petId = p.readLong();
         var pos = p.readPos();
+
+        var mapPet = c.OnlinedCharacter.GetPetById(petId);
+        if (mapPet == null)
+        {
+            return;
+        }
+        var serverStartPos = mapPet.getPosition();
         List<LifeMovementFragment> res;
 
         try
         {
             res = parseMovement(p);
+            mapPet.updatePosition(res);
         }
         catch (EmptyMovementException e)
         {
             _logger.LogError(e.ToString());
             return;
         }
-        var player = c.OnlinedCharacter;
-        sbyte slot = player.getPetIndex(petId);
-        if (slot == -1)
-        {
-            return;
-        }
-        var pet = player.getPet(slot);
-        if (pet == null)
-        {
-            return;
-        }
 
-        pet.updatePosition(res);
-        player.getMap().broadcastMessage(player, PacketCreator.movePet(player.getId(), slot, pos, res), false);
+
+        mapPet.BroadcastMovement(PacketCreator.movePet(c.OnlinedCharacter.Id, mapPet.Index, pos, res), serverStartPos);
+        mapPet.MapModel.MoveMapObject(mapPet);
     }
 }

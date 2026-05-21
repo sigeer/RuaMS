@@ -247,9 +247,6 @@ public class MapleMap : IMap, INamedInstance
 
         if (this.mapobjects.TryAdd(mapobject.getObjectId(), mapobject))
         {
-            mapobject.OnMounted(this);
-
-
             if (mapobject is MapItem mapItem)
             {
                 droppedItems.Add(mapItem);
@@ -264,6 +261,8 @@ public class MapleMap : IMap, INamedInstance
             {
                 spawnedMonstersOnMap.incrementAndGet();
             }
+
+            mapobject.OnMounted(this);
 
             return true;
         }
@@ -351,10 +350,14 @@ public class MapleMap : IMap, INamedInstance
         {
             foreach (var chr in getAllPlayers())
             {
-                if (IsMapObjectVisibleForPlayerCached(chr, obj))
+                if (removePacketAction != null)
                 {
-                    removePacketAction?.Invoke(chr);
+                    if (IsMapObjectVisibleForPlayerCached(chr, obj))
+                    {
+                        removePacketAction.Invoke(chr);
+                    }
                 }
+
                 SetPlayerInvisibleObject(chr, obj, false);
             }
             return true;
@@ -2688,19 +2691,7 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(pqTimer));
         }
 
-        Pet?[] pets = chr.getPets();
-        foreach (Pet? pet in pets)
-        {
-            if (pet != null)
-            {
-                pet.setPos(getGroundBelow(chr.getPosition()));
-                chr.sendPacket(PacketCreator.ShowPet(chr, pet));
-            }
-            else
-            {
-                break;
-            }
-        }
+
         chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
 
         chr.removeSandboxItems();

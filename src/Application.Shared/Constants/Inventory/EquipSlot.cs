@@ -20,8 +20,16 @@ public class EquipSlot : EnumClass
     public const int Mount = -18;
 
     public const int Pet0Equip = -114;
-    public const int Pet1Equip = -122;
+    public const int Pet1Equip = -130;
     public const int Pet2Equip = -138;
+
+    public const int Pet0NameTag = -121;
+    public const int Pet1NameTag = -131;
+    public const int Pet2NameTag = -139;
+
+    public const int Pet0ChatBalloon = -129;
+    public const int Pet1ChatBalloon = -132;
+    public const int Pet2ChatBalloon = -140;
 
     public static readonly EquipSlot Hair = new EquipSlot("Hr", 0);
     public static readonly EquipSlot Face = new EquipSlot("Fc", 0);
@@ -105,4 +113,6 @@ public class EquipSlot : EnumClass
     }
 
     public static short[] PetsEquip { get; } = [Pet0Equip, Pet1Equip, Pet2Equip];
+    public static short[] PetsNameTag { get; } = [Pet0NameTag, Pet1NameTag, Pet2NameTag];
+    public static short[] PetsChatBalloon { get; } = [Pet0ChatBalloon, Pet1ChatBalloon, Pet2ChatBalloon];
 }

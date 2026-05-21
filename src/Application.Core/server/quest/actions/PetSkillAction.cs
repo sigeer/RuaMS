@@ -53,6 +53,6 @@ public class PetSkillAction : AbstractQuestAction
 
     public override void run(Player chr, int? extSelection)
     {
-        chr.getPet(0).setFlag((byte)ItemConstants.getFlagByInt(flag));
+        chr.getPet(0).PetItem.setFlag((byte)ItemConstants.getFlagByInt(flag));
     }
 }
