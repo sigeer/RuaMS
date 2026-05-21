@@ -2691,9 +2691,6 @@ public class MapleMap : IMap, INamedInstance
             chr.sendPacket(PacketCreator.getClock(pqTimer));
         }
 
-
-        chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
-
         chr.removeSandboxItems();
 
         if (chr.getChalkboard() != null)

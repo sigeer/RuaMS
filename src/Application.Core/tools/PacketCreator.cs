@@ -1734,7 +1734,8 @@ public class PacketCreator
         {
             if (pet[i] != null)
             {
-                addPetInfo(p, pet[i]!, false);
+                p.writeByte(1);
+                pet[i]!.EncodeData(p);
             }
         }
         p.writeByte(0); //end of pets
@@ -4105,24 +4106,6 @@ public class PacketCreator
         p.writeString(text);
         p.writeByte(mode2);
         return p;
-    }
-
-    private static void addPetInfo(OutPacket p, MapPet pet, bool showpet)
-    {
-        p.writeByte(1);
-        if (showpet)
-        {
-            p.writeByte(0);
-        }
-
-        p.writeInt(pet.getItemId());
-        p.writeString(pet.Name);
-        p.writeLong(pet.getUniqueId());
-        p.writePos(pet.getPosition());
-        p.writeByte(pet.getStance());
-        p.writeShort(0);
-        p.writeBool(pet.HasNameTag); // nameTag
-        p.writeBool(pet.HasChatBalloon); // chatBalloon
     }
 
 

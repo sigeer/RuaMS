@@ -22,11 +22,8 @@ namespace Application.Core.Game.Players
                     pet.setPosition(getPosition());
                     MapModel.AddMapObject(pet, c => pet.sendSpawnData(c));
                 }
-                else
-                {
-                    break;
-                }
             }
+            commitExcludedItems();
         }
 
         public override void OnUnmounted()
