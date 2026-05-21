@@ -19,8 +19,7 @@ namespace Application.Core.Game.Players
             {
                 if (pet != null)
                 {
-                    pet.setPosition(getPosition());
-                    MapModel.AddMapObject(pet, c => pet.sendSpawnData(c));
+                    MapModel.AddMapObject(pet, null);
                 }
             }
             commitExcludedItems();

@@ -83,7 +83,8 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
                 continue;
             }
 
-            if ((!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance())) && IsVisibleForPlayerWithoutRange(mapChr))
+            if ((!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance())) 
+                && IsVisibleForPlayerWithoutRange(mapChr))
             {
                 mapChr.sendPacket(packet);
             }

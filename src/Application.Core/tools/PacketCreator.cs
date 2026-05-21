@@ -4119,6 +4119,20 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet PetEatCashFoodFail()
+    {
+        OutPacket p = OutPacket.create(SendOpcode.CASH_PET_FOOD_RESULT);
+        p.writeBool(true);
+        return p;
+    }
+
+    public static Packet PetEatCashFoodSuccess(sbyte petIndex)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.CASH_PET_FOOD_RESULT);
+        p.writeBool(false);
+        p.writeByte(petIndex);
+        return p;
+    }
 
 
     public static Packet showOwnPetLevelUp(sbyte index)
@@ -5646,20 +5660,12 @@ public class PacketCreator
         return showSpecialEffect(7);
     }
 
-    public static Packet showMonsterBookPickup()
-    {
-        return showSpecialEffect(14);
-    }
 
     public static Packet showEquipmentLevelUp()
     {
         return showSpecialEffect(15);
     }
 
-    public static Packet showItemLevelup()
-    {
-        return showSpecialEffect(15);
-    }
 
     /// <summary>
     /// 

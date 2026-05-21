@@ -44,7 +44,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public override string GetReadableName(IChannelClient c)
         {
-            return base.GetReadableName(c) + $"Owner {Owner.GetReadableName(c)}";
+            return base.GetReadableName(c) + $" Owner {Owner.GetReadableName(c)}";
         }
 
         public override void sendSpawnData(IChannelClient client)
@@ -59,6 +59,17 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public bool HasChatBalloon => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsChatBalloon[Index]) != null;
         public bool HasNameTag => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsNameTag[Index]) != null;
+
+        public override void OnMounted(IMap map)
+        {
+            base.OnMounted(map);
+            setPosition(Owner.getPosition());
+        }
+
+        public override bool IsVisibleForPlayer(Player chr)
+        {
+            return Owner == chr || base.IsVisibleForPlayer(chr) && !chr.HidePet;
+        }
 
         public void EncodeData(OutPacket p)
         {
@@ -195,21 +206,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             if (Fullness < Pet.MaxFullness || incFullness == 0 || forceEnjoy)
             {
                 //incFullness == 0: command given
-                int newFullness = Fullness + incFullness;
-                if (newFullness > Pet.MaxFullness)
-                {
-                    newFullness = Pet.MaxFullness;
-                }
+                int newFullness = Math.Min(Fullness + incFullness, Pet.MaxFullness);
                 Fullness = newFullness;
 
                 if (incTameness > 0 && Tameness < Pet.MaxTameness)
                 {
-                    int newTameness = Tameness + incTameness;
-                    if (newTameness > Pet.MaxTameness)
-                    {
-                        newTameness = Pet.MaxTameness;
-                    }
-
+                    int newTameness = Math.Min(Tameness + incTameness, Pet.MaxTameness);
                     Tameness = newTameness;
                     while (newTameness >= ExpTable.getTamenessNeededForLevel(Level))
                     {
@@ -239,7 +241,15 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                 enjoyed = false;
             }
 
-            Owner.BroadcastMap(EncodeFoodResponse(enjoyed));
+            if (forceEnjoy)
+            {
+                BroadcastMap(PacketCreator.PetEatCashFoodSuccess(Index));
+            }
+            else
+            {
+                BroadcastMap(EncodeFoodResponse(enjoyed));
+            }
+
 
             Owner.forceUpdateItem(PetItem);
         }
