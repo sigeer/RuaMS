@@ -1511,7 +1511,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void DropItemDestroy(int itemId, Point dropperPos)
     {
-        Broadcast(-1, MapGlobalData.RangedDistance, dropperPos, chr =>
+        Broadcast(-1, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), dropperPos, chr =>
         {
             chr.sendPacket(PacketCreator.DropItemDestroy(itemId, dropperPos));
         });

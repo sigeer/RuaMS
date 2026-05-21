@@ -41,7 +41,8 @@ namespace Application.Shared.Servers
                 }
                 else
                 {
-                    _rangeOfVisibility = ClientWidth * ClientWidth + ClientHeight * ClientHeight;
+                    var radius = Math.Max(ClientHeight, ClientWidth) * 1.1;
+                    _rangeOfVisibility = radius * radius;
                 }
             }
             return _rangeOfVisibility;
