@@ -243,6 +243,8 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
             if (forceEnjoy)
             {
+                BroadcastMap(EncodeFoodResponse(true));
+                // 没观察到任何效果
                 BroadcastMap(PacketCreator.PetEatCashFoodSuccess(Index));
             }
             else

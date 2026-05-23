@@ -292,12 +292,6 @@ public class MapleMap : IMap, INamedInstance
 
                     packetbakery?.Invoke(chr.Client);
                 }
-
-                // 宠物首次进入地图是通过 spawnPlayerMapObject 此时必然会显示
-                if (mapobject.getType() == MapObjectType.PET)
-                {
-                    SetPlayerVisibleObject(chr, mapobject, false);
-                }
             }
             return true;
         }

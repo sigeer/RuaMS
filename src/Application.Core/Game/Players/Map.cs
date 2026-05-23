@@ -20,6 +20,10 @@ namespace Application.Core.Game.Players
                 if (pet != null)
                 {
                     MapModel.AddMapObject(pet, null);
+                    pet.sendSpawnData(Client);
+
+                    // 宠物首次进入地图是通过 spawnPlayerMapObject 此时必然会显示
+                    MapModel.SetPlayerVisibleObject(this, pet, false);
                 }
             }
             commitExcludedItems();

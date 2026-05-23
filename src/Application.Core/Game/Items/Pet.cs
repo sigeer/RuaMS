@@ -67,7 +67,6 @@ public class Pet : Item
 
         CopyItemProps(copyPet);
 
-        MapPet?.Recall();
         return copyPet;
     }
 
