@@ -235,7 +235,7 @@ namespace Application.Core.Game.Players
                             {
                                 if (item is Pet pet)
                                 {
-                                    pet.MapPet?.Recall();
+                                    pet.MapPet?.Recall(2);
 
                                     if (ItemConstants.isExpirablePet(item.getItemId()))
                                     {

@@ -15,7 +15,7 @@ namespace Application.Core.Game.Commands.Gm0
                 client.OnlinedCharacter.HideSummon = true;
             }
 
-            if (type.Equals("summon", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("pet", StringComparison.OrdinalIgnoreCase))
             {
                 client.OnlinedCharacter.HidePet = true;
             }

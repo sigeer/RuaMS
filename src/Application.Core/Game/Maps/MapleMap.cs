@@ -1511,7 +1511,7 @@ public class MapleMap : IMap, INamedInstance
 
     public void DropItemDestroy(int itemId, Point dropperPos)
     {
-        Broadcast(-1, MapGlobalData.RangedDistance, dropperPos, chr =>
+        Broadcast(-1, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), dropperPos, chr =>
         {
             chr.sendPacket(PacketCreator.DropItemDestroy(itemId, dropperPos));
         });
@@ -2574,14 +2574,31 @@ public class MapleMap : IMap, INamedInstance
 
         foreach (var mo in getMapObjects())
         {
-            if (mo.IsVisibleForPlayer(player))
+            if (mo is Player mapChr)
             {
-                SetPlayerVisibleObject(player, mo);
+                if (mapChr.IsVisibleForPlayer(player))
+                {
+                    SetPlayerVisibleObject(player, mapChr, false);
+                    SetPlayerVisibleObject(mapChr, player, false);
+                }
+                else
+                {
+                    SetPlayerInvisibleObject(player, mapChr, false);
+                    SetPlayerInvisibleObject(mapChr, player, false);
+                }
             }
             else
             {
-                SetPlayerInvisibleObject(player, mo);
+                if (mo.IsVisibleForPlayer(player))
+                {
+                    SetPlayerVisibleObject(player, mo);
+                }
+                else
+                {
+                    SetPlayerInvisibleObject(player, mo);
+                }
             }
+
         }
     }
 
@@ -2690,9 +2707,6 @@ public class MapleMap : IMap, INamedInstance
             int pqTimer = (int)TimeSpan.FromMinutes(10).TotalSeconds;
             chr.sendPacket(PacketCreator.getClock(pqTimer));
         }
-
-
-        chr.commitExcludedItems();  // thanks OishiiKawaiiDesu for noticing pet item ignore registry erasing upon changing maps
 
         chr.removeSandboxItems();
 
@@ -2818,27 +2832,37 @@ public class MapleMap : IMap, INamedInstance
     {
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
-            if (list.Add(mapObj) && sendSpawnData)
-                mapObj.sendSpawnData(chr.Client);
+            if (list.Add(mapObj))
+            {
+                if (sendSpawnData)
+                {
+                    mapObj.sendSpawnData(chr.Client);
+                }
+            }
         }
         else
         {
             _chrVisibleMapObjects[chr] = [mapObj];
+
             if (sendSpawnData)
             {
                 mapObj.sendSpawnData(chr.Client);
             }
-
         }
+
+
 
     }
     public void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true)
     {
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
-            if (list.Remove(mapObj) && sendDestroyData)
+            if (list.Remove(mapObj))
             {
-                mapObj.sendDestroyData(chr.Client);
+                if (sendDestroyData)
+                {
+                    mapObj.sendDestroyData(chr.Client);
+                }
             }
         }
     }

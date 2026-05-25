@@ -44,7 +44,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public override string GetReadableName(IChannelClient c)
         {
-            return base.GetReadableName(c) + $"Owner {Owner.GetReadableName(c)}";
+            return base.GetReadableName(c) + $" Owner {Owner.GetReadableName(c)}";
         }
 
         public override void sendSpawnData(IChannelClient client)
@@ -54,19 +54,43 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public override void sendDestroyData(IChannelClient client)
         {
-            client.sendPacket(EncodeHidePet(false));
+            client.sendPacket(EncodeHidePet(0));
         }
 
         public bool HasChatBalloon => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsChatBalloon[Index]) != null;
         public bool HasNameTag => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsNameTag[Index]) != null;
 
-        Packet EncodeHidePet(bool fromHunger)
+        public override void OnMounted(IMap map)
         {
+            base.OnMounted(map);
+            setPosition(Owner.getPosition());
+        }
+
+        public override bool IsVisibleForPlayer(Player chr)
+        {
+            return Owner == chr || base.IsVisibleForPlayer(chr) && !chr.HidePet;
+        }
+
+        public void EncodeData(OutPacket p)
+        {
+            p.writeInt(PetItem.getItemId());
+            p.writeString(PetItem.Name);
+            p.writeLong(PetItem.getUniqueId());
+            p.writePos(getPosition());
+            p.writeByte(getStance());
+            p.writeShort(0); // fh
+            p.writeBool(HasNameTag); // nameTag
+            p.writeBool(HasChatBalloon); // chatBalloon
+        }
+
+        Packet EncodeHidePet(byte recallReason)
+        {
+            // CUserLocal::OnPetActivated
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
             p.writeInt(Owner.Id);
             p.writeByte(Index);
             p.writeByte(0);
-            p.writeBool(fromHunger);
+            p.writeByte(recallReason);
             return p;
         }
 
@@ -76,15 +100,10 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             p.writeInt(Owner.Id);
             p.writeByte(Index);
             p.writeByte(1);
+            //   if ( CInPacket::Decode1(a2) )
+            //     CUser::SetActivePet(v2, v3, 0);
             p.writeByte(0);
-            p.writeInt(PetItem.getItemId());
-            p.writeString(PetItem.Name);
-            p.writeLong(PetItem.getUniqueId());
-            p.writePos(getPosition());
-            p.writeByte(getStance());
-            p.writeShort(0);
-            p.writeBool(HasNameTag); // nameTag
-            p.writeBool(HasChatBalloon); // chatBalloon
+            EncodeData(p);
             return p;
         }
 
@@ -148,10 +167,10 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         /// <summary>
         /// 召回
         /// </summary>
-        /// <param name="fromHungry">因为饱食度过低</param>
-        public void Recall(bool fromHungry = false)
+        /// <param name="recallReason">0. 无，1. 饱食度过低 2. 过期</param>
+        public void Recall(byte recallReason = 0)
         {
-            MapModel.RemoveMapObject(this, mapChr => mapChr.sendPacket(EncodeHidePet(fromHungry)));
+            MapModel.RemoveMapObject(this, mapChr => mapChr.sendPacket(EncodeHidePet(recallReason)));
 
             Owner.removePet(PetId, true);
             Owner.commitExcludedItems();
@@ -187,21 +206,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             if (Fullness < Pet.MaxFullness || incFullness == 0 || forceEnjoy)
             {
                 //incFullness == 0: command given
-                int newFullness = Fullness + incFullness;
-                if (newFullness > Pet.MaxFullness)
-                {
-                    newFullness = Pet.MaxFullness;
-                }
+                int newFullness = Math.Min(Fullness + incFullness, Pet.MaxFullness);
                 Fullness = newFullness;
 
                 if (incTameness > 0 && Tameness < Pet.MaxTameness)
                 {
-                    int newTameness = Tameness + incTameness;
-                    if (newTameness > Pet.MaxTameness)
-                    {
-                        newTameness = Pet.MaxTameness;
-                    }
-
+                    int newTameness = Math.Min(Tameness + incTameness, Pet.MaxTameness);
                     Tameness = newTameness;
                     while (newTameness >= ExpTable.getTamenessNeededForLevel(Level))
                     {
@@ -231,7 +241,17 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                 enjoyed = false;
             }
 
-            Owner.BroadcastMap(EncodeFoodResponse(enjoyed));
+            if (forceEnjoy)
+            {
+                BroadcastMap(EncodeFoodResponse(true));
+                // 没观察到任何效果
+                BroadcastMap(PacketCreator.PetEatCashFoodSuccess(Index));
+            }
+            else
+            {
+                BroadcastMap(EncodeFoodResponse(enjoyed));
+            }
+
 
             Owner.forceUpdateItem(PetItem);
         }
@@ -298,7 +318,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         PetItem.Fullness = 15;
 
-                        Recall(true);
+                        Recall(1);
                         PetItem.PlayerInventory.Owner.dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
                     }
                     else

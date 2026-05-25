@@ -61,7 +61,7 @@ public abstract class AbstractMapObject : IMapObject
     public virtual void sendSpawnData(IChannelClient client) { }
     public virtual void sendDestroyData(IChannelClient client) { }
 
-    
+
     public virtual IMap getMap()
     {
         return MapModel;
@@ -100,8 +100,8 @@ public abstract class AbstractMapObject : IMapObject
     protected virtual bool IsVisibleForPlayerWithoutRange(Player chr) => MapModel == chr.MapModel;
     public virtual bool IsVisibleForPlayer(Player chr)
     {
-        return IsVisibleForPlayerWithoutRange(chr) && (!MapModel.UseRangedView
-            || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance()));
+        return IsVisibleForPlayerWithoutRange(chr) &&
+            (!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance()));
     }
 
 
@@ -114,15 +114,6 @@ public abstract class AbstractMapObject : IMapObject
                 continue;
             }
 
-            if (getType() == MapObjectType.SUMMON && mapChr.HideSummon)
-            {
-                continue;
-            }
-
-            if (getType() == MapObjectType.PET && mapChr.HidePet)
-            {
-                continue;
-            }
 
             if (MapModel.IsMapObjectVisibleForPlayerCached(mapChr, this))
             {
