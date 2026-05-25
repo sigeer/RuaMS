@@ -218,7 +218,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                         Level += 1;
 
                         Owner.sendPacket(PacketCreator.showOwnPetLevelUp(Index));
-                        BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index));
+                        BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
                     }
                 }
 

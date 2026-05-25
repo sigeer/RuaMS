@@ -49,6 +49,7 @@ using server.life;
 using server.maps;
 using server.movement;
 using System.Net;
+using System.Numerics;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
 
@@ -3873,6 +3874,14 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet PlayerJuke(int itemId, string chrName)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.PLAY_JUKEBOX);
+        p.writeInt(itemId);
+        p.writeString(chrName);
+        return p;
+    }
+
     public static Packet musicChange(string song)
     {
         return environmentChange(song, 6);
@@ -6025,6 +6034,15 @@ public class PacketCreator
         OutPacket p = OutPacket.create(SendOpcode.SESSION_VALUE);
         p.writeString(info);
         p.writeString(amount.ToString());
+        return p;
+    }
+
+    public static Packet BonusExpRateChanged(int itemId, int hours, int rate)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.BONUS_EXP_CHANGED);
+        p.writeInt(itemId);
+        p.writeInt(hours);
+        p.writeInt(hours);
         return p;
     }
 

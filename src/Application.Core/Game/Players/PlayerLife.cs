@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.Objects;
@@ -250,9 +251,9 @@ namespace Application.Core.Game.Players
                     var itemCount = inv.countById(ItemId.SafetyCharms[i]);
                     if (itemCount > 0)
                     {
-                        message("You have used a safety charm, so your EXP points have not been decreased.");
                         InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
                         usedSafetyCharm = true;
+                        sendPacket(EffectPacket.ExpDidNotDrop(ItemId.SafetyCharms[i]));
                         break;
                     }
                 }
