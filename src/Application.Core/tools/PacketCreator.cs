@@ -1734,7 +1734,8 @@ public class PacketCreator
         {
             if (pet[i] != null)
             {
-                addPetInfo(p, pet[i]!, false);
+                p.writeByte(1);
+                pet[i]!.EncodeData(p);
             }
         }
         p.writeByte(0); //end of pets
@@ -4107,24 +4108,6 @@ public class PacketCreator
         return p;
     }
 
-    private static void addPetInfo(OutPacket p, MapPet pet, bool showpet)
-    {
-        p.writeByte(1);
-        if (showpet)
-        {
-            p.writeByte(0);
-        }
-
-        p.writeInt(pet.getItemId());
-        p.writeString(pet.Name);
-        p.writeLong(pet.getUniqueId());
-        p.writePos(pet.getPosition());
-        p.writeByte(pet.getStance());
-        p.writeShort(0);
-        p.writeBool(pet.HasNameTag); // nameTag
-        p.writeBool(pet.HasChatBalloon); // chatBalloon
-    }
-
 
     public static Packet movePet(int cid, sbyte slot, Point pos, List<LifeMovementFragment> moves)
     {
@@ -4136,6 +4119,20 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet PetEatCashFoodFail()
+    {
+        OutPacket p = OutPacket.create(SendOpcode.CASH_PET_FOOD_RESULT);
+        p.writeBool(true);
+        return p;
+    }
+
+    public static Packet PetEatCashFoodSuccess(sbyte petIndex)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.CASH_PET_FOOD_RESULT);
+        p.writeBool(false);
+        p.writeByte(petIndex);
+        return p;
+    }
 
 
     public static Packet showOwnPetLevelUp(sbyte index)
@@ -5663,20 +5660,12 @@ public class PacketCreator
         return showSpecialEffect(7);
     }
 
-    public static Packet showMonsterBookPickup()
-    {
-        return showSpecialEffect(14);
-    }
 
     public static Packet showEquipmentLevelUp()
     {
         return showSpecialEffect(15);
     }
 
-    public static Packet showItemLevelup()
-    {
-        return showSpecialEffect(15);
-    }
 
     /// <summary>
     /// 

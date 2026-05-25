@@ -430,7 +430,10 @@ public class UseCashItemHandler : ChannelHandlerBase
         else if (itemType == 524)
         {
             if (toUse.SourceTemplate is not CashPetFoodItemTemplate template)
+            {
+                _logger.LogCritical("{ItemId} is not CashPetFoodItemTemplate", toUse.getItemId());
                 return;
+            }
 
             for (byte i = 0; i < 3; i++)
             {
@@ -441,15 +444,12 @@ public class UseCashItemHandler : ChannelHandlerBase
                     {
                         pet.gainTamenessFullness(template.PetfoodInc, 100, 1, true);
                         remove(c, position, itemId);
-                        break;
+
+                        return;
                     }
                 }
-                else
-                {
-                    break;
-                }
             }
-            c.sendPacket(PacketCreator.enableActions());
+            c.sendPacket(PacketCreator.PetEatCashFoodFail());
         }
         else if (itemType == 530)
         {

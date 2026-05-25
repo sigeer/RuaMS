@@ -5,7 +5,7 @@ namespace Application.Core.Game.Commands.Gm6;
 
 public class DevtestCommand : ParamsCommandBase
 {
-    public DevtestCommand() : base(["[script]"], 6, "devtest")
+    public DevtestCommand() : base(["<script>"], 6, "devtest")
     {
         Description = "直接执行代码";
     }
@@ -14,7 +14,7 @@ public class DevtestCommand : ParamsCommandBase
     {
         try
         {
-            _ = CSharpScript.EvaluateAsync<int>(GetParamByIndex(0), globals: client.OnlinedCharacter);
+            _ = CSharpScript.EvaluateAsync<int>(GetParam("script"), globals: client.OnlinedCharacter);
         }
         catch (CompilationErrorException)
         {
