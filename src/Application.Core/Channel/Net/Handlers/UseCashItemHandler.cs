@@ -385,6 +385,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         else if (itemType == 510)
         {
             player.getMap().broadcastMessage(PacketCreator.musicChange("Jukebox/Congratulation"));
+            player.MapModel.broadcastMessage(PacketCreator.PlayerJuke(itemId, player.Name));
             remove(c, position, itemId);
         }
         else if (itemType == 512)

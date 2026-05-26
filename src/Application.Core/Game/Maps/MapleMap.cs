@@ -1329,11 +1329,6 @@ public class MapleMap : IMap, INamedInstance
 
     public void DropMesoFromPlayer(Player chr, int meso)
     {
-        if (!dropsOn)
-        {
-            return;
-        }
-
         if (meso > 0)
         {
             chr.GainMeso(-meso);
