@@ -66,6 +66,8 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             setPosition(Owner.getPosition());
         }
 
+        public short GetFoothold() => (short)MapModel.Footholds.FindBelowFoothold(getPosition())!.getId();
+
         public override bool IsVisibleForPlayer(Player chr)
         {
             return Owner == chr || base.IsVisibleForPlayer(chr) && !chr.HidePet;
@@ -75,10 +77,10 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         {
             p.writeInt(PetItem.getItemId());
             p.writeString(PetItem.Name);
-            p.writeLong(PetItem.getUniqueId());
+            p.writeLong(PetId);
             p.writePos(getPosition());
             p.writeByte(getStance());
-            p.writeShort(0); // fh
+            p.writeShort(GetFoothold()); // fh
             p.writeBool(HasNameTag); // nameTag
             p.writeBool(HasChatBalloon); // chatBalloon
         }
@@ -143,7 +145,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             BroadcastMap(p, Owner.Id);
         }
 
-        public void BroadcastNameChanged()
+        public void BroadcastNameChanged(bool exceptOwer = true)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
             p.writeInt(Owner.Id);
@@ -154,7 +156,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             //     nNameTag = this->m_pTemplate->nNameTag;
             p.writeBool(HasNameTag);
 
-            BroadcastMap(p);
+            BroadcastMap(p, exceptOwer ? Owner.Id : -1);
         }
 
         public void UpdateName(string name)
@@ -162,7 +164,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             PetItem.Name = name;
 
             Owner.forceUpdateItem(PetItem);
-            BroadcastNameChanged();
+            BroadcastNameChanged(false);
         }
         /// <summary>
         /// 召回
@@ -218,7 +220,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                         Level += 1;
 
                         Owner.sendPacket(PacketCreator.showOwnPetLevelUp(Index));
-                        BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index));
+                        BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
                     }
                 }
 
