@@ -2758,7 +2758,7 @@ public partial class Player
         {
             returnMap = MapModel.Id;
         }
-        changeMap(returnMap);
+
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
 
@@ -2774,6 +2774,7 @@ public partial class Player
             {
                 SetHP(NumericConfig.MinHp);
             }
+            changeMap(returnMap);
         });
         setStance(0);
     }
