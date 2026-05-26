@@ -284,10 +284,12 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    if (chr.getInventory(item.getInventoryType()).AddItem(item))
+
+                    var addR = chr.GetInventory(item.getInventoryType()).AddItem(item);
+                    if (addR != null)
                     {
                         cs.removeFromInventory(item);
-                        c.sendPacket(PacketCreator.takeFromCashInventory(item));
+                        c.sendPacket(PacketCreator.takeFromCashInventory(item, addR.CurrentPosition));
 
                         if (item is Equip equip)
                         {
@@ -310,7 +312,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    Inventory mi = chr.getInventory(InventoryTypeUtils.getByType(invType));
+                    var mi = chr.getInventory(InventoryTypeUtils.getByType(invType));
                     var item = mi.findByCashId(cashId);
                     if (item == null)
                     {

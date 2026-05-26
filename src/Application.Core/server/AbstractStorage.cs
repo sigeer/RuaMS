@@ -1,4 +1,5 @@
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Client.inventory;
 using client.inventory;
 using client.inventory.manipulator;
 using server;
@@ -165,9 +166,9 @@ namespace Application.Core.Server
                 return;
             }
 
-            StorageInventory msi = new StorageInventory(Owner.Client, Items);
-            msi.mergeItems();
-            Items = msi.sortItems();
+            var sorter = new StorageSorter(this);
+            sorter.Merge();
+            Items = sorter.Sort();
             Owner.sendPacket(StoragePacketCreator.arrangeStorage(Slots, Items));
         }
 

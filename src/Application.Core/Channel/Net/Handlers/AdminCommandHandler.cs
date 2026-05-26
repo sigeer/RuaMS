@@ -71,7 +71,7 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x01:
                 { // /d (inv)
                     sbyte inventoryType = p.ReadSByte();
-                    Inventory inValue = c.OnlinedCharacter.getInventory(InventoryTypeUtils.getByType(inventoryType));
+                    var inValue = c.OnlinedCharacter.getInventory(InventoryTypeUtils.getByType(inventoryType));
                     for (short i = 1; i <= inValue.getSlotLimit(); i++)
                     {
                         //TODO What is the point of this loop?

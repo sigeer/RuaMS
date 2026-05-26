@@ -94,7 +94,7 @@ public class PetAutopotProcessor
             curHp = chr.HP;
             curMp = chr.MP;
 
-            Inventory useInv = chr.getInventory(InventoryType.USE);
+            var useInv = chr.getInventory(InventoryType.USE);
 
             toUse = useInv.getItem(slot);
             if (toUse != null)

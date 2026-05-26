@@ -22,8 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Items;
-using Application.Shared.Constants.Item;
+using Application.Core.Client.inventory;
 using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
@@ -58,7 +57,7 @@ public class Item : IComparable<Item>
             return _sourceTemplate;
         }
     }
-    public Inventory? PlayerInventory { get; set; }
+    public AbstractInventory? PlayerInventory { get; set; }
     public Item(int id, short position, short quantity)
     {
         log = LogFactory.GetLogger(LogType.Item);

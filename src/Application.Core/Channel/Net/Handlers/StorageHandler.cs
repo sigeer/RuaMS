@@ -94,7 +94,7 @@ public class StorageHandler : ChannelHandlerBase
                             int itemId = p.readInt();
                             short quantity = p.readShort();
                             InventoryType invType = ItemConstants.getInventoryType(itemId);
-                            Inventory inv = chr.getInventory(invType);
+                            var inv = chr.getInventory(invType);
                             if (invSlot < 1 || invSlot > inv.getSlotLimit())
                             {
                                 // player inv starts at one

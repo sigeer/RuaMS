@@ -73,7 +73,7 @@ namespace Application.Core.Channel.Services
             var portal = mapModel.getPortal(o.Character.Spawnpoint);
             if (portal == null)
                 portal = mapModel.getPortal(0)!;
-            var player = new Player(c, mapModel, portal);
+            var player = new Player(c, mapModel, portal, o);
 
             _mapper.Map(o.Character, player);
 
@@ -122,7 +122,8 @@ namespace Application.Core.Channel.Services
                         player.addPet(petObj);
                     }
                 }
-                player.Bag[item.InventoryType].InsertItem((short)item.Position, itemObj);
+                var type = InventoryTypeUtils.GetByType(item.InventoryType);
+                player.Bag[type].PutItem((short)item.Position, itemObj);
             }
 
             if ((sandboxCheck & ItemConstants.SANDBOX) == ItemConstants.SANDBOX)

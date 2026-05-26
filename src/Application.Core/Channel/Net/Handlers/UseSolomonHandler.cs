@@ -47,7 +47,7 @@ public class UseSolomonHandler : ChannelHandlerBase
             try
             {
                 var chr = c.OnlinedCharacter;
-                Inventory inv = chr.getInventory(InventoryType.USE);
+                var inv = chr.getInventory(InventoryType.USE);
 
                 var slotItem = inv.getItem(slot);
                 if (slotItem == null)

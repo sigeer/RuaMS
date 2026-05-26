@@ -1191,8 +1191,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public ICollection<Item> canWearEquipment(Player chr, ICollection<Item> items)
     {
-        Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
-        if (inv.IsChecked())
+        var inv = chr.GetEquipped();
+        if (inv.IsChecked)
         {
             return items;
         }
@@ -1283,7 +1283,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             equip.wear(true);
             itemz.Add(equip);
         }
-        inv.SetChecked(true);
+        inv.IsChecked = true;
         return itemz;
     }
 

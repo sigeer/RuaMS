@@ -22,6 +22,7 @@
 
 using Acornima.Ast;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -241,7 +242,7 @@ public class PacketCreator
 
     private static void addCharEquips(OutPacket p, Player chr)
     {
-        Inventory equip = chr.getInventory(InventoryType.EQUIPPED);
+        var equip = chr.getInventory(InventoryType.EQUIPPED);
         var ii = ItemInformationProvider.getInstance().canWearEquipment(chr, equip.list());
         Dictionary<short, int> myEquip = new();
         Dictionary<short, int> maskedEquip = new();
@@ -438,7 +439,7 @@ public class PacketCreator
             p.writeByte(chr.getInventory(InventoryTypeUtils.getByType(i)).getSlotLimit());
         }
         p.writeLong(PacketCommon.getTime(-2));
-        Inventory iv = chr.getInventory(InventoryType.EQUIPPED);
+        var iv = chr.getInventory(InventoryType.EQUIPPED);
         var equippedC = iv.list();
         List<Item> equipped = new(equippedC.Count);
         List<Item> equippedCash = new(equippedC.Count);
@@ -2346,6 +2347,57 @@ public class PacketCreator
         return p;
     }
 
+    // CWvsContext::OnInventoryOperation
+    public static Packet InventoryOperation(bool updateTick, IEnumerable<IInventoryOperationCommand> commands)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
+        //  if ( CInPacket::Decode1(a2) )
+        //  {
+        //    this[1044].dwHighDateTime = 0;
+        //    this[1045].dwLowDateTime = get_update_time();
+        //  }
+        p.writeBool(updateTick);
+        p.writeByte(commands.Count());
+
+        int addMovement = -1;
+        foreach (var cmd in commands)
+        {
+            p.writeByte(cmd.Mode);
+            p.writeByte((byte)cmd.InventoryType);
+            p.writeShort(cmd.CurrentPosition);
+            if (cmd is InventoryAdd add)
+            {
+                addItemInfo(p, add.Item);
+            }
+            else if (cmd is InventoryUpdateQuantity update)
+            {
+                p.writeShort(update.NewQuantity);
+            }
+            else if (cmd is InventoryMove move)
+            {
+                p.writeShort(move.NewPosition);
+                addMovement = move.CurrentPosition < 0 ? 1 : 2;
+            }
+            else if (cmd is InventoryRemove remove)
+            {
+                if (cmd.CurrentPosition < 0)
+                {
+                    addMovement = 2;
+                }
+               
+            }
+            else if (cmd is InventoryUpdateEquipExp exp)
+            {
+                p.writeInt(exp.NewExp);
+            }
+        }
+        if (addMovement > 0)
+        {
+            p.writeByte(addMovement);
+        }
+        return p;
+    }
+
     public static Packet getScrollEffect(int chr, ScrollResult scrollSuccess, bool legendarySpirit, bool whiteScroll)
     {
         // thanks to Rien dev team
@@ -2588,14 +2640,14 @@ public class PacketCreator
             var petObj = pets[i];
             if (petObj != null)
             {
-                p.writeByte(i + 1); // 
+                p.writeBool(true); // 
                 p.writeInt(petObj.getItemId()); // petid
                 p.writeString(petObj.Name);
                 p.writeByte(petObj.Level); // pet level
                 p.writeShort(petObj.Tameness); // pet tameness
                 p.writeByte(petObj.Fullness); // pet fullness
                 p.writeShort(0); // skill?
-                p.writeInt(chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.PetsEquip[i])?.getItemId() ?? 0);
+                p.writeInt(chr.GetEquipped().getItem(EquipSlot.PetEquipSlots[i].Equip)?.getItemId() ?? 0);
             }
         }
         p.writeByte(0); //end of pets
@@ -6473,12 +6525,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet takeFromCashInventory(Item item)
+    public static Packet takeFromCashInventory(Item item, short toSlot)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
         p.writeByte(0x68);
-        p.writeShort(item.getPosition());
+        p.writeShort(toSlot);
         addItemInfo(p, item, true);
 
         return p;

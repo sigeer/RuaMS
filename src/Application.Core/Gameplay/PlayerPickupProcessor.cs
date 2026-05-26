@@ -51,13 +51,13 @@ namespace Application.Core.Gameplay
             {
                 if (mapItem.Item == null)
                 {
-                    if (!_player.isEquippedMesoMagnet())
+                    if (!_player.isEquippedMesoMagnet(_petIndex))
                     {
                         _player.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    if (_player.isEquippedPetItemIgnore())
+                    if (_player.isEquippedPetItemIgnore(_petIndex))
                     {
                         HashSet<int> petIgnore = _player.getExcludedItems();
                         if (petIgnore.Count > 0 && petIgnore.Contains(int.MaxValue))
@@ -69,13 +69,13 @@ namespace Application.Core.Gameplay
                 }
                 else
                 {
-                    if (!_player.isEquippedItemPouch())
+                    if (!_player.isEquippedItemPouch(_petIndex))
                     {
                         _player.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    if (_player.isEquippedPetItemIgnore())
+                    if (_player.isEquippedPetItemIgnore(_petIndex))
                     {
                         HashSet<int> petIgnore = _player.getExcludedItems();
                         if (petIgnore.Count > 0 && petIgnore.Contains(mapItem.getItemId()))

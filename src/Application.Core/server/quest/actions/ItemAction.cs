@@ -181,7 +181,7 @@ public class ItemAction : AbstractQuestAction
                     // Make sure they actually have the item.
                     int quantity = item.getCount() * -1;
 
-                    int freeSlotCount = chr.getInventory(type).freeSlotCountById(item.getId(), quantity);
+                    int freeSlotCount = chr.GetInventory(type).freeSlotCountById(item.getId(), quantity);
                     if (freeSlotCount == -1)
                     {
                         if (type.Equals(InventoryType.EQUIP) && chr.getInventory(InventoryType.EQUIPPED).countById(item.getId()) > quantity)

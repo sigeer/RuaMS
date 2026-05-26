@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Utility.Performance;
@@ -24,9 +25,19 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public Inventory getInventory(InventoryType type)
+        public AbstractInventory getInventory(InventoryType type)
         {
             return Bag[type];
+        }
+
+        public InventoryEquipped GetEquipped()
+        {
+            return (Bag[InventoryType.EQUIPPED] as InventoryEquipped) ?? throw new BusinessFatalException("装备栏未初始化");
+        }
+
+        public Inventory GetInventory(InventoryType type)
+        {
+            return (Bag[type] as Inventory) ?? throw new BusinessFatalException($"{type}栏未初始化");
         }
 
         public byte getSlots(int type)
@@ -36,8 +47,7 @@ namespace Application.Core.Game.Players
 
         public bool canGainSlots(int type, int slots)
         {
-            slots += Bag[type].getSlotLimit();
-            return slots <= 96;
+            return Bag[type].CanGainSlot((short)slots);
         }
         public bool gainSlots(int type, int slots, bool update)
         {

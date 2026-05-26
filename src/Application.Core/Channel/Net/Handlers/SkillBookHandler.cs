@@ -54,7 +54,7 @@ public class SkillBookHandler : ChannelHandlerBase
         {
             try
             {
-                Inventory inv = c.OnlinedCharacter.getInventory(InventoryType.USE);
+                var inv = c.OnlinedCharacter.getInventory(InventoryType.USE);
                 var toUse = inv.getItem(slot);
                 if (toUse == null || toUse.getItemId() != itemId)
                 {

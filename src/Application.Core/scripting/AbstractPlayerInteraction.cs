@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -276,12 +277,12 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (getPlayer().getEventInstance() as TEim) ?? throw new ConversationDiffInstanceException();
     }
 
-    public Inventory getInventory(int type)
+    public AbstractInventory getInventory(int type)
     {
         return getPlayer().getInventory(InventoryTypeUtils.getByType((sbyte)type));
     }
 
-    public Inventory getInventory(InventoryType type)
+    public AbstractInventory getInventory(InventoryType type)
     {
         return getPlayer().getInventory(type);
     }
@@ -410,7 +411,7 @@ public class AbstractPlayerInteraction : IClientMessenger
                 {
                     List<ItemQuantity> toRemove = toRemoveItemList.get(i);
 
-                    Inventory inv = this.getInventory(i);
+                    var inv = this.getInventory(i) as Inventory;
                     prfInv.cloneContents(inv);
 
                     foreach (var p in toRemove)

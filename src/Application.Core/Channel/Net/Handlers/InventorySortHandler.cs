@@ -21,7 +21,7 @@
  */
 
 
-using Application.Core.Game.Items;
+using Application.Core.Client.inventory;
 using client.inventory;
 using tools;
 
@@ -49,39 +49,16 @@ public class InventorySortHandler : ChannelHandlerBase
             return;
         }
 
-        List<Item> itemarray = new();
-        List<ModifyInventory> mods = new();
+        var inventory = c.OnlinedCharacter.GetInventory(InventoryTypeUtils.getByType(invType));
+        if (inventory == null)
+        {
+            c.Disconnect(false);
+            return;
+        }
 
-        Inventory inventory = chr.getInventory(InventoryTypeUtils.getByType(invType));
+        var ops = new BagInventorySorter(inventory).Sort();
+        chr.SyncClientInventory(ops, true);
 
-            for (short i = 1; i <= inventory.getSlotLimit(); i++)
-            {
-                var item = inventory.getItem(i);
-                if (item != null)
-                {
-                    // 为什么用copy？
-                    itemarray.Add(item.copy());
-                }
-            }
-
-            foreach (Item item in itemarray)
-            {
-                inventory.removeSlot(item.getPosition());
-                mods.Add(new ModifyInventory(3, item));
-            }
-
-            int invTypeCriteria = (InventoryTypeUtils.getByType(invType) == InventoryType.EQUIP) ? 3 : 1;
-            int sortCriteria = YamlConfig.config.server.USE_ITEM_SORT_BY_NAME ? 2 : 0;
-            itemarray = InventorySorter.Sort(itemarray, sortCriteria, invTypeCriteria);
-
-            foreach (Item item in itemarray)
-            {
-                inventory.AddItem(item);
-                mods.Add(new ModifyInventory(0, item.copy()));//to prevent crashes
-            }
-            itemarray.Clear();
-
-        c.sendPacket(PacketCreator.modifyInventory(true, mods));
         c.sendPacket(PacketCreator.finishedSort2(invType));
         c.sendPacket(PacketCreator.enableActions());
     }

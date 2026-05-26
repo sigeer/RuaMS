@@ -108,7 +108,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                                     {
                                         int qty;
 
-                                        Inventory inv = chr.getInventory(type);
+                                        var inv = chr.getInventory(type);
 
                                         qty = Math.Min(chr.countItem(loseItem.Id), dropCount);
                                         InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);

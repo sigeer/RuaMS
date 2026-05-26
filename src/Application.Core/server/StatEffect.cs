@@ -971,7 +971,7 @@ public class StatEffect
         {
             short projectileConsume = this.getBulletConsume();  // noticed by shavit
 
-            Inventory use = applyto.getInventory(InventoryType.USE);
+            var use = applyto.getInventory(InventoryType.USE);
 
             Item? projectile = null;
             for (int i = 1; i <= use.getSlotLimit(); i++)

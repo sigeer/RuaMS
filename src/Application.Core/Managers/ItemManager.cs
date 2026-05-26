@@ -10,7 +10,7 @@ namespace Application.Core.Managers
 
         public static void UpdateEquip(Player player, int newStat, int newSpdJmp)
         {
-            Inventory equip = player.getInventory(InventoryType.EQUIP);
+            var equip = player.getInventory(InventoryType.EQUIP);
 
             for (byte i = 1; i <= equip.getSlotLimit(); i++)
             {

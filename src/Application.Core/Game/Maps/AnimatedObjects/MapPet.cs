@@ -57,8 +57,8 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             client.sendPacket(EncodeHidePet(0));
         }
 
-        public bool HasChatBalloon => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsChatBalloon[Index]) != null;
-        public bool HasNameTag => Owner.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.PetsNameTag[Index]) != null;
+        public bool HasChatBalloon => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].ChatBalloon);
+        public bool HasNameTag => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].NameTag);
 
         public override void OnMounted(IMap map)
         {

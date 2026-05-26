@@ -31,6 +31,25 @@ public class EquipSlot : EnumClass
     public const int Pet1ChatBalloon = -132;
     public const int Pet2ChatBalloon = -140;
 
+    public const int Pet0MesoMagnet = -123;
+    public const int Pet1MesoMagnet = -134;
+    public const int Pet2MesoMagnet = -142;
+
+    public const int Pet0ItemPouch = -122;
+    public const int Pet1ItemPouch = -133;
+    public const int Pet2ItemPouch = -141;
+
+    public const int Pet0ItemIgnore = -146;
+    public const int Pet1ItemIgnore = -147;
+    public const int Pet2ItemIgnore = -148;
+
+    public static PetEquipSlot[] PetEquipSlots = new PetEquipSlot[3]
+    {
+        new PetEquipSlot(Pet0Equip, Pet0NameTag, Pet0ChatBalloon, Pet0MesoMagnet, Pet0ItemPouch, Pet0ItemIgnore),
+        new PetEquipSlot(Pet1Equip, Pet1NameTag, Pet1ChatBalloon, Pet1MesoMagnet, Pet1ItemPouch, Pet1ItemIgnore),
+        new PetEquipSlot(Pet2Equip, Pet2NameTag, Pet2ChatBalloon, Pet2MesoMagnet, Pet2ItemPouch, Pet2ItemIgnore),
+    };
+
     public static readonly EquipSlot Hair = new EquipSlot("Hr", 0);
     public static readonly EquipSlot Face = new EquipSlot("Fc", 0);
 
@@ -112,7 +131,7 @@ public class EquipSlot : EnumClass
         return PET_EQUIP;
     }
 
-    public static short[] PetsEquip { get; } = [Pet0Equip, Pet1Equip, Pet2Equip];
     public static short[] PetsNameTag { get; } = [Pet0NameTag, Pet1NameTag, Pet2NameTag];
-    public static short[] PetsChatBalloon { get; } = [Pet0ChatBalloon, Pet1ChatBalloon, Pet2ChatBalloon];
 }
+
+public record PetEquipSlot(short Equip, short NameTag, short ChatBalloon, short MesoMagnet, short ItemPouch, short ItemIgnore);

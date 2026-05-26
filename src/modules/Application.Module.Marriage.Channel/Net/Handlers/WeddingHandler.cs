@@ -39,7 +39,7 @@ public class WeddingHandler : ChannelHandlerBase
         _config = options.Value;
     }
 
-    public override async Task HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, IChannelClient c)
     {
 
         if (c.tryacquireClient())
@@ -75,7 +75,7 @@ public class WeddingHandler : ChannelHandlerBase
                                     if (spouse != null)
                                     {
                                         InventoryType type = ItemConstants.getInventoryType(itemid);
-                                        Inventory chrInv = chr.getInventory(type);
+                                        var chrInv = chr.getInventory(type);
 
                                         Item? newItem = null;
                                         chrInv.lockInventory();

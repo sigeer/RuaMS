@@ -692,8 +692,6 @@ public class Equip : Item
             lvupStr += "+UPGSLOT ";
         }
 
-        c.OnlinedCharacter.equipChanged();
-
         c.OnlinedCharacter.showHint(showStr, 300);
         c.OnlinedCharacter.dropMessage(6, lvupStr);
 

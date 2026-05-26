@@ -50,6 +50,7 @@ public enum InventoryType
     CANHOLD = 6,   //Proof-guard for inserting after removal checks
     /// <summary>
     /// 穿在身上的装备
+    /// （对客户端而言都是EQUIP）
     /// </summary>
     EQUIPPED = -1 //Seems nexon screwed something when removing an item T_T
 }

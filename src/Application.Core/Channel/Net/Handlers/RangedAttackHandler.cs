@@ -144,7 +144,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             {
                 bulletCount *= 2;
             }
-            Inventory inv = chr.getInventory(InventoryType.USE);
+            var inv = chr.getInventory(InventoryType.USE);
             for (short i = 1; i <= inv.getSlotLimit(); i++)
             {
                 var item = inv.getItem(i);
@@ -227,7 +227,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 int visProjectile = projectile; //visible projectile sent to players
                 if (ItemConstants.isThrowingStar(projectile))
                 {
-                    Inventory cash = chr.getInventory(InventoryType.CASH);
+                    var cash = chr.getInventory(InventoryType.CASH);
                     for (int i = 1; i <= cash.getSlotLimit(); i++)
                     { // impose order...
                         var item = cash.getItem((short)i);
