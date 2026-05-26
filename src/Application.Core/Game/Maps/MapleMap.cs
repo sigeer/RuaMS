@@ -2808,7 +2808,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (o.IsVisibleForPlayer(chr))
             {
-                SetPlayerVisibleObject(chr, o);
+                SetPlayerVisibleObject(chr, o, o is not MapPet);
 
                 if (o is Monster monster && !monster.isFake())
                     monster.aggroUpdateController();
