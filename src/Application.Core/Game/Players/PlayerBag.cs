@@ -56,6 +56,7 @@ namespace Application.Core.Game.Players
                         break;
                     default:
                         b = byte.MaxValue;
+                        _dataSource[i] = new Inventory(owner, type, b);
                         break;
                 }
             }
