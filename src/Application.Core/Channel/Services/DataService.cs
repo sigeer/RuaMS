@@ -111,6 +111,9 @@ namespace Application.Core.Channel.Services
                 sandboxCheck |= item.Flag;
 
                 var itemObj = _mapper.Map<Item>(item);
+                var type = InventoryTypeUtils.GetByType(item.InventoryType);
+                player.Bag[type].PutItem((short)item.Position, itemObj);
+
                 if (itemObj is Equip equipObj)
                 {
                     player.addPlayerRing(equipObj.Ring);
@@ -122,8 +125,6 @@ namespace Application.Core.Channel.Services
                         player.addPet(petObj);
                     }
                 }
-                var type = InventoryTypeUtils.GetByType(item.InventoryType);
-                player.Bag[type].PutItem((short)item.Position, itemObj);
             }
 
             if ((sandboxCheck & ItemConstants.SANDBOX) == ItemConstants.SANDBOX)

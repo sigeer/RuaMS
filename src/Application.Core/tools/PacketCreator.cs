@@ -2367,7 +2367,7 @@ public class PacketCreator
             p.writeShort(cmd.CurrentPosition);
             if (cmd is InventoryAdd add)
             {
-                addItemInfo(p, add.Item);
+                addItemInfo(p, add.Item, true);
             }
             else if (cmd is InventoryUpdateQuantity update)
             {

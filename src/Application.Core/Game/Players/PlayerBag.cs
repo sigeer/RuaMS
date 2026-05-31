@@ -253,7 +253,7 @@ namespace Application.Core.Game.Players
                     bool deletedCoupon = false;
 
                     List<Item> toberemove = new();
-                    foreach (Inventory inv in GetValues())
+                    foreach (var inv in GetValues())
                     {
                         foreach (Item item in inv.list())
                         {
