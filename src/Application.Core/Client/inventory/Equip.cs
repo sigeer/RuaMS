@@ -697,8 +697,6 @@ public class Equip : Item
 
         c.sendPacket(PacketCreator.showEquipmentLevelUp());
         c.OnlinedCharacter.BroadcastMap(PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15), c.OnlinedCharacter.Id);
-
-        c.OnlinedCharacter.forceUpdateItem(this);
     }
 
     public int getItemExp()

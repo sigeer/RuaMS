@@ -49,12 +49,17 @@ public class InventoryEquipped : AbstractInventory
 
     protected override IEnumerable<Item> ListExsitedEnumerable()
     {
-        return inventory.Values.AsEnumerable();
+        return inventory.Values;
     }
 
     public override List<InventoryItem> LoadAllItem()
     {
-        return inventory.Select(kw => new InventoryItem(kw.Key, kw.Value)).ToList();
+        return LoadAllItemEnumerable().ToList();
+    }
+
+    public override IEnumerable<InventoryItem> LoadAllItemEnumerable()
+    {
+        return inventory.Select(kw => new InventoryItem(kw.Key, kw.Value));
     }
 
     void SetItemPosition(Equip item, short pos)

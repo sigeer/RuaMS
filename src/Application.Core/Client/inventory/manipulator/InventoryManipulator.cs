@@ -362,7 +362,6 @@ public class InventoryManipulator
         }
 
         List<IInventoryOperationCommand> ops = [];
-        List<ModifyInventory> mods = new();
         if (source.SourceTemplate.EquipTradeBlock)
         {
             short flag = source.getFlag();      // thanks BHB for noticing flags missing after equipping these

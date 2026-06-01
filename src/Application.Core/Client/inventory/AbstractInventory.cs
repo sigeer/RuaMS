@@ -52,6 +52,7 @@ namespace Application.Core.Client.inventory
         /// </summary>
         /// <returns></returns>
         public abstract List<InventoryItem> LoadAllItem();
+        public abstract IEnumerable<InventoryItem> LoadAllItemEnumerable();
 
         public abstract Item? getItem(short slot);
         public bool HasItem(int itemId)

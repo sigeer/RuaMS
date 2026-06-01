@@ -2290,62 +2290,62 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet modifyInventory(bool updateTick, List<ModifyInventory> mods)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
-        //  if ( CInPacket::Decode1(a2) )
-        //  {
-        //    this[1044].dwHighDateTime = 0;
-        //    this[1045].dwLowDateTime = get_update_time();
-        //  }
-        p.writeBool(updateTick);
-        p.writeByte(mods.Count);
-        //p.writeByte(0); v104 :)
-        int addMovement = -1;
-        foreach (ModifyInventory mod in mods)
-        {
-            p.writeByte(mod.getMode());
-            p.writeByte(mod.getInventoryType());
-            p.writeShort(mod.getMode() == 2 ? mod.getOldPosition() : mod.getPosition());
-            switch (mod.getMode())
-            {
-                case 0:
-                    {//add item
-                        addItemInfo(p, mod.getItem(), true);
-                        break;
-                    }
-                case 1:
-                    {//update quantity
-                        p.writeShort(mod.getQuantity());
-                        break;
-                    }
-                case 2:
-                    {//move
-                        p.writeShort(mod.getPosition());
-                        if (mod.getPosition() < 0 || mod.getOldPosition() < 0)
-                        {
-                            // unequip: 1, equip: 2
-                            addMovement = mod.getOldPosition() < 0 ? 1 : 2;
-                        }
-                        break;
-                    }
-                case 3:
-                    {//remove
-                        if (mod.getPosition() < 0)
-                        {
-                            addMovement = 2;
-                        }
-                        break;
-                    }
-            }
-            mod.clear();
-        }
-        if (addMovement > -1)
-        {
-            p.writeByte(addMovement);
-        }
-        return p;
-    }
+    //public static Packet modifyInventory(bool updateTick, List<ModifyInventory> mods)
+    //{
+    //    OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
+    //    //  if ( CInPacket::Decode1(a2) )
+    //    //  {
+    //    //    this[1044].dwHighDateTime = 0;
+    //    //    this[1045].dwLowDateTime = get_update_time();
+    //    //  }
+    //    p.writeBool(updateTick);
+    //    p.writeByte(mods.Count);
+    //    //p.writeByte(0); v104 :)
+    //    int addMovement = -1;
+    //    foreach (ModifyInventory mod in mods)
+    //    {
+    //        p.writeByte(mod.getMode());
+    //        p.writeByte(mod.getInventoryType());
+    //        p.writeShort(mod.getMode() == 2 ? mod.getOldPosition() : mod.getPosition());
+    //        switch (mod.getMode())
+    //        {
+    //            case 0:
+    //                {//add item
+    //                    addItemInfo(p, mod.getItem(), true);
+    //                    break;
+    //                }
+    //            case 1:
+    //                {//update quantity
+    //                    p.writeShort(mod.getQuantity());
+    //                    break;
+    //                }
+    //            case 2:
+    //                {//move
+    //                    p.writeShort(mod.getPosition());
+    //                    if (mod.getPosition() < 0 || mod.getOldPosition() < 0)
+    //                    {
+    //                        // unequip: 1, equip: 2
+    //                        addMovement = mod.getOldPosition() < 0 ? 1 : 2;
+    //                    }
+    //                    break;
+    //                }
+    //            case 3:
+    //                {//remove
+    //                    if (mod.getPosition() < 0)
+    //                    {
+    //                        addMovement = 2;
+    //                    }
+    //                    break;
+    //                }
+    //        }
+    //        mod.clear();
+    //    }
+    //    if (addMovement > -1)
+    //    {
+    //        p.writeByte(addMovement);
+    //    }
+    //    return p;
+    //}
 
     // CWvsContext::OnInventoryOperation
     public static Packet InventoryOperation(bool updateTick, IEnumerable<IInventoryOperationCommand> commands)
@@ -3499,7 +3499,9 @@ public class PacketCreator
 
     public static Packet getInventoryFull()
     {
-        return modifyInventory(true, []);
+        OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
+        p.writeBool(true);
+        return p;
     }
 
     public static Packet getShowInventoryFull()

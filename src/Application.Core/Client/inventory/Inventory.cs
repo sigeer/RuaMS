@@ -115,14 +115,25 @@ public class Inventory : AbstractInventory
 
     protected override IEnumerable<Item> ListExsitedEnumerable()
     {
-        return inventory.OfType<Item>().AsEnumerable();
+        return inventory.OfType<Item>();
     }
 
     public override List<InventoryItem> LoadAllItem()
     {
-        return ListExsitedEnumerable().Select((x, i) => new InventoryItem(MapClientSlot((short)i), x)).ToList();
+        return LoadAllItemEnumerable().ToList();
     }
 
+    public override IEnumerable<InventoryItem> LoadAllItemEnumerable()
+    {
+        for (short i = 0; i < inventory.Length; i++)
+        {
+            var item = inventory[i];
+            if (item != null)
+            {
+                yield return new(MapClientSlot(i), item);
+            }
+        }
+    }
     public List<Item?> LoadAllSlot()
     {
         return inventory.ToList();

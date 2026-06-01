@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -246,7 +247,8 @@ public class Shop
             if (c.OnlinedCharacter.getMeso() >= price)
             {
                 item.setQuantity(slotMax);
-                c.OnlinedCharacter.forceUpdateItem(item);
+                c.OnlinedCharacter.SyncClientInventory(new InventoryUpdateQuantity(InventoryType.USE, slot, slotMax));
+
                 c.OnlinedCharacter.GainMeso(-price, enableActions: true);
                 c.sendPacket(PacketCreator.shopTransaction(0x8));
             }
