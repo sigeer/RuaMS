@@ -79,7 +79,7 @@ public class InventoryEquipped : AbstractInventory
 
         SetItemPosition(eqp, position);
 
-        Owner.equippedItem(eqp, true);
+        Owner.equippedItem(eqp);
     }
 
     public Equip? Equip(short slot, Equip newEqp)
@@ -88,7 +88,7 @@ public class InventoryEquipped : AbstractInventory
 
         SetItemPosition(newEqp, slot);
 
-        Owner.equippedItem(newEqp);
+        Owner.equippedItem(newEqp, true);
         return oldEquip;
     }
 

@@ -3795,7 +3795,7 @@ public partial class Player
         return AutobanManager;
     }
 
-    public void equippedItem(Equip equip, bool fromLogin = false)
+    public void equippedItem(Equip equip, bool notLogin = false)
     {
         int itemid = equip.getItemId();
 
@@ -3810,8 +3810,9 @@ public partial class Player
         //    saveCharToDB(SyncCharacterTrigger.Unknown);
         //}
 
-        if (fromLogin)
+        if (notLogin)
         {
+            // 登录后进入地图时会广播
             var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
             if (petIndex != -1)
             {
@@ -3840,14 +3841,20 @@ public partial class Player
 
     public bool isEquippedMesoMagnet(int petIndex)
     {
+        if (petIndex < 0 || petIndex > 2)
+            return false;
         return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].MesoMagnet);
     }
     public bool isEquippedItemPouch(int petIndex)
     {
+        if (petIndex < 0 || petIndex > 2)
+            return false;
         return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemPouch);
     }
     public bool isEquippedPetItemIgnore(int petIndex)
     {
+        if (petIndex < 0 || petIndex > 2)
+            return false;
         return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemIgnore);
     }
 
